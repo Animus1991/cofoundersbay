@@ -1,0 +1,150 @@
+"use client";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Menu, LogOut, User, Settings, X } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { navLinks } from './nav-links';
+import { cn } from '@/lib/utils';
+
+export function MobileNav() {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<{ email?: string; role?: string } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) setUser(JSON.parse(stored));
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  // Close sheet when route changes
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
+  const roleGradient = {
+    founder: 'from-indigo-500 to-purple-500',
+    mentor: 'from-cyan-500 to-teal-500',
+    investor: 'from-orange-500 to-red-500',
+    org: 'from-violet-500 to-indigo-500',
+  };
+
+  const userRole = user?.role as keyof typeof roleGradient;
+  const gradient = roleGradient[userRole] || roleGradient.founder;
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="secondary" size="icon" className="lg:hidden">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[280px] p-0">
+        {/* Header with gradient */}
+        <div className={cn('relative h-32 bg-gradient-to-br p-6', gradient)}>
+          <div className="absolute inset-0 bg-black/20" />
+          <SheetHeader className="relative z-10">
+            <SheetTitle className="text-white font-display text-xl">CoFounderBay</SheetTitle>
+          </SheetHeader>
+          
+          {user && (
+            <div className="relative z-10 mt-4 flex items-center gap-3">
+              <Avatar className="h-10 w-10 border-2 border-white/30">
+                <AvatarFallback className="bg-white/20 text-white font-semibold">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-medium text-white truncate max-w-[160px]">
+                  {user.email}
+                </p>
+                <p className="text-xs text-white/70 capitalize">{user.role}</p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Navigation links */}
+        <nav className="flex-1 p-4 space-y-1">
+          {navLinks.map(({ href, label, icon: Icon }, index) => {
+            const active = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
+                  'animate-fade-in-left',
+                  active
+                    ? 'bg-primary/15 text-primary shadow-sm'
+                    : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+                )}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <Icon className={cn('h-5 w-5 transition-transform', active && 'scale-110')} />
+                {label}
+                {active && (
+                  <div className="ml-auto h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom actions */}
+        <div className="border-t border-border/60 p-4 space-y-2">
+          {user ? (
+            <>
+              <Link
+                href="/profile"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
+              >
+                <User className="h-5 w-5" />
+                My Profile
+              </Link>
+              <Link
+                href="/settings"
+                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
+              >
+                <Settings className="h-5 w-5" />
+                Settings
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+              >
+                <LogOut className="h-5 w-5" />
+                Sign out
+              </button>
+            </>
+          ) : (
+            <div className="flex gap-2">
+              <Link href="/login" className="flex-1">
+                <Button variant="secondary" className="w-full">Sign in</Button>
+              </Link>
+              <Link href="/register" className="flex-1">
+                <Button className="w-full">Sign up</Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}

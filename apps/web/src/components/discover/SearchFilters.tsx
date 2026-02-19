@@ -1,0 +1,523 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Filter,
+  X,
+  ChevronDown,
+  MapPin,
+  Clock,
+  Briefcase,
+  Target,
+  Languages,
+  DollarSign,
+  Users,
+  Sparkles,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from '@/components/ui/sheet';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { cn } from '@/lib/utils';
+
+export type SearchFiltersValues = {
+  q: string;
+  role: string[];
+  skills: string[];
+  industries: string[];
+  stage: string[];
+  location: string;
+  remote: boolean | null;
+  availability: string[];
+  fundingStage: string[];
+  languages: string[];
+  sortBy: 'relevance' | 'recent' | 'active';
+};
+
+type SearchFiltersProps = {
+  filters: SearchFiltersValues;
+  onFiltersChange: (filters: SearchFiltersValues) => void;
+  onSearch: () => void;
+  loading?: boolean;
+  resultCount?: number;
+};
+
+const roles = [
+  { value: 'founder', label: 'Founder' },
+  { value: 'mentor', label: 'Mentor' },
+  { value: 'investor', label: 'Investor' },
+  { value: 'org', label: 'Organization' },
+];
+
+const stages = [
+  { value: 'idea', label: 'Idea Stage' },
+  { value: 'mvp', label: 'MVP' },
+  { value: 'traction', label: 'Traction' },
+  { value: 'scaling', label: 'Scaling' },
+];
+
+const industries = [
+  'AI/ML', 'Fintech', 'Healthtech', 'E-commerce', 'SaaS', 'Marketplace',
+  'Gaming', 'Education', 'Climate', 'Web3/Crypto', 'Hardware', 'Consumer',
+  'Enterprise', 'Social', 'Media', 'Other',
+];
+
+const availabilities = [
+  { value: 'full-time', label: 'Full-time' },
+  { value: 'part-time', label: 'Part-time' },
+  { value: 'weekends', label: 'Weekends only' },
+  { value: 'flexible', label: 'Flexible' },
+];
+
+const fundingStages = [
+  { value: 'pre-seed', label: 'Pre-seed' },
+  { value: 'seed', label: 'Seed' },
+  { value: 'series-a', label: 'Series A' },
+  { value: 'series-b', label: 'Series B+' },
+  { value: 'bootstrapped', label: 'Bootstrapped' },
+];
+
+const commonSkills = [
+  'Product', 'Engineering', 'Design', 'Marketing', 'Sales',
+  'Operations', 'Finance', 'Legal', 'Data Science', 'Growth',
+];
+
+const languageOptions = [
+  'English', 'Greek', 'Spanish', 'French', 'German', 
+  'Chinese', 'Hindi', 'Arabic', 'Portuguese', 'Japanese',
+];
+
+function MultiSelect({
+  options,
+  selected,
+  onChange,
+  placeholder,
+}: {
+  options: { value: string; label: string }[] | string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+  placeholder?: string;
+}) {
+  const normalizedOptions = options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  );
+
+  const toggle = (value: string) => {
+    if (selected.includes(value)) {
+      onChange(selected.filter((v) => v !== value));
+    } else {
+      onChange([...selected, value]);
+    }
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {normalizedOptions.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => toggle(opt.value)}
+          className={cn(
+            'rounded-full border px-3 py-1 text-xs transition-colors',
+            selected.includes(opt.value)
+              ? 'border-primary bg-primary/10 text-primary'
+              : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function SearchFilters({
+  filters,
+  onFiltersChange,
+  onSearch,
+  loading,
+  resultCount,
+}: SearchFiltersProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const updateFilter = <K extends keyof SearchFiltersValues>(
+    key: K,
+    value: SearchFiltersValues[K]
+  ) => {
+    onFiltersChange({ ...filters, [key]: value });
+  };
+
+  const clearFilters = () => {
+    onFiltersChange({
+      q: '',
+      role: [],
+      skills: [],
+      industries: [],
+      stage: [],
+      location: '',
+      remote: null,
+      availability: [],
+      fundingStage: [],
+      languages: [],
+      sortBy: 'relevance',
+    });
+  };
+
+  const activeFiltersCount = [
+    filters.role.length,
+    filters.skills.length,
+    filters.industries.length,
+    filters.stage.length,
+    filters.location ? 1 : 0,
+    filters.remote !== null ? 1 : 0,
+    filters.availability.length,
+    filters.fundingStage.length,
+    filters.languages.length,
+  ].reduce((a, b) => a + b, 0);
+
+  // Active filter pills
+  const activeFilterPills: { key: string; label: string; onRemove: () => void }[] = [];
+  
+  filters.role.forEach((r) => {
+    activeFilterPills.push({
+      key: `role-${r}`,
+      label: roles.find((x) => x.value === r)?.label || r,
+      onRemove: () => updateFilter('role', filters.role.filter((x) => x !== r)),
+    });
+  });
+
+  filters.skills.forEach((s) => {
+    activeFilterPills.push({
+      key: `skill-${s}`,
+      label: s,
+      onRemove: () => updateFilter('skills', filters.skills.filter((x) => x !== s)),
+    });
+  });
+
+  filters.industries.forEach((ind) => {
+    activeFilterPills.push({
+      key: `industry-${ind}`,
+      label: ind,
+      onRemove: () => updateFilter('industries', filters.industries.filter((x) => x !== ind)),
+    });
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Main search bar */}
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Input
+            type="text"
+            placeholder="Search by name, skills, industry..."
+            value={filters.q}
+            onChange={(e) => updateFilter('q', e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+            className="pr-10"
+          />
+          {filters.q && (
+            <button
+              onClick={() => updateFilter('q', '')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Filter button for mobile */}
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="gap-2 relative">
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Filters</span>
+              {activeFiltersCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-primary" />
+                Search Filters
+              </SheetTitle>
+            </SheetHeader>
+
+            <Accordion type="multiple" defaultValue={['role', 'skills']} className="mt-6">
+              {/* Role */}
+              <AccordionItem value="role">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Role
+                    {filters.role.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.role.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={roles}
+                    selected={filters.role}
+                    onChange={(v) => updateFilter('role', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Skills */}
+              <AccordionItem value="skills">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Skills
+                    {filters.skills.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.skills.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={commonSkills}
+                    selected={filters.skills}
+                    onChange={(v) => updateFilter('skills', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Industry */}
+              <AccordionItem value="industry">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Industry
+                    {filters.industries.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.industries.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={industries}
+                    selected={filters.industries}
+                    onChange={(v) => updateFilter('industries', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Stage */}
+              <AccordionItem value="stage">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    Startup Stage
+                    {filters.stage.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.stage.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={stages}
+                    selected={filters.stage}
+                    onChange={(v) => updateFilter('stage', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Location */}
+              <AccordionItem value="location">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Location
+                    {filters.location && <Badge variant="secondary" size="sm">1</Badge>}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-3">
+                  <Input
+                    placeholder="City or country..."
+                    value={filters.location}
+                    onChange={(e) => updateFilter('location', e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    {['Remote OK', 'On-site only'].map((opt, i) => (
+                      <button
+                        key={opt}
+                        onClick={() => updateFilter('remote', i === 0 ? true : false)}
+                        className={cn(
+                          'rounded-full border px-3 py-1 text-xs transition-colors',
+                          (i === 0 && filters.remote === true) || (i === 1 && filters.remote === false)
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-border/60 text-muted-foreground hover:border-primary/50'
+                        )}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Availability */}
+              <AccordionItem value="availability">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Availability
+                    {filters.availability.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.availability.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={availabilities}
+                    selected={filters.availability}
+                    onChange={(v) => updateFilter('availability', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Funding Stage */}
+              <AccordionItem value="funding">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Funding Stage
+                    {filters.fundingStage.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.fundingStage.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={fundingStages}
+                    selected={filters.fundingStage}
+                    onChange={(v) => updateFilter('fundingStage', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Languages */}
+              <AccordionItem value="languages">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center gap-2">
+                    <Languages className="h-4 w-4" />
+                    Languages
+                    {filters.languages.length > 0 && (
+                      <Badge variant="secondary" size="sm">{filters.languages.length}</Badge>
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <MultiSelect
+                    options={languageOptions}
+                    selected={filters.languages}
+                    onChange={(v) => updateFilter('languages', v)}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            <SheetFooter className="mt-6 flex gap-2">
+              <Button variant="ghost" onClick={clearFilters} className="flex-1">
+                Clear all
+              </Button>
+              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="flex-1">
+                Apply filters
+              </Button>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        <Button onClick={onSearch} disabled={loading}>
+          {loading ? 'Searching...' : 'Search'}
+        </Button>
+      </div>
+
+      {/* Quick role filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-muted-foreground">Quick filter:</span>
+        {roles.map((r) => (
+          <Button
+            key={r.value}
+            variant={filters.role.includes(r.value) ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => {
+              if (filters.role.includes(r.value)) {
+                updateFilter('role', filters.role.filter((x) => x !== r.value));
+              } else {
+                updateFilter('role', [...filters.role, r.value]);
+              }
+            }}
+          >
+            {r.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Active filter pills */}
+      {activeFilterPills.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">Active:</span>
+          {activeFilterPills.slice(0, 10).map((pill) => (
+            <Badge
+              key={pill.key}
+              variant="secondary"
+              className="gap-1 pr-1"
+            >
+              {pill.label}
+              <button
+                onClick={pill.onRemove}
+                className="ml-1 rounded-full p-0.5 hover:bg-background/50"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+          {activeFilterPills.length > 10 && (
+            <span className="text-xs text-muted-foreground">
+              +{activeFilterPills.length - 10} more
+            </span>
+          )}
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            Clear all
+          </Button>
+        </div>
+      )}
+
+      {/* Results count & sort */}
+      {resultCount !== undefined && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            {resultCount} {resultCount === 1 ? 'result' : 'results'} found
+          </span>
+          <select
+            value={filters.sortBy}
+            onChange={(e) => updateFilter('sortBy', e.target.value as SearchFiltersValues['sortBy'])}
+            className="h-8 rounded-md border border-input bg-background/60 px-2 text-xs text-foreground shadow-sm backdrop-blur"
+          >
+            <option value="relevance">Most relevant</option>
+            <option value="recent">Recently active</option>
+            <option value="active">Most active</option>
+          </select>
+        </div>
+      )}
+    </div>
+  );
+}

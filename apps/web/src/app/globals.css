@@ -1,0 +1,187 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 32% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 235 82% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 16% 92%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 220 18% 94%;
+    --muted-foreground: 220 10% 40%;
+    --accent: 286 74% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 235 82% 60%;
+    --radius: 14px;
+  }
+
+  .dark {
+    --background: 222 35% 8%;
+    --foreground: 210 40% 96%;
+    --card: 222 30% 12%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 30% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 235 88% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 218 18% 18%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 218 18% 16%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 292 84% 66%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 18% 20%;
+    --input: 220 18% 20%;
+    --ring: 235 88% 66%;
+  }
+
+  .role-founder {
+    --primary: 235 88% 66%;
+    --accent: 292 84% 66%;
+  }
+
+  .role-mentor {
+    --primary: 200 84% 55%;
+    --accent: 180 72% 52%;
+  }
+
+  .role-investor {
+    --primary: 32 92% 60%;
+    --accent: 14 82% 54%;
+  }
+
+  .role-org {
+    --primary: 268 84% 68%;
+    --accent: 248 70% 60%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass {
+    background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.08),
+        rgba(255, 255, 255, 0.02)
+      )
+      border-box;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(18px);
+  }
+
+  /* Staggered animation delays */
+  .stagger-1 { animation-delay: 0.05s; }
+  .stagger-2 { animation-delay: 0.1s; }
+  .stagger-3 { animation-delay: 0.15s; }
+  .stagger-4 { animation-delay: 0.2s; }
+  .stagger-5 { animation-delay: 0.25s; }
+  .stagger-6 { animation-delay: 0.3s; }
+  .stagger-7 { animation-delay: 0.35s; }
+  .stagger-8 { animation-delay: 0.4s; }
+
+  /* Shimmer loading effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--secondary)) 0%,
+      hsl(var(--muted)) 50%,
+      hsl(var(--secondary)) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Role-specific gradients */
+  .gradient-founder {
+    background: linear-gradient(135deg, hsl(235 88% 66%), hsl(292 84% 66%));
+  }
+
+  .gradient-mentor {
+    background: linear-gradient(135deg, hsl(200 84% 55%), hsl(180 72% 52%));
+  }
+
+  .gradient-investor {
+    background: linear-gradient(135deg, hsl(32 92% 60%), hsl(14 82% 54%));
+  }
+
+  .gradient-org {
+    background: linear-gradient(135deg, hsl(268 84% 68%), hsl(248 70% 60%));
+  }
+
+  /* Glow effects per role */
+  .role-founder .glow-role {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(168, 85, 247, 0.15);
+  }
+
+  .role-mentor .glow-role {
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), 0 0 40px rgba(45, 212, 191, 0.15);
+  }
+
+  .role-investor .glow-role {
+    box-shadow: 0 0 20px rgba(251, 146, 60, 0.3), 0 0 40px rgba(239, 68, 68, 0.15);
+  }
+
+  .role-org .glow-role {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(99, 102, 241, 0.15);
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Focus ring animation */
+  .focus-ring-animated:focus-visible {
+    animation: pulse-glow 1.5s ease-in-out infinite;
+  }
+
+  /* Interactive card */
+  .card-interactive {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  /* Backdrop blur levels */
+  .blur-backdrop-sm { backdrop-filter: blur(8px); }
+  .blur-backdrop-md { backdrop-filter: blur(16px); }
+  .blur-backdrop-lg { backdrop-filter: blur(24px); }
+}

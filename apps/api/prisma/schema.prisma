@@ -1,0 +1,411 @@
+// CoFounderBay — source of truth
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  founder
+  mentor
+  investor
+  org
+}
+
+enum ConversationType {
+  direct
+  group
+}
+
+enum UploadKind {
+  avatar
+  message_attachment
+  event_attachment
+}
+
+enum EventType {
+  meetup
+  webinar
+  workshop
+  demo_day
+  networking
+  other
+}
+
+enum RsvpStatus {
+  going
+  interested
+  not_going
+}
+
+enum MeetingType {
+  video
+  in_person
+  chat
+}
+
+enum BookingStatus {
+  requested
+  confirmed
+  cancelled
+  completed
+}
+
+enum NotificationType {
+  message
+  connection_request
+  connection_accepted
+  event_rsvp
+  system
+  billing
+}
+
+enum ConnectionStatus {
+  pending
+  accepted
+  declined
+  blocked
+}
+
+enum ReportType {
+  spam
+  harassment
+  fake
+  inappropriate
+  other
+}
+
+enum ReportStatus {
+  pending
+  reviewed
+  resolved
+  dismissed
+}
+
+enum SubscriptionStatus {
+  trialing
+  active
+  past_due
+  paused
+  canceled
+  unpaid
+  incomplete
+  incomplete_expired
+}
+
+enum UserModerationStatus {
+  active
+  suspended
+  banned
+}
+
+model User {
+  id                     String         @id @default(uuid())
+  email                  String         @unique
+  passwordHash           String
+  role                   Role           @default(founder)
+  moderationStatus       UserModerationStatus @default(active)
+  emailVerified          Boolean        @default(false)
+  hasCompletedOnboarding Boolean        @default(false)
+  lastSeenAt             DateTime?
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  refreshTokens          RefreshToken[]
+  profile                Profile?
+
+  // Messaging
+  conversationParticipants ConversationParticipant[]
+  messagesSent             Message[]
+
+  // Uploads
+  uploads Upload[]
+
+  // Social graph
+  connectionsSent     ConnectionRequest[] @relation("ConnectionsSent")
+  connectionsReceived ConnectionRequest[] @relation("ConnectionsReceived")
+
+  // Events
+  eventsCreated Event[]     @relation("EventsCreated")
+  eventRsvps    EventRsvp[]
+
+  // Mentoring
+  mentorAvailabilities   MentorAvailability[]
+  mentorBookingsAsMentor MentorBooking[]      @relation("MentorBookingsMentor")
+  mentorBookingsAsMentee MentorBooking[]      @relation("MentorBookingsMentee")
+
+  // Notifications
+  notifications Notification[]
+
+  // Moderation
+  reportsFiled    Report[] @relation("ReportsFiled")
+  reportsAgainst  Report[] @relation("ReportsAgainst")
+  reportsResolved Report[] @relation("ReportsResolvedBy")
+
+  // Billing
+  subscription Subscription?
+}
+
+model Profile {
+  id              String         @id @default(uuid())
+  userId          String         @unique
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName     String
+  headline        String?
+  bio             String?        @db.Text
+  location        String?
+  timezone        String?
+  languages       Json? // string[] e.g. ["en", "el"]
+  avatarUrl       String?
+  rolePayload     Json? // role-specific: industry, stage, expertiseAreas, checkSize, etc.
+  visibilityRules Json? // { email?: "public"|"connections"|"private", ... }
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  skills          ProfileSkill[]
+}
+
+model Skill {
+  id        String         @id @default(uuid())
+  name      String
+  slug      String         @unique
+  category  String? // e.g. "technical", "business", "design"
+  createdAt DateTime       @default(now())
+  profiles  ProfileSkill[]
+}
+
+model ProfileSkill {
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  skillId   String
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  level     String? // "beginner" | "intermediate" | "expert" (optional)
+  createdAt DateTime @default(now())
+
+  @@id([profileId, skillId])
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  deviceInfo String?
+}
+
+model Conversation {
+  id            String                    @id @default(uuid())
+  type          ConversationType          @default(direct)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  lastMessageAt DateTime?
+  participants  ConversationParticipant[]
+  messages      Message[]
+}
+
+model ConversationParticipant {
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+  isPinned       Boolean      @default(false)
+  isArchived     Boolean      @default(false)
+  isMuted        Boolean      @default(false)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String              @id @default(uuid())
+  conversationId String
+  conversation   Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User                @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String              @db.Text
+  createdAt      DateTime            @default(now())
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  attachments    MessageAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model MessageAttachment {
+  id        String  @id @default(uuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  uploadId  String?
+  upload    Upload? @relation(fields: [uploadId], references: [id], onDelete: SetNull)
+  url       String
+  mimeType  String?
+  fileName  String?
+  sizeBytes Int?
+}
+
+model Upload {
+  id           String     @id @default(uuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind         UploadKind
+  key          String
+  url          String
+  mimeType     String?
+  originalName String?
+  sizeBytes    Int?
+  createdAt    DateTime   @default(now())
+
+  messageAttachments MessageAttachment[]
+
+  @@index([userId])
+  @@index([kind])
+}
+
+model ConnectionRequest {
+  id          String           @id @default(uuid())
+  requesterId String
+  receiverId  String
+  requester   User             @relation("ConnectionsSent", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver    User             @relation("ConnectionsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  message     String?          @db.Text
+  status      ConnectionStatus @default(pending)
+  respondedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId, status])
+  @@index([requesterId, status])
+}
+
+model Event {
+  id            String      @id @default(uuid())
+  creatorId     String
+  creator       User        @relation("EventsCreated", fields: [creatorId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?     @db.Text
+  type          EventType   @default(networking)
+  startAt       DateTime
+  endAt         DateTime?
+  timezone      String?
+  location      String?
+  isOnline      Boolean     @default(false)
+  meetingUrl    String?
+  capacity      Int?
+  coverImageUrl String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  rsvps         EventRsvp[]
+
+  @@index([startAt])
+  @@index([creatorId])
+}
+
+model EventRsvp {
+  eventId     String
+  userId      String
+  event       Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      RsvpStatus @default(going)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  checkedInAt DateTime?
+
+  @@id([eventId, userId])
+  @@index([userId])
+}
+
+model MentorAvailability {
+  id        String   @id @default(uuid())
+  mentorId  String
+  mentor    User     @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+  weekday   Int // 0-6
+  startTime String // "09:00"
+  endTime   String
+  timezone  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mentorId])
+}
+
+model MentorBooking {
+  id                    String        @id @default(uuid())
+  mentorId              String
+  mentor                User          @relation("MentorBookingsMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId              String
+  mentee                User          @relation("MentorBookingsMentee", fields: [menteeId], references: [id], onDelete: Cascade)
+  startAt               DateTime
+  endAt                 DateTime
+  timezone              String?
+  meetingType           MeetingType   @default(video)
+  meetingUrl            String?
+  notes                 String?       @db.Text
+  status                BookingStatus @default(requested)
+  priceCents            Int?
+  currency              String?       @default("USD")
+  stripePaymentIntentId String?       @unique
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([mentorId, startAt])
+  @@index([menteeId, startAt])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  meta      Json?
+  createdAt DateTime         @default(now())
+  readAt    DateTime?
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+model Report {
+  id           String       @id @default(uuid())
+  type         ReportType
+  status       ReportStatus @default(pending)
+  reporterId   String
+  reporter     User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId   String
+  reported     User         @relation("ReportsAgainst", fields: [reportedId], references: [id], onDelete: Cascade)
+  reason       String       @db.Text
+  context      Json?
+  resolvedAt   DateTime?
+  resolvedById String?
+  resolvedBy   User?        @relation("ReportsResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([status, createdAt])
+  @@index([reportedId, status])
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  userId               String             @unique
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  status               SubscriptionStatus @default(incomplete)
+  priceId              String?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+}

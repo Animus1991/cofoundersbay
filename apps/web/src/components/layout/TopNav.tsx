@@ -1,0 +1,77 @@
+"use client";
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Compass, Sparkles, MessageCircle, Keyboard } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { SearchBar } from './SearchBar';
+import { UserMenu } from './UserMenu';
+import { MobileNav } from './MobileNav';
+import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { NotificationsBell } from './NotificationsBell';
+import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
+
+export function TopNav() {
+  const [ready, setReady] = useState(false);
+  const { open: commandOpen, setOpen: setCommandOpen } = useCommandPalette();
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
+
+  return (
+    <>
+      <header className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 shadow-glow-sm backdrop-blur lg:flex-row lg:items-center lg:justify-between animate-fade-in-down">
+        {/* Logo & Branding */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-primary transition-transform hover:scale-105">
+            <Sparkles className="h-5 w-5 animate-pulse-glow" />
+          </div>
+          <div>
+            <Link href="/" className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors">
+              CoFounderBay
+            </Link>
+            <p className="text-xs text-muted-foreground">
+              Startup networking for founders, mentors, investors
+            </p>
+          </div>
+        </div>
+
+        {/* Search & Discover */}
+        <div className="flex flex-1 items-center gap-3 lg:justify-center">
+          <SearchBar />
+          <Button
+            variant="outline"
+            size="icon"
+            className="hidden lg:flex shrink-0"
+            onClick={() => setCommandOpen(true)}
+            title="Command palette (Ctrl+K)"
+          >
+            <Keyboard className="h-4 w-4" />
+          </Button>
+          <Link href="/discover">
+            <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
+              <Compass className="h-4 w-4" />
+              Discover
+            </Button>
+          </Link>
+          <Link href="/messages">
+            <Button variant="ghost" size="icon" className="hidden lg:flex shrink-0" title="Messages">
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between gap-2 lg:justify-end">
+          <ThemeToggle />
+          <NotificationsBell />
+          <MobileNav />
+          {ready && <UserMenu />}
+        </div>
+      </header>
+
+      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+    </>
+  );
+}
