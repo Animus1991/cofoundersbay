@@ -1,5 +1,6 @@
 // Animation & Layout
 export * from './AnimatedList';
+export * from './AnimatedCard';
 
 // Command & Navigation
 export * from './CommandPalette';

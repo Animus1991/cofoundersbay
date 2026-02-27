@@ -24,9 +24,19 @@
     --input: 220 14% 90%;
     --ring: 235 82% 60%;
     --radius: 14px;
+    /* Nexus-style tokens for intranet dashboard */
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.02), hsl(0 0% 100% / 0));
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.12);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.06);
   }
 
   .dark {
+    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(235 80% 15%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(222 30% 14% / 0.8), hsl(222 30% 10% / 0.6));
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
     --background: 222 35% 8%;
     --foreground: 210 40% 96%;
     --card: 222 30% 12%;
@@ -79,6 +89,21 @@
 }
 
 @layer utilities {
+  .text-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-hero-gradient {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
@@ -184,4 +209,66 @@
   .blur-backdrop-sm { backdrop-filter: blur(8px); }
   .blur-backdrop-md { backdrop-filter: blur(16px); }
   .blur-backdrop-lg { backdrop-filter: blur(24px); }
+
+  /* Hero radial background used by landing page */
+  .bg-hero-radial {
+    background: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      hsl(var(--primary) / 0.12) 0%,
+      transparent 70%
+    );
+  }
+
+  /* Subtle glow shadow (smaller than shadow-glow) */
+  .shadow-glow-sm {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.10);
+  }
+
+  /* Card gradient background (used by reference repo) */
+  .bg-card-gradient {
+    background: var(--gradient-card);
+  }
+
+  /* Accent gradient text */
+  .text-gradient-accent {
+    background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--primary)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Fade-in animation used across pages */
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out both;
+  }
+
+  /* Pulse glow — used by auth page hero icon */
+  .animate-pulse-glow {
+    animation: pulse-glow-ring 2.5s ease-in-out infinite;
+  }
+
+  /* bg-hero-gradient — used by auth split-screen panel */
+  .bg-hero-gradient {
+    background: var(--gradient-hero);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+  50%       { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
+}
+
+@keyframes pulse-glow-ring {
+  0%, 100% { box-shadow: 0 0 12px 2px hsl(var(--primary) / 0.25); }
+  50%       { box-shadow: 0 0 28px 8px hsl(var(--primary) / 0.45); }
 }

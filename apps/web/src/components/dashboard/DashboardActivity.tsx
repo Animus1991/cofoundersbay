@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageSquare, UserPlus } from 'lucide-react';
+import { MessageSquare, UserPlus, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
@@ -42,7 +42,7 @@ export function DashboardActivity({ items = defaultActivity, className }: Dashbo
                 className="flex items-start gap-3 rounded-lg p-2 text-sm transition-colors hover:bg-secondary/60"
               >
                 <span className="mt-0.5 flex shrink-0 text-muted-foreground">
-                  {a.type === 'discussion' ? <MessageSquare className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                  {a.type === 'event' ? <Calendar className="h-4 w-4" /> : a.type === 'connection' ? <UserPlus className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-foreground truncate">{a.title}</p>

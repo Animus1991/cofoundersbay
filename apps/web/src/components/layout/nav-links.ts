@@ -4,13 +4,13 @@ import {
   User,
   Sparkle,
   Settings,
-  Wand2,
   MessageCircle,
   Calendar,
   Briefcase,
+  GraduationCap,
+  Users,
+  Handshake,
 } from 'lucide-react';
-
-import type { LucideIcon } from 'lucide-react';
 
 export type NavSection = {
   section: string;
@@ -28,20 +28,17 @@ export const navSections: NavSection[] = [
     section: 'Community',
     links: [
       { href: '/discover', label: 'Discover', icon: Compass },
+      { href: '/connections', label: 'Connections', icon: Users },
       { href: '/events', label: 'Events', icon: Calendar },
       { href: '/messages', label: 'Messages', icon: MessageCircle },
     ],
   },
   {
-    section: 'Jobs',
+    section: 'Ecosystem',
     links: [
-      { href: '/discover', label: 'Job offers', icon: Briefcase },
-    ],
-  },
-  {
-    section: 'Learning',
-    links: [
-      { href: '/onboarding', label: 'Onboarding', icon: Wand2 },
+      { href: '/mentoring', label: 'Mentoring', icon: GraduationCap },
+      { href: '/jobs', label: 'Jobs', icon: Briefcase },
+      { href: '/opportunities', label: 'Opportunities', icon: Handshake },
     ],
   },
   {

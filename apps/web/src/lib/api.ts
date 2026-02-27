@@ -429,6 +429,78 @@ export async function createBillingPortal(): Promise<{ url: string }> {
   return apiRequest('/api/v1/billing/portal', { method: 'POST' });
 }
 
+// --- Dashboard ---
+
+export type DashboardStats = {
+  activeProfiles: number;
+  matchesThisWeek: number;
+  trendPercent: number;
+  chartData: { label: string; value: number }[];
+};
+
+export type DashboardActivityItem = {
+  id: string;
+  type: 'connection' | 'event';
+  title: string;
+  author?: string;
+  timeAgo: string;
+  href: string;
+  createdAt: string;
+};
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  return apiRequest('/api/v1/dashboard/stats');
+}
+
+export async function getDashboardActivity(params?: { limit?: number }): Promise<DashboardActivityItem[]> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  const url = `/api/v1/dashboard/activity${sp.toString() ? `?${sp}` : ''}`;
+  return apiRequest(url);
+}
+
+// --- Polls ---
+
+export type PollOptionView = { id: string; label: string; votes: number };
+export type PollView = {
+  id: string;
+  question: string;
+  options: PollOptionView[];
+  totalVotes: number;
+  userVoted: string | null;
+  isActive: boolean;
+};
+
+export async function getActivePoll(): Promise<{ poll: PollView | null }> {
+  return apiRequest('/api/v1/polls/active', undefined, { retryOn401: false });
+}
+
+export async function votePoll(pollId: string, optionId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/v1/polls/${pollId}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ optionId }),
+  });
+}
+
+// --- Jobs ---
+
+export type JobPostingView = {
+  id: string;
+  title: string;
+  role: string | null;
+  location: string | null;
+  isRemote: boolean;
+  creator: { displayName: string; avatarUrl: string | null };
+  href?: string;
+};
+
+export async function listJobs(params?: { limit?: number }): Promise<{ jobs: JobPostingView[] }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  const url = `/api/v1/jobs${sp.toString() ? `?${sp}` : ''}`;
+  return apiRequest(url, undefined, { retryOn401: false });
+}
+
 // --- Events ---
 
 export type EventItem = {
@@ -685,4 +757,94 @@ export async function updateAdminUserModeration(
     method: 'PATCH',
     body: JSON.stringify({ moderationStatus }),
   });
+}
+
+// --- Connections ---
+
+export type ConnectionStatus = 'pending' | 'accepted' | 'declined' | 'blocked';
+
+export type ConnectionRequestItem = {
+  id: string;
+  requesterId: string;
+  receiverId: string;
+  status: ConnectionStatus;
+  message: string | null;
+  createdAt: string;
+  updatedAt: string;
+  requester: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    role: string;
+    headline: string | null;
+  };
+  receiver: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    role: string;
+    headline: string | null;
+  };
+};
+
+export async function sendConnectionRequest(body: {
+  receiverId: string;
+  message?: string;
+}): Promise<{ connection: ConnectionRequestItem }> {
+  return apiRequest('/api/v1/connections', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function listConnectionRequests(params?: {
+  type?: 'sent' | 'received' | 'accepted';
+  limit?: number;
+}): Promise<{ connections: ConnectionRequestItem[] }> {
+  const sp = new URLSearchParams();
+  if (params?.type) sp.set('type', params.type);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  const url = `/api/v1/connections${sp.toString() ? `?${sp}` : ''}`;
+  return apiRequest(url);
+}
+
+export async function respondToConnectionRequest(
+  connectionId: string,
+  status: 'accepted' | 'declined',
+): Promise<{ connection: ConnectionRequestItem }> {
+  return apiRequest(`/api/v1/connections/${connectionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function getConnectionStatus(userId: string): Promise<{
+  status: ConnectionStatus | null;
+  connectionId: string | null;
+  direction: 'sent' | 'received' | null;
+}> {
+  return apiRequest(`/api/v1/connections/status/${userId}`);
+}
+
+// --- Jobs (full CRUD) ---
+
+export async function createJobPosting(body: {
+  title: string;
+  description?: string;
+  role?: string;
+  location?: string;
+  isRemote?: boolean;
+}): Promise<{ job: JobPostingView }> {
+  return apiRequest('/api/v1/jobs', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getJobPosting(jobId: string): Promise<{ job: JobPostingView & { description: string | null; createdAt: string } }> {
+  return apiRequest(`/api/v1/jobs/${jobId}`, undefined, { retryOn401: false });
+}
+
+export async function deleteJobPosting(jobId: string): Promise<void> {
+  await apiRequest(`/api/v1/jobs/${jobId}`, { method: 'DELETE' });
 }

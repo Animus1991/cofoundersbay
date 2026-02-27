@@ -14,6 +14,10 @@ import { HealthModule } from './health/health.module';
 import { EventsModule } from './events/events.module';
 import { MentoringModule } from './mentoring/mentoring.module';
 import { ModerationModule } from './moderation/moderation.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { PollsModule } from './polls/polls.module';
+import { JobsModule } from './jobs/jobs.module';
+import { ConnectionsModule } from './connections/connections.module';
 
 // Find the monorepo root .env file
 function findEnvFiles(): string[] {
@@ -48,6 +52,10 @@ function findEnvFiles(): string[] {
     EventsModule,
     MentoringModule,
     ModerationModule,
+    DashboardModule,
+    PollsModule,
+    JobsModule,
+    ConnectionsModule,
   ],
   controllers: [],
   providers: [],

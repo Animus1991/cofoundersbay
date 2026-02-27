@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
   Flag,
@@ -11,20 +12,24 @@ import {
   XCircle,
   Eye,
   Ban,
-  MessageSquare,
-  TrendingUp,
-  Activity,
   BarChart3,
-  Settings,
   Search,
   MoreHorizontal,
-  Calendar,
   Clock,
+  RefreshCw,
 } from 'lucide-react';
+import {
+  listAdminReports,
+  listAdminUsers,
+  updateAdminReport,
+  updateAdminUserModeration,
+  type AdminReportItem,
+  type AdminUserItem,
+} from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,110 +42,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatCard } from '@/components/common/StatCard';
 import { useToast } from '@/components/ui/toast';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-// Mock data
-type Report = {
-  id: string;
-  type: 'spam' | 'harassment' | 'fake' | 'inappropriate' | 'other';
-  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
-  reportedUser: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role: string;
-  };
-  reporterUser: {
-    id: string;
-    name: string;
-  };
-  reason: string;
-  createdAt: Date;
-  context?: string;
-};
-
-const mockReports: Report[] = [
-  {
-    id: '1',
-    type: 'spam',
-    status: 'pending',
-    reportedUser: { id: 'u1', name: 'John Spammer', role: 'founder' },
-    reporterUser: { id: 'u2', name: 'Alex User' },
-    reason: 'Sending promotional messages to multiple users',
-    createdAt: new Date(Date.now() - 1000 * 60 * 30),
-    context: 'Check out my amazing opportunity...',
-  },
-  {
-    id: '2',
-    type: 'fake',
-    status: 'pending',
-    reportedUser: { id: 'u3', name: 'Fake Investor', role: 'investor' },
-    reporterUser: { id: 'u4', name: 'Maria Founder' },
-    reason: 'Profile claims to be VC but has fake credentials',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
-  },
-  {
-    id: '3',
-    type: 'harassment',
-    status: 'reviewed',
-    reportedUser: { id: 'u5', name: 'Rude Person', role: 'mentor' },
-    reporterUser: { id: 'u6', name: 'George Startup' },
-    reason: 'Aggressive behavior in messages',
-    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    context: 'Your idea is terrible and you should quit...',
-  },
-];
-
-type UserData = {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  role: string;
-  status: 'active' | 'suspended' | 'banned';
-  joinedAt: Date;
-  lastActive: Date;
-  reportsCount: number;
-  profileComplete: number;
-};
-
-const mockUsers: UserData[] = [
-  {
-    id: 'u1',
-    name: 'Alex Papadopoulos',
-    email: 'alex@example.com',
-    role: 'founder',
-    status: 'active',
-    joinedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-    lastActive: new Date(Date.now() - 1000 * 60 * 5),
-    reportsCount: 0,
-    profileComplete: 85,
-  },
-  {
-    id: 'u2',
-    name: 'Maria Mentor',
-    email: 'maria@example.com',
-    role: 'mentor',
-    status: 'active',
-    joinedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60),
-    lastActive: new Date(Date.now() - 1000 * 60 * 60),
-    reportsCount: 1,
-    profileComplete: 100,
-  },
-  {
-    id: 'u3',
-    name: 'George Investor',
-    email: 'george@example.com',
-    role: 'investor',
-    status: 'suspended',
-    joinedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15),
-    lastActive: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
-    reportsCount: 3,
-    profileComplete: 60,
-  },
-];
-
-const reportTypeConfig: Record<Report['type'], { label: string; color: string }> = {
+const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
   spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
   harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
   fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
@@ -148,33 +53,38 @@ const reportTypeConfig: Record<Report['type'], { label: string; color: string }>
   other: { label: 'Other', color: 'bg-gray-500/15 text-gray-400 border-gray-500/30' },
 };
 
-const statusConfig: Record<Report['status'], { label: string; color: string; icon: React.ElementType }> = {
+const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pending', color: 'text-amber-400', icon: Clock },
   reviewed: { label: 'Under Review', color: 'text-blue-400', icon: Eye },
   resolved: { label: 'Resolved', color: 'text-emerald-400', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
-function formatTimeAgo(date: Date): string {
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
+function formatTimeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
-
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   return `${days}d ago`;
 }
 
-function ReportCard({ report, onResolve, onDismiss, onBan }: {
-  report: Report;
+function ReportCard({
+  report,
+  onResolve,
+  onDismiss,
+  onBanUser,
+  isActing,
+}: {
+  report: AdminReportItem;
   onResolve: () => void;
   onDismiss: () => void;
-  onBan: () => void;
+  onBanUser: () => void;
+  isActing: boolean;
 }) {
   const typeConf = reportTypeConfig[report.type];
-  const statusConf = statusConfig[report.status];
+  const statusConf = reportStatusConfig[report.status];
   const StatusIcon = statusConf.icon;
 
   return (
@@ -182,43 +92,45 @@ function ReportCard({ report, onResolve, onDismiss, onBan }: {
       <CardContent className="pt-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={report.reportedUser.avatar || undefined} />
-              <AvatarFallback className="bg-destructive/20 text-destructive">
-                {report.reportedUser.name[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <Link href={`/profiles/${report.reported.id}`}>
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-destructive/20 text-destructive">
+                  {report.reported.name?.[0]?.toUpperCase() ?? '?'}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{report.reportedUser.name}</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                  {report.reported.name || report.reported.email}
+                </Link>
+                <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
                 <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
                   {typeConf.label}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporterUser.name} • {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <span className={cn('flex items-center gap-1 text-xs', statusConf.color)}>
               <StatusIcon className="h-3 w-3" />
               {statusConf.label}
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View profile
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  View messages
+                <DropdownMenuItem asChild>
+                  <Link href={`/profiles/${report.reported.id}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View profile
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
@@ -230,7 +142,7 @@ function ReportCard({ report, onResolve, onDismiss, onBan }: {
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBan} className="text-destructive">
+                <DropdownMenuItem onClick={onBanUser} className="text-destructive">
                   <Ban className="h-4 w-4 mr-2" />
                   Ban user
                 </DropdownMenuItem>
@@ -239,20 +151,17 @@ function ReportCard({ report, onResolve, onDismiss, onBan }: {
           </div>
         </div>
 
-        <div className="mt-3 p-3 rounded-lg bg-secondary/40">
+        <div className="mt-3 rounded-lg bg-secondary/40 p-3">
           <p className="text-sm text-foreground">{report.reason}</p>
-          {report.context && (
-            <p className="mt-2 text-xs text-muted-foreground italic">"{report.context}"</p>
-          )}
         </div>
 
         {report.status === 'pending' && (
           <div className="mt-4 flex items-center gap-2">
-            <Button size="sm" variant="secondary" onClick={onDismiss}>
+            <Button size="sm" variant="secondary" onClick={onDismiss} disabled={isActing}>
               Dismiss
             </Button>
-            <Button size="sm" onClick={onResolve}>
-              Take action
+            <Button size="sm" onClick={onResolve} disabled={isActing}>
+              Resolve
             </Button>
           </div>
         )}
@@ -261,77 +170,98 @@ function ReportCard({ report, onResolve, onDismiss, onBan }: {
   );
 }
 
-function UserRow({ user, onSuspend, onBan, onActivate }: {
-  user: UserData;
+function UserRow({
+  user,
+  onSuspend,
+  onBan,
+  onActivate,
+  isActing,
+}: {
+  user: AdminUserItem;
   onSuspend: () => void;
   onBan: () => void;
   onActivate: () => void;
+  isActing: boolean;
 }) {
+  const displayName = user.profile?.displayName ?? user.email;
+
   return (
-    <div className="flex items-center gap-4 p-4 border-b border-border/40 hover:bg-secondary/30 transition-colors">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={user.avatar || undefined} />
-        <AvatarFallback className="bg-primary/20 text-primary">
-          {user.name[0]?.toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-foreground">{user.name}</span>
+    <div className="flex items-center gap-4 border-b border-border/40 p-4 transition-colors hover:bg-secondary/30">
+      <Link href={`/profiles/${user.id}`}>
+        <Avatar className="h-10 w-10 shrink-0">
+          <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
+          <AvatarFallback className="bg-primary/20 text-primary">
+            {displayName[0]?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+            {displayName}
+          </Link>
           <Badge
             variant="outline"
             className={cn(
               'text-xs',
-              user.status === 'active' ? 'text-emerald-400 border-emerald-500/30' :
-              user.status === 'suspended' ? 'text-amber-400 border-amber-500/30' :
-              'text-red-400 border-red-500/30'
+              user.moderationStatus === 'active' ? 'text-emerald-400 border-emerald-500/30' :
+              user.moderationStatus === 'suspended' ? 'text-amber-400 border-amber-500/30' :
+              'text-red-400 border-red-500/30',
             )}
           >
-            {user.status}
+            {user.moderationStatus}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        <p className="truncate text-sm text-muted-foreground">{user.email}</p>
       </div>
-      <div className="hidden sm:block text-right">
-        <p className="text-sm text-foreground">{user.role}</p>
-        <p className="text-xs text-muted-foreground">Profile: {user.profileComplete}%</p>
+      <div className="hidden text-right sm:block">
+        <p className="text-sm capitalize text-foreground">{user.role}</p>
+        {user.lastSeenAt && (
+          <p className="text-xs text-muted-foreground">{formatTimeAgo(user.lastSeenAt)}</p>
+        )}
       </div>
-      <div className="hidden md:block text-right">
+      <div className="hidden text-right md:block">
         <p className="text-sm text-foreground">{user.reportsCount} reports</p>
-        <p className="text-xs text-muted-foreground">Active {formatTimeAgo(user.lastActive)}</p>
+        <p className="text-xs text-muted-foreground">
+          Joined {formatTimeAgo(user.createdAt)}
+        </p>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" disabled={isActing}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem>
-            <Eye className="h-4 w-4 mr-2" />
-            View profile
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Send message
+          <DropdownMenuItem asChild>
+            <Link href={`/profiles/${user.id}`}>
+              <Eye className="mr-2 h-4 w-4" />
+              View profile
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          {user.status === 'active' && (
+          {user.moderationStatus === 'active' && (
             <DropdownMenuItem onClick={onSuspend} className="text-amber-400">
-              <AlertTriangle className="h-4 w-4 mr-2" />
+              <AlertTriangle className="mr-2 h-4 w-4" />
               Suspend
             </DropdownMenuItem>
           )}
-          {user.status === 'suspended' && (
+          {user.moderationStatus === 'suspended' && (
             <DropdownMenuItem onClick={onActivate} className="text-emerald-400">
-              <CheckCircle className="h-4 w-4 mr-2" />
+              <CheckCircle className="mr-2 h-4 w-4" />
               Reactivate
             </DropdownMenuItem>
           )}
-          {user.status !== 'banned' && (
+          {user.moderationStatus !== 'banned' && (
             <DropdownMenuItem onClick={onBan} className="text-destructive">
-              <Ban className="h-4 w-4 mr-2" />
+              <Ban className="mr-2 h-4 w-4" />
               Ban permanently
+            </DropdownMenuItem>
+          )}
+          {user.moderationStatus === 'banned' && (
+            <DropdownMenuItem onClick={onActivate} className="text-emerald-400">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Unban
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
@@ -341,81 +271,106 @@ function UserRow({ user, onSuspend, onBan, onActivate }: {
 }
 
 export default function AdminPage() {
+  const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
-  const [reports, setReports] = useState(mockReports);
-  const [users, setUsers] = useState(mockUsers);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [userSearch, setUserSearch] = useState('');
 
+  const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
+    queryKey: ['admin-reports'],
+    queryFn: () => listAdminReports({ limit: 100 }),
+  });
+
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
+    queryKey: ['admin-users', userSearch],
+    queryFn: () => listAdminUsers({ q: userSearch || undefined, limit: 100 }),
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: ({ id, status, banUserId }: {
+      id: string;
+      status: AdminReportItem['status'];
+      banUserId?: string;
+    }) =>
+      updateAdminReport(id, {
+        status,
+        moderationStatus: banUserId ? 'banned' : undefined,
+      }),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-reports'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      if (vars.banUserId) success('User banned', 'Report resolved and user banned.');
+      else if (vars.status === 'resolved') success('Report resolved', 'Action recorded.');
+      else success('Report dismissed', 'No action taken.');
+    },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+  });
+
+  const userMutation = useMutation({
+    mutationFn: ({ userId, status }: { userId: string; status: 'active' | 'suspended' | 'banned' }) =>
+      updateAdminUserModeration(userId, status),
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      const labels: Record<string, string> = {
+        active: 'reactivated',
+        suspended: 'suspended',
+        banned: 'banned',
+      };
+      success(`User ${labels[vars.status]}`, `The user account has been ${labels[vars.status]}.`);
+    },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+  });
+
+  const reports = reportsData?.reports ?? [];
+  const users = usersData?.users ?? [];
   const pendingReports = reports.filter((r) => r.status === 'pending').length;
+  const isActing = reportMutation.isPending || userMutation.isPending;
 
-  const handleResolveReport = (id: string) => {
-    setReports((prev) => prev.map((r) => r.id === id ? { ...r, status: 'resolved' as const } : r));
-    success('Report resolved', 'Action taken on the reported user');
-  };
-
-  const handleDismissReport = (id: string) => {
-    setReports((prev) => prev.map((r) => r.id === id ? { ...r, status: 'dismissed' as const } : r));
-    success('Report dismissed', 'No action taken');
-  };
-
-  const handleBanUser = (userId: string) => {
-    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status: 'banned' as const } : u));
-    success('User banned', 'The user has been permanently banned');
-  };
-
-  const handleSuspendUser = (userId: string) => {
-    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status: 'suspended' as const } : u));
-    success('User suspended', 'The user has been temporarily suspended');
-  };
-
-  const handleActivateUser = (userId: string) => {
-    setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, status: 'active' as const } : u));
-    success('User reactivated', 'The user account is now active');
-  };
-
-  const filteredUsers = users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = userSearch
+    ? users.filter(
+        (u) =>
+          u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+          (u.profile?.displayName ?? '').toLowerCase().includes(userSearch.toLowerCase()),
+      )
+    : users;
 
   return (
     <AppShell
       title="Admin Dashboard"
       description="Manage users, moderate content, and monitor platform health"
       actions={
-        <Link href="/admin/settings">
-          <Button variant="secondary" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </Button>
-        </Link>
+        <Button
+          variant="secondary"
+          size="sm"
+          className="gap-2"
+          onClick={() => { void refetchReports(); void refetchUsers(); }}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
       }
     >
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Total Users"
-          value={users.length.toString()}
+          value={usersLoading ? '…' : users.length.toString()}
           icon={<Users className="h-5 w-5" />}
-          trend={{ value: 12, label: 'vs last week' }}
         />
         <StatCard
           label="Pending Reports"
-          value={pendingReports.toString()}
+          value={reportsLoading ? '…' : pendingReports.toString()}
           icon={<Flag className="h-5 w-5" />}
           trend={pendingReports > 0 ? { value: -pendingReports, label: 'open' } : undefined}
         />
         <StatCard
-          label="Active Today"
-          value="234"
-          icon={<Activity className="h-5 w-5" />}
+          label="Suspended"
+          value={usersLoading ? '…' : users.filter((u) => u.moderationStatus === 'suspended').length.toString()}
+          icon={<AlertTriangle className="h-5 w-5" />}
         />
         <StatCard
-          label="New This Week"
-          value="45"
-          icon={<TrendingUp className="h-5 w-5" />}
-          trend={{ value: 23, label: 'vs last week' }}
+          label="Banned"
+          value={usersLoading ? '…' : users.filter((u) => u.moderationStatus === 'banned').length.toString()}
+          icon={<Ban className="h-5 w-5" />}
         />
       </div>
 
@@ -426,7 +381,9 @@ export default function AdminPage() {
             <Flag className="h-4 w-4" />
             Reports
             {pendingReports > 0 && (
-              <Badge className="ml-1">{pendingReports}</Badge>
+              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+                {pendingReports}
+              </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="users" className="gap-2">
@@ -443,33 +400,58 @@ export default function AdminPage() {
         <TabsContent value="reports" className="mt-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">
-              Moderation Queue ({pendingReports} pending)
+              Moderation Queue
+              {pendingReports > 0 && (
+                <span className="ml-2 text-sm text-muted-foreground">({pendingReports} pending)</span>
+              )}
             </h2>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                Filter
-              </Button>
-            </div>
           </div>
 
-          {reports.filter((r) => r.status === 'pending').map((report) => (
-            <ReportCard
-              key={report.id}
-              report={report}
-              onResolve={() => handleResolveReport(report.id)}
-              onDismiss={() => handleDismissReport(report.id)}
-              onBan={() => handleBanUser(report.reportedUser.id)}
-            />
-          ))}
-
-          {pendingReports === 0 && (
+          {reportsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="pt-5">
+                  <div className="flex gap-3">
+                    <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-64" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : reports.filter((r) => r.status === 'pending').length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Shield className="h-12 w-12 text-emerald-400 mx-auto mb-4" />
+                <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
                 <h3 className="text-lg font-semibold text-foreground">All clear!</h3>
                 <p className="text-sm text-muted-foreground">No pending reports to review</p>
               </CardContent>
             </Card>
+          ) : (
+            reports
+              .filter((r) => r.status === 'pending')
+              .map((report) => (
+                <ReportCard
+                  key={report.id}
+                  report={report}
+                  isActing={isActing}
+                  onResolve={() =>
+                    reportMutation.mutate({ id: report.id, status: 'resolved' })
+                  }
+                  onDismiss={() =>
+                    reportMutation.mutate({ id: report.id, status: 'dismissed' })
+                  }
+                  onBanUser={() =>
+                    reportMutation.mutate({
+                      id: report.id,
+                      status: 'resolved',
+                      banUserId: report.reported.id,
+                    })
+                  }
+                />
+              ))
           )}
         </TabsContent>
 
@@ -477,29 +459,44 @@ export default function AdminPage() {
         <TabsContent value="users" className="mt-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-base">User Management</CardTitle>
                 <div className="relative w-64">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search users…"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
                     className="pl-9"
                   />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              {filteredUsers.map((user) => (
-                <UserRow
-                  key={user.id}
-                  user={user}
-                  onSuspend={() => handleSuspendUser(user.id)}
-                  onBan={() => handleBanUser(user.id)}
-                  onActivate={() => handleActivateUser(user.id)}
-                />
-              ))}
+              {usersLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                    <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-36" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  </div>
+                ))
+              ) : filteredUsers.length === 0 ? (
+                <div className="py-8 text-center text-sm text-muted-foreground">No users found</div>
+              ) : (
+                filteredUsers.map((user) => (
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    isActing={isActing}
+                    onSuspend={() => userMutation.mutate({ userId: user.id, status: 'suspended' })}
+                    onBan={() => userMutation.mutate({ userId: user.id, status: 'banned' })}
+                    onActivate={() => userMutation.mutate({ userId: user.id, status: 'active' })}
+                  />
+                ))
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -508,9 +505,11 @@ export default function AdminPage() {
         <TabsContent value="analytics" className="mt-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <BarChart3 className="h-12 w-12 text-primary mx-auto mb-4" />
+              <BarChart3 className="mx-auto mb-4 h-12 w-12 text-primary" />
               <h3 className="text-lg font-semibold text-foreground">Analytics Dashboard</h3>
-              <p className="text-sm text-muted-foreground">Coming soon - detailed platform analytics</p>
+              <p className="text-sm text-muted-foreground">
+                Detailed platform analytics coming soon.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

@@ -29,6 +29,28 @@ async function main() {
     });
   }
   console.log(`Seeded ${SKILLS.length} skills`);
+
+  const firstUser = await prisma.user.findFirst();
+  if (firstUser) {
+    const existingPoll = await prisma.poll.findFirst();
+    if (!existingPoll) {
+      const poll = await prisma.poll.create({
+        data: {
+          creatorId: firstUser.id,
+          question: 'What topic should we cover in the next community call?',
+          isActive: true,
+          options: {
+            create: [
+              { label: 'Fundraising & term sheets', sortOrder: 0 },
+              { label: 'Product-market fit', sortOrder: 1 },
+              { label: 'Hiring first team', sortOrder: 2 },
+            ],
+          },
+        },
+      });
+      console.log(`Seeded sample poll: ${poll.id}`);
+    }
+  }
 }
 
 main()

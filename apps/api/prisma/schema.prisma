@@ -148,6 +148,13 @@ model User {
 
   // Billing
   subscription Subscription?
+
+  // Polls
+  pollsCreated Poll[]      @relation("PollsCreated")
+  pollVotes    PollVote[]  @relation("PollVotes")
+
+  // Jobs
+  jobPostings  JobPosting[] @relation("JobPostingsCreated")
 }
 
 model Profile {
@@ -408,4 +415,60 @@ model Subscription {
   cancelAtPeriodEnd    Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+}
+
+model Poll {
+  id        String       @id @default(uuid())
+  creatorId String
+  creator   User         @relation("PollsCreated", fields: [creatorId], references: [id], onDelete: Cascade)
+  question  String       @db.Text
+  isActive  Boolean      @default(true)
+  endsAt    DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  options   PollOption[]
+  votes     PollVote[]
+
+  @@index([isActive, createdAt])
+}
+
+model PollOption {
+  id     String @id @default(uuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label  String @db.Text
+  sortOrder Int @default(0)
+  votes  PollVote[]
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id         String      @id @default(uuid())
+  pollId     String
+  optionId   String
+  userId     String
+  poll       Poll        @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option     PollOption  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user       User        @relation("PollVotes", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime    @default(now())
+
+  @@unique([pollId, userId])
+  @@index([pollId])
+}
+
+model JobPosting {
+  id          String   @id @default(uuid())
+  creatorId   String
+  creator     User     @relation("JobPostingsCreated", fields: [creatorId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  role        String?  // e.g. "Founder", "Technical Co-Founder"
+  location    String?
+  isRemote    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, createdAt])
 }

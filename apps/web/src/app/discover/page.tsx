@@ -11,7 +11,9 @@ import {
   Users,
   ArrowRight,
 } from 'lucide-react';
-import { searchProfiles, getRecommendations, type SearchHit } from '@/lib/api';
+import {
+  searchProfiles, getRecommendations, sendConnectionRequest, type SearchHit
+} from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -122,9 +124,13 @@ export default function DiscoverPage() {
 
   // Handle send connection request
   const handleSendConnection = async (message: string) => {
-    // TODO: Implement actual API call
-    console.log('Sending connection request to', connectionTarget?.userId, 'with message:', message);
-    success('Connection request sent!', `Your request to ${connectionTarget?.displayName} has been sent.`);
+    if (!connectionTarget) return;
+    try {
+      await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
+      success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
+    } catch (err) {
+      showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
+    }
   };
 
   // Handle message
@@ -298,12 +304,12 @@ export default function DiscoverPage() {
                 viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
               )}
             >
-              {suggestions.map((hit) => {
+              {suggestions.map((hit, index) => {
                 const profile = hitToProfile(hit);
                 return (
                   <ProfileCard
                     key={hit.id}
-                    profile={{ ...profile, matchScore: Math.floor(Math.random() * 30) + 70 }}
+                    profile={{ ...profile, matchScore: Math.max(65, 95 - index * 4) }}
                     variant="featured"
                     onConnect={() => handleConnect(profile)}
                     onMessage={() => handleMessage(profile)}

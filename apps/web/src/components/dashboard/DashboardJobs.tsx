@@ -5,6 +5,7 @@ import { Briefcase, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import type { JobPostingView } from '@/lib/api';
 
 export type JobOffer = {
   id: string;
@@ -21,13 +22,24 @@ const defaultJobs: JobOffer[] = [
   { id: '3', title: 'CPO / Product', company: 'B2B Startup', role: 'Founder', location: 'Remote', href: '/discover' },
 ];
 
+function mapApiJobsToOffers(jobs: JobPostingView[]): JobOffer[] {
+  return jobs.map((j) => ({
+    id: j.id,
+    title: j.title,
+    company: j.creator.displayName,
+    role: j.role ?? undefined,
+    location: j.isRemote ? 'Remote' : j.location ?? undefined,
+    href: j.href ?? '/discover',
+  }));
+}
+
 type DashboardJobsProps = {
-  jobs?: JobOffer[] | null;
+  jobs?: JobPostingView[] | null;
   className?: string;
 };
 
-export function DashboardJobs({ jobs = defaultJobs, className }: DashboardJobsProps) {
-  const list = jobs ?? defaultJobs;
+export function DashboardJobs({ jobs, className }: DashboardJobsProps) {
+  const list = jobs?.length ? mapApiJobsToOffers(jobs) : defaultJobs;
 
   return (
     <Card className={cn('', className)}>

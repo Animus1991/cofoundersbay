@@ -12,6 +12,7 @@ import {
   UserPlus,
   Flag,
   Share2,
+  Star,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -285,6 +286,12 @@ export function ProfileCard({
                 </Link>
                 <RoleBadge role={profile.role} size="sm" />
               </div>
+              {profile.matchScore && profile.matchScore > 0 && (
+                <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary shrink-0 ml-1">
+                  <Star className="h-3 w-3 fill-current" />
+                  {profile.matchScore}%
+                </div>
+              )}
               <Button
                 variant="ghost"
                 size="icon"

@@ -11,3 +11,5 @@ export type { CalendarEvent } from './DashboardCalendar';
 export { DashboardHero } from './DashboardHero';
 export { DashboardActivity } from './DashboardActivity';
 export type { ActivityItem } from './DashboardActivity';
+export { DashboardNewsletter } from './DashboardNewsletter';
+export type { NewsletterItem } from './DashboardNewsletter';

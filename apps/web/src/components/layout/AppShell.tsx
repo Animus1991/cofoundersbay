@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { TopNav } from './TopNav';
 import { SideNav } from './SideNav';
+import { MobileBottomNav } from './MobileBottomNav';
 
 type AppShellProps = {
   title?: string;
@@ -11,7 +12,7 @@ type AppShellProps = {
 
 export function AppShell({ title, description, actions, children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-hero-radial pb-16">
+    <div className="min-h-screen bg-hero-radial pb-20 lg:pb-16">
       <div className="mx-auto w-full max-w-7xl px-4 pt-6">
         <TopNav />
         <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
@@ -36,6 +37,7 @@ export function AppShell({ title, description, actions, children }: AppShellProp
           </main>
         </div>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }

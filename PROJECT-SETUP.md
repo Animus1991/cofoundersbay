@@ -111,15 +111,20 @@
 
 **Checklist:**
 
+0. **Πριν την πρώτη εκτέλεση:**
+   - `npm install` στο root του project
+   - Για το API: PostgreSQL πρέπει να τρέχει στο `localhost:5432`
+   - Σωστή εντολή: `npm run dev:api` (χωρίς κενό — όχι `dev: api`)
+
 1. **Τρέξε το API** (πρώτο terminal):
    ```bash
-   pnpm dev:api
+   npm run dev:api
    ```
    Το API τρέχει στο port **3001** (ή τι δίνει το `API_PORT` στο `.env`). Πρέπει να βλέπεις ότι ο server ακούει (π.χ. "Nest application successfully started").
 
 2. **Τρέξε το web** (δεύτερο terminal):
    ```bash
-   pnpm dev:web
+   npm run dev:web
    ```
 
 3. **Environment:** Το `apps/web` καλεί το API μέσω `NEXT_PUBLIC_API_URL`.
@@ -128,15 +133,17 @@
      ```env
      NEXT_PUBLIC_API_URL=http://localhost:3001
      ```
-     και κάνε restart το `pnpm dev:web`.
+     και κάνε restart το `npm run dev:web`.
 
 4. **CORS:** Αν εμφανίζεται **"blocked by CORS policy: No 'Access-Control-Allow-Origin' header"** στο login (ή σε άλλα API calls):
    - Το NestJS API ρυθμίζει CORS στο `apps/api/src/main.ts`. Αν το `CORS_ORIGIN` δεν είναι ορισμένο (ή η λίστα είναι κενή), χρησιμοποιούνται defaults: `localhost:3000`, `localhost:3002`, `192.168.1.2:3000`, `192.168.1.2:3002` (και 127.0.0.1).
-   - Βεβαιώσου ότι το **origin** από το οποίο ανοίγεις το web (π.χ. `http://192.168.1.2:3000`) ανήκει σε αυτά. Αν χρησιμοποιείς άλλο host/port, πρόσθεσέ το στο `CORS_ORIGIN` στο root `.env` (comma-separated) και κάνε **restart του API** (`pnpm dev:api`).
+   - Βεβαιώσου ότι το **origin** από το οποίο ανοίγεις το web (π.χ. `http://192.168.1.2:3000`) ανήκει σε αυτά. Αν χρησιμοποιείς άλλο host/port, πρόσθεσέ το στο `CORS_ORIGIN` στο root `.env` (comma-separated) και κάνε **restart του API** (`npm run dev:api`).
 
 5. **Login σελίδα (UI) vs API:**
    - Η **login σελίδα** (φόρμα) είναι στο **web app** (port **3000**): άνοιξε πάντα `http://192.168.1.2:3000/login` ή `http://localhost:3000/login`. Μην ανοίγεις `http://192.168.1.2:3001/login` — το API (3001) δεν σερβίρει HTML σελίδες, μόνο JSON (`POST /api/v1/auth/login` κ.λπ.). Αν βλέπεις fetch προς `...3001/login`, πιθανόν το tab σου να είχε ως base URL το 3001 (π.χ. άνοιξες το API URL και μετά κλικ σε σύνδεσμο «login»).
-   - Αν το Next.js δείχνει **`GET /login 404`**: βεβαιώσου ότι τρέχεις το **web** (`pnpm dev:web`) και ότι ανοίγεις το site στο **3000**. Αν συνεχίζει, διαγράψτε τον φάκελο `apps/web/.next` και ξανατρέξτε `pnpm dev:web`.
+   - Αν το Next.js δείχνει **`GET /login 404`**: βεβαιώσου ότι τρέχεις το **web** (`npm run dev:web`) και ότι ανοίγεις το site στο **3000**. Αν συνεχίζει, διαγράψτε τον φάκελο `apps/web/.next` και ξανατρέξτε `npm run dev:web`.
+   - Αν εμφανίζεται **"Module not found: Can't resolve 'sonner'"** ή **"framer-motion"**: τρέξε `npm install` στο root, διαγράψτε `apps/web/.next` και ξανατρέξτε `npm run dev:web`.
+   - **Error P1001: Can't reach database server at localhost:5432**: Το PostgreSQL δεν τρέχει. Ξεκίνησέ το (Windows: Services → PostgreSQL, ή Docker αν χρησιμοποιείς `docker-compose`).
 
 Άλλα μηνύματα που μπορεί να δεις:
 - **"Skipping auto-scroll behavior due to position: sticky or position: fixed"** — συμπεριφορά του Next.js layout router, όχι σφάλμα.
@@ -178,3 +185,58 @@
 
 - **Όλα όσα ταιριάζουν** στους σκοπούς της πλατφόρμας και είναι εφικτά με Next.js/NestJS/Prisma **έχουν αντιστοιχηθεί** (dashboard, community-style nav, polls, calendar, notifications, search, command palette, responsive layout, user menu).
 - **Τι εξαιρείται** είναι ρητά: WordPress themes/plugins, LMS/education, plugin-specific λειτουργίες· χωρίς παράλειψη σε ότι αφορά τη δική μας τεχνολογία και τους στόχους της πλατφόρμας.
+
+**Νέες προσθήκες (σχετικά με cofound-connect-nexus & πλήρης υλοποίηση):**
+
+| Πρόσθετο | Περιγραφή |
+|----------|-----------|
+| **Dashboard API** | `GET /api/v1/dashboard/stats` (activeProfiles, matchesThisWeek, trendPercent, chartData), `GET /api/v1/dashboard/activity` (connections + events) |
+| **React Query** | `@tanstack/react-query` για caching, loading states, καλύτερο UX |
+| **Recharts** | Πραγματικό BarChart στα stats αντί για placeholder |
+| **DashboardNewsletter** | Widget "Announcements & newsletter" στο dashboard |
+| **Personalized welcome** | "Welcome back, {displayName}" με δεδομένα από `getMeProfile` |
+| **Auth storage sync** | `storage` event για cross-tab συγχρονισμό κατά login/logout |
+| **Space Grotesk** | Font display (nexus-style) + gradient tokens (--gradient-hero, --shadow-glow) |
+
+---
+
+## 9. Βέλτιστο πλάνο βελτιστοποίησης (βασισμένο σε cofound-connect-nexus)
+
+Το [cofound-connect-nexus](https://github.com/Animus1991/cofound-connect-nexus) είναι Vite + React + shadcn + Tailwind. Οι ιδέες που εφαρμόστηκαν και οι επόμενες προτάσεις:
+
+### Ήδη εφαρμοσμένα από nexus
+
+1. **React Query** — data fetching, caching, loading states
+2. **Recharts** — πραγματικά charts (BarChart στα stats)
+3. **Space Grotesk** — typography για headings
+4. **Gradient tokens** — `--gradient-hero`, `--shadow-glow`, `--gradient-card`
+5. **Stats με trend** — activeProfiles, matchesThisWeek, trendPercent
+6. **Personalized welcome** — "Welcome back, {displayName}"
+7. **Activity feed** — connections + events από backend
+
+### Επόμενα βήματα (προτεραιότητα)
+
+| Βήμα | Περιγραφή | Συν effort |
+|------|-----------|------------|
+| 1 | **Polls backend** — Prisma model Poll + PollOption + PollVote, NestJS module, API CRUD | Μέτριο |
+| 2 | **Jobs/Opportunities** — Model JobPosting ή derive από profiles με role=founder + "seeking" flag, API listing | Μέτριο |
+| 3 | **Framer Motion** — Subtle animations (fade-in, stagger) όπως nexus | Χαμηλό |
+| 4 | **Sonner** — Toast notifications (αντικαθιστά ή συμπληρώνει υπάρχον toast) | Χαμηλό |
+| 5 | **Mobile bottom nav** — Σαν nexus `MobileBottomNav` για συνεπή mobile UX | Χαμηλό |
+| 6 | **Newsletter API** — Endpoint για announcements (ή CMS integration) | Μέτριο |
+
+### Ήδη υλοποιημένα (φάση 2)
+
+| Πρόσθετο | Περιγραφή |
+|----------|-----------|
+| **Polls backend** | Prisma models Poll, PollOption, PollVote · API `GET /api/v1/polls/active`, `POST /api/v1/polls/:pollId/vote` |
+| **Jobs API** | Model JobPosting · API `GET /api/v1/jobs` · DashboardJobs δεμένο με API |
+| **Framer Motion** | AnimatedCard με stagger animations στο dashboard |
+| **Sonner** | Toast component στο layout · `toast.success/error()` για notifications |
+| **Mobile bottom nav** | MobileBottomNav (nexus-style) fixed στο κάτω μέρος · Home, Discover, Messages, Jobs, Profile |
+
+### Τι δεν μεταφέρουμε από nexus
+
+- **Vite** — Μένουμε Next.js App Router (SSR, routing, API routes)
+- **React Router** — Next.js έχει built-in routing
+- **Lovable.dev** — Εξωτερική πλατφόρμα· δεν αντικαθιστά το δικό μας CI/CD

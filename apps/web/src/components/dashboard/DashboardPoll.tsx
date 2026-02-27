@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { BarChart3, Check } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { votePoll } from '@/lib/api';
+import type { PollView } from '@/lib/api';
 
 export type PollOption = { id: string; label: string; votes: number };
 export type DashboardPollData = {
@@ -27,19 +30,35 @@ const defaultPoll: DashboardPollData = {
 };
 
 type DashboardPollProps = {
-  data?: DashboardPollData | null;
-  onVote?: (pollId: string, optionId: string) => void;
+  poll?: PollView | null;
   className?: string;
 };
 
-export function DashboardPoll({ data = defaultPoll, onVote, className }: DashboardPollProps) {
-  const poll = data ?? defaultPoll;
-  const [voted, setVoted] = useState<string | null>(poll.userVoted ?? null);
+export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) {
+  const poll = apiPoll ?? defaultPoll;
+  const isRealPoll = !!apiPoll;
+  const [optimisticVote, setOptimisticVote] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  const voted = optimisticVote ?? poll.userVoted ?? null;
+
+  const voteMutation = useMutation({
+    mutationFn: ({ pollId, optionId }: { pollId: string; optionId: string }) =>
+      votePoll(pollId, optionId),
+    onMutate: ({ optionId }) => setOptimisticVote(optionId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['polls', 'active'] });
+      success('Vote recorded');
+    },
+    onError: (err) => {
+      setOptimisticVote(null);
+      showError(err instanceof Error ? err.message : 'Failed to vote');
+    },
+  });
 
   const handleVote = (optionId: string) => {
-    if (voted) return;
-    setVoted(optionId);
-    onVote?.(poll.id, optionId);
+    if (voted || !isRealPoll) return;
+    voteMutation.mutate({ pollId: poll.id, optionId });
   };
 
   const total = poll.options.reduce((s, o) => s + o.votes, 0) || 1;
@@ -63,7 +82,7 @@ export function DashboardPoll({ data = defaultPoll, onVote, className }: Dashboa
                 <button
                   type="button"
                   onClick={() => handleVote(opt.id)}
-                  disabled={!!voted}
+                  disabled={!!voted || voteMutation.isPending || !isRealPoll}
                   className={cn(
                     'w-full rounded-lg border p-3 text-left text-sm transition-colors',
                     isSelected
