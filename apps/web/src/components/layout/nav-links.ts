@@ -13,6 +13,7 @@ import {
   ShoppingBag,
   BookOpen,
   Activity,
+  TrendingUp,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -26,6 +27,7 @@ export const navSections: NavSection[] = [
     links: [
       { href: '/', label: 'Dashboard', icon: Sparkle },
       { href: '/activity', label: 'Activity', icon: Activity },
+      { href: '/analytics', label: 'Analytics', icon: TrendingUp },
     ],
   },
   {
