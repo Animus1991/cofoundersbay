@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,11 +13,23 @@ export class NotificationsController {
     @CurrentUser() user: { id: string },
     @Query('limit') limitRaw?: string,
     @Query('cursor') cursor?: string,
+    @Query('unread') unread?: string,
+    @Query('type') type?: string,
   ) {
     const limit = Math.min(Math.max(parseInt(limitRaw ?? '30', 10) || 30, 1), 100);
 
+    const where: any = { userId: user.id };
+    
+    if (unread === 'true') {
+      where.readAt = null;
+    }
+    
+    if (type && type !== 'all') {
+      where.type = type;
+    }
+
     const items = await this.prisma.notification.findMany({
-      where: { userId: user.id },
+      where,
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor
@@ -47,7 +59,15 @@ export class NotificationsController {
     };
   }
 
-  @Post(':id/read')
+  @Get('unread-count')
+  async getUnreadCount(@CurrentUser() user: { id: string }) {
+    const count = await this.prisma.notification.count({
+      where: { userId: user.id, readAt: null },
+    });
+    return { count };
+  }
+
+  @Patch(':id/read')
   async markRead(@CurrentUser() user: { id: string }, @Param('id') id: string) {
     await this.prisma.notification.updateMany({
       where: { id, userId: user.id },
@@ -56,11 +76,27 @@ export class NotificationsController {
     return { ok: true };
   }
 
-  @Post('read-all')
+  @Post('mark-all-read')
   async markAllRead(@CurrentUser() user: { id: string }) {
     await this.prisma.notification.updateMany({
       where: { userId: user.id, readAt: null },
       data: { readAt: new Date() },
+    });
+    return { ok: true };
+  }
+
+  @Delete(':id')
+  async deleteNotification(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    await this.prisma.notification.deleteMany({
+      where: { id, userId: user.id },
+    });
+    return { ok: true };
+  }
+
+  @Delete()
+  async deleteAll(@CurrentUser() user: { id: string }) {
+    await this.prisma.notification.deleteMany({
+      where: { userId: user.id },
     });
     return { ok: true };
   }
