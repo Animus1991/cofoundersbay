@@ -104,6 +104,13 @@ enum UserModerationStatus {
   banned
 }
 
+enum InviteStatus {
+  pending
+  accepted
+  expired
+  cancelled
+}
+
 model User {
   id                     String         @id @default(uuid())
   email                  String         @unique
@@ -155,6 +162,10 @@ model User {
 
   // Jobs
   jobPostings  JobPosting[] @relation("JobPostingsCreated")
+
+  // Invites
+  invitesSent     Invite[] @relation("InvitesSent")
+  invitesReceived Invite[] @relation("InvitesReceived")
 }
 
 model Profile {
@@ -240,6 +251,7 @@ model Message {
   createdAt      DateTime            @default(now())
   editedAt       DateTime?
   deletedAt      DateTime?
+  readAt         DateTime?
   attachments    MessageAttachment[]
 
   @@index([conversationId, createdAt])
@@ -471,4 +483,23 @@ model JobPosting {
   updatedAt   DateTime @updatedAt
 
   @@index([isActive, createdAt])
+}
+
+model Invite {
+  id           String       @id @default(uuid())
+  senderId     String
+  sender       User         @relation("InvitesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  email        String
+  message      String?      @db.Text
+  status       InviteStatus @default(pending)
+  acceptedById String?
+  acceptedBy   User?        @relation("InvitesReceived", fields: [acceptedById], references: [id], onDelete: SetNull)
+  acceptedAt   DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([senderId, status])
+  @@index([email, status])
+  @@index([expiresAt])
 }

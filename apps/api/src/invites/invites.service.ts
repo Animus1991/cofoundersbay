@@ -16,28 +16,88 @@ export class InvitesService {
   }
 
   async getUserInvites(userId: string, options: { limit?: number; status?: string }) {
-    // TODO: Implement when Invite model is added to Prisma schema
-    // Placeholder implementation
-    return {
-      invites: [],
-    };
+    const where: any = { senderId: userId };
+    if (options.status) {
+      where.status = options.status;
+    }
+
+    const invites = await this.prisma.invite.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: options.limit || 50,
+      select: {
+        id: true,
+        email: true,
+        message: true,
+        status: true,
+        acceptedAt: true,
+        expiresAt: true,
+        createdAt: true,
+        acceptedBy: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                displayName: true,
+                avatarUrl: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return { invites };
   }
 
   async getInviteStats(userId: string) {
-    // TODO: Implement when Invite model is added to Prisma schema
+    const [totalInvites, acceptedInvites, pendingInvites] = await Promise.all([
+      this.prisma.invite.count({ where: { senderId: userId } }),
+      this.prisma.invite.count({ where: { senderId: userId, status: 'accepted' } }),
+      this.prisma.invite.count({ where: { senderId: userId, status: 'pending' } }),
+    ]);
+
+    const conversionRate = totalInvites > 0 ? (acceptedInvites / totalInvites) * 100 : 0;
+    const rewards = acceptedInvites * 10; // 10 points per accepted invite
+
     return {
-      totalInvites: 0,
-      acceptedInvites: 0,
-      pendingInvites: 0,
-      rewards: 0,
-      conversionRate: 0,
+      totalInvites,
+      acceptedInvites,
+      pendingInvites,
+      rewards,
+      conversionRate,
     };
   }
 
   async createInvite(userId: string, email: string, message?: string) {
-    // TODO: Implement when Invite model is added to Prisma schema
-    const inviteId = `invite-${Date.now()}`;
-    const inviteUrl = `${this.webBaseUrl()}/register?ref=${userId}&invite=${inviteId}`;
+    // Check if invite already exists and is pending
+    const existingInvite = await this.prisma.invite.findFirst({
+      where: {
+        senderId: userId,
+        email,
+        status: 'pending',
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (existingInvite) {
+      throw new Error('An active invite for this email already exists');
+    }
+
+    // Create invite with 30-day expiration
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+
+    const invite = await this.prisma.invite.create({
+      data: {
+        senderId: userId,
+        email,
+        message,
+        expiresAt,
+      },
+    });
+
+    const inviteUrl = `${this.webBaseUrl()}/register?ref=${userId}&invite=${invite.id}`;
 
     await this.emailQueue.enqueueSendEmail({
       to: email,
@@ -47,7 +107,7 @@ export class InvitesService {
         <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; line-height: 1.6">
           <h2 style="margin: 0 0 12px 0; font-size: 18px;">You're Invited to CoFounderBay!</h2>
           <p style="margin: 0 0 16px 0; color: #333">
-            You've been invited to join CoFounderBay, 
+            You've been invited to join CoFounderBay,
             the premier platform for startup founders, mentors, and investors.
           </p>
           ${message ? `<p style="margin: 0 0 16px 0; color: #555; font-style: italic;">"${message}"</p>` : ''}
@@ -65,21 +125,65 @@ export class InvitesService {
 
     return {
       invite: {
-        id: inviteId,
-        email,
-        status: 'pending',
-        sentAt: new Date().toISOString(),
+        id: invite.id,
+        email: invite.email,
+        status: invite.status,
+        sentAt: invite.createdAt.toISOString(),
       },
     };
   }
 
   async cancelInvite(userId: string, inviteId: string) {
-    // TODO: Implement when Invite model is added to Prisma schema
+    const invite = await this.prisma.invite.findUnique({
+      where: { id: inviteId },
+    });
+
+    if (!invite || invite.senderId !== userId) {
+      throw new Error('Invite not found or unauthorized');
+    }
+
+    if (invite.status !== 'pending') {
+      throw new Error('Only pending invites can be cancelled');
+    }
+
+    await this.prisma.invite.update({
+      where: { id: inviteId },
+      data: { status: 'cancelled' },
+    });
+
     return { ok: true };
   }
 
   async acceptInvite(inviteId: string, acceptedUserId: string) {
-    // TODO: Implement when Invite model is added to Prisma schema
+    const invite = await this.prisma.invite.findUnique({
+      where: { id: inviteId },
+    });
+
+    if (!invite) {
+      throw new Error('Invite not found');
+    }
+
+    if (invite.status !== 'pending') {
+      throw new Error('Invite is not pending');
+    }
+
+    if (invite.expiresAt < new Date()) {
+      await this.prisma.invite.update({
+        where: { id: inviteId },
+        data: { status: 'expired' },
+      });
+      throw new Error('Invite has expired');
+    }
+
+    await this.prisma.invite.update({
+      where: { id: inviteId },
+      data: {
+        status: 'accepted',
+        acceptedById: acceptedUserId,
+        acceptedAt: new Date(),
+      },
+    });
+
     return { ok: true };
   }
 }

@@ -28,6 +28,21 @@ const joinSchema = z.object({
   conversationId: z.string().uuid(),
 });
 
+const typingSchema = z.object({
+  conversationId: z.string().uuid(),
+  isTyping: z.boolean(),
+});
+
+const markReadSchema = z.object({
+  conversationId: z.string().uuid(),
+  messageId: z.string().uuid(),
+});
+
+const reactionSchema = z.object({
+  messageId: z.string().uuid(),
+  emoji: z.string().min(1).max(10),
+});
+
 function allowedOrigins(): string[] {
   const corsOriginEnv = process.env.CORS_ORIGIN;
   const origins = corsOriginEnv
@@ -137,6 +152,113 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     // Broadcast to other participants (exclude sender)
     client.to(input.conversationId).emit('message:new', { message });
+
+    return { ok: true };
+  }
+
+  @SubscribeMessage('typing:start')
+  async handleTypingStart(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return;
+
+    const input = typingSchema.parse(body);
+    
+    // Verify user is participant
+    const participant = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId: input.conversationId, userId } },
+      select: { conversationId: true },
+    });
+    if (!participant) return;
+
+    // Broadcast typing indicator to other participants
+    client.to(input.conversationId).emit('typing:update', {
+      conversationId: input.conversationId,
+      userId,
+      isTyping: input.isTyping,
+    });
+
+    return { ok: true };
+  }
+
+  @SubscribeMessage('message:markRead')
+  async handleMarkRead(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return;
+
+    const input = markReadSchema.parse(body);
+
+    // Mark message as read
+    await this.prisma.message.update({
+      where: { id: input.messageId },
+      data: { readAt: new Date() },
+    }).catch(() => {});
+
+    // Broadcast read receipt
+    client.to(input.conversationId).emit('message:read', {
+      messageId: input.messageId,
+      userId,
+      readAt: new Date().toISOString(),
+    });
+
+    return { ok: true };
+  }
+
+  @SubscribeMessage('message:react')
+  async handleReaction(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return;
+
+    const input = reactionSchema.parse(body);
+
+    // Get message to find conversation
+    const message = await this.prisma.message.findUnique({
+      where: { id: input.messageId },
+      select: { conversationId: true },
+    });
+    if (!message) return;
+
+    // TODO: Store reaction in database when MessageReaction model is added
+    // For now, just broadcast the reaction
+    this.server.to(message.conversationId).emit('message:reaction', {
+      messageId: input.messageId,
+      userId,
+      emoji: input.emoji,
+    });
+
+    return { ok: true };
+  }
+
+  @SubscribeMessage('presence:update')
+  async handlePresenceUpdate(
+    @ConnectedSocket() client: AuthedSocket,
+    @MessageBody() body: unknown,
+  ) {
+    const userId = client.data.user?.id;
+    if (!userId) return;
+
+    const status = typeof body === 'object' && body !== null && 'status' in body 
+      ? String(body.status) 
+      : 'online';
+
+    if (['online', 'away', 'busy'].includes(status)) {
+      this.presence.setOnline(userId);
+      
+      // Broadcast presence update to all connected clients
+      this.server.emit('presence:changed', {
+        userId,
+        status,
+        lastSeen: new Date().toISOString(),
+      });
+    }
 
     return { ok: true };
   }
