@@ -65,6 +65,17 @@ interface Proposal {
   date: string;
 }
 
+interface Application {
+  id: string;
+  opportunityTitle: string;
+  orgName: string;
+  orgInitials: string;
+  type: OppType;
+  status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
+  appliedDate: string;
+  message: string;
+}
+
 // ── Static demo data (co-founder / freelance listings) ──────────────────────
 
 const DEMO_LISTINGS: CofounderListing[] = [
@@ -130,6 +141,39 @@ const DEMO_LISTINGS: CofounderListing[] = [
   },
 ];
 
+const DEMO_APPLICATIONS: Application[] = [
+  {
+    id: 'a1',
+    opportunityTitle: 'Frontend Lead — HealthSync',
+    orgName: 'HealthSync',
+    orgInitials: 'HS',
+    type: 'job',
+    status: 'reviewing',
+    appliedDate: '3 days ago',
+    message: 'I have 6 years of React experience and led frontend at two health-tech startups.',
+  },
+  {
+    id: 'a2',
+    opportunityTitle: 'Product Advisor — AgroTech',
+    orgName: 'AgroTech',
+    orgInitials: 'AT',
+    type: 'cofounder',
+    status: 'accepted',
+    appliedDate: '1 week ago',
+    message: 'Interested in offering advisory services based on my agri-tech background.',
+  },
+  {
+    id: 'a3',
+    opportunityTitle: 'Co-founder — AI Tutor',
+    orgName: 'AI Tutor',
+    orgInitials: 'AI',
+    type: 'cofounder',
+    status: 'pending',
+    appliedDate: '1 day ago',
+    message: 'Your vision for AI in education aligns with my 10-year experience in edtech.',
+  },
+];
+
 const DEMO_PROPOSALS: Proposal[] = [
   {
     id: 'p1',
@@ -165,8 +209,10 @@ const TYPE_CONFIG: Record<OppType, { label: string; className: string; icon: typ
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
-  accepted: { label: 'Accepted', className: 'bg-primary/20 text-primary' },
+  accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-400' },
   declined: { label: 'Declined', className: 'bg-destructive/20 text-destructive' },
+  reviewing: { label: 'Under Review', className: 'bg-amber-500/20 text-amber-400' },
+  rejected: { label: 'Rejected', className: 'bg-destructive/20 text-destructive' },
 };
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -512,10 +558,49 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+function ApplicationCard({ application }: { application: Application }) {
+  const config = TYPE_CONFIG[application.type];
+  const statusCfg = STATUS_CONFIG[application.status];
+  return (
+    <Card className={cn('transition-all', application.status === 'rejected' && 'opacity-60')}>
+      <CardContent className="p-5 space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10 rounded-xl">
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary text-xs font-bold">
+                {application.orgInitials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{application.opportunityTitle}</p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{application.orgName}</span>
+                <Badge variant="outline" className={cn('text-[10px] px-1.5', config.className)}>
+                  <config.icon className="mr-1 h-3 w-3" />
+                  {config.label}
+                </Badge>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <Badge variant="secondary" className={cn('text-xs', statusCfg.className)}>
+              {statusCfg.label}
+            </Badge>
+            <span className="text-[10px] text-muted-foreground">{application.appliedDate}</span>
+          </div>
+        </div>
+        <div className="rounded-lg bg-secondary/40 px-3 py-2.5">
+          <p className="text-xs text-foreground/80 leading-relaxed italic">&ldquo;{application.message}&rdquo;</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function OpportunitiesPage() {
   const queryClient = useQueryClient();
   const { success } = useToast();
-  const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'proposals'>('listings');
+  const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<OppType | 'all'>('all');
   const [proposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
@@ -554,7 +639,8 @@ export default function OpportunitiesPage() {
   const tabs = [
     { key: 'listings' as const, label: 'Co-founder & Freelance', icon: Handshake },
     { key: 'jobs' as const, label: 'Jobs', icon: Briefcase },
-    { key: 'proposals' as const, label: 'Proposals', icon: FileText, badge: pendingProposals },
+    { key: 'applications' as const, label: 'My Applications', icon: FileText },
+    { key: 'proposals' as const, label: 'Proposals', icon: Check, badge: pendingProposals },
   ];
 
   return (
@@ -690,6 +776,23 @@ export default function OpportunitiesPage() {
                     j.creator.displayName.toLowerCase().includes(search.toLowerCase()),
                 )
                 .map((job) => <JobCard key={job.id} job={job} />)
+            )}
+          </div>
+        )}
+
+        {/* Applications tab */}
+        {activeTab === 'applications' && (
+          <div className="space-y-4">
+            {DEMO_APPLICATIONS.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
+                <FileText className="h-10 w-10 mb-3 opacity-30" />
+                <p className="font-medium">No applications yet</p>
+                <p className="text-sm mt-1">Apply to listings and jobs to track them here.</p>
+              </div>
+            ) : (
+              DEMO_APPLICATIONS.map((app) => (
+                <ApplicationCard key={app.id} application={app} />
+              ))
             )}
           </div>
         )}
