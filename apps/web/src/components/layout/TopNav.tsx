@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
+import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
@@ -71,7 +71,7 @@ export function TopNav() {
 
         {/* Actions */}
         <div className="flex items-center justify-between gap-2 lg:justify-end">
-          <ThemeToggle />
+          <ThemeSwitcher />
           <NotificationsBell />
           <MobileNav />
           {ready && <UserMenu />}
