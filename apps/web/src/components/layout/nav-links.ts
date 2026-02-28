@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Users,
   Handshake,
+  ShoppingBag,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -39,6 +40,7 @@ export const navSections: NavSection[] = [
       { href: '/mentoring', label: 'Mentoring', icon: GraduationCap },
       { href: '/jobs', label: 'Jobs', icon: Briefcase },
       { href: '/opportunities', label: 'Opportunities', icon: Handshake },
+      { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
     ],
   },
   {
