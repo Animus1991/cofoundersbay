@@ -15,7 +15,7 @@ function profileSelect() {
     displayName: true,
     avatarUrl: true,
     headline: true,
-    user: { select: { role: true } },
+    userId: true,
   } as const;
 }
 
@@ -27,8 +27,8 @@ function mapConnection(c: {
   message: string | null;
   createdAt: Date;
   updatedAt: Date;
-  requester: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; user: { role: string } };
-  receiver: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; user: { role: string } };
+  requester: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; userId: string; user: { role: string } };
+  receiver: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; userId: string; user: { role: string } };
 }) {
   return {
     id: c.id,
@@ -56,8 +56,15 @@ function mapConnection(c: {
 }
 
 const profileInclude = {
-  profile: {
-    select: profileSelect(),
+  select: {
+    id: true,
+    displayName: true,
+    avatarUrl: true,
+    headline: true,
+    userId: true,
+    user: {
+      select: { role: true },
+    },
   },
 };
 
@@ -93,8 +100,8 @@ export class ConnectionsService {
     const connection = await this.prisma.connectionRequest.create({
       data: { requesterId, receiverId, message: message?.trim() || null },
       include: {
-        requester: { select: { ...profileInclude.profile.select } },
-        receiver: { select: { ...profileInclude.profile.select } },
+        requester: profileInclude,
+        receiver: profileInclude,
       },
     });
 
@@ -124,8 +131,8 @@ export class ConnectionsService {
     const connections = await this.prisma.connectionRequest.findMany({
       where,
       include: {
-        requester: { select: { ...profileInclude.profile.select } },
-        receiver: { select: { ...profileInclude.profile.select } },
+        requester: profileInclude,
+        receiver: profileInclude,
       },
       orderBy: { createdAt: 'desc' },
       take: Math.min(limit, 100),
@@ -138,8 +145,8 @@ export class ConnectionsService {
     const connection = await this.prisma.connectionRequest.findUnique({
       where: { id: connectionId },
       include: {
-        requester: { select: { ...profileInclude.profile.select } },
-        receiver: { select: { ...profileInclude.profile.select } },
+        requester: profileInclude,
+        receiver: profileInclude,
       },
     });
 
@@ -151,8 +158,8 @@ export class ConnectionsService {
       where: { id: connectionId },
       data: { status, respondedAt: new Date() },
       include: {
-        requester: { select: { ...profileInclude.profile.select } },
-        receiver: { select: { ...profileInclude.profile.select } },
+        requester: profileInclude,
+        receiver: profileInclude,
       },
     });
 
