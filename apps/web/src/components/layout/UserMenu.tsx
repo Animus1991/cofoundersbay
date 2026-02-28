@@ -2,18 +2,19 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings, Edit, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
-type StoredUser = { displayName?: string; email?: string } | null;
+type StoredUser = { id?: string; displayName?: string; email?: string; role?: string; avatarUrl?: string } | null;
 
 export function UserMenu() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export function UserMenu() {
   }, []);
 
   const initials =
-    user?.displayName?.slice(0, 2).toUpperCase() ||
+    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
     user?.email?.slice(0, 2).toUpperCase() ||
     'ME';
 
@@ -46,18 +47,35 @@ export function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-3 rounded-full border border-border/60 bg-secondary/60 px-3 py-2 text-sm">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback>{initials}</AvatarFallback>
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 px-2.5 py-1.5 text-sm hover:bg-secondary/80 transition-colors outline-none">
+        <Avatar className="h-7 w-7">
+          <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.displayName ?? 'User'} />
+          <AvatarFallback className="text-xs font-bold bg-primary/20 text-primary">{initials}</AvatarFallback>
         </Avatar>
-        <span className="hidden text-sm font-medium text-foreground md:inline">
+        <span className="hidden text-sm font-medium text-foreground md:inline max-w-[120px] truncate">
           {user?.displayName ?? 'Account'}
         </span>
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">{user?.displayName ?? 'User'}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email ?? ''}</p>
+            {user?.role && (
+              <p className="text-xs text-primary capitalize">{user.role}</p>
+            )}
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile">
-            <User className="mr-2 h-4 w-4" /> Profile
+            <User className="mr-2 h-4 w-4" /> My Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/profile/edit">
+            <Edit className="mr-2 h-4 w-4" /> Edit Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -66,7 +84,7 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

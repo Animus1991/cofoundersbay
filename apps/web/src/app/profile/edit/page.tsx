@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -314,86 +315,75 @@ export default function ProfileEditPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
 
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<ProfileFormData>(defaultFormData);
-  const [loading, setLoading] = useState(true);
+  const [formInitialized, setFormInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
-  const [skillCatalog, setSkillCatalog] = useState<Skill[]>([]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement | null>(null);
 
-  // Load profile data
-  useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        const { profile } = await getMeProfile();
-        if (profile) {
-          const rolePayload = (profile.rolePayload ?? {}) as Record<string, unknown>;
-          const links = (rolePayload.links ?? {}) as Record<string, unknown>;
+  const { data: meData, isLoading: profileLoading } = useQuery({
+    queryKey: ['me', 'profile'],
+    queryFn: getMeProfile,
+    staleTime: 5 * 60_000,
+  });
 
-          setForm({
-            ...defaultFormData,
-            displayName: profile.displayName ?? '',
-            headline: profile.headline ?? '',
-            bio: profile.bio ?? '',
-            avatarUrl: profile.avatarUrl ?? '',
-            location: profile.location ?? '',
-            timezone: profile.timezone ?? '',
-            websiteUrl: (typeof links.websiteUrl === 'string' ? links.websiteUrl : '') ?? '',
-            linkedinUrl: (typeof links.linkedinUrl === 'string' ? links.linkedinUrl : '') ?? '',
-            githubUrl: (typeof links.githubUrl === 'string' ? links.githubUrl : '') ?? '',
-            twitterUrl: (typeof links.twitterUrl === 'string' ? links.twitterUrl : '') ?? '',
-            skills: profile.skills?.map((s) => s.skillName) ?? [],
-            industries: Array.isArray(rolePayload.industries)
-              ? (rolePayload.industries as unknown[]).filter((x): x is string => typeof x === 'string')
-              : typeof rolePayload.industry === 'string'
-                ? [rolePayload.industry]
-                : [],
-            languages: profile.languages ?? [],
-            role: (profile.role || 'founder') as Role,
-            startupStage: normalizeFounderStage(typeof rolePayload.stage === 'string' ? rolePayload.stage : ''),
-            commitment: normalizeCommitment(typeof rolePayload.commitment === 'string' ? rolePayload.commitment : ''),
-            lookingFor: Array.isArray(rolePayload.rolesSought)
-              ? (rolePayload.rolesSought as unknown[]).filter((x): x is string => typeof x === 'string')
-              : [],
-            expertiseAreas: Array.isArray(rolePayload.expertiseAreas)
-              ? (rolePayload.expertiseAreas as unknown[]).filter((x): x is string => typeof x === 'string')
-              : [],
-            availability: (typeof rolePayload.availability === 'string' ? rolePayload.availability : '') ?? '',
-            meetingPreference: (typeof rolePayload.meetingPreferences === 'string' ? rolePayload.meetingPreferences : '') ?? '',
-            hourlyRate: (typeof rolePayload.hourlyRate === 'string' ? rolePayload.hourlyRate : '') ?? '',
-            investmentFocus: Array.isArray(rolePayload.investmentFocus)
-              ? (rolePayload.investmentFocus as unknown[]).filter((x): x is string => typeof x === 'string')
-              : [],
-            investmentStages: Array.isArray(rolePayload.stages)
-              ? (rolePayload.stages as unknown[])
-                  .filter((x): x is string => typeof x === 'string')
-                  .map(normalizeInvestmentStage)
-                  .filter(Boolean)
-              : [],
-            checkSizeMin: (typeof rolePayload.checkSizeMin === 'string' ? rolePayload.checkSizeMin : '') ?? '',
-            checkSizeMax: (typeof rolePayload.checkSizeMax === 'string' ? rolePayload.checkSizeMax : '') ?? '',
-            geography: Array.isArray(rolePayload.geography)
-              ? (rolePayload.geography as unknown[]).filter((x): x is string => typeof x === 'string')
-              : [],
-            orgType: (typeof rolePayload.organizationType === 'string' ? rolePayload.organizationType : '') ?? '',
-            programTypes: Array.isArray(rolePayload.programTypes)
-              ? (rolePayload.programTypes as unknown[]).filter((x): x is string => typeof x === 'string')
-              : [],
-          });
-        }
-      } catch {
-        showError('Failed to load profile', 'Please try again');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadProfile();
-  }, [showError]);
+  const { data: skillsData } = useQuery({
+    queryKey: ['skills'],
+    queryFn: listSkills,
+    staleTime: 10 * 60_000,
+  });
+  const skillCatalog = skillsData ?? [];
+  const loading = profileLoading;
 
+  // Initialize form once profile loads
   useEffect(() => {
-    listSkills().then(setSkillCatalog).catch(() => {});
-  }, []);
+    if (!meData?.profile || formInitialized) return;
+    const profile = meData.profile;
+    const rolePayload = (profile.rolePayload ?? {}) as Record<string, unknown>;
+    const links = (rolePayload.links ?? {}) as Record<string, unknown>;
+    setForm({
+      ...defaultFormData,
+      displayName: profile.displayName ?? '',
+      headline: profile.headline ?? '',
+      bio: profile.bio ?? '',
+      avatarUrl: profile.avatarUrl ?? '',
+      location: profile.location ?? '',
+      timezone: profile.timezone ?? '',
+      websiteUrl: (typeof links.websiteUrl === 'string' ? links.websiteUrl : '') ?? '',
+      linkedinUrl: (typeof links.linkedinUrl === 'string' ? links.linkedinUrl : '') ?? '',
+      githubUrl: (typeof links.githubUrl === 'string' ? links.githubUrl : '') ?? '',
+      twitterUrl: (typeof links.twitterUrl === 'string' ? links.twitterUrl : '') ?? '',
+      skills: profile.skills?.map((s) => s.skillName) ?? [],
+      industries: Array.isArray(rolePayload.industries)
+        ? (rolePayload.industries as unknown[]).filter((x): x is string => typeof x === 'string')
+        : typeof rolePayload.industry === 'string' ? [rolePayload.industry] : [],
+      languages: profile.languages ?? [],
+      role: (profile.role || 'founder') as Role,
+      startupStage: normalizeFounderStage(typeof rolePayload.stage === 'string' ? rolePayload.stage : ''),
+      commitment: normalizeCommitment(typeof rolePayload.commitment === 'string' ? rolePayload.commitment : ''),
+      lookingFor: Array.isArray(rolePayload.rolesSought)
+        ? (rolePayload.rolesSought as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+      expertiseAreas: Array.isArray(rolePayload.expertiseAreas)
+        ? (rolePayload.expertiseAreas as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+      availability: (typeof rolePayload.availability === 'string' ? rolePayload.availability : '') ?? '',
+      meetingPreference: (typeof rolePayload.meetingPreferences === 'string' ? rolePayload.meetingPreferences : '') ?? '',
+      hourlyRate: (typeof rolePayload.hourlyRate === 'string' ? rolePayload.hourlyRate : '') ?? '',
+      investmentFocus: Array.isArray(rolePayload.investmentFocus)
+        ? (rolePayload.investmentFocus as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+      investmentStages: Array.isArray(rolePayload.stages)
+        ? (rolePayload.stages as unknown[]).filter((x): x is string => typeof x === 'string').map(normalizeInvestmentStage).filter(Boolean) : [],
+      checkSizeMin: (typeof rolePayload.checkSizeMin === 'string' ? rolePayload.checkSizeMin : '') ?? '',
+      checkSizeMax: (typeof rolePayload.checkSizeMax === 'string' ? rolePayload.checkSizeMax : '') ?? '',
+      geography: Array.isArray(rolePayload.geography)
+        ? (rolePayload.geography as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+      orgType: (typeof rolePayload.organizationType === 'string' ? rolePayload.organizationType : '') ?? '',
+      programTypes: Array.isArray(rolePayload.programTypes)
+        ? (rolePayload.programTypes as unknown[]).filter((x): x is string => typeof x === 'string') : [],
+    });
+    setFormInitialized(true);
+  }, [meData, formInitialized]);
 
   // Update form field
   const updateField = <K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) => {
@@ -462,6 +452,18 @@ export default function ProfileEditPage() {
         rolePayload: Object.keys(rolePayload).length ? rolePayload : undefined,
         skillIds,
       });
+      queryClient.invalidateQueries({ queryKey: ['me', 'profile'] });
+      // Sync updated name/avatar to localStorage so TopNav UserMenu reflects changes immediately
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = JSON.parse(localStorage.getItem('user') ?? '{}');
+          localStorage.setItem('user', JSON.stringify({
+            ...stored,
+            displayName: form.displayName,
+            avatarUrl: form.avatarUrl || stored.avatarUrl,
+          }));
+        } catch { /* silent */ }
+      }
       success('Profile saved', 'Your changes have been saved successfully');
     } catch {
       showError('Save failed', 'Please try again');

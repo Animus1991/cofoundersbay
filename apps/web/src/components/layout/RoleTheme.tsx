@@ -123,11 +123,6 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorage);
   }, [setRole, setTheme]);
 
-  // Prevent flash during hydration
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <ThemeContext.Provider value={{ theme, role, setTheme, setRole }}>
       {children}

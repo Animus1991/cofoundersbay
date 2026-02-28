@@ -13,6 +13,7 @@ import {
   ExternalLink,
   X,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -199,9 +200,11 @@ export default function JobsPage() {
   const [search, setSearch] = useState('');
   const [showPostForm, setShowPostForm] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => listJobs({ limit: 50 }),
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const jobs = data?.jobs ?? [];
@@ -247,7 +250,13 @@ export default function JobsPage() {
         />
       </div>
 
-      {isLoading ? (
+      {isError ? (
+        <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Failed to load jobs. Please check your connection.</p>
+          <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+        </CardContent></Card>
+      ) : isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <JobSkeleton key={i} />

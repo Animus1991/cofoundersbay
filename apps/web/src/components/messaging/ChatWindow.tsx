@@ -16,11 +16,17 @@ import {
   Ban,
   Trash2,
   ArrowLeft,
+  Search,
+  X,
+  Copy,
+  Reply,
+  MessageCircle,
+  Users,
+  UserCheck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +44,11 @@ export type Message = {
   timestamp: Date;
   status: 'sending' | 'sent' | 'delivered' | 'read';
   attachments?: { type: string; url: string; name: string }[];
+  reactions?: { emoji: string; count: number }[];
+  replyTo?: { id: string; content: string; senderName: string };
 };
+
+const QUICK_EMOJIS = ['👍', '❤️', '😂', '😮', '🙏', '🔥'];
 
 type ChatWindowProps = {
   conversation: {
@@ -57,6 +67,9 @@ type ChatWindowProps = {
   onBack?: () => void;
   onReport?: () => void;
   onBlock?: () => void;
+  onTypingStart?: () => void;
+  onTypingStop?: () => void;
+  isRecipientTyping?: boolean;
   className?: string;
 };
 
@@ -80,15 +93,31 @@ function MessageBubble({
   showAvatar,
   recipientAvatar,
   recipientName,
+  onReply,
 }: {
   message: Message;
   isOwn: boolean;
   showAvatar: boolean;
   recipientAvatar?: string | null;
   recipientName: string;
+  onReply?: (msg: Message) => void;
 }) {
+  const [showActions, setShowActions] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
   return (
-    <div className={cn('flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}>
+    <div
+      className={cn('group flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+    >
       {/* Avatar placeholder for alignment */}
       <div className="w-8 flex-shrink-0">
         {showAvatar && !isOwn && (
@@ -102,44 +131,103 @@ function MessageBubble({
       </div>
 
       {/* Message content */}
-      <div className={cn('max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
-        <div
-          className={cn(
-            'rounded-2xl px-4 py-2',
-            isOwn
-              ? 'bg-primary text-primary-foreground rounded-br-md'
-              : 'bg-secondary text-foreground rounded-bl-md'
-          )}
-        >
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-          {message.attachments?.length ? (
-            <div className="mt-2 space-y-1">
-              {message.attachments.map((a, idx) => (
-                <a
-                  key={`${message.id}-att-${idx}`}
-                  href={a.url || undefined}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={cn(
-                    'block rounded-lg px-2 py-1 text-xs',
-                    isOwn ? 'bg-white/10 hover:bg-white/15' : 'bg-background/40 hover:bg-background/50',
-                    a.url ? 'underline' : 'opacity-70 cursor-default'
-                  )}
-                  onClick={(e) => {
-                    if (!a.url) e.preventDefault();
-                  }}
+      <div className={cn('max-w-[70%] flex flex-col', isOwn ? 'items-end' : 'items-start')}>
+        {/* Reply preview */}
+        {message.replyTo && (
+          <div className={cn(
+            'mb-1 rounded-lg border-l-2 border-primary/50 bg-secondary/50 px-3 py-1.5 text-xs text-muted-foreground max-w-full',
+          )}>
+            <span className="font-medium text-foreground/70">{message.replyTo.senderName}: </span>
+            <span className="truncate">{message.replyTo.content.slice(0, 60)}{message.replyTo.content.length > 60 ? '…' : ''}</span>
+          </div>
+        )}
+
+        <div className="relative">
+          {/* Hover action bar */}
+          {showActions && (
+            <div className={cn(
+              'absolute -top-8 flex items-center gap-0.5 rounded-full border border-border/60 bg-card shadow-md px-1 py-0.5 z-10',
+              isOwn ? 'right-0' : 'left-0',
+            )}>
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  className="rounded-full p-1 text-sm hover:bg-secondary/80 transition-colors"
+                  title={emoji}
                 >
-                  {a.name}
-                </a>
+                  {emoji}
+                </button>
+              ))}
+              <div className="w-px h-4 bg-border/60 mx-0.5" />
+              <button
+                type="button"
+                className="rounded-full p-1 hover:bg-secondary/80 transition-colors"
+                title="Reply"
+                onClick={() => onReply?.(message)}
+              >
+                <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+              <button
+                type="button"
+                className="rounded-full p-1 hover:bg-secondary/80 transition-colors"
+                title={copied ? 'Copied!' : 'Copy'}
+                onClick={handleCopy}
+              >
+                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            </div>
+          )}
+
+          <div
+            className={cn(
+              'rounded-2xl px-4 py-2',
+              isOwn
+                ? 'bg-primary text-primary-foreground rounded-br-md'
+                : 'bg-secondary text-foreground rounded-bl-md'
+            )}
+          >
+            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+            {message.attachments?.length ? (
+              <div className="mt-2 space-y-1">
+                {message.attachments.map((a, idx) => (
+                  <a
+                    key={`${message.id}-att-${idx}`}
+                    href={a.url || undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      'flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs',
+                      isOwn ? 'bg-white/10 hover:bg-white/15' : 'bg-background/40 hover:bg-background/50',
+                      a.url ? 'underline' : 'opacity-70 cursor-default'
+                    )}
+                    onClick={(e) => { if (!a.url) e.preventDefault(); }}
+                  >
+                    <Paperclip className="h-3 w-3 shrink-0" />
+                    {a.name}
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Reactions */}
+          {message.reactions?.length ? (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {message.reactions.map((r) => (
+                <span key={r.emoji} className="inline-flex items-center gap-0.5 rounded-full bg-secondary/80 border border-border/50 px-1.5 py-0.5 text-xs">
+                  {r.emoji} {r.count > 1 && <span className="text-muted-foreground">{r.count}</span>}
+                </span>
               ))}
             </div>
           ) : null}
         </div>
+
         <div className={cn('flex items-center gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
           <span className="text-[10px] text-muted-foreground">{formatTime(message.timestamp)}</span>
           {isOwn && (
             <span className="text-muted-foreground">
-              {message.status === 'sending' && <span className="text-[10px]">•</span>}
+              {message.status === 'sending' && <span className="text-[10px]" title="Sending">•</span>}
               {message.status === 'sent' && <Check className="h-3 w-3" />}
               {message.status === 'delivered' && <CheckCheck className="h-3 w-3" />}
               {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary" />}
@@ -169,11 +257,18 @@ export function ChatWindow({
   onBack,
   onReport,
   onBlock,
+  onTypingStart,
+  onTypingStop,
+  isRecipientTyping = false,
   className,
 }: ChatWindowProps) {
   const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isTypingRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -183,12 +278,39 @@ export function ChatWindow({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Typing indicator
+  const handleTyping = (value: string) => {
+    setInputValue(value);
+    if (value.trim()) {
+      if (!isTypingRef.current) {
+        isTypingRef.current = true;
+        onTypingStart?.();
+      }
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = setTimeout(() => {
+        isTypingRef.current = false;
+        onTypingStop?.();
+      }, 2000);
+    } else if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTypingStop?.();
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    }
+  };
+
   // Handle send
   const handleSend = () => {
     if (!inputValue.trim()) return;
     onSendMessage(inputValue.trim(), pendingFiles.length ? pendingFiles : undefined);
     setInputValue('');
     setPendingFiles([]);
+    setReplyTo(null);
+    // Stop typing on send
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      onTypingStop?.();
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    }
     textareaRef.current?.focus();
   };
 
@@ -200,11 +322,16 @@ export function ChatWindow({
     }
   };
 
+  // Filter by search
+  const filteredMessages = searchQuery.trim()
+    ? messages.filter((m) => m.content.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
   // Group messages by date
   const groupedMessages: { date: Date; messages: Message[] }[] = [];
   let currentDate: string | null = null;
 
-  messages.forEach((msg) => {
+  filteredMessages.forEach((msg) => {
     const dateStr = msg.timestamp.toDateString();
     if (dateStr !== currentDate) {
       currentDate = dateStr;
@@ -217,72 +344,101 @@ export function ChatWindow({
   return (
     <div className={cn('flex flex-col h-full bg-background', className)}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          {onBack && (
-            <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          )}
-          <Link href={`/profiles/${conversation.recipientId}`} className="flex items-center gap-3">
-            <div className="relative">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={conversation.recipientAvatar || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary">
-                  {conversation.recipientName[0]?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {conversation.isOnline && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground">{conversation.recipientName}</span>
-                <RoleBadge role={conversation.recipientRole} size="sm" />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {conversation.isOnline
-                  ? 'Online'
-                  : conversation.lastSeen
-                    ? `Last seen ${formatTime(conversation.lastSeen)}`
-                    : 'Offline'}
-              </p>
-            </div>
-          </Link>
-        </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" disabled>
-            <Phone className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" disabled>
-            <Video className="h-5 w-5" />
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
+      <div className="flex flex-col border-b border-border/60">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/profiles/${conversation.recipientId}`}>
-                  <Info className="h-4 w-4 mr-2" />
-                  View profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onReport}>
-                <Flag className="h-4 w-4 mr-2" />
-                Report
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onBlock} className="text-destructive">
-                <Ban className="h-4 w-4 mr-2" />
-                Block
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+            <Link href={`/profiles/${conversation.recipientId}`} className="flex items-center gap-3">
+              <div className="relative">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={conversation.recipientAvatar || undefined} />
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {conversation.recipientName[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {conversation.isOnline && (
+                  <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">{conversation.recipientName}</span>
+                  <RoleBadge role={conversation.recipientRole} size="sm" />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {conversation.isOnline
+                    ? 'Online'
+                    : conversation.lastSeen
+                      ? `Last seen ${formatTime(conversation.lastSeen)}`
+                      : 'Offline'}
+                </p>
+              </div>
+            </Link>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+              <Search className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" disabled title="Voice call (coming soon)">
+              <Phone className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" disabled title="Video call (coming soon)">
+              <Video className="h-5 w-5" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/profiles/${conversation.recipientId}`}>
+                    <Info className="h-4 w-4 mr-2" />
+                    View profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onReport}>
+                  <Flag className="h-4 w-4 mr-2" />
+                  Report
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onBlock} className="text-destructive">
+                  <Ban className="h-4 w-4 mr-2" />
+                  Block
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
+        {/* Search bar */}
+        {searchOpen && (
+          <div className="px-4 pb-3 flex items-center gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <input
+                autoFocus
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search messages…"
+                className="w-full rounded-lg border border-border/60 bg-secondary/50 pl-8 pr-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+              />
+            </div>
+            {searchQuery && (
+              <span className="text-xs text-muted-foreground shrink-0">
+                {filteredMessages.length} result{filteredMessages.length !== 1 ? 's' : ''}
+              </span>
+            )}
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -303,6 +459,7 @@ export function ChatWindow({
                     showAvatar={showAvatar}
                     recipientAvatar={conversation.recipientAvatar}
                     recipientName={conversation.recipientName}
+                    onReply={(m) => { setReplyTo(m); textareaRef.current?.focus(); }}
                   />
                 </div>
               );
@@ -311,7 +468,7 @@ export function ChatWindow({
         ))}
 
         {/* Typing indicator */}
-        {isTyping && (
+        {isRecipientTyping && (
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={conversation.recipientAvatar || undefined} />
@@ -334,6 +491,22 @@ export function ChatWindow({
 
       {/* Input */}
       <div className="p-4 border-t border-border/60">
+        {/* Reply preview */}
+        {replyTo && (
+          <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
+            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-foreground/70">
+                {replyTo.senderId === currentUserId ? 'You' : conversation.recipientName}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
+            </div>
+            <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
+
         {pendingFiles.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {pendingFiles.map((f) => (
@@ -384,20 +557,39 @@ export function ChatWindow({
             <Textarea
               ref={textareaRef}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={(e) => handleTyping(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
+              placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
               rows={1}
               className="min-h-[44px] max-h-[120px] pr-10 resize-none"
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-1 bottom-1"
-              disabled
-            >
-              <Smile className="h-5 w-5" />
-            </Button>
+            <div className="absolute right-1 bottom-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="p-2 w-auto">
+                  <div className="grid grid-cols-8 gap-0.5">
+                    {['😀','😂','😍','🥰','😎','🤔','😅','🙈','👍','👎','❤️','🔥','🎉','✅','💡','🚀',
+                      '💪','🙏','👏','😢','😡','🤝','💰','⭐','🌟','📈','💻','🎯'].map((e) => (
+                      <button
+                        key={e}
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded hover:bg-secondary/80 text-base transition-colors"
+                        onClick={() => {
+                          setInputValue((v) => v + e);
+                          textareaRef.current?.focus();
+                        }}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <Button
             onClick={handleSend}
@@ -415,14 +607,37 @@ export function ChatWindow({
 // Empty state when no conversation is selected
 export function NoChatSelected() {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-      <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-        <Send className="h-10 w-10 text-primary" />
+    <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
+      <div className="relative">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+          <MessageCircle className="h-10 w-10 text-primary" />
+        </div>
+        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center border-2 border-background">
+          <span className="text-emerald-400 text-xs font-bold">✓</span>
+        </div>
       </div>
-      <h3 className="text-lg font-semibold text-foreground mb-2">Your Messages</h3>
-      <p className="text-sm text-muted-foreground max-w-xs">
-        Select a conversation or start a new one to connect with founders, mentors, and investors.
-      </p>
+      <div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">Your Messages</h3>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Select a conversation from the list, or start a new one by connecting with someone on Discover.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2 w-full max-w-[200px]">
+        <a
+          href="/discover"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+        >
+          <Users className="h-4 w-4" />
+          Find people to message
+        </a>
+        <a
+          href="/connections"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+        >
+          <UserCheck className="h-4 w-4" />
+          View connections
+        </a>
+      </div>
     </div>
   );
 }

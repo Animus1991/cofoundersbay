@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
   Rocket, Mail, Lock, ArrowRight,
   Briefcase, GraduationCap, TrendingUp, Building2,
-  Star, Lightbulb, Globe,
+  Star, Lightbulb, Globe, Eye, EyeOff,
 } from 'lucide-react';
 import { register as registerApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -50,21 +49,28 @@ export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<string>('founder');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
+
+  const passwordStrength = password.length === 0 ? null
+    : password.length < 8 ? 'weak'
+    : password.length < 12 || !/[0-9]/.test(password) ? 'medium'
+    : 'strong';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submittingRef.current) return;
     setError('');
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
+    if (!email.trim()) { setError('Please enter your email.'); return; }
+    if (password.length < 8) { setError('Password must be at least 8 characters.'); return; }
+    submittingRef.current = true;
     setLoading(true);
     try {
       const { user, tokens } = await registerApi({
-        email,
+        email: email.trim().toLowerCase(),
         password,
         role: role as 'founder' | 'mentor' | 'investor' | 'org',
       });
@@ -74,9 +80,16 @@ export default function RegisterPage() {
         localStorage.setItem('user', JSON.stringify(user));
       }
       router.push('/onboarding');
-      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      submittingRef.current = false;
+      const msg = err instanceof Error ? err.message : 'Registration failed';
+      if (msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network') || msg.toLowerCase().includes('abort')) {
+        setError('Cannot reach server — check your connection or try again.');
+      } else if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('exists') || msg.toLowerCase().includes('conflict')) {
+        setError('An account with this email already exists. Try signing in.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -109,13 +122,8 @@ export default function RegisterPage() {
       </div>
 
       {/* Right — form */}
-      <div className="flex w-full flex-col justify-center overflow-y-auto px-8 py-12 lg:w-1/2 lg:px-20">
-        <motion.div
-          className="mx-auto w-full max-w-sm"
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
+      <div className="flex w-full flex-col justify-center overflow-y-auto px-8 py-12 lg:w-1/2 lg:px-24">
+        <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Rocket className="h-4 w-4 text-primary-foreground" />
@@ -128,9 +136,10 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <p className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {error}
-              </p>
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+                <span className="mt-0.5 shrink-0">⚠️</span>
+                <span>{error}</span>
+              </div>
             )}
 
             <div className="space-y-2">
@@ -156,16 +165,43 @@ export default function RegisterPage() {
                 <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   id="reg-password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
                   autoComplete="new-password"
                   placeholder="Min 8 characters"
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
+              {passwordStrength && (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1 flex-1">
+                    {(['weak', 'medium', 'strong'] as const).map((level, i) => (
+                      <div key={level} className={`h-1 flex-1 rounded-full transition-colors ${
+                        passwordStrength === 'weak' && i === 0 ? 'bg-red-500'
+                        : passwordStrength === 'medium' && i <= 1 ? 'bg-amber-500'
+                        : passwordStrength === 'strong' ? 'bg-emerald-500'
+                        : 'bg-border'
+                      }`} />
+                    ))}
+                  </div>
+                  <span className={`text-xs ${
+                    passwordStrength === 'weak' ? 'text-red-400'
+                    : passwordStrength === 'medium' ? 'text-amber-400'
+                    : 'text-emerald-400'
+                  }`}>{passwordStrength}</span>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -208,7 +244,7 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Star, ExternalLink, Package, TrendingUp, Zap, DollarSign } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Star, ExternalLink, Package, TrendingUp, DollarSign } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface Tool {
@@ -163,8 +162,6 @@ function ToolCard({ tool }: { tool: Tool }) {
 export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-
   const filteredTools = DEMO_TOOLS.filter((tool) => {
     const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
     const matchesSearch =

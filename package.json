@@ -9,6 +9,7 @@
     "dev": "turbo run dev",
     "dev:web": "npm run dev --prefix apps/web",
     "dev:api": "npm run build -w @cofounderbay/shared && npm run prisma:generate --prefix apps/api && npm run prisma:push --prefix apps/api && npm run start:dev --prefix apps/api",
+    "dev:api:fast": "npm run build -w @cofounderbay/shared && npm run prisma:generate --prefix apps/api && npm run start:dev --prefix apps/api",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
     "db:generate": "npm run prisma:generate --prefix apps/api",

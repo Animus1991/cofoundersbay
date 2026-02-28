@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { getAnalyticsAchievements, getDashboardStats, type AnalyticsAchievement } from '@/lib/api';
 import {
   Award,
   Trophy,
@@ -21,6 +22,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -75,6 +77,31 @@ const CATEGORY_ICONS = {
   activity: Zap,
   special: Crown,
 };
+
+const ICON_MAP: Record<string, typeof Award> = {
+  trophy: Trophy, star: Star, zap: Zap, users: Users, eye: Eye,
+  heart: Heart, calendar: Calendar, flame: Flame, crown: Crown,
+  target: Target, medal: Medal, award: Award,
+};
+
+function apiToAchievement(a: AnalyticsAchievement, index: number): Achievement {
+  const tiers: Achievement['tier'][] = ['bronze', 'silver', 'gold', 'platinum'];
+  const categories: Achievement['category'][] = ['networking', 'engagement', 'profile', 'activity', 'special'];
+  return {
+    id: a.id,
+    title: a.title,
+    description: a.description,
+    category: categories[index % categories.length],
+    tier: tiers[index % tiers.length],
+    icon: ICON_MAP[a.icon.toLowerCase()] ?? Award,
+    points: (index + 1) * 100,
+    progress: a.unlocked ? 1 : 0,
+    total: 1,
+    unlocked: a.unlocked,
+    unlockedAt: a.unlockedAt ? new Date(a.unlockedAt) : undefined,
+    rarity: Math.max(2, 50 - index * 4),
+  };
+}
 
 const DEMO_ACHIEVEMENTS: Achievement[] = [
   {
@@ -212,16 +239,6 @@ const DEMO_ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
-const DEMO_STATS: UserStats = {
-  totalPoints: 1250,
-  level: 8,
-  nextLevelPoints: 1500,
-  currentLevelPoints: 1000,
-  achievementsUnlocked: 3,
-  totalAchievements: 10,
-  rank: 'Rising Star',
-  percentile: 78,
-};
 
 function AchievementCard({ achievement }: { achievement: Achievement }) {
   const Icon = achievement.icon;
@@ -408,21 +425,38 @@ export default function AchievementsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
-  const { data: achievements, isLoading } = useQuery({
+  const { data: rawAchievements, isLoading, isError, refetch } = useQuery({
     queryKey: ['achievements'],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return DEMO_ACHIEVEMENTS;
-    },
+    queryFn: () => getAnalyticsAchievements(),
+    staleTime: 120_000,
+    retry: 1,
   });
 
-  const { data: stats } = useQuery({
-    queryKey: ['achievements', 'stats'],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return DEMO_STATS;
-    },
-  });
+  const achievements = useMemo(
+    () => (rawAchievements ?? []).map((a, i) =>
+      'tier' in a && 'points' in a && 'rarity' in a
+        ? (a as unknown as Achievement)
+        : apiToAchievement(a as AnalyticsAchievement, i)
+    ),
+    [rawAchievements],
+  );
+
+  const stats: UserStats = useMemo(() => {
+    const unlocked = achievements.filter((a) => a.unlocked).length;
+    const total = achievements.length || 1;
+    const totalPoints = achievements.filter((a) => a.unlocked).reduce((s, a) => s + a.points, 0);
+    const level = Math.max(1, Math.floor(totalPoints / 200));
+    return {
+      totalPoints,
+      level,
+      nextLevelPoints: (level + 1) * 200,
+      currentLevelPoints: level * 200,
+      achievementsUnlocked: unlocked,
+      totalAchievements: total,
+      rank: level >= 10 ? 'Legend' : level >= 7 ? 'Expert' : level >= 4 ? 'Rising Star' : 'Newcomer',
+      percentile: Math.min(99, Math.round((unlocked / total) * 100)),
+    };
+  }, [achievements]);
 
   const filteredAchievements = achievements?.filter((achievement) => {
     if (activeTab === 'unlocked' && !achievement.unlocked) return false;
@@ -446,7 +480,12 @@ export default function AchievementsPage() {
       description="Track your progress and unlock achievements"
     >
       <div className="space-y-4">
-        {isLoading ? (
+        {isError ? (
+          <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <p className="text-sm text-muted-foreground">Failed to load achievements.</p>
+            <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+          </CardContent></Card>
+        ) : isLoading ? (
           <AchievementsSkeleton />
         ) : (
           <>

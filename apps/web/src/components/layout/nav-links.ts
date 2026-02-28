@@ -9,12 +9,14 @@ import {
   Briefcase,
   GraduationCap,
   Users,
+  UserCheck,
   Handshake,
   ShoppingBag,
   BookOpen,
   Activity,
   TrendingUp,
   Award,
+  LayoutGrid,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -37,8 +39,8 @@ export const navSections: NavSection[] = [
     links: [
       { href: '/discover', label: 'Discover', icon: Compass },
       { href: '/members', label: 'Members', icon: Users },
-      { href: '/connections', label: 'Connections', icon: Users },
-      { href: '/groups', label: 'Groups', icon: Users },
+      { href: '/connections', label: 'Connections', icon: UserCheck },
+      { href: '/groups', label: 'Groups', icon: LayoutGrid },
       { href: '/events', label: 'Events', icon: Calendar },
       { href: '/messages', label: 'Messages', icon: MessageCircle },
     ],
@@ -54,7 +56,7 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    section: 'Settings',
+    section: 'Account',
     links: [
       { href: '/profile', label: 'My Profile', icon: User },
       { href: '/settings', label: 'Settings', icon: Settings },
@@ -62,5 +64,7 @@ export const navSections: NavSection[] = [
   },
 ];
 
-/** @deprecated Use navSections for Alliance-style grouped nav */
-export const navLinks = navSections.flatMap((s) => s.links);
+/** Flat nav links — deduplicated by href */
+export const navLinks = Array.from(
+  new Map(navSections.flatMap((s) => s.links).map((l) => [l.href, l])).values()
+);

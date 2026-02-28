@@ -135,18 +135,42 @@ export const themes: Record<ThemeName, ThemeColors> = {
 
 export function applyTheme(themeName: ThemeName) {
   const root = document.documentElement;
-  const theme = themes[themeName];
 
-  Object.entries(theme).forEach(([key, value]) => {
-    const cssVarName = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-    root.style.setProperty(cssVarName, value);
-  });
+  // Remove all theme classes and data-theme attribute
+  root.classList.remove('dark', 'light');
+  root.removeAttribute('data-theme');
+  // Clear any previously inline-set CSS vars from old applyTheme calls
+  const varsToClear = Object.keys(themes.dark).map(
+    (k) => `--${k.replace(/([A-Z])/g, '-$1').toLowerCase()}`
+  );
+  varsToClear.forEach((v) => root.style.removeProperty(v));
+
+  // Apply the new theme using classes + data-theme (matching globals.css definitions)
+  switch (themeName) {
+    case 'dark':
+      root.classList.add('dark');
+      break;
+    case 'light':
+      root.classList.add('light');
+      break;
+    case 'system': {
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      root.classList.add(systemDark ? 'dark' : 'light');
+      root.setAttribute('data-theme', 'system');
+      break;
+    }
+    case 'alliance':
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'alliance');
+      break;
+    case 'cofounder':
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'cofounder');
+      break;
+  }
 
   // Store theme preference
   localStorage.setItem('theme', themeName);
-  
-  // Update data-theme attribute for CSS targeting
-  root.setAttribute('data-theme', themeName);
 }
 
 export function getStoredTheme(): ThemeName {

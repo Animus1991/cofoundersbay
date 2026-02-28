@@ -1,31 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getMeProfile, createProfile, listSkills, type Skill } from '@/lib/api';
-import { AppShell } from '@/components/layout/AppShell';
+import { Rocket, User, Briefcase, Zap, ArrowRight, ArrowLeft, Check, Camera, Loader2 } from 'lucide-react';
+import { getMeProfile, createProfile, listSkills, uploadAvatar, type Skill } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
 import { SkillChip } from '@/components/common/SkillChip';
+import { cn } from '@/lib/utils';
 
 const ROLES = [
-  { value: 'founder', label: 'Founder' },
-  { value: 'mentor', label: 'Mentor' },
-  { value: 'investor', label: 'Investor' },
-  { value: 'org', label: 'Organization' },
+  { value: 'founder', label: 'Founder', desc: 'Building and leading a startup', icon: Rocket },
+  { value: 'mentor', label: 'Mentor', desc: 'Coaching and guiding teams', icon: User },
+  { value: 'investor', label: 'Investor', desc: 'Backing early-stage teams', icon: Zap },
+  { value: 'org', label: 'Organization', desc: 'Representing a company or institution', icon: Briefcase },
 ] as const;
+
+const STEPS = [
+  { label: 'About You', icon: User },
+  { label: 'Your Role', icon: Briefcase },
+  { label: 'Skills', icon: Zap },
+];
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [error, setError] = useState('');
   const [role, setRole] = useState<string>('founder');
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     displayName: '',
     headline: '',
@@ -67,6 +79,22 @@ export default function OnboardingPage() {
     listSkills().then(setSkills).catch(() => {});
   }, []);
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const objectUrl = URL.createObjectURL(file);
+    setAvatarPreview(objectUrl);
+    setAvatarUploading(true);
+    try {
+      const { upload } = await uploadAvatar(file);
+      setAvatarUrl(upload.url);
+    } catch {
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -81,10 +109,10 @@ export default function OnboardingPage() {
         languages: form.languages.length ? form.languages : undefined,
         rolePayload: Object.keys(form.rolePayload).length ? form.rolePayload : undefined,
         skillIds: form.skillIds,
+        ...(avatarUrl ? { avatarUrl } : {}),
       };
       await createProfile(payload);
       router.replace('/profile');
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -94,70 +122,152 @@ export default function OnboardingPage() {
 
   if (loading)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-hero-radial text-sm text-muted-foreground">
-        Loading…
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
 
+  const progressValue = ((step - 1) / (STEPS.length - 1)) * 100;
+
   return (
-    <AppShell
-      title="Complete your profile"
-      description="Tell the community who you are and what you’re building."
-      actions={<span className="text-sm text-muted-foreground">Step {step} of 3</span>}
-    >
-      <Card className="max-w-2xl animate-fade-in">
-        <CardHeader>
-          <CardTitle className="text-xl">Profile setup</CardTitle>
-        </CardHeader>
-        <CardContent>
+    <div className="flex min-h-screen bg-background">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-80 xl:w-96 flex-col bg-hero-gradient border-r border-border/40 p-8">
+        <Link href="/" className="flex items-center gap-2.5 mb-12">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Rocket className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="font-display text-xl font-bold">CoFounderBay</span>
+        </Link>
+
+        <div className="space-y-8 flex-1">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Set up your profile</h2>
+            <p className="text-muted-foreground text-sm">Complete your profile to get matched with the right co-founders, mentors, and investors.</p>
+          </div>
+
+          <div className="space-y-3">
+            {STEPS.map((s, i) => {
+              const Icon = s.icon;
+              const isCompleted = step > i + 1;
+              const isCurrent = step === i + 1;
+              return (
+                <div key={s.label} className={cn(
+                  'flex items-center gap-3 p-3 rounded-lg transition-colors',
+                  isCurrent ? 'bg-primary/10 border border-primary/20' : 'opacity-60'
+                )}>
+                  <div className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
+                    isCompleted ? 'bg-green-500 text-white' : isCurrent ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                  )}>
+                    {isCompleted ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                  </div>
+                  <div>
+                    <p className={cn('text-sm font-medium', isCurrent && 'text-primary')}>{s.label}</p>
+                    <p className="text-xs text-muted-foreground">Step {i + 1} of {STEPS.length}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          You can update all details later in Settings.
+        </p>
+      </div>
+
+      {/* Right — form */}
+      <div className="flex-1 flex flex-col">
+        {/* Mobile header */}
+        <div className="lg:hidden flex items-center justify-between p-4 border-b border-border/40">
+          <Link href="/" className="flex items-center gap-2">
+            <Rocket className="h-5 w-5 text-primary" />
+            <span className="font-bold text-sm">CoFounderBay</span>
+          </Link>
+          <span className="text-sm text-muted-foreground">Step {step}/{STEPS.length}</span>
+        </div>
+
+        <div className="flex-1 flex items-start justify-center p-6 lg:p-12">
+          <div className="w-full max-w-xl">
+            {/* Progress bar */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <h1 className="text-2xl font-bold">{STEPS[step - 1].label}</h1>
+                <span className="text-sm text-muted-foreground">{step}/{STEPS.length}</span>
+              </div>
+              <Progress value={progressValue} className="h-2" />
+            </div>
+
           <form
             onSubmit={
               step < 3
-                ? (e) => {
-                    e.preventDefault();
-                    setStep(step + 1);
-                  }
+                ? (e) => { e.preventDefault(); setStep(step + 1); }
                 : handleSubmit
             }
             className="space-y-6"
           >
             {error && (
-              <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {error}
-              </p>
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+                <span className="mt-0.5">⚠️</span>
+                <span>{error}</span>
+              </div>
             )}
 
             {step === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
+                {/* Avatar upload */}
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <Avatar className="h-20 w-20 ring-2 ring-primary/20">
+                      <AvatarImage src={avatarPreview ?? undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-2xl font-semibold">
+                        {form.displayName?.[0]?.toUpperCase() ?? '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                    >
+                      {avatarUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                    </button>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Profile photo</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG or WebP. Max 5MB.</p>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="text-xs text-primary hover:underline mt-1">
+                      {avatarPreview ? 'Change photo' : 'Upload photo'}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Display name *</label>
                   <Input
                     required
                     value={form.displayName}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, displayName: e.target.value }))
-                    }
+                    onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
                     placeholder="Your public name"
+                    autoFocus
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Headline</label>
                   <Input
                     value={form.headline}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, headline: e.target.value }))
-                    }
-                    placeholder="e.g. Technical co-founder"
+                    onChange={(e) => setForm((f) => ({ ...f, headline: e.target.value }))}
+                    placeholder="e.g. Technical co-founder building in AI"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Bio</label>
+                  <label className="text-sm font-medium">Bio <span className="text-muted-foreground font-normal">(optional)</span></label>
                   <Textarea
                     value={form.bio}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, bio: e.target.value }))
-                    }
-                    rows={4}
+                    onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                    rows={3}
+                    placeholder="Tell others what you're building and who you're looking for..."
                   />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -165,18 +275,15 @@ export default function OnboardingPage() {
                     <label className="text-sm font-medium">Location</label>
                     <Input
                       value={form.location}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, location: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+                      placeholder="e.g. Athens, Greece"
                     />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Timezone</label>
                     <Input
                       value={form.timezone}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, timezone: e.target.value }))
-                      }
+                      onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
                       placeholder="e.g. Europe/Athens"
                     />
                   </div>
@@ -185,30 +292,30 @@ export default function OnboardingPage() {
             )}
 
             {step === 2 && (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="space-y-3">
-                  <p className="text-sm font-medium">I am a</p>
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <p className="text-sm font-medium">I am a...</p>
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {ROLES.map((r) => {
+                      const Icon = r.icon;
                       const active = role === r.value;
                       return (
                         <button
                           key={r.value}
                           type="button"
                           onClick={() => setRole(r.value)}
-                          className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
+                          className={cn(
+                            'rounded-xl border p-4 text-left transition-all duration-200',
                             active
-                              ? 'border-primary/60 bg-primary/15 text-primary'
-                              : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground'
-                          }`}
+                              ? 'border-primary bg-primary/10 shadow-sm'
+                              : 'border-border/60 bg-secondary/30 hover:border-primary/40 hover:bg-secondary/60'
+                          )}
                         >
-                          <p className="font-medium">{r.label}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {r.value === 'founder' && 'Build and lead startups'}
-                            {r.value === 'mentor' && 'Coach and guide teams'}
-                            {r.value === 'investor' && 'Back early-stage teams'}
-                            {r.value === 'org' && 'Represent an organization'}
-                          </p>
+                          <div className={cn('mb-2 flex h-9 w-9 items-center justify-center rounded-lg', active ? 'bg-primary/20' : 'bg-secondary')}>
+                            <Icon className={cn('h-5 w-5', active ? 'text-primary' : 'text-muted-foreground')} />
+                          </div>
+                          <p className={cn('font-semibold text-sm', active && 'text-primary')}>{r.label}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{r.desc}</p>
                         </button>
                       );
                     })}
@@ -336,50 +443,66 @@ export default function OnboardingPage() {
             )}
 
             {step === 3 && (
-              <div className="space-y-3">
-                <label className="text-sm font-medium">Skills</label>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((s) => {
-                    const active = form.skillIds.includes(s.id);
-                    return (
-                      <label key={s.id} className="cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={active}
-                          onChange={() =>
-                            setForm((f) => ({
-                              ...f,
-                              skillIds: active
-                                ? f.skillIds.filter((id) => id !== s.id)
-                                : [...f.skillIds, s.id],
-                            }))
-                          }
-                          className="sr-only"
-                        />
-                        <SkillChip label={s.name} active={active} />
-                      </label>
-                    );
-                  })}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-1">Select your skills</p>
+                  <p className="text-xs text-muted-foreground mb-3">Pick up to 15 skills that best describe your expertise.</p>
+                  <div className="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-1">
+                    {skills.map((s) => {
+                      const active = form.skillIds.includes(s.id);
+                      return (
+                        <label key={s.id} className="cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={active}
+                            onChange={() =>
+                              setForm((f) => ({
+                                ...f,
+                                skillIds: active
+                                  ? f.skillIds.filter((id) => id !== s.id)
+                                  : f.skillIds.length < 15 ? [...f.skillIds, s.id] : f.skillIds,
+                              }))
+                            }
+                            className="sr-only"
+                          />
+                          <SkillChip label={s.name} active={active} />
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {form.skillIds.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-2">{form.skillIds.length} skill{form.skillIds.length !== 1 ? 's' : ''} selected</p>
+                  )}
                 </div>
               </div>
             )}
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               {step > 1 && (
-                <Button variant="secondary" type="button" onClick={() => setStep(step - 1)}>
+                <Button variant="outline" type="button" onClick={() => setStep(step - 1)} className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
                   Back
                 </Button>
               )}
-              <Button type="submit" disabled={saving}>
-                {step < 3 ? 'Next' : saving ? 'Saving…' : 'Complete'}
+              <Button type="submit" disabled={saving || avatarUploading} className="gap-2">
+                {saving ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</>
+                ) : step < 3 ? (
+                  <>Continue <ArrowRight className="h-4 w-4" /></>
+                ) : (
+                  <>Complete setup <Check className="h-4 w-4" /></>
+                )}
               </Button>
-              <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
-                Skip for now
-              </Link>
+              {step === 1 && (
+                <Link href="/" className="text-sm text-muted-foreground hover:text-foreground ml-auto">
+                  Skip for now
+                </Link>
+              )}
             </div>
           </form>
-        </CardContent>
-      </Card>
-    </AppShell>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

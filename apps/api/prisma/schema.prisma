@@ -525,24 +525,24 @@ model Invite {
 
 // Groups/Communities System
 model Group {
-  id          String        @id @default(uuid())
-  name        String
-  slug        String        @unique
-  description String?       @db.Text
-  avatarUrl   String?
-  coverUrl    String?
-  privacy     GroupPrivacy  @default(public)
-  category    String?
-  tags        Json?
-  rules       Json?
-  createdById String
-  createdBy   User          @relation("GroupsCreated", fields: [createdById], references: [id])
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(uuid())
+  name           String
+  slug           String        @unique
+  description    String?       @db.Text
+  avatarUrl      String?
+  coverImageUrl  String?
+  privacy        GroupPrivacy  @default(public)
+  category       String?
+  tags           Json?
+  rules          Json?
+  createdById    String
+  createdBy      User          @relation("GroupsCreated", fields: [createdById], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   
-  members     GroupMember[]
-  posts       GroupPost[]
-  events      GroupEvent[]
+  members        GroupMember[]
+  posts          GroupPost[]
+  events         GroupEvent[]
 
   @@index([slug])
   @@index([privacy])
@@ -565,16 +565,18 @@ model GroupMember {
 }
 
 model GroupPost {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   groupId   String
-  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group     Group     @relation(fields: [groupId], references: [id], onDelete: Cascade)
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  content   String   @db.Text
+  author    User      @relation(fields: [authorId], references: [id])
+  content   String    @db.Text
   mediaUrls Json?
-  isPinned  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPinned  Boolean   @default(false)
+  editedAt  DateTime?
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   
   comments  GroupPostComment[]
   reactions GroupPostReaction[]
@@ -590,6 +592,8 @@ model GroupPostComment {
   authorId  String
   author    User      @relation(fields: [authorId], references: [id])
   content   String    @db.Text
+  editedAt  DateTime?
+  deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -605,8 +609,8 @@ model GroupPostReaction {
   user      User      @relation(fields: [userId], references: [id])
   emoji     String
   createdAt DateTime  @default(now())
-  
-  @@unique([postId, userId, emoji])
+
+  @@unique([postId, userId])
   @@index([postId])
 }
 

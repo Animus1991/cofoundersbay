@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -17,13 +18,17 @@ import {
   Shield,
   User,
   LogOut,
+  KeyRound,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { createBillingCheckout, createBillingPortal, getBillingSubscription, type BillingSubscription } from '@/lib/api';
+import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, type BillingSubscription } from '@/lib/api';
 
 type NotifPrefs = {
   messages: boolean;
@@ -72,9 +77,19 @@ export default function SettingsPage() {
     return !!localStorage.getItem('accessToken');
   }, []);
 
-  const [subscription, setSubscription] = useState<BillingSubscription | null>(null);
-  const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<'checkout' | 'portal' | null>(null);
+
+  const { data: subData, isLoading: loading } = useQuery({
+    queryKey: ['billing', 'subscription'],
+    queryFn: getBillingSubscription,
+    staleTime: 60_000,
+    enabled: hasToken,
+  });
+  const subscription = subData?.subscription ?? null;
+
+  const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwWorking, setPwWorking] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [prefs, setPrefs] = useState<NotifPrefs>(() => {
     try {
       const saved = typeof window !== 'undefined' ? localStorage.getItem('notifPrefs') : null;
@@ -94,6 +109,28 @@ export default function SettingsPage() {
     });
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwForm.next !== pwForm.confirm) {
+      showError('Passwords do not match', 'New password and confirmation must match.');
+      return;
+    }
+    if (pwForm.next.length < 8) {
+      showError('Too short', 'New password must be at least 8 characters.');
+      return;
+    }
+    setPwWorking(true);
+    try {
+      await changePassword(pwForm.current, pwForm.next);
+      success('Password changed', 'You have been signed out of all other sessions.');
+      setPwForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      showError('Failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setPwWorking(false);
+    }
+  };
+
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
@@ -103,38 +140,15 @@ export default function SettingsPage() {
     }
   };
 
-  const loadSub = async () => {
-    if (!hasToken) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await getBillingSubscription();
-      setSubscription(res.subscription);
-    } catch (e) {
-      setSubscription(null);
-      showError('Failed to load settings', e instanceof Error ? e.message : 'Please try again');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    void loadSub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasToken]);
-
   useEffect(() => {
     const billing = searchParams.get('billing');
     if (billing === 'success') {
       success('Payment successful', 'Your subscription will activate shortly.');
-      void loadSub();
     }
     if (billing === 'cancel') {
       showError('Checkout canceled', 'No charges were made.');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const status = subscription?.status ?? 'free';
@@ -290,6 +304,56 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Password Change */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <KeyRound className="h-5 w-5 text-primary" />
+                Change password
+              </CardTitle>
+              <CardDescription>Leave blank to keep your current password.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleChangePassword} className="space-y-3 max-w-sm">
+                <div className="relative">
+                  <Input
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="Current password"
+                    value={pwForm.current}
+                    onChange={(e) => setPwForm((p) => ({ ...p, current: e.target.value }))}
+                    required
+                    autoComplete="current-password"
+                    className="pr-10"
+                  />
+                  <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <Input
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="New password (min 8 chars)"
+                  value={pwForm.next}
+                  onChange={(e) => setPwForm((p) => ({ ...p, next: e.target.value }))}
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+                <Input
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="Confirm new password"
+                  value={pwForm.confirm}
+                  onChange={(e) => setPwForm((p) => ({ ...p, confirm: e.target.value }))}
+                  required
+                  autoComplete="new-password"
+                />
+                <Button type="submit" disabled={pwWorking} className="gap-2">
+                  {pwWorking ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                  Update password
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
           {/* Account section */}
           <Card>

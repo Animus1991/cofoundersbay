@@ -18,6 +18,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PollsModule } from './polls/polls.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ConnectionsModule } from './connections/connections.module';
+import { GroupsModule } from './groups/groups.module';
 
 // Find the monorepo root .env file
 function findEnvFiles(): string[] {
@@ -56,6 +57,7 @@ function findEnvFiles(): string[] {
     PollsModule,
     JobsModule,
     ConnectionsModule,
+    GroupsModule,
   ],
   controllers: [],
   providers: [],

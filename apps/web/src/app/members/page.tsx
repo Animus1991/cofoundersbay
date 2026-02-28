@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Users,
   Search,
@@ -19,7 +20,8 @@ import {
   UserPlus,
   MessageCircle,
 } from 'lucide-react';
-import { searchProfiles, type SearchHit } from '@/lib/api';
+import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -259,15 +261,16 @@ export default function MembersPage() {
   const [sortBy, setSortBy] = useState<SortBy>('relevance');
   const [showFilters, setShowFilters] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy],
     queryFn: () => searchProfiles({
       q: searchQuery.trim() || undefined,
-      roles: selectedRole !== 'All Roles' ? [selectedRole] : undefined,
+      roles: selectedRole !== 'All Roles' ? [selectedRole.toLowerCase()] : undefined,
       industries: selectedIndustry !== 'All Industries' ? [selectedIndustry] : undefined,
       location: selectedLocation !== 'All Locations' ? selectedLocation : undefined,
       limit: 50,
     }),
+    staleTime: 30_000,
   });
 
   const members = data?.hits ?? [];
@@ -290,13 +293,23 @@ export default function MembersPage() {
     setSearchQuery('');
   };
 
-  const handleConnect = (memberId: string) => {
-    console.log('Connect with:', memberId);
-  };
+  const router = useRouter();
+  const { success, error: showError } = useToast();
 
-  const handleMessage = (memberId: string) => {
-    console.log('Message:', memberId);
-  };
+  const connectMutation = useMutation({
+    mutationFn: (userId: string) => sendConnectionRequest({ receiverId: userId }),
+    onSuccess: () => success('Request sent', 'Connection request sent successfully'),
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not send request'),
+  });
+
+  const messageMutation = useMutation({
+    mutationFn: (userId: string) => getOrCreateDirectConversation(userId),
+    onSuccess: (data) => router.push(`/messages?conversationId=${data.conversationId}`),
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not open conversation'),
+  });
+
+  const handleConnect = (memberId: string) => connectMutation.mutate(memberId);
+  const handleMessage = (memberId: string) => messageMutation.mutate(memberId);
 
   return (
     <AppShell
@@ -457,7 +470,15 @@ export default function MembersPage() {
         </div>
 
         {/* Members Grid/List */}
-        {isLoading ? (
+        {isError ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+              <Users className="h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
           <div className={cn(
             'grid gap-4',
             viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'

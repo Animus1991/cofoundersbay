@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   Sparkles,
   Users,
@@ -16,25 +16,14 @@ import {
   ArrowRight,
   CheckCircle,
   Briefcase,
+  UserPlus,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  DashboardHero,
-  DashboardStats,
-  DashboardJobs,
-  DashboardMembers,
-  DashboardPoll,
-  DashboardCalendar,
-  DashboardActivity,
-  DashboardNewsletter,
-} from '@/components/dashboard';
-import { AnimatedCard } from '@/components/common/AnimatedCard';
-import type { ActiveMember } from '@/components/dashboard';
-import type { CalendarEvent } from '@/components/dashboard';
+import type { ActiveMember, CalendarEvent } from '@/components/dashboard';
 import {
   getRecommendations,
   listEvents,
@@ -43,7 +32,26 @@ import {
   getMeProfile,
   getActivePoll,
   listJobs,
+  listConnectionRequests,
 } from '@/lib/api';
+import { OptimizedLink } from '@/components/common/OptimizedLink';
+
+const DashboardCardSkeleton = () => (
+  <div className="rounded-xl border border-border/60 bg-card/70 p-4 animate-pulse">
+    <div className="h-4 w-1/3 rounded bg-secondary mb-3" />
+    <div className="h-20 w-full rounded bg-secondary/60" />
+  </div>
+);
+
+const DashboardHero = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardHero })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardStats = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardStats })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardJobs = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardJobs })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardMembers = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardMembers })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardPoll = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardPoll })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardCalendar = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardCalendar })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardActivity = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardActivity })), { loading: () => <DashboardCardSkeleton /> });
+const DashboardNewsletter = dynamic(() => import('@/components/dashboard').then(m => ({ default: m.DashboardNewsletter })), { loading: () => <DashboardCardSkeleton /> });
+const AnimatedCard = dynamic(() => import('@/components/common/AnimatedCard').then(m => ({ default: m.AnimatedCard })), { ssr: false });
 
 const FEATURES = [
   {
@@ -129,20 +137,6 @@ const PERSONAS = [
   },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.55, ease: 'easeOut' as const },
-  }),
-};
-
-const fadeIn = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
-};
-
 function LandingContent() {
   return (
     <div className="min-h-screen bg-background">
@@ -176,16 +170,16 @@ function LandingContent() {
           <div className="absolute inset-0 bg-hero-radial opacity-60" />
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
-          <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0} className="mb-6">
+          <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
               <Sparkles className="h-3.5 w-3.5" />
               The startup ecosystem, connected
             </span>
-          </motion.div>
+          </div>
 
-          <motion.h1
-            initial="hidden" animate="visible" variants={fadeUp} custom={1}
-            className="font-display text-5xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl"
+          <h1
+            className="font-display text-5xl font-bold leading-tight tracking-tight text-foreground sm:text-6xl lg:text-7xl animate-fade-in"
+            style={{ animationDelay: '100ms' }}
           >
             Find your{' '}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -196,19 +190,19 @@ function LandingContent() {
             <span className="bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
               investor
             </span>
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            initial="hidden" animate="visible" variants={fadeUp} custom={2}
-            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl"
+          <p
+            className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl animate-fade-in"
+            style={{ animationDelay: '200ms' }}
           >
             CoFounderBay connects founders, mentors, investors, and accelerators through smart
             matching, real-time messaging, and curated events.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial="hidden" animate="visible" variants={fadeUp} custom={3}
-            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
+          <div
+            className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row animate-fade-in"
+            style={{ animationDelay: '300ms' }}
           >
             <Link href="/register">
               <Button size="lg" className="gap-2 px-8 py-6 text-base">
@@ -221,11 +215,11 @@ function LandingContent() {
                 Explore profiles
               </Button>
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial="hidden" animate="visible" variants={fadeUp} custom={4}
-            className="mt-16 grid grid-cols-3 gap-4 sm:grid-cols-3"
+          <div
+            className="mt-16 grid grid-cols-3 gap-4 sm:grid-cols-3 animate-fade-in"
+            style={{ animationDelay: '400ms' }}
           >
             {[
               { value: '2,400+', label: 'Active members' },
@@ -240,30 +234,27 @@ function LandingContent() {
                 <p className="text-xs text-muted-foreground mt-1">{label}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Personas */}
       <section id="roles" className="border-t border-border/40 py-20 px-6">
         <div className="mx-auto max-w-6xl">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}
-            className="mb-12 text-center"
-          >
+          <div className="mb-12 text-center animate-fade-in">
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Built for every role in the ecosystem
             </h2>
             <p className="mt-3 text-muted-foreground">
               Whether you&apos;re building, advising, investing, or supporting — CoFounderBay works for you.
             </p>
-          </motion.div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PERSONAS.map(({ icon: Icon, role, color, bg, headline, bullets }, i) => (
-              <motion.div
+              <div
                 key={role}
-                initial="hidden" whileInView="visible" viewport={{ once: true }}
-                variants={fadeUp} custom={i}
+                className="animate-fade-in"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
                 <Card className={`border ${bg} hover-lift card-interactive h-full`}>
                   <CardHeader className="pb-3">
@@ -284,7 +275,7 @@ function LandingContent() {
                     ))}
                   </CardContent>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -293,26 +284,20 @@ function LandingContent() {
       {/* Features */}
       <section id="features" className="border-t border-border/40 bg-secondary/20 py-20 px-6">
         <div className="mx-auto max-w-6xl">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}
-            className="mb-12 text-center"
-          >
+          <div className="mb-12 text-center animate-fade-in">
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Everything your startup network needs
             </h2>
             <p className="mt-3 text-muted-foreground">
               One platform. No scattered tools. From introductions to signed term sheets.
             </p>
-          </motion.div>
+          </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-              <motion.div
+              <div
                 key={title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.07, duration: 0.5 }}
-                className="group flex gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 hover:border-primary/30 hover:shadow-glow-sm transition-all duration-300"
+                className="group flex gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 hover:border-primary/30 hover:shadow-glow-sm transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${i * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                   <Icon className="h-5 w-5 text-primary" />
@@ -321,7 +306,7 @@ function LandingContent() {
                   <h3 className="font-semibold text-foreground">{title}</h3>
                   <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -329,10 +314,7 @@ function LandingContent() {
 
       {/* CTA */}
       <section id="cta" className="py-24 px-6 text-center">
-        <motion.div
-          initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}
-          className="mx-auto max-w-xl space-y-6"
-        >
+        <div className="mx-auto max-w-xl space-y-6 animate-fade-in">
           <h2 className="font-display text-4xl font-bold text-foreground">
             Ready to find your people?
           </h2>
@@ -354,7 +336,7 @@ function LandingContent() {
               </Button>
             </Link>
           </div>
-        </motion.div>
+        </div>
       </section>
     </div>
   );
@@ -405,17 +387,27 @@ function DashboardContent() {
   const { data: profileData } = useQuery({
     queryKey: ['me', 'profile'],
     queryFn: getMeProfile,
+    staleTime: 5 * 60_000,
   });
   const displayName = profileData?.profile?.displayName ?? 'there';
+
+  const { data: pendingData } = useQuery({
+    queryKey: ['connections', 'pending-received'],
+    queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
+    staleTime: 30_000,
+  });
+  const pendingCount = pendingData?.connections?.length ?? 0;
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: getDashboardStats,
+    staleTime: 60_000,
   });
 
   const { data: membersData } = useQuery({
     queryKey: ['recommendations', { limit: 5 }],
     queryFn: () => getRecommendations({ limit: 5 }),
+    staleTime: 3 * 60_000,
   });
   const members = membersData?.suggestions
     ? mapSuggestionsToMembers(membersData.suggestions)
@@ -424,6 +416,7 @@ function DashboardContent() {
   const { data: eventsData } = useQuery({
     queryKey: ['events', { scope: 'upcoming', limit: 4 }],
     queryFn: () => listEvents({ scope: 'upcoming', limit: 4 }),
+    staleTime: 2 * 60_000,
   });
   const events = eventsData?.events
     ? mapEventsToCalendar(eventsData.events)
@@ -432,17 +425,20 @@ function DashboardContent() {
   const { data: activityData } = useQuery({
     queryKey: ['dashboard', 'activity'],
     queryFn: () => getDashboardActivity({ limit: 5 }),
+    staleTime: 60_000,
   });
   const activityItems = activityData ? mapActivityItems(activityData) : null;
 
   const { data: pollData } = useQuery({
     queryKey: ['polls', 'active'],
     queryFn: getActivePoll,
+    staleTime: 5 * 60_000,
   });
 
   const { data: jobsData } = useQuery({
     queryKey: ['jobs', { limit: 4 }],
     queryFn: () => listJobs({ limit: 4 }),
+    staleTime: 2 * 60_000,
   });
   const jobs = jobsData?.jobs ?? null;
 
@@ -459,12 +455,47 @@ function DashboardContent() {
     <AppShell>
       <div className="space-y-6">
         <div className="rounded-xl border border-border/60 bg-card/70 p-4 shadow-glow-sm backdrop-blur">
-          <h1 className="font-display text-xl font-semibold text-foreground">
-            Welcome back, {displayName} 👋
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Here&apos;s what&apos;s happening in your network today.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="font-display text-xl font-semibold text-foreground">
+                Welcome back, {displayName} 👋
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Here&apos;s what&apos;s happening in your network today.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <OptimizedLink href="/discover">
+                <button className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors">
+                  <Compass className="h-3.5 w-3.5" />
+                  Discover
+                </button>
+              </OptimizedLink>
+              <OptimizedLink href="/connections">
+                <button className="relative inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 transition-colors">
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Connections
+                  {pendingCount > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                      {pendingCount > 9 ? '9+' : pendingCount}
+                    </span>
+                  )}
+                </button>
+              </OptimizedLink>
+              <OptimizedLink href="/messages">
+                <button className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 transition-colors">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Messages
+                </button>
+              </OptimizedLink>
+              <OptimizedLink href="/events">
+                <button className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary/70 transition-colors">
+                  <Calendar className="h-3.5 w-3.5" />
+                  Events
+                </button>
+              </OptimizedLink>
+            </div>
+          </div>
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6">

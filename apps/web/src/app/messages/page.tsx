@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X, UserPlus, MessageSquare } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
 import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -71,6 +70,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [isMobileViewingChat, setIsMobileViewingChat] = useState(false);
+  const [isRecipientTyping, setIsRecipientTyping] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'chats' | 'intros'>('chats');
   const [introRequests, setIntroRequests] = useState<ConnectionRequestItem[]>([]);
   const [introLoading, setIntroLoading] = useState(false);
@@ -173,13 +173,37 @@ export default function MessagesPage() {
       );
     };
 
+    const onTypingStart: ServerToClientEvents['typing:start'] = ({ conversationId }) => {
+      if (selectedConversationIdRef.current === conversationId) {
+        setIsRecipientTyping(true);
+      }
+    };
+
+    const onTypingStop: ServerToClientEvents['typing:stop'] = ({ conversationId }) => {
+      if (selectedConversationIdRef.current === conversationId) {
+        setIsRecipientTyping(false);
+      }
+    };
+
+    const onPresence: ServerToClientEvents['presence:update'] = ({ userId, isOnline }) => {
+      setConversations((prev) =>
+        prev.map((c) => (c.recipientId === userId ? { ...c, isOnline } : c))
+      );
+    };
+
     s.on('message:new', onNew);
     s.on('message:ack', onAck);
+    s.on('typing:start', onTypingStart);
+    s.on('typing:stop', onTypingStop);
+    s.on('presence:update', onPresence);
 
     return () => {
       mounted = false;
       s.off('message:new', onNew);
       s.off('message:ack', onAck);
+      s.off('typing:start', onTypingStart);
+      s.off('typing:stop', onTypingStop);
+      s.off('presence:update', onPresence);
       s.disconnect();
       socketRef.current = null;
     };
@@ -278,6 +302,11 @@ export default function MessagesPage() {
     socketRef.current?.emit('conversation:join', { conversationId: conv.id });
   }, [openConversationId, conversations]);
 
+  // Reset typing indicator when conversation changes
+  useEffect(() => {
+    setIsRecipientTyping(false);
+  }, [selectedConversation?.id]);
+
   // Load messages when conversation is selected
   useEffect(() => {
     if (selectedConversation) {
@@ -302,6 +331,19 @@ export default function MessagesPage() {
       };
     }
   }, [selectedConversation, currentUserId, showError]);
+
+  // Typing indicator emit
+  const handleTypingStart = useCallback(() => {
+    if (selectedConversation) {
+      socketRef.current?.emit('typing:start', { conversationId: selectedConversation.id });
+    }
+  }, [selectedConversation]);
+
+  const handleTypingStop = useCallback(() => {
+    if (selectedConversation) {
+      socketRef.current?.emit('typing:stop', { conversationId: selectedConversation.id });
+    }
+  }, [selectedConversation]);
 
   // Handle send message
   const handleSendMessage = async (content: string, attachments?: File[]) => {
@@ -403,12 +445,12 @@ export default function MessagesPage() {
   const pendingIntrosCount = introRequests.length;
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-full bg-background">
       {/* Sidebar - hidden on mobile when viewing chat */}
       <div
         className={cn(
-          'w-full md:w-80 lg:w-96 border-r border-border/60 flex-shrink-0 flex flex-col',
-          isMobileViewingChat && 'hidden md:block'
+          'w-full md:w-[340px] lg:w-[380px] border-r border-border/60 flex-shrink-0 flex flex-col',
+          isMobileViewingChat && 'hidden md:flex'
         )}
       >
         <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex flex-col h-full">
@@ -477,13 +519,9 @@ export default function MessagesPage() {
             ) : (
               <div className="space-y-2 p-4">
                 {introRequests.map((req) => (
-                  <motion.div
+                  <div
                     key={req.id}
-                    layout
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="rounded-xl border border-border/50 bg-card/60 p-4"
+                    className="rounded-xl border border-border/50 bg-card/60 p-4 animate-fade-in"
                   >
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10 shrink-0">
@@ -530,7 +568,7 @@ export default function MessagesPage() {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
             )}
@@ -555,6 +593,9 @@ export default function MessagesPage() {
             messages={messages}
             currentUserId={currentUserId}
             onSendMessage={handleSendMessage}
+            onTypingStart={handleTypingStart}
+            onTypingStop={handleTypingStop}
+            isRecipientTyping={isRecipientTyping}
             onBack={() => {
               setIsMobileViewingChat(false);
             }}

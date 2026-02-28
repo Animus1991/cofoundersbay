@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   LayoutGrid,
   List,
@@ -64,30 +65,24 @@ export default function DiscoverPage() {
   const [filters, setFilters] = useState<SearchFiltersValues>(defaultFilters);
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [total, setTotal] = useState(0);
-  const [suggestions, setSuggestions] = useState<SearchHit[]>([]);
   const [loading, setLoading] = useState(false);
-  const [suggestionsLoaded, setSuggestionsLoaded] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState<'search' | 'suggestions' | 'matches'>('search');
 
   // Connection request dialog
   const [connectionTarget, setConnectionTarget] = useState<ProfileCardData | null>(null);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
+  const queryClient = useQueryClient();
 
-  // Load suggestions on mount
-  useEffect(() => {
-    let mounted = true;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    if (token) {
-      getRecommendations({ limit: 8 })
-        .then((r) => mounted && setSuggestions(r.suggestions))
-        .catch(() => {})
-        .finally(() => mounted && setSuggestionsLoaded(true));
-    } else {
-      setSuggestionsLoaded(true);
-    }
-    return () => { mounted = false; };
-  }, []);
+  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const { data: recommendationsData, isLoading: suggestionsLoading } = useQuery({
+    queryKey: ['recommendations', { limit: 8 }],
+    queryFn: () => getRecommendations({ limit: 8 }),
+    staleTime: 3 * 60_000,
+    enabled: hasToken,
+  });
+  const suggestions: SearchHit[] = (recommendationsData?.suggestions ?? []) as SearchHit[];
+  const suggestionsLoaded = !suggestionsLoading;
 
   // Search function
   const runSearch = useCallback(async () => {
@@ -117,6 +112,17 @@ export default function DiscoverPage() {
     }
   }, [filters, showError]);
 
+  // Debounced auto-search on filter changes when on search tab
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (activeTab !== 'search') return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    const delay = filters.q.length > 0 ? 500 : 150;
+    debounceRef.current = setTimeout(() => { void runSearch(); }, delay);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, activeTab]);
+
   // Convert SearchHit to ProfileCardData
   const hitToProfile = (hit: SearchHit): ProfileCardData => ({
     id: hit.id,
@@ -145,6 +151,7 @@ export default function DiscoverPage() {
     try {
       await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
+      queryClient.invalidateQueries({ queryKey: ['connections'] });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }

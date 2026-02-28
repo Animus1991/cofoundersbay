@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Calendar, Grid, List, MapPin, Plus, Search, Video } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -40,52 +41,34 @@ function toEventData(item: EventItem): EventData {
 
 export default function EventsPage() {
   const { success, error: showError } = useToast();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'my-events' | 'past'>('upcoming');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filter, setFilter] = useState<EventFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [eventsRaw, setEventsRaw] = useState<EventItem[]>([]);
 
   const hasToken = useMemo(() => {
     if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('accessToken');
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const scope =
-          activeTab === 'my-events' ? 'mine' : activeTab === 'past' ? 'past' : 'upcoming';
-        if (scope === 'mine' && !hasToken) {
-          if (!cancelled) setEventsRaw([]);
-          return;
-        }
-        const res = await listEvents({
-          scope,
-          q: searchQuery.trim() || undefined,
-          mode: filter === 'all' ? undefined : filter,
-          limit: 48,
-        });
-        if (!cancelled) setEventsRaw(res.events);
-      } catch (e) {
-        if (!cancelled) {
-          setEventsRaw([]);
-          showError('Failed to load events', e instanceof Error ? e.message : 'Please try again');
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, 250);
+  const scope = activeTab === 'my-events' ? 'mine' : activeTab === 'past' ? 'past' : 'upcoming';
 
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [activeTab, filter, hasToken, searchQuery, showError]);
+  const { data: eventsResult, isLoading: loading, isError, refetch } = useQuery({
+    queryKey: ['events', scope, searchQuery, filter],
+    queryFn: () =>
+      listEvents({
+        scope,
+        q: searchQuery.trim() || undefined,
+        mode: filter === 'all' ? undefined : filter,
+        limit: 48,
+      }),
+    enabled: scope !== 'mine' || hasToken,
+    staleTime: 60_000,
+    retry: 1,
+  });
 
+  const eventsRaw = eventsResult?.events ?? [];
   const events = useMemo(() => eventsRaw.map(toEventData), [eventsRaw]);
   const featured = viewMode === 'grid' ? events[0] : null;
   const rest = viewMode === 'grid' ? events.slice(1) : events;
@@ -94,17 +77,24 @@ export default function EventsPage() {
     try {
       const nextStatus = event.viewerRsvp === 'going' ? 'not_going' : 'going';
       await rsvpEvent(event.id, nextStatus);
-      setEventsRaw((prev) =>
-        prev.map((item) =>
-          item.id === event.id
-            ? {
-                ...item,
-                viewerRsvp: nextStatus,
-                attendeesCount:
-                  item.attendeesCount + (nextStatus === 'going' ? 1 : item.viewerRsvp === 'going' ? -1 : 0),
-              }
-            : item,
-        ),
+      queryClient.setQueryData(
+        ['events', scope, searchQuery, filter],
+        (old: { events: EventItem[] } | undefined) => {
+          if (!old) return old;
+          return {
+            ...old,
+            events: old.events.map((item) =>
+              item.id === event.id
+                ? {
+                    ...item,
+                    viewerRsvp: nextStatus,
+                    attendeesCount:
+                      item.attendeesCount + (nextStatus === 'going' ? 1 : item.viewerRsvp === 'going' ? -1 : 0),
+                  }
+                : item,
+            ),
+          };
+        },
       );
       success('RSVP updated', nextStatus === 'going' ? 'You are going to this event' : 'RSVP removed');
     } catch (e) {
@@ -195,7 +185,12 @@ export default function EventsPage() {
 
         {(['upcoming', 'my-events', 'past'] as const).map((tab) => (
           <TabsContent key={tab} value={tab} className="mt-6">
-            {loading ? (
+            {isError ? (
+              <div className="flex flex-col items-center gap-3 py-16 text-center">
+                <p className="text-sm text-muted-foreground">Failed to load events.</p>
+                <button onClick={() => refetch()} className="text-sm text-primary hover:underline">Try again</button>
+              </div>
+            ) : loading ? (
               <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <EventCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />

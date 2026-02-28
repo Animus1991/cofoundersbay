@@ -1,4 +1,9 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+// Returns the API base URL evaluated at call time — not module load time.
+// Always uses NEXT_PUBLIC_API_URL if set (set it to http://localhost:3001 in .env.local).
+// Never derives host from window.location to avoid LAN IP (192.168.x.x) mismatches.
+function getApiBase(): string {
+  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+}
 
 export type AuthUser = { id: string; email: string; role: string };
 export type Tokens = { accessToken: string; refreshToken: string; expiresIn: number };
@@ -74,7 +79,7 @@ async function refreshAccessToken(): Promise<Tokens> {
   const refreshToken = getStoredRefreshToken();
   if (!refreshToken) throw new ApiError(401, 'Session expired');
 
-  const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+  const res = await fetch(`${getApiBase()}/api/v1/auth/refresh`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refreshToken }),
@@ -86,12 +91,46 @@ async function refreshAccessToken(): Promise<Tokens> {
   return (await readJsonIfAny<Tokens>(res)) as Tokens;
 }
 
+const REQUEST_TIMEOUT_MS = 8_000;
+const NETWORK_RETRY_ATTEMPTS = 2;
+const NETWORK_RETRY_DELAY_MS = 800;
+
+function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const signal = init.signal
+    ? (() => {
+        // Merge provided signal with timeout signal
+        const merged = new AbortController();
+        init.signal.addEventListener('abort', () => merged.abort());
+        controller.signal.addEventListener('abort', () => merged.abort());
+        return merged.signal;
+      })()
+    : controller.signal;
+  return fetch(url, { ...init, signal }).finally(() => clearTimeout(timer));
+}
+
+async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= NETWORK_RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await fetchWithTimeout(url, init);
+    } catch (err) {
+      lastError = err;
+      const isNetworkErr = err instanceof TypeError || (err instanceof DOMException && err.name === 'AbortError');
+      if (!isNetworkErr || attempt === NETWORK_RETRY_ATTEMPTS) throw err;
+      await new Promise((r) => setTimeout(r, NETWORK_RETRY_DELAY_MS * (attempt + 1)));
+    }
+  }
+  throw lastError;
+}
+
 async function apiRequest<T>(
   path: string,
   init?: RequestInit,
-  opts?: { retryOn401?: boolean },
+  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
 ): Promise<T> {
-  const url = `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
+  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
   const token = getStoredToken();
 
   const headers = new Headers(init?.headers ?? {});
@@ -99,7 +138,11 @@ async function apiRequest<T>(
   if (!headers.has('Content-Type') && !isForm) headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
-  const res = await fetch(url, { ...init, headers });
+  const doFetch = opts?.skipNetworkRetry
+    ? (u: string, i: RequestInit) => fetchWithTimeout(u, i)
+    : fetchWithNetworkRetry;
+
+  const res = await doFetch(url, { ...init, headers });
   if (res.status === 401 && (opts?.retryOn401 ?? true)) {
     try {
       refreshInFlight ??= refreshAccessToken().finally(() => {
@@ -110,14 +153,14 @@ async function apiRequest<T>(
 
       const retryHeaders = new Headers(headers);
       retryHeaders.set('Authorization', `Bearer ${tokens.accessToken}`);
-      const retryRes = await fetch(url, { ...init, headers: retryHeaders });
+      const retryRes = await doFetch(url, { ...init, headers: retryHeaders });
       if (!retryRes.ok) {
         const msg = await safeReadErrorMessage(retryRes);
         throw new ApiError(retryRes.status, msg);
       }
       return (await readJsonIfAny<T>(retryRes)) as T;
     } catch (e) {
-      clearStoredTokens();
+      if (e instanceof ApiError && e.status === 401) clearStoredTokens();
       throw e;
     }
   }
@@ -167,6 +210,13 @@ export async function logout(accessToken: string, refreshToken: string | null) {
     { retryOn401: false },
   ).catch(() => {});
   clearStoredTokens();
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<{ ok: boolean }> {
+  return apiRequest('/api/v1/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
 }
 
 // --- Profile & skills ---
@@ -462,6 +512,90 @@ export async function getDashboardActivity(params?: { limit?: number }): Promise
   if (params?.limit != null) sp.set('limit', String(params.limit));
   const url = `/api/v1/dashboard/activity${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
+}
+
+// --- Analytics ---
+
+export interface UserMetrics {
+  profileViews: number;
+  profileViewsChange: number;
+  newConnections: number;
+  newConnectionsChange: number;
+  messagesSent: number;
+  messagesSentChange: number;
+  engagementRate: number;
+  engagementRateChange: number;
+  searchAppearances: number;
+  searchAppearancesChange: number;
+  activityScore: number;
+  activityScoreChange: number;
+}
+
+export interface AnalyticsProfileView {
+  date: string;
+  views: number;
+  uniqueVisitors: number;
+}
+
+export interface AnalyticsEngagement {
+  connections: number;
+  messages: number;
+  likes: number;
+  comments: number;
+  shares: number;
+}
+
+export interface AnalyticsTopContent {
+  id: string;
+  type: 'post' | 'comment' | 'profile';
+  title: string;
+  views: number;
+  engagement: number;
+  date: string;
+}
+
+export interface AnalyticsAchievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+}
+
+export interface WeeklySummary {
+  mostActiveDay: string;
+  peakHour: string;
+  avgResponseTime: string;
+  totalInteractions: number;
+}
+
+export async function getAnalyticsMetrics(period = '7d'): Promise<UserMetrics> {
+  return apiRequest(`/api/v1/analytics/metrics?period=${period}`);
+}
+
+export async function getAnalyticsProfileViews(period = '7d'): Promise<AnalyticsProfileView[]> {
+  return apiRequest(`/api/v1/analytics/profile-views?period=${period}`);
+}
+
+export async function getAnalyticsEngagement(period = '7d'): Promise<AnalyticsEngagement> {
+  return apiRequest(`/api/v1/analytics/engagement?period=${period}`);
+}
+
+export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[]> {
+  return apiRequest(`/api/v1/analytics/top-content?limit=${limit}`);
+}
+
+export async function getAnalyticsAchievements(): Promise<AnalyticsAchievement[]> {
+  return apiRequest('/api/v1/analytics/achievements');
+}
+
+export async function getWeeklySummary(): Promise<WeeklySummary> {
+  return apiRequest('/api/v1/analytics/weekly-summary');
+}
+
+export async function getGrowthTrends(period = '30d'): Promise<{ data: { date: string; connections: number; views: number }[] }> {
+  return apiRequest(`/api/v1/analytics/growth-trends?period=${period}`);
 }
 
 // --- Polls ---
@@ -852,4 +986,203 @@ export async function getJobPosting(jobId: string): Promise<{ job: JobPostingVie
 
 export async function deleteJobPosting(jobId: string): Promise<void> {
   await apiRequest(`/api/v1/jobs/${jobId}`, { method: 'DELETE' });
+}
+
+// --- Groups ---
+
+export type GroupPrivacy = 'public' | 'private' | 'secret';
+export type GroupMemberRole = 'owner' | 'admin' | 'moderator' | 'member';
+
+export interface GroupMemberUser {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  headline: string | null;
+  role: string;
+}
+
+export interface GroupMember {
+  userId: string;
+  role: GroupMemberRole;
+  joinedAt: string;
+  user?: GroupMemberUser;
+}
+
+export interface GroupView {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  privacy: GroupPrivacy;
+  category: string | null;
+  tags: string[];
+  coverImageUrl: string | null;
+  avatarUrl: string | null;
+  rules: { title: string; description: string }[];
+  memberCount: number;
+  postCount: number;
+  eventCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: GroupMemberUser | null;
+  isMember: boolean;
+  memberRole: GroupMemberRole | null;
+}
+
+export interface GroupPost {
+  id: string;
+  groupId: string;
+  content: string;
+  mediaUrls: string[];
+  isPinned: boolean;
+  createdAt: string;
+  editedAt: string | null;
+  commentCount: number;
+  reactionCount: number;
+  myReaction: string | null;
+  author: GroupMemberUser;
+}
+
+export interface GroupComment {
+  id: string;
+  postId: string;
+  content: string;
+  createdAt: string;
+  editedAt: string | null;
+  author: GroupMemberUser;
+}
+
+export async function listGroups(params?: {
+  category?: string;
+  privacy?: GroupPrivacy;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sort?: 'recent' | 'popular' | 'trending';
+  myGroups?: boolean;
+}): Promise<{ groups: GroupView[]; total: number; hasMore: boolean }> {
+  const q = new URLSearchParams();
+  if (params?.category) q.set('category', params.category);
+  if (params?.privacy) q.set('privacy', params.privacy);
+  if (params?.search) q.set('search', params.search);
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.offset) q.set('offset', String(params.offset));
+  if (params?.sort) q.set('sort', params.sort);
+  if (params?.myGroups) q.set('myGroups', 'true');
+  const qs = q.toString();
+  return apiRequest(`/api/v1/groups${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function getGroup(groupId: string): Promise<{
+  group: GroupView & { members: GroupMember[] };
+  isMember: boolean;
+  memberRole: GroupMemberRole | null;
+}> {
+  return apiRequest(`/api/v1/groups/${groupId}`, undefined, { retryOn401: false });
+}
+
+export async function getMyGroups(): Promise<{
+  groups: (GroupView & { memberRole: GroupMemberRole; joinedAt: string })[];
+}> {
+  return apiRequest('/api/v1/groups/my');
+}
+
+export async function createGroup(body: {
+  name: string;
+  slug: string;
+  description?: string;
+  privacy?: GroupPrivacy;
+  category?: string;
+  tags?: string[];
+  coverImageUrl?: string;
+  avatarUrl?: string;
+}): Promise<{ group: GroupView & { members: GroupMember[] }; isMember: boolean; memberRole: GroupMemberRole | null }> {
+  return apiRequest('/api/v1/groups', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function updateGroup(groupId: string, body: Partial<{
+  name: string;
+  description: string;
+  privacy: GroupPrivacy;
+  category: string;
+  tags: string[];
+  coverImageUrl: string | null;
+  avatarUrl: string | null;
+}>): Promise<{ group: GroupView }> {
+  return apiRequest(`/api/v1/groups/${groupId}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export async function deleteGroup(groupId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/v1/groups/${groupId}`, { method: 'DELETE' });
+}
+
+export async function joinGroup(groupId: string): Promise<{ member: GroupMember }> {
+  return apiRequest(`/api/v1/groups/${groupId}/join`, { method: 'POST', body: '{}' });
+}
+
+export async function leaveGroup(groupId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/v1/groups/${groupId}/leave`, { method: 'POST', body: '{}' });
+}
+
+export async function listGroupMembers(groupId: string, params?: { limit?: number; offset?: number }): Promise<{
+  members: GroupMember[];
+  total: number;
+}> {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.offset) q.set('offset', String(params.offset));
+  const qs = q.toString();
+  return apiRequest(`/api/v1/groups/${groupId}/members${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function listGroupPosts(groupId: string, params?: { limit?: number; offset?: number }): Promise<{
+  posts: GroupPost[];
+  total: number;
+  hasMore: boolean;
+}> {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.offset) q.set('offset', String(params.offset));
+  const qs = q.toString();
+  return apiRequest(`/api/v1/groups/${groupId}/posts${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function createGroupPost(groupId: string, body: {
+  content: string;
+  mediaUrls?: string[];
+  isPinned?: boolean;
+}): Promise<{ post: GroupPost }> {
+  return apiRequest(`/api/v1/groups/${groupId}/posts`, { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function deleteGroupPost(groupId: string, postId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/v1/groups/${groupId}/posts/${postId}`, { method: 'DELETE' });
+}
+
+export async function reactToGroupPost(groupId: string, postId: string, emoji: string): Promise<{
+  action: 'added' | 'removed' | 'updated';
+  emoji: string;
+}> {
+  return apiRequest(`/api/v1/groups/${groupId}/posts/${postId}/react`, {
+    method: 'POST',
+    body: JSON.stringify({ emoji }),
+  });
+}
+
+export async function listGroupComments(groupId: string, postId: string, params?: { limit?: number; offset?: number }): Promise<{
+  comments: GroupComment[];
+  total: number;
+}> {
+  const q = new URLSearchParams();
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.offset) q.set('offset', String(params.offset));
+  const qs = q.toString();
+  return apiRequest(`/api/v1/groups/${groupId}/posts/${postId}/comments${qs ? `?${qs}` : ''}`, undefined, { retryOn401: false });
+}
+
+export async function createGroupComment(groupId: string, postId: string, content: string): Promise<{ comment: GroupComment }> {
+  return apiRequest(`/api/v1/groups/${groupId}/posts/${postId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
 }

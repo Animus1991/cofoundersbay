@@ -42,43 +42,69 @@ const nextConfig: NextConfig = {
   // Experimental features for better performance
   experimental: {
     optimizePackageImports: [
-      'lucide-react', 
-      'recharts', 
-      'framer-motion', 
-      '@radix-ui/react-avatar', 
-      '@radix-ui/react-dialog', 
+      'lucide-react',
+      'recharts',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-tabs',
       '@radix-ui/react-select',
       '@radix-ui/react-popover',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-accordion',
       'date-fns',
-      'socket.io-client'
+      'socket.io-client',
     ],
-    turbo: {
-      resolveAlias: {
-        '@': './src',
-      },
-    },
-    optimizeCss: true,
-    scrollRestoration: true,
-    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
-    optimisticClientCache: true,
-    webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB', 'INP'],
+    // Faster client-side navigation
+    clientRouterFilter: true,
+    clientRouterFilterRedirects: false,
   },
-  
-  // Modularize imports for better tree-shaking
-  modularizeImports: {
-    'lucide-react': {
-      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
-      skipDefaultConversion: true,
-    },
-    'date-fns': {
-      transform: 'date-fns/{{member}}',
-    },
+
+  // Webpack optimizations for faster dev + smaller bundles
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Faster source maps in dev (eval is fastest but harder to debug)
+      config.devtool = 'cheap-module-source-map';
+    }
+    if (!dev) {
+      // Production: split large vendor chunks for better caching
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            radix: {
+              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+              name: 'radix-ui',
+              chunks: 'all',
+              priority: 20,
+            },
+            tanstack: {
+              test: /[\\/]node_modules[\\/]@tanstack[\\/]/,
+              name: 'tanstack-query',
+              chunks: 'all',
+              priority: 20,
+            },
+            lucide: {
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+              name: 'lucide',
+              chunks: 'all',
+              priority: 20,
+            },
+            framerMotion: {
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              name: 'framer-motion',
+              chunks: 'all',
+              priority: 20,
+            },
+          },
+        },
+      };
+    }
+    return config;
   },
   
   // Production optimizations
-  swcMinify: true,
   poweredByHeader: false,
   
   // Compression

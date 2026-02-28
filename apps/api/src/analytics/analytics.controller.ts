@@ -1,7 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser } from '../auth/current-user.decorator';
-import { AnalyticsService } from './analytics.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { AnalyticsService, UserMetrics, ProfileView, EngagementData, TopContent, Achievement, WeeklySummary } from './analytics.service';
 
 @Controller('api/v1/analytics')
 @UseGuards(JwtAuthGuard)
@@ -12,7 +12,7 @@ export class AnalyticsController {
   async getMetrics(
     @CurrentUser() user: { id: string },
     @Query('period') period?: string,
-  ) {
+  ): Promise<UserMetrics> {
     return this.analytics.getUserMetrics(user.id, period || '7d');
   }
 
@@ -20,7 +20,7 @@ export class AnalyticsController {
   async getProfileViews(
     @CurrentUser() user: { id: string },
     @Query('period') period?: string,
-  ) {
+  ): Promise<ProfileView[]> {
     return this.analytics.getProfileViews(user.id, period || '7d');
   }
 
@@ -28,7 +28,7 @@ export class AnalyticsController {
   async getEngagement(
     @CurrentUser() user: { id: string },
     @Query('period') period?: string,
-  ) {
+  ): Promise<EngagementData> {
     return this.analytics.getEngagementData(user.id, period || '7d');
   }
 
@@ -36,17 +36,17 @@ export class AnalyticsController {
   async getTopContent(
     @CurrentUser() user: { id: string },
     @Query('limit') limit?: string,
-  ) {
+  ): Promise<TopContent[]> {
     return this.analytics.getTopContent(user.id, parseInt(limit || '10', 10));
   }
 
   @Get('achievements')
-  async getAchievements(@CurrentUser() user: { id: string }) {
+  async getAchievements(@CurrentUser() user: { id: string }): Promise<Achievement[]> {
     return this.analytics.getUserAchievements(user.id);
   }
 
   @Get('weekly-summary')
-  async getWeeklySummary(@CurrentUser() user: { id: string }) {
+  async getWeeklySummary(@CurrentUser() user: { id: string }): Promise<WeeklySummary> {
     return this.analytics.getWeeklySummary(user.id);
   }
 

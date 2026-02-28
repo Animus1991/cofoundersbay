@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true});\" && next dev",
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",

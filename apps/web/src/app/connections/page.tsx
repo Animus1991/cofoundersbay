@@ -227,12 +227,13 @@ export default function ConnectionsPage() {
         })()
       : null;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['connections', tab],
     queryFn: () =>
       listConnectionRequests({
         type: tab === 'intros' ? 'received' : tab,
       }),
+    staleTime: 30_000,
   });
 
   const respondMutation = useMutation({
@@ -287,7 +288,7 @@ export default function ConnectionsPage() {
           <TabsTrigger value="intros" className="gap-2">
             <Handshake className="h-4 w-4" />
             Intro Requests
-            {tab === 'intros' && introCount > 0 && (
+            {introCount > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
                 {introCount}
               </Badge>
@@ -309,7 +310,12 @@ export default function ConnectionsPage() {
 
         {/* Intro Requests tab */}
         <TabsContent value="intros" className="mt-6 space-y-3">
-          {isLoading ? (
+          {isError ? (
+            <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load requests.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+            </CardContent></Card>
+          ) : isLoading ? (
             Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
           ) : connections.length === 0 ? (
             <EmptyState
@@ -341,7 +347,12 @@ export default function ConnectionsPage() {
         {/* Standard tabs */}
         {(['received', 'sent', 'accepted'] as const).map((t) => (
           <TabsContent key={t} value={t} className="mt-6 space-y-3">
-            {isLoading && tab === t ? (
+            {isError && tab === t ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <p className="text-sm text-muted-foreground">Failed to load connections.</p>
+                <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+              </CardContent></Card>
+            ) : isLoading && tab === t ? (
               Array.from({ length: 3 }).map((_, i) => <ConnectionSkeleton key={i} />)
             ) : connections.length === 0 ? (
               <EmptyState

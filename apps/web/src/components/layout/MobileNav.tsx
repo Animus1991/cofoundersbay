@@ -7,7 +7,7 @@ import { Menu, LogOut, User, Settings, X } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { navLinks } from './nav-links';
+import { navSections } from './nav-links';
 import { cn } from '@/lib/utils';
 
 export function MobileNav() {
@@ -80,31 +80,38 @@ export function MobileNav() {
           )}
         </div>
 
-        {/* Navigation links */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navLinks.map(({ href, label, icon: Icon }, index) => {
-            const active = pathname === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
-                  'animate-fade-in-left',
-                  active
-                    ? 'bg-primary/15 text-primary shadow-sm'
-                    : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
-                )}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <Icon className={cn('h-5 w-5 transition-transform', active && 'scale-110')} />
-                {label}
-                {active && (
-                  <div className="ml-auto h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
-                )}
-              </Link>
-            );
-          })}
+        {/* Navigation links grouped by section */}
+        <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+          {navSections
+            .filter((s) => s.section !== 'Account')
+            .map(({ section, links }) => (
+            <div key={section}>
+              <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                {section}
+              </p>
+              {links.map(({ href, label, icon: Icon }) => {
+                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+                return (
+                  <Link
+                    key={`${section}-${href}`}
+                    href={href}
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200',
+                      active
+                        ? 'bg-primary/15 text-primary shadow-sm'
+                        : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+                    )}
+                  >
+                    <Icon className={cn('h-4 w-4 transition-transform', active && 'scale-110')} />
+                    {label}
+                    {active && (
+                      <div className="ml-auto h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom actions */}

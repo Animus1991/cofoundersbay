@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-interface UserMetrics {
+export interface UserMetrics {
   profileViews: number;
   profileViewsChange: number;
   newConnections: number;
@@ -16,13 +16,13 @@ interface UserMetrics {
   activityScoreChange: number;
 }
 
-interface ProfileView {
+export interface ProfileView {
   date: string;
   views: number;
   uniqueVisitors: number;
 }
 
-interface EngagementData {
+export interface EngagementData {
   connections: number;
   messages: number;
   likes: number;
@@ -30,7 +30,7 @@ interface EngagementData {
   shares: number;
 }
 
-interface TopContent {
+export interface TopContent {
   id: string;
   type: 'post' | 'comment' | 'profile';
   title: string;
@@ -39,7 +39,7 @@ interface TopContent {
   date: string;
 }
 
-interface Achievement {
+export interface Achievement {
   id: string;
   title: string;
   description: string;
@@ -48,7 +48,7 @@ interface Achievement {
   unlockedAt?: Date;
 }
 
-interface WeeklySummary {
+export interface WeeklySummary {
   mostActiveDay: string;
   peakHour: string;
   avgResponseTime: string;

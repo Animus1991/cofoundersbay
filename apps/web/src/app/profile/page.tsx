@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import {
   MapPin,
   Clock,
@@ -60,11 +60,9 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
           <span className="text-sm font-bold text-primary">{pct}%</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            initial={{ width: 0 }}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+            style={{ width: `${pct}%` }}
           />
         </div>
         <div className="grid grid-cols-2 gap-1.5">
@@ -243,21 +241,20 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
 export default function ProfilePage() {
   const router = useRouter();
   const { success } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  useEffect(() => {
-    getMeProfile()
-      .then((res) => {
-        if (!res.hasCompletedOnboarding) {
-          router.replace('/onboarding');
-          return;
-        }
-        setProfile(res.profile);
-      })
-      .catch(() => router.replace('/login'))
-      .finally(() => setLoading(false));
-  }, [router]);
+  const { data: meData, isLoading, error } = useQuery({
+    queryKey: ['me', 'profile'],
+    queryFn: getMeProfile,
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+
+  React.useEffect(() => {
+    if (error) { router.replace('/login'); return; }
+    if (meData && !meData.hasCompletedOnboarding) { router.replace('/onboarding'); }
+  }, [meData, error, router]);
+
+  const profile = meData?.profile ?? null;
 
   const handleShare = () => {
     if (!profile) return;
@@ -267,7 +264,7 @@ export default function ProfilePage() {
     );
   };
 
-  if (loading)
+  if (isLoading)
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="space-y-4 w-80">

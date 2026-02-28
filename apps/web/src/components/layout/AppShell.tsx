@@ -1,8 +1,12 @@
-import { ReactNode } from 'react';
+import { ReactNode, memo } from 'react';
 import { TopNav } from './TopNav';
 import { SideNav } from './SideNav';
 import { MobileBottomNav } from './MobileBottomNav';
 import { PageTransition } from '@/components/common/PageTransition';
+
+const MemoTopNav = memo(TopNav);
+const MemoSideNav = memo(SideNav);
+const MemoMobileBottomNav = memo(MobileBottomNav);
 
 type AppShellProps = {
   title?: string;
@@ -14,10 +18,10 @@ type AppShellProps = {
 export function AppShell({ title, description, actions, children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-hero-radial pb-20 lg:pb-16">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-6">
-        <TopNav />
-        <div className="mt-6 grid gap-6 lg:grid-cols-[240px_1fr]">
-          <SideNav />
+      <div className="mx-auto w-full max-w-[1900px] px-4 sm:px-6 lg:px-8 pt-6">
+        <MemoTopNav />
+        <div className="mt-6 grid gap-6 lg:grid-cols-[300px_1fr]">
+          <MemoSideNav />
           <PageTransition>
             <main className="space-y-6">
               {(title || description || actions) && (
@@ -40,7 +44,7 @@ export function AppShell({ title, description, actions, children }: AppShellProp
           </PageTransition>
         </div>
       </div>
-      <MobileBottomNav />
+      <MemoMobileBottomNav />
     </div>
   );
 }

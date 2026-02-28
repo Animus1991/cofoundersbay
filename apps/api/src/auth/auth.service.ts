@@ -94,6 +94,21 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({ where: { tokenHash: hash } });
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true },
+    });
+    if (!user) throw new UnauthorizedException('User not found');
+
+    const valid = await argon2.verify(user.passwordHash, currentPassword);
+    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+
+    const newHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newHash } });
+    await this.prisma.refreshToken.deleteMany({ where: { userId } });
+  }
+
   async validateUser(userId: string): Promise<{ id: string; email: string; role: string } | null> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

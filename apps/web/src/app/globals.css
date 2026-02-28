@@ -58,6 +58,78 @@
     --ring: 235 88% 66%;
   }
 
+  /* ── System theme: distinct slate-blue palette ── */
+  [data-theme="system"] {
+    --background: 215 28% 17%;
+    --foreground: 210 20% 98%;
+    --card: 215 25% 21%;
+    --card-foreground: 210 20% 98%;
+    --popover: 215 25% 21%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 20% 26%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 20% 26%;
+    --muted-foreground: 215 16% 70%;
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 20% 30%;
+    --input: 215 20% 30%;
+    --ring: 199 89% 48%;
+    --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
+  }
+
+  /* ── Alliance theme: warm cream & amber ── */
+  [data-theme="alliance"] {
+    --background: 195 26% 96%;
+    --foreground: 220 100% 3%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 100% 3%;
+    --popover: 180 25% 98%;
+    --popover-foreground: 220 100% 3%;
+    --primary: 34 100% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 15% 88%;
+    --secondary-foreground: 220 100% 3%;
+    --muted: 180 25% 94%;
+    --muted-foreground: 210 5% 46%;
+    --accent: 34 100% 52%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 200 15% 88%;
+    --input: 200 15% 88%;
+    --ring: 34 100% 52%;
+    --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
+  }
+
+  /* ── Cofounder theme: dark purple/cyan ── */
+  [data-theme="cofounder"] {
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
+    --card: 240 8% 8%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 8% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 6% 15%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 6% 15%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 280 100% 70%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 6% 18%;
+    --input: 240 6% 18%;
+    --ring: 262 83% 58%;
+    --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
+  }
+
   .role-founder {
     --primary: 235 88% 66%;
     --accent: 292 84% 66%;
@@ -268,6 +340,31 @@
     animation: fade-in 0.4s ease-out both;
   }
 
+  /* Dashboard card stagger */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.45s ease-out both;
+  }
+
+  /* TopNav entrance */
+  .animate-fade-in-down {
+    animation: fade-in-down 0.4s ease-out both;
+  }
+
+  /* MobileNav slide-in links */
+  .animate-fade-in-left {
+    animation: fade-in-left 0.3s ease-out both;
+  }
+
+  /* QuickActions FAB items */
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out both;
+  }
+
+  /* FloatingActionButton subtle bounce */
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s ease-in-out infinite;
+  }
+
   /* Pulse glow — used by auth page hero icon */
   .animate-pulse-glow {
     animation: pulse-glow-ring 2.5s ease-in-out infinite;
@@ -282,6 +379,31 @@
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-left {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-4px); }
 }
 
 @keyframes shimmer {

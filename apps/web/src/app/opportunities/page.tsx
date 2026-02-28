@@ -606,9 +606,11 @@ export default function OpportunitiesPage() {
   const [proposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
   const [showPostForm, setShowPostForm] = useState(false);
 
-  const { data: jobsData, isLoading: jobsLoading } = useQuery({
+  const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
     queryKey: ['jobs', { limit: 50 }],
     queryFn: () => import('@/lib/api').then((m) => m.listJobs({ limit: 50 })),
+    staleTime: 60_000,
+    retry: 1,
   });
 
   const filteredListings = DEMO_LISTINGS.filter((o) => {
@@ -745,7 +747,12 @@ export default function OpportunitiesPage() {
                 className="pl-10"
               />
             </div>
-            {jobsLoading ? (
+            {jobsError ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <p className="text-sm text-muted-foreground">Failed to load jobs.</p>
+                <Button variant="secondary" size="sm" onClick={() => refetchJobs()}>Try again</Button>
+              </CardContent></Card>
+            ) : jobsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
                   <CardContent className="flex gap-4 p-5">

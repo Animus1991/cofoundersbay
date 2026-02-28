@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Edit, Archive, Pin, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Search, Edit, Archive, Pin, MoreHorizontal, Trash2, MessageSquarePlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn } from '@/lib/utils';
 
 export type Conversation = {
@@ -91,30 +92,31 @@ function ConversationItem({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             {conversation.isPinned && <Pin className="h-3 w-3 text-primary flex-shrink-0" />}
             <span className={cn(
-              'font-medium truncate',
-              conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'
+              'text-sm font-semibold truncate',
+              conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
             )}>
               {conversation.recipientName}
             </span>
+            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-[9px] leading-tight" />
           </div>
-          <span className="text-xs text-muted-foreground flex-shrink-0">
+          <span className="text-[11px] text-muted-foreground flex-shrink-0 tabular-nums">
             {formatTime(conversation.lastMessageTime)}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2 mt-0.5">
           <p className={cn(
-            'text-sm truncate',
-            conversation.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'
+            'text-xs truncate leading-relaxed',
+            conversation.unreadCount > 0 ? 'text-foreground/80 font-medium' : 'text-muted-foreground'
           )}>
-            {conversation.lastMessage}
+            {conversation.lastMessage || <span className="italic">No messages yet</span>}
           </p>
           {conversation.unreadCount > 0 && (
-            <Badge className="h-5 min-w-[20px] px-1.5 flex-shrink-0">
-              {conversation.unreadCount}
-            </Badge>
+            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground flex-shrink-0">
+              {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
+            </span>
           )}
         </div>
       </div>
@@ -230,10 +232,26 @@ export function ConversationList({
         )}
 
         {filteredConversations.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageSquarePlus className="h-6 w-6 text-primary" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'No conversations found' : 'No messages yet'}
             </p>
+            <p className="text-xs text-muted-foreground">
+              {searchQuery
+                ? `No results for "${searchQuery}"`
+                : 'Connect with founders, mentors, and investors to start chatting'}
+            </p>
+            {!searchQuery && (
+              <Link
+                href="/discover"
+                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+              >
+                Find people to message
+              </Link>
+            )}
           </div>
         )}
       </div>

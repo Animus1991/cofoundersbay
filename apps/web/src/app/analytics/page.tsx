@@ -3,6 +3,18 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
+  getAnalyticsMetrics,
+  getAnalyticsProfileViews,
+  getAnalyticsEngagement,
+  getAnalyticsTopContent,
+  getWeeklySummary,
+  type UserMetrics,
+  type AnalyticsProfileView,
+  type AnalyticsEngagement,
+  type AnalyticsTopContent,
+  type WeeklySummary,
+} from '@/lib/api';
+import {
   TrendingUp,
   Users,
   Eye,
@@ -20,6 +32,7 @@ import {
   Minus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -56,93 +69,18 @@ interface TopContent {
   date: string;
 }
 
-const DEMO_METRICS: AnalyticsMetric[] = [
-  {
-    label: 'Profile Views',
-    value: 1247,
-    change: 12.5,
-    changeType: 'increase',
-    icon: Eye,
-    color: 'text-blue-500',
-  },
-  {
-    label: 'New Connections',
-    value: 34,
-    change: 8.3,
-    changeType: 'increase',
-    icon: UserPlus,
-    color: 'text-green-500',
-  },
-  {
-    label: 'Messages Sent',
-    value: 156,
-    change: -2.1,
-    changeType: 'decrease',
-    icon: MessageCircle,
-    color: 'text-purple-500',
-  },
-  {
-    label: 'Engagement Rate',
-    value: 24.8,
-    change: 0,
-    changeType: 'neutral',
-    icon: Heart,
-    color: 'text-red-500',
-  },
-  {
-    label: 'Search Appearances',
-    value: 892,
-    change: 15.7,
-    changeType: 'increase',
-    icon: Target,
-    color: 'text-orange-500',
-  },
-  {
-    label: 'Activity Score',
-    value: 87,
-    change: 5.2,
-    changeType: 'increase',
-    icon: Activity,
-    color: 'text-cyan-500',
-  },
-];
-
-const DEMO_PROFILE_VIEWS: ProfileView[] = [
-  { date: '2024-02-21', views: 45, uniqueVisitors: 38 },
-  { date: '2024-02-22', views: 52, uniqueVisitors: 44 },
-  { date: '2024-02-23', views: 38, uniqueVisitors: 32 },
-  { date: '2024-02-24', views: 61, uniqueVisitors: 53 },
-  { date: '2024-02-25', views: 48, uniqueVisitors: 41 },
-  { date: '2024-02-26', views: 73, uniqueVisitors: 62 },
-  { date: '2024-02-27', views: 58, uniqueVisitors: 49 },
-];
-
-const DEMO_TOP_CONTENT: TopContent[] = [
-  {
-    id: '1',
-    type: 'post',
-    title: 'Excited to announce our seed round funding! 🎉',
-    views: 1234,
-    engagement: 156,
-    date: '2024-02-25',
-  },
-  {
-    id: '2',
-    type: 'profile',
-    title: 'Your Profile',
-    views: 892,
-    engagement: 89,
-    date: '2024-02-27',
-  },
-  {
-    id: '3',
-    type: 'post',
-    title: 'Looking for B2B SaaS co-founders in early stage',
-    views: 678,
-    engagement: 67,
-    date: '2024-02-24',
-  },
-];
+function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
+  const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
+    v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
+  return [
+    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, color: 'text-blue-500' },
+    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, color: 'text-green-500' },
+    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, color: 'text-purple-500' },
+    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, color: 'text-red-500' },
+    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, color: 'text-orange-500' },
+    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, color: 'text-cyan-500' },
+  ];
+}
 
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
   const Icon = metric.icon;
@@ -273,16 +211,16 @@ function TopContentList({ content }: { content: TopContent[] }) {
   );
 }
 
-function EngagementBreakdown() {
+function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
   const engagementData = [
-    { type: 'Connections', value: 34, color: 'bg-blue-500' },
-    { type: 'Messages', value: 156, color: 'bg-green-500' },
-    { type: 'Likes', value: 289, color: 'bg-red-500' },
-    { type: 'Comments', value: 67, color: 'bg-purple-500' },
-    { type: 'Shares', value: 45, color: 'bg-orange-500' },
+    { type: 'Connections', value: engagement?.connections ?? 0, color: 'bg-blue-500' },
+    { type: 'Messages', value: engagement?.messages ?? 0, color: 'bg-green-500' },
+    { type: 'Likes', value: engagement?.likes ?? 0, color: 'bg-red-500' },
+    { type: 'Comments', value: engagement?.comments ?? 0, color: 'bg-purple-500' },
+    { type: 'Shares', value: engagement?.shares ?? 0, color: 'bg-orange-500' },
   ];
 
-  const total = engagementData.reduce((sum, item) => sum + item.value, 0);
+  const total = engagementData.reduce((sum, item) => sum + item.value, 0) || 1;
 
   return (
     <Card>
@@ -319,41 +257,17 @@ function EngagementBreakdown() {
   );
 }
 
-function AchievementsCard() {
-  const achievements = [
-    {
-      id: '1',
-      title: 'Early Adopter',
-      description: 'Joined in the first month',
-      icon: Award,
-      color: 'text-yellow-500',
-      unlocked: true,
-    },
-    {
-      id: '2',
-      title: 'Networker',
-      description: 'Connected with 50+ members',
-      icon: Users,
-      color: 'text-blue-500',
-      unlocked: true,
-    },
-    {
-      id: '3',
-      title: 'Active Contributor',
-      description: 'Posted 100+ times',
-      icon: MessageCircle,
-      color: 'text-green-500',
-      unlocked: false,
-    },
-    {
-      id: '4',
-      title: 'Influencer',
-      description: '1000+ profile views',
-      icon: Eye,
-      color: 'text-purple-500',
-      unlocked: true,
-    },
-  ];
+function AchievementsCard({ achievements: rawAchievements }: { achievements?: { id: string; title: string; description: string; icon: string; unlocked: boolean }[] }) {
+  const achievements = (rawAchievements ?? []).slice(0, 4).map((a) => ({
+    id: a.id,
+    title: a.title,
+    description: a.description,
+    icon: Award,
+    color: 'text-yellow-500',
+    unlocked: a.unlocked,
+  }));
+
+  if (!achievements.length) return null;
 
   return (
     <Card>
@@ -416,20 +330,70 @@ function AnalyticsSkeleton() {
 
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'engagement' | 'growth'>('overview');
+  const [period, setPeriod] = useState('7d');
 
-  const { data: metrics, isLoading } = useQuery({
-    queryKey: ['analytics', 'metrics'],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return DEMO_METRICS;
-    },
+  const { data: rawMetrics, isLoading: metricsLoading, isError: metricsError, refetch: refetchMetrics } = useQuery({
+    queryKey: ['analytics', 'metrics', period],
+    queryFn: () => getAnalyticsMetrics(period),
+    staleTime: 60_000,
+    retry: 1,
   });
+
+  const { data: profileViews, isLoading: viewsLoading } = useQuery({
+    queryKey: ['analytics', 'profile-views', period],
+    queryFn: () => getAnalyticsProfileViews(period),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const { data: engagement } = useQuery({
+    queryKey: ['analytics', 'engagement', period],
+    queryFn: () => getAnalyticsEngagement(period),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const { data: topContent } = useQuery({
+    queryKey: ['analytics', 'top-content'],
+    queryFn: () => getAnalyticsTopContent(5),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const { data: weeklySummary } = useQuery({
+    queryKey: ['analytics', 'weekly-summary'],
+    queryFn: () => getWeeklySummary(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+
+  const metrics = rawMetrics ? metricsToDisplay(rawMetrics) : [];
+  const isLoading = metricsLoading || viewsLoading;
 
   return (
     <AppShell
       title="Analytics Dashboard"
       description="Track your profile performance and engagement"
     >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex gap-2">
+          {(['7d', '14d', '30d'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={cn(
+                'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
+                period === p
+                  ? 'border-primary bg-primary/20 text-primary'
+                  : 'border-border/60 text-muted-foreground hover:border-primary/40',
+              )}
+            >
+              {p === '7d' ? 'Last 7 days' : p === '14d' ? 'Last 14 days' : 'Last 30 days'}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="overview" className="gap-2">
@@ -447,53 +411,65 @@ export default function AnalyticsPage() {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4 space-y-4">
-          {isLoading ? (
+          {metricsError ? (
+            <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetchMetrics()}>Try again</Button>
+            </CardContent></Card>
+          ) : isLoading ? (
             <AnalyticsSkeleton />
           ) : (
             <>
               {/* Metrics Grid */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {metrics?.map((metric) => (
+                {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
                 ))}
               </div>
 
               {/* Charts and Lists */}
               <div className="grid gap-4 lg:grid-cols-2">
-                <ProfileViewsChart data={DEMO_PROFILE_VIEWS} />
-                <EngagementBreakdown />
+                {profileViews && profileViews.length > 0 && (
+                  <ProfileViewsChart data={profileViews} />
+                )}
+                <EngagementBreakdown engagement={engagement} />
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-2">
-                <TopContentList content={DEMO_TOP_CONTENT} />
-                <AchievementsCard />
-              </div>
+              {topContent && topContent.length > 0 && (
+                <TopContentList content={topContent} />
+              )}
 
-              {/* Additional Insights */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Weekly Summary
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Most Active Day</p>
-                      <p className="text-lg font-semibold">Monday</p>
+              {/* Weekly Summary */}
+              {weeklySummary && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" />
+                      Weekly Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4 sm:grid-cols-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Most Active Day</p>
+                        <p className="text-lg font-semibold">{weeklySummary.mostActiveDay || '—'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Peak Hour</p>
+                        <p className="text-lg font-semibold">{weeklySummary.peakHour || '—'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Avg. Response Time</p>
+                        <p className="text-lg font-semibold">{weeklySummary.avgResponseTime || '—'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Total Interactions</p>
+                        <p className="text-lg font-semibold">{weeklySummary.totalInteractions ?? 0}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Peak Hour</p>
-                      <p className="text-lg font-semibold">2:00 PM - 3:00 PM</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Avg. Response Time</p>
-                      <p className="text-lg font-semibold">2.3 hours</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
         </TabsContent>

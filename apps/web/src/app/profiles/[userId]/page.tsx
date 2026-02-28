@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -100,16 +101,10 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
 export default function PublicProfilePage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const userId = params.userId as string;
 
-  const [profile, setProfile] = useState<PublicProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [connStatus, setConnStatus] = useState<{
-    status: ConnectionStatus | null;
-    connectionId: string | null;
-    direction: 'sent' | 'received' | null;
-  } | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [messaging, setMessaging] = useState(false);
 
@@ -117,26 +112,33 @@ export default function PublicProfilePage() {
     typeof window !== 'undefined'
       ? (() => { try { return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null; } catch { return null; } })()
       : null;
+  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
 
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    Promise.all([
-      getPublicProfile(userId, token ?? undefined),
-      token ? getConnectionStatus(userId).catch(() => null) : Promise.resolve(null),
-    ])
-      .then(([prof, status]) => {
-        setProfile(prof);
-        setConnStatus(status);
-      })
-      .catch(() => router.replace('/discover'))
-      .finally(() => setLoading(false));
-  }, [userId, router]);
+  const { data: profile, isLoading, isError } = useQuery({
+    queryKey: ['public-profile', userId],
+    queryFn: () => {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      return getPublicProfile(userId, token ?? undefined);
+    },
+    staleTime: 2 * 60_000,
+    enabled: !!userId,
+    retry: 1,
+  });
+
+  const { data: connStatus } = useQuery({
+    queryKey: ['connection-status', userId],
+    queryFn: () => getConnectionStatus(userId),
+    staleTime: 30_000,
+    enabled: !!userId && hasToken,
+  });
 
   const handleConnect = async () => {
     setConnecting(true);
     try {
       await sendConnectionRequest({ receiverId: userId });
-      setConnStatus({ status: 'pending', connectionId: null, direction: 'sent' });
+      queryClient.setQueryData(['connection-status', userId], {
+        status: 'pending', connectionId: null, direction: 'sent',
+      });
       success('Request sent!', `Your connection request has been sent.`);
     } catch (err) {
       showError('Could not connect', err instanceof Error ? err.message : 'Please try again');
@@ -163,16 +165,35 @@ export default function PublicProfilePage() {
     );
   };
 
-  if (loading)
+  if (isLoading)
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="space-y-4 w-80">
-          <Skeleton className="h-48 w-full rounded-2xl" />
-          <Skeleton className="h-32 w-full rounded-2xl" />
+      <AppShell>
+        <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
+          <div className="space-y-4">
+            <Skeleton className="h-64 w-full rounded-2xl" />
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-40 w-full rounded-2xl" />
+            <Skeleton className="h-56 w-full rounded-2xl" />
+          </div>
         </div>
-      </div>
+      </AppShell>
     );
-  if (!profile) return null;
+
+  if (isError || !profile)
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center gap-4 py-24 text-center">
+          <p className="text-lg font-semibold text-foreground">Profile not found</p>
+          <p className="text-sm text-muted-foreground">This profile may have been removed or is not publicly visible.</p>
+          <button onClick={() => router.back()} className="text-sm text-primary hover:underline">
+            ← Go back
+          </button>
+        </div>
+      </AppShell>
+    );
 
   const isOwnProfile = viewerId === userId;
   type RolePayloadValue = string | string[] | Record<string, string> | null | undefined;

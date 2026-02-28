@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { listMessageConversations, listConnectionRequests } from '@/lib/api';
 
 export type UnreadCounts = {
@@ -9,47 +9,30 @@ export type UnreadCounts = {
 };
 
 /**
- * Polls (or fetches once on mount) unread message count + pending intro requests.
- * Re-exported so SideNav and TopNav can both consume it without duplicate fetches.
+ * Returns unread message count + pending intro requests.
+ * Uses React Query for deduplication — all components share the same cached fetch.
  */
 export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
-  const [counts, setCounts] = useState<UnreadCounts>({ messages: 0, intros: 0 });
+  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
 
-  useEffect(() => {
-    let mounted = true;
+  const { data: convData } = useQuery({
+    queryKey: ['conversations', 'list'],
+    queryFn: listMessageConversations,
+    staleTime: 30_000,
+    refetchInterval: pollIntervalMs,
+    enabled: hasToken,
+  });
 
-    const load = async () => {
-      try {
-        const [convResult, introResult] = await Promise.allSettled([
-          listMessageConversations(),
-          listConnectionRequests({ type: 'received', limit: 50 }),
-        ]);
+  const { data: introData } = useQuery({
+    queryKey: ['connections', 'pending-received'],
+    queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
+    staleTime: 30_000,
+    refetchInterval: pollIntervalMs,
+    enabled: hasToken,
+  });
 
-        if (!mounted) return;
+  const messages = convData?.conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
+  const intros = introData?.connections.filter((c) => c.status === 'pending').length ?? 0;
 
-        const messages =
-          convResult.status === 'fulfilled'
-            ? convResult.value.conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)
-            : 0;
-
-        const intros =
-          introResult.status === 'fulfilled'
-            ? introResult.value.connections.filter((c) => c.status === 'pending').length
-            : 0;
-
-        setCounts({ messages, intros });
-      } catch {
-        // silent — not critical
-      }
-    };
-
-    load();
-    const timer = setInterval(load, pollIntervalMs);
-    return () => {
-      mounted = false;
-      clearInterval(timer);
-    };
-  }, [pollIntervalMs]);
-
-  return counts;
+  return { messages, intros };
 }

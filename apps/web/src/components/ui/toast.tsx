@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { createContext, useContext, useCallback, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -96,6 +97,25 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
   );
 }
 
+function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (id: string) => void }) {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setContainer(document.body);
+  }, []);
+
+  if (!container) return null;
+
+  return createPortal(
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
+      {toasts.map((toast) => (
+        <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
+      ))}
+    </div>,
+    container
+  );
+}
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -131,12 +151,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, warning, info }}>
       {children}
-      {/* Toast container */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 w-full max-w-sm pointer-events-none">
-        {toasts.map((toast) => (
-          <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
-        ))}
-      </div>
+      <ToastPortal toasts={toasts} removeToast={removeToast} />
     </ToastContext.Provider>
   );
 }

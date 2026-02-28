@@ -9,14 +9,45 @@ import { ConnectionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
-function profileSelect() {
-  return {
+// User model only has: id, email, role, etc. — NOT displayName/avatarUrl/headline.
+// Those live on the related Profile model. We include profile nested under each User.
+const profileInclude = {
+  select: {
     id: true,
-    displayName: true,
-    avatarUrl: true,
-    headline: true,
-    userId: true,
-  } as const;
+    role: true,
+    profile: {
+      select: {
+        id: true,
+        displayName: true,
+        avatarUrl: true,
+        headline: true,
+        userId: true,
+      },
+    },
+  },
+} as const;
+
+type UserWithProfile = {
+  id: string;
+  role: string;
+  profile: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+    userId: string;
+  } | null;
+};
+
+function mapParticipant(u: UserWithProfile) {
+  return {
+    id: u.profile?.id ?? u.id,
+    userId: u.id,
+    displayName: u.profile?.displayName ?? 'Unknown',
+    avatarUrl: u.profile?.avatarUrl ?? null,
+    headline: u.profile?.headline ?? null,
+    role: u.role,
+  };
 }
 
 function mapConnection(c: {
@@ -27,8 +58,8 @@ function mapConnection(c: {
   message: string | null;
   createdAt: Date;
   updatedAt: Date;
-  requester: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; userId: string; user: { role: string } };
-  receiver: { id: string; displayName: string; avatarUrl: string | null; headline: string | null; userId: string; user: { role: string } };
+  requester: UserWithProfile;
+  receiver: UserWithProfile;
 }) {
   return {
     id: c.id,
@@ -38,35 +69,10 @@ function mapConnection(c: {
     message: c.message,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
-    requester: {
-      id: c.requester.id,
-      displayName: c.requester.displayName,
-      avatarUrl: c.requester.avatarUrl,
-      role: c.requester.user.role,
-      headline: c.requester.headline,
-    },
-    receiver: {
-      id: c.receiver.id,
-      displayName: c.receiver.displayName,
-      avatarUrl: c.receiver.avatarUrl,
-      role: c.receiver.user.role,
-      headline: c.receiver.headline,
-    },
+    requester: mapParticipant(c.requester),
+    receiver: mapParticipant(c.receiver),
   };
 }
-
-const profileInclude = {
-  select: {
-    id: true,
-    displayName: true,
-    avatarUrl: true,
-    headline: true,
-    userId: true,
-    user: {
-      select: { role: true },
-    },
-  },
-};
 
 @Injectable()
 export class ConnectionsService {
@@ -109,7 +115,7 @@ export class ConnectionsService {
     await this.notifications.createNotification({
       userId: receiverId,
       type: 'connection_request',
-      title: `${connection.requester.displayName} wants to connect`,
+      title: `${connection.requester.profile?.displayName ?? 'Someone'} wants to connect`,
       body: message?.trim() || 'Sent you a connection request',
       link: '/connections',
     }).catch(() => {});
@@ -167,7 +173,7 @@ export class ConnectionsService {
       await this.notifications.createNotification({
         userId: connection.requesterId,
         type: 'connection_accepted',
-        title: `${connection.receiver.displayName} accepted your connection`,
+        title: `${connection.receiver.profile?.displayName ?? 'Someone'} accepted your connection`,
         body: 'You are now connected',
         link: `/profiles/${connection.receiverId}`,
       }).catch(() => {});
@@ -198,4 +204,6 @@ export class ConnectionsService {
       direction: connection.requesterId === viewerId ? 'sent' : 'received',
     };
   }
+
+  // profileInclude uses nested profile select — displayName is on Profile, NOT User
 }

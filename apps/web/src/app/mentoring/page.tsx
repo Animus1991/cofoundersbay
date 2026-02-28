@@ -22,7 +22,7 @@ import {
   Award,
   TrendingUp,
 } from 'lucide-react';
-import { listMentorBookings, updateMentorBooking, type MentorBookingItem } from '@/lib/api';
+import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, type MentorBookingItem, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,54 +73,25 @@ interface Mentor {
   isFeatured?: boolean;
 }
 
-const DEMO_MENTORS: Mentor[] = [
-  {
-    id: '1',
-    displayName: 'Sarah Chen',
-    avatarUrl: null,
-    bio: 'Former VP of Product at TechCorp. Helping founders build products users love.',
-    expertise: ['Product Strategy', 'User Research', 'Growth'],
-    hourlyRate: 150,
-    rating: 4.9,
-    totalSessions: 127,
-    location: 'San Francisco, CA',
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    displayName: 'Alex Kumar',
-    avatarUrl: null,
-    bio: 'Serial entrepreneur with 3 exits. Specializing in B2B SaaS and fundraising.',
-    expertise: ['Fundraising', 'B2B Sales', 'Strategy'],
-    hourlyRate: 200,
-    rating: 5.0,
-    totalSessions: 89,
-    location: 'New York, NY',
-    isFeatured: true,
-  },
-  {
-    id: '3',
-    displayName: 'Maria Santos',
-    avatarUrl: null,
-    bio: 'Growth marketing expert. Scaled 5 startups from 0 to 1M users.',
-    expertise: ['Growth Marketing', 'SEO', 'Content'],
-    hourlyRate: 120,
-    rating: 4.8,
-    totalSessions: 156,
-    location: 'Austin, TX',
-  },
-  {
-    id: '4',
-    displayName: 'David Park',
-    avatarUrl: null,
-    bio: 'CTO and tech advisor. Building scalable systems for high-growth startups.',
-    expertise: ['Tech Architecture', 'Team Building', 'CTO Advisory'],
-    hourlyRate: 180,
-    rating: 4.9,
-    totalSessions: 94,
-    location: 'Seattle, WA',
-  },
-];
+function hitToMentor(hit: SearchHit): Mentor {
+  const rp = (hit as unknown as { rolePayload?: Record<string, unknown> }).rolePayload ?? {};
+  const expertise = Array.isArray(rp.expertiseAreas)
+    ? (rp.expertiseAreas as string[])
+    : hit.skillNames ?? [];
+  const hourlyRate = typeof rp.hourlyRate === 'string' ? parseFloat(rp.hourlyRate) : undefined;
+  return {
+    id: hit.userId,
+    displayName: hit.displayName,
+    avatarUrl: hit.avatarUrl ?? null,
+    bio: hit.bio ?? '',
+    expertise: expertise.slice(0, 5),
+    hourlyRate: hourlyRate && !isNaN(hourlyRate) ? hourlyRate : undefined,
+    rating: 0,
+    totalSessions: 0,
+    location: hit.location ?? undefined,
+    isFeatured: false,
+  };
+}
 
 const EXPERTISE_FILTERS = [
   'All',
@@ -217,21 +188,36 @@ function BookingModal({
   mentor,
   open,
   onClose,
+  onBook,
 }: {
   mentor: Mentor | null;
   open: boolean;
   onClose: () => void;
+  onBook: (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => Promise<void>;
 }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState('60');
-  const [meetingType, setMeetingType] = useState('video');
+  const [meetingType, setMeetingType] = useState<'video' | 'in_person' | 'chat'>('video');
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const { error: showError } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Booking:', { mentor, date, time, duration, meetingType, notes });
-    onClose();
+    if (!mentor || !date || !time) return;
+    setSubmitting(true);
+    try {
+      const startAt = new Date(`${date}T${time}`).toISOString();
+      const endAt = new Date(new Date(`${date}T${time}`).getTime() + parseInt(duration) * 60000).toISOString();
+      await onBook(mentor.id, startAt, endAt, meetingType, notes);
+      setDate(''); setTime(''); setNotes('');
+      onClose();
+    } catch (err) {
+      showError('Booking failed', err instanceof Error ? err.message : 'Please try again');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!mentor) return null;
@@ -296,8 +282,8 @@ function BookingModal({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="video">Video Call</SelectItem>
-                  <SelectItem value="phone">Phone Call</SelectItem>
-                  <SelectItem value="in-person">In Person</SelectItem>
+                  <SelectItem value="chat">Chat</SelectItem>
+                  <SelectItem value="in_person">In Person</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -326,10 +312,13 @@ function BookingModal({
           )}
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={submitting}>
               Cancel
             </Button>
-            <Button type="submit">Request Booking</Button>
+            <Button type="submit" disabled={submitting} className="gap-2">
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              Request Booking
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -506,6 +495,7 @@ export default function MentoringPage() {
   const [selectedExpertise, setSelectedExpertise] = useState('All');
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [mentorHits, setMentorHits] = useState<Mentor[]>([]);
 
   const userId =
     typeof window !== 'undefined'
@@ -518,10 +508,29 @@ export default function MentoringPage() {
         })()
       : null;
 
+  // Load real mentors from search API
+  const { isLoading: mentorsQueryLoading, isError: mentorsError } = useQuery({
+    queryKey: ['mentors', searchQuery, selectedExpertise],
+    queryFn: async () => {
+      const expertise = selectedExpertise !== 'All' ? [selectedExpertise] : undefined;
+      const res = await searchProfiles({
+        q: searchQuery.trim() || undefined,
+        roles: ['mentor'],
+        skills: expertise,
+        limit: 24,
+      });
+      setMentorHits(res.hits.map(hitToMentor));
+      return res;
+    },
+    staleTime: 60_000,
+    enabled: mainTab === 'find',
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ['mentoring-bookings'],
     queryFn: () => listMentorBookings('all'),
     enabled: mainTab === 'sessions',
+    staleTime: 30_000,
   });
 
   const updateMutation = useMutation({
@@ -535,16 +544,7 @@ export default function MentoringPage() {
     onError: (err) => showError('Action failed', err instanceof Error ? err.message : 'Please try again'),
   });
 
-  const filteredMentors = DEMO_MENTORS.filter((mentor) => {
-    const matchesSearch =
-      !searchQuery.trim() ||
-      mentor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mentor.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mentor.expertise.some((e) => e.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesExpertise =
-      selectedExpertise === 'All' || mentor.expertise.includes(selectedExpertise);
-    return matchesSearch && matchesExpertise;
-  });
+  const filteredMentors = mentorHits;
 
   const featuredMentors = filteredMentors.filter((m) => m.isFeatured);
   const regularMentors = filteredMentors.filter((m) => !m.isFeatured);
@@ -566,6 +566,12 @@ export default function MentoringPage() {
   const handleBookMentor = (mentor: Mentor) => {
     setSelectedMentor(mentor);
     setBookingModalOpen(true);
+  };
+
+  const handleCreateBooking = async (mentorId: string, startAt: string, endAt: string, meetingType: 'video' | 'in_person' | 'chat', notes: string) => {
+    await createMentorBooking({ mentorId, startAt, endAt, meetingType, notes: notes || undefined });
+    queryClient.invalidateQueries({ queryKey: ['mentoring-bookings'] });
+    success('Booking requested!', 'Your session request has been sent to the mentor.');
   };
 
   return (
@@ -620,41 +626,53 @@ export default function MentoringPage() {
             </div>
           </div>
 
-          {featuredMentors.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Featured Mentors
-                </h2>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {featuredMentors.map((mentor) => (
-                  <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
-                ))}
-              </div>
+          {mentorsError ? (
+            <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load mentors.</p>
+            </CardContent></Card>
+          ) : mentorsQueryLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => <MentorSkeleton key={i} />)}
             </div>
-          )}
+          ) : (
+            <>
+              {featuredMentors.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Award className="h-4 w-4 text-primary" />
+                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                      Featured Mentors
+                    </h2>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {featuredMentors.map((mentor) => (
+                      <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {regularMentors.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                All Mentors
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {regularMentors.map((mentor) => (
-                  <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
-                ))}
-              </div>
-            </div>
-          )}
+              {regularMentors.length > 0 && (
+                <div className="space-y-3">
+                  {featuredMentors.length > 0 && (
+                    <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">All Mentors</h2>
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {regularMentors.map((mentor) => (
+                      <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {filteredMentors.length === 0 && (
-            <EmptyState
-              illustration="search"
-              title="No mentors found"
-              description="Try adjusting your search or filters"
-            />
+              {filteredMentors.length === 0 && (
+                <EmptyState
+                  illustration="search"
+                  title="No mentors found"
+                  description="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here."
+                />
+              )}
+            </>
           )}
         </TabsContent>
 
@@ -725,6 +743,7 @@ export default function MentoringPage() {
           setBookingModalOpen(false);
           setSelectedMentor(null);
         }}
+        onBook={handleCreateBooking}
       />
     </AppShell>
   );
