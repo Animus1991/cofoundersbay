@@ -11,6 +11,7 @@ import {
   Users,
   Handshake,
   ShoppingBag,
+  BookOpen,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -30,6 +31,7 @@ export const navSections: NavSection[] = [
     links: [
       { href: '/discover', label: 'Discover', icon: Compass },
       { href: '/connections', label: 'Connections', icon: Users },
+      { href: '/groups', label: 'Groups', icon: Users },
       { href: '/events', label: 'Events', icon: Calendar },
       { href: '/messages', label: 'Messages', icon: MessageCircle },
     ],
@@ -41,6 +43,7 @@ export const navSections: NavSection[] = [
       { href: '/jobs', label: 'Jobs', icon: Briefcase },
       { href: '/opportunities', label: 'Opportunities', icon: Handshake },
       { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
+      { href: '/learning', label: 'Learning', icon: BookOpen },
     ],
   },
   {
