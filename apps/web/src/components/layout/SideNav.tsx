@@ -1,10 +1,10 @@
 "use client";
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { navSections } from './nav-links';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { OptimizedLink } from '@/components/common/OptimizedLink';
 
 export function SideNav() {
   const pathname = usePathname();
@@ -30,7 +30,7 @@ export function SideNav() {
                 const badge = badgeFor(href);
                 return (
                   <li key={href}>
-                    <Link
+                    <OptimizedLink
                       href={href}
                       className={cn(
                         'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
@@ -46,7 +46,7 @@ export function SideNav() {
                           {badge > 99 ? '99+' : badge}
                         </span>
                       )}
-                    </Link>
+                    </OptimizedLink>
                   </li>
                 );
               })}

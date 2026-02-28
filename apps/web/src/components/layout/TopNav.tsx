@@ -1,6 +1,5 @@
 "use client";
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Compass, Sparkles, MessageCircle, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { NotificationsBell } from './NotificationsBell';
 import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { OptimizedLink } from '@/components/common/OptimizedLink';
 
 export function TopNav() {
   const [ready, setReady] = useState(false);
@@ -30,9 +30,9 @@ export function TopNav() {
             <Sparkles className="h-5 w-5 animate-pulse-glow" />
           </div>
           <div>
-            <Link href="/" className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors">
+            <OptimizedLink href="/" className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors">
               CoFounderBay
-            </Link>
+            </OptimizedLink>
             <p className="text-xs text-muted-foreground">
               Startup networking for founders, mentors, investors
             </p>
@@ -51,13 +51,13 @@ export function TopNav() {
           >
             <Keyboard className="h-4 w-4" />
           </Button>
-          <Link href="/discover">
+          <OptimizedLink href="/discover">
             <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
               <Compass className="h-4 w-4" />
               Discover
             </Button>
-          </Link>
-          <Link href="/messages">
+          </OptimizedLink>
+          <OptimizedLink href="/messages">
             <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" title="Messages">
               <MessageCircle className="h-4 w-4" />
               {unreadMessages > 0 && (
@@ -66,7 +66,7 @@ export function TopNav() {
                 </span>
               )}
             </Button>
-          </Link>
+          </OptimizedLink>
         </div>
 
         {/* Actions */}

@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { RoutePrefetcher } from '@/components/common/RoutePrefetcher';
 
 const inter = Inter({
   subsets: ['latin', 'greek'],
@@ -65,14 +66,15 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <QueryProvider>
-          <NetworkProvider>
-            <ToastProvider>
-              <RoleTheme>
-                <OfflineBanner />
-                {children}
-              </RoleTheme>
-            </ToastProvider>
-          </NetworkProvider>
+            <RoutePrefetcher />
+            <NetworkProvider>
+              <ToastProvider>
+                <RoleTheme>
+                  <OfflineBanner />
+                  {children}
+                </RoleTheme>
+              </ToastProvider>
+            </NetworkProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>
