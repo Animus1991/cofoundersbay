@@ -1,0 +1,165 @@
+export type ThemeName = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder';
+
+export interface ThemeColors {
+  background: string;
+  foreground: string;
+  card: string;
+  cardForeground: string;
+  popover: string;
+  popoverForeground: string;
+  primary: string;
+  primaryForeground: string;
+  secondary: string;
+  secondaryForeground: string;
+  muted: string;
+  mutedForeground: string;
+  accent: string;
+  accentForeground: string;
+  destructive: string;
+  destructiveForeground: string;
+  border: string;
+  input: string;
+  ring: string;
+}
+
+export const themes: Record<ThemeName, ThemeColors> = {
+  dark: {
+    background: '222.2 84% 4.9%',
+    foreground: '210 40% 98%',
+    card: '222.2 84% 4.9%',
+    cardForeground: '210 40% 98%',
+    popover: '222.2 84% 4.9%',
+    popoverForeground: '210 40% 98%',
+    primary: '217.2 91.2% 59.8%',
+    primaryForeground: '222.2 47.4% 11.2%',
+    secondary: '217.2 32.6% 17.5%',
+    secondaryForeground: '210 40% 98%',
+    muted: '217.2 32.6% 17.5%',
+    mutedForeground: '215 20.2% 65.1%',
+    accent: '217.2 32.6% 17.5%',
+    accentForeground: '210 40% 98%',
+    destructive: '0 62.8% 30.6%',
+    destructiveForeground: '210 40% 98%',
+    border: '217.2 32.6% 17.5%',
+    input: '217.2 32.6% 17.5%',
+    ring: '224.3 76.3% 48%',
+  },
+  light: {
+    background: '0 0% 100%',
+    foreground: '222.2 84% 4.9%',
+    card: '0 0% 100%',
+    cardForeground: '222.2 84% 4.9%',
+    popover: '0 0% 100%',
+    popoverForeground: '222.2 84% 4.9%',
+    primary: '221.2 83.2% 53.3%',
+    primaryForeground: '210 40% 98%',
+    secondary: '210 40% 96.1%',
+    secondaryForeground: '222.2 47.4% 11.2%',
+    muted: '210 40% 96.1%',
+    mutedForeground: '215.4 16.3% 46.9%',
+    accent: '210 40% 96.1%',
+    accentForeground: '222.2 47.4% 11.2%',
+    destructive: '0 84.2% 60.2%',
+    destructiveForeground: '210 40% 98%',
+    border: '214.3 31.8% 91.4%',
+    input: '214.3 31.8% 91.4%',
+    ring: '221.2 83.2% 53.3%',
+  },
+  system: {
+    // System theme uses slightly different colors from dark for distinction
+    background: '224 71% 4%',
+    foreground: '213 31% 91%',
+    card: '224 71% 4%',
+    cardForeground: '213 31% 91%',
+    popover: '224 71% 4%',
+    popoverForeground: '213 31% 91%',
+    primary: '210 100% 50%',
+    primaryForeground: '0 0% 100%',
+    secondary: '222 47% 11%',
+    secondaryForeground: '210 40% 98%',
+    muted: '223 47% 11%',
+    mutedForeground: '215.4 16.3% 56.9%',
+    accent: '216 34% 17%',
+    accentForeground: '210 40% 98%',
+    destructive: '0 63% 31%',
+    destructiveForeground: '210 40% 98%',
+    border: '216 34% 17%',
+    input: '216 34% 17%',
+    ring: '210 100% 50%',
+  },
+  alliance: {
+    // Alliance WordPress theme inspired colors
+    background: '195 26% 96%', // #eef6f7
+    foreground: '220 100% 3%', // #000724
+    card: '0 0% 100%', // #ffffff
+    cardForeground: '220 100% 3%',
+    popover: '180 25% 98%', // #f8fbfc
+    popoverForeground: '220 100% 3%',
+    primary: '34 100% 66%', // #efa758 (accent color)
+    primaryForeground: '0 0% 100%',
+    secondary: '200 15% 88%', // #d9e0e3
+    secondaryForeground: '220 100% 3%',
+    muted: '180 25% 98%',
+    mutedForeground: '210 5% 51%', // #7a7e83
+    accent: '34 100% 66%',
+    accentForeground: '0 0% 100%',
+    destructive: '0 84% 60%',
+    destructiveForeground: '0 0% 100%',
+    border: '200 15% 88%',
+    input: '200 15% 88%',
+    ring: '34 100% 66%',
+  },
+  cofounder: {
+    // Cofounder-startapp inspired theme (modern, vibrant)
+    background: '240 10% 4%', // Very dark blue-gray
+    foreground: '0 0% 98%',
+    card: '240 8% 8%',
+    cardForeground: '0 0% 98%',
+    popover: '240 8% 8%',
+    popoverForeground: '0 0% 98%',
+    primary: '262 83% 58%', // Vibrant purple
+    primaryForeground: '0 0% 100%',
+    secondary: '200 100% 50%', // Cyan accent
+    secondaryForeground: '240 10% 4%',
+    muted: '240 6% 15%',
+    mutedForeground: '240 5% 65%',
+    accent: '280 100% 70%', // Bright magenta
+    accentForeground: '0 0% 100%',
+    destructive: '0 72% 51%',
+    destructiveForeground: '0 0% 100%',
+    border: '240 6% 15%',
+    input: '240 6% 15%',
+    ring: '262 83% 58%',
+  },
+};
+
+export function applyTheme(themeName: ThemeName) {
+  const root = document.documentElement;
+  const theme = themes[themeName];
+
+  Object.entries(theme).forEach(([key, value]) => {
+    const cssVarName = `--${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+    root.style.setProperty(cssVarName, value);
+  });
+
+  // Store theme preference
+  localStorage.setItem('theme', themeName);
+  
+  // Update data-theme attribute for CSS targeting
+  root.setAttribute('data-theme', themeName);
+}
+
+export function getStoredTheme(): ThemeName {
+  if (typeof window === 'undefined') return 'dark';
+  
+  const stored = localStorage.getItem('theme') as ThemeName;
+  if (stored && themes[stored]) return stored;
+  
+  return 'dark';
+}
+
+export function getSystemTheme(): 'dark' | 'light' {
+  if (typeof window === 'undefined') return 'dark';
+  
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
