@@ -12,6 +12,7 @@ import {
   Handshake,
   ShoppingBag,
   BookOpen,
+  Activity,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -24,6 +25,7 @@ export const navSections: NavSection[] = [
     section: 'Main',
     links: [
       { href: '/', label: 'Dashboard', icon: Sparkle },
+      { href: '/activity', label: 'Activity', icon: Activity },
     ],
   },
   {
