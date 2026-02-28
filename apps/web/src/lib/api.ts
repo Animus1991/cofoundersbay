@@ -258,6 +258,8 @@ export type SearchHit = {
   location: string | null;
   role: string;
   skillNames: string[];
+  skills?: string[];
+  industries?: string[];
   matchScore?: number;
   lookingFor?: string | null;
   availability?: string | null;

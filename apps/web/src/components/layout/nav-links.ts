@@ -30,6 +30,7 @@ export const navSections: NavSection[] = [
     section: 'Community',
     links: [
       { href: '/discover', label: 'Discover', icon: Compass },
+      { href: '/members', label: 'Members', icon: Users },
       { href: '/connections', label: 'Connections', icon: Users },
       { href: '/groups', label: 'Groups', icon: Users },
       { href: '/events', label: 'Events', icon: Calendar },
