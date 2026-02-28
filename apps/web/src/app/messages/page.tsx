@@ -1,9 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Check, X, UserPlus, MessageSquare } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
 import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { RoleBadge } from '@/components/common/RoleBadge';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import {
@@ -12,8 +19,11 @@ import {
   listMessageConversations,
   updateConversationFlags,
   uploadMessageAttachment,
+  listConnectionRequests,
+  respondToConnectionRequest,
   type ConversationSummary,
   type MessageItem,
+  type ConnectionRequestItem,
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 
@@ -61,6 +71,10 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const [isMobileViewingChat, setIsMobileViewingChat] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<'chats' | 'intros'>('chats');
+  const [introRequests, setIntroRequests] = useState<ConnectionRequestItem[]>([]);
+  const [introLoading, setIntroLoading] = useState(false);
+  const [introResponding, setIntroResponding] = useState<Record<string, boolean>>({});
 
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
   const selectedConversationIdRef = useRef<string | null>(null);
@@ -171,6 +185,55 @@ export default function MessagesPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load pending intro (connection) requests
+  const loadIntroRequests = useCallback(async () => {
+    setIntroLoading(true);
+    try {
+      const { connections } = await listConnectionRequests({ type: 'received', limit: 50 });
+      setIntroRequests(connections.filter((c) => c.status === 'pending'));
+    } catch {
+      // silently fail
+    } finally {
+      setIntroLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadIntroRequests();
+  }, [loadIntroRequests]);
+
+  const handleIntroRespond = async (id: string, action: 'accepted' | 'declined') => {
+    setIntroResponding((prev) => ({ ...prev, [id]: true }));
+    try {
+      await respondToConnectionRequest(id, action);
+      setIntroRequests((prev) => prev.filter((r) => r.id !== id));
+      success(
+        action === 'accepted' ? 'Connection accepted!' : 'Request declined',
+        action === 'accepted' ? 'You can now message this person.' : undefined,
+      );
+      if (action === 'accepted') {
+        const { connections: updated } = await listConnectionRequests({ type: 'received', limit: 50 });
+        const accepted = updated.find((c) => c.id === id);
+        if (accepted) {
+          const { conversationId } = await getOrCreateDirectConversation(accepted.requesterId);
+          const { conversations: list } = await listMessageConversations();
+          const mapped = list.map(mapConversation);
+          setConversations(mapped);
+          const conv = mapped.find((c) => c.id === conversationId);
+          if (conv) {
+            setSidebarTab('chats');
+            setSelectedConversation(conv);
+            setIsMobileViewingChat(true);
+          }
+        }
+      }
+    } catch (e) {
+      showError('Action failed', e instanceof Error ? e.message : 'Please try again');
+    } finally {
+      setIntroResponding((prev) => ({ ...prev, [id]: false }));
+    }
+  };
 
   // Handle URL param for direct messaging
   const toUserId = searchParams.get('to');
@@ -337,27 +400,142 @@ export default function MessagesPage() {
     await handleArchive(id);
   };
 
+  const pendingIntrosCount = introRequests.length;
+
   return (
     <div className="flex h-screen bg-background">
-      {/* Conversation list - hidden on mobile when viewing chat */}
+      {/* Sidebar - hidden on mobile when viewing chat */}
       <div
         className={cn(
-          'w-full md:w-80 lg:w-96 border-r border-border/60 flex-shrink-0',
+          'w-full md:w-80 lg:w-96 border-r border-border/60 flex-shrink-0 flex flex-col',
           isMobileViewingChat && 'hidden md:block'
         )}
       >
-        <ConversationList
-          conversations={conversations}
-          selectedId={selectedConversation?.id}
-          onSelect={(conv) => {
-            setSelectedConversation(conv);
-            setIsMobileViewingChat(true);
-          }}
-          onNewMessage={() => {}}
-          onPin={handlePin}
-          onArchive={handleArchive}
-          onDelete={handleDelete}
-        />
+        <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex flex-col h-full">
+          <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
+            <TabsList className="w-full">
+              <TabsTrigger value="chats" className="flex-1 gap-1.5">
+                <MessageSquare className="h-3.5 w-3.5" />
+                Chats
+                {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
+                  <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                    {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="intros" className="flex-1 gap-1.5">
+                <UserPlus className="h-3.5 w-3.5" />
+                Intros
+                {pendingIntrosCount > 0 && (
+                  <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
+                    {pendingIntrosCount}
+                  </span>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="chats" className="flex-1 overflow-hidden mt-0">
+            <ConversationList
+              conversations={conversations}
+              selectedId={selectedConversation?.id}
+              onSelect={(conv) => {
+                setSelectedConversation(conv);
+                setIsMobileViewingChat(true);
+              }}
+              onNewMessage={() => {}}
+              onPin={handlePin}
+              onArchive={handleArchive}
+              onDelete={handleDelete}
+            />
+          </TabsContent>
+
+          <TabsContent value="intros" className="flex-1 overflow-y-auto mt-0">
+            {introLoading ? (
+              <div className="p-4 space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="rounded-xl border border-border/40 bg-card/40 p-4 animate-pulse">
+                    <div className="flex gap-3">
+                      <div className="h-10 w-10 rounded-full bg-secondary" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3 w-24 rounded bg-secondary" />
+                        <div className="h-3 w-full rounded bg-secondary" />
+                        <div className="h-3 w-3/4 rounded bg-secondary" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : introRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
+                <div className="rounded-full bg-secondary p-3">
+                  <UserPlus className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm font-medium text-foreground">No pending intros</p>
+                <p className="text-xs text-muted-foreground">When someone sends you a connection request, it will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-2 p-4">
+                {introRequests.map((req) => (
+                  <motion.div
+                    key={req.id}
+                    layout
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="rounded-xl border border-border/50 bg-card/60 p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Avatar className="h-10 w-10 shrink-0">
+                        <AvatarImage src={req.requester.avatarUrl ?? undefined} />
+                        <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                          {req.requester.displayName[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {req.requester.displayName}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground shrink-0">
+                            {new Date(req.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <RoleBadge role={req.requester.role} size="sm" className="mt-0.5" />
+                        {req.message && (
+                          <p className="mt-2 text-xs text-foreground/70 leading-relaxed line-clamp-3 italic">
+                            &ldquo;{req.message}&rdquo;
+                          </p>
+                        )}
+                        <div className="mt-3 flex gap-2">
+                          <Button
+                            size="sm"
+                            className="h-7 gap-1 text-xs px-3"
+                            disabled={introResponding[req.id]}
+                            onClick={() => handleIntroRespond(req.id, 'accepted')}
+                          >
+                            <Check className="h-3 w-3" />
+                            Accept
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 gap-1 text-xs px-3"
+                            disabled={introResponding[req.id]}
+                            onClick={() => handleIntroRespond(req.id, 'declined')}
+                          >
+                            <X className="h-3 w-3" />
+                            Decline
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Chat window */}

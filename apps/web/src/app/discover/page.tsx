@@ -29,6 +29,20 @@ import { cn } from '@/lib/utils';
 
 type ViewMode = 'grid' | 'list' | 'match';
 
+type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
+type MatchReason = { type: MatchReasonType; text: string; score: number };
+
+/** Derive human-readable match reasons from the API score (0-100). */
+function buildMatchReasons(score: number): MatchReason[] {
+  const reasons: MatchReason[] = [];
+  if (score >= 30) reasons.push({ type: 'skills', text: 'Complementary role & skills', score: 30 });
+  if (score >= 45) reasons.push({ type: 'stage', text: 'Matching startup stage', score: Math.min(20, score - 30) });
+  if (score >= 65) reasons.push({ type: 'industry', text: 'Similar industry focus', score: 15 });
+  if (score >= 80) reasons.push({ type: 'location', text: 'Same location', score: 10 });
+  if (reasons.length === 0) reasons.push({ type: 'skills', text: 'Potential match', score: score });
+  return reasons;
+}
+
 const defaultFilters: SearchFiltersValues = {
   q: '',
   role: [],
@@ -114,6 +128,9 @@ export default function DiscoverPage() {
     role: hit.role,
     location: hit.location,
     skills: hit.skillNames || [],
+    matchScore: hit.matchScore,
+    lookingFor: hit.lookingFor,
+    availability: hit.availability,
   });
 
   // Handle connect
@@ -304,12 +321,12 @@ export default function DiscoverPage() {
                 viewMode === 'grid' ? 'md:grid-cols-2' : 'grid-cols-1'
               )}
             >
-              {suggestions.map((hit, index) => {
+              {suggestions.map((hit) => {
                 const profile = hitToProfile(hit);
                 return (
                   <ProfileCard
                     key={hit.id}
-                    profile={{ ...profile, matchScore: Math.max(65, 95 - index * 4) }}
+                    profile={profile}
                     variant="featured"
                     onConnect={() => handleConnect(profile)}
                     onMessage={() => handleMessage(profile)}
@@ -362,9 +379,10 @@ export default function DiscoverPage() {
               staggerDelay={100}
               className="grid gap-6 md:grid-cols-2"
             >
-              {suggestions.slice(0, 6).map((hit, index) => {
+              {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);
-                const score = 95 - index * 5;
+                const score = hit.matchScore ?? 50;
+                const matchReasons = buildMatchReasons(score);
                 return (
                   <MatchCard
                     key={hit.id}
@@ -377,11 +395,7 @@ export default function DiscoverPage() {
                     location={hit.location}
                     skills={hit.skillNames || []}
                     compatibilityScore={score}
-                    matchReasons={[
-                      { type: 'skills', text: 'Complementary skills', score: 25 },
-                      { type: 'stage', text: 'Same startup stage', score: 20 },
-                      { type: 'industry', text: 'Similar industry focus', score: 15 },
-                    ]}
+                    matchReasons={matchReasons}
                     onLike={() => success('Liked!', `You liked ${hit.displayName}`)}
                     onPass={() => {}}
                     onMessage={() => handleMessage(profile)}

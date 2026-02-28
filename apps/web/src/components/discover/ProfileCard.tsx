@@ -45,6 +45,8 @@ export type ProfileCardData = {
   isVerified?: boolean;
   lastActive?: Date;
   matchScore?: number;
+  lookingFor?: string | null;
+  availability?: string | null;
 };
 
 type ProfileCardProps = {
@@ -200,6 +202,24 @@ export function ProfileCard({
                 <span className="text-xs text-muted-foreground self-center">
                   +{profile.skills.length - 5}
                 </span>
+              )}
+            </div>
+          )}
+
+          {/* Looking for / availability */}
+          {(profile.lookingFor || profile.availability) && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {profile.lookingFor && (
+                <div className="rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
+                  <span className="text-muted-foreground">Looking for: </span>
+                  <span className="font-medium text-foreground">{profile.lookingFor}</span>
+                </div>
+              )}
+              {profile.availability && (
+                <div className="rounded-lg bg-secondary/60 px-3 py-1.5 text-xs">
+                  <span className="text-muted-foreground">Availability: </span>
+                  <span className="font-medium text-foreground">{profile.availability}</span>
+                </div>
               )}
             </div>
           )}

@@ -10,10 +10,12 @@ import { MobileNav } from './MobileNav';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { NotificationsBell } from './NotificationsBell';
 import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 
 export function TopNav() {
   const [ready, setReady] = useState(false);
   const { open: commandOpen, setOpen: setCommandOpen } = useCommandPalette();
+  const { messages: unreadMessages } = useUnreadCounts();
 
   useEffect(() => {
     setReady(true);
@@ -56,8 +58,13 @@ export function TopNav() {
             </Button>
           </Link>
           <Link href="/messages">
-            <Button variant="ghost" size="icon" className="hidden lg:flex shrink-0" title="Messages">
+            <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" title="Messages">
               <MessageCircle className="h-4 w-4" />
+              {unreadMessages > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
+                </span>
+              )}
             </Button>
           </Link>
         </div>

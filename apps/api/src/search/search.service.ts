@@ -155,59 +155,130 @@ export class SearchService {
     return { hits, total };
   }
 
-  /** Rules-based: suggest co-founders (founders), mentors, or investors for the current user. */
+  /**
+   * Rules-based recommendations with score 0-100 per candidate.
+   *
+   * Scoring breakdown (max 100):
+   *   30 pts — role complementarity (e.g. founder ↔ mentor/investor)
+   *   30 pts — skills overlap with what the viewer seeks
+   *   20 pts — stage alignment (rolePayload.stage match)
+   *   10 pts — location / timezone proximity
+   *   10 pts — recency (profile updated in last 30 days)
+   */
   async getRecommendations(userId: string, options?: { role?: string; limit?: number }) {
-    const limit = Math.min(options?.limit ?? 10, 20);
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    if (!user) return { suggestions: [] };
+    const fetchLimit = 50; // fetch more than needed so scoring can reorder
+    const returnLimit = Math.min(options?.limit ?? 10, 20);
 
-    const targetRole = (options?.role ?? this.suggestTargetRole(user.role)) as Role;
-    const excludeIds = await this.prisma.profile.findUnique({
+    const viewer = await this.prisma.profile.findUnique({
       where: { userId },
-      select: { id: true },
-    }).then((p) => (p ? [p.id] : []));
+      include: {
+        user: { select: { role: true } },
+        skills: { include: { skill: true } },
+      },
+    });
+    if (!viewer) return { suggestions: [] };
 
-    const profiles = await this.prisma.profile.findMany({
+    const viewerRole = viewer.user.role as string;
+    const viewerSkillNames = new Set(
+      viewer.skills.map((s: { skill: { name: string } }) => s.skill.name.toLowerCase()),
+    );
+    const viewerStage = (viewer.rolePayload as Record<string, unknown> | null)?.stage as string | undefined;
+    const viewerLocation = viewer.location?.toLowerCase();
+
+    // Determine which roles to target
+    const targetRoles = options?.role
+      ? [options.role as Role]
+      : this.complementaryRoles(viewerRole);
+
+    const candidates = await this.prisma.profile.findMany({
       where: {
-        user: { role: targetRole },
-        id: excludeIds.length ? { notIn: excludeIds } : undefined,
+        userId: { not: userId },
+        user: { role: { in: targetRoles } },
       },
       include: {
         user: { select: { id: true, role: true } },
         skills: { include: { skill: true } },
       },
       orderBy: { updatedAt: 'desc' },
-      take: limit,
+      take: fetchLimit,
     });
 
-    return {
-      suggestions: profiles.map((p) => ({
+    const now = Date.now();
+    const scored = candidates.map((p) => {
+      let score = 0;
+
+      // 1. Role complementarity (30 pts)
+      score += 30;
+
+      // 2. Skills overlap (30 pts)
+      const candidateSkills = new Set(
+        p.skills.map((s: { skill: { name: string } }) => s.skill.name.toLowerCase()),
+      );
+      const overlap = [...viewerSkillNames].filter((s) => candidateSkills.has(s)).length;
+      const union = new Set([...viewerSkillNames, ...candidateSkills]).size;
+      const jaccard = union > 0 ? overlap / union : 0;
+      score += Math.round(jaccard * 30);
+
+      // 3. Stage alignment (20 pts)
+      const candidateStage = (p.rolePayload as Record<string, unknown> | null)?.stage as string | undefined;
+      if (viewerStage && candidateStage && viewerStage === candidateStage) {
+        score += 20;
+      } else if (viewerStage && candidateStage) {
+        // Partial credit for adjacent stages
+        score += 5;
+      }
+
+      // 4. Location proximity (10 pts)
+      if (viewerLocation && p.location?.toLowerCase().includes(viewerLocation)) {
+        score += 10;
+      } else if (viewerLocation && viewerLocation.includes(p.location?.toLowerCase() ?? '')) {
+        score += 5;
+      }
+
+      // 5. Recency bonus (10 pts — updated within 30 days)
+      const daysSinceUpdate = (now - p.updatedAt.getTime()) / 86400000;
+      if (daysSinceUpdate <= 7) score += 10;
+      else if (daysSinceUpdate <= 30) score += 5;
+
+      // Clamp to 100
+      score = Math.min(score, 100);
+
+      const rp = p.rolePayload as Record<string, unknown> | null;
+      return {
         id: p.id,
         userId: p.userId,
         displayName: p.displayName,
         headline: p.headline,
+        bio: p.bio,
+        avatarUrl: p.avatarUrl ?? null,
         location: p.location,
         role: p.user.role,
         skillNames: p.skills.map((s: { skill: { name: string } }) => s.skill.name),
-      })),
-    };
+        matchScore: score,
+        lookingFor: (rp?.lookingFor as string | undefined) ?? null,
+        availability: (rp?.availability as string | undefined) ?? (rp?.commitment as string | undefined) ?? null,
+      };
+    });
+
+    // Sort by score desc, return top N
+    scored.sort((a, b) => b.matchScore - a.matchScore);
+
+    return { suggestions: scored.slice(0, returnLimit) };
   }
 
-  private suggestTargetRole(userRole: string): string {
-    switch (userRole) {
+  /** Returns complementary roles for a given viewer role. */
+  private complementaryRoles(viewerRole: string): Role[] {
+    switch (viewerRole) {
       case 'founder':
-        return 'mentor'; // suggest mentors first; can add "co-founders" as second type later
+        return ['mentor', 'investor'] as Role[];
       case 'mentor':
-        return 'founder';
+        return ['founder'] as Role[];
       case 'investor':
-        return 'founder';
+        return ['founder'] as Role[];
       case 'org':
-        return 'founder';
+        return ['founder', 'mentor'] as Role[];
       default:
-        return 'founder';
+        return ['founder', 'mentor', 'investor'] as Role[];
     }
   }
 }

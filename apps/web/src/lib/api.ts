@@ -258,6 +258,9 @@ export type SearchHit = {
   location: string | null;
   role: string;
   skillNames: string[];
+  matchScore?: number;
+  lookingFor?: string | null;
+  availability?: string | null;
 };
 
 export async function searchProfiles(params: {
