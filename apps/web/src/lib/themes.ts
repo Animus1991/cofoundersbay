@@ -66,26 +66,26 @@ export const themes: Record<ThemeName, ThemeColors> = {
     ring: '221.2 83.2% 53.3%',
   },
   system: {
-    // System theme uses slightly different colors from dark for distinction
-    background: '224 71% 4%',
-    foreground: '213 31% 91%',
-    card: '224 71% 4%',
-    cardForeground: '213 31% 91%',
-    popover: '224 71% 4%',
-    popoverForeground: '213 31% 91%',
-    primary: '210 100% 50%',
+    // System theme with distinct slate-blue tones (clearly different from dark)
+    background: '215 28% 17%', // Slate blue background
+    foreground: '210 20% 98%',
+    card: '215 25% 20%', // Slightly lighter slate
+    cardForeground: '210 20% 98%',
+    popover: '215 25% 20%',
+    popoverForeground: '210 20% 98%',
+    primary: '199 89% 48%', // Bright cyan-blue
     primaryForeground: '0 0% 100%',
-    secondary: '222 47% 11%',
-    secondaryForeground: '210 40% 98%',
-    muted: '223 47% 11%',
-    mutedForeground: '215.4 16.3% 56.9%',
-    accent: '216 34% 17%',
-    accentForeground: '210 40% 98%',
-    destructive: '0 63% 31%',
-    destructiveForeground: '210 40% 98%',
-    border: '216 34% 17%',
-    input: '216 34% 17%',
-    ring: '210 100% 50%',
+    secondary: '215 20% 25%',
+    secondaryForeground: '210 20% 98%',
+    muted: '215 20% 25%',
+    mutedForeground: '215 16% 70%',
+    accent: '199 89% 48%',
+    accentForeground: '0 0% 100%',
+    destructive: '0 70% 50%',
+    destructiveForeground: '0 0% 100%',
+    border: '215 20% 30%',
+    input: '215 20% 30%',
+    ring: '199 89% 48%',
   },
   alliance: {
     // Alliance WordPress theme inspired colors

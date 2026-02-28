@@ -41,7 +41,19 @@ const nextConfig: NextConfig = {
   
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts', 'framer-motion', '@radix-ui/react-avatar', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+    optimizePackageImports: [
+      'lucide-react', 
+      'recharts', 
+      'framer-motion', 
+      '@radix-ui/react-avatar', 
+      '@radix-ui/react-dialog', 
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-select',
+      '@radix-ui/react-popover',
+      'date-fns',
+      'socket.io-client'
+    ],
     turbo: {
       resolveAlias: {
         '@': './src',
@@ -49,6 +61,20 @@ const nextConfig: NextConfig = {
     },
     optimizeCss: true,
     scrollRestoration: true,
+    serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs'],
+    optimisticClientCache: true,
+    webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB', 'INP'],
+  },
+  
+  // Modularize imports for better tree-shaking
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+      skipDefaultConversion: true,
+    },
+    'date-fns': {
+      transform: 'date-fns/{{member}}',
+    },
   },
   
   // Production optimizations

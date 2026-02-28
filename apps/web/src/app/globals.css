@@ -85,6 +85,32 @@
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Wider layout containers for better aesthetics at 100% zoom */
+  .container {
+    max-width: 1560px !important;
+  }
+  
+  .container-wide {
+    max-width: 1800px !important;
+  }
+  
+  .container-narrow {
+    max-width: 800px !important;
+  }
+  
+  /* Performance optimizations */
+  * {
+    will-change: auto;
+  }
+  
+  img, video {
+    content-visibility: auto;
   }
 }
 
