@@ -7,6 +7,7 @@ import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndic
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoutePrefetcher } from '@/components/common/RoutePrefetcher';
+import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 
 const inter = Inter({
   subsets: ['latin', 'greek'],
@@ -67,6 +68,7 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>
             <RoutePrefetcher />
+            <ServiceWorkerRegistration />
             <NetworkProvider>
               <ToastProvider>
                 <RoleTheme>
