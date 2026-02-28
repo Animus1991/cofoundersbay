@@ -15,17 +15,41 @@ import {
   Plus,
   ExternalLink,
   BookOpen,
+  Star,
+  MapPin,
+  DollarSign,
+  Search,
+  Award,
+  TrendingUp,
 } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, type MentorBookingItem } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -36,7 +60,282 @@ const STATUS_COLORS: Record<string, string> = {
   declined: 'bg-muted text-muted-foreground border-border',
 };
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+interface Mentor {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string;
+  expertise: string[];
+  hourlyRate?: number;
+  rating: number;
+  totalSessions: number;
+  location?: string;
+  isFeatured?: boolean;
+}
+
+const DEMO_MENTORS: Mentor[] = [
+  {
+    id: '1',
+    displayName: 'Sarah Chen',
+    avatarUrl: null,
+    bio: 'Former VP of Product at TechCorp. Helping founders build products users love.',
+    expertise: ['Product Strategy', 'User Research', 'Growth'],
+    hourlyRate: 150,
+    rating: 4.9,
+    totalSessions: 127,
+    location: 'San Francisco, CA',
+    isFeatured: true,
+  },
+  {
+    id: '2',
+    displayName: 'Alex Kumar',
+    avatarUrl: null,
+    bio: 'Serial entrepreneur with 3 exits. Specializing in B2B SaaS and fundraising.',
+    expertise: ['Fundraising', 'B2B Sales', 'Strategy'],
+    hourlyRate: 200,
+    rating: 5.0,
+    totalSessions: 89,
+    location: 'New York, NY',
+    isFeatured: true,
+  },
+  {
+    id: '3',
+    displayName: 'Maria Santos',
+    avatarUrl: null,
+    bio: 'Growth marketing expert. Scaled 5 startups from 0 to 1M users.',
+    expertise: ['Growth Marketing', 'SEO', 'Content'],
+    hourlyRate: 120,
+    rating: 4.8,
+    totalSessions: 156,
+    location: 'Austin, TX',
+  },
+  {
+    id: '4',
+    displayName: 'David Park',
+    avatarUrl: null,
+    bio: 'CTO and tech advisor. Building scalable systems for high-growth startups.',
+    expertise: ['Tech Architecture', 'Team Building', 'CTO Advisory'],
+    hourlyRate: 180,
+    rating: 4.9,
+    totalSessions: 94,
+    location: 'Seattle, WA',
+  },
+];
+
+const EXPERTISE_FILTERS = [
+  'All',
+  'Product Strategy',
+  'Fundraising',
+  'Growth Marketing',
+  'Tech Architecture',
+  'B2B Sales',
+  'User Research',
+];
+
+function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
+  return (
+    <Card className="card-interactive hover-lift group transition-all duration-300">
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start gap-4">
+          <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/20">
+            <AvatarImage src={mentor.avatarUrl ?? undefined} />
+            <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+              {mentor.displayName[0]?.toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <div>
+                <Link
+                  href={`/profiles/${mentor.id}`}
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {mentor.displayName}
+                </Link>
+                {mentor.isFeatured && (
+                  <Badge variant="secondary" className="ml-2 gap-1 text-xs">
+                    <TrendingUp className="h-3 w-3" />
+                    Featured
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+              <div className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
+                <span>({mentor.totalSessions} sessions)</span>
+              </div>
+              {mentor.location && (
+                <>
+                  <span>•</span>
+                  <div className="flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5" />
+                    {mentor.location}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+              {mentor.bio}
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {mentor.expertise.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-between pt-3 border-t border-border/40">
+              {mentor.hourlyRate && (
+                <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  {mentor.hourlyRate}/hour
+                </div>
+              )}
+              <Button size="sm" onClick={onBook} className="gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                Book Session
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BookingModal({
+  mentor,
+  open,
+  onClose,
+}: {
+  mentor: Mentor | null;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [duration, setDuration] = useState('60');
+  const [meetingType, setMeetingType] = useState('video');
+  const [notes, setNotes] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Booking:', { mentor, date, time, duration, meetingType, notes });
+    onClose();
+  };
+
+  if (!mentor) return null;
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Book a Session with {mentor.displayName}</DialogTitle>
+          <DialogDescription>
+            Choose your preferred date, time, and session details
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date">Date</Label>
+              <Input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="time">Time</Label>
+              <Input
+                id="time"
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger id="duration">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 minutes</SelectItem>
+                  <SelectItem value="60">60 minutes</SelectItem>
+                  <SelectItem value="90">90 minutes</SelectItem>
+                  <SelectItem value="120">2 hours</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="meeting-type">Meeting Type</Label>
+              <Select value={meetingType} onValueChange={setMeetingType}>
+                <SelectTrigger id="meeting-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="video">Video Call</SelectItem>
+                  <SelectItem value="phone">Phone Call</SelectItem>
+                  <SelectItem value="in-person">In Person</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="What would you like to discuss?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          {mentor.hourlyRate && (
+            <div className="rounded-lg bg-secondary/40 p-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Estimated Cost:</span>
+                <span className="font-semibold text-foreground">
+                  ${((mentor.hourlyRate * parseInt(duration)) / 60).toFixed(0)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">Request Booking</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function BookingCard({
   booking,
@@ -64,7 +363,6 @@ function BookingCard({
     <Card className="card-interactive">
       <CardContent className="p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-          {/* Avatar + name */}
           <Link href={`/profiles/${otherUserId}`}>
             <Avatar className="h-12 w-12 shrink-0 ring-2 ring-primary/20">
               <AvatarImage src={other.avatarUrl ?? undefined} />
@@ -129,7 +427,6 @@ function BookingCard({
             )}
           </div>
 
-          {/* Actions */}
           {!isPast && (
             <div className="flex shrink-0 gap-2">
               {isMentor && booking.status === 'requested' && (
@@ -179,10 +476,36 @@ function BookingSkeleton() {
   );
 }
 
+function MentorSkeleton() {
+  return (
+    <Card>
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start gap-4">
+          <Skeleton className="h-16 w-16 rounded-full shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function MentoringPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
-  const [tab, setTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
+  const [mainTab, setMainTab] = useState<'find' | 'sessions'>('find');
+  const [sessionsTab, setSessionsTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedExpertise, setSelectedExpertise] = useState('All');
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
 
   const userId =
     typeof window !== 'undefined'
@@ -198,6 +521,7 @@ export default function MentoringPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['mentoring-bookings'],
     queryFn: () => listMentorBookings('all'),
+    enabled: mainTab === 'sessions',
   });
 
   const updateMutation = useMutation({
@@ -211,13 +535,27 @@ export default function MentoringPage() {
     onError: (err) => showError('Action failed', err instanceof Error ? err.message : 'Please try again'),
   });
 
+  const filteredMentors = DEMO_MENTORS.filter((mentor) => {
+    const matchesSearch =
+      !searchQuery.trim() ||
+      mentor.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mentor.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      mentor.expertise.some((e) => e.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesExpertise =
+      selectedExpertise === 'All' || mentor.expertise.includes(selectedExpertise);
+    return matchesSearch && matchesExpertise;
+  });
+
+  const featuredMentors = filteredMentors.filter((m) => m.isFeatured);
+  const regularMentors = filteredMentors.filter((m) => !m.isFeatured);
+
   const allBookings = data?.bookings ?? [];
   const now = new Date();
 
-  const filtered = allBookings.filter((b) => {
+  const filteredBookings = allBookings.filter((b) => {
     const end = new Date(b.endAt);
-    if (tab === 'upcoming') return end >= now && b.status !== 'cancelled';
-    if (tab === 'past') return end < now || b.status === 'completed';
+    if (sessionsTab === 'upcoming') return end >= now && b.status !== 'cancelled';
+    if (sessionsTab === 'past') return end < now || b.status === 'completed';
     return true;
   });
 
@@ -225,23 +563,103 @@ export default function MentoringPage() {
     (b) => new Date(b.endAt) >= now && b.status !== 'cancelled',
   ).length;
 
+  const handleBookMentor = (mentor: Mentor) => {
+    setSelectedMentor(mentor);
+    setBookingModalOpen(true);
+  };
+
   return (
     <AppShell
       title="Mentoring"
-      description="Manage your mentoring sessions and availability"
-      actions={
-        <Link href="/discover?role=mentor">
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Find a mentor
-          </Button>
-        </Link>
-      }
+      description="Find expert mentors and manage your sessions"
     >
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        {/* Main: bookings */}
-        <div className="space-y-4">
-          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+      <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="find" className="gap-2">
+            <Search className="h-4 w-4" />
+            Find Mentors
+          </TabsTrigger>
+          <TabsTrigger value="sessions" className="gap-2">
+            <Calendar className="h-4 w-4" />
+            My Sessions
+            {upcomingCount > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                {upcomingCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="find" className="space-y-4">
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search mentors by name, expertise, or bio..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {EXPERTISE_FILTERS.map((expertise) => (
+                <button
+                  key={expertise}
+                  onClick={() => setSelectedExpertise(expertise)}
+                  className={cn(
+                    'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
+                    selectedExpertise === expertise
+                      ? 'border-primary bg-primary/20 text-primary'
+                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                  )}
+                >
+                  {expertise}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {featuredMentors.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Award className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  Featured Mentors
+                </h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {featuredMentors.map((mentor) => (
+                  <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {regularMentors.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                All Mentors
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {regularMentors.map((mentor) => (
+                  <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filteredMentors.length === 0 && (
+            <EmptyState
+              illustration="search"
+              title="No mentors found"
+              description="Try adjusting your search or filters"
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="sessions" className="space-y-4">
+          <Tabs value={sessionsTab} onValueChange={(v) => setSessionsTab(v as typeof sessionsTab)}>
             <TabsList>
               <TabsTrigger value="upcoming" className="gap-2">
                 <Calendar className="h-4 w-4" />
@@ -263,7 +681,7 @@ export default function MentoringPage() {
               <TabsContent key={t} value={t} className="mt-4 space-y-3">
                 {isLoading ? (
                   Array.from({ length: 3 }).map((_, i) => <BookingSkeleton key={i} />)
-                ) : filtered.length === 0 ? (
+                ) : filteredBookings.length === 0 ? (
                   <EmptyState
                     illustration="calendar"
                     title={t === 'upcoming' ? 'No upcoming sessions' : t === 'past' ? 'No past sessions' : 'No sessions yet'}
@@ -274,17 +692,15 @@ export default function MentoringPage() {
                     }
                     action={
                       t === 'upcoming' ? (
-                        <Link href="/discover?role=mentor">
-                          <Button variant="secondary" className="gap-2">
-                            <GraduationCap className="h-4 w-4" />
-                            Find a mentor
-                          </Button>
-                        </Link>
+                        <Button variant="secondary" className="gap-2" onClick={() => setMainTab('find')}>
+                          <GraduationCap className="h-4 w-4" />
+                          Find a mentor
+                        </Button>
                       ) : undefined
                     }
                   />
                 ) : (
-                  filtered.map((b) => (
+                  filteredBookings.map((b) => (
                     <BookingCard
                       key={b.id}
                       booking={b}
@@ -299,68 +715,17 @@ export default function MentoringPage() {
               </TabsContent>
             ))}
           </Tabs>
-        </div>
+        </TabsContent>
+      </Tabs>
 
-        {/* Sidebar: quick info */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 text-primary" />
-                How it works
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <div className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">1</span>
-                <p>Browse mentors in <Link href="/discover?role=mentor" className="text-primary hover:underline">Discover</Link> and view their profiles.</p>
-              </div>
-              <div className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">2</span>
-                <p>Request a session by choosing a date, time, and type.</p>
-              </div>
-              <div className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">3</span>
-                <p>Once confirmed, join the meeting via the link provided.</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" />
-                Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              {[
-                {
-                  label: 'Total sessions',
-                  value: allBookings.length,
-                },
-                {
-                  label: 'Upcoming',
-                  value: upcomingCount,
-                },
-                {
-                  label: 'Completed',
-                  value: allBookings.filter((b) => b.status === 'completed').length,
-                },
-                {
-                  label: 'As mentor',
-                  value: allBookings.filter((b) => b.mentorId === userId).length,
-                },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl bg-secondary/40 p-3 text-center">
-                  <p className="text-xl font-bold text-foreground">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <BookingModal
+        mentor={selectedMentor}
+        open={bookingModalOpen}
+        onClose={() => {
+          setBookingModalOpen(false);
+          setSelectedMentor(null);
+        }}
+      />
     </AppShell>
   );
 }
