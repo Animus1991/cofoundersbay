@@ -111,6 +111,19 @@ enum InviteStatus {
   cancelled
 }
 
+enum GroupPrivacy {
+  public
+  private
+  secret
+}
+
+enum GroupMemberRole {
+  owner
+  admin
+  moderator
+  member
+}
+
 model User {
   id                     String         @id @default(uuid())
   email                  String         @unique
@@ -166,6 +179,13 @@ model User {
   // Invites
   invitesSent     Invite[] @relation("InvitesSent")
   invitesReceived Invite[] @relation("InvitesReceived")
+
+  // Groups
+  groupsCreated      Group[]            @relation("GroupsCreated")
+  groupMemberships   GroupMember[]
+  groupPosts         GroupPost[]
+  groupPostComments  GroupPostComment[]
+  groupPostReactions GroupPostReaction[]
 }
 
 model Profile {
@@ -499,7 +519,110 @@ model Invite {
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
-  @@index([senderId, status])
-  @@index([email, status])
-  @@index([expiresAt])
+  @@index([email])
+  @@index([status])
+}
+
+// Groups/Communities System
+model Group {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  description String?       @db.Text
+  avatarUrl   String?
+  coverUrl    String?
+  privacy     GroupPrivacy  @default(public)
+  category    String?
+  tags        Json?
+  rules       Json?
+  createdById String
+  createdBy   User          @relation("GroupsCreated", fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  members     GroupMember[]
+  posts       GroupPost[]
+  events      GroupEvent[]
+
+  @@index([slug])
+  @@index([privacy])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model GroupMember {
+  id        String          @id @default(uuid())
+  groupId   String
+  group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      GroupMemberRole @default(member)
+  joinedAt  DateTime        @default(now())
+  
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model GroupPost {
+  id        String   @id @default(uuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String   @db.Text
+  mediaUrls Json?
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  comments  GroupPostComment[]
+  reactions GroupPostReaction[]
+
+  @@index([groupId, createdAt])
+  @@index([authorId])
+}
+
+model GroupPostComment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id])
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+}
+
+model GroupPostReaction {
+  id        String    @id @default(uuid())
+  postId    String
+  post      GroupPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  emoji     String
+  createdAt DateTime  @default(now())
+  
+  @@unique([postId, userId, emoji])
+  @@index([postId])
+}
+
+model GroupEvent {
+  id          String   @id @default(uuid())
+  groupId     String
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  isVirtual   Boolean  @default(false)
+  meetingUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([groupId, startDate])
 }
