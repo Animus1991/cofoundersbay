@@ -25,8 +25,12 @@ import {
   Plus,
   X,
   Loader2,
+  Sparkles,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import { getMeProfile, listSkills, updateProfile, uploadAvatar, type Skill } from '@/lib/api';
+import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -320,6 +324,22 @@ export default function ProfileEditPage() {
   const [formInitialized, setFormInitialized] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('basic');
+  const [aiLoading, setAILoading] = useState(false);
+  const [aiSuggestions, setAISuggestions] = useState<ProfileSuggestions | null>(null);
+  const [showAISuggestions, setShowAISuggestions] = useState(false);
+
+  const handleAISuggest = async () => {
+    setAILoading(true);
+    try {
+      const { suggestions } = await getAIProfileSuggestions();
+      setAISuggestions(suggestions);
+      setShowAISuggestions(true);
+    } catch {
+      showError('AI unavailable', 'Could not load suggestions right now');
+    } finally {
+      setAILoading(false);
+    }
+  };
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement | null>(null);
 
@@ -586,7 +606,20 @@ export default function ProfileEditPage() {
               {/* Name & Headline */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Name & Headline</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base">Name & Headline</CardTitle>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                      onClick={handleAISuggest}
+                      disabled={aiLoading}
+                    >
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {aiLoading ? 'Analyzing...' : 'Improve with AI'}
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
@@ -615,6 +648,81 @@ export default function ProfileEditPage() {
                     />
                     <p className="text-xs text-muted-foreground">{form.bio.length}/500</p>
                   </div>
+
+                  {/* AI Suggestions panel */}
+                  {showAISuggestions && aiSuggestions && (
+                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold text-primary">AI Suggestions</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {aiSuggestions.completionScore}% complete
+                          </Badge>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAISuggestions(false)}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+
+                      {aiSuggestions.headline && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground">Suggested headline:</p>
+                          <div className="flex items-start gap-2">
+                            <p className="text-sm text-foreground flex-1 bg-background rounded-md px-3 py-2 border border-border">
+                              {aiSuggestions.headline}
+                            </p>
+                            <Button size="sm" variant="outline" className="shrink-0 gap-1"
+                              onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
+                              <CheckCircle2 className="h-3 w-3" /> Apply
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {aiSuggestions.bio && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground">Suggested bio:</p>
+                          <div className="flex items-start gap-2">
+                            <p className="text-sm text-foreground flex-1 bg-background rounded-md px-3 py-2 border border-border">
+                              {aiSuggestions.bio}
+                            </p>
+                            <Button size="sm" variant="outline" className="shrink-0 gap-1"
+                              onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
+                              <CheckCircle2 className="h-3 w-3" /> Apply
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {aiSuggestions.improvements.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground">Improvements:</p>
+                          <ul className="space-y-1">
+                            {aiSuggestions.improvements.map((imp, i) => (
+                              <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                                <span className="text-primary mt-0.5">•</span>
+                                {imp}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {aiSuggestions.missingElements.length > 0 && (
+                        <div className="space-y-1.5">
+                          <p className="text-xs font-medium text-muted-foreground">Missing:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {aiSuggestions.missingElements.map((el, i) => (
+                              <Badge key={i} variant="outline" className="text-xs text-amber-600 border-amber-200">
+                                {el}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
