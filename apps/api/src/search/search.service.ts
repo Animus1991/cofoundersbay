@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Role } from '@prisma/client';
 import { Prisma } from '@prisma/client';
+import { computeMatchScore, type ProfileSnapshot } from '@cofounderbay/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { MeilisearchService } from './meilisearch.service';
 
@@ -26,7 +27,11 @@ export class SearchService {
     offset?: number;
   }) {
     if (this.meili.isEnabled()) {
-      return this.meili.searchProfiles(params);
+      try {
+        return await this.meili.searchProfiles(params);
+      } catch {
+        // Meilisearch unreachable — fall through to Prisma
+      }
     }
     return this.searchProfilesFallback(params);
   }
@@ -157,16 +162,11 @@ export class SearchService {
 
   /**
    * Rules-based recommendations with score 0-100 per candidate.
-   *
-   * Scoring breakdown (max 100):
-   *   30 pts — role complementarity (e.g. founder ↔ mentor/investor)
-   *   30 pts — skills overlap with what the viewer seeks
-   *   20 pts — stage alignment (rolePayload.stage match)
-   *   10 pts — location / timezone proximity
-   *   10 pts — recency (profile updated in last 30 days)
+   * Excludes users that already have a pending or accepted connection with the viewer.
+   * Uses shared computeMatchScore for consistent scoring (role, skills, stage, commitment, location, recency).
    */
   async getRecommendations(userId: string, options?: { role?: string; limit?: number }) {
-    const fetchLimit = 50; // fetch more than needed so scoring can reorder
+    const fetchLimit = 50;
     const returnLimit = Math.min(options?.limit ?? 10, 20);
 
     const viewer = await this.prisma.profile.findUnique({
@@ -178,21 +178,15 @@ export class SearchService {
     });
     if (!viewer) return { suggestions: [] };
 
-    const viewerRole = viewer.user.role as string;
-    const viewerSkillNames = new Set(
-      viewer.skills.map((s: { skill: { name: string } }) => s.skill.name.toLowerCase()),
-    );
-    const viewerStage = (viewer.rolePayload as Record<string, unknown> | null)?.stage as string | undefined;
-    const viewerLocation = viewer.location?.toLowerCase();
+    const excludedUserIds = await this.getConnectedOrPendingUserIds(userId);
 
-    // Determine which roles to target
     const targetRoles = options?.role
       ? [options.role as Role]
-      : this.complementaryRoles(viewerRole);
+      : this.complementaryRoles(viewer.user.role as string);
 
     const candidates = await this.prisma.profile.findMany({
       where: {
-        userId: { not: userId },
+        userId: { not: userId, notIn: excludedUserIds },
         user: { role: { in: targetRoles } },
       },
       include: {
@@ -203,46 +197,10 @@ export class SearchService {
       take: fetchLimit,
     });
 
-    const now = Date.now();
+    const viewerSnapshot = this.toProfileSnapshot(viewer);
     const scored = candidates.map((p) => {
-      let score = 0;
-
-      // 1. Role complementarity (30 pts)
-      score += 30;
-
-      // 2. Skills overlap (30 pts)
-      const candidateSkills = new Set(
-        p.skills.map((s: { skill: { name: string } }) => s.skill.name.toLowerCase()),
-      );
-      const overlap = [...viewerSkillNames].filter((s) => candidateSkills.has(s)).length;
-      const union = new Set([...viewerSkillNames, ...candidateSkills]).size;
-      const jaccard = union > 0 ? overlap / union : 0;
-      score += Math.round(jaccard * 30);
-
-      // 3. Stage alignment (20 pts)
-      const candidateStage = (p.rolePayload as Record<string, unknown> | null)?.stage as string | undefined;
-      if (viewerStage && candidateStage && viewerStage === candidateStage) {
-        score += 20;
-      } else if (viewerStage && candidateStage) {
-        // Partial credit for adjacent stages
-        score += 5;
-      }
-
-      // 4. Location proximity (10 pts)
-      if (viewerLocation && p.location?.toLowerCase().includes(viewerLocation)) {
-        score += 10;
-      } else if (viewerLocation && viewerLocation.includes(p.location?.toLowerCase() ?? '')) {
-        score += 5;
-      }
-
-      // 5. Recency bonus (10 pts — updated within 30 days)
-      const daysSinceUpdate = (now - p.updatedAt.getTime()) / 86400000;
-      if (daysSinceUpdate <= 7) score += 10;
-      else if (daysSinceUpdate <= 30) score += 5;
-
-      // Clamp to 100
-      score = Math.min(score, 100);
-
+      const candidateSnapshot = this.toProfileSnapshot(p);
+      const { score, breakdown } = computeMatchScore(viewerSnapshot, candidateSnapshot);
       const rp = p.rolePayload as Record<string, unknown> | null;
       return {
         id: p.id,
@@ -255,22 +213,66 @@ export class SearchService {
         role: p.user.role,
         skillNames: p.skills.map((s: { skill: { name: string } }) => s.skill.name),
         matchScore: score,
+        matchReasons: breakdown.reasons,
         lookingFor: (rp?.lookingFor as string | undefined) ?? null,
         availability: (rp?.availability as string | undefined) ?? (rp?.commitment as string | undefined) ?? null,
       };
     });
 
-    // Sort by score desc, return top N
     scored.sort((a, b) => b.matchScore - a.matchScore);
-
     return { suggestions: scored.slice(0, returnLimit) };
   }
 
-  /** Returns complementary roles for a given viewer role. */
+  /** User IDs that have pending or accepted connection with the given user (either direction). */
+  private async getConnectedOrPendingUserIds(userId: string): Promise<string[]> {
+    const requests = await this.prisma.connectionRequest.findMany({
+      where: {
+        OR: [{ requesterId: userId }, { receiverId: userId }],
+        status: { in: ['pending', 'accepted'] },
+      },
+      select: { requesterId: true, receiverId: true },
+    });
+    const ids = new Set<string>();
+    for (const r of requests) {
+      if (r.requesterId !== userId) ids.add(r.requesterId);
+      if (r.receiverId !== userId) ids.add(r.receiverId);
+    }
+    return Array.from(ids);
+  }
+
+  private toProfileSnapshot(p: {
+    id: string;
+    userId: string;
+    displayName: string;
+    headline: string | null;
+    bio: string | null;
+    location: string | null;
+    timezone: string | null;
+    rolePayload: unknown;
+    updatedAt: Date;
+    user: { role: string };
+    skills: { skill: { name: string } }[];
+  }): ProfileSnapshot {
+    return {
+      profileId: p.id,
+      userId: p.userId,
+      role: p.user.role as ProfileSnapshot['role'],
+      displayName: p.displayName,
+      headline: p.headline,
+      bio: p.bio,
+      location: p.location,
+      timezone: p.timezone,
+      skillNames: p.skills.map((s) => s.skill.name),
+      rolePayload: (p.rolePayload as Record<string, unknown>) ?? null,
+      updatedAtMs: p.updatedAt.getTime(),
+    };
+  }
+
+  /** Returns complementary roles for a given viewer role (includes cofounder match for founders). */
   private complementaryRoles(viewerRole: string): Role[] {
     switch (viewerRole) {
       case 'founder':
-        return ['mentor', 'investor'] as Role[];
+        return ['mentor', 'investor', 'founder'] as Role[];
       case 'mentor':
         return ['founder'] as Role[];
       case 'investor':

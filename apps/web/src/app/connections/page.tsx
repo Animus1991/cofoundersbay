@@ -237,14 +237,27 @@ export default function ConnectionsPage() {
   });
 
   const respondMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: 'accepted' | 'declined' }) =>
-      respondToConnectionRequest(id, status),
-    onSuccess: (_, { status }) => {
+    mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string }) =>
+      respondToConnectionRequest(id, status).then(() => otherUserId),
+    onSuccess: (otherUserId, { status }) => {
       queryClient.invalidateQueries({ queryKey: ['connections'] });
-      success(
-        status === 'accepted' ? 'Connection accepted!' : 'Request declined',
-        status === 'accepted' ? 'You are now connected.' : 'The request has been removed.',
-      );
+      if (status === 'accepted' && otherUserId) {
+        success(
+          'Connection accepted!',
+          'You are now connected.',
+          {
+            action: {
+              label: 'Start a conversation',
+              onClick: () => handleMessage(otherUserId),
+            },
+          },
+        );
+      } else {
+        success(
+          status === 'accepted' ? 'Connection accepted!' : 'Request declined',
+          status === 'accepted' ? 'You are now connected.' : 'The request has been removed.',
+        );
+      }
     },
     onError: (err) => {
       showError('Could not respond', err instanceof Error ? err.message : 'Please try again');
@@ -337,7 +350,7 @@ export default function ConnectionsPage() {
                 key={c.id}
                 connection={c}
                 isPending={respondMutation.isPending}
-                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted' })}
+                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId })}
                 onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
               />
             ))
@@ -389,7 +402,10 @@ export default function ConnectionsPage() {
                   connection={c}
                   viewerId={viewerId}
                   isPending={respondMutation.isPending}
-                  onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted' })}
+                  onAccept={() => {
+                    const otherUserId = c.requesterId === viewerId ? c.receiverId : c.requesterId;
+                    respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId });
+                  }}
                   onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
                   onMessage={() => handleMessage(
                     c.requesterId === viewerId ? c.receiverId : c.requesterId,

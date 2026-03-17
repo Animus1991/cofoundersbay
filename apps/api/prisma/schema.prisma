@@ -15,6 +15,7 @@ enum Role {
   mentor
   investor
   org
+  admin
 }
 
 enum ConversationType {
@@ -127,16 +128,33 @@ enum GroupMemberRole {
 model User {
   id                     String         @id @default(uuid())
   email                  String         @unique
-  passwordHash           String
+  slug                   String         @unique
+  passwordHash           String?
   role                   Role           @default(founder)
   moderationStatus       UserModerationStatus @default(active)
-  emailVerified          Boolean        @default(false)
-  hasCompletedOnboarding Boolean        @default(false)
+  emailVerified              Boolean        @default(false)
+  emailVerificationToken     String?        @unique
+  emailVerificationExpires   DateTime?
+  hasCompletedOnboarding     Boolean        @default(false)
   lastSeenAt             DateTime?
   createdAt              DateTime       @default(now())
   updatedAt              DateTime       @updatedAt
+
+  @@index([role, moderationStatus])
+  @@index([lastSeenAt])
+  @@index([createdAt])
+
   refreshTokens          RefreshToken[]
   profile                Profile?
+
+  // OAuth providers
+  googleId               String?        @unique
+  linkedinId             String?        @unique
+  
+  // Two-Factor Authentication
+  twoFactorSecret        String?
+  twoFactorEnabled       Boolean        @default(false)
+  twoFactorBackupCodes   String[]       @default([])
 
   // Messaging
   conversationParticipants ConversationParticipant[]
@@ -186,6 +204,18 @@ model User {
   groupPosts         GroupPost[]
   groupPostComments  GroupPostComment[]
   groupPostReactions GroupPostReaction[]
+
+  // Phase 2: Analytics & Data
+  profileViewsAsViewer ProfileView[]       @relation("ProfileViewsAsViewer")
+  activities           UserActivity[]
+  opportunities        Opportunity[]
+  learningResources    LearningResource[]
+  marketplaceServices  MarketplaceService[]
+  cohortsOrganized     Cohort[]
+
+  // Admin
+  adminAuditLogs       AdminAuditLog[]     @relation("AdminAuditLogs")
+  cohortMemberships    CohortMember[]
 }
 
 model Profile {
@@ -201,9 +231,24 @@ model Profile {
   avatarUrl       String?
   rolePayload     Json? // role-specific: industry, stage, expertiseAreas, checkSize, etc.
   visibilityRules Json? // { email?: "public"|"connections"|"private", ... }
+  
+  // Organization-specific fields
+  tagline         String?
+  website         String?
+  mission         String?        @db.Text
+  industry        String?
+  focus           String?        // comma-separated focus areas
+  size            String?        // organization size
+  
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   skills          ProfileSkill[]
+  
+  // Phase 2: Analytics
+  views           ProfileView[]
+
+  @@index([location])
+  @@index([createdAt])
 }
 
 model Skill {
@@ -340,12 +385,14 @@ model Event {
   meetingUrl    String?
   capacity      Int?
   coverImageUrl String?
+  isFeatured    Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   rsvps         EventRsvp[]
 
   @@index([startAt])
   @@index([creatorId])
+  @@index([isFeatured])
 }
 
 model EventRsvp {
@@ -416,20 +463,21 @@ model Notification {
 }
 
 model Report {
-  id           String       @id @default(uuid())
-  type         ReportType
-  status       ReportStatus @default(pending)
-  reporterId   String
-  reporter     User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
-  reportedId   String
-  reported     User         @relation("ReportsAgainst", fields: [reportedId], references: [id], onDelete: Cascade)
-  reason       String       @db.Text
-  context      Json?
-  resolvedAt   DateTime?
-  resolvedById String?
-  resolvedBy   User?        @relation("ReportsResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id             String       @id @default(uuid())
+  type           ReportType
+  status         ReportStatus @default(pending)
+  reporterId     String
+  reporter       User         @relation("ReportsFiled", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId     String
+  reported       User         @relation("ReportsAgainst", fields: [reportedId], references: [id], onDelete: Cascade)
+  reason         String       @db.Text
+  context        Json?
+  resolvedAt     DateTime?
+  resolvedById   String?
+  resolvedBy     User?        @relation("ReportsResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolutionNote String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@index([status, createdAt])
   @@index([reportedId, status])
@@ -499,10 +547,12 @@ model JobPosting {
   location    String?
   isRemote    Boolean  @default(false)
   isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([isActive, createdAt])
+  @@index([isFeatured])
 }
 
 model Invite {
@@ -535,6 +585,7 @@ model Group {
   category       String?
   tags           Json?
   rules          Json?
+  isFeatured     Boolean       @default(false)
   createdById    String
   createdBy      User          @relation("GroupsCreated", fields: [createdById], references: [id])
   createdAt      DateTime      @default(now())
@@ -548,6 +599,7 @@ model Group {
   @@index([privacy])
   @@index([category])
   @@index([createdAt])
+  @@index([isFeatured])
 }
 
 model GroupMember {
@@ -629,4 +681,228 @@ model GroupEvent {
   updatedAt   DateTime @updatedAt
 
   @@index([groupId, startDate])
+}
+
+// ============================================
+// Phase 2: Data Layer Completion & Analytics
+// ============================================
+
+enum ProfileViewSource {
+  direct
+  search
+  recommendation
+  group
+  event
+  external
+}
+
+enum UserActivityType {
+  profile_view
+  connection_sent
+  connection_accepted
+  message_sent
+  event_created
+  event_rsvp
+  group_joined
+  post_created
+  login
+  profile_updated
+}
+
+enum OpportunityType {
+  job
+  cofounder
+  investment
+  partnership
+  mentorship
+  other
+}
+
+enum LearningResourceType {
+  article
+  video
+  course
+  podcast
+  book
+  tool
+  template
+}
+
+enum LearningDifficulty {
+  beginner
+  intermediate
+  advanced
+}
+
+enum MarketplaceCategory {
+  legal
+  finance
+  marketing
+  development
+  design
+  consulting
+  coaching
+  other
+}
+
+// Track profile views for analytics
+model ProfileView {
+  id         String            @id @default(uuid())
+  profileId  String
+  profile    Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  viewerId   String?           // nullable for anonymous views
+  viewer     User?             @relation("ProfileViewsAsViewer", fields: [viewerId], references: [id], onDelete: SetNull)
+  source     ProfileViewSource @default(direct)
+  referrer   String?           // URL or context
+  createdAt  DateTime          @default(now())
+
+  @@index([profileId, createdAt])
+  @@index([viewerId])
+}
+
+// Track user activity for analytics and recommendations
+model UserActivity {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      UserActivityType
+  entityId  String?          // ID of related entity (profile, event, group, etc.)
+  entityType String?         // "profile", "event", "group", etc.
+  meta      Json?            // Additional context
+  createdAt DateTime         @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+  @@index([entityId])
+}
+
+// Opportunities (jobs, co-founder searches, investments, etc.)
+model Opportunity {
+  id          String          @id @default(uuid())
+  title       String
+  description String?         @db.Text
+  type        OpportunityType @default(job)
+  company     String?
+  location    String?
+  isRemote    Boolean         @default(false)
+  url         String?         // External application URL
+  tags        Json?           // string[]
+  deadline    DateTime?
+  isActive    Boolean         @default(true)
+  createdById String
+  createdBy   User            @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([type, isActive])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+// Learning resources (articles, videos, courses, etc.)
+model LearningResource {
+  id          String              @id @default(uuid())
+  title       String
+  description String?             @db.Text
+  type        LearningResourceType @default(article)
+  category    String?             // "fundraising", "product", "marketing", etc.
+  url         String
+  author      String?
+  duration    Int?                // minutes for video/course
+  difficulty  LearningDifficulty  @default(beginner)
+  tags        Json?               // string[]
+  imageUrl    String?
+  isFeatured  Boolean             @default(false)
+  isActive    Boolean             @default(true)
+  createdById String
+  createdBy   User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([type, isActive])
+  @@index([category])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+// Marketplace services (legal, finance, marketing, etc.)
+model MarketplaceService {
+  id           String              @id @default(uuid())
+  title        String
+  description  String?             @db.Text
+  category     MarketplaceCategory @default(other)
+  providerName String
+  providerLogo String?
+  pricing      String?             // "Free", "$99/mo", "Custom", etc.
+  contactUrl   String?
+  websiteUrl   String?
+  tags         Json?               // string[]
+  isFeatured   Boolean             @default(false)
+  isActive     Boolean             @default(true)
+  createdById  String
+  createdBy    User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([category, isActive])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+// Cohorts/Programs for B2B functionality
+model Cohort {
+  id          String         @id @default(uuid())
+  name        String
+  slug        String         @unique
+  description String?        @db.Text
+  organizerId String
+  organizer   User           @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  startDate   DateTime?
+  endDate     DateTime?
+  capacity    Int?
+  isPublic    Boolean        @default(true)
+  tags        Json?          // string[]
+  imageUrl    String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  members     CohortMember[]
+
+  @@index([slug])
+  @@index([organizerId])
+  @@index([isPublic, isActive])
+}
+
+model CohortMember {
+  id        String   @id @default(uuid())
+  cohortId  String
+  cohort    Cohort   @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("participant") // "participant", "mentor", "organizer"
+  joinedAt  DateTime @default(now())
+
+  @@unique([cohortId, userId])
+  @@index([cohortId])
+  @@index([userId])
+}
+
+// Admin Audit Log for tracking all admin actions
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  actor      User     @relation("AdminAuditLogs", fields: [actorId], references: [id], onDelete: Cascade)
+  action     String   // e.g., "user.ban", "report.resolve", "content.remove"
+  entityType String   // e.g., "user", "report", "event", "group"
+  entityId   String?  // ID of the affected entity
+  meta       Json?    // Additional context (reason, old/new values, etc.)
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
 }

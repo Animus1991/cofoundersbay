@@ -31,7 +31,7 @@ const updateBookingSchema = z.object({
   notes: z.string().trim().max(2000).nullable().optional(),
 });
 
-@Controller('v1/mentor')
+@Controller('mentor')
 @UseGuards(JwtAuthGuard)
 export class MentoringController {
   constructor(private readonly mentoring: MentoringService) {}

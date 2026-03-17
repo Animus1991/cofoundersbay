@@ -77,7 +77,7 @@ export class PerformanceMonitor {
         const inpObserver = new PerformanceObserver((list) => {
           for (const entry of list.getEntries()) {
             this.metrics.INP = (entry as any).duration;
-            this.reportMetric('INP', this.metrics.INP);
+            this.reportMetric('INP', this.metrics.INP ?? 0);
           }
         });
         inpObserver.observe({ entryTypes: ['event'] });

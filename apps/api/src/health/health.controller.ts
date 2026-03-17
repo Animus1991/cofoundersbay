@@ -4,7 +4,7 @@ import IORedis from 'ioredis';
 import { PrismaService } from '../prisma/prisma.service';
 import { MeilisearchService } from '../search/meilisearch.service';
 
-@Controller('v1/health')
+@Controller('health')
 export class HealthController {
   constructor(
     private readonly prisma: PrismaService,

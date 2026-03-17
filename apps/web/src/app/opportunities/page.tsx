@@ -202,17 +202,17 @@ const DEMO_PROPOSALS: Proposal[] = [
 // ── Config maps ───────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<OppType, { label: string; className: string; icon: typeof Briefcase }> = {
-  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/20', icon: Handshake },
+  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
   job: { label: 'Job', className: 'bg-primary/20 text-primary border-primary/20', icon: Building2 },
-  freelance: { label: 'Freelance', className: 'bg-orange-500/20 text-orange-400 border-orange-500/20', icon: FileText },
+  freelance: { label: 'Freelance', className: 'bg-orange-500/20 text-orange-700 border-orange-500/20 dark:text-orange-400', icon: FileText },
 };
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
-  accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-400' },
-  declined: { label: 'Declined', className: 'bg-destructive/20 text-destructive' },
-  reviewing: { label: 'Under Review', className: 'bg-amber-500/20 text-amber-400' },
-  rejected: { label: 'Rejected', className: 'bg-destructive/20 text-destructive' },
+  accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
+  declined: { label: 'Declined', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
+  reviewing: { label: 'Under Review', className: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
+  rejected: { label: 'Rejected', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
 };
 
 // ── Sub-components ─────────────────────────────────────────────────────────────

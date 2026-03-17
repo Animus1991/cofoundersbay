@@ -17,6 +17,7 @@ import {
   TrendingUp,
   Award,
   LayoutGrid,
+  Heart,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -38,6 +39,7 @@ export const navSections: NavSection[] = [
     section: 'Community',
     links: [
       { href: '/discover', label: 'Discover', icon: Compass },
+      { href: '/matches', label: 'Matches', icon: Heart },
       { href: '/members', label: 'Members', icon: Users },
       { href: '/connections', label: 'Connections', icon: UserCheck },
       { href: '/groups', label: 'Groups', icon: LayoutGrid },

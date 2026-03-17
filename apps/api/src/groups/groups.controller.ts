@@ -25,7 +25,7 @@ import {
   updateMemberRoleSchema,
 } from './dto/groups.dto';
 
-@Controller('v1/groups')
+@Controller('groups')
 export class GroupsController {
   constructor(private readonly groups: GroupsService) {}
 

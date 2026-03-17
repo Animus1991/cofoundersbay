@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { BookingStatus, MeetingType, Prisma } from '@prisma/client';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailerService } from '../mailer/mailer.service';
 
 export type AvailabilitySlot = {
   id: string;
@@ -42,6 +43,7 @@ export class MentoringService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly mailer: MailerService,
   ) {}
 
   async listAvailability(mentorId: string): Promise<AvailabilitySlot[]> {
@@ -246,9 +248,82 @@ export class MentoringService {
           meta: { bookingId: updated.id, status: patch.status },
         })
         .catch(() => {});
+
+      // Send email confirmation when booking is confirmed
+      if (patch.status === 'confirmed') {
+        void this.sendBookingConfirmationEmails(updated).catch(() => {});
+      }
     }
 
     return this.toBookingItem(updated);
+  }
+
+  private async sendBookingConfirmationEmails(booking: {
+    id: string;
+    startAt: Date;
+    endAt: Date;
+    timezone: string | null;
+    meetingType: MeetingType;
+    meetingUrl: string | null;
+    mentor: { id: string; profile: { displayName: string; avatarUrl: string | null } | null };
+    mentee: { id: string; profile: { displayName: string; avatarUrl: string | null } | null };
+  }): Promise<void> {
+    // Get email addresses
+    const [mentorUser, menteeUser] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: booking.mentor.id }, select: { email: true } }),
+      this.prisma.user.findUnique({ where: { id: booking.mentee.id }, select: { email: true } }),
+    ]);
+
+    if (!mentorUser?.email || !menteeUser?.email) return;
+
+    const mentorName = booking.mentor.profile?.displayName ?? 'Mentor';
+    const menteeName = booking.mentee.profile?.displayName ?? 'Mentee';
+    const startDate = booking.startAt.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const startTime = booking.startAt.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const endTime = booking.endAt.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const tz = booking.timezone ?? 'UTC';
+    const meetingUrl = booking.meetingUrl ?? 'To be provided';
+
+    const emailHtml = (recipientName: string, otherName: string, role: 'mentor' | 'mentee') => `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #6366f1;">Mentoring Session Confirmed!</h2>
+        <p>Hi ${recipientName},</p>
+        <p>Your mentoring session with <strong>${otherName}</strong> has been confirmed.</p>
+        <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+          <p style="margin: 4px 0;"><strong>Date:</strong> ${startDate}</p>
+          <p style="margin: 4px 0;"><strong>Time:</strong> ${startTime} - ${endTime} (${tz})</p>
+          <p style="margin: 4px 0;"><strong>Type:</strong> ${booking.meetingType}</p>
+          <p style="margin: 4px 0;"><strong>Meeting Link:</strong> ${meetingUrl}</p>
+        </div>
+        <p>You can view and manage your bookings in your <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/mentoring" style="color: #6366f1;">mentoring dashboard</a>.</p>
+        <p style="color: #6b7280; font-size: 14px;">— The CoFounderBay Team</p>
+      </div>
+    `;
+
+    // Send to mentor
+    await this.mailer.sendEmail({
+      to: mentorUser.email,
+      subject: `Mentoring session confirmed with ${menteeName}`,
+      html: emailHtml(mentorName, menteeName, 'mentor'),
+    });
+
+    // Send to mentee
+    await this.mailer.sendEmail({
+      to: menteeUser.email,
+      subject: `Mentoring session confirmed with ${mentorName}`,
+      html: emailHtml(menteeName, mentorName, 'mentee'),
+    });
   }
 
   private toBookingItem(row: {

@@ -11,6 +11,7 @@ import {
 import { register as registerApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 
 const ROLES = [
   {
@@ -195,10 +196,10 @@ export default function RegisterPage() {
                       }`} />
                     ))}
                   </div>
-                  <span className={`text-xs ${
-                    passwordStrength === 'weak' ? 'text-red-400'
-                    : passwordStrength === 'medium' ? 'text-amber-400'
-                    : 'text-emerald-400'
+                  <span className={`text-xs font-medium ${
+                    passwordStrength === 'weak' ? 'text-red-600 dark:text-red-400'
+                    : passwordStrength === 'medium' ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-emerald-600 dark:text-emerald-400'
                   }`}>{passwordStrength}</span>
                 </div>
               )}
@@ -236,6 +237,9 @@ export default function RegisterPage() {
               {loading ? 'Creating account…' : 'Create account'}
               {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
+
+            <OAuthDivider />
+            <OAuthButtons mode="register" disabled={loading} />
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">

@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
 const PREFETCH_ROUTES = [
   '/',
   '/discover',
+  '/matches',
   '/members',
   '/activity',
   '/analytics',
@@ -20,48 +21,39 @@ const PREFETCH_ROUTES = [
 
 export function RoutePrefetcher() {
   const pathname = usePathname();
+  const router = useRouter();
+  // Track which hrefs have already been prefetched so we never duplicate
+  const prefetchedRef = useRef<Set<string>>(new Set());
 
+  // Use Next.js router.prefetch (not <link> DOM injection) for static routes
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const prefetchRoute = (route: string) => {
-      const link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.href = route;
-      link.as = 'document';
-      document.head.appendChild(link);
-    };
-
     const timeoutId = setTimeout(() => {
       PREFETCH_ROUTES.forEach((route) => {
-        if (route !== pathname) {
-          prefetchRoute(route);
+        if (route !== pathname && !prefetchedRef.current.has(route)) {
+          prefetchedRef.current.add(route);
+          router.prefetch(route);
         }
       });
     }, 2000);
 
     return () => clearTimeout(timeoutId);
-  }, [pathname]);
+  }, [pathname, router]);
 
+  // Prefetch in-viewport anchor links via IntersectionObserver
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const links = document.querySelectorAll('a[href^="/"]');
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const link = entry.target as HTMLAnchorElement;
             const href = link.getAttribute('href');
-            
-            if (href && !href.startsWith('http')) {
-              const prefetchLink = document.createElement('link');
-              prefetchLink.rel = 'prefetch';
-              prefetchLink.href = href;
-              prefetchLink.as = 'document';
-              document.head.appendChild(prefetchLink);
-              
+            if (href && !href.startsWith('http') && !prefetchedRef.current.has(href)) {
+              prefetchedRef.current.add(href);
+              router.prefetch(href);
               observer.unobserve(link);
             }
           }
@@ -71,9 +63,8 @@ export function RoutePrefetcher() {
     );
 
     links.forEach((link) => observer.observe(link));
-
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [pathname, router]);
 
   return null;
 }

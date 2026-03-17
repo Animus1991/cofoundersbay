@@ -6,7 +6,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
 
-@Controller('v1/billing')
+@Controller('billing')
 export class BillingController {
   constructor(private readonly billing: BillingService) {}
 

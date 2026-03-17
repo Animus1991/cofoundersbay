@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/jwt-optional.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
-@Controller('v1')
+@Controller()
 export class SearchController {
   constructor(private readonly search: SearchService) {}
 

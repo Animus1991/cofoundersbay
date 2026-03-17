@@ -29,17 +29,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
 
-interface Notification {
-  id: string;
-  type: 'message' | 'connection' | 'like' | 'comment' | 'event' | 'job' | 'achievement' | 'system';
-  title: string;
-  body: string;
-  readAt: string | null;
-  createdAt: string;
-  link?: string | null;
-  meta?: Record<string, any>;
-}
+// Use NotificationItem from @/lib/api
 
 const NOTIFICATION_ICONS = {
   message: MessageCircle,
@@ -63,51 +55,51 @@ const NOTIFICATION_COLORS = {
   system: 'text-gray-500',
 };
 
-function NotificationItem({
+function NotificationRow({
   notification,
   onMarkAsRead,
   onDelete,
 }: {
-  notification: Notification;
+  notification: NotificationItem;
   onMarkAsRead: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const Icon = NOTIFICATION_ICONS[notification.type];
+  const Icon = NOTIFICATION_ICONS[notification.type as keyof typeof NOTIFICATION_ICONS] || NOTIFICATION_ICONS.system;
   const timeAgo = getTimeAgo(notification.createdAt);
 
   return (
     <div
       className={cn(
         'flex items-start gap-3 p-3 hover:bg-secondary/40 transition-colors cursor-pointer',
-        !notification.read && 'bg-primary/5'
+        !notification.readAt && 'bg-primary/5'
       )}
       onClick={() => {
-        if (!notification.read) {
+        if (!notification.readAt) {
           onMarkAsRead(notification.id);
         }
-        if (notification.actionUrl) {
-          window.location.href = notification.actionUrl;
+        if (notification.link) {
+          window.location.href = notification.link;
         }
       }}
     >
-      <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type])}>
+      <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
         <Icon className="h-4 w-4" />
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
           <h4 className="font-semibold text-sm line-clamp-1">{notification.title}</h4>
-          {!notification.read && (
+          {!notification.readAt && (
             <div className="h-2 w-2 rounded-full bg-primary shrink-0 mt-1" />
           )}
         </div>
         <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
-          {notification.message}
+          {notification.body}
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
           <div className="flex items-center gap-1">
-            {!notification.read && (
+            {!notification.readAt && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -138,7 +130,7 @@ function NotificationItem({
   );
 }
 
-function getTimeAgo(date: Date): string {
+function getTimeAgo(date: string | Date): string {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
   
   if (seconds < 60) return 'Just now';
@@ -161,17 +153,22 @@ export function NotificationCenter() {
       if (filter === 'unread') params.append('unread', 'true');
       if (categoryFilter !== 'all') params.append('type', categoryFilter);
       
-      const response = await apiRequest(`/api/v1/notifications?${params.toString()}`);
-      return response.json();
+      const result = await listNotifications();
+      let items = result?.notifications ?? [];
+      if (filter === 'unread') {
+        items = items.filter((n: any) => !n.readAt);
+      }
+      if (categoryFilter !== 'all') {
+        items = items.filter((n: any) => n.type === categoryFilter);
+      }
+      return items;
     },
     refetchInterval: 30000,
   });
 
   const markAsReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest(`/api/v1/notifications/${id}/read`, {
-        method: 'PATCH',
-      });
+      await markNotificationRead(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -180,9 +177,7 @@ export function NotificationCenter() {
 
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest('/api/v1/notifications/mark-all-read', {
-        method: 'POST',
-      });
+      await markAllNotificationsRead();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -191,16 +186,15 @@ export function NotificationCenter() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest(`/api/v1/notifications/${id}`, {
-        method: 'DELETE',
-      });
+      // Delete not yet implemented in API, mark as read instead
+      await markNotificationRead(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 
-  const unreadCount = notifications.filter((n: Notification) => n.readAt === null).length;
+  const unreadCount = notifications.filter((n: NotificationItem) => n.readAt === null).length;
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'WebSocket' in window) {
@@ -318,8 +312,8 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="divide-y">
-              {notifications.map((notification: Notification) => (
-                <NotificationItem
+              {notifications.map((notification: NotificationItem) => (
+                <NotificationRow
                   key={notification.id}
                   notification={notification}
                   onMarkAsRead={(id) => markAsReadMutation.mutate(id)}
@@ -340,5 +334,4 @@ export function NotificationCenter() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
 }

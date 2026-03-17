@@ -61,12 +61,12 @@ type PostCardProps = {
 };
 
 const postTypeConfig: Record<PostType, { label: string; color: string; emoji: string }> = {
-  update: { label: 'Update', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30', emoji: '📢' },
-  ask: { label: 'Ask', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30', emoji: '❓' },
-  offer: { label: 'Offer', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', emoji: '🎁' },
-  hiring: { label: 'Hiring', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30', emoji: '👥' },
-  milestone: { label: 'Milestone', color: 'bg-pink-500/15 text-pink-400 border-pink-500/30', emoji: '🎉' },
-  pitch: { label: 'Pitch', color: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30', emoji: '🚀' },
+  update: { label: 'Update', color: 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30', emoji: '📢' },
+  ask: { label: 'Ask', color: 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30', emoji: '❓' },
+  offer: { label: 'Offer', color: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30', emoji: '🎁' },
+  hiring: { label: 'Hiring', color: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30', emoji: '👥' },
+  milestone: { label: 'Milestone', color: 'bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/30', emoji: '🎉' },
+  pitch: { label: 'Pitch', color: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400 border-cyan-500/30', emoji: '🚀' },
 };
 
 function formatTimeAgo(date: Date): string {
@@ -287,7 +287,7 @@ export function PostCard({
             onClick={handleBookmark}
             className={cn(
               'h-8 w-8',
-              bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
+              bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
             )}
           >
             <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />

@@ -389,7 +389,9 @@ export default function DiscoverPage() {
               {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);
                 const score = hit.matchScore ?? 50;
-                const matchReasons = buildMatchReasons(score);
+                const matchReasons = hit.matchReasons?.length
+                  ? hit.matchReasons.map((text) => ({ type: 'skills' as MatchReasonType, text, score: 0 }))
+                  : buildMatchReasons(score);
                 return (
                   <MatchCard
                     key={hit.id}

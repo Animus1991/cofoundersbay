@@ -10,10 +10,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
@@ -192,13 +192,13 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
               <DropdownMenuLabel>Filter by type</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {SEARCH_TYPES.map((type) => (
-                <DropdownMenuCheckboxItem
+                <DropdownMenuItem
                   key={type.value}
-                  checked={selectedTypes.includes(type.value)}
-                  onCheckedChange={() => toggleType(type.value)}
+                  onClick={() => toggleType(type.value)}
+                  className={selectedTypes.includes(type.value) ? 'bg-accent' : ''}
                 >
-                  {type.label}
-                </DropdownMenuCheckboxItem>
+                  {selectedTypes.includes(type.value) ? '✓ ' : ''}{type.label}
+                </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>

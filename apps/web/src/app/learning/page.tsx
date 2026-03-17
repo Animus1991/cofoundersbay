@@ -125,9 +125,9 @@ const TYPE_CONFIG = {
 };
 
 const DIFFICULTY_CONFIG = {
-  beginner: { label: 'Beginner', color: 'bg-emerald-500/20 text-emerald-400' },
-  intermediate: { label: 'Intermediate', color: 'bg-amber-500/20 text-amber-400' },
-  advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-400' },
+  beginner: { label: 'Beginner', color: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
+  intermediate: { label: 'Intermediate', color: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
+  advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-700 dark:text-red-400' },
 };
 
 function ResourceCard({ resource }: { resource: Resource }) {

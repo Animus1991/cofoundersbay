@@ -331,10 +331,10 @@ export default function ProfileEditPage() {
 
   const { data: skillsData } = useQuery({
     queryKey: ['skills'],
-    queryFn: listSkills,
+    queryFn: () => listSkills(),
     staleTime: 10 * 60_000,
   });
-  const skillCatalog = skillsData ?? [];
+  const skillCatalog = (skillsData ?? []) as Array<{ id: string; name: string; slug: string; category: string | null }>;
   const loading = profileLoading;
 
   // Initialize form once profile loads

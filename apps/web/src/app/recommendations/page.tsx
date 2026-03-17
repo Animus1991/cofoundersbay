@@ -238,7 +238,7 @@ export default function RecommendationsPage() {
     <AppShell
       title="Recommendations"
       description="Discover your best matches based on AI-powered analysis"
-      action={
+      actions={
         <Button variant="outline" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh

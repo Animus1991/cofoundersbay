@@ -383,6 +383,13 @@ function mapActivityItems(
   }));
 }
 
+function getTimeBasedGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 function DashboardContent() {
   const { data: profileData } = useQuery({
     queryKey: ['me', 'profile'],
@@ -390,6 +397,8 @@ function DashboardContent() {
     staleTime: 5 * 60_000,
   });
   const displayName = profileData?.profile?.displayName ?? 'there';
+  const userRole = profileData?.profile?.role ?? 'founder';
+  const greeting = getTimeBasedGreeting();
 
   const { data: pendingData } = useQuery({
     queryKey: ['connections', 'pending-received'],
@@ -458,10 +467,16 @@ function DashboardContent() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h1 className="font-display text-xl font-semibold text-foreground">
-                Welcome back, {displayName} 👋
+                {greeting}, {displayName} 👋
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Here&apos;s what&apos;s happening in your network today.
+                {userRole === 'mentor' 
+                  ? 'Check your upcoming sessions and mentee requests.'
+                  : userRole === 'investor'
+                    ? 'Discover promising founders and track your portfolio.'
+                    : pendingCount > 0
+                      ? `You have ${pendingCount} pending connection${pendingCount > 1 ? 's' : ''} to review.`
+                      : 'Here\'s what\'s happening in your network today.'}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">

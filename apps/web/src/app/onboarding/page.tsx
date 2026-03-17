@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Rocket, User, Briefcase, Zap, ArrowRight, ArrowLeft, Check, Camera, Loader2 } from 'lucide-react';
@@ -12,6 +12,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { SkillChip } from '@/components/common/SkillChip';
 import { cn } from '@/lib/utils';
+
+const ONBOARDING_STORAGE_KEY = 'cfb_onboarding_state';
 
 const ROLES = [
   { value: 'founder', label: 'Founder', desc: 'Building and leading a startup', icon: Rocket },
@@ -26,6 +28,50 @@ const STEPS = [
   { label: 'Skills', icon: Zap },
 ];
 
+interface OnboardingState {
+  step: number;
+  role: string;
+  form: {
+    displayName: string;
+    headline: string;
+    bio: string;
+    location: string;
+    timezone: string;
+    languages: string[];
+    rolePayload: Record<string, unknown>;
+    skillIds: string[];
+  };
+  avatarUrl: string | null;
+}
+
+function loadSavedState(): Partial<OnboardingState> | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = localStorage.getItem(ONBOARDING_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveState(state: OnboardingState): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // Storage full or unavailable
+  }
+}
+
+function clearSavedState(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(ONBOARDING_STORAGE_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -38,6 +84,7 @@ export default function OnboardingPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [stateRestored, setStateRestored] = useState(false);
   const [form, setForm] = useState({
     displayName: '',
     headline: '',
@@ -49,13 +96,39 @@ export default function OnboardingPage() {
     skillIds: [] as string[],
   });
 
+  // Save state to localStorage whenever it changes
+  const persistState = useCallback(() => {
+    if (!stateRestored) return;
+    saveState({ step, role, form, avatarUrl });
+  }, [step, role, form, avatarUrl, stateRestored]);
+
+  useEffect(() => {
+    persistState();
+  }, [persistState]);
+
   useEffect(() => {
     let mounted = true;
     getMeProfile()
       .then(({ profile, hasCompletedOnboarding }) => {
         if (!mounted) return;
-        if (hasCompletedOnboarding && profile) router.replace('/profile');
-        else if (profile) {
+        if (hasCompletedOnboarding && profile) {
+          clearSavedState();
+          router.replace('/profile');
+          return;
+        }
+        
+        // Try to restore saved state first
+        const savedState = loadSavedState();
+        if (savedState && savedState.form?.displayName) {
+          setStep(savedState.step || 1);
+          setRole(savedState.role || 'founder');
+          setForm(savedState.form);
+          if (savedState.avatarUrl) {
+            setAvatarUrl(savedState.avatarUrl);
+            setAvatarPreview(savedState.avatarUrl);
+          }
+        } else if (profile) {
+          // Fall back to profile data
           setForm((f) => ({
             ...f,
             displayName: profile.displayName ?? '',
@@ -69,6 +142,7 @@ export default function OnboardingPage() {
           }));
           setRole(profile.role ?? 'founder');
         }
+        setStateRestored(true);
       })
       .catch(() => router.replace('/login'))
       .finally(() => { if (mounted) setLoading(false); });
@@ -112,6 +186,7 @@ export default function OnboardingPage() {
         ...(avatarUrl ? { avatarUrl } : {}),
       };
       await createProfile(payload);
+      clearSavedState(); // Clear localStorage after successful submission
       router.replace('/profile');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');

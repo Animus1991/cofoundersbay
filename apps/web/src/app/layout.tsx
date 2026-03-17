@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoutePrefetcher } from '@/components/optimization/RoutePrefetcher';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
+import { cn } from '@/lib/utils';
 
 const inter = Inter({
   subsets: ['latin', 'greek'],
@@ -60,11 +61,24 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="el" className="dark" suppressHydrationWarning>
+    <html
+      lang="el"
+      data-scroll-behavior="smooth"
+      className={cn(
+        inter.variable,
+        sora.variable,
+        spaceGrotesk.variable,
+        'scroll-smooth',
+      )}
+      suppressHydrationWarning
+    >
       <body
         suppressHydrationWarning
         className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} bg-background text-foreground font-sans antialiased`}
       >
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <ErrorBoundary>
           <QueryProvider>
             <RoutePrefetcher />

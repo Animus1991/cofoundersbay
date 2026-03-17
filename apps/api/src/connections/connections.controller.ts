@@ -22,7 +22,7 @@ const respondSchema = z.object({
   status: z.enum(['accepted', 'declined']),
 });
 
-@Controller('v1/connections')
+@Controller('connections')
 @UseGuards(JwtAuthGuard)
 export class ConnectionsController {
   constructor(private readonly connections: ConnectionsService) {}

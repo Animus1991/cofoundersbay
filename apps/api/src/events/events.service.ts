@@ -253,6 +253,51 @@ export class EventsService {
     };
   }
 
+  generateIcsCalendar(event: EventListItem): string {
+    const formatIcsDate = (isoDate: string): string => {
+      return new Date(isoDate).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const escapeIcs = (text: string): string => {
+      return text.replace(/[\\;,\n]/g, (match) => {
+        if (match === '\n') return '\\n';
+        return '\\' + match;
+      });
+    };
+
+    const uid = `${event.id}@cofounderbay.com`;
+    const dtstamp = formatIcsDate(new Date().toISOString());
+    const dtstart = formatIcsDate(event.startAt);
+    const dtend = formatIcsDate(event.endAt);
+    const summary = escapeIcs(event.title);
+    const description = escapeIcs(event.description || '');
+    const location = event.isOnline 
+      ? (event.meetingUrl || 'Online') 
+      : escapeIcs(event.location || 'TBD');
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//CoFounderBay//Events//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${dtstart}`,
+      `DTEND:${dtend}`,
+      `SUMMARY:${summary}`,
+      `DESCRIPTION:${description}`,
+      `LOCATION:${location}`,
+      `ORGANIZER;CN=${escapeIcs(event.host.displayName)}:mailto:noreply@cofounderbay.com`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    return icsContent;
+  }
+
   private toEventListItem(item: {
     id: string;
     title: string;

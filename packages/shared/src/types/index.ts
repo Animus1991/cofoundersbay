@@ -1,6 +1,20 @@
 // Shared domain types (API + Web)
 
+export * from './api';
 export type UserRole = 'founder' | 'mentor' | 'investor' | 'org';
+
+// Re-export commonly used types for convenience
+export type {
+  ApiResponse,
+  PaginatedResponse,
+  ApiError,
+  StandardErrorResponse,
+  StandardSuccessResponse,
+  RequestMetadata,
+  HealthCheckResponse,
+} from './api';
+
+export { ErrorCode } from './api';
 
 export interface UserProfileBase {
   id: string;

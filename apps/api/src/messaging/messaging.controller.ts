@@ -13,7 +13,7 @@ const flagsSchema = z.object({
   isArchived: z.boolean().optional(),
 });
 
-@Controller('v1/messages')
+@Controller('messages')
 @UseGuards(JwtAuthGuard)
 export class MessagingController {
   constructor(private readonly messaging: MessagingService) {}

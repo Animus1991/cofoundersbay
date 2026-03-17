@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
@@ -21,13 +21,18 @@ export interface JwtPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly emailVerificationRequired: boolean;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.emailVerificationRequired =
+      this.config.get<string>('EMAIL_VERIFICATION_REQUIRED') === 'true';
+  }
 
-  async register(input: RegisterInput): Promise<{ user: { id: string; email: string; role: string }; tokens: TokenPair }> {
+  async register(input: RegisterInput): Promise<{ user: { id: string; email: string; role: string; emailVerified: boolean }; tokens: TokenPair }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
       select: { id: true },
@@ -45,15 +50,15 @@ export class AuthService {
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return {
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
       tokens,
     };
   }
 
-  async login(input: LoginInput): Promise<{ user: { id: string; email: string; role: string }; tokens: TokenPair }> {
+  async login(input: LoginInput): Promise<{ user: { id: string; email: string; role: string; emailVerified: boolean }; tokens: TokenPair }> {
     const user = await this.prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
-      select: { id: true, email: true, role: true, passwordHash: true, moderationStatus: true },
+      select: { id: true, email: true, role: true, passwordHash: true, moderationStatus: true, emailVerified: true },
     });
     if (!user) throw new UnauthorizedException('Invalid email or password');
     if (user.moderationStatus === 'suspended') {
@@ -63,12 +68,19 @@ export class AuthService {
       throw new UnauthorizedException('Your account has been banned');
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Please use OAuth to sign in (Google/LinkedIn)');
+    }
     const valid = await argon2.verify(user.passwordHash, input.password);
     if (!valid) throw new UnauthorizedException('Invalid email or password');
 
+    if (this.emailVerificationRequired && !user.emailVerified) {
+      throw new ForbiddenException('Please verify your email before logging in. Check your inbox for the verification link.');
+    }
+
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return {
-      user: { id: user.id, email: user.email, role: user.role },
+      user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
       tokens,
     };
   }
@@ -101,6 +113,9 @@ export class AuthService {
     });
     if (!user) throw new UnauthorizedException('User not found');
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('No password set. Please set a password first.');
+    }
     const valid = await argon2.verify(user.passwordHash, currentPassword);
     if (!valid) throw new UnauthorizedException('Current password is incorrect');
 

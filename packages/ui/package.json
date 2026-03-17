@@ -4,14 +4,42 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./button": "./src/button.tsx",
+    "./card": "./src/card.tsx",
+    "./badge": "./src/badge.tsx",
+    "./input": "./src/input.tsx",
+    "./textarea": "./src/textarea.tsx",
+    "./avatar": "./src/avatar.tsx",
+    "./skeleton": "./src/skeleton.tsx",
+    "./dialog": "./src/dialog.tsx",
+    "./tabs": "./src/tabs.tsx",
+    "./select": "./src/select.tsx",
+    "./toast": "./src/toast.tsx",
+    "./empty-state": "./src/empty-state.tsx"
+  },
   "scripts": {
     "lint": "tsc --noEmit"
   },
   "peerDependencies": {
-    "react": "^18.0.0 || ^19.0.0"
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.2",
+    "@radix-ui/react-dialog": "^1.1.4",
+    "@radix-ui/react-select": "^2.1.4",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@radix-ui/react-tabs": "^1.1.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
     "typescript": "^5.7.2"
   }
 }

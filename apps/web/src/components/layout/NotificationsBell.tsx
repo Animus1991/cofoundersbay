@@ -35,14 +35,14 @@ const TYPE_ICON: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  message: 'bg-blue-500/15 text-blue-400',
-  connection_request: 'bg-emerald-500/15 text-emerald-400',
-  connection_accepted: 'bg-emerald-500/15 text-emerald-400',
-  match: 'bg-yellow-500/15 text-yellow-400',
-  event: 'bg-purple-500/15 text-purple-400',
-  job: 'bg-orange-500/15 text-orange-400',
-  group: 'bg-cyan-500/15 text-cyan-400',
-  mention: 'bg-pink-500/15 text-pink-400',
+  message: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
+  connection_request: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+  connection_accepted: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
+  match: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+  event: 'bg-purple-500/15 text-purple-700 dark:text-purple-400',
+  job: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
+  group: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400',
+  mention: 'bg-pink-500/15 text-pink-700 dark:text-pink-400',
 };
 
 function NotifIcon({ type }: { type: string }) {
@@ -59,15 +59,16 @@ export function NotificationsBell({ className }: { className?: string }) {
   const router = useRouter();
   const { error: showError } = useToast();
 
-  const accessToken = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
-  }, []);
-
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [hasNew, setHasNew] = useState(false);
   const socketConnectedRef = useRef(false);
+
+  // Client-only: load accessToken after mount to avoid hydration mismatch
+  useEffect(() => {
+    setAccessToken(localStorage.getItem('accessToken'));
+  }, []);
 
   const unread = items.filter((n) => !n.readAt).length;
 

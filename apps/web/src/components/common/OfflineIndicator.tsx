@@ -79,7 +79,7 @@ export function OfflineBanner() {
 
   if (!isOnline) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-[200] bg-amber-500 px-4 py-2 text-amber-950 animate-slide-in-down">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-amber-950 animate-slide-in-down" style={{ scrollMargin: 0 }}>
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <WifiOff className="h-4 w-4" />
@@ -103,7 +103,7 @@ export function OfflineBanner() {
 
   if (showReconnected) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-[200] bg-emerald-500 px-4 py-2 text-emerald-950 animate-slide-in-down">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 px-4 py-2 text-emerald-950 animate-slide-in-down" style={{ scrollMargin: 0 }}>
         <div className="container mx-auto flex items-center justify-center gap-2">
           <Wifi className="h-4 w-4" />
           <span className="text-sm font-medium">Back online!</span>
@@ -123,7 +123,7 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
     <div
       className={cn(
         'flex items-center gap-1.5 text-xs',
-        isOnline ? 'text-emerald-400' : 'text-amber-400',
+        isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
         className
       )}
     >

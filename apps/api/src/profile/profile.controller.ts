@@ -7,7 +7,7 @@ import { createProfileSchema, updateProfileSchema } from '@cofounderbay/shared';
 
 type UserPayload = { id: string; email: string; role: string };
 
-@Controller('v1')
+@Controller()
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 

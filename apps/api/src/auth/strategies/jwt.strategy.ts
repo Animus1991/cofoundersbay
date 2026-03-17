@@ -2,7 +2,18 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request } from 'express';
 import { AuthService, JwtPayload } from '../auth.service';
+import { COOKIE_NAMES } from '../cookie.utils';
+
+function extractJwtFromCookieOrHeader(req: Request): string | null {
+  // 1. Try HttpOnly cookie first
+  const cookieToken = (req.cookies as Record<string, string>)?.[COOKIE_NAMES.ACCESS_TOKEN];
+  if (cookieToken) return cookieToken;
+
+  // 2. Fall back to Authorization header (backwards compat / mobile clients)
+  return ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -21,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       );
     }
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: extractJwtFromCookieOrHeader,
       ignoreExpiration: false,
       secretOrKey: secret,
     });

@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 
-@Controller('v1/notifications')
+@Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
   constructor(private readonly prisma: PrismaService) {}

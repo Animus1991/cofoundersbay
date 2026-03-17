@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeiliSearch } from 'meilisearch';
 
@@ -8,15 +8,25 @@ export const PROFILES_INDEX = 'profiles';
 export class MeilisearchService implements OnModuleInit {
   private client: MeiliSearch | null = null;
   private enabled: boolean = false;
+  private readonly logger = new Logger(MeilisearchService.name);
 
   constructor(private readonly config: ConfigService) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     const host = this.config.get<string>('MEILISEARCH_HOST');
     const key = this.config.get<string>('MEILISEARCH_API_KEY');
     if (host && key) {
       this.client = new MeiliSearch({ host, apiKey: key });
-      this.enabled = true;
+      // Probe connectivity — disable if unreachable so fallback kicks in
+      try {
+        await this.client.health();
+        this.enabled = true;
+        this.logger.log('Meilisearch connected successfully');
+      } catch {
+        this.enabled = false;
+        this.client = null;
+        this.logger.warn('Meilisearch unreachable — using Prisma fallback for search');
+      }
     }
   }
 
@@ -117,16 +127,24 @@ export class MeilisearchService implements OnModuleInit {
           ? ['updatedAt:desc']
           : undefined;
 
-    const results = await index.search(q, {
-      limit: Math.min(params.limit ?? 20, 50),
-      offset: params.offset ?? 0,
-      filter: filters.length ? filters.join(' AND ') : undefined,
-      sort,
-    });
-    return {
-      hits: (results.hits as ProfileSearchDocument[]),
-      total: results.estimatedTotalHits ?? 0,
-    };
+    try {
+      const results = await index.search(q, {
+        limit: Math.min(params.limit ?? 20, 50),
+        offset: params.offset ?? 0,
+        filter: filters.length ? filters.join(' AND ') : undefined,
+        sort,
+      });
+      return {
+        hits: (results.hits as ProfileSearchDocument[]),
+        total: results.estimatedTotalHits ?? 0,
+      };
+    } catch (err) {
+      // Disable Meilisearch so subsequent calls use Prisma fallback
+      this.logger.warn('Meilisearch search failed, disabling for this session', err);
+      this.enabled = false;
+      this.client = null;
+      throw err;
+    }
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Check, CheckCheck, MoreVertical, Reply, Trash2, Copy } from 'lucide-react';
+import { Check, CheckCheck, MoreVertical, Reply, Trash2, Copy, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

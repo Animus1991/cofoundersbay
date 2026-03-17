@@ -70,6 +70,9 @@ type ChatWindowProps = {
   onTypingStart?: () => void;
   onTypingStop?: () => void;
   isRecipientTyping?: boolean;
+  hasMoreMessages?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
   className?: string;
 };
 
@@ -260,6 +263,9 @@ export function ChatWindow({
   onTypingStart,
   onTypingStop,
   isRecipientTyping = false,
+  hasMoreMessages = false,
+  isLoadingMore = false,
+  onLoadMore,
   className,
 }: ChatWindowProps) {
   const [inputValue, setInputValue] = useState('');
@@ -443,6 +449,20 @@ export function ChatWindow({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-1">
+        {/* Load more button at top */}
+        {hasMoreMessages && (
+          <div className="flex justify-center py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onLoadMore}
+              disabled={isLoadingMore}
+              className="text-xs text-muted-foreground"
+            >
+              {isLoadingMore ? 'Loading...' : 'Load older messages'}
+            </Button>
+          </div>
+        )}
         {groupedMessages.map((group, groupIndex) => (
           <div key={groupIndex}>
             <DateDivider date={group.date} />

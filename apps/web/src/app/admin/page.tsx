@@ -17,14 +17,30 @@ import {
   MoreHorizontal,
   Clock,
   RefreshCw,
+  GraduationCap,
+  Plus,
+  Trash2,
+  Calendar,
+  UserCheck,
 } from 'lucide-react';
 import {
   listAdminReports,
   listAdminUsers,
   updateAdminReport,
   updateAdminUserModeration,
+  getAdminStats,
+  banUser,
+  unbanUser,
+  changeUserRole,
+  listAdminAuditLogs,
+  listAdminCohorts,
+  createAdminCohort,
+  deleteAdminCohort,
   type AdminReportItem,
   type AdminUserItem,
+  type AdminPlatformStats,
+  type AdminAuditLogItem,
+  type AdminCohortItem,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -46,17 +62,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-400 border-red-500/30' },
-  fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-orange-500/15 text-orange-400 border-orange-500/30' },
-  other: { label: 'Other', color: 'bg-gray-500/15 text-gray-400 border-gray-500/30' },
+  spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400' },
+  harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-400' },
+  fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400' },
+  inappropriate: { label: 'Inappropriate', color: 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400' },
+  other: { label: 'Other', color: 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400' },
 };
 
 const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'text-amber-400', icon: Clock },
-  reviewed: { label: 'Under Review', color: 'text-blue-400', icon: Eye },
-  resolved: { label: 'Resolved', color: 'text-emerald-400', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'text-amber-600 dark:text-amber-400', icon: Clock },
+  reviewed: { label: 'Under Review', color: 'text-blue-600 dark:text-blue-400', icon: Eye },
+  resolved: { label: 'Resolved', color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
@@ -241,13 +257,13 @@ function UserRow({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
-            <DropdownMenuItem onClick={onSuspend} className="text-amber-400">
+            <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
               <AlertTriangle className="mr-2 h-4 w-4" />
               Suspend
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
               <CheckCircle className="mr-2 h-4 w-4" />
               Reactivate
             </DropdownMenuItem>
@@ -259,7 +275,7 @@ function UserRow({
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
               <CheckCircle className="mr-2 h-4 w-4" />
               Unban
             </DropdownMenuItem>
@@ -273,7 +289,17 @@ function UserRow({
 export default function AdminPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const [activeTab, setActiveTab] = useState('reports');
   const [userSearch, setUserSearch] = useState('');
+  const [cohortSearch, setCohortSearch] = useState('');
+  const [showNewCohort, setShowNewCohort] = useState(false);
+  const [newCohort, setNewCohort] = useState({ name: '', slug: '', description: '', startDate: '', endDate: '', capacity: '' });
+
+  const { data: statsData, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+    queryKey: ['admin-stats'],
+    queryFn: () => getAdminStats(),
+    staleTime: 30_000,
+  });
 
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useQuery({
     queryKey: ['admin-reports'],
@@ -284,6 +310,37 @@ export default function AdminPage() {
     queryKey: ['admin-users', userSearch],
     queryFn: () => listAdminUsers({ q: userSearch || undefined, limit: 100 }),
   });
+
+  const { data: auditData, isLoading: auditLoading } = useQuery({
+    queryKey: ['admin-audit-logs'],
+    queryFn: () => listAdminAuditLogs({ limit: 50 }),
+    enabled: activeTab === 'audit',
+  });
+
+  const { data: cohortsData, isLoading: cohortsLoading, refetch: refetchCohorts } = useQuery({
+    queryKey: ['admin-cohorts', cohortSearch],
+    queryFn: () => listAdminCohorts({ q: cohortSearch || undefined, limit: 50 }),
+    enabled: activeTab === 'cohorts',
+  });
+
+  const createCohortMutation = useMutation({
+    mutationFn: (data: Parameters<typeof createAdminCohort>[0]) => createAdminCohort(data),
+    onSuccess: () => {
+      void refetchCohorts();
+      setShowNewCohort(false);
+      setNewCohort({ name: '', slug: '', description: '', startDate: '', endDate: '', capacity: '' });
+      success('Cohort created', 'New program created successfully.');
+    },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not create cohort'),
+  });
+
+  const deleteCohortMutation = useMutation({
+    mutationFn: (cohortId: string) => deleteAdminCohort(cohortId),
+    onSuccess: () => { void refetchCohorts(); success('Deleted', 'Cohort removed.'); },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not delete cohort'),
+  });
+
+  const stats = statsData?.stats;
 
   const reportMutation = useMutation({
     mutationFn: ({ id, status, banUserId }: {
@@ -350,32 +407,43 @@ export default function AdminPage() {
       }
     >
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <StatCard
           label="Total Users"
-          value={usersLoading ? '…' : users.length.toString()}
+          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
+          icon={<Users className="h-5 w-5" />}
+          trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
+        />
+        <StatCard
+          label="Active Today"
+          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
           icon={<Users className="h-5 w-5" />}
         />
         <StatCard
           label="Pending Reports"
-          value={reportsLoading ? '…' : pendingReports.toString()}
+          value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
           icon={<Flag className="h-5 w-5" />}
-          trend={pendingReports > 0 ? { value: -pendingReports, label: 'open' } : undefined}
+          trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
         />
         <StatCard
-          label="Suspended"
-          value={usersLoading ? '…' : users.filter((u) => u.moderationStatus === 'suspended').length.toString()}
-          icon={<AlertTriangle className="h-5 w-5" />}
+          label="Connections"
+          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
+          icon={<Users className="h-5 w-5" />}
         />
         <StatCard
-          label="Banned"
-          value={usersLoading ? '…' : users.filter((u) => u.moderationStatus === 'banned').length.toString()}
-          icon={<Ban className="h-5 w-5" />}
+          label="Messages"
+          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
+          icon={<Users className="h-5 w-5" />}
+        />
+        <StatCard
+          label="Events"
+          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
+          icon={<Users className="h-5 w-5" />}
         />
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="reports">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="reports" className="gap-2">
             <Flag className="h-4 w-4" />
@@ -390,9 +458,17 @@ export default function AdminPage() {
             <Users className="h-4 w-4" />
             Users
           </TabsTrigger>
+          <TabsTrigger value="cohorts" className="gap-2">
+            <GraduationCap className="h-4 w-4" />
+            Cohorts
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="h-4 w-4" />
             Analytics
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="gap-2">
+            <Shield className="h-4 w-4" />
+            Audit Log
           </TabsTrigger>
         </TabsList>
 
@@ -501,15 +577,236 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
 
+        {/* Cohorts Tab */}
+        <TabsContent value="cohorts" className="mt-6 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="relative w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search cohorts…"
+                value={cohortSearch}
+                onChange={(e) => setCohortSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
+              <Plus className="h-4 w-4" />
+              New Cohort
+            </Button>
+          </div>
+
+          {showNewCohort && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Create New Cohort / Program</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Name *</label>
+                    <Input placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
+                      onChange={(e) => setNewCohort(p => ({ ...p, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Slug *</label>
+                    <Input placeholder="spring-2025" value={newCohort.slug} onChange={(e) => setNewCohort(p => ({ ...p, slug: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Start Date</label>
+                    <Input type="date" value={newCohort.startDate} onChange={(e) => setNewCohort(p => ({ ...p, startDate: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">End Date</label>
+                    <Input type="date" value={newCohort.endDate} onChange={(e) => setNewCohort(p => ({ ...p, endDate: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground">Capacity</label>
+                    <Input type="number" placeholder="50" value={newCohort.capacity} onChange={(e) => setNewCohort(p => ({ ...p, capacity: e.target.value }))} />
+                  </div>
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-medium text-muted-foreground">Description</label>
+                    <Input placeholder="Short description…" value={newCohort.description} onChange={(e) => setNewCohort(p => ({ ...p, description: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" disabled={!newCohort.name || !newCohort.slug || createCohortMutation.isPending}
+                    onClick={() => createCohortMutation.mutate({
+                      name: newCohort.name,
+                      slug: newCohort.slug,
+                      description: newCohort.description || undefined,
+                      startDate: newCohort.startDate || undefined,
+                      endDate: newCohort.endDate || undefined,
+                      capacity: newCohort.capacity ? parseInt(newCohort.capacity) : undefined,
+                    })}>
+                    {createCohortMutation.isPending ? 'Creating…' : 'Create'}
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setShowNewCohort(false)}>Cancel</Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {cohortsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}><CardContent className="pt-5"><div className="space-y-2"><Skeleton className="h-5 w-48" /><Skeleton className="h-4 w-64" /></div></CardContent></Card>
+            ))
+          ) : (cohortsData?.cohorts ?? []).length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="font-semibold text-foreground">No cohorts yet</h3>
+                <p className="text-sm text-muted-foreground">Create your first cohort or program above</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {(cohortsData?.cohorts ?? []).map((cohort) => (
+                <Card key={cohort.id} className="group">
+                  <CardContent className="pt-5">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground truncate">{cohort.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">/{cohort.slug}</p>
+                        {cohort.description && (
+                          <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{cohort.description}</p>
+                        )}
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Badge variant="secondary" className="gap-1 text-xs">
+                            <UserCheck className="h-3 w-3" />
+                            {cohort._count.members} members
+                          </Badge>
+                          {cohort.startDate && (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(cohort.startDate).toLocaleDateString()}
+                            </Badge>
+                          )}
+                          {cohort.capacity && (
+                            <Badge variant="outline" className="text-xs">Cap: {cohort.capacity}</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-destructive opacity-0 group-hover:opacity-100"
+                        onClick={() => deleteCohortMutation.mutate(cohort.id)}
+                        disabled={deleteCohortMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="mt-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Users by Role</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {stats?.usersByRole && Object.entries(stats.usersByRole).map(([role, count]) => (
+                  <div key={role} className="flex items-center justify-between">
+                    <span className="text-sm capitalize text-foreground">{role}</span>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">New Users</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">Today</span>
+                  <Badge variant="secondary">{stats?.newUsersToday ?? 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">This Week</span>
+                  <Badge variant="secondary">{stats?.newUsersThisWeek ?? 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">This Month</span>
+                  <Badge variant="secondary">{stats?.newUsersThisMonth ?? 0}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Users</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">DAU</span>
+                  <Badge variant="secondary">{stats?.activeUsersToday ?? 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">WAU</span>
+                  <Badge variant="secondary">{stats?.activeUsersThisWeek ?? 0}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">MAU</span>
+                  <Badge variant="secondary">{stats?.activeUsersThisMonth ?? 0}</Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Audit Log Tab */}
+        <TabsContent value="audit" className="mt-6">
           <Card>
-            <CardContent className="py-12 text-center">
-              <BarChart3 className="mx-auto mb-4 h-12 w-12 text-primary" />
-              <h3 className="text-lg font-semibold text-foreground">Analytics Dashboard</h3>
-              <p className="text-sm text-muted-foreground">
-                Detailed platform analytics coming soon.
-              </p>
+            <CardHeader>
+              <CardTitle className="text-base">Admin Audit Log</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {auditLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-64" />
+                    </div>
+                  </div>
+                ))
+              ) : (auditData?.logs ?? []).length === 0 ? (
+                <div className="py-12 text-center">
+                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">No audit logs yet</p>
+                </div>
+              ) : (
+                (auditData?.logs ?? []).map((log) => (
+                  <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Shield className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-medium text-foreground">{log.actorEmail}</span>
+                        <Badge variant="outline" className="text-xs">{log.action}</Badge>
+                        <Badge variant="secondary" className="text-xs">{log.entityType}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {log.entityId && <span>ID: {log.entityId.slice(0, 8)}… · </span>}
+                        {formatTimeAgo(log.createdAt)}
+                      </p>
+                      {log.meta && Object.keys(log.meta).length > 0 && (
+                        <pre className="mt-2 rounded bg-secondary/40 p-2 text-xs text-muted-foreground overflow-x-auto">
+                          {JSON.stringify(log.meta, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
         </TabsContent>

@@ -21,7 +21,7 @@ function safeExt(originalName: string): string {
   return ext;
 }
 
-@Controller('v1/uploads')
+@Controller('uploads')
 @UseGuards(JwtAuthGuard)
 export class UploadsController {
   constructor(private readonly uploads: UploadsService) {}

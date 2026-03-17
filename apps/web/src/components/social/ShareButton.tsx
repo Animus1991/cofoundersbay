@@ -26,7 +26,7 @@ interface ShareButtonProps {
   title: string;
   description?: string;
   variant?: 'default' | 'outline' | 'ghost';
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  size?: 'sm' | 'lg' | 'icon' | 'md';
   className?: string;
 }
 
@@ -89,7 +89,7 @@ export function ShareButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        {navigator.share && (
+        {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuItem onClick={handleNativeShare}>
               <Share2 className="h-4 w-4 mr-2" />

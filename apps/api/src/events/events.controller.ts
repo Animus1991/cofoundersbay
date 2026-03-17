@@ -24,7 +24,7 @@ const rsvpSchema = z.object({
   status: z.nativeEnum(RsvpStatus).default('going'),
 });
 
-@Controller('v1/events')
+@Controller('events')
 export class EventsController {
   constructor(private readonly events: EventsService) {}
 

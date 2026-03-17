@@ -50,8 +50,8 @@ function CompatibilityRing({ score, size = 'md' }: { score: number; size?: 'sm' 
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
-  const scoreColor = score >= 80 ? 'text-emerald-400' : score >= 60 ? 'text-amber-400' : 'text-red-400';
-  const strokeColor = score >= 80 ? 'stroke-emerald-400' : score >= 60 ? 'stroke-amber-400' : 'stroke-red-400';
+  const scoreColor = score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : score >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400';
+  const strokeColor = score >= 80 ? 'stroke-emerald-500 dark:stroke-emerald-400' : score >= 60 ? 'stroke-amber-500 dark:stroke-amber-400' : 'stroke-red-500 dark:stroke-red-400';
 
   return (
     <div className={cn('relative flex items-center justify-center', sizeClasses[size])}>

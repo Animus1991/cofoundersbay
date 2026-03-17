@@ -254,7 +254,7 @@ export function EventCard({
               <Users className="h-4 w-4" />
               {event.attendeesCount} attending
               {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 10 && (
-                <span className="text-amber-400">• {spotsLeft} spots left</span>
+                <span className="text-amber-600 dark:text-amber-400">• {spotsLeft} spots left</span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export function EventCard({
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
-                className={cn(bookmarked && 'text-amber-400')}
+                className={cn(bookmarked && 'text-amber-500 dark:text-amber-400')}
               >
                 <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
               </Button>
@@ -361,7 +361,7 @@ export function EventCard({
             variant="ghost"
             size="icon"
             onClick={handleBookmark}
-            className={cn('h-8 w-8', bookmarked && 'text-amber-400')}
+            className={cn('h-8 w-8', bookmarked && 'text-amber-500 dark:text-amber-400')}
           >
             <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
           </Button>

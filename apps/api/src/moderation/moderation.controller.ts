@@ -13,6 +13,8 @@ import { ReportStatus, ReportType, UserModerationStatus } from '@prisma/client';
 import { z } from 'zod';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { ModerationService } from './moderation.service';
 
 const createReportSchema = z.object({
@@ -31,7 +33,7 @@ const updateUserStatusSchema = z.object({
   moderationStatus: z.nativeEnum(UserModerationStatus),
 });
 
-@Controller('v1/reports')
+@Controller('reports')
 @UseGuards(JwtAuthGuard)
 export class ReportsController {
   constructor(private readonly moderation: ModerationService) {}
@@ -50,19 +52,18 @@ export class ReportsController {
   }
 }
 
-@Controller('v1/admin')
-@UseGuards(JwtAuthGuard)
-export class AdminController {
+@Controller('admin')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
+export class ModerationAdminController {
   constructor(private readonly moderation: ModerationService) {}
 
   @Get('reports')
   async listReports(
-    @CurrentUser() user: { id: string; role: string },
     @Query('status') status?: ReportStatus,
     @Query('q') q?: string,
     @Query('limit') limitRaw?: string,
   ) {
-    this.assertAdmin(user);
     const reports = await this.moderation.listReports({
       status,
       q: q?.trim() || undefined,
@@ -73,11 +74,10 @@ export class AdminController {
 
   @Patch('reports/:reportId')
   async updateReport(
-    @CurrentUser() user: { id: string; role: string },
+    @CurrentUser() user: { id: string },
     @Param('reportId') reportId: string,
     @Body() body: unknown,
   ) {
-    this.assertAdmin(user);
     const input = updateReportSchema.parse(body);
     const report = await this.moderation.updateReportStatus({
       reportId,
@@ -86,40 +86,5 @@ export class AdminController {
       moderationStatus: input.moderationStatus,
     });
     return { report };
-  }
-
-  @Get('users')
-  async listUsers(
-    @CurrentUser() user: { role: string },
-    @Query('q') q?: string,
-    @Query('limit') limitRaw?: string,
-  ) {
-    this.assertAdmin(user);
-    const users = await this.moderation.listUsers({
-      q: q?.trim() || undefined,
-      limit: limitRaw ? parseInt(limitRaw, 10) : undefined,
-    });
-    return { users };
-  }
-
-  @Patch('users/:userId/moderation-status')
-  async updateUserStatus(
-    @CurrentUser() user: { role: string },
-    @Param('userId') userId: string,
-    @Body() body: unknown,
-  ) {
-    this.assertAdmin(user);
-    const input = updateUserStatusSchema.parse(body);
-    return this.moderation.setUserModerationStatus({
-      userId,
-      moderationStatus: input.moderationStatus,
-    });
-  }
-
-  private assertAdmin(user: { role: string }) {
-    // In production, moderation endpoints are restricted to org admins.
-    if (process.env.NODE_ENV === 'production' && user.role !== 'org') {
-      throw new ForbiddenException('Admin access required');
-    }
   }
 }

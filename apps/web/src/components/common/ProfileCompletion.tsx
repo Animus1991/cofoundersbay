@@ -41,14 +41,14 @@ export function ProfileCompletionRing({
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const colorClass = 
-    percentage >= 80 ? 'stroke-emerald-400' : 
-    percentage >= 50 ? 'stroke-amber-400' : 
-    'stroke-red-400';
+    percentage >= 80 ? 'stroke-emerald-500 dark:stroke-emerald-400' : 
+    percentage >= 50 ? 'stroke-amber-500 dark:stroke-amber-400' : 
+    'stroke-red-500 dark:stroke-red-400';
 
   const textColorClass = 
-    percentage >= 80 ? 'text-emerald-400' : 
-    percentage >= 50 ? 'text-amber-400' : 
-    'text-red-400';
+    percentage >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 
+    percentage >= 50 ? 'text-amber-600 dark:text-amber-400' : 
+    'text-red-600 dark:text-red-400';
 
   return (
     <div className={cn('relative flex items-center justify-center', config.container)}>
@@ -149,15 +149,15 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
         {/* Status message */}
         <div className="text-center">
           {percentage >= 80 ? (
-            <p className="text-sm text-emerald-400 font-medium">
+            <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
               Great job! Your profile is looking strong.
             </p>
           ) : percentage >= 50 ? (
-            <p className="text-sm text-amber-400 font-medium">
+            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
               Good progress! Complete a few more fields to stand out.
             </p>
           ) : (
-            <p className="text-sm text-red-400 font-medium">
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">
               Complete your profile to get better matches.
             </p>
           )}

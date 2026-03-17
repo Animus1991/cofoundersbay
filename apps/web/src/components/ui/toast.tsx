@@ -20,14 +20,22 @@ type Toast = {
   };
 };
 
+type ToastOptions = {
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  duration?: number;
+};
+
 type ToastContextType = {
   toasts: Toast[];
   addToast: (toast: Omit<Toast, 'id'>) => void;
   removeToast: (id: string) => void;
-  success: (title: string, description?: string) => void;
-  error: (title: string, description?: string) => void;
-  warning: (title: string, description?: string) => void;
-  info: (title: string, description?: string) => void;
+  success: (title: string, description?: string, options?: ToastOptions) => void;
+  error: (title: string, description?: string, options?: ToastOptions) => void;
+  warning: (title: string, description?: string, options?: ToastOptions) => void;
+  info: (title: string, description?: string, options?: ToastOptions) => void;
 };
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -48,10 +56,10 @@ const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>>
 };
 
 const toastStyles: Record<ToastType, string> = {
-  success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-  error: 'border-red-500/30 bg-red-500/10 text-red-400',
-  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
-  info: 'border-blue-500/30 bg-blue-500/10 text-blue-400',
+  success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
+  error: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
+  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
+  info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
 };
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
@@ -129,22 +137,26 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const success = useCallback(
-    (title: string, description?: string) => addToast({ type: 'success', title, description }),
+    (title: string, description?: string, options?: ToastOptions) => 
+      addToast({ type: 'success', title, description, ...options }),
     [addToast]
   );
 
   const error = useCallback(
-    (title: string, description?: string) => addToast({ type: 'error', title, description }),
+    (title: string, description?: string, options?: ToastOptions) => 
+      addToast({ type: 'error', title, description, ...options }),
     [addToast]
   );
 
   const warning = useCallback(
-    (title: string, description?: string) => addToast({ type: 'warning', title, description }),
+    (title: string, description?: string, options?: ToastOptions) => 
+      addToast({ type: 'warning', title, description, ...options }),
     [addToast]
   );
 
   const info = useCallback(
-    (title: string, description?: string) => addToast({ type: 'info', title, description }),
+    (title: string, description?: string, options?: ToastOptions) => 
+      addToast({ type: 'info', title, description, ...options }),
     [addToast]
   );
 

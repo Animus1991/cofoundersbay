@@ -44,10 +44,10 @@ const badgeIcons = {
 };
 
 const tierColors = {
-  bronze: 'text-orange-600 dark:text-orange-400',
-  silver: 'text-gray-400 dark:text-gray-300',
-  gold: 'text-yellow-500 dark:text-yellow-400',
-  platinum: 'text-cyan-400 dark:text-cyan-300',
+  bronze: 'text-orange-700 dark:text-orange-400',
+  silver: 'text-gray-600 dark:text-gray-300',
+  gold: 'text-yellow-700 dark:text-yellow-400',
+  platinum: 'text-cyan-700 dark:text-cyan-300',
 };
 
 const tierBgColors = {

@@ -23,7 +23,7 @@ const createJobSchema = z.object({
   isRemote: z.boolean().optional(),
 });
 
-@Controller('v1')
+@Controller()
 export class JobsController {
   constructor(private readonly jobs: JobsService) {}
 

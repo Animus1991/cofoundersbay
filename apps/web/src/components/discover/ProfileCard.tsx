@@ -47,7 +47,36 @@ export type ProfileCardData = {
   matchScore?: number;
   lookingFor?: string | null;
   availability?: string | null;
+  completenessScore?: number;
 };
+
+const ROLE_RING_COLORS: Record<string, string> = {
+  founder: 'ring-indigo-500/60',
+  mentor: 'ring-cyan-500/60',
+  investor: 'ring-orange-500/60',
+  org: 'ring-purple-500/60',
+  admin: 'ring-red-500/60',
+};
+
+function ProfileCompletenessBar({ score }: { score: number }) {
+  const getColor = () => {
+    if (score >= 80) return 'bg-emerald-500';
+    if (score >= 50) return 'bg-amber-500';
+    return 'bg-red-500';
+  };
+  
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-secondary/60 rounded-full overflow-hidden">
+        <div 
+          className={cn('h-full rounded-full transition-all', getColor())}
+          style={{ width: `${score}%` }}
+        />
+      </div>
+      <span className="text-[10px] text-muted-foreground font-medium">{score}%</span>
+    </div>
+  );
+}
 
 type ProfileCardProps = {
   profile: ProfileCardData;
@@ -157,7 +186,7 @@ export function ProfileCard({
                   {profile.displayName}
                 </Link>
                 {profile.isVerified && (
-                  <Badge variant="secondary" size="sm" className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30">
+                  <Badge variant="secondary" size="sm" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
                     Verified
                   </Badge>
                 )}
@@ -243,7 +272,7 @@ export function ProfileCard({
                 onClick={handleBookmark}
                 className={cn(
                   'h-8 w-8',
-                  bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
+                  bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
                 )}
               >
                 <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
@@ -288,12 +317,21 @@ export function ProfileCard({
         {/* Header */}
         <div className="flex items-start gap-3">
           <Link href={`/profiles/${profile.userId}`}>
-            <Avatar className="h-12 w-12 ring-2 ring-border/40">
-              <AvatarImage src={profile.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold">
-                {profile.displayName[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className={cn('h-12 w-12 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
+                <AvatarImage src={profile.avatarUrl || undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                  {profile.displayName[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {profile.isVerified && (
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center ring-2 ring-card">
+                  <svg className="h-2.5 w-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
@@ -306,37 +344,37 @@ export function ProfileCard({
                 </Link>
                 <RoleBadge role={profile.role} size="sm" />
               </div>
-              {profile.matchScore && profile.matchScore > 0 && (
-                <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary shrink-0 ml-1">
-                  <Star className="h-3 w-3 fill-current" />
-                  {profile.matchScore}%
-                </div>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleBookmark}
-                className={cn(
-                  'h-8 w-8 flex-shrink-0',
-                  bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
+              <div className="flex items-center gap-1 shrink-0 ml-1">
+                {profile.matchScore && profile.matchScore > 0 && (
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    <Star className="h-3 w-3 fill-current" />
+                    {profile.matchScore}%
+                  </div>
                 )}
-              >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleBookmark}
+                  className={cn(
+                    'h-8 w-8 flex-shrink-0',
+                    bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                  )}
+                >
+                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                </Button>
+              </div>
             </div>
             {profile.headline && (
-              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{profile.headline}</p>
+              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{profile.headline}</p>
+            )}
+            {profile.location && (
+              <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                {profile.location}
+              </div>
             )}
           </div>
         </div>
-
-        {/* Location */}
-        {profile.location && (
-          <div className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            {profile.location}
-          </div>
-        )}
 
         {/* Skills */}
         {profile.skills.length > 0 && (

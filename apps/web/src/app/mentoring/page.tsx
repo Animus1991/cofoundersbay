@@ -276,7 +276,7 @@ function BookingModal({
 
             <div className="space-y-2">
               <Label htmlFor="meeting-type">Meeting Type</Label>
-              <Select value={meetingType} onValueChange={setMeetingType}>
+              <Select value={meetingType} onValueChange={(v) => setMeetingType(v as 'video' | 'in_person' | 'chat')}>
                 <SelectTrigger id="meeting-type">
                   <SelectValue />
                 </SelectTrigger>

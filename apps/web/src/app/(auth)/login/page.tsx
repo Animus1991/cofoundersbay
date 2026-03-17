@@ -7,6 +7,7 @@ import { Rocket, Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff } from 
 import { login } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 
 const HERO_POINTS = [
   { icon: Users, text: 'Connect with 10,000+ founders & investors' },
@@ -126,6 +127,9 @@ export default function LoginPage() {
               {loading ? 'Signing in…' : 'Sign in'}
               {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
+
+            <OAuthDivider />
+            <OAuthButtons mode="login" disabled={loading} />
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">

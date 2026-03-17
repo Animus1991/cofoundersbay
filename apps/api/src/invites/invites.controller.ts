@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { InvitesService } from './invites.service';
 
-@Controller('v1/invites')
+@Controller('invites')
 @UseGuards(JwtAuthGuard)
 export class InvitesController {
   constructor(private readonly invitesService: InvitesService) {}
