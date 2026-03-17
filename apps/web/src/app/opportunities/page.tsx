@@ -28,10 +28,11 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -468,15 +469,12 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
     setForm((p) => ({ ...p, [k]: v }));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-base">Post an opportunity</CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Post an opportunity</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Type</label>
             <div className="flex gap-2 flex-wrap">
@@ -535,24 +533,20 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
             />
             Remote
           </label>
-          <div className="flex gap-2 pt-2">
+        <DialogFooter>
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
             <Button
-              className="flex-1 gap-2"
+              className="gap-2"
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Rocket className="h-4 w-4" />
-              )}
+              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
               Post
             </Button>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        </DialogFooter>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

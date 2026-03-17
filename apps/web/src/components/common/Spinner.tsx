@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
@@ -20,23 +22,33 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
 }
 
 // Full page loading spinner with optional message
+// Rendered via createPortal to document.body to avoid Next.js InnerScrollAndFocusHandler warning
 export function PageLoader({ message }: { message?: string }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const content = (
+    <div
+      aria-label="Loading"
+      aria-live="polite"
+      aria-busy="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+    >
       <div className="flex flex-col items-center gap-4 animate-fade-in">
-        {/* Animated logo/spinner */}
         <div className="relative">
           <div className="h-16 w-16 rounded-full border-4 border-primary/20 animate-pulse" />
           <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-transparent border-t-primary animate-spin" />
           <div className="absolute inset-2 h-12 w-12 rounded-full bg-primary/10 animate-pulse-glow" />
         </div>
-        
         {message && (
           <p className="text-sm text-muted-foreground animate-pulse">{message}</p>
         )}
       </div>
     </div>
   );
+
+  if (!mounted) return null;
+  return createPortal(content, document.body);
 }
 
 // Inline loading state

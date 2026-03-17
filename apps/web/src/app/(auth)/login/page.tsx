@@ -3,11 +3,12 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Rocket, Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff } from 'lucide-react';
 import { login } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
+import { Logo, LogoIcon } from '@/components/brand/Logo';
 
 const HERO_POINTS = [
   { icon: Users, text: 'Connect with 10,000+ founders & investors' },
@@ -60,11 +61,8 @@ export default function LoginPage() {
       {/* Left — form */}
       <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-md animate-fade-in">
-          <Link href="/" className="mb-10 flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <Rocket className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-display text-xl font-bold text-foreground">CoFounderBay</span>
+          <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
+            <Logo size="sm" />
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground">Welcome back</h1>
@@ -144,8 +142,8 @@ export default function LoginPage() {
       {/* Right — hero visual */}
       <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20 animate-pulse-glow">
-            <Rocket className="h-10 w-10 text-primary" />
+          <div className="mx-auto mb-8">
+            <LogoIcon size={72} />
           </div>
           <h2 className="font-display text-3xl font-bold text-foreground">
             Your next co-founder is waiting

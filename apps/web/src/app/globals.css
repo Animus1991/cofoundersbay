@@ -5,31 +5,32 @@
 @layer base {
   :root {
     /* ── Light theme (ChatGPT / Replit inspired — clean, neutral, minimal) ── */
-    --background: 0 0% 97.5%;
-    --foreground: 222 20% 10%;
+    --background: 220 16% 97%;
+    --foreground: 222 24% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222 20% 10%;
+    --card-foreground: 222 24% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 20% 10%;
-    --primary: 235 76% 57%;
+    --popover-foreground: 222 24% 8%;
+    --primary: 235 76% 54%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 93%;
-    --secondary-foreground: 222 20% 20%;
-    --muted: 220 12% 95%;
-    --muted-foreground: 220 8% 46%;
-    --accent: 235 76% 57%;
+    --secondary: 220 16% 94%;
+    --secondary-foreground: 222 20% 22%;
+    --muted: 220 14% 95.5%;
+    --muted-foreground: 220 10% 42%;
+    --accent: 235 76% 54%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 89%;
-    --input: 220 13% 89%;
-    --ring: 235 76% 57%;
+    --border: 220 14% 88%;
+    --input: 0 0% 100%;
+    --ring: 235 76% 54%;
     --radius: 8px;
     --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
     --shadow-glow: 0 0 0 1px hsl(var(--border));
-    --shadow-card: 0 1px 2px hsl(0 0% 0% / 0.05), 0 2px 8px hsl(0 0% 0% / 0.04);
+    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04);
+    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08), 0 2px 4px hsl(0 0% 0% / 0.04);
   }
 
   .dark {
@@ -244,6 +245,34 @@
   img, video {
     content-visibility: auto;
   }
+
+  /* View transition defaults — smooth page navigation */
+  ::view-transition-old(root) {
+    animation: cfb-page-out 0.18s ease-in both;
+  }
+  ::view-transition-new(root) {
+    animation: cfb-page-in 0.22s ease-out both;
+  }
+
+  /* Better input focus ring */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.5);
+  }
+
+  /* Smooth transitions on interactive elements */
+  button, a, input, textarea, select {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Prevent transition flash on first load */
+  .no-transition * {
+    transition: none !important;
+  }
 }
 
 @layer utilities {
@@ -395,9 +424,14 @@
     background-clip: text;
   }
 
+  /* View transition name for route-level animation */
+  main {
+    view-transition-name: main-content;
+  }
+
   /* Fade-in animation used across pages */
   .animate-fade-in {
-    animation: fade-in 0.4s ease-out both;
+    animation: fade-in 0.35s ease-out both;
   }
 
   /* Dashboard card stagger */
@@ -479,4 +513,23 @@
 @keyframes pulse-glow-ring {
   0%, 100% { box-shadow: 0 0 12px 2px hsl(var(--primary) / 0.25); }
   50%       { box-shadow: 0 0 28px 8px hsl(var(--primary) / 0.45); }
+}
+
+@keyframes cfb-page-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes cfb-page-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

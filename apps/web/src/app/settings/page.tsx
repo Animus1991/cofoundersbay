@@ -74,9 +74,9 @@ export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
 
-  const hasToken = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('accessToken');
+  const [hasToken, setHasToken] = useState(false);
+  useEffect(() => {
+    setHasToken(!!localStorage.getItem('accessToken'));
   }, []);
 
   const queryClient = useQueryClient();
@@ -108,14 +108,13 @@ export default function SettingsPage() {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwWorking, setPwWorking] = useState(false);
   const [showPw, setShowPw] = useState(false);
-  const [prefs, setPrefs] = useState<NotifPrefs>(() => {
+  const [prefs, setPrefs] = useState<NotifPrefs>(DEFAULT_PREFS);
+  useEffect(() => {
     try {
-      const saved = typeof window !== 'undefined' ? localStorage.getItem('notifPrefs') : null;
-      return saved ? { ...DEFAULT_PREFS, ...JSON.parse(saved) } : DEFAULT_PREFS;
-    } catch {
-      return DEFAULT_PREFS;
-    }
-  });
+      const saved = localStorage.getItem('notifPrefs');
+      if (saved) setPrefs((p) => ({ ...p, ...JSON.parse(saved) }));
+    } catch { /* silent */ }
+  }, []);
 
   const updatePref = (key: keyof NotifPrefs, value: boolean) => {
     setPrefs((prev) => {

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Loader2, Globe, Lock } from 'lucide-react';
+import { Loader2, Globe, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { createGroup, type GroupPrivacy } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
@@ -57,19 +58,13 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card shadow-2xl">
-        <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
-          <h2 className="font-display text-lg font-semibold">Create Group</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create Group</DialogTitle>
+        </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Group Name *</label>
             <Input
@@ -162,7 +157,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

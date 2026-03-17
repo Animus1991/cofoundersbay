@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Compass, Sparkles, MessageCircle, Keyboard } from 'lucide-react';
+import { Compass, MessageCircle, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
@@ -11,6 +11,7 @@ import { NotificationsBell } from './NotificationsBell';
 import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
+import { Logo } from '@/components/brand/Logo';
 
 export function TopNav() {
   const [ready, setReady] = useState(false);
@@ -25,19 +26,9 @@ export function TopNav() {
     <>
       <header className="flex flex-col gap-4 rounded-xl border border-border bg-card px-4 py-3 shadow-sm lg:flex-row lg:items-center lg:justify-between">
         {/* Logo & Branding */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20 text-primary transition-transform hover:scale-105">
-            <Sparkles className="h-5 w-5 animate-pulse-glow" />
-          </div>
-          <div>
-            <OptimizedLink href="/" className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors">
-              CoFounderBay
-            </OptimizedLink>
-            <p className="text-xs text-muted-foreground">
-              Startup networking for founders, mentors, investors
-            </p>
-          </div>
-        </div>
+        <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
+          <Logo size="sm" />
+        </OptimizedLink>
 
         {/* Search & Discover */}
         <div className="flex flex-1 items-center gap-3 lg:justify-center">

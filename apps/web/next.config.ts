@@ -58,6 +58,8 @@ const nextConfig: NextConfig = {
     // Faster client-side navigation
     clientRouterFilter: true,
     clientRouterFilterRedirects: false,
+    // CSS View Transitions API for smooth page navigation (Chrome 111+)
+    viewTransition: true,
   },
 
   // Webpack optimizations for faster dev + smaller bundles

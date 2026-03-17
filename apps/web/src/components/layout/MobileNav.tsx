@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User, Settings, X } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { navSections } from './nav-links';
@@ -60,7 +61,9 @@ export function MobileNav() {
         <div className={cn('relative h-32 bg-gradient-to-br p-6', gradient)}>
           <div className="absolute inset-0 bg-black/20" />
           <SheetHeader className="relative z-10">
-            <SheetTitle className="text-white font-display text-xl">CoFounderBay</SheetTitle>
+            <SheetTitle asChild>
+              <Logo size="sm" inverted />
+            </SheetTitle>
           </SheetHeader>
           
           {user && (

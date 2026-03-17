@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { Logo } from '@/components/brand/Logo';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -143,9 +144,9 @@ function LandingContent() {
       {/* Nav bar */}
       <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-          <span className="font-display text-lg font-bold text-foreground tracking-tight">
-            CoFounderBay
-          </span>
+          <Link href="/">
+            <Logo size="sm" />
+          </Link>
           <div className="hidden items-center gap-7 md:flex text-sm text-muted-foreground">
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <a href="#roles" className="hover:text-foreground transition-colors">Who it&apos;s for</a>
