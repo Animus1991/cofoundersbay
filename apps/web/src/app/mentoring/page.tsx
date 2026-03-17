@@ -21,8 +21,12 @@ import {
   Search,
   Award,
   TrendingUp,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  FileText,
 } from 'lucide-react';
-import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, type MentorBookingItem, type SearchHit } from '@/lib/api';
+import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, summarizeMeetingNotes, type MentorBookingItem, type SearchHit, type MeetingNotesSummary } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -348,6 +352,25 @@ function BookingCard({
   const end = new Date(booking.endAt);
   const isPast = end < new Date();
 
+  const [showNotes, setShowNotes] = useState(false);
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [aiSummary, setAISummary] = useState<MeetingNotesSummary | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+  const { success: _ns, error: notifyError } = useToast();
+
+  const handleSummarize = async () => {
+    if (!sessionNotes.trim()) return;
+    setSummarizing(true);
+    try {
+      const { summary } = await summarizeMeetingNotes(sessionNotes);
+      setAISummary(summary);
+    } catch {
+      notifyError('AI unavailable', 'Could not generate summary right now.');
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
   return (
     <Card className="card-interactive">
       <CardContent className="p-4">
@@ -401,6 +424,73 @@ function BookingCard({
               <p className="mt-2 text-xs text-muted-foreground italic line-clamp-2">
                 &ldquo;{booking.notes}&rdquo;
               </p>
+            )}
+
+            {isPast && (booking.status === 'completed' || booking.status === 'confirmed') && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNotes(!showNotes)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Session Notes & AI Summary
+                  {showNotes ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                </button>
+                {showNotes && (
+                  <div className="mt-2 space-y-2">
+                    <Textarea
+                      placeholder="Add your session notes, key points, decisions..."
+                      value={sessionNotes}
+                      onChange={(e) => setSessionNotes(e.target.value)}
+                      rows={3}
+                      className="text-sm"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                      onClick={handleSummarize}
+                      disabled={summarizing || !sessionNotes.trim()}
+                    >
+                      {summarizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {summarizing ? 'Summarizing...' : 'Summarize with AI'}
+                    </Button>
+                    {aiSummary && (
+                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-semibold text-primary">AI Summary</span>
+                        </div>
+                        <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
+                        {aiSummary.actionItems.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Action Items:</p>
+                            <ul className="space-y-0.5">
+                              {aiSummary.actionItems.map((item, i) => (
+                                <li key={i} className="flex items-start gap-1 text-xs text-foreground">
+                                  <CheckCircle className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {aiSummary.followUps.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Follow-ups:</p>
+                            <ul className="space-y-0.5">
+                              {aiSummary.followUps.map((f, i) => (
+                                <li key={i} className="text-xs text-muted-foreground">• {f}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
 
             {booking.meetingUrl && booking.status === 'confirmed' && (

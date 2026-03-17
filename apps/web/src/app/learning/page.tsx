@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getMeProfile } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 interface Resource {
@@ -222,10 +224,35 @@ function ResourceCard({ resource }: { resource: Resource }) {
   );
 }
 
+const ROLE_CATEGORY_MAP: Record<string, string[]> = {
+  founder: ['Fundraising', 'Product', 'Marketing', 'Sales', 'Leadership'],
+  mentor: ['Leadership', 'Product', 'Sales'],
+  investor: ['Fundraising', 'Leadership', 'Marketing'],
+  org: ['Leadership', 'Marketing', 'Sales'],
+};
+
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: meData } = useQuery({
+    queryKey: ['me', 'profile'],
+    queryFn: getMeProfile,
+    staleTime: 5 * 60_000,
+  });
+
+  const userRole = meData?.profile?.role ?? 'founder';
+  const userSkills = meData?.profile?.skills?.map((s) => s.skillName.toLowerCase()) ?? [];
+
+  const recommendedResources = DEMO_RESOURCES.filter((r) => {
+    const roleCategories = ROLE_CATEGORY_MAP[userRole] ?? [];
+    const matchesRole = roleCategories.includes(r.category);
+    const matchesSkill = userSkills.some((skill) =>
+      r.tags.some((tag) => tag.toLowerCase().includes(skill) || skill.includes(tag.toLowerCase()))
+    );
+    return matchesRole || matchesSkill;
+  }).slice(0, 4);
 
   const filteredResources = DEMO_RESOURCES.filter((resource) => {
     const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
@@ -245,6 +272,24 @@ export default function LearningPage() {
       title="Learning"
       description="Courses, guides, and resources to grow your startup"
     >
+      {/* Recommended for you */}
+      {recommendedResources.length > 0 && activeTab === 'all' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Recommended for you
+            </h2>
+            <Badge variant="secondary" className="text-[10px] capitalize">{userRole}</Badge>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {recommendedResources.map((resource) => (
+              <ResourceCard key={`rec-${resource.id}`} resource={resource} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-4">
         <TabsList className="grid w-full max-w-md grid-cols-3">
