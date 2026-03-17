@@ -40,9 +40,12 @@ export class AuthService {
     if (existing) throw new ConflictException('Email already registered');
 
     const passwordHash = await argon2.hash(input.password, { type: argon2.argon2id });
+    const baseSlug = input.email.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '-');
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
     const user = await this.prisma.user.create({
       data: {
         email: input.email.toLowerCase(),
+        slug,
         passwordHash,
         role: input.role as 'founder' | 'mentor' | 'investor' | 'org',
       },

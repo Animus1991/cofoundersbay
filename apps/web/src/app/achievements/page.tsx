@@ -432,14 +432,14 @@ export default function AchievementsPage() {
     retry: 1,
   });
 
-  const achievements = useMemo(
-    () => (rawAchievements ?? []).map((a, i) =>
+  const achievements = useMemo(() => {
+    const list = isError || !rawAchievements ? DEMO_ACHIEVEMENTS : rawAchievements;
+    return (list ?? []).map((a, i) =>
       'tier' in a && 'points' in a && 'rarity' in a
         ? (a as unknown as Achievement)
-        : apiToAchievement(a as AnalyticsAchievement, i)
-    ),
-    [rawAchievements],
-  );
+        : apiToAchievement(a as AnalyticsAchievement, i),
+    );
+  }, [rawAchievements, isError]);
 
   const stats: UserStats = useMemo(() => {
     const unlocked = achievements.filter((a) => a.unlocked).length;
@@ -480,12 +480,7 @@ export default function AchievementsPage() {
       description="Track your progress and unlock achievements"
     >
       <div className="space-y-4">
-        {isError ? (
-          <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-            <p className="text-sm text-muted-foreground">Failed to load achievements.</p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
-          </CardContent></Card>
-        ) : isLoading ? (
+        {isLoading ? (
           <AchievementsSkeleton />
         ) : (
           <>

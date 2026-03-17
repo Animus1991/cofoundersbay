@@ -1750,3 +1750,81 @@ export async function getOrgCohorts(slug: string, params?: {
   if (params?.offset != null) sp.set('offset', String(params.offset));
   return apiRequest(`/api/org/${slug}/cohorts?${sp}`);
 }
+
+// ─── AI Features ─────────────────────────────────────────────────────────────
+
+export type ProfileSuggestions = {
+  headline: string | null;
+  bio: string | null;
+  missingElements: string[];
+  improvements: string[];
+  completionScore: number;
+};
+
+export type MeetingNotesSummary = {
+  summary: string;
+  actionItems: string[];
+  keyTakeaways: string[];
+  followUps: string[];
+};
+
+export async function getAIProfileSuggestions(): Promise<{ suggestions: ProfileSuggestions }> {
+  return apiRequest('/api/ai/profile-suggestions', { method: 'POST' });
+}
+
+export async function summarizeMeetingNotes(notes: string): Promise<{ summary: MeetingNotesSummary }> {
+  return apiRequest('/api/ai/meeting-notes/summarize', {
+    method: 'POST',
+    body: JSON.stringify({ notes }),
+  });
+}
+
+// ─── Matching / Recommendations ──────────────────────────────────────────────
+
+export type MatchScore = {
+  userId: string;
+  score: number;
+  reasons: string[];
+  profile: {
+    displayName: string | null;
+    headline: string | null;
+    avatarUrl: string | null;
+    location: string | null;
+  } | null;
+};
+
+export async function getWeeklyDigest(): Promise<{
+  recommendations: MatchScore[];
+  stats: { totalConnections: number; acceptanceRate: number; responseRate: number };
+  generatedAt: string;
+}> {
+  return apiRequest('/api/recommendations/weekly-digest');
+}
+
+export async function getMatchScore(targetUserId: string): Promise<{
+  userId: string;
+  score: number;
+  reasons: string[];
+}> {
+  return apiRequest(`/api/recommendations/score/${targetUserId}`);
+}
+
+export async function submitMatchFeedback(
+  targetUserId: string,
+  feedback: 'positive' | 'negative',
+): Promise<{ ok: boolean }> {
+  return apiRequest('/api/recommendations/feedback', {
+    method: 'POST',
+    body: JSON.stringify({ targetUserId, feedback }),
+  });
+}
+
+export async function getMatchingStats(): Promise<{
+  sentRequests: number;
+  receivedRequests: number;
+  totalConnections: number;
+  acceptanceRate: number;
+  responseRate: number;
+}> {
+  return apiRequest('/api/recommendations/stats');
+}

@@ -4,9 +4,7 @@ import { HttpException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ErrorCode, StandardErrorResponse, StandardSuccessResponse } from '@cofounderbay/shared';
 
-interface RequestWithId extends Request {
-  id?: string;
-}
+type RequestWithId = Request & { reqId?: string };
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -18,8 +16,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const req = ctx.getRequest<RequestWithId>();
     
     // Generate unique request ID for tracing
-    const requestId = req.id || randomUUID();
-    req.id = requestId;
+    const requestId = req.reqId || String(req.id ?? '') || randomUUID();
+    req.reqId = requestId;
 
     const timestamp = new Date().toISOString();
     const path = req.url;
@@ -216,6 +214,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
 // Middleware to add request ID to all requests
 export function requestIdMiddleware(req: RequestWithId, res: Response, next: () => void) {
-  req.id = randomUUID();
+  req.reqId = randomUUID();
   next();
 }

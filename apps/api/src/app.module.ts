@@ -34,6 +34,8 @@ import { LearningModule } from './learning/learning.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { AdminModule } from './admin/admin.module';
 import { OrgModule } from './org/org.module';
+import { MatchingModule } from './matching/matching.module';
+import { AIModule } from './ai/ai.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -91,6 +93,8 @@ function findEnvFiles(): string[] {
     MarketplaceModule,
     AdminModule,
     OrgModule,
+    MatchingModule,
+    AIModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:

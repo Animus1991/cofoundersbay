@@ -34,14 +34,14 @@ export function SideNav() {
     'ME';
 
   return (
-    <aside className="hidden lg:flex lg:flex-col h-fit min-h-[420px] rounded-2xl border border-border/60 bg-card/70 shadow-glow-sm backdrop-blur sticky top-6">
-      <nav className="flex-1 space-y-5 p-4 overflow-y-auto">
+    <aside className="hidden lg:flex lg:flex-col h-fit min-h-[420px] rounded-xl border border-border bg-card shadow-sm sticky top-4">
+      <nav className="flex-1 space-y-4 p-3 overflow-y-auto">
         {navSections.map(({ section, links }) => (
           <div key={section}>
-            <p className="px-3 text-[10px] font-bold uppercase tracking-[0.25em] text-muted-foreground/70">
+            <p className="px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1">
               {section}
             </p>
-            <ul className="mt-2 space-y-0.5">
+            <ul className="space-y-0.5">
               {links.map(({ href, label, icon: Icon }) => {
                 const active = pathname === href || (href !== '/' && pathname.startsWith(href));
                 const badge = badgeFor(href);
@@ -50,10 +50,10 @@ export function SideNav() {
                     <OptimizedLink
                       href={href}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150',
+                        'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors',
                         active
-                          ? 'bg-primary/15 text-primary shadow-sm'
-                          : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground hover:translate-x-0.5',
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-muted-foreground hover:bg-secondary hover:text-foreground font-normal',
                       )}
                     >
                       <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />

@@ -1,189 +1,169 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
   Sparkles,
   TrendingUp,
   Target,
-  Filter,
   RefreshCw,
   UserPlus,
   MessageCircle,
   Star,
+  ThumbsUp,
+  ThumbsDown,
+  MapPin,
   Briefcase,
   GraduationCap,
   DollarSign,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/toast';
+import {
+  getRecommendations,
+  getWeeklyDigest,
+  sendConnectionRequest,
+  submitMatchFeedback,
+  getMatchingStats,
+  type SearchHit,
+} from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-interface Recommendation {
-  id: string;
-  userId: string;
-  displayName: string;
-  headline: string;
-  avatarUrl: string;
-  role: string;
-  location: string;
-  matchScore: number;
-  matchReasons: string[];
-  skills: string[];
-  industries: string[];
-  mutualConnections: number;
-  recentActivity: string;
+const ROLE_ICON: Record<string, typeof Users> = {
+  founder: Briefcase,
+  mentor: GraduationCap,
+  investor: DollarSign,
+  org: Users,
+};
+
+const ROLE_COLOR: Record<string, string> = {
+  founder: 'bg-blue-50 text-blue-700 border-blue-200',
+  mentor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  investor: 'bg-amber-50 text-amber-700 border-amber-200',
+  org: 'bg-purple-50 text-purple-700 border-purple-200',
+};
+
+function MatchScoreBadge({ score }: { score: number }) {
+  const color =
+    score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
+  return (
+    <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
+      <Star className="h-3 w-3 fill-current" />
+      {score}%
+    </div>
+  );
 }
 
-const DEMO_RECOMMENDATIONS: Recommendation[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    displayName: 'Sarah Chen',
-    headline: 'Technical Co-founder | AI/ML Expert',
-    avatarUrl: 'https://i.pravatar.cc/150?img=1',
-    role: 'founder',
-    location: 'San Francisco, CA',
-    matchScore: 95,
-    matchReasons: [
-      'Complementary technical skills',
-      'Similar startup stage',
-      'Shared interest in AI/ML',
-      'Located in same city',
-    ],
-    skills: ['Machine Learning', 'Python', 'TensorFlow', 'Cloud Architecture'],
-    industries: ['AI/ML', 'SaaS', 'Enterprise'],
-    mutualConnections: 12,
-    recentActivity: 'Posted about seed funding 2 days ago',
-  },
-  {
-    id: '2',
-    userId: 'user2',
-    displayName: 'Michael Rodriguez',
-    headline: 'Product Manager | B2B SaaS',
-    avatarUrl: 'https://i.pravatar.cc/150?img=2',
-    role: 'founder',
-    location: 'New York, NY',
-    matchScore: 92,
-    matchReasons: [
-      'Strong product background',
-      'B2B SaaS experience',
-      'Looking for technical co-founder',
-      '3 mutual connections',
-    ],
-    skills: ['Product Strategy', 'User Research', 'Agile', 'Analytics'],
-    industries: ['SaaS', 'B2B', 'Fintech'],
-    mutualConnections: 3,
-    recentActivity: 'Attended TechCrunch Disrupt last week',
-  },
-  {
-    id: '3',
-    userId: 'user3',
-    displayName: 'Emily Watson',
-    headline: 'Growth Marketing | 0→1 Specialist',
-    avatarUrl: 'https://i.pravatar.cc/150?img=3',
-    role: 'founder',
-    location: 'Austin, TX',
-    matchScore: 88,
-    matchReasons: [
-      'Growth expertise',
-      'Early-stage focus',
-      'Proven track record',
-      'Remote-friendly',
-    ],
-    skills: ['Growth Hacking', 'SEO', 'Content Marketing', 'Analytics'],
-    industries: ['Marketing', 'SaaS', 'E-commerce'],
-    mutualConnections: 8,
-    recentActivity: 'Shared insights on growth strategies',
-  },
-];
+function RecommendationCard({ hit, onConnect, onFeedback }: {
+  hit: SearchHit & { matchScore?: number; matchReasons?: string[] };
+  onConnect: (userId: string) => void;
+  onFeedback: (userId: string, fb: 'positive' | 'negative') => void;
+}) {
+  const RoleIcon = ROLE_ICON[hit.role ?? 'founder'] ?? Users;
+  const score = hit.matchScore ?? hit.matchingScore ?? 0;
+  const reasons: string[] = hit.matchReasons ?? [];
 
-function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   return (
-    <Card className="card-interactive hover-lift">
-      <CardContent className="p-5">
+    <Card className="group hover:shadow-md transition-shadow">
+      <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <div className="relative shrink-0">
-            <img
-              src={recommendation.avatarUrl}
-              alt={recommendation.displayName}
-              className="h-16 w-16 rounded-full object-cover"
-            />
-            <div className="absolute -bottom-1 -right-1 flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs font-semibold">
-              <Star className="h-3 w-3 fill-current" />
-              {recommendation.matchScore}%
-            </div>
-          </div>
+          <Link href={`/profiles/${hit.userId}`}>
+            <Avatar className="h-14 w-14 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
+              <AvatarImage src={hit.avatarUrl ?? undefined} />
+              <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
+                {hit.displayName?.[0]?.toUpperCase() ?? '?'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-2">
+            <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <h3 className="font-semibold text-lg mb-1">{recommendation.displayName}</h3>
-                <p className="text-sm text-muted-foreground mb-2">{recommendation.headline}</p>
-                <p className="text-xs text-muted-foreground">{recommendation.location}</p>
+                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                  {hit.displayName}
+                </Link>
+                {hit.headline && (
+                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{hit.headline}</p>
+                )}
+                {hit.location && (
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                    <MapPin className="h-3 w-3" />
+                    {hit.location}
+                  </p>
+                )}
               </div>
-              <Badge variant="secondary" className="shrink-0">
-                {recommendation.role}
-              </Badge>
+              <div className="flex items-center gap-2 shrink-0">
+                {score > 0 && <MatchScoreBadge score={score} />}
+                <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[hit.role ?? 'founder'])}>
+                  <RoleIcon className="h-3 w-3 mr-1" />
+                  {hit.role}
+                </Badge>
+              </div>
             </div>
 
-            <div className="space-y-3 mb-4">
-              <div>
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2">Why you match:</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {recommendation.matchReasons.map((reason, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {reason}
-                    </Badge>
-                  ))}
-                </div>
+            {reasons.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2 mb-3">
+                {reasons.slice(0, 3).map((r, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs">
+                    {r}
+                  </Badge>
+                ))}
               </div>
+            )}
 
-              <div>
-                <h4 className="text-xs font-semibold text-muted-foreground mb-2">Skills:</h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {recommendation.skills.slice(0, 4).map((skill, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {skill}
-                    </Badge>
-                  ))}
-                  {recommendation.skills.length > 4 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{recommendation.skills.length - 4} more
-                    </Badge>
-                  )}
-                </div>
+            {hit.skills && hit.skills.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-3">
+                {hit.skills.slice(0, 4).map((s, i) => (
+                  <span key={i} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
+                    {s}
+                  </span>
+                ))}
+                {hit.skills.length > 4 && (
+                  <span className="text-xs text-muted-foreground px-1">+{hit.skills.length - 4}</span>
+                )}
               </div>
-
-              {recommendation.mutualConnections > 0 && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Users className="h-3 w-3" />
-                  {recommendation.mutualConnections} mutual connections
-                </div>
-              )}
-
-              {recommendation.recentActivity && (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <TrendingUp className="h-3 w-3" />
-                  {recommendation.recentActivity}
-                </div>
-              )}
-            </div>
+            )}
 
             <div className="flex items-center gap-2">
-              <Button className="flex-1">
-                <UserPlus className="h-4 w-4 mr-2" />
+              <Button size="sm" className="gap-1.5" onClick={() => onConnect(hit.userId)}>
+                <UserPlus className="h-3.5 w-3.5" />
                 Connect
               </Button>
-              <Button variant="outline" className="flex-1">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Message
-              </Button>
+              <Link href={`/messages?userId=${hit.userId}`}>
+                <Button size="sm" variant="outline" className="gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  Message
+                </Button>
+              </Link>
+              <div className="ml-auto flex items-center gap-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600"
+                  title="Good match"
+                  onClick={() => onFeedback(hit.userId, 'positive')}
+                >
+                  <ThumbsUp className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                  title="Not a match"
+                  onClick={() => onFeedback(hit.userId, 'negative')}
+                >
+                  <ThumbsDown className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -192,22 +172,21 @@ function RecommendationCard({ recommendation }: { recommendation: Recommendation
   );
 }
 
-function RecommendationsSkeleton() {
+function Skeleton3() {
   return (
-    <div className="space-y-4">
-      {Array.from({ length: 3 }).map((_, i) => (
+    <div className="space-y-3">
+      {[0, 1, 2].map((i) => (
         <Card key={i}>
-          <CardContent className="p-5">
-            <div className="flex items-start gap-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <div className="flex-1 space-y-3">
-                <Skeleton className="h-5 w-48" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-32" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-24" />
-                  <Skeleton className="h-6 w-24" />
+          <CardContent className="p-4">
+            <div className="flex gap-4">
+              <Skeleton className="h-14 w-14 rounded-full shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-64" />
+                <Skeleton className="h-3 w-24" />
+                <div className="flex gap-2 pt-1">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-20" />
                 </div>
               </div>
             </div>
@@ -219,111 +198,169 @@ function RecommendationsSkeleton() {
 }
 
 export default function RecommendationsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'cofounders' | 'mentors' | 'investors'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'founders' | 'mentors' | 'investors'>('all');
   const [refreshKey, setRefreshKey] = useState(0);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
-  const { data: recommendations, isLoading } = useQuery({
-    queryKey: ['recommendations', activeTab, refreshKey],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return DEMO_RECOMMENDATIONS;
+  const role = activeTab === 'all' ? undefined : activeTab.replace(/s$/, '');
+
+  const { data: recsData, isLoading: recsLoading } = useQuery({
+    queryKey: ['recommendations', role, refreshKey],
+    queryFn: () => getRecommendations({ role, limit: 20 }),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: digestData, isLoading: digestLoading } = useQuery({
+    queryKey: ['weekly-digest'],
+    queryFn: getWeeklyDigest,
+    staleTime: 10 * 60_000,
+  });
+
+  const { data: statsData } = useQuery({
+    queryKey: ['matching-stats'],
+    queryFn: getMatchingStats,
+    staleTime: 5 * 60_000,
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: (userId: string) => sendConnectionRequest(userId, ''),
+    onSuccess: () => toast({ title: 'Connection request sent!' }),
+    onError: () => toast({ title: 'Could not send request', variant: 'destructive' }),
+  });
+
+  const feedbackMutation = useMutation({
+    mutationFn: ({ userId, fb }: { userId: string; fb: 'positive' | 'negative' }) =>
+      submitMatchFeedback(userId, fb),
+    onSuccess: (_, { fb }) => {
+      toast({ title: fb === 'positive' ? 'Thanks for the feedback!' : 'Got it, we will improve your matches' });
     },
   });
 
+  const recommendations = recsData?.suggestions ?? [];
+  const weeklyRecs = digestData?.recommendations ?? [];
+  const stats = digestData?.stats ?? statsData;
+
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
+    setRefreshKey((k) => k + 1);
+    queryClient.invalidateQueries({ queryKey: ['weekly-digest'] });
   };
 
   return (
     <AppShell
       title="Recommendations"
-      description="Discover your best matches based on AI-powered analysis"
+      description="AI-powered matches based on your profile, skills, and goals"
       actions={
-        <Button variant="outline" onClick={handleRefresh}>
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh
         </Button>
       }
     >
-      <div className="space-y-4">
-        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 rounded-xl bg-primary/20">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">AI-Powered Matching</h2>
-                <p className="text-sm text-muted-foreground">
-                  Based on your profile, skills, and preferences
-                </p>
-              </div>
-            </div>
+      <div className="space-y-5">
+        {/* Stats header */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: 'New Matches', value: recommendations.length, icon: Target },
+            { label: 'This Week', value: weeklyRecs.length, icon: Sparkles },
+            { label: 'Connections', value: stats?.totalConnections ?? 0, icon: Users },
+            { label: 'Acceptance Rate', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
+          ].map(({ label, value, icon: Icon }) => (
+            <Card key={label}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold leading-none">{value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">{recommendations?.length || 0}</p>
-                <p className="text-xs text-muted-foreground">New matches</p>
+        {/* Weekly digest section */}
+        {!digestLoading && weeklyRecs.length > 0 && (
+          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
+                <Badge variant="secondary" className="text-xs ml-auto">
+                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
+                </Badge>
               </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">95%</p>
-                <p className="text-xs text-muted-foreground">Avg. match score</p>
+              <div className="flex gap-3 overflow-x-auto pb-1">
+                {weeklyRecs.slice(0, 5).map((m) => (
+                  <Link key={m.userId} href={`/profiles/${m.userId}`} className="shrink-0">
+                    <div className="flex flex-col items-center gap-1.5 w-16 text-center group">
+                      <div className="relative">
+                        <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
+                          <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
+                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                            {m.profile?.displayName?.[0] ?? '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] font-bold px-1 rounded-full">
+                          {m.score}%
+                        </div>
+                      </div>
+                      <p className="text-xs truncate w-full text-muted-foreground group-hover:text-foreground">
+                        {m.profile?.displayName?.split(' ')[0] ?? 'User'}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">23</p>
-                <p className="text-xs text-muted-foreground">Mutual connections</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-2xl font-bold">12</p>
-                <p className="text-xs text-muted-foreground">Active this week</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
+        {/* Tab list */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <div className="flex items-center justify-between">
-            <TabsList>
-              <TabsTrigger value="all" className="gap-2">
-                <Target className="h-4 w-4" />
-                All Matches
-              </TabsTrigger>
-              <TabsTrigger value="cofounders" className="gap-2">
-                <Users className="h-4 w-4" />
-                Co-founders
-              </TabsTrigger>
-              <TabsTrigger value="mentors" className="gap-2">
-                <GraduationCap className="h-4 w-4" />
-                Mentors
-              </TabsTrigger>
-              <TabsTrigger value="investors" className="gap-2">
-                <DollarSign className="h-4 w-4" />
-                Investors
-              </TabsTrigger>
-            </TabsList>
+          <TabsList>
+            <TabsTrigger value="all" className="gap-1.5">
+              <Target className="h-3.5 w-3.5" />
+              All
+            </TabsTrigger>
+            <TabsTrigger value="founders" className="gap-1.5">
+              <Briefcase className="h-3.5 w-3.5" />
+              Founders
+            </TabsTrigger>
+            <TabsTrigger value="mentors" className="gap-1.5">
+              <GraduationCap className="h-3.5 w-3.5" />
+              Mentors
+            </TabsTrigger>
+            <TabsTrigger value="investors" className="gap-1.5">
+              <DollarSign className="h-3.5 w-3.5" />
+              Investors
+            </TabsTrigger>
+          </TabsList>
 
-            <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-            </Button>
-          </div>
-
-          <TabsContent value={activeTab} className="mt-4 space-y-4">
-            {isLoading ? (
-              <RecommendationsSkeleton />
-            ) : recommendations && recommendations.length > 0 ? (
-              recommendations.map((recommendation) => (
-                <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+          <TabsContent value={activeTab} className="mt-4 space-y-3">
+            {recsLoading ? (
+              <Skeleton3 />
+            ) : recommendations.length > 0 ? (
+              recommendations.map((hit) => (
+                <RecommendationCard
+                  key={hit.userId}
+                  hit={hit}
+                  onConnect={(uid) => connectMutation.mutate(uid)}
+                  onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
+                />
               ))
             ) : (
               <Card>
-                <CardContent className="py-12 text-center">
-                  <Sparkles className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No recommendations yet</h3>
+                <CardContent className="py-14 text-center">
+                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <h3 className="font-semibold mb-1">No recommendations yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Complete your profile to get personalized matches
+                    Complete your profile to unlock personalized matches
                   </p>
-                  <Button>Complete Profile</Button>
+                  <Link href="/profile/edit">
+                    <Button size="sm">Complete Profile</Button>
+                  </Link>
                 </CardContent>
               </Card>
             )}

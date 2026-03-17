@@ -43,9 +43,12 @@ export class UserService {
     }
 
     // Create user
+    const baseSlug = data.email.split('@')[0].replace(/[^a-z0-9]/g, '-').toLowerCase();
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
     const user = await this.prisma.user.create({
       data: {
         email: data.email,
+        slug,
         passwordHash: data.passwordHash,
         role: data.role,
         moderationStatus: 'active',

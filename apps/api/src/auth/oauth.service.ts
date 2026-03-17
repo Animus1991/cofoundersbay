@@ -43,9 +43,11 @@ export class OAuthService {
         });
       } else {
         // Create new user
+        const googleSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
           data: {
             email: profile.email,
+            slug: googleSlug,
             googleId: profile.id,
             emailVerified: true, // Google verifies email
             profile: {
@@ -86,9 +88,11 @@ export class OAuthService {
         });
       } else {
         // Create new user
+        const linkedinSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
           data: {
             email: profile.email,
+            slug: linkedinSlug,
             linkedinId: profile.id,
             emailVerified: true, // LinkedIn verifies email
             profile: {
