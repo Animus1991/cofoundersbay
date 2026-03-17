@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -74,7 +75,7 @@ export default function DiscoverPage() {
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const queryClient = useQueryClient();
 
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useIsAuthenticated();
   const { data: recommendationsData, isLoading: suggestionsLoading } = useQuery({
     queryKey: ['recommendations', { limit: 8 }],
     queryFn: () => getRecommendations({ limit: 8 }),

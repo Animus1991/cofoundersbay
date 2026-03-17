@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -110,7 +111,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     typeof window !== 'undefined'
       ? (() => { try { return JSON.parse(localStorage.getItem('user') ?? 'null')?.id ?? null; } catch { return null; } })()
       : null;
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useIsAuthenticated();
 
   const { data: profile, isLoading, isError } = useQuery({
     queryKey: ['public-profile', userId],

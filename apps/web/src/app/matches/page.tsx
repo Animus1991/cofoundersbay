@@ -13,6 +13,7 @@ import { AnimatedList } from '@/components/common/AnimatedList';
 import { MatchCard } from '@/components/common/MatchCard';
 import { ConnectionRequestDialog } from '@/components/common/ConnectionRequest';
 import { useToast } from '@/components/ui/toast';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 
@@ -52,7 +53,7 @@ export default function MatchesPage() {
   const [connectionTarget, setConnectionTarget] = useState<ProfileCardData | null>(null);
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
 
-  const hasToken = typeof window !== 'undefined' ? !!localStorage.getItem('accessToken') : false;
+  const hasToken = useIsAuthenticated();
   const { data, isLoading } = useQuery({
     queryKey: ['recommendations', 'matches', { limit: 20 }],
     queryFn: () => getRecommendations({ limit: 20 }),

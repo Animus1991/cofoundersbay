@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Rocket, User, Briefcase, Zap, ArrowRight, Check, Loader2, Bot } from 'lucide-react';
+import { User, Briefcase, Zap, ArrowRight, Check, Loader2, Bot, Rocket } from 'lucide-react';
 import { createProfile, listSkills, type Skill } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/brand/Logo';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
 
@@ -242,13 +243,8 @@ export function ConversationalOnboarding() {
       {/* Header */}
       <header className="border-b border-border bg-card px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Rocket className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-sm font-semibold text-foreground">CoFounderBay</h1>
-            <p className="text-xs text-muted-foreground">Profile Setup</p>
-          </div>
+          <Logo size="xs" />
+          <p className="text-xs text-muted-foreground border-l border-border pl-3">Profile Setup</p>
           {/* Progress dots */}
           <div className="ml-auto flex gap-1.5">
             {(['name', 'role', 'headline', 'location', 'bio', 'skills'] as Step[]).map((s, i) => {

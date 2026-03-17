@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { Calendar, Grid, List, MapPin, Plus, Search, Video } from 'lucide-react';
@@ -14,6 +14,7 @@ import { AnimatedList } from '@/components/common/AnimatedList';
 import { useToast } from '@/components/ui/toast';
 import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -47,10 +48,7 @@ export default function EventsPage() {
   const [filter, setFilter] = useState<EventFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const hasToken = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('accessToken');
-  }, []);
+  const hasToken = useIsAuthenticated();
 
   const scope = activeTab === 'my-events' ? 'mine' : activeTab === 'past' ? 'past' : 'upcoming';
 
@@ -73,7 +71,7 @@ export default function EventsPage() {
   const featured = viewMode === 'grid' ? events[0] : null;
   const rest = viewMode === 'grid' ? events.slice(1) : events;
 
-  const handleRsvp = async (event: EventItem) => {
+  const handleRsvp = async (event: EventItem): Promise<void> => {
     try {
       const nextStatus = event.viewerRsvp === 'going' ? 'not_going' : 'going';
       await rsvpEvent(event.id, nextStatus);
