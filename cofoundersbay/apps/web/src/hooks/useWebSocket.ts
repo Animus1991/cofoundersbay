@@ -36,14 +36,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     setState((prev) => ({ ...prev, connecting: true, error: null }));
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setState({ connected: false, connecting: false, error: new Error('No auth token') });
-      return;
-    }
-
+    // Auth is handled by the HttpOnly cfb_access cookie sent with withCredentials.
+    // No token should be read from localStorage.
     const socket = io(url, {
-      auth: { token },
+      withCredentials: true,
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -77,15 +73,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     setState({ connected: false, connecting: false, error: null });
   }, []);
 
-  const emit = useCallback((event: string, data?: any) => {
+  const emit = useCallback((event: string, data?: unknown) => {
     if (!socketRef.current?.connected) {
-      console.warn('Socket not connected, cannot emit:', event);
       return;
     }
     socketRef.current.emit(event, data);
   }, []);
 
-  const on = useCallback((event: string, handler: (...args: any[]) => void) => {
+  const on = useCallback((event: string, handler: (...args: unknown[]) => void) => {
     if (!socketRef.current) return;
     socketRef.current.on(event, handler);
     return () => {

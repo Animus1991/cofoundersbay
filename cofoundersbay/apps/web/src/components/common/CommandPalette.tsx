@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { logout } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import {
   Search,
@@ -147,10 +148,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       label: 'Sign out',
       description: 'Log out of your account',
       icon: LogOut,
-      action: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+      action: async () => {
+        try { await logout(); } catch { /* ignore */ }
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('user');
+          window.dispatchEvent(new CustomEvent('cfb:logout'));
+        }
         router.push('/login');
       },
       category: 'settings',

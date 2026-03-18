@@ -337,10 +337,8 @@ export async function uploadMessageAttachment(
   });
 }
 
-export async function getPublicProfile(userId: string, token?: string | null): Promise<PublicProfile> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  return apiRequest<PublicProfile>(`/api/profiles/${userId}`, { headers }, { retryOn401: false });
+export async function getPublicProfile(userId: string): Promise<PublicProfile> {
+  return apiRequest<PublicProfile>(`/api/profiles/${userId}`, undefined, { retryOn401: false });
 }
 
 export async function listSkills(category?: string): Promise<Skill[]> {

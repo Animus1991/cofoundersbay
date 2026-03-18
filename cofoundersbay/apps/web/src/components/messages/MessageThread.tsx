@@ -44,9 +44,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
     queryKey: ['messages', conversationId],
     queryFn: async () => {
       const response = await fetch(`/api/v1/messages/${conversationId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
       const data = await response.json();
       return data.messages || [];
@@ -70,9 +68,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
 
       const response = await fetch(`/api/v1/messages/${conversationId}`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
         body: formData,
       });
 
@@ -90,9 +86,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
     mutationFn: async (messageId: string) => {
       const response = await fetch(`/api/v1/messages/${conversationId}/${messageId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to delete message');

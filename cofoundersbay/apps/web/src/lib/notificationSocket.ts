@@ -18,11 +18,16 @@ export type NotificationSocketEvents = {
 
 let _socket: Socket<NotificationSocketEvents, Record<string, never>> | null = null;
 
-export function getNotificationSocket(accessToken: string): Socket<NotificationSocketEvents, Record<string, never>> {
+/**
+ * Returns (or creates) a singleton notification socket authenticated via
+ * HttpOnly cfb_access cookie. withCredentials ensures cookies are sent on
+ * the WebSocket handshake — no token should be passed from client JS.
+ */
+export function getNotificationSocket(): Socket<NotificationSocketEvents, Record<string, never>> {
   if (_socket && _socket.connected) return _socket;
   if (_socket) _socket.disconnect();
   _socket = io(`${getApiBase()}/notifications`, {
-    auth: { token: accessToken },
+    withCredentials: true,
     transports: ['websocket'],
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,

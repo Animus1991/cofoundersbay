@@ -57,9 +57,7 @@ export function ActivityFeed() {
     queryKey: ['activity-feed'],
     queryFn: async () => {
       const response = await fetch('/api/v1/activity/feed', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
       const data = await response.json();
       return data.activities || [];
@@ -71,9 +69,7 @@ export function ActivityFeed() {
     try {
       await fetch(`/api/v1/activity/${activityId}/like`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
     } catch (error) {
       console.error('Failed to like activity:', error);

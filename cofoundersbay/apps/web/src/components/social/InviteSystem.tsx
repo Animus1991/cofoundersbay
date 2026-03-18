@@ -41,9 +41,7 @@ export function InviteSystem() {
     queryKey: ['invites'],
     queryFn: async () => {
       const response = await fetch('/api/v1/invites', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
       const data = await response.json();
       return data.invites || [];
@@ -54,9 +52,7 @@ export function InviteSystem() {
     queryKey: ['invite-stats'],
     queryFn: async () => {
       const response = await fetch('/api/v1/invites/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
       return response.json();
     },
@@ -66,9 +62,9 @@ export function InviteSystem() {
     mutationFn: async (email: string) => {
       const response = await fetch('/api/v1/invites', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
         body: JSON.stringify({ email }),
       });

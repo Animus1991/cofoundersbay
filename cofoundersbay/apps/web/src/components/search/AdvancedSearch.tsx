@@ -92,9 +92,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
       });
 
       const response = await fetch(`/api/v1/search?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
 
       const data = await response.json();
@@ -109,9 +107,7 @@ export function AdvancedSearch({ onSelect, placeholder = 'Search...', className 
       if (!debouncedQuery || debouncedQuery.length < 2) return [];
 
       const response = await fetch(`/api/v1/search/suggestions?q=${debouncedQuery}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-        },
+        credentials: 'include',
       });
 
       const data = await response.json();

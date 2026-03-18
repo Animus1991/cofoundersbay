@@ -70,7 +70,17 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
   ) {}
 
   async handleConnection(client: AuthedSocket) {
+    // Prefer cookie-based auth (HttpOnly cfb_access cookie sent with withCredentials).
+    // Fall back to handshake.auth.token for legacy/server-side clients.
+    const cookieHeader = client.handshake.headers.cookie ?? '';
+    const cookieToken = cookieHeader
+      .split(';')
+      .map((c) => c.trim())
+      .find((c) => c.startsWith('cfb_access='))
+      ?.slice('cfb_access='.length) ?? null;
+
     const token =
+      cookieToken ||
       (typeof client.handshake.auth?.token === 'string' ? client.handshake.auth.token : null) ||
       (typeof client.handshake.headers.authorization === 'string' && client.handshake.headers.authorization.startsWith('Bearer ')
         ? client.handshake.headers.authorization.slice(7)

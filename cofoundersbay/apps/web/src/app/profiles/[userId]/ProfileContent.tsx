@@ -115,10 +115,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
 
   const { data: profile, isLoading, isError } = useQuery({
     queryKey: ['public-profile', userId],
-    queryFn: () => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-      return getPublicProfile(userId, token ?? undefined);
-    },
+    queryFn: () => getPublicProfile(userId),
     staleTime: 2 * 60_000,
     enabled: !!userId,
     retry: 1,

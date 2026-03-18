@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useHasSession } from '@/hooks/useSession';
 import { useRouter } from 'next/navigation';
 import {
   Bell, CheckCheck, MessageCircle, UserPlus, Star, Calendar,
@@ -58,22 +59,16 @@ function NotifIcon({ type }: { type: string }) {
 export function NotificationsBell({ className }: { className?: string }) {
   const router = useRouter();
   const { error: showError } = useToast();
+  const hasSession = useHasSession();
 
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [hasNew, setHasNew] = useState(false);
   const socketConnectedRef = useRef(false);
 
-  // Client-only: load accessToken after mount to avoid hydration mismatch
-  useEffect(() => {
-    setAccessToken(localStorage.getItem('accessToken'));
-  }, []);
-
   const unread = items.filter((n) => !n.readAt).length;
 
   const load = async () => {
-    if (!accessToken) return;
     setLoading(true);
     try {
       const res = await listNotifications({ limit: 15 });
@@ -85,21 +80,21 @@ export function NotificationsBell({ className }: { className?: string }) {
     }
   };
 
-  // Initial load + polling fallback every 60s
+  // Initial load + polling fallback every 60s (cookie auth handles credentials)
   useEffect(() => {
-    if (!accessToken) return;
+    if (!hasSession) return;
     void load();
     const t = setInterval(() => void load(), 60_000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [hasSession]);
 
-  // Real-time socket for instant notification push
+  // Real-time socket for instant notification push (authenticated via cookie)
   useEffect(() => {
-    if (!accessToken || socketConnectedRef.current) return;
+    if (!hasSession || socketConnectedRef.current) return;
     socketConnectedRef.current = true;
     try {
-      const sock = getNotificationSocket(accessToken);
+      const sock = getNotificationSocket();
       sock.on('notification:new', (payload) => {
         setItems((prev) => {
           if (prev.some((x) => x.id === payload.id)) return prev;
@@ -114,10 +109,9 @@ export function NotificationsBell({ className }: { className?: string }) {
       disconnectNotificationSocket();
       socketConnectedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [hasSession]);
 
-  if (!accessToken) return null;
+  if (!hasSession) return null;
 
   return (
     <DropdownMenu

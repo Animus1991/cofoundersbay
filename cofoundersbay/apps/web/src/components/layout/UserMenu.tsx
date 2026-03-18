@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { logout } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import { LogOut, User, Settings, Edit, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -36,11 +37,11 @@ export function UserMenu() {
     user?.email?.slice(0, 2).toUpperCase() ||
     'ME';
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await logout(); } catch { /* ignore */ }
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      window.dispatchEvent(new CustomEvent('cfb:logout'));
     }
     router.push('/login');
   };

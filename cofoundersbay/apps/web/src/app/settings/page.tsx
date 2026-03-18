@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
-import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, type BillingSubscription } from '@/lib/api';
+import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, logout, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 
 type NotifPrefs = {
@@ -149,11 +149,11 @@ export default function SettingsPage() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await logout(); } catch { /* ignore */ }
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      window.dispatchEvent(new CustomEvent('cfb:logout'));
       window.location.href = '/login';
     }
   };

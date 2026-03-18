@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { logout } from '@/lib/api';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User, Settings } from 'lucide-react';
@@ -32,10 +33,10 @@ export function MobileNav() {
     setOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+  const handleLogout = async () => {
+    try { await logout(); } catch { /* ignore */ }
     localStorage.removeItem('user');
+    window.dispatchEvent(new CustomEvent('cfb:logout'));
     window.location.href = '/login';
   };
 

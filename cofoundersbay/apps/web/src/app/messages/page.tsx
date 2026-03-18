@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useSession } from '@/hooks/useSession';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X, UserPlus, MessageSquare } from 'lucide-react';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
@@ -76,14 +77,10 @@ export default function MessagesPage() {
   const [introLoading, setIntroLoading] = useState(false);
   const [introResponding, setIntroResponding] = useState<Record<string, boolean>>({});
 
+  const { hasSession, user: sessionUser, loading: sessionLoading } = useSession();
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
   const selectedConversationIdRef = useRef<string | null>(null);
   const currentUserIdRef = useRef<string>('');
-
-  const accessToken = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
-  }, []);
 
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversation?.id ?? null;
@@ -95,20 +92,15 @@ export default function MessagesPage() {
 
   // Bootstrap: auth, conversations, socket
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const rawUser = localStorage.getItem('user');
-    if (!rawUser || !accessToken) {
+    // Wait until session has loaded before deciding to redirect
+    if (sessionLoading) return;
+    if (!hasSession) {
       router.replace('/login');
       return;
     }
 
-    try {
-      const parsed = JSON.parse(rawUser) as { id?: string };
-      if (parsed?.id) setCurrentUserId(parsed.id);
-    } catch {
-      router.replace('/login');
-      return;
-    }
+    // Populate current user ID from the server-validated session
+    if (sessionUser?.id) setCurrentUserId(sessionUser.id);
 
     let mounted = true;
 
@@ -125,8 +117,8 @@ export default function MessagesPage() {
 
     load();
 
-    // Socket
-    const s = createMessagingSocket(accessToken);
+    // Socket — authenticated via HttpOnly cfb_access cookie (withCredentials)
+    const s = createMessagingSocket();
     socketRef.current = s;
 
     const onNew: ServerToClientEvents['message:new'] = ({ message }) => {
@@ -263,7 +255,7 @@ export default function MessagesPage() {
   const toUserId = searchParams.get('to');
   const openConversationId = searchParams.get('c');
   useEffect(() => {
-    if (!toUserId || !accessToken || openConversationId) return;
+    if (!toUserId || !hasSession || openConversationId) return;
 
     let cancelled = false;
     const run = async () => {
@@ -290,7 +282,7 @@ export default function MessagesPage() {
     return () => {
       cancelled = true;
     };
-  }, [toUserId, accessToken, showError, openConversationId]);
+  }, [toUserId, hasSession, showError, openConversationId]);
 
   // Handle URL param for opening an existing conversation
   useEffect(() => {

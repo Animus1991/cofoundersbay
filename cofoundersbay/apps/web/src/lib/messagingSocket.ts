@@ -25,10 +25,14 @@ export type ClientToServerEvents = {
   'typing:stop': (payload: { conversationId: string }) => void;
 };
 
-export function createMessagingSocket(accessToken: string): Socket<ServerToClientEvents, ClientToServerEvents> {
+/**
+ * Creates a messaging socket authenticated via HttpOnly cfb_access cookie.
+ * withCredentials ensures the browser sends cookies on the WebSocket handshake.
+ * No token should be passed from client JavaScript.
+ */
+export function createMessagingSocket(): Socket<ServerToClientEvents, ClientToServerEvents> {
   return io(getApiBase(), {
-    auth: { token: accessToken },
+    withCredentials: true,
     transports: ['websocket'],
   });
 }
-
