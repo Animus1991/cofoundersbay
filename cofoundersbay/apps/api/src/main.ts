@@ -2,15 +2,27 @@
 // We use a guarded dynamic require so the app still boots if the package is not yet installed.
 if (process.env.SENTRY_DSN) {
   try {
+    interface SentryEvent {
+      request?: {
+        cookies?: unknown;
+        headers?: { authorization?: unknown };
+      };
+    }
+    interface SentryModule {
+      init(options: {
+        dsn: string;
+        environment: string;
+        tracesSampleRate: number;
+        beforeSend(event: SentryEvent): SentryEvent;
+      }): void;
+    }
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-    const Sentry: any = require('@sentry/node');
+    const Sentry = require('@sentry/node') as SentryModule;
     Sentry.init({
       dsn: process.env.SENTRY_DSN,
       environment: process.env.NODE_ENV ?? 'development',
       tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      beforeSend(event: any) {
+      beforeSend(event: SentryEvent): SentryEvent {
         if (event.request?.cookies) delete event.request.cookies;
         if (event.request?.headers?.authorization) delete event.request.headers.authorization;
         return event;
@@ -25,6 +37,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigModule } from '@nestjs/config';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import type { Request, Response, NextFunction } from 'express';
 import { resolve } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
@@ -90,7 +103,7 @@ async function bootstrap() {
 
   // Redirect bare root GET / → frontend (prevents confusing JSON 404 when devs open :3001)
   const frontendOrigin = (config.cors.origin as string[])?.[0] ?? 'http://localhost:3000';
-  app.use((req: any, res: any, next: any) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path === '/' && req.method === 'GET') {
       res.redirect(302, frontendOrigin);
       return;

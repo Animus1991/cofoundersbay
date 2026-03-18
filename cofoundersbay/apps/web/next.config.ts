@@ -105,10 +105,39 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and security
   async headers() {
+    // Build a strict Content-Security-Policy.
+    // 'unsafe-inline' for styles is required by Next.js inline styles and Tailwind.
+    // 'unsafe-eval' is omitted — Next.js prod builds do not need it.
+    // ws: / wss: are needed for socket.io websocket transport.
+    const csp = [
+      "default-src 'self'",
+      // Scripts: self + Next.js runtime chunks (nonce-based ideally, but
+      // next.js inlines chunk loaders so 'self' covers local bundles)
+      "script-src 'self' 'unsafe-inline'",
+      // Styles: self + inline (Tailwind/CSS-in-JS) + Google Fonts stylesheets
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      // Fonts: self + Google Fonts CDN
+      "font-src 'self' https://fonts.gstatic.com",
+      // Images: self + data URIs (avatars/thumbnails) + any HTTPS CDN
+      "img-src 'self' data: https:",
+      // API + WebSocket connections: self (same origin via Next proxy) + explicit API port for direct dev access
+      "connect-src 'self' ws: wss: http://localhost:* https:",
+      // Frames: deny by default
+      "frame-ancestors 'none'",
+      // Object/media: none
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
     return [
       {
         source: '/:path*',
         headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: csp,
+          },
           {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
