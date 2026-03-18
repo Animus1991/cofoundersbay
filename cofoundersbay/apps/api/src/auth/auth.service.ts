@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Role } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -43,13 +44,12 @@ export class AuthService {
     const baseSlug = input.email.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '-');
     const slug = `${baseSlug}-${Date.now().toString(36)}`;
     const user = await this.prisma.user.create({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: {
         email: input.email.toLowerCase(),
         slug,
         passwordHash,
-        role: input.role as 'founder' | 'mentor' | 'investor' | 'org',
-      } as any,
+        role: (input.role ?? 'founder') as Role,
+      },
     });
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);

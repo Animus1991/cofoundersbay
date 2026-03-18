@@ -209,7 +209,7 @@ async function apiRequest<T>(
 
 export async function register(body: { email: string; password: string; role?: string }) {
   clearLegacyTokens();
-  const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
+  const result = await apiRequest<{ user: AuthUser }>(
     '/api/auth/register',
     { method: 'POST', body: JSON.stringify(body) },
     { retryOn401: false },
@@ -227,7 +227,7 @@ export async function forgotPassword(email: string): Promise<{ sent: boolean }> 
 
 export async function login(body: { email: string; password: string }) {
   clearLegacyTokens();
-  const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
+  const result = await apiRequest<{ user: AuthUser }>(
     '/api/auth/login',
     { method: 'POST', body: JSON.stringify(body) },
     { retryOn401: false },

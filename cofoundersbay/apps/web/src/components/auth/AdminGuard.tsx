@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { getMe } from '@/lib/api';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -16,32 +17,22 @@ export function AdminGuard({ children }: AdminGuardProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkAdmin = () => {
-      try {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) {
-          setIsAdmin(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const user = JSON.parse(userStr);
-        setIsAdmin(user.role === 'admin');
+    getMe()
+      .then(({ user }) => {
+        setIsAdmin(user.role === 'admin' || user.role === 'super_admin');
         setIsLoading(false);
-      } catch {
+      })
+      .catch(() => {
         setIsAdmin(false);
         setIsLoading(false);
-      }
-    };
-
-    checkAdmin();
+      });
   }, []);
 
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <Shield className="h-8 w-8 animate-pulse text-primary" />
           <p className="text-sm text-muted-foreground">Verifying access...</p>
         </div>
       </div>

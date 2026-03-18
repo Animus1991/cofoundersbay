@@ -71,7 +71,7 @@ export default function RegisterPage() {
     submittingRef.current = true;
     setLoading(true);
     try {
-      const { user, tokens } = await registerApi({
+      const { user } = await registerApi({
         email: email.trim().toLowerCase(),
         password,
         role: role as 'founder' | 'mentor' | 'investor' | 'org',

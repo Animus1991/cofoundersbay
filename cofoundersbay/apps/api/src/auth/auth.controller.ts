@@ -60,7 +60,6 @@ export class AuthController {
 
     return {
       user: result.user,
-      tokens: result.tokens,
     };
   }
 
@@ -78,7 +77,6 @@ export class AuthController {
 
       return {
         user: result.user,
-        tokens: result.tokens,
       };
     } catch (error) {
       console.error('[LOGIN ERROR]', error);
@@ -105,7 +103,7 @@ export class AuthController {
     const tokens: TokenPair = await this.authService.refresh(refreshToken);
     setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
 
-    return tokens;
+    return { ok: true };
   }
 
   @Post('logout')
