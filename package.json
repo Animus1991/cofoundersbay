@@ -19,10 +19,15 @@
     "db:sync": "npm run prisma:push --prefix apps/api",
     "db:migrate": "npm run prisma:migrate --prefix apps/api",
     "db:studio": "npm run prisma:studio --prefix apps/api",
-    "db:seed": "npm run db:seed --prefix apps/api"
+    "db:seed": "npm run db:seed --prefix apps/api",
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
   "devDependencies": {
-    "turbo": "^2.3.0"
+    "turbo": "^2.3.0",
+    "typescript": "~5.9.2",
+    "prettier": "^3.8.1"
   },
   "engines": {
     "node": ">=20"
@@ -30,5 +35,6 @@
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0"
-  }
+  },
+  "license": "MIT"
 }

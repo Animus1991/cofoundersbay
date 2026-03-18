@@ -7,6 +7,11 @@ dist
 .next
 out
 .turbo
+tmp
+out-tsc
+*.tsbuildinfo
+.expo
+.expo-shared
 
 # Env
 .env
@@ -16,8 +21,21 @@ out
 # IDE
 .idea
 .vscode
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 *.swp
 *.swo
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # OS
 .DS_Store
@@ -27,6 +45,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-error.log
+testem.log
+libpeerconnection.log
 
 # Testing
 coverage
@@ -39,3 +60,12 @@ coverage
 # Misc
 *.pem
 .vercel
+/.sass-cache
+/connect.lock
+/typings
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+
+# Replit
+.cache/
+.local/

@@ -1,0 +1,524 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import {
+  Users,
+  Search,
+  Grid3x3,
+  List,
+  MapPin,
+  Briefcase,
+  TrendingUp,
+  Award,
+  Filter,
+  X,
+  ChevronDown,
+  Star,
+  UserPlus,
+  MessageCircle,
+} from 'lucide-react';
+import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+
+type ViewMode = 'grid' | 'list';
+type SortBy = 'relevance' | 'newest' | 'active' | 'popular';
+
+const ROLES = ['All Roles', 'Founder', 'Co-Founder', 'Investor', 'Mentor', 'Advisor', 'Developer', 'Designer', 'Marketer'];
+const INDUSTRIES = ['All Industries', 'Technology', 'Healthcare', 'Finance', 'E-commerce', 'Education', 'Real Estate', 'SaaS', 'AI/ML', 'Blockchain'];
+const LOCATIONS = ['All Locations', 'Remote', 'San Francisco', 'New York', 'London', 'Berlin', 'Singapore', 'Austin', 'Seattle', 'Boston'];
+const AVAILABILITY = ['All', 'Available Now', 'Part-Time', 'Full-Time', 'Consulting'];
+
+interface MemberCardProps {
+  member: SearchHit;
+  viewMode: ViewMode;
+  onConnect: () => void;
+  onMessage: () => void;
+}
+
+function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps) {
+  const isGridView = viewMode === 'grid';
+
+  if (isGridView) {
+    return (
+      <Card className="card-interactive hover-lift group transition-all duration-300">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex flex-col items-center text-center">
+            <Link href={`/profiles/${member.userId}`}>
+              <Avatar className="h-24 w-24 ring-2 ring-primary/20 mb-3">
+                <AvatarImage src={member.avatarUrl ?? undefined} />
+                <AvatarFallback className="bg-primary/20 text-primary font-semibold text-xl">
+                  {member.displayName[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+
+            <Link
+              href={`/profiles/${member.userId}`}
+              className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors mb-1"
+            >
+              {member.displayName}
+            </Link>
+
+            {member.role && (
+              <Badge variant="secondary" className="mb-2">
+                {member.role}
+              </Badge>
+            )}
+
+            {member.bio && (
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                {member.bio}
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 justify-center mb-3">
+              {member.skills?.slice(0, 3).map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground"
+                >
+                  {skill}
+                </span>
+              ))}
+              {member.skills && member.skills.length > 3 && (
+                <span className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground">
+                  +{member.skills.length - 3}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+              {member.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {member.location}
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2 w-full">
+              <Button size="sm" onClick={onConnect} className="flex-1 gap-1.5">
+                <UserPlus className="h-3.5 w-3.5" />
+                Connect
+              </Button>
+              <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+                <MessageCircle className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="card-interactive hover-lift group transition-all duration-300">
+      <CardContent className="p-5">
+        <div className="flex items-start gap-4">
+          <Link href={`/profiles/${member.userId}`}>
+            <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/20">
+              <AvatarImage src={member.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+                {member.displayName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <Link
+                  href={`/profiles/${member.userId}`}
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                >
+                  {member.displayName}
+                </Link>
+                {member.role && (
+                  <Badge variant="secondary" className="ml-2">
+                    {member.role}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <Button size="sm" onClick={onConnect} className="gap-1.5">
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Connect
+                </Button>
+                <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
+                  <MessageCircle className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+
+            {member.bio && (
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                {member.bio}
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {member.skills?.slice(0, 5).map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground"
+                >
+                  {skill}
+                </span>
+              ))}
+              {member.skills && member.skills.length > 5 && (
+                <span className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground">
+                  +{member.skills.length - 5} more
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              {member.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {member.location}
+                </div>
+              )}
+              {member.industries && member.industries.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  {member.industries.slice(0, 2).join(', ')}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
+  if (viewMode === 'grid') {
+    return (
+      <Card>
+        <CardContent className="p-5 space-y-4">
+          <div className="flex flex-col items-center">
+            <Skeleton className="h-24 w-24 rounded-full mb-3" />
+            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="h-4 w-20 mb-3" />
+            <Skeleton className="h-12 w-full mb-3" />
+            <div className="flex gap-2 w-full">
+              <Skeleton className="h-8 flex-1" />
+              <Skeleton className="h-8 w-12" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-start gap-4">
+          <Skeleton className="h-16 w-16 rounded-full shrink-0" />
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-20" />
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function MembersPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRole, setSelectedRole] = useState('All Roles');
+  const [selectedIndustry, setSelectedIndustry] = useState('All Industries');
+  const [selectedLocation, setSelectedLocation] = useState('All Locations');
+  const [selectedAvailability, setSelectedAvailability] = useState('All');
+  const [sortBy, setSortBy] = useState<SortBy>('relevance');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy],
+    queryFn: () => searchProfiles({
+      q: searchQuery.trim() || undefined,
+      roles: selectedRole !== 'All Roles' ? [selectedRole.toLowerCase()] : undefined,
+      industries: selectedIndustry !== 'All Industries' ? [selectedIndustry] : undefined,
+      location: selectedLocation !== 'All Locations' ? selectedLocation : undefined,
+      limit: 50,
+    }),
+    staleTime: 30_000,
+  });
+
+  const members = data?.hits ?? [];
+  const total = data?.total ?? 0;
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedRole !== 'All Roles') count++;
+    if (selectedIndustry !== 'All Industries') count++;
+    if (selectedLocation !== 'All Locations') count++;
+    if (selectedAvailability !== 'All') count++;
+    return count;
+  }, [selectedRole, selectedIndustry, selectedLocation, selectedAvailability]);
+
+  const clearFilters = () => {
+    setSelectedRole('All Roles');
+    setSelectedIndustry('All Industries');
+    setSelectedLocation('All Locations');
+    setSelectedAvailability('All');
+    setSearchQuery('');
+  };
+
+  const router = useRouter();
+  const { success, error: showError } = useToast();
+
+  const connectMutation = useMutation({
+    mutationFn: (userId: string) => sendConnectionRequest({ receiverId: userId }),
+    onSuccess: () => success('Request sent', 'Connection request sent successfully'),
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not send request'),
+  });
+
+  const messageMutation = useMutation({
+    mutationFn: (userId: string) => getOrCreateDirectConversation(userId),
+    onSuccess: (data) => router.push(`/messages?conversationId=${data.conversationId}`),
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not open conversation'),
+  });
+
+  const handleConnect = (memberId: string) => connectMutation.mutate(memberId);
+  const handleMessage = (memberId: string) => messageMutation.mutate(memberId);
+
+  return (
+    <AppShell
+      title="Member Directory"
+      description={`Discover and connect with ${total.toLocaleString()} members`}
+    >
+      <div className="space-y-4">
+        {/* Search and View Controls */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search members by name, skills, or bio..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              variant={showFilters ? 'default' : 'outline'}
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {activeFiltersCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                  {activeFiltersCount}
+                </Badge>
+              )}
+            </Button>
+
+            <div className="flex rounded-lg border border-border/60">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="rounded-r-none"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <Card className="border-primary/20">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Role</label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ROLES.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Industry</label>
+                  <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((industry) => (
+                        <SelectItem key={industry} value={industry}>
+                          {industry}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Location</label>
+                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          {location}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Availability</label>
+                  <Select value={selectedAvailability} onValueChange={setSelectedAvailability}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AVAILABILITY.map((avail) => (
+                        <SelectItem key={avail} value={avail}>
+                          {avail}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {activeFiltersCount > 0 && (
+                <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/60">
+                  <span className="text-sm text-muted-foreground">
+                    {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
+                    <X className="h-3.5 w-3.5" />
+                    Clear all
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Results Header */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {isLoading ? 'Loading...' : `${total.toLocaleString()} member${total !== 1 ? 's' : ''} found`}
+          </p>
+
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="relevance">Most Relevant</SelectItem>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="active">Most Active</SelectItem>
+              <SelectItem value="popular">Most Popular</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Members Grid/List */}
+        {isError ? (
+          <Card>
+            <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+              <Users className="h-8 w-8 text-muted-foreground/40" />
+              <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+            </CardContent>
+          </Card>
+        ) : isLoading ? (
+          <div className={cn(
+            'grid gap-4',
+            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+          )}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <MemberSkeleton key={i} viewMode={viewMode} />
+            ))}
+          </div>
+        ) : members.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No members found</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Try adjusting your search or filters
+              </p>
+              {activeFiltersCount > 0 && (
+                <Button variant="secondary" onClick={clearFilters}>
+                  Clear filters
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className={cn(
+            'grid gap-4',
+            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+          )}>
+            {members.map((member) => (
+              <MemberCard
+                key={member.userId}
+                member={member}
+                viewMode={viewMode}
+                onConnect={() => handleConnect(member.userId)}
+                onMessage={() => handleMessage(member.userId)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </AppShell>
+  );
+}
