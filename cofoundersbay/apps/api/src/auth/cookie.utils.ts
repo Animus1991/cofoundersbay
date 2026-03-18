@@ -2,6 +2,17 @@ import { Response } from 'express';
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 
+/**
+ * Derive the refresh-token cookie path from the API_PREFIX env var.
+ * This keeps the cookie path in sync with the NestJS global prefix so it
+ * does not need to be updated when the prefix changes.
+ * Example: API_PREFIX=api → path=/api/auth
+ */
+function refreshCookiePath(): string {
+  const prefix = (process.env.API_PREFIX ?? 'api').replace(/^\/|\/$/g, '');
+  return `/${prefix}/auth`;
+}
+
 export const COOKIE_NAMES = {
   ACCESS_TOKEN: 'cfb_access',
   REFRESH_TOKEN: 'cfb_refresh',
@@ -36,6 +47,7 @@ export function setAuthCookies(
   config: Partial<CookieConfig> = {},
 ) {
   const merged = { ...DEFAULT_CONFIG, ...config };
+  const refreshPath = refreshCookiePath();
 
   res.cookie(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
     ...baseCookieOptions(merged.accessMaxAge),
@@ -44,23 +56,23 @@ export function setAuthCookies(
 
   res.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
     ...baseCookieOptions(merged.refreshMaxAge),
-    path: '/api/auth', // only sent to auth endpoints (matches NestJS global prefix 'api')
+    path: refreshPath, // scoped to auth endpoints; derived from API_PREFIX
     ...(merged.domain ? { domain: merged.domain } : {}),
   });
 
   // Non-httpOnly session presence cookie — matches refresh token TTL (7 days)
-  // Allows frontend JS to detect an active session without reading the httpOnly tokens.
   res.cookie(COOKIE_NAMES.SESSION, '1', {
     httpOnly: false,
     secure: IS_PROD,
     sameSite: 'lax' as const,
     path: '/',
-    maxAge: merged.refreshMaxAge * 1000, // same lifetime as refresh token
+    maxAge: merged.refreshMaxAge * 1000,
     ...(merged.domain ? { domain: merged.domain } : {}),
   });
 }
 
 export function clearAuthCookies(res: Response, domain?: string) {
+  const refreshPath = refreshCookiePath();
   const opts = {
     httpOnly: true,
     secure: IS_PROD,
@@ -70,6 +82,6 @@ export function clearAuthCookies(res: Response, domain?: string) {
   };
 
   res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, opts);
-  res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { ...opts, path: '/api/auth' });
+  res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { ...opts, path: refreshPath });
   res.clearCookie(COOKIE_NAMES.SESSION, { httpOnly: false, secure: IS_PROD, sameSite: 'lax', path: '/', ...(domain ? { domain } : {}) });
 }
