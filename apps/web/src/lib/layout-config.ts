@@ -6,18 +6,18 @@
 export const layoutConfig = {
   // Container widths (20% wider than standard)
   maxWidth: {
-    sm: '720px',    // Mobile landscape
-    md: '960px',    // Tablet
-    lg: '1320px',   // Desktop (was 1100px)
-    xl: '1560px',   // Large desktop (was 1300px)
-    '2xl': '1800px', // Ultra-wide (was 1500px)
+    sm: '756px',    // Mobile landscape (+5%)
+    md: '1008px',   // Tablet (+5%)
+    lg: '1386px',   // Desktop (+5%)
+    xl: '1638px',   // Large desktop (+5%)
+    '2xl': '1890px', // Ultra-wide (+5%)
   },
   
   // Content area widths
   content: {
-    narrow: '800px',   // For focused content (articles, forms)
-    standard: '1320px', // Standard content width
-    wide: '1560px',    // Wide layouts (dashboards, tables)
+    narrow: '840px',   // For focused content (articles, forms) (+5%)
+    standard: '1386px', // Standard content width (+5%)
+    wide: '1638px',    // Wide layouts (dashboards, tables) (+5%)
     full: '100%',      // Full width
   },
   

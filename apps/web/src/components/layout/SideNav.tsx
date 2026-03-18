@@ -1,25 +1,36 @@
-"use client";
+'use client';
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { navSections } from './nav-links';
+import { useSidebar } from './SidebarContext';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Logo, LogoIcon } from '@/components/brand/Logo';
 
-type StoredUser = { displayName?: string; email?: string; role?: string; avatarUrl?: string } | null;
+type StoredUser = {
+  displayName?: string;
+  email?: string;
+  role?: string;
+  avatarUrl?: string;
+} | null;
 
 export function SideNav() {
   const pathname = usePathname();
+  const { expanded, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
   const [user, setUser] = useState<StoredUser>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window === 'undefined') return;
     const raw = localStorage.getItem('user');
     if (!raw) return;
-    try { setUser(JSON.parse(raw)); } catch { /* silent */ }
+    try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
   }, []);
 
   const badgeFor = (href: string): number => {
@@ -35,44 +46,109 @@ export function SideNav() {
 
   return (
     <aside
-      className="hidden lg:flex lg:flex-col h-fit min-h-[420px] rounded-xl border border-border bg-card shadow-sm sticky top-4"
+      className={cn(
+        'fixed left-0 top-0 z-40 flex h-full flex-col border-r border-border/60 bg-card/98 backdrop-blur-sm',
+        'transition-[width] duration-200 ease-out will-change-[width]',
+        'hidden lg:flex',
+        expanded ? 'w-[240px]' : 'w-[68px]',
+      )}
       aria-label="Main navigation"
     >
-      <nav className="flex-1 space-y-4 p-2 overflow-y-auto">
+      {/* ── Logo header ── */}
+      <div
+        className={cn(
+          'flex h-14 flex-shrink-0 items-center border-b border-border/60',
+          expanded ? 'justify-between px-4' : 'justify-center px-0',
+        )}
+      >
+        {expanded ? (
+          <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Logo size="sm" />
+          </OptimizedLink>
+        ) : (
+          <OptimizedLink href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
+            <LogoIcon size={28} />
+          </OptimizedLink>
+        )}
+        {expanded && mounted && (
+          <button
+            onClick={toggle}
+            className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label="Collapse sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* ── Navigation ── */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
         {navSections.map(({ section, links }) => (
-          <div key={section}>
-            <p className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
-              {section}
-            </p>
-            <ul className="space-y-0.5">
+          <div key={section} className="mb-1">
+            {expanded ? (
+              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
+                {section}
+              </p>
+            ) : (
+              <div className="mx-3 my-2 h-px bg-border/50" />
+            )}
+            <ul className="space-y-0.5 px-2">
               {links.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+                const active =
+                  pathname === href || (href !== '/' && pathname.startsWith(href));
                 const badge = badgeFor(href);
+
                 return (
                   <li key={`${section}-${href}`}>
                     <OptimizedLink
                       href={href}
                       aria-current={active ? 'page' : undefined}
+                      title={!expanded ? label : undefined}
                       className={cn(
-                        'relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-all duration-150',
+                        'group relative flex items-center rounded-lg transition-all duration-150',
+                        expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
                         active
                           ? 'bg-primary/8 text-primary font-medium'
-                          : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground font-normal',
+                          : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >
-                      {/* Left border indicator for active state */}
-                      {active && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-primary" aria-hidden="true" />
-                      )}
-                      <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-primary' : 'text-muted-foreground/70')} aria-hidden="true" />
-                      <span className="truncate">{label}</span>
-                      {badge > 0 && (
+                      {/* Active left bar */}
+                      {active && expanded && (
                         <span
-                          className="ml-auto flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground"
-                          aria-label={`${badge} unread`}
-                        >
-                          {badge > 99 ? '99+' : badge}
-                        </span>
+                          className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary"
+                          aria-hidden="true"
+                        />
+                      )}
+
+                      {/* Icon + badge (collapsed) */}
+                      <span className="relative flex-shrink-0">
+                        <Icon
+                          className={cn(
+                            'h-4 w-4',
+                            active ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground',
+                          )}
+                          aria-hidden="true"
+                        />
+                        {badge > 0 && !expanded && (
+                          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold leading-none text-primary-foreground">
+                            {badge > 9 ? '9+' : badge}
+                          </span>
+                        )}
+                      </span>
+
+                      {/* Label + badge (expanded) */}
+                      {expanded && (
+                        <>
+                          <span className="truncate text-sm leading-none">{label}</span>
+                          {badge > 0 && (
+                            <span
+                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"
+                              aria-label={`${badge} unread`}
+                            >
+                              {badge > 99 ? '99+' : badge}
+                            </span>
+                          )}
+                        </>
                       )}
                     </OptimizedLink>
                   </li>
@@ -83,22 +159,51 @@ export function SideNav() {
         ))}
       </nav>
 
-      {user && (
-        <div className="border-t border-border/60 p-3">
-          <OptimizedLink href="/profile" className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-secondary/60 transition-colors">
-            <Avatar className="h-8 w-8 shrink-0">
+      {/* ── User profile footer ── */}
+      <div className="flex-shrink-0 border-t border-border/60 p-2">
+        {user && mounted ? (
+          <OptimizedLink
+            href="/profile"
+            title={!expanded ? (user.displayName ?? 'Profile') : undefined}
+            className={cn(
+              'flex items-center rounded-lg transition-colors hover:bg-secondary/60',
+              expanded ? 'gap-2.5 px-2 py-2' : 'justify-center p-2',
+            )}
+          >
+            <Avatar className="h-7 w-7 flex-shrink-0">
               <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-xs font-bold bg-primary/20 text-primary">{initials}</AvatarFallback>
+              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary">
+                {initials}
+              </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground truncate">{user.displayName ?? 'User'}</p>
-              {user.role && (
-                <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
-              )}
-            </div>
+            {expanded && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium leading-tight text-foreground">
+                  {user.displayName ?? 'User'}
+                </p>
+                {user.role && (
+                  <p className="truncate text-xs capitalize leading-tight text-muted-foreground">
+                    {user.role}
+                  </p>
+                )}
+              </div>
+            )}
           </OptimizedLink>
-        </div>
-      )}
+        ) : (
+          <div className={cn('rounded-lg bg-secondary/40', expanded ? 'h-10' : 'h-9 w-9 mx-auto')} />
+        )}
+
+        {/* Expand button when collapsed */}
+        {!expanded && mounted && (
+          <button
+            onClick={toggle}
+            className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        )}
+      </div>
     </aside>
   );
 }

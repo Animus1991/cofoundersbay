@@ -7,6 +7,7 @@ export type JobPostingView = {
   role: string | null;
   location: string | null;
   isRemote: boolean;
+  isFeatured: boolean;
   creator: { displayName: string; avatarUrl: string | null };
   href?: string;
 };
@@ -45,6 +46,7 @@ export class JobsService {
       role: job.role,
       location: job.location,
       isRemote: job.isRemote,
+      isFeatured: job.isFeatured,
       description: job.description,
       createdAt: job.createdAt.toISOString(),
       creator: {
@@ -70,6 +72,7 @@ export class JobsService {
       role: job.role,
       location: job.location,
       isRemote: job.isRemote,
+      isFeatured: job.isFeatured,
       description: job.description,
       createdAt: job.createdAt.toISOString(),
       creator: {
@@ -106,6 +109,7 @@ export class JobsService {
       role: j.role,
       location: j.location,
       isRemote: j.isRemote,
+      isFeatured: j.isFeatured,
       creator: {
         displayName: j.creator.profile?.displayName ?? 'Anonymous',
         avatarUrl: j.creator.profile?.avatarUrl ?? null,

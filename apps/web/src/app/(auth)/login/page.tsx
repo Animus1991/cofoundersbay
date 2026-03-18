@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff } from 'lucide-react';
-import { login } from '@/lib/api';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff, Building2 } from 'lucide-react';
+import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
@@ -18,12 +18,53 @@ const HERO_POINTS = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [ssoDiscovery, setSsoDiscovery] = useState<SSODiscoveryResult | null>(null);
+  const [checkingSSO, setCheckingSSO] = useState(false);
   const submittingRef = useRef(false);
+  const ssoCheckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check for SSO when email changes (debounced)
+  const checkSSOForEmail = useCallback(async (emailValue: string) => {
+    if (!emailValue.includes('@') || emailValue.split('@')[1]?.length < 3) {
+      setSsoDiscovery(null);
+      return;
+    }
+
+    setCheckingSSO(true);
+    try {
+      const result = await discoverSSOByEmail(emailValue);
+      setSsoDiscovery(result);
+    } catch {
+      setSsoDiscovery(null);
+    } finally {
+      setCheckingSSO(false);
+    }
+  }, []);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    
+    // Debounce SSO check
+    if (ssoCheckTimeoutRef.current) {
+      clearTimeout(ssoCheckTimeoutRef.current);
+    }
+    ssoCheckTimeoutRef.current = setTimeout(() => {
+      checkSSOForEmail(value);
+    }, 500);
+  };
+
+  const handleSSOLogin = () => {
+    if (!ssoDiscovery?.provider?.id) return;
+    const returnUrl = searchParams.get('returnUrl') || '/';
+    window.location.href = getSSOLoginUrl(ssoDiscovery.provider.id, returnUrl);
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +99,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left — form */}
-      <div className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24">
+      <main id="main-content" className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             <Logo size="sm" />
@@ -83,47 +124,88 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   required
                   autoComplete="email"
                   placeholder="you@startup.com"
                   className="pl-10"
                 />
               </div>
+              {checkingSSO && (
+                <p className="text-xs text-muted-foreground animate-pulse">Checking organization settings...</p>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium">Password</label>
-                <span className="text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors">Forgot password?</span>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  className="pl-10 pr-10"
-                />
-                <button
+            {/* SSO Discovery Banner */}
+            {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  <span className="font-medium text-sm">
+                    {ssoDiscovery.tenant?.name || 'Organization'} SSO detected
+                  </span>
+                </div>
+                <Button
                   type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  tabIndex={-1}
+                  onClick={handleSSOLogin}
+                  className="w-full gap-2"
+                  variant="default"
+                  style={ssoDiscovery.provider.loginButtonColor ? { backgroundColor: ssoDiscovery.provider.loginButtonColor } : undefined}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                  {ssoDiscovery.provider.logoUrl && (
+                    <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" />
+                  )}
+                  {ssoDiscovery.provider.loginButtonText || 'Continue with SSO'}
+                </Button>
+                {ssoDiscovery.ssoRequired && !ssoDiscovery.allowPasswordLogin ? (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Your organization requires SSO login
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Or continue with password below
+                  </p>
+                )}
               </div>
-            </div>
+            )}
 
-            <Button type="submit" disabled={loading} className="w-full gap-2" size="lg">
-              {loading ? 'Signing in…' : 'Sign in'}
-              {!loading && <ArrowRight className="h-4 w-4" />}
-            </Button>
+            {/* Password section - hidden if SSO is required */}
+            {(!ssoDiscovery?.ssoRequired || ssoDiscovery?.allowPasswordLogin) && (
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="text-sm font-medium">Password</label>
+                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot password?</Link>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required={!ssoDiscovery?.ssoRequired}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      className="pl-10 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button type="submit" disabled={loading} className="w-full gap-2" size="lg">
+                  {loading ? 'Signing in…' : 'Sign in'}
+                  {!loading && <ArrowRight className="h-4 w-4" />}
+                </Button>
+              </>
+            )}
 
             <OAuthDivider />
             <OAuthButtons mode="login" disabled={loading} />
@@ -136,7 +218,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-      </div>
+      </main>
 
       {/* Right — hero panel */}
       <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">

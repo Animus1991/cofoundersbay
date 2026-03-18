@@ -16,6 +16,7 @@ enum Role {
   investor
   org
   admin
+  super_admin
 }
 
 enum ConversationType {
@@ -185,7 +186,8 @@ model User {
   reportsResolved Report[] @relation("ReportsResolvedBy")
 
   // Billing
-  subscription Subscription?
+  subscriptions     Subscription[]
+  seatAllocations   SeatAllocation[]
 
   // Polls
   pollsCreated Poll[]      @relation("PollsCreated")
@@ -216,6 +218,11 @@ model User {
   // Admin
   adminAuditLogs       AdminAuditLog[]     @relation("AdminAuditLogs")
   cohortMemberships    CohortMember[]
+
+  // SSO / Multi-tenant
+  userIdentities       UserIdentity[]
+  tenantMemberships    TenantMembership[]
+  ssoAuthEvents        SSOAuthEvent[]
 }
 
 model Profile {
@@ -481,20 +488,6 @@ model Report {
 
   @@index([status, createdAt])
   @@index([reportedId, status])
-}
-
-model Subscription {
-  id                   String             @id @default(uuid())
-  userId               String             @unique
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stripeCustomerId     String?            @unique
-  stripeSubscriptionId String?            @unique
-  status               SubscriptionStatus @default(incomplete)
-  priceId              String?
-  currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
 }
 
 model Poll {
@@ -886,6 +879,540 @@ model CohortMember {
   @@unique([cohortId, userId])
   @@index([cohortId])
   @@index([userId])
+}
+
+// ── White-label / Multi-tenant ──────────────────────────────────────────────
+
+enum TenantStatus {
+  draft
+  active
+  suspended
+}
+
+model Tenant {
+  id            String        @id @default(uuid())
+  slug          String        @unique
+  name          String
+  displayName   String?
+  description   String?       @db.Text
+  website       String?
+  logoUrl       String?
+  faviconUrl    String?
+  status        TenantStatus  @default(draft)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  branding          TenantBranding?
+  ssoConfig         TenantSSOConfig?
+  identityProviders IdentityProvider[]
+  memberships       TenantMembership[]
+  domainMappings    DomainMapping[]
+  tenantDomains     TenantDomain[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model TenantBranding {
+  id                    String    @id @default(uuid())
+  tenantId              String    @unique
+  tenant                Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Colors
+  primaryColor          String?   // hex, e.g. "#6366f1"
+  secondaryColor        String?
+  accentColor           String?
+
+  // Content
+  heroTitle             String?
+  heroSubtitle          String?
+  ctaLabel              String?   @default("Get Started")
+  onboardingIntroText   String?   @db.Text
+  dashboardWelcomeText  String?
+
+  // Contact & legal
+  supportEmail          String?
+  privacyPolicyUrl      String?
+  termsUrl              String?
+
+  // Social
+  linkedinUrl           String?
+  twitterUrl            String?
+
+  // Email
+  emailSignature        String?   @db.Text
+  emailLogoUrl          String?
+
+  isBrandingActive      Boolean   @default(false)
+  publishedAt           DateTime?
+  updatedAt             DateTime  @updatedAt
+}
+
+// ── Enterprise SSO / Identity Provider ─────────────────────────────────────
+
+enum SSOProviderType {
+  saml
+  oidc
+  oauth2
+}
+
+enum SSOMode {
+  disabled      // No SSO for this tenant
+  optional      // Users can choose SSO or password
+  required      // SSO mandatory for tenant members
+}
+
+model IdentityProvider {
+  id                  String          @id @default(uuid())
+  tenantId            String
+  tenant              Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Provider config
+  providerType        SSOProviderType
+  providerName        String          // Display name, e.g. "University of Athens SSO"
+  isActive            Boolean         @default(false)
+  
+  // SAML config
+  samlEntryPoint      String?         // IdP SSO URL
+  samlIssuer          String?         // IdP Entity ID
+  samlCert            String?         @db.Text // IdP X.509 certificate
+  samlMetadataUrl     String?         // IdP metadata URL for auto-config
+  
+  // OIDC/OAuth2 config
+  oidcIssuerUrl       String?         // e.g. https://accounts.google.com
+  oidcClientId        String?
+  oidcClientSecret    String?         // encrypted in production
+  oidcScopes          String?         @default("openid profile email")
+  oidcAuthorizationUrl String?
+  oidcTokenUrl        String?
+  oidcUserInfoUrl     String?
+  
+  // UI customization
+  loginButtonText     String?         @default("Continue with SSO")
+  loginButtonColor    String?         // hex color
+  logoUrl             String?
+  
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  
+  // Relations
+  ssoConfig           TenantSSOConfig?
+  userIdentities      UserIdentity[]
+  authEvents          SSOAuthEvent[]
+  
+  @@unique([tenantId, providerType])
+  @@index([tenantId])
+  @@index([isActive])
+}
+
+model TenantSSOConfig {
+  id                    String            @id @default(uuid())
+  tenantId              String            @unique
+  tenant                Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  identityProviderId    String?           @unique
+  identityProvider      IdentityProvider? @relation(fields: [identityProviderId], references: [id], onDelete: SetNull)
+  
+  // SSO mode
+  ssoMode               SSOMode           @default(disabled)
+  
+  // Domain restrictions
+  allowedDomains        String[]          // e.g. ["uoa.gr", "di.uoa.gr"]
+  enforceEmailDomain    Boolean           @default(true)
+  
+  // Auto-provisioning (JIT)
+  autoProvisionEnabled  Boolean           @default(false)
+  defaultRole           String            @default("founder")
+  autoAssignToTenant    Boolean           @default(true)
+  
+  // Role mapping rules (JSON array)
+  roleMappingRules      Json?             // e.g. [{ claim: "groups", value: "admins", role: "admin" }]
+  
+  // Post-login behavior
+  postLoginRedirect     String?           // Custom redirect URL after SSO login
+  requireProfileCompletion Boolean        @default(true)
+  
+  // Security
+  sessionDurationHours  Int               @default(24)
+  allowPasswordFallback Boolean           @default(false) // Allow password login even with SSO
+  
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  
+  @@index([tenantId])
+  @@index([ssoMode])
+}
+
+model UserIdentity {
+  id                  String            @id @default(uuid())
+  userId              String
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  identityProviderId  String
+  identityProvider    IdentityProvider  @relation(fields: [identityProviderId], references: [id], onDelete: Cascade)
+  
+  // External identity
+  externalId          String            // Subject/NameID from IdP
+  email               String?           // Email from IdP claims
+  displayName         String?           // Name from IdP claims
+  rawClaims           Json?             // Full claims for debugging
+  
+  // Status
+  isLinked            Boolean           @default(true)
+  linkedAt            DateTime          @default(now())
+  lastLoginAt         DateTime?
+  
+  @@unique([identityProviderId, externalId])
+  @@index([userId])
+  @@index([identityProviderId])
+  @@index([email])
+}
+
+model TenantMembership {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Role within tenant
+  role        String    @default("member") // "member", "admin", "owner"
+  
+  // Status
+  isActive    Boolean   @default(true)
+  joinedAt    DateTime  @default(now())
+  invitedBy   String?   // userId of inviter
+  
+  // SSO-specific
+  provisionedViaSSO Boolean @default(false)
+  lastSSOLoginAt    DateTime?
+  
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([isActive])
+}
+
+model DomainMapping {
+  id          String    @id @default(uuid())
+  domain      String    @unique // e.g. "uoa.gr" - email domain for SSO discovery
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Auto-discovery
+  isVerified  Boolean   @default(false)
+  verifiedAt  DateTime?
+  
+  // Behavior
+  autoRedirectToSSO Boolean @default(false)
+  
+  createdAt   DateTime  @default(now())
+  
+  @@index([domain])
+  @@index([tenantId])
+}
+
+// ── Tenant Domain Routing (Subdomains & Custom Domains) ───────────────────────
+
+enum TenantDomainType {
+  subdomain   // e.g. athens.cofounderbay.com
+  custom      // e.g. founders.university.edu
+}
+
+enum DomainVerificationStatus {
+  pending
+  verified
+  failed
+  expired
+}
+
+model TenantDomain {
+  id                    String                    @id @default(uuid())
+  tenantId              String
+  tenant                Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Domain configuration
+  domainType            TenantDomainType
+  domainName            String                    @unique // Full domain, e.g. "athens.cofounderbay.com" or "founders.uni.edu"
+  isPrimary             Boolean                   @default(false)
+  isActive              Boolean                   @default(false)
+  
+  // SSL/TLS
+  sslStatus             String?                   // "pending", "active", "failed"
+  sslExpiresAt          DateTime?
+  
+  // Verification (for custom domains)
+  verificationStatus    DomainVerificationStatus  @default(pending)
+  verificationToken     String?                   // DNS TXT record value
+  verificationMethod    String?                   // "dns_txt", "dns_cname", "file"
+  dnsInstructions       String?                   @db.Text // JSON instructions for DNS setup
+  verifiedAt            DateTime?
+  lastVerificationCheck DateTime?
+  
+  // Routing behavior
+  redirectBehavior      String?                   @default("none") // "none", "redirect_to_primary", "redirect_to_main"
+  customLandingEnabled  Boolean                   @default(true)
+  
+  // Metadata
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  
+  @@index([tenantId])
+  @@index([domainName])
+  @@index([domainType])
+  @@index([isActive])
+}
+
+// ── Billing & Subscriptions ───────────────────────────────────────────────────
+
+enum BillingCycle {
+  monthly
+  annual
+}
+
+enum PlanType {
+  free
+  individual_premium
+  organization
+  enterprise
+}
+
+model BillingPlan {
+  id                    String          @id @default(uuid())
+  
+  // Plan identity
+  name                  String          @unique // e.g. "free", "pro", "team", "enterprise"
+  displayName           String          // e.g. "Free", "Pro", "Team", "Enterprise"
+  description           String?         @db.Text
+  planType              PlanType
+  
+  // Pricing
+  priceMonthly          Int             @default(0) // in cents
+  priceAnnual           Int             @default(0) // in cents
+  currency              String          @default("USD")
+  
+  // Limits
+  seatLimit             Int?            // null = unlimited
+  storageGb             Int             @default(1)
+  
+  // Feature flags (JSON object)
+  features              Json            // e.g. { "sso": true, "whiteLabel": true, "analytics": "advanced" }
+  
+  // Visibility
+  isPublic              Boolean         @default(true)
+  isActive              Boolean         @default(true)
+  sortOrder             Int             @default(0)
+  
+  // Stripe/Payment provider
+  stripeProductId       String?
+  stripePriceIdMonthly  String?
+  stripePriceIdAnnual   String?
+  
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  
+  // Relations
+  subscriptions         Subscription[]
+  
+  @@index([planType])
+  @@index([isActive])
+}
+
+model Subscription {
+  id                    String              @id @default(uuid())
+  
+  // Owner (either user or tenant)
+  userId                String?
+  user                  User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId              String?
+  // Note: Tenant relation added via tenantSubscriptions on Tenant model
+  
+  // Plan
+  planId                String
+  plan                  BillingPlan         @relation(fields: [planId], references: [id])
+  billingCycle          BillingCycle        @default(monthly)
+  
+  // Status
+  status                SubscriptionStatus  @default(trialing)
+  
+  // Dates
+  startDate             DateTime            @default(now())
+  currentPeriodStart    DateTime            @default(now())
+  currentPeriodEnd      DateTime
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  canceledAt            DateTime?
+  cancelAtPeriodEnd     Boolean             @default(false)
+  
+  // Seats (for organization plans)
+  seatLimit             Int?
+  activeSeatCount       Int                 @default(1)
+  
+  // Payment provider
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  
+  // Metadata
+  metadata              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  // Relations
+  invoices              Invoice[]
+  seatAllocations       SeatAllocation[]
+  
+  @@index([userId])
+  @@index([tenantId])
+  @@index([planId])
+  @@index([status])
+  @@index([currentPeriodEnd])
+}
+
+model SeatAllocation {
+  id              String        @id @default(uuid())
+  subscriptionId  String
+  subscription    Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Status
+  isActive        Boolean       @default(true)
+  allocatedAt     DateTime      @default(now())
+  deactivatedAt   DateTime?
+  
+  // Metadata
+  allocatedBy     String?       // userId of allocator
+  
+  @@unique([subscriptionId, userId])
+  @@index([subscriptionId])
+  @@index([userId])
+  @@index([isActive])
+}
+
+model Invoice {
+  id                  String        @id @default(uuid())
+  subscriptionId      String
+  subscription        Subscription  @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  
+  // Invoice details
+  invoiceNumber       String        @unique
+  status              String        @default("draft") // "draft", "open", "paid", "void", "uncollectible"
+  
+  // Amounts (in cents)
+  subtotal            Int           @default(0)
+  tax                 Int           @default(0)
+  total               Int           @default(0)
+  amountPaid          Int           @default(0)
+  amountDue           Int           @default(0)
+  currency            String        @default("USD")
+  
+  // Dates
+  periodStart         DateTime
+  periodEnd           DateTime
+  dueDate             DateTime?
+  paidAt              DateTime?
+  
+  // Billing details
+  billingName         String?
+  billingEmail        String?
+  billingAddress      Json?         // { line1, line2, city, state, postalCode, country }
+  taxId               String?       // VAT number
+  
+  // Payment provider
+  stripeInvoiceId     String?
+  stripePaymentIntentId String?
+  hostedInvoiceUrl    String?
+  invoicePdf          String?
+  
+  // Metadata
+  metadata            Json?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  lines               InvoiceLine[]
+  
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model InvoiceLine {
+  id          String    @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  // Line item
+  description String
+  quantity    Int       @default(1)
+  unitAmount  Int       // in cents
+  amount      Int       // quantity * unitAmount
+  
+  // Period
+  periodStart DateTime?
+  periodEnd   DateTime?
+  
+  // Metadata
+  metadata    Json?
+  
+  @@index([invoiceId])
+}
+
+model PromotionCode {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  
+  // Discount
+  discountType    String    // "percent", "fixed"
+  discountValue   Int       // percentage or cents
+  currency        String?   @default("USD") // for fixed discounts
+  
+  // Restrictions
+  maxRedemptions  Int?
+  timesRedeemed   Int       @default(0)
+  validFrom       DateTime  @default(now())
+  validUntil      DateTime?
+  
+  // Applicability
+  applicablePlans String[]  // plan IDs, empty = all plans
+  firstTimeOnly   Boolean   @default(false)
+  
+  // Status
+  isActive        Boolean   @default(true)
+  
+  // Metadata
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  
+  @@index([code])
+  @@index([isActive])
+}
+
+model SSOAuthEvent {
+  id                  String            @id @default(uuid())
+  identityProviderId  String
+  identityProvider    IdentityProvider  @relation(fields: [identityProviderId], references: [id], onDelete: Cascade)
+  userId              String?
+  user                User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Event details
+  eventType           String            // "login_success", "login_failure", "logout", "provision", "link"
+  email               String?
+  externalId          String?
+  
+  // Context
+  ipAddress           String?
+  userAgent           String?
+  errorCode           String?
+  errorMessage        String?
+  
+  // Metadata
+  metadata            Json?
+  createdAt           DateTime          @default(now())
+  
+  @@index([identityProviderId])
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
 }
 
 // Admin Audit Log for tracking all admin actions

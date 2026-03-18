@@ -6,16 +6,19 @@ import { Link2, Unlink, Loader2, Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getLinkedAccounts, unlinkGoogleAccount, unlinkLinkedInAccount } from '@/lib/api';
+import { useHasSession } from '@/hooks/useSession';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function LinkedAccounts() {
   const queryClient = useQueryClient();
   const [unlinkingProvider, setUnlinkingProvider] = useState<'google' | 'linkedin' | null>(null);
+  const hasSession = useHasSession();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['linked-accounts'],
     queryFn: getLinkedAccounts,
+    enabled: hasSession,
   });
 
   const unlinkGoogleMutation = useMutation({

@@ -67,7 +67,22 @@ export class HealthController {
       (services.redis === 'disabled' || services.redis === 'up') &&
       (services.meilisearch === 'disabled' || services.meilisearch === 'up');
 
-    return { ok, services };
+    return { ok, services, timestamp: new Date().toISOString() };
+  }
+
+  @Get('live')
+  liveness() {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  }
+
+  @Get('ready')
+  async readiness() {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      return { status: 'ready', timestamp: new Date().toISOString() };
+    } catch {
+      return { status: 'not_ready', reason: 'database_unavailable', timestamp: new Date().toISOString() };
+    }
   }
 }
 

@@ -25,7 +25,8 @@ export function useTheme() {
 }
 
 export function RoleTheme({ children }: { children?: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  // Use consistent initial values for SSR/CSR to prevent hydration mismatch
+  const [theme, setThemeState] = useState<Theme>('system');
   const [role, setRoleState] = useState<Role>(null);
   const [mounted, setMounted] = useState(false);
 

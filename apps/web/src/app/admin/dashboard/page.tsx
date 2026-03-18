@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import {
   Card,
@@ -8,23 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+
 import {
   Users,
   MessageSquare,
@@ -39,7 +26,14 @@ import {
   XCircle,
 } from 'lucide-react';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const UserRoleChart = dynamic(
+  () => import('./Charts').then((m) => ({ default: m.UserRoleChart })),
+  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-secondary/40 rounded-lg" /> },
+);
+const EngagementChart = dynamic(
+  () => import('./Charts').then((m) => ({ default: m.EngagementChart })),
+  { ssr: false, loading: () => <div className="h-[300px] animate-pulse bg-secondary/40 rounded-lg" /> },
+);
 
 interface AdminMetrics {
   timestamp: string;
@@ -387,25 +381,7 @@ export default function AdminDashboardPage() {
             <CardTitle>User Distribution by Role</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={userRoleData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {userRoleData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <UserRoleChart data={userRoleData} />
           </CardContent>
         </Card>
 
@@ -415,15 +391,7 @@ export default function AdminDashboardPage() {
             <CardTitle>Engagement Metrics</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={engagementData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
+            <EngagementChart data={engagementData} />
           </CardContent>
         </Card>
       </div>

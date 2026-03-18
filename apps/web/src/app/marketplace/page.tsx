@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Search, Star, ExternalLink, Package, TrendingUp, DollarSign } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 interface Tool {
@@ -162,8 +165,36 @@ function ToolCard({ tool }: { tool: Tool }) {
 export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredTools = DEMO_TOOLS.filter((tool) => {
-    const matchesCategory = selectedCategory === 'All' || tool.category === selectedCategory;
+
+  const { data: apiData, isLoading } = useQuery({
+    queryKey: ['marketplace', selectedCategory !== 'All' ? selectedCategory.toLowerCase() : undefined, searchQuery || undefined],
+    queryFn: () => listMarketplaceServices({
+      category: selectedCategory !== 'All' ? selectedCategory.toLowerCase() as MarketplaceCategory : undefined,
+      search: searchQuery.trim() || undefined,
+      limit: 50,
+    }),
+    staleTime: 5 * 60_000,
+    retry: 1,
+  });
+
+  const backendTools: Tool[] = (apiData?.services ?? []).map((s) => ({
+    id: s.id,
+    name: s.title,
+    description: s.description ?? '',
+    category: s.category.charAt(0).toUpperCase() + s.category.slice(1),
+    url: s.websiteUrl ?? s.contactUrl ?? '#',
+    logo: s.providerLogo ?? undefined,
+    pricing: s.pricing ?? 'Contact',
+    avgRating: 0,
+    reviewCount: 0,
+    tags: s.tags,
+    featured: s.isFeatured,
+  }));
+
+  const allTools = backendTools.length > 0 ? backendTools : DEMO_TOOLS;
+
+  const filteredTools = allTools.filter((tool) => {
+    const matchesCategory = selectedCategory === 'All' || tool.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch =
       !searchQuery.trim() ||
       tool.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -211,8 +242,29 @@ export default function MarketplacePage() {
         </div>
       </div>
 
+      {/* Loading skeletons */}
+      {isLoading && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-5">
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                  <div className="flex gap-2 pt-1">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {/* Featured Tools */}
-      {featuredTools.length > 0 && (
+      {!isLoading && featuredTools.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -229,7 +281,7 @@ export default function MarketplacePage() {
       )}
 
       {/* All Tools */}
-      {regularTools.length > 0 && (
+      {!isLoading && regularTools.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             All Tools
@@ -243,7 +295,7 @@ export default function MarketplacePage() {
       )}
 
       {/* Empty State */}
-      {filteredTools.length === 0 && (
+      {!isLoading && filteredTools.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Package className="h-12 w-12 mb-4 text-muted-foreground/30" />
           <p className="font-medium text-foreground">No tools found</p>

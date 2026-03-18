@@ -7,9 +7,9 @@ import { ConversationList, type Conversation } from '@/components/messaging/Conv
 import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/common/RoleBadge';
+import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import {
@@ -445,11 +445,12 @@ export default function MessagesPage() {
   const pendingIntrosCount = introRequests.length;
 
   return (
+    <AppShell fullHeight>
     <div className="flex h-full bg-background">
-      {/* Sidebar - hidden on mobile when viewing chat */}
+      {/* Messenger sidebar — conversations + intros */}
       <div
         className={cn(
-          'w-full md:w-[340px] lg:w-[380px] border-r border-border/60 flex-shrink-0 flex flex-col',
+          'w-full md:w-[320px] lg:w-[360px] border-r border-border/60 flex-shrink-0 flex flex-col bg-card',
           isMobileViewingChat && 'hidden md:flex'
         )}
       >
@@ -579,8 +580,8 @@ export default function MessagesPage() {
       {/* Chat window */}
       <div
         className={cn(
-          'flex-1',
-          !isMobileViewingChat && 'hidden md:block'
+          'flex-1 min-w-0',
+          !isMobileViewingChat && 'hidden md:flex md:flex-col'
         )}
       >
         {selectedConversation ? (
@@ -607,5 +608,6 @@ export default function MessagesPage() {
         )}
       </div>
     </div>
+    </AppShell>
   );
 }

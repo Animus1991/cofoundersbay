@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfileIndexService } from '../jobs/profile-index.service';
+import { CacheService } from '../common/cache/cache.service';
 import { Prisma } from '@prisma/client';
 import type { CreateProfileInput, UpdateProfileInput } from '@cofounderbay/shared';
 
@@ -9,6 +10,7 @@ export class ProfileService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly profileIndex: ProfileIndexService,
+    private readonly cache: CacheService,
   ) {}
 
   private profileSelect = {
@@ -62,6 +64,12 @@ export class ProfileService {
   }
 
   async getPublicProfile(profileUserId: string, viewerUserId?: string) {
+    const cacheKey = `public-profile:${profileUserId}:${viewerUserId || 'anonymous'}`;
+    
+    // Try to get from cache first
+    const cached = await this.cache.get(cacheKey);
+    if (cached) return cached;
+
     const [profile, user] = await Promise.all([
       this.prisma.profile.findUnique({
         where: { userId: profileUserId },
@@ -78,7 +86,7 @@ export class ProfileService {
     const isOwner = viewerUserId === profileUserId;
     const showEmail = isOwner || visibility.email === 'public';
 
-    return {
+    const result = {
       id: profile.id,
       userId: profile.userId,
       displayName: profile.displayName,
@@ -99,6 +107,10 @@ export class ProfileService {
       createdAt: profile.createdAt.toISOString(),
       updatedAt: profile.updatedAt.toISOString(),
     };
+
+    // Cache the result for 5 minutes
+    await this.cache.set(cacheKey, result, 300);
+    return result;
   }
 
   async upsertProfile(userId: string, input: CreateProfileInput | UpdateProfileInput, isFullCreate: boolean) {
@@ -196,6 +208,9 @@ export class ProfileService {
 
     void this.profileIndex.schedule(profile.id, userId).catch(() => {});
 
+    // Invalidate cache for this profile
+    await this.invalidateProfileCache(userId);
+
     return this.getOwnProfile(userId);
   }
 
@@ -206,5 +221,18 @@ export class ProfileService {
       select: { id: true, name: true, slug: true, category: true },
     });
     return list;
+  }
+
+  private async invalidateProfileCache(userId: string) {
+    // Invalidate all public profile cache entries for this user
+    // Use a simple approach - invalidate common patterns
+    const patterns = [
+      `public-profile:${userId}:anonymous`,
+      `public-profile:${userId}:`,
+    ];
+    
+    for (const key of patterns) {
+      await this.cache.del(key);
+    }
   }
 }

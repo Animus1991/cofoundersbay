@@ -134,8 +134,8 @@ const DIFFICULTY_CONFIG = {
 };
 
 function ResourceCard({ resource }: { resource: Resource }) {
-  const typeConfig = TYPE_CONFIG[resource.type];
-  const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty];
+  const typeConfig = TYPE_CONFIG[resource.type] ?? TYPE_CONFIG.article;
+  const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">

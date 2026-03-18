@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Logo } from '@/components/brand/Logo';
 import Link from 'next/link';
@@ -551,39 +551,39 @@ function DashboardContent() {
 }
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const checkAuth = useCallback(() => {
-    if (typeof window === 'undefined') return false;
-    return document.cookie.includes('cfb_session=');
-  }, []);
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    setMounted(true);
-    setIsLoggedIn(checkAuth());
-
-    const sync = () => setIsLoggedIn(checkAuth());
-    window.addEventListener('cfb:login',  sync);
-    window.addEventListener('cfb:logout', sync);
-    window.addEventListener('storage',    sync);
-    return () => {
-      window.removeEventListener('cfb:login',  sync);
-      window.removeEventListener('cfb:logout', sync);
-      window.removeEventListener('storage',    sync);
+    // Check auth only on client side after mount
+    const checkAuth = () => {
+      const hasSession = document.cookie.includes('cfb_session=');
+      setAuthState(hasSession ? 'authenticated' : 'unauthenticated');
     };
-  }, [checkAuth]);
 
-  if (!mounted) {
+    // Initial check
+    checkAuth();
+
+    // Listen for auth changes
+    const sync = () => checkAuth();
+    window.addEventListener('cfb:login', sync);
+    window.addEventListener('cfb:logout', sync);
+    window.addEventListener('storage', sync);
+    
+    return () => {
+      window.removeEventListener('cfb:login', sync);
+      window.removeEventListener('cfb:logout', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  // Show minimal loading state during hydration - must match SSR output
+  if (authState === 'loading') {
     return (
-      <AppShell>
-        <div className="flex min-h-[40vh] items-center justify-center rounded-2xl border border-border/60 bg-card/70">
-          <p className="text-sm text-muted-foreground">Loading…</p>
-        </div>
-      </AppShell>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
     );
   }
 
-  return isLoggedIn ? <DashboardContent /> : <LandingContent />;
+  return authState === 'authenticated' ? <DashboardContent /> : <LandingContent />;
 }

@@ -55,19 +55,10 @@ const nextConfig: NextConfig = {
       'date-fns',
       'socket.io-client',
     ],
-    // Faster client-side navigation
-    clientRouterFilter: true,
-    clientRouterFilterRedirects: false,
-    // CSS View Transitions API for smooth page navigation (Chrome 111+)
-    viewTransition: true,
   },
 
   // Webpack optimizations for faster dev + smaller bundles
   webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      // Faster source maps in dev (eval is fastest but harder to debug)
-      config.devtool = 'cheap-module-source-map';
-    }
     if (!dev) {
       // Production: split large vendor chunks for better caching
       config.optimization = {

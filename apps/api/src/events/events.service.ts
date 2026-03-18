@@ -20,6 +20,7 @@ export type EventListItem = {
   capacity: number | null;
   coverImageUrl: string | null;
   attendeesCount: number;
+  isFeatured: boolean;
   host: {
     id: string;
     displayName: string;
@@ -311,6 +312,7 @@ export class EventsService {
     meetingUrl: string | null;
     capacity: number | null;
     coverImageUrl: string | null;
+    isFeatured: boolean;
     creator: {
       id: string;
       role: string;
@@ -345,6 +347,7 @@ export class EventsService {
       capacity: item.capacity,
       coverImageUrl: item.coverImageUrl,
       attendeesCount: item._count.rsvps,
+      isFeatured: item.isFeatured,
       host: {
         id: item.creator.id,
         displayName: item.creator.profile?.displayName ?? 'Community host',

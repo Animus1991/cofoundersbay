@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listMessageConversations, listConnectionRequests } from '@/lib/api';
+import { useHasSession } from './useSession';
 
 export type UnreadCounts = {
   messages: number;
@@ -10,44 +10,12 @@ export type UnreadCounts = {
 };
 
 /**
- * Check if the user has an active session by looking for the CSRF cookie.
- * The cfb_csrf cookie is set by the API on login (non-httpOnly, JS-readable).
- * Falls back to legacy localStorage token for backward compat.
- */
-function hasActiveSession(): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.cookie.includes('cfb_session=');
-}
-
-/**
  * Returns unread message count + pending intro requests.
  * Uses React Query for deduplication — all components share the same cached fetch.
  * Reacts to login/logout events immediately (same-tab and cross-tab).
  */
 export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
-  const [hasToken, setHasToken] = useState(() => hasActiveSession());
-
-  useEffect(() => {
-    // Cross-tab sync via storage event
-    const syncStorage = () => setHasToken(hasActiveSession());
-    // Same-tab login/logout events dispatched by api.ts
-    const onLogin = () => setHasToken(true);
-    const onLogout = () => setHasToken(false);
-
-    window.addEventListener('storage', syncStorage);
-    window.addEventListener('cfb:login', onLogin);
-    window.addEventListener('cfb:logout', onLogout);
-
-    // Periodic fallback poll (catches cookie expiry not signalled by events)
-    const id = setInterval(syncStorage, 30_000);
-
-    return () => {
-      window.removeEventListener('storage', syncStorage);
-      window.removeEventListener('cfb:login', onLogin);
-      window.removeEventListener('cfb:logout', onLogout);
-      clearInterval(id);
-    };
-  }, []);
+  const hasToken = useHasSession();
 
   const { data: convData, isError: convError } = useQuery({
     queryKey: ['conversations', 'list'],

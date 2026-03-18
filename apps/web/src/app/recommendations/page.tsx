@@ -69,7 +69,7 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
   onFeedback: (userId: string, fb: 'positive' | 'negative') => void;
 }) {
   const RoleIcon = ROLE_ICON[hit.role ?? 'founder'] ?? Users;
-  const score = hit.matchScore ?? hit.matchingScore ?? 0;
+  const score = hit.matchScore ?? 0;
   const reasons: string[] = hit.matchReasons ?? [];
 
   return (
@@ -201,11 +201,11 @@ export default function RecommendationsPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'founders' | 'mentors' | 'investors'>('all');
   const [refreshKey, setRefreshKey] = useState(0);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const { success: toastSuccess, error: toastError } = useToast();
 
   const role = activeTab === 'all' ? undefined : activeTab.replace(/s$/, '');
 
-  const { data: recsData, isLoading: recsLoading } = useQuery({
+  const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
     queryKey: ['recommendations', role, refreshKey],
     queryFn: () => getRecommendations({ role, limit: 20 }),
     staleTime: 5 * 60_000,
@@ -224,16 +224,16 @@ export default function RecommendationsPage() {
   });
 
   const connectMutation = useMutation({
-    mutationFn: (userId: string) => sendConnectionRequest(userId, ''),
-    onSuccess: () => toast({ title: 'Connection request sent!' }),
-    onError: () => toast({ title: 'Could not send request', variant: 'destructive' }),
+    mutationFn: (userId: string) => sendConnectionRequest({ receiverId: userId }),
+    onSuccess: () => toastSuccess('Connection request sent!'),
+    onError: () => toastError('Could not send request', 'Please try again'),
   });
 
   const feedbackMutation = useMutation({
     mutationFn: ({ userId, fb }: { userId: string; fb: 'positive' | 'negative' }) =>
       submitMatchFeedback(userId, fb),
     onSuccess: (_, { fb }) => {
-      toast({ title: fb === 'positive' ? 'Thanks for the feedback!' : 'Got it, we will improve your matches' });
+      toastSuccess(fb === 'positive' ? 'Thanks for the feedback!' : 'Got it, improving your matches');
     },
   });
 
@@ -341,6 +341,11 @@ export default function RecommendationsPage() {
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {recsLoading ? (
               <Skeleton3 />
+            ) : recsError ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <p className="text-sm text-muted-foreground">Failed to load recommendations.</p>
+                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}>Retry</Button>
+              </CardContent></Card>
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard

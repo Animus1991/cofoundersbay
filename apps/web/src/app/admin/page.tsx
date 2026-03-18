@@ -22,6 +22,14 @@ import {
   Trash2,
   Calendar,
   UserCheck,
+  Mail,
+  Send,
+  ChevronRight,
+  Download,
+  Star,
+  StarOff,
+  Layers,
+  Briefcase,
 } from 'lucide-react';
 import {
   listAdminReports,
@@ -36,11 +44,19 @@ import {
   listAdminCohorts,
   createAdminCohort,
   deleteAdminCohort,
+  listAdminEmailTemplates,
+  getAdminEmailTemplatePreview,
+  testSendAdminEmail,
+  featureContent,
+  removeContent,
+  listEvents,
+  listJobs,
   type AdminReportItem,
   type AdminUserItem,
   type AdminPlatformStats,
   type AdminAuditLogItem,
   type AdminCohortItem,
+  type AdminEmailTemplate,
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -84,6 +100,140 @@ function formatTimeAgo(dateStr: string): string {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   return `${days}d ago`;
+}
+
+function EmailTemplatesTab() {
+  const { success, error: showError } = useToast();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [testEmail, setTestEmail] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const { data: listData, isLoading: listLoading } = useQuery({
+    queryKey: ['admin-email-templates'],
+    queryFn: listAdminEmailTemplates,
+  });
+
+  const { data: preview, isLoading: previewLoading } = useQuery({
+    queryKey: ['admin-email-preview', selectedId],
+    queryFn: () => getAdminEmailTemplatePreview(selectedId!),
+    enabled: !!selectedId,
+  });
+
+  const templates: AdminEmailTemplate[] = listData?.templates ?? [];
+
+  async function handleTestSend() {
+    if (!selectedId || !testEmail) return;
+    setSending(true);
+    try {
+      const result = await testSendAdminEmail(selectedId, testEmail);
+      if (result.sent) success('Email sent', `Test email sent to ${testEmail}`);
+      else showError('Not sent', result.reason ?? 'Email not configured');
+    } catch {
+      showError('Failed', 'Could not send test email');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <TabsContent value="email" className="mt-6 space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Template list */}
+        <Card className="md:col-span-1">
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Templates</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {listLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 border-b border-border/40 px-4 py-3">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-4 flex-1" />
+                </div>
+              ))
+            ) : (
+              templates.map((tpl) => (
+                <button
+                  key={tpl.id}
+                  onClick={() => setSelectedId(tpl.id)}
+                  className={`flex w-full items-center justify-between gap-3 border-b border-border/40 px-4 py-3 text-left transition-colors hover:bg-secondary/50 ${
+                    selectedId === tpl.id ? 'bg-secondary' : ''
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{tpl.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{tpl.description}</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </button>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Preview panel */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="text-sm font-semibold">
+                {selectedId ? `Preview: ${templates.find(t => t.id === selectedId)?.name ?? selectedId}` : 'Select a template'}
+              </CardTitle>
+              {selectedId && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="email"
+                    placeholder="test@example.com"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    className="h-8 w-48 text-xs"
+                  />
+                  <Button
+                    size="sm"
+                    className="gap-1.5 h-8 text-xs"
+                    onClick={handleTestSend}
+                    disabled={!testEmail || sending}
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                    {sending ? 'Sending…' : 'Test Send'}
+                  </Button>
+                </div>
+              )}
+            </div>
+            {selectedId && preview && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Subject: <span className="font-medium text-foreground">{preview.subject}</span>
+              </p>
+            )}
+          </CardHeader>
+          <CardContent>
+            {!selectedId && (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Mail className="h-12 w-12 text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">Select a template to preview it</p>
+              </div>
+            )}
+            {selectedId && previewLoading && (
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-32 w-full mt-4" />
+              </div>
+            )}
+            {selectedId && preview && !previewLoading && (
+              <div className="rounded-lg border border-border overflow-hidden">
+                <iframe
+                  srcDoc={preview.html}
+                  title="Email preview"
+                  className="w-full min-h-[400px] bg-white"
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </TabsContent>
+  );
 }
 
 function ReportCard({
@@ -340,6 +490,59 @@ export default function AdminPage() {
     onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Could not delete cohort'),
   });
 
+  const { data: eventsData, isLoading: eventsLoading, isError: eventsError, refetch: refetchEvents } = useQuery({
+    queryKey: ['admin-events'],
+    queryFn: () => listEvents({ limit: 50 }),
+    enabled: activeTab === 'content',
+    retry: 1,
+  });
+
+  const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
+    queryKey: ['admin-jobs'],
+    queryFn: () => listJobs({ limit: 50 }),
+    enabled: activeTab === 'content',
+    retry: 1,
+  });
+
+  const featureMutation = useMutation({
+    mutationFn: ({ type, id, featured }: { type: 'event' | 'group' | 'job'; id: string; featured: boolean }) =>
+      featureContent(type, id, featured),
+    onSuccess: (_, { featured }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      success(featured ? 'Featured' : 'Unfeatured', 'Content visibility updated.');
+    },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+  });
+
+  const removeContentMutation = useMutation({
+    mutationFn: ({ type, id }: { type: 'event' | 'group' | 'job'; id: string }) =>
+      removeContent(type, id, 'Removed by admin'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-events'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-jobs'] });
+      success('Removed', 'Content removed from the platform.');
+    },
+    onError: (err) => showError('Failed', err instanceof Error ? err.message : 'Please try again'),
+  });
+
+  const exportAuditLogCSV = () => {
+    const logs = auditData?.logs ?? [];
+    if (!logs.length) return;
+    const header = 'Actor,Action,Entity Type,Entity ID,Timestamp\n';
+    const rows = logs.map((l) =>
+      [l.actorEmail, l.action, l.entityType, l.entityId ?? '', new Date(l.createdAt).toISOString()].join(','),
+    );
+    const csv = header + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const stats = statsData?.stats;
 
   const reportMutation = useMutation({
@@ -458,6 +661,10 @@ export default function AdminPage() {
             <Users className="h-4 w-4" />
             Users
           </TabsTrigger>
+          <TabsTrigger value="content" className="gap-2">
+            <Layers className="h-4 w-4" />
+            Content
+          </TabsTrigger>
           <TabsTrigger value="cohorts" className="gap-2">
             <GraduationCap className="h-4 w-4" />
             Cohorts
@@ -469,6 +676,10 @@ export default function AdminPage() {
           <TabsTrigger value="audit" className="gap-2">
             <Shield className="h-4 w-4" />
             Audit Log
+          </TabsTrigger>
+          <TabsTrigger value="email" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Email Templates
           </TabsTrigger>
         </TabsList>
 
@@ -575,6 +786,121 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Content Management Tab */}
+        <TabsContent value="content" className="mt-6 space-y-6">
+          {/* Events */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                Events
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+              </Button>
+            </div>
+            {eventsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <Skeleton className="h-8 w-8 rounded shrink-0" />
+                  <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
+                </div>
+              ))
+            ) : eventsError ? (
+              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+            ) : (eventsData?.events ?? []).length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  {(eventsData?.events ?? []).map((ev) => (
+                    <div key={ev.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{ev.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{ev.mode} · {ev.attendeesCount} attendees</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="ghost" size="sm"
+                          className={ev.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
+                          disabled={featureMutation.isPending}
+                        >
+                          {ev.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {ev.isFeatured ? 'Unfeature' : 'Feature'}
+                        </Button>
+                        <Button
+                          variant="ghost" size="sm" className="text-destructive"
+                          onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
+                          disabled={removeContentMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Jobs */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                Job Postings
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+              </Button>
+            </div>
+            {jobsLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 border-b border-border/40 p-4">
+                  <Skeleton className="h-8 w-8 rounded shrink-0" />
+                  <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-64" /></div>
+                </div>
+              ))
+            ) : jobsError ? (
+              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+            ) : (jobsData?.jobs ?? []).length === 0 ? (
+              <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  {(jobsData?.jobs ?? []).map((job) => (
+                    <div key={job.id} className="flex items-center justify-between gap-4 border-b border-border/40 p-4 last:border-0">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{job.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{job.type ?? 'Full-time'} · {job.location ?? 'Remote'}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button
+                          variant="ghost" size="sm"
+                          className={job.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
+                          disabled={featureMutation.isPending}
+                        >
+                          {job.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {job.isFeatured ? 'Unfeature' : 'Feature'}
+                        </Button>
+                        <Button
+                          variant="ghost" size="sm" className="text-destructive"
+                          onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
+                          disabled={removeContentMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* Cohorts Tab */}
@@ -760,11 +1086,26 @@ export default function AdminPage() {
           </div>
         </TabsContent>
 
+        {/* Email Templates Tab */}
+        <EmailTemplatesTab />
+
         {/* Audit Log Tab */}
         <TabsContent value="audit" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Admin Audit Log</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Admin Audit Log</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportAuditLogCSV}
+                  disabled={!auditData?.logs?.length}
+                  className="gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export CSV
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               {auditLoading ? (

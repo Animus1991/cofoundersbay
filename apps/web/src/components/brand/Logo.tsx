@@ -8,71 +8,76 @@ interface LogoProps {
   className?: string;
   iconClassName?: string;
   textClassName?: string;
-  /** Use white text/icon (for dark/colored backgrounds) */
   inverted?: boolean;
 }
 
 const SIZE_MAP = {
-  xs: { icon: 22,  text: 'text-sm',  gap: 'gap-1.5', tracking: 'tracking-tight' },
-  sm: { icon: 28,  text: 'text-base', gap: 'gap-2',   tracking: 'tracking-tight' },
-  md: { icon: 34,  text: 'text-xl',  gap: 'gap-2.5', tracking: 'tracking-tight' },
-  lg: { icon: 42,  text: 'text-2xl', gap: 'gap-3',   tracking: 'tracking-tight' },
-  xl: { icon: 54,  text: 'text-3xl', gap: 'gap-3.5', tracking: 'tracking-tighter' },
+  xs: { icon: 22, text: 'text-sm',   gap: 'gap-1.5', tracking: 'tracking-tight' },
+  sm: { icon: 28, text: 'text-base', gap: 'gap-2',   tracking: 'tracking-tight' },
+  md: { icon: 32, text: 'text-lg',   gap: 'gap-2.5', tracking: 'tracking-tight' },
+  lg: { icon: 40, text: 'text-2xl',  gap: 'gap-3',   tracking: 'tracking-tight' },
+  xl: { icon: 52, text: 'text-3xl',  gap: 'gap-3.5', tracking: 'tracking-tighter' },
 };
 
 /**
- * CoFounderBay brand icon.
+ * CoFounderBay icon mark.
  *
- * Concept: Two overlapping circles (Venn diagram) — the moment two co-founders
- * unite. Their intersection glows, symbolising the shared vision and the
- * platform's role as the meeting point. Housed in a softly-rounded badge with
- * a deep indigo → violet gradient.
+ * Concept: A rounded-square badge. Inside: two founder nodes (circles) at
+ * the top-left and top-right, connected by a sweeping bay arc that meets at
+ * the bottom centre — like two ships entering a harbor together. The shape
+ * reads as "C" (connect/collaborate) and the arc echoes a harbor bay.
+ * Clean, scalable from 16 px to 512 px.
  */
-export function LogoIcon({ size = 34, className }: { size?: number; className?: string }) {
-  // All values derived from `size` so the icon is pixel-perfect at any scale.
-  const s      = size;
-  const cx     = s / 2;          // horizontal centre
-  const cy     = s / 2;          // vertical centre
-  const rx     = s * 0.225;      // Venn circle radius
-  const offset = s * 0.115;      // half-distance between the two circle centres
-  const lCx    = cx - offset;    // left circle centre x
-  const rCx    = cx + offset;    // right circle centre x
-  const vCy    = cy + s * 0.03;  // slightly below centre for optical balance
-
-  // The intersection lens path (two circular arcs forming the overlap region)
-  // Using the formula for circle–circle intersection arc endpoints.
-  const d = offset * 2;          // distance between centres
-  const r = rx;
-  // Intersection y-offset from the line joining the two centres
-  const h = Math.sqrt(r * r - (d / 2) * (d / 2));
-  const iy1 = vCy - h;           // top intersection point y
+export function LogoIcon({ size = 32, className }: { size?: number; className?: string }) {
+  const gId = `cfb-g-${size}`;
+  const gId2 = `cfb-g2-${size}`;
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox="0 0 32 32"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
       className={className}
     >
-      {/* Main bay/harbor shape - curved base representing the 'Bay' */}
+      <defs>
+        {/* Badge gradient — indigo → violet */}
+        <linearGradient id={gId} x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stopColor="#6366f1" />
+          <stop offset="100%" stopColor="#7c3aed" />
+        </linearGradient>
+        {/* Inner glow for nodes */}
+        <radialGradient id={gId2} cx="50%" cy="30%" r="60%">
+          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* Badge background */}
+      <rect width="32" height="32" rx="8" fill={`url(#${gId})`} />
+
+      {/* Subtle inner highlight */}
+      <rect width="32" height="32" rx="8" fill={`url(#${gId2})`} />
+
+      {/* Bay arc — founders meeting at the harbour */}
       <path
-        d="M4 16 Q12 20 20 16 L20 18 Q12 22 4 18 Z"
-        className="fill-primary opacity-90"
+        d="M8.5 11 C8.5 20.5 16 24 16 24 C16 24 23.5 20.5 23.5 11"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.9"
       />
-      
-      {/* Two co-founder figures - simplified human shapes */}
-      <circle cx="9" cy="11" r="2.5" className="fill-primary opacity-80" />
-      <path d="M9 14 Q9 16 7 17 L11 17 Q9 16 9 14" className="fill-primary opacity-80" />
-      
-      <circle cx="15" cy="11" r="2.5" className="fill-primary opacity-70" />
-      <path d="M15 14 Q15 16 13 17 L17 17 Q15 16 15 14" className="fill-primary opacity-70" />
-      
-      {/* Connection bridge between them */}
-      <rect x="11" y="13" width="2" height="3" className="fill-background" rx="0.5" />
-      
-      {/* Growth arrow pointing upward */}
-      <path d="M12 6 L12 10 M10 8 L12 6 L14 8" stroke="currentColor" strokeWidth="1.5" className="text-primary opacity-60" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+
+      {/* Left founder node */}
+      <circle cx="8.5" cy="10.5" r="3" fill="white" opacity="0.95" />
+
+      {/* Right founder node */}
+      <circle cx="23.5" cy="10.5" r="3" fill="white" opacity="0.95" />
+
+      {/* Centre anchor dot — the Bay meeting point */}
+      <circle cx="16" cy="24" r="1.8" fill="white" opacity="0.85" />
     </svg>
   );
 }
@@ -87,32 +92,32 @@ export function Logo({
   inverted = false,
 }: LogoProps) {
   const config = SIZE_MAP[size];
-  const textColor = inverted ? 'text-white' : 'text-foreground';
-  const iconColor = inverted ? 'text-white' : 'text-primary';
 
   if (variant === 'icon') {
-    return <LogoIcon size={config.icon} className={cn(iconColor, iconClassName, className)} />;
+    return <LogoIcon size={config.icon} className={cn(iconClassName, className)} />;
   }
 
   const wordmark = (
-    <div className={cn('font-display font-semibold', config.tracking, config.text, textColor, textClassName)}>
-      <span className={cn('bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent', inverted && 'text-white')}>
-        Co
-      </span>
-      <span className={cn('mx-0.5', inverted && 'text-white')}>Founder</span>
-      <span className={cn('bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent', inverted && 'text-white')}>
-        Bay
-      </span>
-    </div>
+    <span
+      className={cn(
+        'font-semibold select-none',
+        config.text,
+        config.tracking,
+        inverted ? 'text-white' : 'text-foreground',
+        textClassName,
+      )}
+    >
+      <span className={inverted ? 'text-white/90' : 'text-primary'}>Co</span>
+      <span className={inverted ? 'text-white' : 'text-foreground'}>Founder</span>
+      <span className={inverted ? 'text-white/90' : 'text-primary'}>Bay</span>
+    </span>
   );
 
-  if (variant === 'wordmark') {
-    return wordmark;
-  }
+  if (variant === 'wordmark') return wordmark;
 
   return (
-    <div className={cn('flex items-center', config.gap, className)}>
-      <LogoIcon size={config.icon} className={cn(iconColor, iconClassName)} />
+    <div className={cn('inline-flex items-center', config.gap, className)}>
+      <LogoIcon size={config.icon} className={iconClassName} />
       {wordmark}
     </div>
   );

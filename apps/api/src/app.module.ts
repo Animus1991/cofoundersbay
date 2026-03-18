@@ -36,6 +36,8 @@ import { AdminModule } from './admin/admin.module';
 import { OrgModule } from './org/org.module';
 import { MatchingModule } from './matching/matching.module';
 import { AIModule } from './ai/ai.module';
+import { TenantModule } from './tenant/tenant.module';
+import { SSOModule } from './sso/sso.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -95,6 +97,8 @@ function findEnvFiles(): string[] {
     OrgModule,
     MatchingModule,
     AIModule,
+    TenantModule,
+    SSOModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:

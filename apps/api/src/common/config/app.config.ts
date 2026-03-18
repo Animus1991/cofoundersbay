@@ -75,7 +75,7 @@ export default registerAs('app', () => ({
   port: parseInt(process.env.PORT || '3001', 10),
   apiPrefix: process.env.API_PREFIX || 'api',
   cors: {
-    origin: (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
+    origin: (process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3002,http://localhost:3003').split(','),
     credentials: true,
   },
   rateLimit: {

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Sora, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
@@ -8,25 +7,8 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoutePrefetcher } from '@/components/optimization/RoutePrefetcher';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
-import { cn } from '@/lib/utils';
-
-const inter = Inter({
-  subsets: ['latin', 'greek'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const sora = Sora({
-  subsets: ['latin'],
-  variable: '--font-sora',
-  display: 'swap',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
-});
+import { SidebarProvider } from '@/components/layout/SidebarContext';
+import { ChatBubble } from '@/components/common/ChatBubble';
 
 export const metadata: Metadata = {
   title: {
@@ -64,33 +46,36 @@ export default function RootLayout({
     <html
       lang="el"
       data-scroll-behavior="smooth"
-      className={cn(
-        inter.variable,
-        sora.variable,
-        spaceGrotesk.variable,
-        'scroll-smooth',
-      )}
+      className="scroll-smooth"
       suppressHydrationWarning
     >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         suppressHydrationWarning
-        className={`${inter.variable} ${sora.variable} ${spaceGrotesk.variable} bg-background text-foreground font-sans antialiased`}
+        className="bg-background text-foreground font-sans antialiased"
       >
-        <a href="#main-content" className="skip-to-content">
-          Skip to main content
-        </a>
         <ErrorBoundary>
           <QueryProvider>
-            <RoutePrefetcher />
-            <ServiceWorkerRegistration />
-            <NetworkProvider>
-              <ToastProvider>
-                <RoleTheme>
-                  <OfflineBanner />
-                  {children}
-                </RoleTheme>
-              </ToastProvider>
-            </NetworkProvider>
+            <SidebarProvider>
+              <RoutePrefetcher />
+              <ServiceWorkerRegistration />
+              <NetworkProvider>
+                <ToastProvider>
+                  <RoleTheme>
+                    <OfflineBanner />
+                    {children}
+                    <ChatBubble />
+                  </RoleTheme>
+                </ToastProvider>
+              </NetworkProvider>
+            </SidebarProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

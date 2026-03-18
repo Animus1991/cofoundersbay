@@ -19,11 +19,21 @@ export class BillingController {
       subscription: {
         id: subscription.id,
         status: subscription.status,
-        priceId: subscription.priceId,
-        currentPeriodEnd: subscription.currentPeriodEnd ? subscription.currentPeriodEnd.toISOString() : null,
+        planId: subscription.planId,
+        planName: subscription.plan?.name ?? null,
+        planDisplayName: subscription.plan?.displayName ?? null,
+        billingCycle: subscription.billingCycle,
+        currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
         cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+        seatLimit: subscription.seatLimit,
+        activeSeatCount: subscription.activeSeatCount,
       },
     };
+  }
+
+  @Get('plans')
+  async listPlans() {
+    return this.billing.listPlans();
   }
 
   @Post('checkout')

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -24,10 +25,11 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
 import { SearchFilters, type SearchFiltersValues } from '@/components/discover/SearchFilters';
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
-import { MatchCard } from '@/components/common/MatchCard';
-import { ConnectionRequestDialog } from '@/components/common/ConnectionRequest';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+
+const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
+const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 
 type ViewMode = 'grid' | 'list' | 'match';
 
@@ -197,7 +199,7 @@ export default function DiscoverPage() {
           </TabsList>
 
           {/* View mode toggle */}
-          <div className="flex items-center gap-1 rounded-lg border border-border/60 p-1">
+          <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-card p-1 shadow-sm">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
@@ -218,7 +220,7 @@ export default function DiscoverPage() {
         </div>
 
         {/* Search Tab */}
-        <TabsContent value="search" className="space-y-6 mt-6">
+        <TabsContent value="search" className="space-y-8 mt-6">
           {/* Filters */}
           <SearchFilters
             filters={filters}
@@ -245,6 +247,7 @@ export default function DiscoverPage() {
               title="No profiles found"
               description="Try adjusting your filters or search for something different."
               illustration="search"
+              className="py-12"
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
                   Clear filters

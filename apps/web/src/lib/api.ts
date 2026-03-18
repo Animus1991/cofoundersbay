@@ -218,6 +218,13 @@ export async function register(body: { email: string; password: string; role?: s
   return result;
 }
 
+export async function forgotPassword(email: string): Promise<{ sent: boolean }> {
+  return apiRequest('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+}
+
 export async function login(body: { email: string; password: string }) {
   clearLegacyTokens();
   const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
@@ -675,6 +682,8 @@ export type JobPostingView = {
   role: string | null;
   location: string | null;
   isRemote: boolean;
+  type?: string;
+  isFeatured?: boolean;
   creator: { displayName: string; avatarUrl: string | null };
   href?: string;
 };
@@ -710,6 +719,7 @@ export type EventItem = {
     role: string;
   };
   viewerRsvp: 'going' | 'interested' | 'not_going' | null;
+  isFeatured?: boolean;
 };
 
 export async function listEvents(params?: {
@@ -1737,6 +1747,34 @@ export async function removeAdminCohortMember(
   return apiRequest(`/api/admin/cohorts/${cohortId}/members/${userId}`, { method: 'DELETE' });
 }
 
+// ─── Admin Email Templates ────────────────────────────────────────────────────
+
+export type AdminEmailTemplate = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export type AdminEmailTemplatePreview = {
+  subject: string;
+  html: string;
+};
+
+export async function listAdminEmailTemplates(): Promise<{ templates: AdminEmailTemplate[] }> {
+  return apiRequest('/api/admin/email-templates');
+}
+
+export async function getAdminEmailTemplatePreview(templateId: string): Promise<AdminEmailTemplatePreview> {
+  return apiRequest(`/api/admin/email-templates/${templateId}/preview`);
+}
+
+export async function testSendAdminEmail(templateId: string, to: string): Promise<{ sent: boolean; reason?: string }> {
+  return apiRequest(`/api/admin/email-templates/${templateId}/test-send`, {
+    method: 'POST',
+    body: JSON.stringify({ to }),
+  });
+}
+
 // Organization Profile API
 export async function getOrgProfile(slug: string): Promise<{ org: OrgProfile }> {
   return apiRequest(`/api/org/${slug}`);
@@ -1839,3 +1877,129 @@ export async function getMatchingStats(): Promise<{
 }> {
   return apiRequest('/api/recommendations/stats');
 }
+
+// ─── Tenants / White-label ───────────────────────────────────────────────────
+
+export type TenantBranding = {
+  id: string;
+  tenantId: string;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
+  heroTitle?: string | null;
+  heroSubtitle?: string | null;
+  ctaLabel?: string | null;
+  onboardingIntroText?: string | null;
+  dashboardWelcomeText?: string | null;
+  supportEmail?: string | null;
+  privacyPolicyUrl?: string | null;
+  termsUrl?: string | null;
+  linkedinUrl?: string | null;
+  twitterUrl?: string | null;
+  isBrandingActive: boolean;
+  publishedAt?: string | null;
+};
+
+export type TenantItem = {
+  id: string;
+  slug: string;
+  name: string;
+  displayName?: string | null;
+  description?: string | null;
+  website?: string | null;
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
+  status: 'draft' | 'active' | 'suspended';
+  branding?: TenantBranding | null;
+  createdAt: string;
+};
+
+export async function getTenantBySlug(slug: string): Promise<TenantItem> {
+  return apiRequest(`/api/tenants/${slug}`);
+}
+
+export async function listTenants(params?: { status?: string; limit?: number }): Promise<TenantItem[]> {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set('status', params.status);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/tenants${sp.toString() ? `?${sp}` : ''}`);
+}
+
+// ── SSO / Enterprise Authentication ────────────────────────────────────────
+
+export type SSOProviderType = 'saml' | 'oidc' | 'oauth2';
+export type SSOMode = 'disabled' | 'optional' | 'required';
+
+export type SSOProviderInfo = {
+  id: string;
+  name: string;
+  type: SSOProviderType;
+  loginButtonText: string;
+  loginButtonColor?: string | null;
+  logoUrl?: string | null;
+};
+
+export type SSODiscoveryResult = {
+  ssoAvailable: boolean;
+  ssoRequired?: boolean;
+  allowPasswordLogin: boolean;
+  tenant?: {
+    id: string;
+    slug: string;
+    name: string;
+  };
+  provider?: SSOProviderInfo | null;
+};
+
+export type TenantMembershipItem = {
+  id: string;
+  tenantId: string;
+  role: string;
+  isActive: boolean;
+  joinedAt: string;
+  tenant: {
+    id: string;
+    slug: string;
+    name: string;
+    displayName?: string | null;
+    logoUrl?: string | null;
+  };
+};
+
+/**
+ * Discover SSO configuration by email domain
+ */
+export async function discoverSSOByEmail(email: string): Promise<SSODiscoveryResult> {
+  return apiRequest(`/api/sso/discover?email=${encodeURIComponent(email)}`);
+}
+
+/**
+ * Discover SSO configuration by tenant slug
+ */
+export async function discoverSSOByTenant(slug: string): Promise<SSODiscoveryResult> {
+  return apiRequest(`/api/sso/discover/tenant/${slug}`);
+}
+
+/**
+ * Check if password login is allowed for an email
+ */
+export async function canUsePasswordLogin(email: string): Promise<{ allowed: boolean }> {
+  return apiRequest(`/api/sso/can-use-password?email=${encodeURIComponent(email)}`);
+}
+
+/**
+ * Get current user's tenant memberships
+ */
+export async function getUserTenantMemberships(): Promise<{ memberships: TenantMembershipItem[] }> {
+  return apiRequest('/api/sso/memberships');
+}
+
+/**
+ * Initiate SSO login - returns redirect URL
+ */
+export function getSSOLoginUrl(providerId: string, returnUrl?: string): string {
+  const params = new URLSearchParams();
+  if (returnUrl) params.set('returnUrl', returnUrl);
+  return `${getApiBase()}/sso/login/${providerId}${params.toString() ? `?${params}` : ''}`;
+}
+

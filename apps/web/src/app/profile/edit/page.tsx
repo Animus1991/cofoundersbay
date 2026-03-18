@@ -343,7 +343,7 @@ export default function ProfileEditPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarFileRef = useRef<HTMLInputElement | null>(null);
 
-  const { data: meData, isLoading: profileLoading } = useQuery({
+  const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
     queryKey: ['me', 'profile'],
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
@@ -491,6 +491,17 @@ export default function ProfileEditPage() {
       setSaving(false);
     }
   };
+
+  if (profileError) {
+    return (
+      <AppShell title="Edit Profile">
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 text-center">
+          <p className="text-sm text-muted-foreground">Failed to load your profile.</p>
+          <Button variant="secondary" size="sm" onClick={() => void refetchProfile()}>Try again</Button>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (loading) {
     return (

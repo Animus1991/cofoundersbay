@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { SubscriptionStatus } from '@prisma/client';
+import type { SubscriptionStatus, BillingCycle } from '@prisma/client';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from './stripe.service';
@@ -21,39 +21,96 @@ export class BillingService {
     return this.config.get<string>('STRIPE_PRICE_ID_PREMIUM') ?? null;
   }
 
+  // ── Plans ─────────────────────────────────────────────────────────────────
+
+  async listPlans() {
+    const plans = await this.prisma.billingPlan.findMany({
+      where: { isActive: true, isPublic: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+    return { plans };
+  }
+
+  async getPlan(planId: string) {
+    const plan = await this.prisma.billingPlan.findUnique({ where: { id: planId } });
+    if (!plan) throw new NotFoundException('Plan not found');
+    return { plan };
+  }
+
+  // ── Subscriptions ─────────────────────────────────────────────────────────
+
   async getSubscription(userId: string) {
-    const sub = await this.prisma.subscription.findUnique({
+    const sub = await this.prisma.subscription.findFirst({
       where: { userId },
+      include: { plan: true },
+      orderBy: { createdAt: 'desc' },
     });
     return { subscription: sub };
   }
 
-  private async ensureStripeCustomer(userId: string): Promise<{ customerId: string }> {
+  async getUserSubscriptions(userId: string) {
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { userId },
+      include: { plan: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { subscriptions };
+  }
+
+  private async getOrCreateFreePlan(): Promise<string> {
+    let freePlan = await this.prisma.billingPlan.findUnique({ where: { name: 'free' } });
+    if (!freePlan) {
+      freePlan = await this.prisma.billingPlan.create({
+        data: {
+          name: 'free',
+          displayName: 'Free',
+          description: 'Basic access to the platform',
+          planType: 'free',
+          priceMonthly: 0,
+          priceAnnual: 0,
+          features: { matching: 'basic', messages: 100, events: true },
+          isPublic: true,
+          isActive: true,
+          sortOrder: 0,
+        },
+      });
+    }
+    return freePlan.id;
+  }
+
+  private async ensureStripeCustomer(userId: string): Promise<{ customerId: string; subscriptionId?: string }> {
     const stripe = this.stripeSvc.getClient();
     const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
     if (!user) throw new BadRequestException('User not found');
 
-    const existing = await this.prisma.subscription.findUnique({ where: { userId } });
-    if (existing?.stripeCustomerId) return { customerId: existing.stripeCustomerId };
+    const existing = await this.prisma.subscription.findFirst({ where: { userId } });
+    if (existing?.stripeCustomerId) {
+      return { customerId: existing.stripeCustomerId, subscriptionId: existing.id };
+    }
 
     const customer = await stripe.customers.create({
       email: user.email,
       metadata: { userId },
     });
 
-    await this.prisma.subscription.upsert({
-      where: { userId },
-      create: {
+    // Create a free subscription by default
+    const freePlanId = await this.getOrCreateFreePlan();
+    const now = new Date();
+    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+    const sub = await this.prisma.subscription.create({
+      data: {
         userId,
-        stripeCustomerId: customer.id,
-        status: 'incomplete' as SubscriptionStatus,
-      },
-      update: {
+        planId: freePlanId,
+        billingCycle: 'monthly' as BillingCycle,
+        status: 'active' as SubscriptionStatus,
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
         stripeCustomerId: customer.id,
       },
     });
 
-    return { customerId: customer.id };
+    return { customerId: customer.id, subscriptionId: sub.id };
   }
 
   async createCheckoutSession(params: { userId: string; priceId?: string | null }) {
@@ -132,19 +189,21 @@ export class BillingService {
     const userId = session.client_reference_id ?? (session.metadata?.userId || null);
     if (!userId) return;
 
-    await this.prisma.subscription.upsert({
-      where: { userId },
-      create: {
-        userId,
-        stripeCustomerId,
-        stripeSubscriptionId,
-        status: 'incomplete' as SubscriptionStatus,
-      },
-      update: {
-        stripeCustomerId,
-        stripeSubscriptionId,
-      },
-    });
+    // Find existing subscription for this user
+    const existing = await this.prisma.subscription.findFirst({ where: { userId } });
+    
+    if (existing) {
+      // Update existing subscription with Stripe IDs
+      await this.prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          stripeCustomerId,
+          stripeSubscriptionId,
+          status: 'active' as SubscriptionStatus,
+        },
+      });
+    }
+    // If no existing subscription, the webhook for subscription.created will handle it
   }
 
   private mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
@@ -167,14 +226,20 @@ export class BillingService {
     const stripeCustomerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
     const stripeSubscriptionId = sub.id;
 
-    const priceId = sub.items.data[0]?.price?.id ?? null;
+    const stripePriceId = sub.items.data[0]?.price?.id ?? null;
     const maxItemPeriodEnd = sub.items?.data?.length
       ? Math.max(...sub.items.data.map((i) => i.current_period_end))
       : null;
-    const currentPeriodEnd = maxItemPeriodEnd ? new Date(maxItemPeriodEnd * 1000) : null;
+    const currentPeriodEnd = maxItemPeriodEnd 
+      ? new Date(maxItemPeriodEnd * 1000) 
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
+    const currentPeriodStart = sub.items.data[0]?.current_period_start
+      ? new Date(sub.items.data[0].current_period_start * 1000)
+      : new Date();
     const cancelAtPeriodEnd = sub.cancel_at_period_end ?? false;
     const status = this.mapStripeStatus(sub.status);
 
+    // Find existing subscription by Stripe IDs or user
     const existing =
       (await this.prisma.subscription.findFirst({ where: { stripeCustomerId } })) ??
       (await this.prisma.subscription.findFirst({ where: { stripeSubscriptionId } }));
@@ -182,26 +247,56 @@ export class BillingService {
     const userId = existing?.userId ?? (sub.metadata?.userId || null);
     if (!userId) return;
 
-    await this.prisma.subscription.upsert({
-      where: { userId },
-      create: {
-        userId,
-        stripeCustomerId,
-        stripeSubscriptionId,
-        status,
-        priceId,
-        currentPeriodEnd,
-        cancelAtPeriodEnd,
-      },
-      update: {
-        stripeCustomerId,
-        stripeSubscriptionId,
-        status,
-        priceId,
-        currentPeriodEnd,
-        cancelAtPeriodEnd,
-      },
-    });
+    // Get or create a premium plan to link to
+    let premiumPlan = await this.prisma.billingPlan.findUnique({ where: { name: 'premium' } });
+    if (!premiumPlan) {
+      premiumPlan = await this.prisma.billingPlan.create({
+        data: {
+          name: 'premium',
+          displayName: 'Premium',
+          description: 'Full access to all platform features',
+          planType: 'individual_premium',
+          priceMonthly: 1900, // $19/month
+          priceAnnual: 15900, // $159/year
+          features: { matching: 'advanced', messages: 'unlimited', events: true, analytics: true },
+          stripePriceIdMonthly: stripePriceId,
+          isPublic: true,
+          isActive: true,
+          sortOrder: 1,
+        },
+      });
+    }
+
+    if (existing) {
+      // Update existing subscription
+      await this.prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          stripeCustomerId,
+          stripeSubscriptionId,
+          status,
+          currentPeriodStart,
+          currentPeriodEnd,
+          cancelAtPeriodEnd,
+          planId: premiumPlan.id,
+        },
+      });
+    } else {
+      // Create new subscription
+      await this.prisma.subscription.create({
+        data: {
+          userId,
+          planId: premiumPlan.id,
+          billingCycle: 'monthly',
+          status,
+          currentPeriodStart,
+          currentPeriodEnd,
+          cancelAtPeriodEnd,
+          stripeCustomerId,
+          stripeSubscriptionId,
+        },
+      });
+    }
   }
 }
 

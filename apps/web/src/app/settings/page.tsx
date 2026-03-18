@@ -76,7 +76,8 @@ export default function SettingsPage() {
 
   const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
-    setHasToken(!!localStorage.getItem('accessToken'));
+    // Use cfb_session cookie for auth detection (cookie-based auth)
+    setHasToken(typeof document !== 'undefined' && document.cookie.includes('cfb_session='));
   }, []);
 
   const queryClient = useQueryClient();

@@ -4,58 +4,64 @@
 
 @layer base {
   :root {
-    /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
-    --background:       220 20% 97%;
-    --foreground:       222 26% 9%;
-    --card:             0 0% 100%;
-    --card-foreground:  222 26% 9%;
-    --popover:          0 0% 100%;
-    --popover-foreground: 222 26% 9%;
+    /* ── Font family CSS variables (set here since next/font/google is not used) ── */
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-sora: 'Sora', system-ui, sans-serif;
+    --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
 
-    /* Primary: clear indigo — identifiable, modern, professional */
-    --primary:          235 78% 54%;
+    /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
+    --background:       220 16% 96%;
+    --foreground:       220 26% 9%;
+    --card:             0 0% 100%;
+    --card-foreground:  220 26% 9%;
+    --popover:          0 0% 100%;
+    --popover-foreground: 220 26% 9%;
+
+    /* Primary: professional blue-violet — modern, trustworthy */
+    --primary:          236 72% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: light neutral for ghost actions */
-    --secondary:        220 18% 93%;
-    --secondary-foreground: 222 22% 22%;
+    /* Secondary: subtle gray for secondary actions */
+    --secondary:        220 13% 94%;
+    --secondary-foreground: 220 18% 16%;
 
-    /* Muted: for placeholder, subtitles */
-    --muted:            220 16% 95%;
-    --muted-foreground: 220 9% 44%;
+    /* Muted: for subtitles, disabled states */
+    --muted:            220 12% 92%;
+    --muted-foreground: 220 8% 48%;
 
-    /* Accent: for highlights, badges, link hovers */
-    --accent:           235 78% 54%;
+    /* Accent: vibrant for highlights, badges */
+    --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 72% 51%;
+    --destructive:      0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders: visible but not heavy */
-    --border:           220 13% 89%;
+    /* Borders: subtle, consistent */
+    --border:           220 13% 90%;
     --input:            0 0% 100%;
-    --ring:             235 78% 54%;
+    --ring:             236 72% 55%;
     --radius:           8px;
 
-    /* Typography scale */
-    --font-size-xs:     0.75rem;
-    --font-size-sm:     0.8125rem;
-    --font-size-base:   0.9375rem;
-    --font-size-lg:     1.0625rem;
-    --font-size-xl:     1.25rem;
-    --font-size-2xl:    1.5rem;
-    --font-size-3xl:    1.875rem;
+    /* Typography scale — refined for readability */
+    --font-size-xs:     0.75rem;    /* 12px */
+    --font-size-sm:     0.875rem;   /* 14px */
+    --font-size-base:   0.9375rem;  /* 15px */
+    --font-size-lg:     1rem;       /* 16px */
+    --font-size-xl:     1.125rem;   /* 18px */
+    --font-size-2xl:    1.25rem;    /* 20px */
+    --font-size-3xl:    1.5rem;     /* 24px */
+    --font-size-4xl:    2rem;       /* 32px */
 
     /* Gradients */
     --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
     --gradient-card:    linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
 
-    /* Shadows — crisp, minimal (no glow in light mode) */
+    /* Shadows — subtle, professional (ChatGPT style) */
     --shadow-glow:      0 0 0 1px hsl(var(--border));
-    --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border));
-    --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.07), 0 1px 3px hsl(0 0% 0% / 0.04);
-    --shadow-modal:     0 8px 32px hsl(0 0% 0% / 0.12), 0 2px 8px hsl(0 0% 0% / 0.06);
+    --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border) / 0.7);
+    --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.06), 0 1px 4px hsl(0 0% 0% / 0.04);
+    --shadow-modal:     0 16px 40px hsl(0 0% 0% / 0.10), 0 4px 12px hsl(0 0% 0% / 0.06);
   }
 
   .dark {
@@ -196,24 +202,12 @@
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
     font-feature-settings: 'cv11', 'ss01';
-    font-size: 15px;
-    line-height: 1.6;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    line-height: 1.55;
+    letter-spacing: -0.012em;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Skip to main content — accessibility */
-  .skip-to-content {
-    position: absolute;
-    left: -9999px;
-    top: 1rem;
-    z-index: 9999;
-    @apply rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground;
-  }
-  .skip-to-content:focus {
-    left: 1rem;
   }
 
   /* Custom scrollbar — thin & minimal */
@@ -314,10 +308,6 @@
 
   .shadow-glow {
     box-shadow: var(--shadow-glow);
-  }
-
-  .text-balance {
-    text-wrap: balance;
   }
 
   .glass {
@@ -456,27 +446,27 @@
 
   /* Fade-in animation used across pages */
   .animate-fade-in {
-    animation: fade-in 0.35s ease-out both;
+    animation: fade-in 0.18s ease-out both;
   }
 
   /* Dashboard card stagger */
   .animate-fade-in-up {
-    animation: fade-in-up 0.45s ease-out both;
+    animation: fade-in-up 0.22s ease-out both;
   }
 
   /* TopNav entrance */
   .animate-fade-in-down {
-    animation: fade-in-down 0.4s ease-out both;
+    animation: fade-in-down 0.2s ease-out both;
   }
 
   /* MobileNav slide-in links */
   .animate-fade-in-left {
-    animation: fade-in-left 0.3s ease-out both;
+    animation: fade-in-left 0.2s ease-out both;
   }
 
   /* QuickActions FAB items */
   .animate-scale-in {
-    animation: scale-in 0.2s ease-out both;
+    animation: scale-in 0.15s ease-out both;
   }
 
   /* FloatingActionButton subtle bounce */
@@ -487,11 +477,6 @@
   /* Pulse glow — used by auth page hero icon */
   .animate-pulse-glow {
     animation: pulse-glow-ring 2.5s ease-in-out infinite;
-  }
-
-  /* bg-hero-gradient — used by auth split-screen panel */
-  .bg-hero-gradient {
-    background: var(--gradient-hero);
   }
 
   /* Semi-transparent white overlay used on hero panels */
@@ -517,6 +502,15 @@
   }
   .skip-to-content:focus {
     transform: translateX(-50%) translateY(0);
+  }
+
+  /* Hide scrollbar while keeping scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 
   /* Screen-reader only utility */
@@ -596,3 +590,41 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Enhanced component utilities ── */
+@layer utilities {
+  /* Better focus styles */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/80 focus-visible:ring-offset-1;
+  }
+  
+  /* Smooth transitions */
+  .transition-smooth {
+    @apply transition-all duration-150 ease-out;
+  }
+  
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-150 hover:shadow-lg hover:-translate-y-px;
+  }
+  
+  /* Button variants */
+  .btn-ghost-subtle {
+    @apply text-foreground/70 hover:text-foreground hover:bg-secondary/50;
+  }
+  
+  /* Input improvements */
+  .input-clean {
+    @apply border-border/60 hover:border-ring/40 focus:border-ring;
+  }
+  
+  /* Text improvements */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}
+

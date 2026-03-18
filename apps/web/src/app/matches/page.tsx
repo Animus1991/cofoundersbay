@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,14 +9,16 @@ import { Sparkles, ArrowRight, UserPlus } from 'lucide-react';
 import { getRecommendations, sendConnectionRequest, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
 import { MatchCard } from '@/components/common/MatchCard';
-import { ConnectionRequestDialog } from '@/components/common/ConnectionRequest';
 import { useToast } from '@/components/ui/toast';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
+
+const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
 
@@ -54,7 +57,7 @@ export default function MatchesPage() {
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
 
   const hasToken = useIsAuthenticated();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['recommendations', 'matches', { limit: 20 }],
     queryFn: () => getRecommendations({ limit: 20 }),
     staleTime: 3 * 60_000,
@@ -124,6 +127,13 @@ export default function MatchesPage() {
               </Link>
             }
           />
+        )}
+
+        {hasToken && isError && (
+          <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <p className="text-sm text-muted-foreground">Failed to load matches.</p>
+            <Button variant="secondary" size="sm" onClick={() => void refetch()}>Retry</Button>
+          </CardContent></Card>
         )}
 
         {hasToken && isLoading && (

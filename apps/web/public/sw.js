@@ -1,40 +1,28 @@
 // Service Worker for CoFounderBay
-// Provides offline support and caching for better performance
+// Network-first strategy to prevent stale cache issues in development
 
-const CACHE_NAME = 'cofounderbay-v1';
-const RUNTIME_CACHE = 'cofounderbay-runtime-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `cofounderbay-${CACHE_VERSION}`;
 
-// Assets to cache on install
-const PRECACHE_ASSETS = [
-  '/',
-  '/manifest.json',
-];
-
-// Install event - precache critical assets
+// Install event - skip waiting immediately
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clear ALL old caches and claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+          .filter((name) => name !== CACHE_NAME)
           .map((name) => caches.delete(name))
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch event - network first, fallback to cache
+// Fetch event - NETWORK FIRST for everything to prevent stale assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -42,76 +30,41 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Skip chrome extensions and external requests
-  if (!url.origin.includes(self.location.origin)) return;
+  // Skip external requests
+  if (url.origin !== self.location.origin) return;
 
-  // API requests - network only with offline fallback
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Clone and cache successful responses
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Return cached version if offline
-          return caches.match(request).then((cached) => {
-            if (cached) return cached;
-            // Return offline page for failed API requests
-            return new Response(
-              JSON.stringify({ error: 'Offline', message: 'No internet connection' }),
-              {
-                status: 503,
-                headers: { 'Content-Type': 'application/json' },
-              }
-            );
-          });
-        })
-    );
-    return;
-  }
-
-  // Static assets - cache first, fallback to network
-  if (
-    url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/)
-  ) {
+  // Skip _next/static with hash in filename (already cache-busted by Next.js)
+  // These can use stale-while-revalidate safely
+  if (url.pathname.includes('/_next/static/') && url.pathname.match(/\.[a-f0-9]{8,}\./)) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        return (
-          cached ||
-          fetch(request).then((response) => {
-            const responseClone = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-            return response;
-          })
-        );
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        }).catch(() => cached);
+        return cached || fetchPromise;
       })
     );
     return;
   }
 
-  // HTML pages - network first, fallback to cache
+  // Everything else: NETWORK FIRST (prevents stale page issues)
   event.respondWith(
     fetch(request)
       .then((response) => {
-        const responseClone = response.clone();
-        caches.open(RUNTIME_CACHE).then((cache) => {
-          cache.put(request, responseClone);
-        });
+        // Only cache successful responses for static assets
+        if (response.ok && url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|woff2?)$/)) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
         return response;
       })
       .catch(() => {
-        return caches.match(request).then((cached) => {
-          return cached || caches.match('/');
-        });
+        // Offline fallback - try cache
+        return caches.match(request);
       })
   );
 });
