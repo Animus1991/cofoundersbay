@@ -46,62 +46,33 @@ export function LogoIcon({ size = 34, className }: { size?: number; className?: 
   // Intersection y-offset from the line joining the two centres
   const h = Math.sqrt(r * r - (d / 2) * (d / 2));
   const iy1 = vCy - h;           // top intersection point y
-  const iy2 = vCy + h;           // bottom intersection point y
-  const ix  = cx;                // intersection points share the same x (midpoint)
-
-  const lensPath = [
-    `M ${ix} ${iy1}`,
-    `A ${r} ${r} 0 0 1 ${ix} ${iy2}`,   // arc on the right circle (going clockwise)
-    `A ${r} ${r} 0 0 1 ${ix} ${iy1}`,   // arc on the left circle  (going clockwise)
-    'Z',
-  ].join(' ');
-
   return (
     <svg
-      width={s}
-      height={s}
-      viewBox={`0 0 ${s} ${s}`}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('shrink-0', className)}
-      aria-label="CoFounderBay"
-      role="img"
+      className={className}
     >
-      <defs>
-        {/* Badge gradient — indigo to violet */}
-        <linearGradient id={`cfb-badge-${s}`} x1="0" y1="0" x2={s} y2={s} gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#4338CA" />
-          <stop offset="100%" stopColor="#7C3AED" />
-        </linearGradient>
-        {/* Lens (intersection) highlight gradient */}
-        <linearGradient id={`cfb-lens-${s}`} x1={lCx} y1={iy1} x2={rCx} y2={iy2} gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#E0E7FF" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="1"   />
-        </linearGradient>
-        <clipPath id={`cfb-clip-${s}`}>
-          <rect x="0" y="0" width={s} height={s} rx={s * 0.24} />
-        </clipPath>
-      </defs>
-
-      {/* Badge background */}
-      <rect x="0" y="0" width={s} height={s} rx={s * 0.24} fill={`url(#cfb-badge-${s})`} />
-
-      {/* Subtle inner highlight at top — depth */}
-      <ellipse cx={s * 0.5} cy={s * 0.18} rx={s * 0.32} ry={s * 0.1} fill="white" opacity="0.08" />
-
-      {/* Left circle (co-founder A) */}
-      <circle cx={lCx} cy={vCy} r={rx} fill="white" opacity="0.22" />
-      <circle cx={lCx} cy={vCy} r={rx} stroke="white" strokeWidth={s * 0.04} strokeOpacity="0.55" />
-
-      {/* Right circle (co-founder B) */}
-      <circle cx={rCx} cy={vCy} r={rx} fill="white" opacity="0.22" />
-      <circle cx={rCx} cy={vCy} r={rx} stroke="white" strokeWidth={s * 0.04} strokeOpacity="0.55" />
-
-      {/* Intersection lens — glows brightest */}
-      <path d={lensPath} fill={`url(#cfb-lens-${s})`} opacity="0.92" />
-
-      {/* Tiny sparkle dot at top of lens */}
-      <circle cx={ix} cy={iy1 - s * 0.025} r={s * 0.038} fill="white" opacity="0.9" />
+      {/* Main bay/harbor shape - curved base representing the 'Bay' */}
+      <path
+        d="M4 16 Q12 20 20 16 L20 18 Q12 22 4 18 Z"
+        className="fill-primary opacity-90"
+      />
+      
+      {/* Two co-founder figures - simplified human shapes */}
+      <circle cx="9" cy="11" r="2.5" className="fill-primary opacity-80" />
+      <path d="M9 14 Q9 16 7 17 L11 17 Q9 16 9 14" className="fill-primary opacity-80" />
+      
+      <circle cx="15" cy="11" r="2.5" className="fill-primary opacity-70" />
+      <path d="M15 14 Q15 16 13 17 L17 17 Q15 16 15 14" className="fill-primary opacity-70" />
+      
+      {/* Connection bridge between them */}
+      <rect x="11" y="13" width="2" height="3" className="fill-background" rx="0.5" />
+      
+      {/* Growth arrow pointing upward */}
+      <path d="M12 6 L12 10 M10 8 L12 6 L14 8" stroke="currentColor" strokeWidth="1.5" className="text-primary opacity-60" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -115,34 +86,33 @@ export function Logo({
   textClassName,
   inverted = false,
 }: LogoProps) {
-  const { icon, text, gap, tracking } = SIZE_MAP[size];
+  const config = SIZE_MAP[size];
+  const textColor = inverted ? 'text-white' : 'text-foreground';
+  const iconColor = inverted ? 'text-white' : 'text-primary';
 
   if (variant === 'icon') {
-    return <LogoIcon size={icon} className={cn(iconClassName, className)} />;
+    return <LogoIcon size={config.icon} className={cn(iconColor, iconClassName, className)} />;
   }
 
   const wordmark = (
-    <span
-      className={cn(
-        'font-display font-bold select-none leading-none',
-        text,
-        tracking,
-        inverted ? 'text-white' : 'text-foreground',
-        textClassName,
-      )}
-    >
-      Co<span className={inverted ? 'text-white/80' : 'text-muted-foreground'}>Founder</span>
-      <span className="text-primary font-extrabold">Bay</span>
-    </span>
+    <div className={cn('font-display font-semibold', config.tracking, config.text, textColor, textClassName)}>
+      <span className={cn('bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent', inverted && 'text-white')}>
+        Co
+      </span>
+      <span className={cn('mx-0.5', inverted && 'text-white')}>Founder</span>
+      <span className={cn('bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent', inverted && 'text-white')}>
+        Bay
+      </span>
+    </div>
   );
 
   if (variant === 'wordmark') {
-    return <span className={className}>{wordmark}</span>;
+    return wordmark;
   }
 
   return (
-    <div className={cn('flex items-center', gap, className)}>
-      <LogoIcon size={icon} className={iconClassName} />
+    <div className={cn('flex items-center', config.gap, className)}>
+      <LogoIcon size={config.icon} className={cn(iconColor, iconClassName)} />
       {wordmark}
     </div>
   );

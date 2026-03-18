@@ -1,9 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from './prisma/prisma.service';
+import { CacheService } from './common/cache/cache.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+  ) {}
 
   @Get()
   getRoot() {
@@ -23,11 +29,21 @@ export class AppController {
   }
 
   @Get('health')
-  getHealth() {
+  async getHealth() {
+    const [dbOk, redisOk] = await Promise.all([
+      this.prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false),
+      this.cache.isHealthy(),
+    ]);
+
+    const status = dbOk ? 'ok' : 'degraded';
     return {
-      status: 'ok',
+      status,
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
+      services: {
+        database: dbOk ? 'up' : 'down',
+        cache: redisOk ? 'up' : 'down',
+      },
     };
   }
 }

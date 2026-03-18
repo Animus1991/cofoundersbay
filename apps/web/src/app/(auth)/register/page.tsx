@@ -77,8 +77,7 @@ export default function RegisterPage() {
         role: role as 'founder' | 'mentor' | 'investor' | 'org',
       });
       if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', tokens.accessToken);
-        localStorage.setItem('refreshToken', tokens.refreshToken);
+        // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
       }
       router.push('/onboarding');
