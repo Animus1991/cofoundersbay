@@ -38,9 +38,10 @@ export function TopNav() {
             size="icon"
             className="hidden lg:flex shrink-0"
             onClick={() => setCommandOpen(true)}
+            aria-label="Open command palette (Ctrl+K)"
             title="Command palette (Ctrl+K)"
           >
-            <Keyboard className="h-4 w-4" />
+            <Keyboard className="h-4 w-4" aria-hidden="true" />
           </Button>
           <OptimizedLink href="/discover">
             <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
@@ -48,11 +49,11 @@ export function TopNav() {
               Discover
             </Button>
           </OptimizedLink>
-          <OptimizedLink href="/messages">
-            <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" title="Messages">
-              <MessageCircle className="h-4 w-4" />
+          <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
+            <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true">
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
               {unreadMessages > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
                 </span>
               )}

@@ -1,3 +1,26 @@
+// Sentry must be initialised before NestFactory to instrument the full request lifecycle.
+// We use a guarded dynamic require so the app still boots if the package is not yet installed.
+if (process.env.SENTRY_DSN) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+    const Sentry: any = require('@sentry/node');
+    Sentry.init({
+      dsn: process.env.SENTRY_DSN,
+      environment: process.env.NODE_ENV ?? 'development',
+      tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      beforeSend(event: any) {
+        if (event.request?.cookies) delete event.request.cookies;
+        if (event.request?.headers?.authorization) delete event.request.headers.authorization;
+        return event;
+      },
+    });
+  } catch {
+    console.warn('[Sentry] @sentry/node not installed — skipping Sentry init. Run `npm install` to enable.');
+  }
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigModule } from '@nestjs/config';

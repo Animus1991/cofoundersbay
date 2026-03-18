@@ -34,11 +34,14 @@ export function SideNav() {
     'ME';
 
   return (
-    <aside className="hidden lg:flex lg:flex-col h-fit min-h-[420px] rounded-xl border border-border bg-card shadow-sm sticky top-4">
-      <nav className="flex-1 space-y-4 p-3 overflow-y-auto">
+    <aside
+      className="hidden lg:flex lg:flex-col h-fit min-h-[420px] rounded-xl border border-border bg-card shadow-sm sticky top-4"
+      aria-label="Main navigation"
+    >
+      <nav className="flex-1 space-y-4 p-2 overflow-y-auto">
         {navSections.map(({ section, links }) => (
           <div key={section}>
-            <p className="px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1">
+            <p className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">
               {section}
             </p>
             <ul className="space-y-0.5">
@@ -49,17 +52,25 @@ export function SideNav() {
                   <li key={`${section}-${href}`}>
                     <OptimizedLink
                       href={href}
+                      aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors',
+                        'relative flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-all duration-150',
                         active
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'text-muted-foreground hover:bg-secondary hover:text-foreground font-normal',
+                          ? 'bg-primary/8 text-primary font-medium'
+                          : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground font-normal',
                       )}
                     >
-                      <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
+                      {/* Left border indicator for active state */}
+                      {active && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-primary" aria-hidden="true" />
+                      )}
+                      <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-primary' : 'text-muted-foreground/70')} aria-hidden="true" />
                       <span className="truncate">{label}</span>
                       {badge > 0 && (
-                        <span className="ml-auto flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                        <span
+                          className="ml-auto flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground"
+                          aria-label={`${badge} unread`}
+                        >
                           {badge > 99 ? '99+' : badge}
                         </span>
                       )}

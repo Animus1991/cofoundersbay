@@ -4,22 +4,30 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+  'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]',
   {
     variants: {
       variant: {
         default:
-          'bg-primary text-primary-foreground shadow-glow-sm hover:shadow-glow-md',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-        ghost: 'hover:bg-secondary/60',
-        outline: 'border border-input bg-transparent hover:bg-secondary/60',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+          'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90',
+        secondary:
+          'bg-secondary text-secondary-foreground border border-border/60 hover:bg-secondary/70',
+        ghost:
+          'text-foreground/70 hover:bg-secondary hover:text-foreground',
+        outline:
+          'border border-border bg-transparent text-foreground hover:bg-secondary hover:border-border/80',
+        destructive:
+          'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
+        link:
+          'text-primary underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
       size: {
-        sm: 'h-9 px-3',
-        md: 'h-10 px-4',
-        lg: 'h-11 px-6 text-base',
-        icon: 'h-10 w-10',
+        xs:   'h-7 px-2.5 text-xs rounded',
+        sm:   'h-8 px-3 text-xs',
+        md:   'h-9 px-4',
+        lg:   'h-10 px-6 text-base',
+        xl:   'h-12 px-8 text-base',
+        icon: 'h-9 w-9',
       },
     },
     defaultVariants: {

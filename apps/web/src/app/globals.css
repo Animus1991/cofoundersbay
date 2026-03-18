@@ -4,33 +4,58 @@
 
 @layer base {
   :root {
-    /* ── Light theme (ChatGPT / Replit inspired — clean, neutral, minimal) ── */
-    --background: 220 16% 97%;
-    --foreground: 222 24% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 24% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 24% 8%;
-    --primary: 235 76% 54%;
+    /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
+    --background:       220 20% 97%;
+    --foreground:       222 26% 9%;
+    --card:             0 0% 100%;
+    --card-foreground:  222 26% 9%;
+    --popover:          0 0% 100%;
+    --popover-foreground: 222 26% 9%;
+
+    /* Primary: clear indigo — identifiable, modern, professional */
+    --primary:          235 78% 54%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 16% 94%;
-    --secondary-foreground: 222 20% 22%;
-    --muted: 220 14% 95.5%;
-    --muted-foreground: 220 10% 42%;
-    --accent: 235 76% 54%;
+
+    /* Secondary: light neutral for ghost actions */
+    --secondary:        220 18% 93%;
+    --secondary-foreground: 222 22% 22%;
+
+    /* Muted: for placeholder, subtitles */
+    --muted:            220 16% 95%;
+    --muted-foreground: 220 9% 44%;
+
+    /* Accent: for highlights, badges, link hovers */
+    --accent:           235 78% 54%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 72% 50%;
+
+    --destructive:      0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 88%;
-    --input: 0 0% 100%;
-    --ring: 235 76% 54%;
-    --radius: 8px;
-    --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
+
+    /* Borders: visible but not heavy */
+    --border:           220 13% 89%;
+    --input:            0 0% 100%;
+    --ring:             235 78% 54%;
+    --radius:           8px;
+
+    /* Typography scale */
+    --font-size-xs:     0.75rem;
+    --font-size-sm:     0.8125rem;
+    --font-size-base:   0.9375rem;
+    --font-size-lg:     1.0625rem;
+    --font-size-xl:     1.25rem;
+    --font-size-2xl:    1.5rem;
+    --font-size-3xl:    1.875rem;
+
+    /* Gradients */
+    --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
-    --shadow-glow: 0 0 0 1px hsl(var(--border));
-    --shadow-card: 0 1px 3px hsl(0 0% 0% / 0.06), 0 1px 2px hsl(0 0% 0% / 0.04);
-    --shadow-elevated: 0 4px 12px hsl(0 0% 0% / 0.08), 0 2px 4px hsl(0 0% 0% / 0.04);
+    --gradient-card:    linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
+
+    /* Shadows — crisp, minimal (no glow in light mode) */
+    --shadow-glow:      0 0 0 1px hsl(var(--border));
+    --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border));
+    --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.07), 0 1px 3px hsl(0 0% 0% / 0.04);
+    --shadow-modal:     0 8px 32px hsl(0 0% 0% / 0.12), 0 2px 8px hsl(0 0% 0% / 0.06);
   }
 
   .dark {
@@ -467,6 +492,44 @@
   /* bg-hero-gradient — used by auth split-screen panel */
   .bg-hero-gradient {
     background: var(--gradient-hero);
+  }
+
+  /* Semi-transparent white overlay used on hero panels */
+  .bg-white\/8  { background-color: rgb(255 255 255 / 0.08); }
+  .bg-white\/12 { background-color: rgb(255 255 255 / 0.12); }
+  .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
+
+  /* Skip-to-content — screen reader + keyboard accessible */
+  .skip-to-content {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%) translateY(-120%);
+    top: 0.75rem;
+    z-index: 9999;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius);
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: transform 0.15s ease;
+    white-space: nowrap;
+  }
+  .skip-to-content:focus {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Screen-reader only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 }
 

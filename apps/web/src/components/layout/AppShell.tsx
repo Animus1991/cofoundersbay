@@ -23,7 +23,7 @@ export function AppShell({ title, description, actions, children }: AppShellProp
         <div className="mt-4 grid gap-5 lg:grid-cols-[260px_1fr]">
           <MemoSideNav />
           <PageTransition>
-            <main className="space-y-5 min-w-0">
+            <main id="main-content" className="space-y-5 min-w-0">
               {(title || description || actions) && (
                 <section className="flex flex-col justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-sm lg:flex-row lg:items-center">
                   <div>

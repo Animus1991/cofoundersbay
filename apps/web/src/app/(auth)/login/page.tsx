@@ -139,25 +139,27 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right — hero visual */}
-      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12">
-        <div className="max-w-md text-center">
-          <div className="mx-auto mb-8">
+      {/* Right — hero panel */}
+      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">
+        {/* Subtle radial overlay */}
+        <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
+        <div className="relative z-10 max-w-md text-center">
+          <div className="mx-auto mb-8 flex items-center justify-center">
             <LogoIcon size={72} />
           </div>
-          <h2 className="font-display text-3xl font-bold text-foreground">
+          <h2 className="font-display text-3xl font-bold text-white">
             Your next co-founder is waiting
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            Join a thriving community of founders, investors, and startup professionals.
+          <p className="mt-4 text-white/65 text-base leading-relaxed">
+            Join thousands of founders, mentors, and investors building the future together.
           </p>
-          <div className="mt-10 space-y-4 text-left">
+          <div className="mt-10 space-y-3 text-left">
             {HERO_POINTS.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3 rounded-xl bg-secondary/30 px-4 py-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-                  <Icon className="h-4 w-4 text-primary" />
+              <div key={text} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                  <Icon className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-sm text-foreground/80">{text}</span>
+                <span className="text-sm text-white/85 font-medium">{text}</span>
               </div>
             ))}
           </div>

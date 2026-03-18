@@ -99,24 +99,25 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Left — hero visual */}
-      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12">
-        <div className="max-w-md text-center">
-          <div className="mx-auto mb-8">
+      {/* Left — hero panel */}
+      <div className="hidden bg-hero-gradient lg:flex lg:w-1/2 lg:flex-col lg:items-center lg:justify-center px-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
+        <div className="relative z-10 max-w-md text-center">
+          <div className="mx-auto mb-8 flex items-center justify-center">
             <LogoIcon size={72} />
           </div>
-          <h2 className="font-display text-3xl font-bold text-foreground">
+          <h2 className="font-display text-3xl font-bold text-white">
             Start your journey
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            Create your signal-rich profile and get matched with the right people for your startup journey.
+          <p className="mt-4 text-white/65 text-base leading-relaxed">
+            Create your signal-rich profile and get matched with the right founders, mentors, and investors.
           </p>
-          <div className="mt-10 grid grid-cols-3 gap-4">
+          <div className="mt-10 grid grid-cols-3 gap-3">
             {HERO_STATS.map(({ icon: Icon, value, label }) => (
-              <div key={label} className="rounded-xl bg-secondary/30 px-3 py-4 text-center">
-                <Icon className="mx-auto mb-2 h-5 w-5 text-primary" />
-                <p className="font-display text-xl font-bold text-foreground">{value}</p>
-                <p className="text-xs text-muted-foreground">{label}</p>
+              <div key={label} className="rounded-xl border border-white/10 bg-white/8 px-3 py-4 text-center backdrop-blur-sm">
+                <Icon className="mx-auto mb-2 h-5 w-5 text-white/80" />
+                <p className="font-display text-xl font-bold text-white">{value}</p>
+                <p className="text-xs text-white/55">{label}</p>
               </div>
             ))}
           </div>
