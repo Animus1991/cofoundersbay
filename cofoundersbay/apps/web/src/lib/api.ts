@@ -209,12 +209,15 @@ async function apiRequest<T>(
 
 export async function register(body: { email: string; password: string; role?: string }) {
   clearLegacyTokens();
-  const result = await apiRequest<{ user: AuthUser }>(
+  const result = await apiRequest<{ user: AuthUser; verificationRequired: boolean }>(
     '/api/auth/register',
     { method: 'POST', body: JSON.stringify(body) },
     { retryOn401: false },
   );
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:login'));
+  // Only dispatch login event if not pending email verification
+  if (!result.verificationRequired && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cfb:login'));
+  }
   return result;
 }
 

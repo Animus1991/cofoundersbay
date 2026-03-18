@@ -33,7 +33,11 @@ export class AuthService {
       this.config.get<string>('EMAIL_VERIFICATION_REQUIRED') === 'true';
   }
 
-  async register(input: RegisterInput): Promise<{ user: { id: string; email: string; role: string; emailVerified: boolean }; tokens: TokenPair }> {
+  async register(input: RegisterInput): Promise<{
+    user: { id: string; email: string; role: string; emailVerified: boolean };
+    tokens: TokenPair | null;
+    verificationRequired: boolean;
+  }> {
     const existing = await this.prisma.user.findUnique({
       where: { email: input.email.toLowerCase() },
       select: { id: true },
@@ -52,10 +56,21 @@ export class AuthService {
       },
     });
 
+    // When email verification is required, do NOT issue auth tokens yet.
+    // The user must verify their email before they can log in.
+    if (this.emailVerificationRequired) {
+      return {
+        user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
+        tokens: null,
+        verificationRequired: true,
+      };
+    }
+
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return {
       user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
       tokens,
+      verificationRequired: false,
     };
   }
 
@@ -98,6 +113,12 @@ export class AuthService {
     if (!record || record.expiresAt < new Date()) {
       if (record) await this.prisma.refreshToken.delete({ where: { id: record.id } }).catch(() => {});
       throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    // Enforce email verification status on refresh as well
+    if (this.emailVerificationRequired && !record.user.emailVerified) {
+      await this.prisma.refreshToken.delete({ where: { id: record.id } });
+      throw new ForbiddenException('Email not verified. Please verify your email before logging in.');
     }
 
     await this.prisma.refreshToken.delete({ where: { id: record.id } });

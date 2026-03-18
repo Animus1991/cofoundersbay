@@ -56,10 +56,15 @@ export class AuthController {
     // Send verification email (non-blocking — don't fail registration if mail fails)
     this.verificationService.sendEmailVerification(result.user.id).catch(() => {});
 
-    setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+    // Only set auth cookies when email verification is NOT required.
+    // When required, the user must verify email first before they can log in.
+    if (result.tokens) {
+      setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+    }
 
     return {
       user: result.user,
+      verificationRequired: result.verificationRequired,
     };
   }
 

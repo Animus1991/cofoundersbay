@@ -71,7 +71,7 @@ export default function RegisterPage() {
     submittingRef.current = true;
     setLoading(true);
     try {
-      const { user } = await registerApi({
+      const { user, verificationRequired } = await registerApi({
         email: email.trim().toLowerCase(),
         password,
         role: role as 'founder' | 'mentor' | 'investor' | 'org',
@@ -80,7 +80,12 @@ export default function RegisterPage() {
         // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
       }
-      router.push('/onboarding');
+      if (verificationRequired) {
+        // Email verification required — redirect to a page explaining this
+        router.push('/register/verify-pending?email=' + encodeURIComponent(email.trim().toLowerCase()));
+      } else {
+        router.push('/onboarding');
+      }
     } catch (err) {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Registration failed';
