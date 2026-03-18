@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSession } from '@/hooks/useSession';
 import dynamic from 'next/dynamic';
 import { Logo } from '@/components/brand/Logo';
 import Link from 'next/link';
@@ -551,33 +551,10 @@ function DashboardContent() {
 }
 
 export default function Home() {
-  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const { hasSession, loading } = useSession();
 
-  useEffect(() => {
-    // Check auth only on client side after mount
-    const checkAuth = () => {
-      const hasSession = document.cookie.includes('cfb_session=');
-      setAuthState(hasSession ? 'authenticated' : 'unauthenticated');
-    };
-
-    // Initial check
-    checkAuth();
-
-    // Listen for auth changes
-    const sync = () => checkAuth();
-    window.addEventListener('cfb:login', sync);
-    window.addEventListener('cfb:logout', sync);
-    window.addEventListener('storage', sync);
-    
-    return () => {
-      window.removeEventListener('cfb:login', sync);
-      window.removeEventListener('cfb:logout', sync);
-      window.removeEventListener('storage', sync);
-    };
-  }, []);
-
-  // Show minimal loading state during hydration - must match SSR output
-  if (authState === 'loading') {
+  // Show minimal loading state during hydration
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
@@ -585,5 +562,5 @@ export default function Home() {
     );
   }
 
-  return authState === 'authenticated' ? <DashboardContent /> : <LandingContent />;
+  return hasSession ? <DashboardContent /> : <LandingContent />;
 }

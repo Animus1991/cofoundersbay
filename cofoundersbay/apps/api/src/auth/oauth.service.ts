@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 import { createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { GoogleProfile } from './strategies/google.strategy';
@@ -48,21 +49,19 @@ export class OAuthService {
       } else {
         // Create new user
         const googleSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
-        user = await this.prisma.user.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: {
-            email: profile.email,
-            slug: googleSlug,
-            googleId: profile.id,
-            emailVerified: true, // Google verifies email
-            profile: {
-              create: {
-                displayName: profile.displayName || profile.firstName || 'User',
-                avatarUrl: profile.picture,
-              },
+        const googleCreateData: Prisma.UserCreateInput = {
+          email: profile.email,
+          slug: googleSlug,
+          googleId: profile.id,
+          emailVerified: true, // Google verifies email
+          profile: {
+            create: {
+              displayName: profile.displayName || profile.firstName || 'User',
+              avatarUrl: profile.picture,
             },
-          } as any,
-        });
+          },
+        };
+        user = await this.prisma.user.create({ data: googleCreateData });
       }
     }
 
@@ -95,21 +94,19 @@ export class OAuthService {
       } else {
         // Create new user
         const linkedinSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
-        user = await this.prisma.user.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: {
-            email: profile.email,
-            slug: linkedinSlug,
-            linkedinId: profile.id,
-            emailVerified: true, // LinkedIn verifies email
-            profile: {
-              create: {
-                displayName: profile.displayName || `${profile.firstName} ${profile.lastName}`.trim() || 'User',
-                avatarUrl: profile.picture,
-              },
+        const linkedinCreateData: Prisma.UserCreateInput = {
+          email: profile.email,
+          slug: linkedinSlug,
+          linkedinId: profile.id,
+          emailVerified: true, // LinkedIn verifies email
+          profile: {
+            create: {
+              displayName: profile.displayName || `${profile.firstName} ${profile.lastName}`.trim() || 'User',
+              avatarUrl: profile.picture,
             },
-          } as any,
-        });
+          },
+        };
+        user = await this.prisma.user.create({ data: linkedinCreateData });
       }
     }
 

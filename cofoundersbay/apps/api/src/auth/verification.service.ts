@@ -55,8 +55,9 @@ export class VerificationService {
       });
       this.logger.log(`Verification email sent to ${user.email}`);
     } else {
+      // Log that mail is not configured — do NOT log the raw token to avoid leaking secrets
       this.logger.warn(
-        `Mail not configured. Verification token for ${user.email}: ${token}`,
+        `Mail not configured. Verification email for ${user.email} not sent. Set SMTP env vars to enable email delivery.`,
       );
     }
   }
