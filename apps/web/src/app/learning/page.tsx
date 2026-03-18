@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getMeProfile } from '@/lib/api';
+import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 interface Resource {
@@ -231,6 +232,25 @@ const ROLE_CATEGORY_MAP: Record<string, string[]> = {
   org: ['Leadership', 'Marketing', 'Sales'],
 };
 
+// Map backend LearningResourceItem to local Resource shape
+function backendToResource(r: LearningResourceItem): Resource {
+  return {
+    id: r.id,
+    title: r.title,
+    description: r.description ?? '',
+    type: (r.type as Resource['type']) ?? 'article',
+    category: r.category ?? 'General',
+    duration: r.duration != null ? `${r.duration} min` : undefined,
+    difficulty: (r.difficulty as Resource['difficulty']) ?? 'beginner',
+    author: r.author ?? 'CoFounderBay',
+    authorRole: '',
+    url: r.url,
+    isFeatured: r.isFeatured,
+    tags: r.tags ?? [],
+    completedBy: undefined,
+  };
+}
+
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -242,10 +262,37 @@ export default function LearningPage() {
     staleTime: 5 * 60_000,
   });
 
+  // Fetch from real backend; fall back to DEMO_RESOURCES if empty (new installation)
+  const { data: learningData, isLoading: learningLoading } = useQuery({
+    queryKey: ['learning', selectedCategory !== 'All' ? selectedCategory : undefined, searchQuery || undefined],
+    queryFn: () => listLearningResources({
+      category: selectedCategory !== 'All' ? selectedCategory : undefined,
+      search: searchQuery.trim() || undefined,
+      limit: 50,
+    }),
+    staleTime: 5 * 60_000,
+  });
+
+  const { data: categoriesData } = useQuery({
+    queryKey: ['learning-categories'],
+    queryFn: getLearningCategories,
+    staleTime: 60 * 60_000,
+  });
+
+  // Dynamic category list from backend (fallback to hardcoded CATEGORIES)
+  const allCategories = categoriesData?.categories?.length
+    ? ['All', ...categoriesData.categories]
+    : CATEGORIES;
+
+  // Use backend data if available, fall back to DEMO_RESOURCES
+  const allResources: Resource[] = learningData?.resources?.length
+    ? learningData.resources.map(backendToResource)
+    : DEMO_RESOURCES;
+
   const userRole = meData?.profile?.role ?? 'founder';
   const userSkills = meData?.profile?.skills?.map((s) => s.skillName.toLowerCase()) ?? [];
 
-  const recommendedResources = DEMO_RESOURCES.filter((r) => {
+  const recommendedResources = allResources.filter((r) => {
     const roleCategories = ROLE_CATEGORY_MAP[userRole] ?? [];
     const matchesRole = roleCategories.includes(r.category);
     const matchesSkill = userSkills.some((skill) =>
@@ -254,15 +301,18 @@ export default function LearningPage() {
     return matchesRole || matchesSkill;
   }).slice(0, 4);
 
-  const filteredResources = DEMO_RESOURCES.filter((resource) => {
-    const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
-    const matchesSearch =
-      !searchQuery.trim() ||
-      resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+  // If backend is handling filtering, skip client-side filter; otherwise apply client-side
+  const filteredResources = learningData?.resources?.length
+    ? allResources  // already filtered by backend via query params
+    : allResources.filter((resource) => {
+        const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
+        const matchesSearch =
+          !searchQuery.trim() ||
+          resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+      });
 
   const featuredResources = filteredResources.filter((r) => r.isFeatured);
   const regularResources = filteredResources.filter((r) => !r.isFeatured);
@@ -313,7 +363,7 @@ export default function LearningPage() {
 
             {/* Category filters */}
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {CATEGORIES.map((category) => (
+              {allCategories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
@@ -330,8 +380,27 @@ export default function LearningPage() {
             </div>
           </div>
 
+          {/* Loading skeleton */}
+          {learningLoading && (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-border p-5 space-y-3">
+                  <div className="flex gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Featured Resources */}
-          {featuredResources.length > 0 && activeTab === 'all' && (
+          {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
@@ -348,7 +417,7 @@ export default function LearningPage() {
           )}
 
           {/* All Resources */}
-          {regularResources.length > 0 && (
+          {!learningLoading && regularResources.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 All Resources
@@ -362,7 +431,7 @@ export default function LearningPage() {
           )}
 
           {/* Empty State */}
-          {filteredResources.length === 0 && (
+          {!learningLoading && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
               <p className="font-medium text-foreground">No resources found</p>

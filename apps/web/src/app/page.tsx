@@ -556,8 +556,7 @@ export default function Home() {
 
   const checkAuth = useCallback(() => {
     if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem('accessToken');
-    return !!token;
+    return document.cookie.includes('cfb_session=');
   }, []);
 
   useEffect(() => {
@@ -565,13 +564,15 @@ export default function Home() {
     setMounted(true);
     setIsLoggedIn(checkAuth());
 
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'accessToken' || e.key === null) {
-        setIsLoggedIn(checkAuth());
-      }
+    const sync = () => setIsLoggedIn(checkAuth());
+    window.addEventListener('cfb:login',  sync);
+    window.addEventListener('cfb:logout', sync);
+    window.addEventListener('storage',    sync);
+    return () => {
+      window.removeEventListener('cfb:login',  sync);
+      window.removeEventListener('cfb:logout', sync);
+      window.removeEventListener('storage',    sync);
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
   }, [checkAuth]);
 
   if (!mounted) {

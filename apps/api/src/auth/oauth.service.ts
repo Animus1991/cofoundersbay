@@ -6,9 +6,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { GoogleProfile } from './strategies/google.strategy';
 import { LinkedInProfile } from './strategies/linkedin.strategy';
 
-interface OAuthTokens {
+interface TokenPair {
   accessToken: string;
   refreshToken: string;
+}
+
+interface OAuthTokens extends TokenPair {
+  user: { id: string; email: string; role: string; isNew: boolean };
 }
 
 @Injectable()
@@ -45,6 +49,7 @@ export class OAuthService {
         // Create new user
         const googleSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: {
             email: profile.email,
             slug: googleSlug,
@@ -56,12 +61,13 @@ export class OAuthService {
                 avatarUrl: profile.picture,
               },
             },
-          },
+          } as any,
         });
       }
     }
 
-    return this.generateTokens(user.id);
+    const tokens = await this.generateTokens(user.id);
+    return { ...tokens, user: { id: user.id, email: user.email, role: user.role, isNew: !user.hasCompletedOnboarding } };
   }
 
   async handleLinkedInLogin(profile: LinkedInProfile): Promise<OAuthTokens> {
@@ -90,6 +96,7 @@ export class OAuthService {
         // Create new user
         const linkedinSlug = `${profile.email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now().toString(36)}`;
         user = await this.prisma.user.create({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: {
             email: profile.email,
             slug: linkedinSlug,
@@ -101,12 +108,13 @@ export class OAuthService {
                 avatarUrl: profile.picture,
               },
             },
-          },
+          } as any,
         });
       }
     }
 
-    return this.generateTokens(user.id);
+    const tokens = await this.generateTokens(user.id);
+    return { ...tokens, user: { id: user.id, email: user.email, role: user.role, isNew: !user.hasCompletedOnboarding } };
   }
 
   async linkGoogleAccount(userId: string, profile: GoogleProfile): Promise<void> {
@@ -198,7 +206,7 @@ export class OAuthService {
     };
   }
 
-  private async generateTokens(userId: string): Promise<OAuthTokens> {
+  private async generateTokens(userId: string): Promise<TokenPair> {
     const payload = { sub: userId };
     
     const accessToken = this.jwt.sign(payload, {
@@ -221,6 +229,6 @@ export class OAuthService {
       },
     });
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken } satisfies TokenPair;
   }
 }

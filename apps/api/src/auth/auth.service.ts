@@ -43,12 +43,13 @@ export class AuthService {
     const baseSlug = input.email.toLowerCase().split('@')[0].replace(/[^a-z0-9]/g, '-');
     const slug = `${baseSlug}-${Date.now().toString(36)}`;
     const user = await this.prisma.user.create({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       data: {
         email: input.email.toLowerCase(),
         slug,
         passwordHash,
         role: input.role as 'founder' | 'mentor' | 'investor' | 'org',
-      },
+      } as any,
     });
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);

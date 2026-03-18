@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { GoogleProfile } from './strategies/google.strategy';
 import { LinkedInProfile } from './strategies/linkedin.strategy';
+import { setAuthCookies } from './cookie.utils';
 
 @Controller('auth')
 export class OAuthController {
@@ -54,20 +55,21 @@ export class OAuthController {
   async googleCallback(@Req() req: Request, @Res() res: Response) {
     try {
       const profile = req.user as GoogleProfile;
-      const tokens = await this.oauthService.handleGoogleLogin(profile);
-      
+      const { accessToken, refreshToken, user } = await this.oauthService.handleGoogleLogin(profile);
+
+      // Set httpOnly cookies — never expose tokens in URL params
+      setAuthCookies(res, accessToken, refreshToken);
+
       const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
       const redirectUrl = new URL('/auth/oauth-callback', frontendUrl);
-      redirectUrl.searchParams.set('accessToken', tokens.accessToken);
-      redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
       redirectUrl.searchParams.set('provider', 'google');
+      if (user?.id) redirectUrl.searchParams.set('uid', user.id);
 
       return res.redirect(redirectUrl.toString());
     } catch (error) {
       const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
       const errorUrl = new URL('/auth/oauth-callback', frontendUrl);
       errorUrl.searchParams.set('error', error instanceof Error ? error.message : 'OAuth failed');
-      
       return res.redirect(errorUrl.toString());
     }
   }
@@ -101,20 +103,21 @@ export class OAuthController {
   async linkedinCallback(@Req() req: Request, @Res() res: Response) {
     try {
       const profile = req.user as LinkedInProfile;
-      const tokens = await this.oauthService.handleLinkedInLogin(profile);
-      
+      const { accessToken, refreshToken, user } = await this.oauthService.handleLinkedInLogin(profile);
+
+      // Set httpOnly cookies — never expose tokens in URL params
+      setAuthCookies(res, accessToken, refreshToken);
+
       const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
       const redirectUrl = new URL('/auth/oauth-callback', frontendUrl);
-      redirectUrl.searchParams.set('accessToken', tokens.accessToken);
-      redirectUrl.searchParams.set('refreshToken', tokens.refreshToken);
       redirectUrl.searchParams.set('provider', 'linkedin');
+      if (user?.id) redirectUrl.searchParams.set('uid', user.id);
 
       return res.redirect(redirectUrl.toString());
     } catch (error) {
       const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
       const errorUrl = new URL('/auth/oauth-callback', frontendUrl);
       errorUrl.searchParams.set('error', error instanceof Error ? error.message : 'OAuth failed');
-      
       return res.redirect(errorUrl.toString());
     }
   }

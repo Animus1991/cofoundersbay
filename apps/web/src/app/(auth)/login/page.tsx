@@ -33,10 +33,9 @@ export default function LoginPage() {
     submittingRef.current = true;
     setLoading(true);
     try {
-      const { user, tokens } = await login({ email: email.trim().toLowerCase(), password });
+      const { user } = await login({ email: email.trim().toLowerCase(), password });
       if (typeof window !== 'undefined') {
-        localStorage.setItem('accessToken', tokens.accessToken);
-        localStorage.setItem('refreshToken', tokens.refreshToken);
+        // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
       }
       // Redirect to dashboard — it will auto-redirect to /onboarding if profile incomplete

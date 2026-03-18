@@ -88,6 +88,16 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
 
+  // Redirect bare root GET / → frontend (prevents confusing JSON 404 when devs open :3001)
+  const frontendOrigin = (config.cors.origin as string[])?.[0] ?? 'http://localhost:3000';
+  app.use((req: any, res: any, next: any) => {
+    if (req.path === '/' && req.method === 'GET') {
+      res.redirect(302, frontendOrigin);
+      return;
+    }
+    next();
+  });
+
   // API prefix
   app.setGlobalPrefix(config.apiPrefix);
   

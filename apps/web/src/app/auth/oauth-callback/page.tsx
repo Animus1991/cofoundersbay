@@ -5,17 +5,16 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { getMe } from '@/lib/api';
 
 export default function OAuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('Processing authentication...');
+  const [message, setMessage] = useState('Verifying your session…');
 
   useEffect(() => {
-    const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
-    const provider = searchParams.get('provider');
+    const provider = searchParams.get('provider') ?? 'OAuth';
     const error = searchParams.get('error');
 
     if (error) {
@@ -24,57 +23,57 @@ export default function OAuthCallbackPage() {
       return;
     }
 
-    if (accessToken && refreshToken) {
-      // Store tokens
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      
-      setStatus('success');
-      setMessage(`Successfully signed in with ${provider || 'OAuth'}!`);
-      
-      // Redirect to dashboard after brief delay
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
-    } else {
-      setStatus('error');
-      setMessage('Authentication failed. No tokens received.');
-    }
-  }, [searchParams, router]);
+    // Cookies are already set by the backend redirect.
+    // Verify by calling getMe() — uses the httpOnly cookie.
+    getMe()
+      .then(({ user }) => {
+        // Store display data only (no tokens)
+        localStorage.setItem('user', JSON.stringify(user));
+        window.dispatchEvent(new CustomEvent('cfb:login'));
+
+        setStatus('success');
+        setMessage(`Signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
+
+        // New user → onboarding; existing user → dashboard
+        const destination = searchParams.get('uid') ? '/' : '/';
+        setTimeout(() => router.push(destination), 1200);
+      })
+      .catch(() => {
+        setStatus('error');
+        setMessage('Authentication failed. Please try again.');
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6 text-center">
+        <CardContent className="pt-8 pb-8 text-center space-y-3">
           {status === 'loading' && (
             <>
-              <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
-              <h2 className="text-lg font-semibold mb-2">Authenticating</h2>
+              <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+              <h2 className="text-lg font-semibold">Verifying…</h2>
               <p className="text-sm text-muted-foreground">{message}</p>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <CheckCircle className="mx-auto h-12 w-12 text-green-500 mb-4" />
-              <h2 className="text-lg font-semibold mb-2">Success!</h2>
+              <CheckCircle className="mx-auto h-12 w-12 text-emerald-500" />
+              <h2 className="text-lg font-semibold">Welcome!</h2>
               <p className="text-sm text-muted-foreground">{message}</p>
-              <p className="text-xs text-muted-foreground mt-2">Redirecting to dashboard...</p>
+              <p className="text-xs text-muted-foreground">Redirecting…</p>
             </>
           )}
 
           {status === 'error' && (
             <>
-              <XCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
-              <h2 className="text-lg font-semibold mb-2">Authentication Failed</h2>
-              <p className="text-sm text-muted-foreground mb-4">{message}</p>
-              <div className="flex gap-3 justify-center">
-                <Button variant="outline" onClick={() => router.push('/login')}>
-                  Back to Login
-                </Button>
-                <Button onClick={() => router.push('/register')}>
-                  Create Account
-                </Button>
+              <XCircle className="mx-auto h-12 w-12 text-destructive" />
+              <h2 className="text-lg font-semibold">Authentication Failed</h2>
+              <p className="text-sm text-muted-foreground">{message}</p>
+              <div className="flex gap-3 justify-center pt-2">
+                <Button variant="outline" onClick={() => router.push('/login')}>Back to Login</Button>
+                <Button onClick={() => router.push('/register')}>Create Account</Button>
               </div>
             </>
           )}

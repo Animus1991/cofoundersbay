@@ -75,6 +75,7 @@ async function main() {
     const existing = await prisma.user.findUnique({ where: { email: u.email } });
     if (!existing) {
       const user = await prisma.user.create({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: {
           email: u.email,
           slug: u.email.split('@')[0].replace(/[^a-z0-9]/g, '-'),
@@ -97,7 +98,7 @@ async function main() {
               }),
             },
           },
-        },
+        } as any,
       });
       createdUsers.push({ id: user.id, role: user.role });
       console.log(`Created demo user: ${u.email}`);

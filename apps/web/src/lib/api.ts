@@ -39,8 +39,11 @@ function clearLegacyTokens() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
+  // Note: 'user' key is kept as display data, not a security concern
 }
+
+// Run once at module load — purges any stale auth tokens from the legacy system
+clearLegacyTokens();
 
 /** Read the CSRF double-submit cookie value */
 function getCsrfToken(): string | null {
@@ -189,7 +192,10 @@ async function apiRequest<T>(
       }
       return (await readJsonIfAny<T>(retryRes)) as T;
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) clearLegacyTokens();
+      if (e instanceof ApiError && e.status === 401) {
+        clearLegacyTokens();
+        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:logout'));
+      }
       throw e;
     }
   }
@@ -203,20 +209,24 @@ async function apiRequest<T>(
 
 export async function register(body: { email: string; password: string; role?: string }) {
   clearLegacyTokens();
-  return apiRequest<{ user: AuthUser; tokens: Tokens }>(
+  const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
     '/api/auth/register',
     { method: 'POST', body: JSON.stringify(body) },
     { retryOn401: false },
   );
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:login'));
+  return result;
 }
 
 export async function login(body: { email: string; password: string }) {
   clearLegacyTokens();
-  return apiRequest<{ user: AuthUser; tokens: Tokens }>(
+  const result = await apiRequest<{ user: AuthUser; tokens: Tokens }>(
     '/api/auth/login',
     { method: 'POST', body: JSON.stringify(body) },
     { retryOn401: false },
   );
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:login'));
+  return result;
 }
 
 export async function logout() {
@@ -226,6 +236,7 @@ export async function logout() {
     { retryOn401: false },
   ).catch(() => {});
   clearLegacyTokens();
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:logout'));
 }
 
 /** Get current user from HttpOnly cookie session */
