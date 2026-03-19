@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CheckCircle, Circle, ArrowRight, Play, AlertCircle, Rocket } from 'lucide-react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
 const TEST_STEPS = [
   {
     id: 'database',
@@ -86,7 +88,7 @@ export default function TestOnboardingPage() {
   };
 
   const testDatabase = async () => {
-    const response = await fetch('/api/v1/health');
+    const response = await fetch(`${API_BASE}/api/health`);
     if (!response.ok) throw new Error('Health check failed');
     
     const health = await response.json();
@@ -100,7 +102,7 @@ export default function TestOnboardingPage() {
 
   const testRedis = async () => {
     // Test Redis connectivity through API
-    const response = await fetch('/api/v1/health');
+    const response = await fetch(`${API_BASE}/api/health`);
     if (!response.ok) throw new Error('Health check failed');
     
     const health = await response.json();
@@ -115,9 +117,9 @@ export default function TestOnboardingPage() {
   const testAPI = async () => {
     // Test various API endpoints
     const endpoints = [
-      '/api/v1/health',
-      '/api/v1/health/readiness',
-      '/api/v1/health/liveness',
+      `${API_BASE}/api/health`,
+      `${API_BASE}/api/health/readiness`,
+      `${API_BASE}/api/health/liveness`,
     ];
     
     for (const endpoint of endpoints) {
@@ -132,7 +134,7 @@ export default function TestOnboardingPage() {
 
   const testOnboarding = async () => {
     // Test onboarding page loads
-    const response = await fetch('/onboarding/enhanced-onboarding');
+    const response = await fetch('/onboarding');
     if (!response.ok && response.status !== 404) {
       throw new Error('Onboarding page not accessible');
     }

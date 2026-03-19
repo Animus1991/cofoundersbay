@@ -55,9 +55,40 @@ export interface WeeklySummary {
   totalInteractions: number;
 }
 
+export interface AnalyticsOverview {
+  metrics: UserMetrics;
+  profileViews: ProfileView[];
+  engagement: EngagementData;
+  topContent: TopContent[];
+  weeklySummary: WeeklySummary;
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private prisma: PrismaService) {}
+
+  async getOverview(
+    userId: string,
+    period: string,
+    topContentLimit = 5,
+  ): Promise<AnalyticsOverview> {
+    const [metrics, profileViews, engagement, topContent, weeklySummary] =
+      await Promise.all([
+        this.getUserMetrics(userId, period),
+        this.getProfileViews(userId, period),
+        this.getEngagementData(userId, period),
+        this.getTopContent(userId, topContentLimit),
+        this.getWeeklySummary(userId),
+      ]);
+
+    return {
+      metrics,
+      profileViews,
+      engagement,
+      topContent,
+      weeklySummary,
+    };
+  }
 
   async getUserMetrics(userId: string, period: string): Promise<UserMetrics> {
     const days = this.parsePeriod(period);

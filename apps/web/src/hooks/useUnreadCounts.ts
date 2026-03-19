@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listMessageConversations, listConnectionRequests } from '@/lib/api';
 import { useHasSession } from './useSession';
@@ -16,6 +17,20 @@ export type UnreadCounts = {
  */
 export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   const hasToken = useHasSession();
+  const [isVisible, setIsVisible] = useState(
+    () => typeof document === 'undefined' || document.visibilityState === 'visible',
+  );
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === 'visible');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   const { data: convData, isError: convError } = useQuery({
     queryKey: ['conversations', 'list'],
@@ -23,10 +38,12 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
     staleTime: 30_000,
     // Stop polling on error (server down / 401) — resume only after window focus or manual refetch
     refetchInterval: (query) => {
-      if (query.state.status === 'error') return false;
+      if (!isVisible || query.state.status === 'error') return false;
       return pollIntervalMs;
     },
-    enabled: hasToken,
+    enabled: hasToken && isVisible,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
     retry: 0,
   });
 
@@ -35,10 +52,12 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
     queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     staleTime: 30_000,
     refetchInterval: (query) => {
-      if (query.state.status === 'error') return false;
+      if (!isVisible || query.state.status === 'error') return false;
       return pollIntervalMs;
     },
-    enabled: hasToken,
+    enabled: hasToken && isVisible,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
     retry: 0,
   });
 

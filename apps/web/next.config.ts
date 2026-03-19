@@ -17,6 +17,8 @@ const allowedDevOrigins = Array.from(
   ]),
 );
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
@@ -105,7 +107,7 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and security
   async headers() {
-    return [
+    const headers = [
       {
         source: '/:path*',
         headers: [
@@ -135,25 +137,53 @@ const nextConfig: NextConfig = {
           }
         ]
       },
-      {
-        source: '/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      }
     ];
+
+    if (isProduction) {
+      headers.push(
+        {
+          source: '/static/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable'
+            }
+          ]
+        },
+        {
+          source: '/_next/static/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable'
+            }
+          ]
+        },
+      );
+    } else {
+      headers.push(
+        {
+          source: '/static/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'no-store, max-age=0, must-revalidate',
+            },
+          ],
+        },
+        {
+          source: '/_next/static/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'no-store, max-age=0, must-revalidate',
+            },
+          ],
+        },
+      );
+    }
+
+    return headers;
   },
 };
 

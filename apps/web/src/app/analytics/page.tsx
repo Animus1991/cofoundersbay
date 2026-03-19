@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  getAnalyticsMetrics,
-  getAnalyticsProfileViews,
-  getAnalyticsEngagement,
-  getAnalyticsTopContent,
-  getWeeklySummary,
+  getAnalyticsOverview,
   type UserMetrics,
   type AnalyticsProfileView,
   type AnalyticsEngagement,
@@ -332,43 +328,18 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'engagement' | 'growth'>('overview');
   const [period, setPeriod] = useState('7d');
 
-  const { data: rawMetrics, isLoading: metricsLoading, isError: metricsError, refetch: refetchMetrics } = useQuery({
-    queryKey: ['analytics', 'metrics', period],
-    queryFn: () => getAnalyticsMetrics(period),
+  const { data: overview, isLoading, isError, refetch } = useQuery({
+    queryKey: ['analytics', 'overview', period],
+    queryFn: () => getAnalyticsOverview(period, 5),
     staleTime: 60_000,
     retry: 1,
   });
 
-  const { data: profileViews, isLoading: viewsLoading } = useQuery({
-    queryKey: ['analytics', 'profile-views', period],
-    queryFn: () => getAnalyticsProfileViews(period),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const { data: engagement } = useQuery({
-    queryKey: ['analytics', 'engagement', period],
-    queryFn: () => getAnalyticsEngagement(period),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const { data: topContent } = useQuery({
-    queryKey: ['analytics', 'top-content'],
-    queryFn: () => getAnalyticsTopContent(5),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const { data: weeklySummary } = useQuery({
-    queryKey: ['analytics', 'weekly-summary'],
-    queryFn: () => getWeeklySummary(),
-    staleTime: 60_000,
-    retry: 1,
-  });
-
-  const metrics = rawMetrics ? metricsToDisplay(rawMetrics) : [];
-  const isLoading = metricsLoading || viewsLoading;
+  const metrics = overview ? metricsToDisplay(overview.metrics) : [];
+  const profileViews = overview?.profileViews;
+  const engagement = overview?.engagement;
+  const topContent = overview?.topContent;
+  const weeklySummary = overview?.weeklySummary;
 
   return (
     <AppShell
@@ -410,36 +381,22 @@ export default function AnalyticsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-4 space-y-4">
-          {metricsError ? (
+        <TabsContent value="overview" className="mt-4 space-y-4">
+          {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetchMetrics()}>Try again</Button>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent></Card>
           ) : isLoading ? (
             <AnalyticsSkeleton />
           ) : (
             <>
-              {/* Metrics Grid */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
                 ))}
               </div>
 
-              {/* Charts and Lists */}
-              <div className="grid gap-4 lg:grid-cols-2">
-                {profileViews && profileViews.length > 0 && (
-                  <ProfileViewsChart data={profileViews} />
-                )}
-                <EngagementBreakdown engagement={engagement} />
-              </div>
-
-              {topContent && topContent.length > 0 && (
-                <TopContentList content={topContent} />
-              )}
-
-              {/* Weekly Summary */}
               {weeklySummary && (
                 <Card>
                   <CardHeader>
@@ -470,6 +427,60 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="engagement" className="mt-4 space-y-4">
+          {isError ? (
+            <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+            </CardContent></Card>
+          ) : isLoading ? (
+            <AnalyticsSkeleton />
+          ) : (
+            <>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <EngagementBreakdown engagement={engagement} />
+                {topContent && topContent.length > 0 ? (
+                  <TopContentList content={topContent} />
+                ) : (
+                  <Card>
+                    <CardContent className="py-16 text-center text-sm text-muted-foreground">
+                      No engagement data available yet.
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="growth" className="mt-4 space-y-4">
+          {isError ? (
+            <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+            </CardContent></Card>
+          ) : isLoading ? (
+            <AnalyticsSkeleton />
+          ) : (
+            <>
+              {profileViews && profileViews.length > 0 ? (
+                <ProfileViewsChart data={profileViews} />
+              ) : (
+                <Card>
+                  <CardContent className="py-16 text-center text-sm text-muted-foreground">
+                    Not enough profile-view data yet.
+                  </CardContent>
+                </Card>
+              )}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {metrics.map((metric) => (
+                  <MetricCard key={metric.label} metric={metric} />
+                ))}
+              </div>
             </>
           )}
         </TabsContent>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X, UserPlus, MessageSquare } from 'lucide-react';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
@@ -20,11 +20,14 @@ import {
   uploadMessageAttachment,
   listConnectionRequests,
   respondToConnectionRequest,
+  getMe,
+  ApiError,
   type ConversationSummary,
   type MessageItem,
   type ConnectionRequestItem,
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
+import { useSession } from '@/hooks/useSession';
 
 function mapConversation(s: ConversationSummary): Conversation {
   const lastAt = s.lastMessage?.createdAt ?? s.updatedAt;
@@ -64,6 +67,7 @@ export default function MessagesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
+  const { hasSession, mounted: sessionReady } = useSession();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -80,11 +84,6 @@ export default function MessagesPage() {
   const selectedConversationIdRef = useRef<string | null>(null);
   const currentUserIdRef = useRef<string>('');
 
-  const accessToken = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
-  }, []);
-
   useEffect(() => {
     selectedConversationIdRef.current = selectedConversation?.id ?? null;
   }, [selectedConversation]);
@@ -95,39 +94,17 @@ export default function MessagesPage() {
 
   // Bootstrap: auth, conversations, socket
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const rawUser = localStorage.getItem('user');
-    if (!rawUser || !accessToken) {
-      router.replace('/login');
+    if (!sessionReady) {
       return;
     }
 
-    try {
-      const parsed = JSON.parse(rawUser) as { id?: string };
-      if (parsed?.id) setCurrentUserId(parsed.id);
-    } catch {
+    if (!hasSession) {
       router.replace('/login');
       return;
     }
 
     let mounted = true;
-
-    const load = async () => {
-      try {
-        const { conversations: list } = await listMessageConversations();
-        if (!mounted) return;
-        setConversations(list.map(mapConversation));
-      } catch (e) {
-        if (!mounted) return;
-        showError('Failed to load conversations', e instanceof Error ? e.message : 'Please try again');
-      }
-    };
-
-    load();
-
-    // Socket
-    const s = createMessagingSocket(accessToken);
-    socketRef.current = s;
+    let socket: ReturnType<typeof createMessagingSocket> | null = null;
 
     const onNew: ServerToClientEvents['message:new'] = ({ message }) => {
       setConversations((prev) =>
@@ -191,24 +168,91 @@ export default function MessagesPage() {
       );
     };
 
-    s.on('message:new', onNew);
-    s.on('message:ack', onAck);
-    s.on('typing:start', onTypingStart);
-    s.on('typing:stop', onTypingStop);
-    s.on('presence:update', onPresence);
+    const bootstrap = async () => {
+      try {
+        const rawUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+        let resolvedUserId = '';
+
+        if (rawUser) {
+          try {
+            resolvedUserId = (JSON.parse(rawUser) as { id?: string }).id ?? '';
+          } catch {
+            resolvedUserId = '';
+          }
+        }
+
+        if (!resolvedUserId) {
+          const { user } = await getMe();
+          resolvedUserId = user.id;
+
+          if (typeof window !== 'undefined') {
+            let fallbackUser: Record<string, unknown> = {};
+            if (rawUser) {
+              try {
+                fallbackUser = JSON.parse(rawUser) as Record<string, unknown>;
+              } catch {
+                fallbackUser = {};
+              }
+            }
+            localStorage.setItem('user', JSON.stringify({
+              ...fallbackUser,
+              id: user.id,
+              email: fallbackUser.email ?? user.email,
+              role: fallbackUser.role ?? user.role,
+            }));
+            window.dispatchEvent(new CustomEvent('cfb:user'));
+          }
+        }
+
+        if (!mounted) return;
+        setCurrentUserId(resolvedUserId);
+
+        const { conversations: list } = await listMessageConversations();
+        if (!mounted) return;
+        setConversations(list.map(mapConversation));
+
+        socket = createMessagingSocket();
+        socketRef.current = socket;
+        socket.on('message:new', onNew);
+        socket.on('message:ack', onAck);
+        socket.on('typing:start', onTypingStart);
+        socket.on('typing:stop', onTypingStop);
+        socket.on('presence:update', onPresence);
+      } catch (error) {
+        if (!mounted) return;
+        if (error instanceof ApiError && error.status === 401) {
+          router.replace('/login');
+          return;
+        }
+        showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+      }
+    };
+
+    void bootstrap();
 
     return () => {
       mounted = false;
-      s.off('message:new', onNew);
-      s.off('message:ack', onAck);
-      s.off('typing:start', onTypingStart);
-      s.off('typing:stop', onTypingStop);
-      s.off('presence:update', onPresence);
-      s.disconnect();
+      socket?.off('message:new', onNew);
+      socket?.off('message:ack', onAck);
+      socket?.off('typing:start', onTypingStart);
+      socket?.off('typing:stop', onTypingStop);
+      socket?.off('presence:update', onPresence);
+      socket?.disconnect();
       socketRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasSession, router, sessionReady, showError]);
+
+  if (!sessionReady || !hasSession) {
+    return (
+      <AppShell fullHeight contentClassName="min-h-0">
+        <div className="flex flex-1 items-center justify-center bg-background/40">
+          <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+            Preparing your messages...
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   // Load pending intro (connection) requests
   const loadIntroRequests = useCallback(async () => {
@@ -263,7 +307,7 @@ export default function MessagesPage() {
   const toUserId = searchParams.get('to');
   const openConversationId = searchParams.get('c');
   useEffect(() => {
-    if (!toUserId || !accessToken || openConversationId) return;
+    if (!toUserId || openConversationId) return;
 
     let cancelled = false;
     const run = async () => {
@@ -290,7 +334,7 @@ export default function MessagesPage() {
     return () => {
       cancelled = true;
     };
-  }, [toUserId, accessToken, showError, openConversationId]);
+  }, [toUserId, showError, openConversationId]);
 
   // Handle URL param for opening an existing conversation
   useEffect(() => {

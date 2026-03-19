@@ -1,7 +1,7 @@
 {
   "name": "CoFounderBay",
   "short_name": "CoFounderBay",
-  "description": "Startup ecosystem networking — founders, mentors, investors",
+  "description": "Startup ecosystem networking for founders, mentors, and investors",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
@@ -42,21 +42,39 @@
       "short_name": "Discover",
       "description": "Find founders, mentors, and investors",
       "url": "/discover",
-      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "Messages",
       "short_name": "Messages",
       "description": "View your conversations",
       "url": "/messages",
-      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     },
     {
       "name": "Profile",
       "short_name": "Profile",
       "description": "View your profile",
       "url": "/profile",
-      "icons": [{ "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [
+        {
+          "src": "/icons/icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
     }
   ],
   "related_applications": [],

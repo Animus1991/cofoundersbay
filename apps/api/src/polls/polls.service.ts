@@ -33,28 +33,27 @@ export class PollsService {
 
     if (!poll) return null;
 
-    const options = await Promise.all(
-      poll.options.map(async (opt) => ({
-        id: opt.id,
-        label: opt.label,
-        votes: await this.prisma.pollVote.count({ where: { optionId: opt.id } }),
-      })),
-    );
+    const voteCounts = await this.prisma.pollVote.groupBy({
+      by: ['optionId'],
+      where: { pollId: poll.id },
+      _count: { _all: true },
+    });
+    const voteCountMap = new Map(voteCounts.map((item) => [item.optionId, item._count._all]));
+
+    const options = poll.options.map((opt) => ({
+      id: opt.id,
+      label: opt.label,
+      votes: voteCountMap.get(opt.id) ?? 0,
+    }));
 
     const totalVotes = options.reduce((s, o) => s + o.votes, 0);
-    const userVote = viewerUserId
-      ? await this.prisma.pollVote.findUnique({
-          where: { pollId_userId: { pollId: poll.id, userId: viewerUserId } },
-          select: { optionId: true },
-        })
-      : null;
 
     return {
       id: poll.id,
       question: poll.question,
       options,
       totalVotes,
-      userVoted: userVote?.optionId ?? null,
+      userVoted: viewerUserId ? poll.votes[0]?.optionId ?? null : null,
       isActive: poll.isActive,
     };
   }

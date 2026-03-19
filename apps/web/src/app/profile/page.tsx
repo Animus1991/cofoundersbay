@@ -273,7 +273,13 @@ export default function ProfilePage() {
         </div>
       </div>
     );
-  if (!profile) return null;
+  if (!profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-sm text-muted-foreground">Preparing your profile...</p>
+      </div>
+    );
+  }
 
   const rolePayload = (profile.rolePayload ?? {}) as Record<string, unknown>;
 

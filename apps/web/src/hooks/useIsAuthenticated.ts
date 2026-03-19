@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useHasSession } from './useSession';
 
 /**
  * Check active session via the cfb_session cookie (non-httpOnly, set by backend on login).
@@ -18,25 +18,5 @@ export function hasActiveSession(): boolean {
  * Reacts to cfb:login / cfb:logout events dispatched by api.ts for same-tab updates.
  */
 export function useIsAuthenticated(): boolean {
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => {
-    setAuthenticated(hasActiveSession());
-
-    const onLogin  = () => setAuthenticated(true);
-    const onLogout = () => setAuthenticated(false);
-    const onStorage = () => setAuthenticated(hasActiveSession());
-
-    window.addEventListener('cfb:login',  onLogin);
-    window.addEventListener('cfb:logout', onLogout);
-    window.addEventListener('storage',    onStorage);
-
-    return () => {
-      window.removeEventListener('cfb:login',  onLogin);
-      window.removeEventListener('cfb:logout', onLogout);
-      window.removeEventListener('storage',    onStorage);
-    };
-  }, []);
-
-  return authenticated;
+  return useHasSession();
 }

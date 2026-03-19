@@ -35,11 +35,33 @@ export class ApiError extends Error {
 }
 
 // Legacy localStorage cleanup — remove tokens if left over from pre-cookie auth
+export class ApiNetworkError extends Error {
+  cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
+    super(message);
+    this.name = 'ApiNetworkError';
+    this.cause = cause;
+  }
+}
+
 function clearLegacyTokens() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   // Note: 'user' key is kept as display data, not a security concern
+}
+
+function clearSessionIndicators() {
+  if (typeof document === 'undefined') return;
+  document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
+  document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
+}
+
+function broadcastLogout() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('cfb:logout'));
+  }
 }
 
 // Run once at module load — purges any stale auth tokens from the legacy system
@@ -123,6 +145,30 @@ async function refreshAccessToken(): Promise<void> {
 const REQUEST_TIMEOUT_MS = 8_000;
 const NETWORK_RETRY_ATTEMPTS = 2;
 const NETWORK_RETRY_DELAY_MS = 800;
+const API_CIRCUIT_BREAKER_MS = 5_000;
+let apiUnavailableUntil = 0;
+let apiReachable = true;
+
+function broadcastApiReachability(reachable: boolean) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(reachable ? 'cfb:api-online' : 'cfb:api-offline'));
+}
+
+function markApiUnavailable() {
+  apiUnavailableUntil = Date.now() + API_CIRCUIT_BREAKER_MS;
+  if (apiReachable) {
+    apiReachable = false;
+    broadcastApiReachability(false);
+  }
+}
+
+function markApiReachable() {
+  apiUnavailableUntil = 0;
+  if (!apiReachable) {
+    apiReachable = true;
+    broadcastApiReachability(true);
+  }
+}
 
 function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
   const controller = new AbortController();
@@ -140,18 +186,29 @@ function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
 }
 
 async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Response> {
+  if (typeof window !== 'undefined' && Date.now() < apiUnavailableUntil) {
+    throw new ApiNetworkError('The API is restarting or temporarily unavailable. Please try again in a moment.');
+  }
+
   let lastError: unknown;
   for (let attempt = 0; attempt <= NETWORK_RETRY_ATTEMPTS; attempt++) {
     try {
-      return await fetchWithTimeout(url, init);
+      const response = await fetchWithTimeout(url, init);
+      markApiReachable();
+      return response;
     } catch (err) {
       lastError = err;
       const isNetworkErr = err instanceof TypeError || (err instanceof DOMException && err.name === 'AbortError');
-      if (!isNetworkErr || attempt === NETWORK_RETRY_ATTEMPTS) throw err;
+      if (!isNetworkErr) throw err;
+      if (attempt === NETWORK_RETRY_ATTEMPTS) {
+        markApiUnavailable();
+        throw new ApiNetworkError('Unable to reach the API server.', err);
+      }
       await new Promise((r) => setTimeout(r, NETWORK_RETRY_DELAY_MS * (attempt + 1)));
     }
   }
-  throw lastError;
+  markApiUnavailable();
+  throw new ApiNetworkError('Unable to reach the API server.', lastError);
 }
 
 async function apiRequest<T>(
@@ -192,9 +249,10 @@ async function apiRequest<T>(
       }
       return (await readJsonIfAny<T>(retryRes)) as T;
     } catch (e) {
-      if (e instanceof ApiError && e.status === 401) {
+      if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
         clearLegacyTokens();
-        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:logout'));
+        clearSessionIndicators();
+        broadcastLogout();
       }
       throw e;
     }
@@ -243,7 +301,8 @@ export async function logout() {
     { retryOn401: false },
   ).catch(() => {});
   clearLegacyTokens();
-  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('cfb:logout'));
+  clearSessionIndicators();
+  broadcastLogout();
 }
 
 /** Get current user from HttpOnly cookie session */
@@ -621,6 +680,26 @@ export interface WeeklySummary {
   peakHour: string;
   avgResponseTime: string;
   totalInteractions: number;
+}
+
+export interface AnalyticsOverview {
+  metrics: UserMetrics;
+  profileViews: AnalyticsProfileView[];
+  engagement: AnalyticsEngagement;
+  topContent: AnalyticsTopContent[];
+  weeklySummary: WeeklySummary;
+}
+
+export async function getAnalyticsOverview(
+  period = '7d',
+  topContentLimit = 5,
+): Promise<AnalyticsOverview> {
+  const params = new URLSearchParams({
+    period,
+    topContentLimit: String(topContentLimit),
+  });
+
+  return apiRequest(`/api/analytics/overview?${params.toString()}`);
 }
 
 export async function getAnalyticsMetrics(period = '7d'): Promise<UserMetrics> {
@@ -2002,4 +2081,3 @@ export function getSSOLoginUrl(providerId: string, returnUrl?: string): string {
   if (returnUrl) params.set('returnUrl', returnUrl);
   return `${getApiBase()}/sso/login/${providerId}${params.toString() ? `?${params}` : ''}`;
 }
-

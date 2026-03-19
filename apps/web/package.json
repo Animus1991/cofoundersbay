@@ -3,11 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true});\" && next dev",
+    "dev": "node ./scripts/dev.js",
+    "dev:clean": "node ./scripts/dev.js --clean",
+    "prebuild": "node ../../scripts/ensure-supported-node.cjs web-build",
+    "prestart": "node ../../scripts/ensure-supported-node.cjs web-start",
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
     "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true});\""
+  },
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0 || ^25.0.0"
   },
   "dependencies": {
     "@cofounderbay/shared": "*",

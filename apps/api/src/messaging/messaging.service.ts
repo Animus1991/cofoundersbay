@@ -139,6 +139,24 @@ export class MessagingService {
       take: 100,
     });
 
+    const unreadCounts = await Promise.all(
+      conversations.map(async (conversation) => {
+        const me = conversation.participants.find((participant) => participant.userId === userId);
+        const lastReadAt = me?.lastReadAt ?? null;
+
+        const unreadCount = await this.prisma.message.count({
+          where: {
+            conversationId: conversation.id,
+            senderId: { not: userId },
+            ...(lastReadAt ? { createdAt: { gt: lastReadAt } } : {}),
+          },
+        });
+
+        return [conversation.id, unreadCount] as const;
+      }),
+    );
+    const unreadCountMap = new Map(unreadCounts);
+
     const result: ConversationSummaryDto[] = [];
     for (const c of conversations) {
       const me = c.participants.find((p) => p.userId === userId);
@@ -157,15 +175,6 @@ export class MessagingService {
             lastSeenAt: other.lastSeenAt ?? null,
           }
         : null;
-
-      const lastReadAt = me?.lastReadAt ?? null;
-      const unreadCount = await this.prisma.message.count({
-        where: {
-          conversationId: c.id,
-          senderId: { not: userId },
-          ...(lastReadAt ? { createdAt: { gt: lastReadAt } } : {}),
-        },
-      });
 
       const last = c.messages[0] ?? null;
 
@@ -191,7 +200,7 @@ export class MessagingService {
               createdAt: last.createdAt.toISOString(),
             }
           : null,
-        unreadCount,
+        unreadCount: unreadCountMap.get(c.id) ?? 0,
         isPinned: me?.isPinned ?? false,
         isArchived: me?.isArchived ?? false,
         updatedAt: c.updatedAt.toISOString(),

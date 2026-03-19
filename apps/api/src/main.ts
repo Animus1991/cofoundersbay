@@ -115,6 +115,17 @@ async function bootstrap() {
     console.log(`🚀 Features: ${JSON.stringify(config.features)}`);
   });
 
-  await app.listen(config.port);
+  await app.listen(config.port).catch((err: NodeJS.ErrnoException) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(
+        `\n❌ Port ${config.port} is already in use.\n` +
+        `   Another API process is likely running.\n` +
+        `   Kill it first:  taskkill /F /PID $(netstat -ano | findstr :${config.port})\n` +
+        `   Or set a different port:  PORT=3002 npm run start:dev\n`,
+      );
+      process.exit(1);
+    }
+    throw err;
+  });
 }
 bootstrap();

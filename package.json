@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "predev": "node ./scripts/ensure-supported-node.cjs workspace-dev",
+    "prebuild": "node ./scripts/ensure-supported-node.cjs workspace-build",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dev:web": "npm run dev --prefix apps/web",
@@ -30,7 +32,7 @@
     "prettier": "^3.8.1"
   },
   "engines": {
-    "node": ">=20"
+    "node": "^20.0.0 || ^22.0.0"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",

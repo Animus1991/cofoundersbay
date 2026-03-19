@@ -1,67 +1,64 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 /**
  * Check if the user has an active session.
- * Returns true if either:
- * - cfb_session cookie exists
- * - cfb_access_token in localStorage exists
+ * Returns true when the session presence cookie exists.
  */
 function checkSession(): boolean {
-  if (typeof window === 'undefined') return false;
-  
-  // Check for session cookie
-  if (document.cookie.includes('cfb_session=')) return true;
-  
-  // Check for access token in localStorage (legacy/fallback)
-  try {
-    const token = localStorage.getItem('cfb_access_token');
-    if (token && token.length > 10) return true;
-  } catch {
-    // localStorage not available
-  }
-  
-  return false;
+  return typeof document !== 'undefined' && document.cookie.includes('cfb_session=');
+}
+
+type Listener = () => void;
+
+const listeners = new Set<Listener>();
+let bound = false;
+
+function emitSessionChange() {
+  listeners.forEach((listener) => listener());
+}
+
+function bindSessionEvents() {
+  if (bound || typeof window === 'undefined') return;
+
+  const notify = () => emitSessionChange();
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      emitSessionChange();
+    }
+  };
+
+  window.addEventListener('cfb:login', notify);
+  window.addEventListener('cfb:logout', notify);
+  window.addEventListener('storage', notify);
+  window.addEventListener('focus', notify);
+  window.addEventListener('pageshow', notify);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  bound = true;
+}
+
+function subscribe(listener: Listener) {
+  bindSessionEvents();
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 /**
  * Hook to detect if user has an active session.
- * Prevents hydration mismatch by always starting with false on server.
- * Updates on login/logout events and storage changes.
+ * Prevents hydration mismatch by always starting with false on the server.
  */
 export function useSession() {
-  const [hasSession, setHasSession] = useState(false);
+  const hasSession = useSyncExternalStore(subscribe, checkSession, () => false);
   const [mounted, setMounted] = useState(false);
-
-  const refresh = useCallback(() => {
-    setHasSession(checkSession());
-  }, []);
 
   useEffect(() => {
     setMounted(true);
-    refresh();
+  }, []);
 
-    // Listen for login/logout events
-    const onLogin = () => setHasSession(true);
-    const onLogout = () => setHasSession(false);
-    
-    window.addEventListener('cfb:login', onLogin);
-    window.addEventListener('cfb:logout', onLogout);
-    window.addEventListener('storage', refresh);
-
-    // Periodic check for cookie expiry
-    const interval = setInterval(refresh, 30_000);
-
-    return () => {
-      window.removeEventListener('cfb:login', onLogin);
-      window.removeEventListener('cfb:logout', onLogout);
-      window.removeEventListener('storage', refresh);
-      clearInterval(interval);
-    };
-  }, [refresh]);
-
-  return { hasSession, mounted, refresh };
+  return { hasSession, mounted, refresh: emitSessionChange };
 }
 
 /**
@@ -69,6 +66,5 @@ export function useSession() {
  * For use in components that only need the boolean value.
  */
 export function useHasSession(): boolean {
-  const { hasSession } = useSession();
-  return hasSession;
+  return useSyncExternalStore(subscribe, checkSession, () => false);
 }

@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
 interface EndpointStatus {
   endpoint: string;
   status: 'loading' | 'success' | 'error';
@@ -15,12 +17,12 @@ interface EndpointStatus {
 
 export default function ApiStatusPage() {
   const [endpoints, setEndpoints] = useState<EndpointStatus[]>([
-    { endpoint: '/api/v1/health', status: 'loading' },
-    { endpoint: '/api/v1/health/readiness', status: 'loading' },
-    { endpoint: '/api/v1/health/liveness', status: 'loading' },
-    { endpoint: '/api/v1/auth/register', status: 'loading' },
-    { endpoint: '/api/v1/auth/login', status: 'loading' },
-    { endpoint: '/api/v1/analytics/achievements', status: 'loading' },
+    { endpoint: `${API_BASE}/api/health`, status: 'loading' },
+    { endpoint: `${API_BASE}/api/health/readiness`, status: 'loading' },
+    { endpoint: `${API_BASE}/api/health/liveness`, status: 'loading' },
+    { endpoint: `${API_BASE}/api/auth/register`, status: 'loading' },
+    { endpoint: `${API_BASE}/api/auth/login`, status: 'loading' },
+    { endpoint: `${API_BASE}/api/analytics/achievements`, status: 'loading' },
   ]);
 
   const [isChecking, setIsChecking] = useState(false);

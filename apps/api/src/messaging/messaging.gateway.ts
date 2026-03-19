@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { z } from 'zod';
 import type { Server, Socket } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
+import { COOKIE_NAMES } from '../auth/cookie.utils';
 import { PrismaService } from '../prisma/prisma.service';
 import { MessagingService } from './messaging.service';
 import { PresenceService } from './presence.service';
@@ -51,6 +52,24 @@ function allowedOrigins(): string[] {
   return origins;
 }
 
+function readCookie(cookieHeader: string | undefined, name: string): string | null {
+  if (!cookieHeader) return null;
+
+  const prefix = `${name}=`;
+  for (const part of cookieHeader.split(/;\s*/)) {
+    if (!part.startsWith(prefix)) continue;
+
+    const value = part.slice(prefix.length);
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  }
+
+  return null;
+}
+
 @WebSocketGateway({
   cors: {
     origin: allowedOrigins(),
@@ -74,7 +93,11 @@ export class MessagingGateway implements OnGatewayConnection, OnGatewayDisconnec
       (typeof client.handshake.auth?.token === 'string' ? client.handshake.auth.token : null) ||
       (typeof client.handshake.headers.authorization === 'string' && client.handshake.headers.authorization.startsWith('Bearer ')
         ? client.handshake.headers.authorization.slice(7)
-        : null);
+        : null) ||
+      readCookie(
+        typeof client.handshake.headers.cookie === 'string' ? client.handshake.headers.cookie : undefined,
+        COOKIE_NAMES.ACCESS_TOKEN,
+      );
 
     if (!token) {
       client.disconnect(true);

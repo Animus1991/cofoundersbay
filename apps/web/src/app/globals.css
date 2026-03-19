@@ -256,21 +256,18 @@
     max-width: 800px !important;
   }
   
-  /* Performance optimizations */
-  * {
-    will-change: auto;
-  }
-  
   img, video {
     content-visibility: auto;
   }
 
-  /* View transition defaults — smooth page navigation */
-  ::view-transition-old(root) {
-    animation: cfb-page-out 0.18s ease-in both;
-  }
-  ::view-transition-new(root) {
-    animation: cfb-page-in 0.22s ease-out both;
+  /* View transition defaults — only applied when browser supports View Transitions API */
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root) {
+      animation: cfb-page-out 0.18s ease-in both;
+    }
+    ::view-transition-new(root) {
+      animation: cfb-page-in 0.22s ease-out both;
+    }
   }
 
   /* Better input focus ring */
@@ -281,11 +278,9 @@
     box-shadow: 0 0 0 2px hsl(var(--ring) / 0.5);
   }
 
-  /* Smooth transitions on interactive elements */
-  button, a, input, textarea, select {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-    transition-duration: 150ms;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Smooth transitions on interactive elements — only on hover/focus to reduce idle layout cost */
+  button, a {
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
   }
 
   /* Prevent transition flash on first load */
@@ -439,9 +434,11 @@
     background-clip: text;
   }
 
-  /* View transition name for route-level animation */
-  main {
-    view-transition-name: main-content;
+  /* View transition name — scoped to supported browsers */
+  @supports (view-transition-name: none) {
+    main {
+      view-transition-name: main-content;
+    }
   }
 
   /* Fade-in animation used across pages */

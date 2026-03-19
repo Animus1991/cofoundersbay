@@ -3,6 +3,7 @@
 
 const CACHE_VERSION = 'v2';
 const CACHE_NAME = `cofounderbay-${CACHE_VERSION}`;
+const IS_LOCALHOST = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 
 // Install event - skip waiting immediately
 self.addEventListener('install', (event) => {
@@ -11,6 +12,17 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clear ALL old caches and claim clients
 self.addEventListener('activate', (event) => {
+  if (IS_LOCALHOST) {
+    event.waitUntil((async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+      await self.registration.unregister();
+      const clients = await self.clients.matchAll({ type: 'window' });
+      await Promise.all(clients.map((client) => client.navigate(client.url)));
+    })());
+    return;
+  }
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -24,6 +36,8 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - NETWORK FIRST for everything to prevent stale assets
 self.addEventListener('fetch', (event) => {
+  if (IS_LOCALHOST) return;
+
   const { request } = event;
   const url = new URL(request.url);
 

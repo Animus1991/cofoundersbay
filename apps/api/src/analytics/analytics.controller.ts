@@ -1,12 +1,34 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { AnalyticsService, UserMetrics, ProfileView, EngagementData, TopContent, Achievement, WeeklySummary } from './analytics.service';
+import {
+  AnalyticsOverview,
+  AnalyticsService,
+  UserMetrics,
+  ProfileView,
+  EngagementData,
+  TopContent,
+  Achievement,
+  WeeklySummary,
+} from './analytics.service';
 
 @Controller('analytics')
 @UseGuards(JwtAuthGuard)
 export class AnalyticsController {
   constructor(private readonly analytics: AnalyticsService) {}
+
+  @Get('overview')
+  async getOverview(
+    @CurrentUser() user: { id: string },
+    @Query('period') period?: string,
+    @Query('topContentLimit') topContentLimit?: string,
+  ): Promise<AnalyticsOverview> {
+    return this.analytics.getOverview(
+      user.id,
+      period || '7d',
+      parseInt(topContentLimit || '5', 10),
+    );
+  }
 
   @Get('metrics')
   async getMetrics(

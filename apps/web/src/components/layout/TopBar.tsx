@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,12 @@ import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { NotificationsBell } from './NotificationsBell';
-import { CommandPalette, useCommandPalette } from '@/components/common/CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
+
+const CommandPalette = dynamic(
+  () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
+  { ssr: false },
+);
 
 export function TopBar() {
   const [ready, setReady] = useState(false);
@@ -50,7 +56,7 @@ export function TopBar() {
         </div>
       </header>
 
-      <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+      {ready && commandOpen ? <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} /> : null}
     </>
   );
 }

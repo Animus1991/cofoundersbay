@@ -36,14 +36,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     setState((prev) => ({ ...prev, connecting: true, error: null }));
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      setState({ connected: false, connecting: false, error: new Error('No auth token') });
-      return;
-    }
-
     const socket = io(url, {
-      auth: { token },
+      withCredentials: true,
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,

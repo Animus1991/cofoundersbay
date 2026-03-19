@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
@@ -24,33 +22,24 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
 }
 
 // Full page loading spinner with optional message
-// Rendered via createPortal to document.body to avoid Next.js InnerScrollAndFocusHandler warning
+// Uses a simple inline render — no portal, no backdrop-blur (both cause hydration
+// issues and GPU compositing overhead that delay first meaningful paint).
 export function PageLoader({ message }: { message?: string }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
-  const content = (
+  return (
     <div
       aria-label="Loading"
       aria-live="polite"
       aria-busy="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      className="flex min-h-[60vh] items-center justify-center"
     >
-      <div className="flex flex-col items-center gap-4 animate-fade-in">
-        <div className="relative">
-          <div className="h-16 w-16 rounded-full border-4 border-primary/20 animate-pulse" />
-          <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-transparent border-t-primary animate-spin" />
-          <div className="absolute inset-2 h-12 w-12 rounded-full bg-primary/10 animate-pulse-glow" />
-        </div>
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         {message && (
-          <p className="text-sm text-muted-foreground animate-pulse">{message}</p>
+          <p className="text-sm text-muted-foreground">{message}</p>
         )}
       </div>
     </div>
   );
-
-  if (!mounted) return null;
-  return createPortal(content, document.body);
 }
 
 // Inline loading state

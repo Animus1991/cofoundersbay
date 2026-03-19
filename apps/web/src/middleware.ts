@@ -2,12 +2,16 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = new Set([
+  '/',
   '/login',
   '/register',
   '/forgot-password',
   '/reset-password',
   '/verify-email',
   '/auth/oauth-callback',
+  '/manifest.json',
+  '/site.webmanifest',
+  '/robots.txt',
 ]);
 
 const PUBLIC_PREFIXES = [
@@ -19,11 +23,10 @@ const PUBLIC_PREFIXES = [
   '/api/',       // API calls handled by backend
 ];
 
-const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|svg|webp|css|js|woff2?|ttf|otf|map)$/;
+const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|svg|webp|css|js|json|webmanifest|txt|xml|woff2?|ttf|otf|map)$/;
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.has(pathname)) return true;
-  if (pathname === '/') return false; // home requires auth check (shows landing or dashboard)
   if (STATIC_EXTENSIONS.test(pathname)) return true;
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }

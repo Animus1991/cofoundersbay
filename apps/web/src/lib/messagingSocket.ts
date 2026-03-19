@@ -25,9 +25,10 @@ export type ClientToServerEvents = {
   'typing:stop': (payload: { conversationId: string }) => void;
 };
 
-export function createMessagingSocket(accessToken: string): Socket<ServerToClientEvents, ClientToServerEvents> {
+export function createMessagingSocket(accessToken?: string | null): Socket<ServerToClientEvents, ClientToServerEvents> {
   return io(getApiBase(), {
-    auth: { token: accessToken },
+    auth: accessToken ? { token: accessToken } : undefined,
+    withCredentials: true,
     transports: ['websocket'],
   });
 }

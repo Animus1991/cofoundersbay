@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Bell, CheckCheck, MessageCircle, UserPlus, Star, Calendar,
@@ -20,7 +20,7 @@ import {
   markNotificationRead,
   type NotificationItem,
 } from '@/lib/api';
-import { getNotificationSocket, disconnectNotificationSocket } from '@/lib/notificationSocket';
+import { useHasSession } from '@/hooks/useSession';
 import { cn, formatRelativeTime } from '@/lib/utils';
 
 const TYPE_ICON: Record<string, React.ElementType> = {
@@ -58,66 +58,69 @@ function NotifIcon({ type }: { type: string }) {
 export function NotificationsBell({ className }: { className?: string }) {
   const router = useRouter();
   const { error: showError } = useToast();
+  const hasSession = useHasSession();
 
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [hasNew, setHasNew] = useState(false);
-  const socketConnectedRef = useRef(false);
+  const loadingRef = useRef(false);
 
-  // Client-only: load accessToken after mount to avoid hydration mismatch
-  useEffect(() => {
-    setAccessToken(localStorage.getItem('accessToken'));
-  }, []);
-
-  const unread = items.filter((n) => !n.readAt).length;
+  const unread = items.filter((notification) => !notification.readAt).length;
 
   const load = async () => {
-    if (!accessToken) return;
+    if (loadingRef.current) return;
+
+    if (!hasSession) {
+      setItems([]);
+      setHasNew(false);
+      return;
+    }
+
+    loadingRef.current = true;
     setLoading(true);
     try {
-      const res = await listNotifications({ limit: 15 });
-      setItems(res.notifications);
+      const result = await listNotifications({ limit: 15 });
+      setItems(result.notifications);
     } catch {
-      // silently fail on background polls
+      // Silent background failure; the menu itself remains usable.
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
 
-  // Initial load + polling fallback every 60s
   useEffect(() => {
-    if (!accessToken) return;
-    void load();
-    const t = setInterval(() => void load(), 60_000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
-
-  // Real-time socket for instant notification push
-  useEffect(() => {
-    if (!accessToken || socketConnectedRef.current) return;
-    socketConnectedRef.current = true;
-    try {
-      const sock = getNotificationSocket(accessToken);
-      sock.on('notification:new', (payload) => {
-        setItems((prev) => {
-          if (prev.some((x) => x.id === payload.id)) return prev;
-          return [payload as NotificationItem, ...prev].slice(0, 20);
-        });
-        setHasNew(true);
-      });
-    } catch {
-      // socket namespace may not exist yet — polling covers it
+    if (!hasSession) {
+      setItems([]);
+      setHasNew(false);
+      return;
     }
+
+    void load();
+
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void load();
+      }
+    };
+
+    const handleApiOnline = () => {
+      refreshIfVisible();
+    };
+
+    window.addEventListener('focus', refreshIfVisible);
+    window.addEventListener('cfb:api-online', handleApiOnline);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+
     return () => {
-      disconnectNotificationSocket();
-      socketConnectedRef.current = false;
+      window.removeEventListener('focus', refreshIfVisible);
+      window.removeEventListener('cfb:api-online', handleApiOnline);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken]);
+  }, [hasSession]);
 
-  if (!accessToken) return null;
+  if (!hasSession) return null;
 
   return (
     <DropdownMenu
@@ -144,9 +147,8 @@ export function NotificationsBell({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-[380px] p-0 max-h-[520px] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <DropdownMenuContent align="end" className="flex max-h-[520px] w-[380px] flex-col overflow-hidden p-0">
+        <div className="flex flex-shrink-0 items-center justify-between px-4 py-3">
           <div>
             <span className="text-sm font-semibold text-foreground">Notifications</span>
             {unread > 0 && (
@@ -163,9 +165,12 @@ export function NotificationsBell({ className }: { className?: string }) {
             onClick={async () => {
               try {
                 await markAllNotificationsRead();
-                setItems((prev) => prev.map((n) => ({ ...n, readAt: n.readAt ?? new Date().toISOString() })));
-              } catch (e) {
-                showError('Failed to mark read', e instanceof Error ? e.message : 'Please try again');
+                setItems((prev) => prev.map((notification) => ({
+                  ...notification,
+                  readAt: notification.readAt ?? new Date().toISOString(),
+                })));
+              } catch (error) {
+                showError('Failed to mark read', error instanceof Error ? error.message : 'Please try again');
               }
             }}
           >
@@ -175,74 +180,81 @@ export function NotificationsBell({ className }: { className?: string }) {
         </div>
         <DropdownMenuSeparator className="my-0" />
 
-        {/* List */}
-        <div className="overflow-y-auto flex-1">
+        <div className="flex-1 overflow-y-auto">
           {items.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
                 <Bell className="h-5 w-5 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
-                {loading ? 'Loading…' : "You're all caught up!"}
+                {loading ? 'Loading...' : "You're all caught up!"}
               </p>
             </div>
           )}
 
-          {items.map((n) => (
+          {items.map((notification) => (
             <button
-              key={n.id}
+              key={notification.id}
               className={cn(
-                'flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 border-b border-border/30 last:border-0',
-                !n.readAt && 'bg-primary/5',
+                'flex w-full items-start gap-3 border-b border-border/30 px-4 py-3 text-left transition-colors hover:bg-secondary/50 last:border-0',
+                !notification.readAt && 'bg-primary/5',
               )}
               onClick={async () => {
                 try {
-                  if (!n.readAt) {
-                    await markNotificationRead(n.id);
+                  if (!notification.readAt) {
+                    await markNotificationRead(notification.id);
                     setItems((prev) =>
-                      prev.map((x) => (x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x)),
+                      prev.map((item) => (
+                        item.id === notification.id
+                          ? { ...item, readAt: new Date().toISOString() }
+                          : item
+                      )),
                     );
                   }
                 } catch {
-                  // ignore
+                  // Ignore best-effort read receipts here.
                 }
-                if (n.link) router.push(n.link);
+
+                if (notification.link) {
+                  router.push(notification.link);
+                }
               }}
             >
-              <NotifIcon type={n.type} />
-              <div className="flex-1 min-w-0">
+              <NotifIcon type={notification.type} />
+              <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <p className={cn(
-                    'text-xs leading-snug',
-                    !n.readAt ? 'font-semibold text-foreground' : 'font-medium text-foreground/80',
-                  )}>
-                    {n.title}
+                  <p
+                    className={cn(
+                      'text-xs leading-snug',
+                      !notification.readAt ? 'font-semibold text-foreground' : 'font-medium text-foreground/80',
+                    )}
+                  >
+                    {notification.title}
                   </p>
-                  <span className="shrink-0 text-[10px] text-muted-foreground mt-0.5">
-                    {formatRelativeTime(n.createdAt)}
+                  <span className="mt-0.5 shrink-0 text-[10px] text-muted-foreground">
+                    {formatRelativeTime(notification.createdAt)}
                   </span>
                 </div>
-                {n.body && (
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.body}</p>
+                {notification.body && (
+                  <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{notification.body}</p>
                 )}
               </div>
-              {!n.readAt && (
+              {!notification.readAt && (
                 <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
               )}
             </button>
           ))}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
           <>
             <DropdownMenuSeparator className="my-0" />
-            <div className="px-4 py-2.5 flex-shrink-0">
+            <div className="flex-shrink-0 px-4 py-2.5">
               <button
                 className="w-full text-center text-xs text-primary hover:underline"
                 onClick={() => router.push('/notifications')}
               >
-                View all notifications →
+                View all notifications
               </button>
             </div>
           </>
@@ -251,4 +263,3 @@ export function NotificationsBell({ className }: { className?: string }) {
     </DropdownMenu>
   );
 }
-

@@ -2,54 +2,55 @@
 
 import { useEffect } from 'react';
 
+const CACHED_PREFIX = 'cofounderbay-';
+
+async function unregisterServiceWorkersAndCaches() {
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.map((registration) => registration.unregister()));
+
+  if ('caches' in window) {
+    const cacheKeys = await caches.keys();
+    await Promise.all(
+      cacheKeys
+        .filter((key) => key.startsWith(CACHED_PREFIX))
+        .map((key) => caches.delete(key)),
+    );
+  }
+}
+
 /**
- * Registers the Service Worker for offline support and caching.
- * Forces immediate update to prevent stale cache issues.
+ * Registers the Service Worker only when explicitly enabled.
+ * Updates happen in the background without forcing a reload during navigation.
  */
 export function ServiceWorkerRegistration() {
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
-    
-    // Only register in production
-    if (process.env.NODE_ENV !== 'production') {
-      // In development, unregister any existing service workers
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        registrations.forEach((reg) => reg.unregister());
-      });
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
       return;
     }
 
-    navigator.serviceWorker
-      .register('/sw.js', { updateViaCache: 'none' })
+    if (process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_ENABLE_SW !== 'true') {
+      void unregisterServiceWorkersAndCaches();
+      return;
+    }
+
+    let updateInterval: ReturnType<typeof setInterval> | null = null;
+
+    void navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
       .then((registration) => {
-        // Force immediate update check
-        registration.update();
-
-        // Listen for new service worker
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (!newWorker) return;
-
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available - skip waiting and reload
-              newWorker.postMessage({ type: 'SKIP_WAITING' });
-              window.location.reload();
-            }
-          });
-        });
-
-        // Check for updates every 5 minutes
-        setInterval(() => registration.update(), 5 * 60 * 1000);
+        void registration.update();
+        updateInterval = setInterval(() => {
+          void registration.update();
+        }, 15 * 60 * 1000);
       })
-      .catch((error) => {
-        console.error('SW registration failed:', error);
+      .catch(() => {
+        // Keep registration failures silent in production UI.
       });
 
-    // Handle controller change (new SW activated)
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
-    });
+    return () => {
+      if (updateInterval) {
+        clearInterval(updateInterval);
+      }
+    };
   }, []);
 
   return null;

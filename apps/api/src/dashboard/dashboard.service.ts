@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CacheService } from '../common/cache/cache.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type DashboardStats = {
@@ -20,141 +21,152 @@ export type ActivityItem = {
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+  ) {}
 
   async getStats(): Promise<DashboardStats> {
-    const now = new Date();
-    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    return this.cache.getOrSet('dashboard:stats', async () => {
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    const [
-      profileCount,
-      matchesThisWeek,
-      matchesLastWeek,
-    ] = await Promise.all([
-      this.prisma.profile.count(),
-      this.prisma.connectionRequest.count({
-        where: {
-          status: 'accepted',
-          respondedAt: { gte: weekAgo },
-        },
-      }),
-      this.prisma.connectionRequest.count({
-        where: {
-          status: 'accepted',
-          respondedAt: {
-            gte: twoWeeksAgo,
-            lt: weekAgo,
+      const [
+        profileCount,
+        matchesThisWeek,
+        matchesLastWeek,
+        chartData,
+      ] = await Promise.all([
+        this.prisma.profile.count(),
+        this.prisma.connectionRequest.count({
+          where: {
+            status: 'accepted',
+            respondedAt: { gte: weekAgo },
           },
-        },
-      }),
-    ]);
+        }),
+        this.prisma.connectionRequest.count({
+          where: {
+            status: 'accepted',
+            respondedAt: {
+              gte: twoWeeksAgo,
+              lt: weekAgo,
+            },
+          },
+        }),
+        this.getChartData(),
+      ]);
 
-    const trendPercent =
-      matchesLastWeek > 0
-        ? Math.round(((matchesThisWeek - matchesLastWeek) / matchesLastWeek) * 100)
-        : matchesThisWeek > 0 ? 100 : 0;
+      const trendPercent =
+        matchesLastWeek > 0
+          ? Math.round(((matchesThisWeek - matchesLastWeek) / matchesLastWeek) * 100)
+          : matchesThisWeek > 0 ? 100 : 0;
 
-    const chartData = await this.getChartData();
-
-    return {
-      activeProfiles: profileCount,
-      matchesThisWeek,
-      trendPercent,
-      chartData,
-    };
+      return {
+        activeProfiles: profileCount,
+        matchesThisWeek,
+        trendPercent,
+        chartData,
+      };
+    }, { ttl: 60, tags: ['dashboard'] });
   }
 
   private async getChartData(): Promise<{ label: string; value: number }[]> {
-    const days: { label: string; value: number }[] = [];
     const now = new Date();
-    for (let i = 6; i >= 0; i--) {
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const offset = 6 - index;
       const d = new Date(now);
-      d.setDate(d.getDate() - i);
+      d.setDate(d.getDate() - offset);
       d.setHours(0, 0, 0, 0);
       const next = new Date(d);
       next.setDate(next.getDate() + 1);
-      const count = await this.prisma.connectionRequest.count({
+      return { label: d.toLocaleDateString('en-GB', { weekday: 'short' }), start: d, end: next };
+    });
+
+    const counts = await Promise.all(days.map((day) => (
+      this.prisma.connectionRequest.count({
         where: {
           status: 'accepted',
           respondedAt: {
-            gte: d,
-            lt: next,
+            gte: day.start,
+            lt: day.end,
           },
         },
-      });
-      days.push({
-        label: d.toLocaleDateString('en-GB', { weekday: 'short' }),
-        value: count,
-      });
-    }
-    return days;
+      })
+    )));
+
+    return days.map((day, index) => ({
+      label: day.label,
+      value: counts[index] ?? 0,
+    }));
   }
 
   async getActivity(limit = 10): Promise<ActivityItem[]> {
-    const now = new Date();
-    const [connections, events] = await Promise.all([
-      this.prisma.connectionRequest.findMany({
-        where: { status: 'accepted' },
-        orderBy: { respondedAt: 'desc' },
-        take: limit,
-        include: {
-          requester: {
-            select: {
-              profile: { select: { displayName: true } },
+    return this.cache.getOrSet(`dashboard:activity:${limit}`, async () => {
+      const now = new Date();
+      const [connections, events] = await Promise.all([
+        this.prisma.connectionRequest.findMany({
+          where: { status: 'accepted' },
+          orderBy: { respondedAt: 'desc' },
+          take: limit,
+          include: {
+            requester: {
+              select: {
+                profile: { select: { displayName: true } },
+              },
+            },
+            receiver: {
+              select: {
+                profile: { select: { displayName: true } },
+              },
             },
           },
-          receiver: {
-            select: {
-              profile: { select: { displayName: true } },
+        }),
+        this.prisma.event.findMany({
+          where: { startAt: { gte: now } },
+          orderBy: { startAt: 'asc' },
+          take: Math.floor(limit / 2),
+          include: {
+            creator: {
+              select: {
+                profile: { select: { displayName: true } },
+              },
             },
           },
-        },
-      }),
-      this.prisma.event.findMany({
-        where: { startAt: { gte: now } },
-        orderBy: { startAt: 'asc' },
-        take: Math.floor(limit / 2),
-        include: {
-          creator: {
-            select: {
-              profile: { select: { displayName: true } },
-            },
-          },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
-    const items: ActivityItem[] = [];
+      const items: ActivityItem[] = [];
 
-    for (const c of connections) {
-      if (!c.respondedAt) continue;
-      const requesterName = c.requester.profile?.displayName ?? 'Someone';
-      const receiverName = c.receiver.profile?.displayName ?? 'Someone';
-      items.push({
-        id: `conn-${c.id}`,
-        type: 'connection',
-        title: `${requesterName} and ${receiverName} connected`,
-        timeAgo: formatTimeAgo(c.respondedAt),
-        href: '/discover',
-        createdAt: c.respondedAt.toISOString(),
-      });
-    }
+      for (const c of connections) {
+        if (!c.respondedAt) continue;
+        const requesterName = c.requester.profile?.displayName ?? 'Someone';
+        const receiverName = c.receiver.profile?.displayName ?? 'Someone';
+        items.push({
+          id: `conn-${c.id}`,
+          type: 'connection',
+          title: `${requesterName} and ${receiverName} connected`,
+          timeAgo: formatTimeAgo(c.respondedAt),
+          href: '/discover',
+          createdAt: c.respondedAt.toISOString(),
+        });
+      }
 
-    for (const e of events) {
-      items.push({
-        id: `evt-${e.id}`,
-        type: 'event',
-        title: e.title,
-        author: e.creator.profile?.displayName ?? undefined,
-        timeAgo: formatTimeAgo(e.createdAt),
-        href: '/events',
-        createdAt: e.createdAt.toISOString(),
-      });
-    }
+      for (const e of events) {
+        items.push({
+          id: `evt-${e.id}`,
+          type: 'event',
+          title: e.title,
+          author: e.creator.profile?.displayName ?? undefined,
+          timeAgo: formatTimeAgo(e.createdAt),
+          href: '/events',
+          createdAt: e.createdAt.toISOString(),
+        });
+      }
 
-    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return items.slice(0, limit);
+      items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      return items.slice(0, limit);
+    }, { ttl: 30, tags: ['dashboard'] });
   }
 }
 

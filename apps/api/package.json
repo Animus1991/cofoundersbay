@@ -3,10 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prebuild": "node ../../scripts/ensure-supported-node.cjs api-build",
+    "prestart": "node ../../scripts/ensure-supported-node.cjs api-start",
+    "prestart:dev": "node ../../scripts/ensure-supported-node.cjs api-dev",
+    "prestart:debug": "node ../../scripts/ensure-supported-node.cjs api-debug",
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\" && npx nest build",
     "start": "npx nest start",
-    "start:dev": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\" && node -e \"require('fs').rmSync('tsconfig.build.tsbuildinfo',{force:true});\" && nest start --watch",
-    "start:debug": "npx nest start --debug --watch",
+    "start:dev": "node ./scripts/dev.js",
+    "start:debug": "node ./scripts/dev.js --debug",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true});\"",
@@ -15,6 +19,9 @@
     "prisma:push": "prisma db push --skip-generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
+  },
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0 || ^25.0.0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

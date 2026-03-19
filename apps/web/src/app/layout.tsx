@@ -5,7 +5,6 @@ import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
-import { RoutePrefetcher } from '@/components/optimization/RoutePrefetcher';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { ChatBubble } from '@/components/common/ChatBubble';
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
     default: 'CoFounderBay',
     template: '%s | CoFounderBay',
   },
-  description: 'Startup ecosystem networking — founders, mentors, investors',
+  description: 'Startup ecosystem networking for founders, mentors, and investors',
   keywords: ['startup', 'founder', 'cofounder', 'mentor', 'investor', 'networking', 'entrepreneurship'],
   authors: [{ name: 'CoFounderBay' }],
   openGraph: {
@@ -44,19 +43,11 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="el"
+      lang="en"
       data-scroll-behavior="smooth"
       className="scroll-smooth"
       suppressHydrationWarning
     >
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"
@@ -64,7 +55,6 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>
             <SidebarProvider>
-              <RoutePrefetcher />
               <ServiceWorkerRegistration />
               <NetworkProvider>
                 <ToastProvider>
