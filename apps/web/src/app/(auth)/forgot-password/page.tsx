@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
@@ -46,7 +45,9 @@ export default function ForgotPasswordPage() {
 
         {sent ? (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20 px-6 py-8 text-center space-y-3">
-            <CheckCircle className="mx-auto h-10 w-10 text-emerald-500" />
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+              Sent
+            </div>
             <h2 className="font-semibold text-foreground">Check your inbox</h2>
             <p className="text-sm text-muted-foreground">
               If <span className="font-medium text-foreground">{email}</span> is registered,
@@ -63,20 +64,16 @@ export default function ForgotPasswordPage() {
             )}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  autoFocus
-                  placeholder="you@startup.com"
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                autoFocus
+                placeholder="you@startup.com"
+              />
             </div>
             <Button type="submit" disabled={loading} className="w-full" size="lg">
               {loading ? 'Sending…' : 'Send reset link'}
@@ -85,8 +82,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div className="text-center">
-          <Link href="/login" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-3.5 w-3.5" />
+          <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Back to sign in
           </Link>
         </div>

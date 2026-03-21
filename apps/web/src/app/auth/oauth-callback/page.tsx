@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getMe } from '@/lib/api';
@@ -14,8 +13,8 @@ export default function OAuthCallbackPage() {
   const [message, setMessage] = useState('Verifying your session…');
 
   useEffect(() => {
-    const provider = searchParams.get('provider') ?? 'OAuth';
-    const error = searchParams.get('error');
+    const provider = searchParams?.get('provider') ?? 'OAuth';
+    const error = searchParams?.get('error');
 
     if (error) {
       setStatus('error');
@@ -35,7 +34,7 @@ export default function OAuthCallbackPage() {
         setMessage(`Signed in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}!`);
 
         // New user → onboarding; existing user → dashboard
-        const destination = searchParams.get('uid') ? '/' : '/';
+        const destination = searchParams?.get('uid') ? '/' : '/';
         setTimeout(() => router.push(destination), 1200);
       })
       .catch(() => {
@@ -51,7 +50,10 @@ export default function OAuthCallbackPage() {
         <CardContent className="pt-8 pb-8 text-center space-y-3">
           {status === 'loading' && (
             <>
-              <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+              <div
+                aria-hidden="true"
+                className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
+              />
               <h2 className="text-lg font-semibold">Verifying…</h2>
               <p className="text-sm text-muted-foreground">{message}</p>
             </>
@@ -59,7 +61,9 @@ export default function OAuthCallbackPage() {
 
           {status === 'success' && (
             <>
-              <CheckCircle className="mx-auto h-12 w-12 text-emerald-500" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+                OK
+              </div>
               <h2 className="text-lg font-semibold">Welcome!</h2>
               <p className="text-sm text-muted-foreground">{message}</p>
               <p className="text-xs text-muted-foreground">Redirecting…</p>
@@ -68,7 +72,9 @@ export default function OAuthCallbackPage() {
 
           {status === 'error' && (
             <>
-              <XCircle className="mx-auto h-12 w-12 text-destructive" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive">
+                !
+              </div>
               <h2 className="text-lg font-semibold">Authentication Failed</h2>
               <p className="text-sm text-muted-foreground">{message}</p>
               <div className="flex gap-3 justify-center pt-2">

@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
+  Delete,
   Query,
   Body,
   Param,
@@ -9,6 +11,7 @@ import {
   Req,
   Res,
   HttpStatus,
+  HttpCode,
   BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -253,5 +256,113 @@ export class SSOController {
   async getUserMemberships(@CurrentUser() user: any) {
     const memberships = await this.ssoService.getUserTenantMemberships(user.id);
     return { memberships };
+  }
+
+  // ── Admin: SSO Stats ────────────────────────────────────────────────────────
+
+  /**
+   * Get SSO platform statistics
+   */
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async getStats() {
+    return this.ssoService.getStats();
+  }
+
+  // ── Admin: Auth Events ──────────────────────────────────────────────────────
+
+  /**
+   * Get recent SSO auth events for admin audit
+   */
+  @Get('admin/events')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async getAuthEvents(
+    @Query('tenantId') tenantId?: string,
+    @Query('eventType') eventType?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.ssoService.getAuthEvents({
+      tenantId,
+      eventType,
+      limit: limit ? parseInt(limit, 10) : 50,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
+  }
+
+  // ── Admin: Identity Provider CRUD ──────────────────────────────────────────
+
+  /**
+   * List providers for a tenant
+   */
+  @Get('tenants/:tenantId/providers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async listProviders(@Param('tenantId') tenantId: string) {
+    return this.ssoService.listProviders(tenantId);
+  }
+
+  /**
+   * Create identity provider for a tenant
+   */
+  @Post('tenants/:tenantId/providers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async createProvider(
+    @Param('tenantId') tenantId: string,
+    @Body() body: Parameters<typeof this.ssoService.createProvider>[1],
+  ) {
+    return this.ssoService.createProvider(tenantId, body);
+  }
+
+  /**
+   * Update identity provider
+   */
+  @Patch('providers/:providerId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async updateProvider(
+    @Param('providerId') providerId: string,
+    @Body() body: Parameters<typeof this.ssoService.updateProvider>[1],
+  ) {
+    return this.ssoService.updateProvider(providerId, body);
+  }
+
+  /**
+   * Delete identity provider
+   */
+  @Delete('providers/:providerId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async deleteProvider(@Param('providerId') providerId: string) {
+    return this.ssoService.deleteProvider(providerId);
+  }
+
+  // ── Admin: SSO Config ───────────────────────────────────────────────────────
+
+  /**
+   * Get SSO config for a tenant
+   */
+  @Get('tenants/:tenantId/config')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async getSSOConfig(@Param('tenantId') tenantId: string) {
+    return this.ssoService.getSSOConfig(tenantId);
+  }
+
+  /**
+   * Upsert SSO config for a tenant
+   */
+  @Post('tenants/:tenantId/config')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async upsertSSOConfig(
+    @Param('tenantId') tenantId: string,
+    @Body() body: { providerId?: string } & Parameters<typeof this.ssoService.upsertSSOConfig>[2],
+  ) {
+    const { providerId, ...config } = body;
+    return this.ssoService.upsertSSOConfig(tenantId, providerId ?? null, config);
   }
 }

@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { getTenantBySlug, type TenantItem } from '@/lib/api';
+import { getTenantBySlug, discoverSSOByTenant, getSSOLoginUrl, type TenantItem, type SSODiscoveryResult } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,9 @@ import {
   Shield,
   Linkedin,
   Twitter,
+  Instagram,
+  Building2,
+  LogIn,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -42,61 +45,124 @@ function hexToHsl(hex: string): string | null {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
-function TenantLanding({ tenant }: { tenant: TenantItem }) {
+function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryResult | null }) {
   const b = tenant.branding;
-  const primaryHsl = b?.primaryColor ? hexToHsl(b.primaryColor) : null;
+
+  const cssVars: React.CSSProperties = {};
+  if (b?.primaryColor) {
+    const h = hexToHsl(b.primaryColor);
+    if (h) {
+      (cssVars as any)['--primary'] = h;
+      (cssVars as any)['--primary-foreground'] = '0 0% 100%';
+    }
+  }
+  if (b?.secondaryColor) {
+    const h = hexToHsl(b.secondaryColor);
+    if (h) (cssVars as any)['--secondary'] = h;
+  }
+  if (b?.accentColor) {
+    const h = hexToHsl(b.accentColor);
+    if (h) (cssVars as any)['--accent'] = h;
+  }
+
+  const handleSSOLogin = () => {
+    if (!sso?.provider?.id) return;
+    window.location.href = getSSOLoginUrl(sso.provider.id, `/t/${tenant.slug}`);
+  };
 
   return (
-    <div
-      className="min-h-screen bg-background"
-      style={primaryHsl ? { '--primary': primaryHsl } as React.CSSProperties : undefined}
-    >
+    <div className="min-h-screen bg-background" style={cssVars}>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/90 via-primary to-primary/80 text-primary-foreground">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_30%_50%,white_0%,transparent_50%)]" />
-        <div className="relative mx-auto max-w-5xl px-6 py-20 text-center">
+      <section
+        className="relative overflow-hidden text-white"
+        style={b?.heroImageUrl
+          ? { backgroundImage: `url(${b.heroImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+          : undefined}
+      >
+        {/* Overlay — always present so text is readable over both gradient and photo heroes */}
+        <div
+          className="absolute inset-0"
+          style={b?.heroImageUrl
+            ? { background: 'linear-gradient(to bottom right, rgba(0,0,0,0.65), rgba(0,0,0,0.45))' }
+            : { background: 'linear-gradient(to bottom right, var(--tw-gradient-from, oklch(0.6 0.2 264)), var(--tw-gradient-to, oklch(0.45 0.2 264)))' }}
+        />
+        {/* Subtle light burst */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_30%_50%,white_0%,transparent_60%)]" />
+
+        <div className="relative mx-auto max-w-5xl px-6 py-24 text-center">
           {tenant.logoUrl && (
-            <img
-              src={tenant.logoUrl}
-              alt={tenant.name}
-              className="mx-auto mb-6 h-16 w-auto rounded-lg"
-            />
+            <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" />
           )}
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-4">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
             {b?.heroTitle || tenant.displayName || tenant.name}
           </h1>
-          <p className="mx-auto max-w-2xl text-lg text-primary-foreground/80 mb-8">
-            {b?.heroSubtitle || tenant.description || 'Join our startup ecosystem'}
+          <p className="mx-auto max-w-2xl text-lg text-white/80 mb-8 drop-shadow-sm">
+            {b?.heroSubtitle || tenant.shortDescription || tenant.description || 'Join our startup ecosystem'}
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2">
+
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* SSO login button (shown first if SSO available) */}
+            {sso?.ssoAvailable && sso.provider && (
+              <Button
+                size="lg"
+                onClick={handleSSOLogin}
+                className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
+              >
+                <Building2 className="h-4 w-4" />
+                {sso.provider.loginButtonText || 'Sign in with Organization SSO'}
+              </Button>
+            )}
+
+            <Link href={b?.ctaUrl || '/register'}>
+              <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2 shadow">
                 {b?.ctaLabel || 'Get Started'}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </Link>
-            {tenant.website && (
-              <a href={tenant.website} target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2">
-                  <Globe className="h-4 w-4" />
-                  Learn More
-                </Button>
-              </a>
-            )}
+
+            <Link href="/login">
+              <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2">
+                <LogIn className="h-4 w-4" />
+                Sign In
+              </Button>
+            </Link>
           </div>
+
+          {sso?.ssoRequired && (
+            <p className="mt-4 text-xs text-white/60">This organization requires SSO authentication for member access.</p>
+          )}
         </div>
       </section>
 
-      {/* Features */}
+      {/* About section — shown only when aboutText is set */}
+      {(b?.aboutText || tenant.aboutText) && (
+        <section className="bg-muted/30 border-b border-border/60">
+          <div className="mx-auto max-w-4xl px-6 py-14">
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                  {b?.aboutText || tenant.aboutText}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Feature cards */}
       <section className="mx-auto max-w-5xl px-6 py-16">
         <div className="grid gap-6 sm:grid-cols-3">
           {[
-            { icon: Users, title: 'Connect', desc: 'Find co-founders, mentors, and collaborators' },
+            { icon: Users, title: b?.communityNaming ? `Join the ${b.communityNaming}` : 'Connect', desc: 'Find co-founders, mentors, and collaborators' },
             { icon: Sparkles, title: 'AI Matching', desc: 'Smart compatibility scoring for better teams' },
             { icon: Shield, title: 'Trusted Network', desc: 'Verified profiles and moderated community' },
           ].map((f) => (
-            <Card key={f.title} className="text-center">
-              <CardContent className="pt-6">
+            <Card key={f.title} className="text-center border-border/60 hover:shadow-md transition-shadow">
+              <CardContent className="pt-6 pb-6">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                   <f.icon className="h-6 w-6 text-primary" />
                 </div>
@@ -108,21 +174,31 @@ function TenantLanding({ tenant }: { tenant: TenantItem }) {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA band */}
       <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-8 pb-8">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary" />
-            <h2 className="text-2xl font-bold mb-2">Ready to build your next startup?</h2>
+            <h2 className="text-2xl font-bold mb-2">
+              {b?.dashboardWelcomeText || `Ready to join ${tenant.displayName || tenant.name}?`}
+            </h2>
             <p className="text-muted-foreground mb-6">
-              Join {tenant.displayName || tenant.name} and connect with the right people.
+              Connect with the right people and build something great.
             </p>
-            <Link href="/register">
-              <Button size="lg" className="gap-2">
-                {b?.ctaLabel || 'Join Now'}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex flex-wrap justify-center gap-3">
+              {sso?.ssoAvailable && sso.provider && (
+                <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
+                  <Building2 className="h-4 w-4" />
+                  {sso.provider.loginButtonText || 'SSO Login'}
+                </Button>
+              )}
+              <Link href={b?.ctaUrl || '/register'}>
+                <Button size="lg" className="gap-2">
+                  {b?.ctaLabel || 'Join Now'}
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -131,37 +207,61 @@ function TenantLanding({ tenant }: { tenant: TenantItem }) {
       <footer className="border-t border-border/60 bg-card">
         <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="text-xs">{tenant.status}</Badge>
-            <span className="text-sm text-muted-foreground">{tenant.displayName || tenant.name}</span>
+            {tenant.logoUrl
+              ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" />
+              : <Badge variant="secondary" className="text-xs">{tenant.status}</Badge>}
+            <span className="text-sm font-medium">{tenant.displayName || tenant.name}</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
-              <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground">
+              <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground transition-colors">
                 <Mail className="h-4 w-4" />
               </a>
             )}
+            {(b?.websiteUrl || tenant.website) && (
+              <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Globe className="h-4 w-4" />
+              </a>
+            )}
             {b?.linkedinUrl && (
-              <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+              <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Linkedin className="h-4 w-4" />
               </a>
             )}
             {b?.twitterUrl && (
-              <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
+              <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                 <Twitter className="h-4 w-4" />
               </a>
             )}
-            {b?.privacyPolicyUrl && (
-              <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Privacy <ExternalLink className="h-3 w-3" />
+            {b?.instagramUrl && (
+              <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Instagram className="h-4 w-4" />
               </a>
             )}
-            {b?.termsUrl && (
-              <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Terms <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              {b?.privacyPolicyUrl && (
+                <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
+                  Privacy <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {b?.termsUrl && (
+                <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
+                  Terms <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {b?.cookiePolicyUrl && (
+                <a href={b.cookiePolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
+                  Cookies <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
           </div>
         </div>
+        {b?.emailFooterText && (
+          <div className="border-t border-border/40 mx-auto max-w-5xl px-6 py-3">
+            <p className="text-xs text-muted-foreground text-center">{b.emailFooterText}</p>
+          </div>
+        )}
       </footer>
     </div>
   );
@@ -169,7 +269,7 @@ function TenantLanding({ tenant }: { tenant: TenantItem }) {
 
 export default function TenantPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = (params?.slug as string) ?? '';
 
   const { data: tenant, isLoading, isError } = useQuery({
     queryKey: ['tenant', slug],
@@ -177,21 +277,35 @@ export default function TenantPage() {
     staleTime: 5 * 60_000,
   });
 
+  const { data: sso } = useQuery({
+    queryKey: ['tenant', slug, 'sso'],
+    queryFn: () => discoverSSOByTenant(slug),
+    enabled: !!tenant,
+    staleTime: 5 * 60_000,
+  });
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-6 w-96" />
-        <Skeleton className="h-10 w-32 mt-4" />
+      <div className="min-h-screen bg-background">
+        <div className="h-[50vh] bg-muted animate-pulse" />
+        <div className="mx-auto max-w-5xl px-6 py-12 space-y-6">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <div className="grid gap-4 sm:grid-cols-3 pt-4">
+            {[1,2,3].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (isError || !tenant) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
+        <Building2 className="h-12 w-12 text-muted-foreground" />
         <h1 className="text-2xl font-bold text-foreground">Organization not found</h1>
-        <p className="text-muted-foreground">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
+        <p className="text-muted-foreground max-w-sm">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
         <Link href="/">
           <Button variant="outline">Back to CoFounderBay</Button>
         </Link>
@@ -199,5 +313,5 @@ export default function TenantPage() {
     );
   }
 
-  return <TenantLanding tenant={tenant} />;
+  return <TenantLanding tenant={tenant} sso={sso ?? null} />;
 }

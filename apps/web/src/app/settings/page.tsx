@@ -159,7 +159,7 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    const billing = searchParams.get('billing');
+    const billing = searchParams?.get('billing');
     if (billing === 'success') {
       success('Payment successful', 'Your subscription will activate shortly.');
     }

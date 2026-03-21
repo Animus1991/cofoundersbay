@@ -87,5 +87,40 @@ export class UploadsController {
 
     return { upload };
   }
+
+  @Post('research-asset')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for research documents
+    }),
+  )
+  async uploadResearchAsset(
+    @CurrentUser() user: { id: string },
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file?.buffer) return { ok: false };
+
+    const ext = safeExt(file.originalname);
+    const filename = `research_${Date.now()}_${randomBytes(8).toString('hex')}${ext}`;
+
+    const stored = await this.uploads.storeFile({
+      buffer: file.buffer,
+      filename,
+      mimeType: file.mimetype || 'application/octet-stream',
+    });
+
+    const upload = await this.uploads.createUploadRecord({
+      userId: user.id,
+      kind: 'research_asset',
+      key: stored.key,
+      url: stored.url,
+      mimeType: file.mimetype ?? null,
+      originalName: file.originalname ?? null,
+      sizeBytes: file.size ?? null,
+    });
+
+    return { upload };
+  }
 }
 

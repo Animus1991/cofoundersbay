@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from './SearchBar';
@@ -17,12 +18,24 @@ const CommandPalette = dynamic(
 );
 
 export function TopBar() {
+  const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const { open: commandOpen, setOpen: setCommandOpen } = useCommandPalette();
 
   useEffect(() => {
     setReady(true);
   }, []);
+
+  // Hide TopBar on auth pages
+  const isAuthPage =
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/forgot-password') ||
+    pathname?.startsWith('/reset-password') ||
+    pathname?.startsWith('/onboarding') ||
+    pathname?.startsWith('/auth');
+
+  if (isAuthPage) return null;
 
   return (
     <>

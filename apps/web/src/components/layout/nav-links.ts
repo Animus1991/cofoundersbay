@@ -2,22 +2,18 @@ import {
   type LucideIcon,
   Compass,
   User,
-  Sparkle,
   Settings,
   MessageCircle,
   Calendar,
-  Briefcase,
   GraduationCap,
   Users,
   UserCheck,
-  Handshake,
-  ShoppingBag,
-  BookOpen,
-  Activity,
-  TrendingUp,
-  Award,
-  LayoutGrid,
   Heart,
+  Bell,
+  Flag,
+  Bookmark,
+  Grid3X3,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export type NavSection = {
@@ -27,40 +23,36 @@ export type NavSection = {
 
 export const navSections: NavSection[] = [
   {
-    section: 'Main',
+    section: 'Workspace',
     links: [
-      { href: '/', label: 'Dashboard', icon: Sparkle },
-      { href: '/activity', label: 'Activity', icon: Activity },
-      { href: '/analytics', label: 'Analytics', icon: TrendingUp },
-      { href: '/achievements', label: 'Achievements', icon: Award },
-    ],
-  },
-  {
-    section: 'Community',
-    links: [
-      { href: '/discover', label: 'Discover', icon: Compass },
-      { href: '/matches', label: 'Matches', icon: Heart },
-      { href: '/members', label: 'Members', icon: Users },
-      { href: '/connections', label: 'Connections', icon: UserCheck },
-      { href: '/groups', label: 'Groups', icon: LayoutGrid },
-      { href: '/events', label: 'Events', icon: Calendar },
+      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/research', label: 'Research', icon: Grid3X3 },
       { href: '/messages', label: 'Messages', icon: MessageCircle },
+      { href: '/milestones', label: 'Milestones', icon: Flag },
     ],
   },
   {
-    section: 'Ecosystem',
+    section: 'Discovery',
     links: [
-      { href: '/mentoring', label: 'Mentoring', icon: GraduationCap },
-      { href: '/jobs', label: 'Jobs', icon: Briefcase },
-      { href: '/opportunities', label: 'Opportunities', icon: Handshake },
-      { href: '/marketplace', label: 'Marketplace', icon: ShoppingBag },
-      { href: '/learning', label: 'Learning', icon: BookOpen },
+      { href: '/matches', label: 'Matches', icon: Heart },
+      { href: '/discover', label: 'Explore', icon: Compass },
+      { href: '/mentoring', label: 'Mentors', icon: GraduationCap },
+      { href: '/groups', label: 'Communities', icon: Users },
+    ],
+  },
+  {
+    section: 'Network',
+    links: [
+      { href: '/connections', label: 'Connections', icon: UserCheck },
+      { href: '/events', label: 'Events', icon: Calendar },
+      { href: '/shortlist', label: 'Saved', icon: Bookmark },
     ],
   },
   {
     section: 'Account',
     links: [
-      { href: '/profile', label: 'My Profile', icon: User },
+      { href: '/profile', label: 'Profile', icon: User },
+      { href: '/notifications', label: 'Notifications', icon: Bell },
       { href: '/settings', label: 'Settings', icon: Settings },
     ],
   },

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { RoleTheme } from '@/components/layout/RoleTheme';
@@ -7,7 +9,10 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
-import { ChatBubble } from '@/components/common/ChatBubble';
+import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
+import { PopupChatProvider } from '@/contexts/PopupChatContext';
+import { MessagingProvider } from '@/contexts/MessagingContext';
+import { TenantProvider } from '@/components/providers/TenantContext';
 
 export const metadata: Metadata = {
   title: {
@@ -54,18 +59,24 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <QueryProvider>
-            <SidebarProvider>
-              <ServiceWorkerRegistration />
-              <NetworkProvider>
-                <ToastProvider>
-                  <RoleTheme>
-                    <OfflineBanner />
-                    {children}
-                    <ChatBubble />
-                  </RoleTheme>
-                </ToastProvider>
-              </NetworkProvider>
-            </SidebarProvider>
+            <TenantProvider>
+              <SidebarProvider>
+                <ServiceWorkerRegistration />
+                <NetworkProvider>
+                  <ToastProvider>
+                    <PopupChatProvider>
+                      <MessagingProvider>
+                        <RoleTheme>
+                          <OfflineBanner />
+                          {children}
+                          <GlobalFloatingUi />
+                        </RoleTheme>
+                      </MessagingProvider>
+                    </PopupChatProvider>
+                  </ToastProvider>
+                </NetworkProvider>
+              </SidebarProvider>
+            </TenantProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

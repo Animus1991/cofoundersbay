@@ -101,6 +101,75 @@ export class DashboardService {
     }));
   }
 
+  async getUserSummary(userId: string) {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      pendingReceived,
+      totalConnections,
+      unreadMessages,
+      unreadNotifications,
+      upcomingEvents,
+      myMilestones,
+    ] = await Promise.all([
+      this.prisma.connectionRequest.count({
+        where: { receiverId: userId, status: 'pending' },
+      }),
+      this.prisma.connectionRequest.count({
+        where: {
+          status: 'accepted',
+          OR: [{ requesterId: userId }, { receiverId: userId }],
+        },
+      }),
+      // Count unread messages in conversations where user is a participant
+      this.prisma.message.count({
+        where: {
+          readAt: null,
+          senderId: { not: userId },
+          conversation: { participants: { some: { userId } } },
+        },
+      }),
+      this.prisma.notification.count({
+        where: { userId, readAt: null },
+      }),
+      this.prisma.event.count({
+        where: {
+          startAt: { gte: now },
+          OR: [
+            { creatorId: userId },
+            { rsvps: { some: { userId } } },
+          ],
+        },
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.prisma as any).milestone.count({
+        where: {
+          OR: [{ ownerId: userId }, { collaboratorId: userId }],
+          status: { notIn: ['completed', 'cancelled'] },
+        },
+      }).catch(() => 0),
+    ]);
+
+    const newConnectionsThisWeek = await this.prisma.connectionRequest.count({
+      where: {
+        status: 'accepted',
+        respondedAt: { gte: weekAgo },
+        OR: [{ requesterId: userId }, { receiverId: userId }],
+      },
+    });
+
+    return {
+      pendingReceived,
+      totalConnections,
+      newConnectionsThisWeek,
+      unreadMessages,
+      unreadNotifications,
+      upcomingEvents,
+      activeMilestones: myMilestones,
+    };
+  }
+
   async getActivity(limit = 10): Promise<ActivityItem[]> {
     return this.cache.getOrSet(`dashboard:activity:${limit}`, async () => {
       const now = new Date();

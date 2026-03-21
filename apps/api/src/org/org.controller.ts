@@ -35,4 +35,16 @@ export class OrgController {
       offset: offset ? parseInt(offset) : undefined,
     });
   }
+
+  @Get(':slug/members')
+  async getOrgMembers(
+    @Param('slug') slug: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    return this.orgService.getOrgMembers(slug, {
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+    });
+  }
 }

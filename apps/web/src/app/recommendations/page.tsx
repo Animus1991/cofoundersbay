@@ -17,6 +17,11 @@ import {
   Briefcase,
   GraduationCap,
   DollarSign,
+  ChevronDown,
+  EyeOff,
+  Clock,
+  Search,
+  ShieldCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
@@ -32,9 +37,13 @@ import {
   getRecommendations,
   getWeeklyDigest,
   sendConnectionRequest,
-  submitMatchFeedback,
+  recordMatchFeedback,
+  recordBehavioralSignal,
   getMatchingStats,
   type SearchHit,
+  type MatchSuggestion,
+  type MatchFeedbackType,
+  type MatchExplanationItem,
 } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
@@ -63,24 +72,103 @@ function MatchScoreBadge({ score }: { score: number }) {
   );
 }
 
+// Dimension score bar for explanation
+function ExplanationBar({ items }: { items: MatchExplanationItem[] }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="mt-2 mb-3 space-y-1">
+      {items.slice(0, 3).map((item) => (
+        <div key={item.dimension} className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground w-24 shrink-0">{item.label}</span>
+          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary/70 rounded-full transition-all"
+              style={{ width: `${Math.round(item.score * 100)}%` }}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground w-8 text-right">{Math.round(item.score * 100)}%</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Rich feedback dropdown
+const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
+  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600' },
+  { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
+  { label: 'Not now', value: 'not_now', icon: Clock },
+  { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
+  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-red-500' },
+];
+
+function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative">
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-7 w-7 text-muted-foreground"
+        onClick={() => setOpen(p => !p)}
+        title="Feedback"
+      >
+        <ChevronDown className="h-3.5 w-3.5" />
+      </Button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 bottom-8 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
+            {FEEDBACK_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                className={cn(
+                  'flex items-center gap-2 w-full px-3 py-2 text-xs hover:bg-muted transition-colors',
+                  opt.color ?? 'text-foreground'
+                )}
+                onClick={() => { onFeedback(opt.value); setOpen(false); }}
+              >
+                <opt.icon className="h-3 w-3" />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function RecommendationCard({ hit, onConnect, onFeedback }: {
-  hit: SearchHit & { matchScore?: number; matchReasons?: string[] };
+  hit: (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
   onConnect: (userId: string) => void;
-  onFeedback: (userId: string, fb: 'positive' | 'negative') => void;
+  onFeedback: (userId: string, fb: MatchFeedbackType) => void;
 }) {
-  const RoleIcon = ROLE_ICON[hit.role ?? 'founder'] ?? Users;
-  const score = hit.matchScore ?? 0;
-  const reasons: string[] = hit.matchReasons ?? [];
+  // Support both old SearchHit shape and new MatchSuggestion shape
+  const userId = (hit as any).userId;
+  const displayName = (hit as any).profile?.displayName ?? (hit as any).displayName ?? 'Unknown';
+  const headline = (hit as any).profile?.headline ?? (hit as any).headline ?? null;
+  const avatarUrl = (hit as any).profile?.avatarUrl ?? (hit as any).avatarUrl ?? null;
+  const location = (hit as any).profile?.location ?? (hit as any).location ?? null;
+  const role = (hit as any).role ?? null;
+  const skills = (hit as any).profile?.skills ?? (hit as any).skills ?? [];
+  const score = (hit as any).score ?? (hit as any).matchScore ?? 0;
+  const confidence = (hit as any).confidence ?? null;
+  const reasons: string[] = (hit as any).reasons ?? (hit as any).matchReasons ?? [];
+  const explanation: MatchExplanationItem[] = (hit as any).explanation ?? [];
+
+  const RoleIcon = ROLE_ICON[role ?? 'founder'] ?? Users;
+  const [showExplanation, setShowExplanation] = useState(false);
 
   return (
     <Card className="group hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <Link href={`/profiles/${hit.userId}`}>
+          <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
             <Avatar className="h-14 w-14 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
-              <AvatarImage src={hit.avatarUrl ?? undefined} />
+              <AvatarImage src={avatarUrl ?? undefined} />
               <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
-                {hit.displayName?.[0]?.toUpperCase() ?? '?'}
+                {displayName?.[0]?.toUpperCase() ?? '?'}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -88,60 +176,81 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
-                  {hit.displayName}
+                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                  {displayName}
                 </Link>
-                {hit.headline && (
-                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{hit.headline}</p>
+                {headline && (
+                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{headline}</p>
                 )}
-                {hit.location && (
+                {location && (
                   <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                     <MapPin className="h-3 w-3" />
-                    {hit.location}
+                    {location}
                   </p>
                 )}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {score > 0 && <MatchScoreBadge score={score} />}
-                <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[hit.role ?? 'founder'])}>
-                  <RoleIcon className="h-3 w-3 mr-1" />
-                  {hit.role}
-                </Badge>
+                {confidence !== null && (
+                  <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                    <ShieldCheck className="h-3 w-3" />
+                    {confidence}%
+                  </span>
+                )}
+                {role && (
+                  <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
+                    <RoleIcon className="h-3 w-3 mr-1" />
+                    {role}
+                  </Badge>
+                )}
               </div>
             </div>
 
+            {/* Reason chips */}
             {reasons.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2 mb-3">
+              <div className="flex flex-wrap gap-1.5 mt-2 mb-2">
                 {reasons.slice(0, 3).map((r, i) => (
                   <Badge key={i} variant="secondary" className="text-xs">
                     {r}
                   </Badge>
                 ))}
+                {explanation.length > 0 && (
+                  <button
+                    onClick={() => setShowExplanation(p => !p)}
+                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                  >
+                    {showExplanation ? 'Hide details' : 'Why this match?'}
+                  </button>
+                )}
               </div>
             )}
 
-            {hit.skills && hit.skills.length > 0 && (
+            {/* Explanation bars */}
+            {showExplanation && <ExplanationBar items={explanation} />}
+
+            {/* Skills */}
+            {skills.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
-                {hit.skills.slice(0, 4).map((s, i) => (
+                {(skills as any[]).slice(0, 4).map((s: any, i: number) => (
                   <span key={i} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
-                    {s}
+                    {s.skill?.name ?? s}
                   </span>
                 ))}
-                {hit.skills.length > 4 && (
-                  <span className="text-xs text-muted-foreground px-1">+{hit.skills.length - 4}</span>
+                {skills.length > 4 && (
+                  <span className="text-xs text-muted-foreground px-1">+{skills.length - 4}</span>
                 )}
               </div>
             )}
 
             <div className="flex items-center gap-2">
-              <Button size="sm" className="gap-1.5" onClick={() => onConnect(hit.userId)}>
+              <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
                 <UserPlus className="h-3.5 w-3.5" />
                 Connect
               </Button>
-              <Link href={`/messages?userId=${hit.userId}`}>
+              <Link href={`/matches/${userId}`}>
                 <Button size="sm" variant="outline" className="gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  Message
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  Full Breakdown
                 </Button>
               </Link>
               <div className="ml-auto flex items-center gap-1">
@@ -150,19 +259,11 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
                   variant="ghost"
                   className="h-7 w-7 text-muted-foreground hover:text-emerald-600"
                   title="Good match"
-                  onClick={() => onFeedback(hit.userId, 'positive')}
+                  onClick={() => onFeedback(userId, 'accepted')}
                 >
                   <ThumbsUp className="h-3.5 w-3.5" />
                 </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-red-500"
-                  title="Not a match"
-                  onClick={() => onFeedback(hit.userId, 'negative')}
-                >
-                  <ThumbsDown className="h-3.5 w-3.5" />
-                </Button>
+                <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
               </div>
             </div>
           </div>
@@ -230,10 +331,16 @@ export default function RecommendationsPage() {
   });
 
   const feedbackMutation = useMutation({
-    mutationFn: ({ userId, fb }: { userId: string; fb: 'positive' | 'negative' }) =>
-      submitMatchFeedback(userId, fb),
+    mutationFn: ({ userId, fb }: { userId: string; fb: MatchFeedbackType }) =>
+      recordMatchFeedback({ targetUserId: userId, feedback: fb }),
     onSuccess: (_, { fb }) => {
-      toastSuccess(fb === 'positive' ? 'Thanks for the feedback!' : 'Got it, improving your matches');
+      const msg = fb === 'accepted' ? 'Thanks! Improving your matches.' :
+        fb === 'not_relevant' ? 'Got it — fewer like this.' :
+        fb === 'not_now' ? 'Noted — we\'ll revisit later.' :
+        fb === 'better_fit_wanted' ? 'Understood — refining suggestions.' :
+        'Feedback recorded.';
+      toastSuccess(msg);
+      queryClient.invalidateQueries({ queryKey: ['recommendations'] });
     },
   });
 
@@ -349,8 +456,8 @@ export default function RecommendationsPage() {
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard
-                  key={hit.userId}
-                  hit={hit}
+                  key={(hit as any).userId}
+                  hit={hit as any}
                   onConnect={(uid) => connectMutation.mutate(uid)}
                   onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
                 />

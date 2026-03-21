@@ -33,6 +33,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CollaborationStarter, PostAcceptCollaborationModal } from '@/components/collaboration/CollaborationStarter';
 
 function ConnectionCard({
   connection,
@@ -215,6 +216,9 @@ export default function ConnectionsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [tab, setTab] = useState<'intros' | 'received' | 'sent' | 'accepted'>('intros');
+  const [justAcceptedUser, setJustAcceptedUser] = useState<{
+    id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null;
+  } | null>(null);
 
   const viewerId =
     typeof window !== 'undefined'
@@ -237,26 +241,14 @@ export default function ConnectionsPage() {
   });
 
   const respondMutation = useMutation({
-    mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string }) =>
+    mutationFn: ({ id, status, otherUserId }: { id: string; status: 'accepted' | 'declined'; otherUserId?: string; acceptedUserInfo?: { id: string; displayName: string; avatarUrl?: string | null; role?: string; headline?: string | null } }) =>
       respondToConnectionRequest(id, status).then(() => otherUserId),
-    onSuccess: (otherUserId, { status }) => {
+    onSuccess: (otherUserId, { status, acceptedUserInfo }) => {
       queryClient.invalidateQueries({ queryKey: ['connections'] });
-      if (status === 'accepted' && otherUserId) {
-        success(
-          'Connection accepted!',
-          'You are now connected.',
-          {
-            action: {
-              label: 'Start a conversation',
-              onClick: () => handleMessage(otherUserId),
-            },
-          },
-        );
-      } else {
-        success(
-          status === 'accepted' ? 'Connection accepted!' : 'Request declined',
-          status === 'accepted' ? 'You are now connected.' : 'The request has been removed.',
-        );
+      if (status === 'accepted' && otherUserId && acceptedUserInfo) {
+        setJustAcceptedUser(acceptedUserInfo);
+      } else if (status !== 'accepted') {
+        success('Request declined', 'The request has been removed.');
       }
     },
     onError: (err) => {
@@ -284,6 +276,13 @@ export default function ConnectionsPage() {
   ).length;
 
   return (
+    <>
+    {justAcceptedUser && (
+      <PostAcceptCollaborationModal
+        otherUser={justAcceptedUser}
+        onDismiss={() => setJustAcceptedUser(null)}
+      />
+    )}
     <AppShell
       title="Connections"
       description="Manage your network and connection requests"
@@ -350,7 +349,7 @@ export default function ConnectionsPage() {
                 key={c.id}
                 connection={c}
                 isPending={respondMutation.isPending}
-                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId })}
+                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester.headline ?? null } })}
                 onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
               />
             ))
@@ -396,26 +395,34 @@ export default function ConnectionsPage() {
                 }
               />
             ) : (
-              connections.map((c) => (
-                <ConnectionCard
-                  key={c.id}
-                  connection={c}
-                  viewerId={viewerId}
-                  isPending={respondMutation.isPending}
-                  onAccept={() => {
-                    const otherUserId = c.requesterId === viewerId ? c.receiverId : c.requesterId;
-                    respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId });
-                  }}
-                  onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
-                  onMessage={() => handleMessage(
-                    c.requesterId === viewerId ? c.receiverId : c.requesterId,
-                  )}
-                />
-              ))
+              connections.map((c) => {
+                const otherUser = c.requesterId === viewerId
+                  ? { id: c.receiverId, displayName: c.receiver?.displayName ?? '', avatarUrl: c.receiver?.avatarUrl ?? null, role: c.receiver?.role, headline: c.receiver?.headline ?? null }
+                  : { id: c.requesterId, displayName: c.requester?.displayName ?? '', avatarUrl: c.requester?.avatarUrl ?? null, role: c.requester?.role, headline: c.requester?.headline ?? null };
+                return (
+                  <div key={c.id} className="rounded-xl overflow-hidden border border-border/60 shadow-sm">
+                    <ConnectionCard
+                      connection={c}
+                      viewerId={viewerId}
+                      isPending={respondMutation.isPending}
+                      onAccept={() => {
+                        const uid = c.requesterId === viewerId ? c.receiverId : c.requesterId;
+                        respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: uid, acceptedUserInfo: otherUser });
+                      }}
+                      onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
+                      onMessage={() => handleMessage(otherUser.id)}
+                    />
+                    {t === 'accepted' && c.status === 'accepted' && (
+                      <CollaborationStarter otherUser={otherUser} mode="inline" />
+                    )}
+                  </div>
+                );
+              })
             )}
           </TabsContent>
         ))}
       </Tabs>
     </AppShell>
+    </>
   );
 }

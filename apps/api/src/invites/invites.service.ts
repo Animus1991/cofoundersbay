@@ -50,17 +50,38 @@ export class InvitesService {
     return { invites };
   }
 
+  private readonly MONTHLY_INVITE_LIMIT = 10;
+
   async getInviteStats(userId: string) {
-    const [totalInvites, acceptedInvites, pendingInvites] = await Promise.all([
+    // Calculate start of current month for quota
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [totalInvites, acceptedInvites, pendingInvites, thisMonthInvites] = await Promise.all([
       this.prisma.invite.count({ where: { senderId: userId } }),
       this.prisma.invite.count({ where: { senderId: userId, status: 'accepted' } }),
       this.prisma.invite.count({ where: { senderId: userId, status: 'pending' } }),
+      this.prisma.invite.count({
+        where: {
+          senderId: userId,
+          createdAt: { gte: monthStart },
+          status: { in: ['pending', 'accepted'] }, // Don't count cancelled toward limit
+        },
+      }),
     ]);
 
+    const remaining = Math.max(0, this.MONTHLY_INVITE_LIMIT - thisMonthInvites);
     const conversionRate = totalInvites > 0 ? (acceptedInvites / totalInvites) * 100 : 0;
     const rewards = acceptedInvites * 10; // 10 points per accepted invite
 
     return {
+      stats: {
+        total: totalInvites,
+        pending: pendingInvites,
+        accepted: acceptedInvites,
+        remaining,
+      },
+      // Legacy fields for backwards compatibility
       totalInvites,
       acceptedInvites,
       pendingInvites,

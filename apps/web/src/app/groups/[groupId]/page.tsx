@@ -204,7 +204,8 @@ function PostCard({
 }
 
 export default function GroupDetailPage() {
-  const { groupId } = useParams<{ groupId: string }>();
+  const params = useParams<{ groupId: string }>();
+  const groupId = params?.groupId;
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: toastError } = useToast();
@@ -225,13 +226,14 @@ export default function GroupDetailPage() {
 
   const groupQuery = useQuery({
     queryKey: ['group', groupId],
-    queryFn: () => getGroup(groupId),
+    queryFn: () => getGroup(groupId!),
     staleTime: 60_000,
+    enabled: !!groupId,
   });
 
   const postsQuery = useQuery({
     queryKey: ['group-posts', groupId],
-    queryFn: () => listGroupPosts(groupId, { limit: 20 }),
+    queryFn: () => listGroupPosts(groupId!, { limit: 20 }),
     staleTime: 30_000,
     enabled: !!groupId,
   });

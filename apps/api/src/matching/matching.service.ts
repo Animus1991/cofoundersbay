@@ -11,13 +11,35 @@ export interface MatchingCriteria {
   industry?: string;
   stage?: string;
   commitment?: string;
-  maxDistance?: number; // km
+  maxDistance?: number;
+  modelVersion?: string;
+}
+
+export interface ScoreBreakdown {
+  role: number;
+  skills: number;
+  location: number;
+  industry: number;
+  semantic: number;
+  behavioral: number;
+  outcomePrior: number;
+  total: number;
+}
+
+export interface MatchExplanation {
+  dimension: string;
+  label: string;
+  weight: number;
+  score: number;
 }
 
 export interface MatchScore {
   userId: string;
   score: number;
+  confidence: number;
   reasons: string[];
+  explanation: MatchExplanation[];
+  breakdown: ScoreBreakdown;
   profile: any;
 }
 
@@ -28,6 +50,17 @@ export interface MatchingResult {
   generatedAt: Date;
 }
 
+// ── Default model weights (Stage 1: hybrid rule + semantic) ──────────────────
+const DEFAULT_WEIGHTS = {
+  role: 0.35,
+  skills: 0.22,
+  location: 0.12,
+  industry: 0.11,
+  semantic: 0.10,
+  behavioral: 0.06,
+  outcomePrior: 0.04,
+};
+
 @Injectable()
 export class MatchingService {
   private readonly logger = new Logger(MatchingService.name);
@@ -37,409 +70,697 @@ export class MatchingService {
     private readonly cache: CacheService,
   ) {}
 
-  /**
-   * Generate smart matches for a user based on their profile and preferences
-   */
+  // ── Public: generate matches ───────────────────────────────────────────────
+
   async generateMatches(criteria: MatchingCriteria): Promise<MatchingResult> {
-    const cacheKey = `matches:${criteria.userId}:${JSON.stringify(criteria)}`;
-    
+    const cacheKey = `matches:v2:${criteria.userId}:${criteria.role ?? 'any'}`;
     return this.cache.getOrSet(cacheKey, async () => {
       const user = await this.prisma.user.findUnique({
         where: { id: criteria.userId },
-        include: { profile: true },
+        include: { profile: { include: { skills: { include: { skill: true } } } } },
       });
+      if (!user) throw new Error('User not found');
 
-      if (!user) {
-        throw new Error('User not found');
-      }
+      const weights = await this.getActiveWeights(criteria.modelVersion);
+      const [potentialMatches, userVector, outcomeMap, behavioralMap] = await Promise.all([
+        this.getPotentialMatches(criteria),
+        this.getOrBuildFeatureVector(user),
+        this.getOutcomePriorMap(criteria.userId),
+        this.getBehavioralMap(criteria.userId),
+      ]);
 
-      // Get potential matches based on role and criteria
-      const potentialMatches = await this.getPotentialMatches(criteria);
-      
-      // Calculate scores for each match
       const scoredMatches = await Promise.all(
-        potentialMatches.map(async (candidate) => 
-          this.calculateMatchScore(user, candidate, criteria)
+        potentialMatches.map(candidate =>
+          this.calculateMatchScore(user, userVector, candidate, criteria, weights, outcomeMap, behavioralMap)
         )
       );
 
-      // Sort by score and filter out low matches
       const validMatches = scoredMatches
-        .filter(match => match.score > 0.3) // Minimum 30% compatibility
+        .filter(m => m.score > 0.25)
         .sort((a, b) => b.score - a.score)
-        .slice(0, 20); // Top 20 matches
+        .slice(0, 20);
 
-      return {
-        matches: validMatches,
-        total: validMatches.length,
-        criteria,
-        generatedAt: new Date(),
-      };
-    }, { ttl: 3600 }); // Cache for 1 hour
+      // Log inferences in background
+      this.logInferences(criteria.userId, validMatches, criteria.modelVersion ?? '1.0').catch(() => {});
+
+      return { matches: validMatches, total: validMatches.length, criteria, generatedAt: new Date() };
+    }, { ttl: 3600 });
   }
 
-  /**
-   * Get recommendations for users to connect with
-   */
-  async getRecommendations(userId: string, limit: number = 10): Promise<MatchScore[]> {
+  async getRecommendations(userId: string, limit = 10): Promise<MatchScore[]> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: { include: { skills: true } } },
+      include: { profile: { include: { skills: { include: { skill: true } } } } },
     });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
+    if (!user) throw new Error('User not found');
 
     const criteria: MatchingCriteria = {
       userId,
-      role: this.getComplementaryRole(user.role as 'founder' | 'mentor' | 'investor' | 'org') as MatchingCriteria['role'],
-      skills: (user.profile as any)?.skills?.map((s: any) => s.skillId) || [],
-      location: user.profile?.location || undefined,
-      remote: true, // Default to open to remote
+      role: this.getComplementaryRole(user.role) as MatchingCriteria['role'],
+      location: user.profile?.location ?? undefined,
+      remote: true,
     };
-
     const result = await this.generateMatches(criteria);
     return result.matches.slice(0, limit);
   }
 
-  /**
-   * Calculate compatibility score between two users
-   */
+  // ── Feedback ───────────────────────────────────────────────────────────────
+
+  async recordFeedback(params: {
+    sourceUserId: string;
+    targetUserId: string;
+    feedback: string;
+    connectionStarted?: boolean;
+    conversationStarted?: boolean;
+  }): Promise<void> {
+    await this.prisma.matchOutcome.upsert({
+      where: { sourceUserId_targetUserId: { sourceUserId: params.sourceUserId, targetUserId: params.targetUserId } },
+      create: {
+        sourceUserId: params.sourceUserId,
+        targetUserId: params.targetUserId,
+        feedback: params.feedback as any,
+        connectionStarted: params.connectionStarted ?? false,
+        conversationStarted: params.conversationStarted ?? false,
+      },
+      update: {
+        feedback: params.feedback as any,
+        connectionStarted: params.connectionStarted ?? false,
+        conversationStarted: params.conversationStarted ?? false,
+      },
+    });
+
+    // Record behavioral signal
+    await this.recordBehavioralSignal(params.sourceUserId, 'match_feedback', params.targetUserId, 'user',
+      params.feedback === 'accepted' ? 2.0 : params.feedback === 'declined' ? -1.0 : 0.5);
+
+    // Invalidate cache
+    await this.cache.invalidateByTag(`matches:v2:${params.sourceUserId}`);
+  }
+
+  async recordBehavioralSignal(
+    userId: string,
+    signalType: string,
+    targetId?: string,
+    targetType?: string,
+    value = 1.0,
+  ): Promise<void> {
+    await this.prisma.userBehaviorSignal.create({
+      data: { userId, signalType, targetId, targetType, value },
+    });
+    // Invalidate feature vector cache so it rebuilds with new signals
+    await this.cache.del(`fv:${userId}`);
+  }
+
+  // ── Legacy: backward-compatible feedback method ────────────────────────────
+
+  async updateMatchingFeedback(userId: string, matchUserId: string, feedback: 'positive' | 'negative'): Promise<void> {
+    await this.recordFeedback({
+      sourceUserId: userId,
+      targetUserId: matchUserId,
+      feedback: feedback === 'positive' ? 'accepted' : 'declined',
+    });
+  }
+
+  // ── Stats ──────────────────────────────────────────────────────────────────
+
+  async getMatchingStats(userId: string): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { connectionsSent: true, connectionsReceived: true },
+    });
+    if (!user) throw new Error('User not found');
+
+    const sent = user.connectionsSent;
+    const received = user.connectionsReceived;
+    const accepted = [...sent, ...received].filter(c => c.status === 'accepted');
+
+    const [outcomes, signals] = await Promise.all([
+      this.prisma.matchOutcome.findMany({ where: { sourceUserId: userId }, select: { feedback: true } }),
+      this.prisma.userBehaviorSignal.count({ where: { userId } }),
+    ]);
+
+    const positiveOutcomes = outcomes.filter(o => ['accepted', 'connection_started'].includes(o.feedback)).length;
+
+    return {
+      sentRequests: sent.filter(c => c.status === 'pending').length,
+      receivedRequests: received.filter(c => c.status === 'pending').length,
+      totalConnections: accepted.length,
+      acceptanceRate: sent.length > 0 ? (accepted.filter(c => c.requesterId === userId).length / sent.length) * 100 : 0,
+      responseRate: received.length > 0 ? (accepted.filter(c => c.receiverId === userId).length / received.length) * 100 : 0,
+      matchOutcomes: outcomes.length,
+      positiveOutcomeRate: outcomes.length > 0 ? (positiveOutcomes / outcomes.length) * 100 : 0,
+      behavioralSignals: signals,
+    };
+  }
+
+  async getAdminStats(): Promise<any> {
+    const [totalMatches, activeModel, experiments] = await Promise.all([
+      this.prisma.matchInferenceLog.count(),
+      this.prisma.matchModelVersion.findFirst({ where: { isActive: true } }),
+      this.prisma.matchExperiment.findMany({ where: { status: 'running' } }),
+    ]);
+
+    const outcomes = await this.prisma.matchOutcome.groupBy({
+      by: ['feedback'],
+      _count: true,
+    });
+
+    return { totalMatches, activeModel, runningExperiments: experiments.length, outcomes };
+  }
+
+  // ── Detailed VS breakdown (Match Detail Page) ──────────────────────────────
+
+  async getDetailedVs(sourceUserId: string, targetUserId: string): Promise<any> {
+    const include = { profile: { include: { skills: { include: { skill: true } } } } };
+    const [source, target] = await Promise.all([
+      this.prisma.user.findUnique({ where: { id: sourceUserId }, include }),
+      this.prisma.user.findUnique({ where: { id: targetUserId }, include }),
+    ]);
+    if (!source || !target) throw new Error('User not found');
+
+    const [sourceVec, targetVec, weights, outcomeMap, behavioralMap] = await Promise.all([
+      this.getOrBuildFeatureVector(source),
+      this.getOrBuildFeatureVector(target),
+      this.getActiveWeights(),
+      this.getOutcomePriorMap(sourceUserId),
+      this.getBehavioralMap(sourceUserId),
+    ]);
+
+    const matchScore = await this.calculateMatchScore(
+      source, sourceVec, target, { userId: sourceUserId, remote: true },
+      weights, outcomeMap, behavioralMap,
+    );
+
+    // ── Shared strengths: overlapping skills + keyword themes ────────────────
+    const sourceSkillNames = (source.profile?.skills ?? []).map((s: any) => s.skill?.name ?? '');
+    const targetSkillNames = (target.profile?.skills ?? []).map((s: any) => s.skill?.name ?? '');
+    const sharedSkills = sourceSkillNames.filter((n: string) => targetSkillNames.includes(n));
+
+    const sourceKws = new Set<string>([
+      ...((sourceVec.bioKeywords as string[]) ?? []),
+      ...((sourceVec.goalKeywords as string[]) ?? []),
+    ]);
+    const targetKws = new Set<string>([
+      ...((targetVec.bioKeywords as string[]) ?? []),
+      ...((targetVec.goalKeywords as string[]) ?? []),
+    ]);
+    const sharedKeywords = [...sourceKws].filter(k => targetKws.has(k)).slice(0, 6);
+
+    const strengthsFromSkills = sharedSkills.slice(0, 4).map((name: string) => ({ icon: 'terminal', label: name }));
+    const strengthsFromKws = sharedKeywords.slice(0, 4 - strengthsFromSkills.length).map((kw: string) => ({
+      icon: 'lightbulb', label: kw.charAt(0).toUpperCase() + kw.slice(1),
+    }));
+    const sharedStrengths = [...strengthsFromSkills, ...strengthsFromKws];
+
+    // ── Compatibility badges ─────────────────────────────────────────────────
+    const badges: string[] = [];
+    if (matchScore.breakdown.semantic > 0.65) badges.push('High Vision Alignment');
+    if (matchScore.breakdown.role > 0.8) badges.push('Strong Role Complement');
+    if (matchScore.breakdown.skills > 0.7) badges.push('Execution Match');
+    if (matchScore.breakdown.location > 0.8) badges.push('Same Ecosystem');
+    if (matchScore.breakdown.industry > 0.75) badges.push('Industry Fit');
+    if (matchScore.breakdown.behavioral > 0.7) badges.push('Highly Active');
+    if (badges.length === 0) badges.push('Potential Match');
+
+    // ── Friction points ──────────────────────────────────────────────────────
+    const frictionPoints: Array<{ icon: string; title: string; description: string }> = [];
+    const sourceLoc = source.profile?.location;
+    const targetLoc = target.profile?.location;
+    if (sourceLoc && targetLoc && sourceLoc !== targetLoc && matchScore.breakdown.location < 0.6) {
+      frictionPoints.push({
+        icon: 'schedule',
+        title: 'Location Difference',
+        description: `${sourceLoc} vs ${targetLoc}. Remote coordination may require structured async communication.`,
+      });
+    }
+    const sP = (source.profile?.rolePayload as any);
+    const tP = (target.profile?.rolePayload as any);
+    if (sP?.stage && tP?.stage && sP.stage !== tP.stage) {
+      frictionPoints.push({
+        icon: 'trending_up',
+        title: 'Stage Expectation Gap',
+        description: `One party is at ${sP.stage} stage, the other at ${tP.stage}. Align on milestone priorities early.`,
+      });
+    }
+    const sourceTech = sourceSkillNames.some((n: string) => ['technical', 'engineering', 'developer', 'software'].some(t => n.toLowerCase().includes(t)));
+    const targetTech = targetSkillNames.some((n: string) => ['technical', 'engineering', 'developer', 'software'].some(t => n.toLowerCase().includes(t)));
+    if (sourceTech && targetTech) {
+      frictionPoints.push({
+        icon: 'warning_amber',
+        title: 'Technical Role Overlap',
+        description: 'Both profiles are primarily technical. Consider how business, sales, and growth responsibilities will be covered.',
+      });
+    }
+    if (sP?.commitment && tP?.commitment && sP.commitment !== tP.commitment) {
+      frictionPoints.push({
+        icon: 'hourglass_empty',
+        title: 'Commitment Difference',
+        description: `Availability mismatch (${sP.commitment} vs ${tP.commitment}). Establish shared expectations on hours and milestones.`,
+      });
+    }
+
+    // ── Work style comparison data (5-axis: Risk, Speed, Vision, Technical, Social) ────
+    const workStyleAxes = ['Risk', 'Speed', 'Vision', 'Technical', 'Social'];
+    const extractWorkStyle = (user: any, vec: any): number[] => {
+      const p = user.profile?.rolePayload as any;
+      const risk = p?.riskTolerance === 'high' ? 85 : p?.riskTolerance === 'medium' ? 55 : 30;
+      const speed = p?.commitment === 'full_time' ? 90 : p?.commitment === 'part_time' ? 55 : 40;
+      const vision = Math.round((vec.goalKeywords?.length ?? 0) / 20 * 100);
+      const skillNames = (user.profile?.skills ?? []).map((s: any) => (s.skill?.name ?? '').toLowerCase());
+      const techScore = Math.min(100, skillNames.filter((n: string) => ['code', 'engineer', 'data', 'tech', 'dev'].some(t => n.includes(t))).length * 25);
+      const social = Math.round(Math.min(100, (vec.activityScore ?? 0.5) * 100));
+      return [risk, speed, Math.max(20, Math.min(100, vision)), techScore, social];
+    };
+
+    return {
+      overall: { score: Math.round(matchScore.score * 100), confidence: Math.round(matchScore.confidence * 100) },
+      breakdown: [
+        { key: 'role', label: 'Role Complementarity', score: Math.round(matchScore.breakdown.role * 100), color: '#4ADE80' },
+        { key: 'skills', label: 'Skills & Expertise', score: Math.round(matchScore.breakdown.skills * 100), color: '#22D3EE' },
+        { key: 'semantic', label: 'Vision & Goals', score: Math.round(matchScore.breakdown.semantic * 100), color: '#F472B6' },
+        { key: 'industry', label: 'Industry Alignment', score: Math.round(matchScore.breakdown.industry * 100), color: '#FB923C' },
+        { key: 'location', label: 'Location Fit', score: Math.round(matchScore.breakdown.location * 100), color: '#A78BFA' },
+        { key: 'behavioral', label: 'Platform Activity', score: Math.round(matchScore.breakdown.behavioral * 100), color: '#34D399' },
+      ],
+      badges: badges.slice(0, 3),
+      sharedStrengths,
+      frictionPoints: frictionPoints.slice(0, 3),
+      workStyle: {
+        axes: workStyleAxes,
+        source: extractWorkStyle(source, sourceVec),
+        target: extractWorkStyle(target, targetVec),
+      },
+      reasons: matchScore.reasons,
+      sourceProfile: {
+        id: source.id,
+        role: source.role,
+        displayName: source.profile?.displayName ?? source.email.split('@')[0],
+        headline: source.profile?.headline,
+        avatarUrl: source.profile?.avatarUrl,
+        location: source.profile?.location,
+      },
+      targetProfile: {
+        id: target.id,
+        role: target.role,
+        displayName: target.profile?.displayName ?? target.email.split('@')[0],
+        headline: target.profile?.headline,
+        avatarUrl: target.profile?.avatarUrl,
+        location: target.profile?.location,
+      },
+    };
+  }
+
+  // ── Core scoring ───────────────────────────────────────────────────────────
+
   private async calculateMatchScore(
     user: any,
+    userVector: any,
     candidate: any,
-    criteria: MatchingCriteria
+    criteria: MatchingCriteria,
+    weights: typeof DEFAULT_WEIGHTS,
+    outcomeMap: Map<string, number>,
+    behavioralMap: Map<string, number>,
   ): Promise<MatchScore> {
-    const score: { [key: string]: number } = {};
     const reasons: string[] = [];
 
-    // Role compatibility (40% weight)
+    // Layer 1: Structured features
     const roleScore = this.calculateRoleCompatibility(user.role, candidate.role);
-    score.role = roleScore * 0.4;
-    if (roleScore > 0.7) {
-      reasons.push('Complementary roles');
-    }
-
-    // Skills compatibility (25% weight)
-    const skillsScore = await this.calculateSkillsCompatibility(
-      user.profile?.skills || [],
-      candidate.profile?.skills || []
+    const skillsScore = this.calculateSkillsCompatibility(
+      user.profile?.skills ?? [], candidate.profile?.skills ?? []
     );
-    score.skills = skillsScore * 0.25;
-    if (skillsScore > 0.5) {
-      reasons.push('Shared skills and expertise');
-    }
-
-    // Location compatibility (20% weight)
     const locationScore = this.calculateLocationCompatibility(
-      user.profile?.location,
-      candidate.profile?.location,
-      criteria.remote
+      user.profile?.location, candidate.profile?.location, criteria.remote
     );
-    score.location = locationScore * 0.2;
-    if (locationScore > 0.6) {
-      reasons.push('Compatible location preferences');
-    }
+    const industryScore = this.calculateIndustryCompatibility(user.profile, candidate.profile);
 
-    // Industry/stage compatibility (15% weight)
-    const industryScore = this.calculateIndustryCompatibility(
-      user.profile,
-      candidate.profile
+    // Layer 2: Semantic (bio/goal keyword overlap)
+    const candidateVector = await this.getOrBuildFeatureVector(candidate);
+    const semanticScore = this.calculateSemanticScore(userVector, candidateVector);
+
+    // Layer 3: Behavioral signal (how active / responsive this candidate is)
+    const behavioralScore = behavioralMap.get(candidate.id) ?? 0.5;
+
+    // Layer 4: Outcome prior (past feedback for this specific pair)
+    const outcomePrior = outcomeMap.get(candidate.id) ?? 0.5;
+
+    // Build breakdown
+    const breakdown: ScoreBreakdown = {
+      role: roleScore,
+      skills: skillsScore,
+      location: locationScore,
+      industry: industryScore,
+      semantic: semanticScore,
+      behavioral: behavioralScore,
+      outcomePrior,
+      total: 0,
+    };
+
+    // Weighted total
+    breakdown.total = Math.min(1,
+      roleScore * weights.role +
+      skillsScore * weights.skills +
+      locationScore * weights.location +
+      industryScore * weights.industry +
+      semanticScore * weights.semantic +
+      behavioralScore * weights.behavioral +
+      outcomePrior * weights.outcomePrior
     );
-    score.industry = industryScore * 0.15;
-    if (industryScore > 0.5) {
-      reasons.push('Similar industry or stage');
-    }
 
-    const totalScore = Object.values(score).reduce((sum, val) => sum + val, 0);
+    // Build human-readable reasons
+    if (roleScore > 0.7) reasons.push('Complementary roles');
+    if (skillsScore > 0.5) reasons.push('Matching skills & expertise');
+    if (semanticScore > 0.5) reasons.push('Aligned goals & vision');
+    if (locationScore > 0.7) reasons.push('Same region or open to remote');
+    if (industryScore > 0.6) reasons.push('Related industry or stage');
+    if (behavioralScore > 0.7) reasons.push('Highly active on platform');
+
+    // Build safe explanation for UI
+    const explanation: MatchExplanation[] = [
+      { dimension: 'role', label: 'Role fit', weight: weights.role, score: roleScore },
+      { dimension: 'skills', label: 'Skills & expertise', weight: weights.skills, score: skillsScore },
+      { dimension: 'semantic', label: 'Goals & vision', weight: weights.semantic, score: semanticScore },
+      { dimension: 'location', label: 'Location', weight: weights.location, score: locationScore },
+      { dimension: 'industry', label: 'Industry & stage', weight: weights.industry, score: industryScore },
+    ].filter(e => e.score > 0.3); // Only show meaningful dimensions
+
+    const confidence = this.computeConfidence(breakdown, userVector, candidateVector);
 
     return {
       userId: candidate.id,
-      score: totalScore,
+      score: breakdown.total,
+      confidence,
       reasons,
+      explanation,
+      breakdown,
       profile: candidate.profile,
     };
   }
 
-  /**
-   * Get potential matches based on basic criteria
-   */
+  // ── Semantic scoring (TF-IDF style keyword overlap) ────────────────────────
+
+  private calculateSemanticScore(userVec: any, candidateVec: any): number {
+    if (!userVec || !candidateVec) return 0.5;
+
+    const userKws = new Set<string>([
+      ...((userVec.bioKeywords as string[]) ?? []),
+      ...((userVec.goalKeywords as string[]) ?? []),
+      ...((userVec.expertiseKeywords as string[]) ?? []),
+    ]);
+    const candidateKws = new Set<string>([
+      ...((candidateVec.bioKeywords as string[]) ?? []),
+      ...((candidateVec.goalKeywords as string[]) ?? []),
+      ...((candidateVec.expertiseKeywords as string[]) ?? []),
+    ]);
+
+    if (userKws.size === 0 || candidateKws.size === 0) return 0.4;
+
+    // Jaccard similarity on keyword sets
+    const intersection = new Set([...userKws].filter(k => candidateKws.has(k)));
+    const union = new Set([...userKws, ...candidateKws]);
+    const jaccard = intersection.size / union.size;
+
+    // Boost: check for thematic complementarity (tech vs business, etc.)
+    const complementaryBoost = this.computeKeywordComplementarity(userKws, candidateKws);
+
+    return Math.min(1, jaccard * 0.6 + complementaryBoost * 0.4);
+  }
+
+  private computeKeywordComplementarity(kws1: Set<string>, kws2: Set<string>): number {
+    const techTerms = ['engineer', 'developer', 'technical', 'software', 'code', 'data', 'ai', 'ml', 'backend', 'frontend'];
+    const bizTerms = ['sales', 'marketing', 'business', 'growth', 'revenue', 'strategy', 'operations', 'finance', 'cfo', 'cmo'];
+    const designTerms = ['design', 'ux', 'ui', 'product', 'brand', 'creative', 'visual'];
+
+    const hasTech = (kws: Set<string>) => techTerms.some(t => [...kws].some(k => k.includes(t)));
+    const hasBiz = (kws: Set<string>) => bizTerms.some(t => [...kws].some(k => k.includes(t)));
+    const hasDesign = (kws: Set<string>) => designTerms.some(t => [...kws].some(k => k.includes(t)));
+
+    let score = 0;
+    if ((hasTech(kws1) && hasBiz(kws2)) || (hasBiz(kws1) && hasTech(kws2))) score += 0.6;
+    if ((hasTech(kws1) && hasDesign(kws2)) || (hasDesign(kws1) && hasTech(kws2))) score += 0.4;
+    if ((hasBiz(kws1) && hasDesign(kws2)) || (hasDesign(kws1) && hasBiz(kws2))) score += 0.3;
+
+    return Math.min(1, score);
+  }
+
+  // ── Feature vector ─────────────────────────────────────────────────────────
+
+  private async getOrBuildFeatureVector(user: any): Promise<any> {
+    const cached = await this.cache.get(`fv:${user.id}`);
+    if (cached) return cached;
+
+    // Extract keywords from profile text
+    const profileText = [
+      user.profile?.bio ?? '',
+      user.profile?.headline ?? '',
+      (user.profile?.rolePayload as any)?.goals ?? '',
+      (user.profile?.rolePayload as any)?.expertise ?? '',
+    ].join(' ').toLowerCase();
+
+    const keywords = this.extractKeywords(profileText);
+    const goalText = ((user.profile?.rolePayload as any)?.goals ?? '').toLowerCase();
+    const goalKeywords = this.extractKeywords(goalText);
+    const expertiseText = ((user.profile?.rolePayload as any)?.expertise ?? '').toLowerCase();
+    const expertiseKeywords = this.extractKeywords(expertiseText);
+
+    // Behavioral aggregates from DB
+    const [signals, outcomes] = await Promise.all([
+      this.prisma.userBehaviorSignal.findMany({
+        where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 30 * 24 * 3600 * 1000) } },
+        select: { signalType: true, value: true },
+      }),
+      this.prisma.matchOutcome.findMany({
+        where: { sourceUserId: user.id },
+        select: { feedback: true },
+      }),
+    ]);
+
+    const activityScore = Math.min(1, signals.length / 50);
+    const positiveOutcomes = outcomes.filter(o => o.feedback === 'accepted').length;
+    const acceptanceRate = outcomes.length > 0 ? positiveOutcomes / outcomes.length : null;
+
+    // Profile completeness
+    const p = user.profile;
+    const fields = [p?.bio, p?.headline, p?.location, p?.avatarUrl, p?.skills?.length > 0];
+    const profileQualityScore = fields.filter(Boolean).length / fields.length;
+
+    const vector = {
+      bioKeywords: keywords.slice(0, 30),
+      goalKeywords: goalKeywords.slice(0, 20),
+      expertiseKeywords: expertiseKeywords.slice(0, 20),
+      activityScore,
+      acceptanceRate,
+      profileQualityScore,
+    };
+
+    // Persist to DB async (upsert)
+    this.prisma.matchFeatureVector.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, features: { role: user.role }, ...vector },
+      update: { features: { role: user.role }, ...vector },
+    }).catch(() => {});
+
+    await this.cache.set(`fv:${user.id}`, vector, 3600);
+    return vector;
+  }
+
+  private extractKeywords(text: string): string[] {
+    const stopwords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+      'by', 'from', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+      'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'shall',
+      'my', 'your', 'our', 'their', 'its', 'this', 'that', 'these', 'those', 'i', 'we',
+      'you', 'he', 'she', 'it', 'they', 'what', 'which', 'who', 'how', 'when', 'where',
+    ]);
+    return text
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopwords.has(w))
+      .filter((w, i, arr) => arr.indexOf(w) === i) // unique
+      .slice(0, 50);
+  }
+
+  // ── Outcome prior map ──────────────────────────────────────────────────────
+
+  private async getOutcomePriorMap(userId: string): Promise<Map<string, number>> {
+    const outcomes = await this.prisma.matchOutcome.findMany({
+      where: { sourceUserId: userId },
+      select: { targetUserId: true, feedback: true },
+    });
+    const map = new Map<string, number>();
+    for (const o of outcomes) {
+      const score = o.feedback === 'accepted' ? 0.9
+        : o.feedback === 'declined' ? 0.1
+        : o.feedback === 'not_relevant' ? 0.05
+        : 0.5;
+      map.set(o.targetUserId, score);
+    }
+    return map;
+  }
+
+  // ── Behavioral map ─────────────────────────────────────────────────────────
+
+  private async getBehavioralMap(userId: string): Promise<Map<string, number>> {
+    // Get recent positive behavioral signals about other users
+    const signals = await this.prisma.userBehaviorSignal.findMany({
+      where: {
+        userId,
+        signalType: { in: ['profile_view', 'match_click', 'message_sent'] },
+        targetType: 'user',
+        createdAt: { gte: new Date(Date.now() - 30 * 24 * 3600 * 1000) },
+      },
+      select: { targetId: true, signalType: true, value: true },
+    });
+
+    const map = new Map<string, number>();
+    for (const s of signals) {
+      if (!s.targetId) continue;
+      const current = map.get(s.targetId) ?? 0.5;
+      map.set(s.targetId, Math.min(1, current + s.value * 0.1));
+    }
+    return map;
+  }
+
+  // ── Confidence calculation ─────────────────────────────────────────────────
+
+  private computeConfidence(breakdown: ScoreBreakdown, userVec: any, candidateVec: any): number {
+    let confidence = 0.5;
+    if (userVec?.profileQualityScore > 0.6) confidence += 0.15;
+    if (candidateVec?.profileQualityScore > 0.6) confidence += 0.15;
+    if (userVec?.bioKeywords?.length > 5) confidence += 0.1;
+    if (candidateVec?.bioKeywords?.length > 5) confidence += 0.1;
+    return Math.min(0.95, confidence);
+  }
+
+  // ── Model weights ──────────────────────────────────────────────────────────
+
+  private async getActiveWeights(modelVersion?: string): Promise<typeof DEFAULT_WEIGHTS> {
+    try {
+      const model = modelVersion
+        ? await this.prisma.matchModelVersion.findUnique({ where: { version: modelVersion } })
+        : await this.prisma.matchModelVersion.findFirst({ where: { isActive: true } });
+      if (model?.weights) return model.weights as typeof DEFAULT_WEIGHTS;
+    } catch {}
+    return DEFAULT_WEIGHTS;
+  }
+
+  // ── Inference logging ──────────────────────────────────────────────────────
+
+  private async logInferences(sourceUserId: string, matches: MatchScore[], modelVersion: string): Promise<void> {
+    for (const match of matches.slice(0, 10)) {
+      await this.prisma.matchInferenceLog.upsert({
+        where: {
+          sourceUserId_targetUserId_modelVersion: {
+            sourceUserId, targetUserId: match.userId, modelVersion,
+          },
+        },
+        create: {
+          sourceUserId, targetUserId: match.userId,
+          roleScore: match.breakdown.role,
+          skillScore: match.breakdown.skills,
+          locationScore: match.breakdown.location,
+          industryScore: match.breakdown.industry,
+          semanticScore: match.breakdown.semantic,
+          behavioralScore: match.breakdown.behavioral,
+          outcomePriorScore: match.breakdown.outcomePrior,
+          finalScore: match.breakdown.total,
+          modelVersion,
+          explanation: match.explanation as any,
+          confidence: match.confidence,
+          shownAt: new Date(),
+        },
+        update: { finalScore: match.breakdown.total, shownAt: new Date() },
+      }).catch(() => {});
+    }
+  }
+
+  // ── Candidate pool ─────────────────────────────────────────────────────────
+
   private async getPotentialMatches(criteria: MatchingCriteria): Promise<any[]> {
     const where: any = {
       id: { not: criteria.userId },
       moderationStatus: 'active',
       emailVerified: true,
     };
-
-    // Filter by role if specified
-    if (criteria.role) {
-      where.role = criteria.role;
-    }
-
-    // Filter by location if specified and not remote
+    if (criteria.role) where.role = criteria.role;
     if (criteria.location && !criteria.remote) {
-      where.profile = {
-        location: criteria.location,
-      };
+      where.profile = { location: criteria.location };
     }
-
     return this.prisma.user.findMany({
       where,
-      include: {
-        profile: {
-          include: {
-            skills: true,
-          },
-        },
-      },
-      take: 100, // Limit for performance
+      include: { profile: { include: { skills: { include: { skill: true } } } } },
+      take: 100,
     });
   }
 
-  /**
-   * Calculate role compatibility score
-   */
+  // ── Structured scoring helpers ─────────────────────────────────────────────
+
   private calculateRoleCompatibility(userRole: string, candidateRole: string): number {
-    const compatibilityMatrix: { [key: string]: { [key: string]: number } } = {
-      founder: {
-        founder: 0.3, // Similar founders can collaborate
-        mentor: 0.9, // Founders need mentors
-        investor: 0.8, // Founders need investors
-        org: 0.7, // Founders may need org support
-      },
-      mentor: {
-        founder: 0.9, // Mentors help founders
-        mentor: 0.4, // Mentors can collaborate
-        investor: 0.6, // Mentors and investors can connect
-        org: 0.8, // Mentors often work with orgs
-      },
-      investor: {
-        founder: 0.8, // Investors invest in founders
-        mentor: 0.6, // Investors value mentor insights
-        investor: 0.5, // Investors can co-invest
-        org: 0.9, // Investors work with orgs
-      },
-      org: {
-        founder: 0.7, // Orgs support founders
-        mentor: 0.8, // Orgs work with mentors
-        investor: 0.9, // Orgs need investors
-        org: 0.6, // Orgs can collaborate
-      },
+    const matrix: Record<string, Record<string, number>> = {
+      founder: { founder: 0.3, mentor: 0.9, investor: 0.8, org: 0.7 },
+      mentor:  { founder: 0.9, mentor: 0.4, investor: 0.6, org: 0.8 },
+      investor: { founder: 0.8, mentor: 0.6, investor: 0.5, org: 0.9 },
+      org:     { founder: 0.7, mentor: 0.8, investor: 0.9, org: 0.6 },
     };
-
-    return compatibilityMatrix[userRole]?.[candidateRole] || 0.5;
+    return matrix[userRole]?.[candidateRole] ?? 0.5;
   }
 
-  /**
-   * Calculate skills compatibility score
-   */
-  private async calculateSkillsCompatibility(
-    userSkills: any[],
-    candidateSkills: any[]
-  ): Promise<number> {
-    if (!userSkills.length || !candidateSkills.length) {
-      return 0.5; // Neutral score if no skills data
-    }
+  private calculateSkillsCompatibility(userSkills: any[], candidateSkills: any[]): number {
+    if (!userSkills.length || !candidateSkills.length) return 0.4;
+    const uIds = new Set(userSkills.map(s => s.skillId));
+    const cIds = new Set(candidateSkills.map(s => s.skillId));
+    const intersection = [...uIds].filter(id => cIds.has(id)).length;
+    const union = new Set([...uIds, ...cIds]).size;
+    const jaccard = intersection / union;
 
-    const userSkillIds = new Set(userSkills.map((s: any) => s.skillId));
-    const candidateSkillIds = new Set(candidateSkills.map((s: any) => s.skillId));
+    const uNames = userSkills.map(s => (s.skill?.name ?? '').toLowerCase());
+    const cNames = candidateSkills.map(s => (s.skill?.name ?? '').toLowerCase());
+    const complementary = this.calcComplementarySkills(uNames, cNames);
 
-    // Calculate intersection
-    const intersection = new Set(
-      [...userSkillIds].filter(skillId => candidateSkillIds.has(skillId))
-    );
-
-    const union = new Set([...userSkillIds, ...candidateSkillIds]);
-    
-    // Jaccard similarity
-    const similarity = intersection.size / union.size;
-
-    // Boost score for complementary skills (not identical but related)
-    const complementaryScore = this.calculateComplementarySkills(userSkills, candidateSkills);
-
-    return Math.min(1, similarity * 0.7 + complementaryScore * 0.3);
+    return Math.min(1, jaccard * 0.7 + complementary * 0.3);
   }
 
-  /**
-   * Calculate complementary skills score
-   */
-  private calculateComplementarySkills(userSkills: any[], candidateSkills: any[]): number {
-    // This would integrate with a skills taxonomy to find complementary skills
-    // For now, return a simple heuristic
-    const userSkillNames = userSkills.map((s: any) => (s.skill?.name || '').toLowerCase());
-    const candidateSkillNames = candidateSkills.map((s: any) => (s.skill?.name || '').toLowerCase());
-
-    // Define complementary skill pairs
-    const complementaryPairs = [
-      ['technical', 'business'],
-      ['marketing', 'product'],
-      ['design', 'development'],
-      ['sales', 'engineering'],
-      ['finance', 'operations'],
+  private calcComplementarySkills(uNames: string[], cNames: string[]): number {
+    const pairs = [
+      ['technical', 'business'], ['marketing', 'product'],
+      ['design', 'development'], ['sales', 'engineering'], ['finance', 'operations'],
     ];
-
-    let complementaryCount = 0;
-    for (const [skill1, skill2] of complementaryPairs) {
-      const hasSkill1 = userSkillNames.some((name: string) => name.includes(skill1));
-      const hasSkill2 = candidateSkillNames.some((name: string) => name.includes(skill2));
-      const hasSkill1Candidate = candidateSkillNames.some((name: string) => name.includes(skill1));
-      const hasSkill2User = userSkillNames.some((name: string) => name.includes(skill2));
-
-      if ((hasSkill1 && hasSkill2) || (hasSkill1Candidate && hasSkill2User)) {
-        complementaryCount++;
-      }
+    let count = 0;
+    for (const [a, b] of pairs) {
+      const uA = uNames.some(n => n.includes(a)), cB = cNames.some(n => n.includes(b));
+      const cA = cNames.some(n => n.includes(a)), uB = uNames.some(n => n.includes(b));
+      if ((uA && cB) || (cA && uB)) count++;
     }
-
-    return Math.min(1, complementaryCount / complementaryPairs.length);
+    return Math.min(1, count / pairs.length);
   }
 
-  /**
-   * Calculate location compatibility score
-   */
-  private calculateLocationCompatibility(
-    userLocation?: string,
-    candidateLocation?: string,
-    remote: boolean = false
-  ): number {
-    if (remote) {
-      return 0.9; // High score for remote compatibility
-    }
-
-    if (!userLocation || !candidateLocation) {
-      return 0.5; // Neutral score if location data missing
-    }
-
-    // Simple location matching - in real implementation, use geolocation API
-    if (userLocation.toLowerCase() === candidateLocation.toLowerCase()) {
-      return 1.0;
-    }
-
-    // Check if same country/region (simplified)
-    const userParts = userLocation.toLowerCase().split(',');
-    const candidateParts = candidateLocation.toLowerCase().split(',');
-
-    if (userParts[userParts.length - 1] === candidateParts[candidateParts.length - 1]) {
-      return 0.7;
-    }
-
+  private calculateLocationCompatibility(uLoc?: string, cLoc?: string, remote = false): number {
+    if (remote) return 0.85;
+    if (!uLoc || !cLoc) return 0.5;
+    if (uLoc.toLowerCase() === cLoc.toLowerCase()) return 1.0;
+    const uParts = uLoc.toLowerCase().split(',');
+    const cParts = cLoc.toLowerCase().split(',');
+    if (uParts.at(-1)?.trim() === cParts.at(-1)?.trim()) return 0.7;
     return 0.3;
   }
 
-  /**
-   * Calculate industry/stage compatibility
-   */
-  private calculateIndustryCompatibility(userProfile: any, candidateProfile: any): number {
-    const userPayload = userProfile?.rolePayload as any;
-    const candidatePayload = candidateProfile?.rolePayload as any;
-
-    if (!userPayload || !candidatePayload) {
-      return 0.5;
-    }
-
+  private calculateIndustryCompatibility(uProfile: any, cProfile: any): number {
+    const uP = uProfile?.rolePayload as any;
+    const cP = cProfile?.rolePayload as any;
+    if (!uP || !cP) return 0.5;
     let score = 0.5;
-
-    // Industry matching
-    if (userPayload.industry && candidatePayload.industry) {
-      if (userPayload.industry === candidatePayload.industry) {
-        score += 0.3;
-      }
+    if (uP.industry && cP.industry && uP.industry === cP.industry) score += 0.3;
+    if (uP.stage && cP.stage) {
+      const stageDiff = Math.abs(this.stageNum(uP.stage) - this.stageNum(cP.stage));
+      score += Math.max(0, 0.2 - stageDiff * 0.07);
     }
-
-    // Stage compatibility
-    if (userPayload.stage && candidatePayload.stage) {
-      const stageCompatibility = this.getStageCompatibility(userPayload.stage, candidatePayload.stage);
-      score += stageCompatibility * 0.2;
-    }
-
     return Math.min(1, score);
   }
 
-  /**
-   * Get stage compatibility score
-   */
-  private getStageCompatibility(stage1: string, stage2: string): number {
-    const stageOrder = ['idea', 'mvp', 'traction', 'scaling'];
-    const stageMap: { [key: string]: number } = {
-      idea: 0,
-      mvp: 1,
-      traction: 2,
-      scaling: 3,
-    };
-
-    const stage1Level = stageMap[stage1] ?? 0;
-    const stage2Level = stageMap[stage2] ?? 0;
-
-    // Closer stages are more compatible
-    const diff = Math.abs(stage1Level - stage2Level);
-    return Math.max(0, 1 - diff * 0.3);
+  private stageNum(stage: string): number {
+    return ({ idea: 0, mvp: 1, traction: 2, scaling: 3 }[stage] ?? 1);
   }
 
-  /**
-   * Get complementary role for matching
-   */
-  private getComplementaryRole(userRole: string): 'founder' | 'mentor' | 'investor' | 'org' | undefined {
-    const complementaryRoles: { [key: string]: string[] } = {
-      founder: ['mentor', 'investor'],
-      mentor: ['founder', 'org'],
-      investor: ['founder', 'org'],
-      org: ['mentor', 'investor'],
-    };
-
-    return complementaryRoles[userRole]?.[0] as 'founder' | 'mentor' | 'investor' | 'org' | undefined;
-  }
-
-  /**
-   * Update matching algorithm based on user feedback
-   */
-  async updateMatchingFeedback(userId: string, matchUserId: string, feedback: 'positive' | 'negative'): Promise<void> {
-    const cacheKey = `feedback:${userId}:${matchUserId}`;
-    
-    // Store feedback for learning algorithm
-    await this.cache.set(cacheKey, {
-      feedback,
-      timestamp: new Date(),
-    }, 30 * 24 * 60 * 60); // 30 days
-
-    // Invalidate user's matches cache
-    await this.cache.invalidateByTag(`user:${userId}:matches`);
-    
-    this.logger.log(`Recorded matching feedback: ${userId} -> ${matchUserId} (${feedback})`);
-  }
-
-  /**
-   * Get user's matching statistics
-   */
-  async getMatchingStats(userId: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        connectionsSent: true,
-        connectionsReceived: true,
-      },
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const sentRequests = user.connectionsSent.filter(c => c.status === 'pending');
-    const receivedRequests = user.connectionsReceived.filter(c => c.status === 'pending');
-    const acceptedConnections = [
-      ...user.connectionsSent.filter(c => c.status === 'accepted'),
-      ...user.connectionsReceived.filter(c => c.status === 'accepted'),
-    ];
-
-    return {
-      sentRequests: sentRequests.length,
-      receivedRequests: receivedRequests.length,
-      totalConnections: acceptedConnections.length,
-      acceptanceRate: sentRequests.length > 0 
-        ? (acceptedConnections.filter(c => c.requesterId === userId).length / sentRequests.length) * 100
-        : 0,
-      responseRate: receivedRequests.length > 0
-        ? (acceptedConnections.filter(c => c.receiverId === userId).length / receivedRequests.length) * 100
-        : 0,
-    };
+  private getComplementaryRole(role: string): string | undefined {
+    return ({ founder: 'mentor', mentor: 'founder', investor: 'founder', org: 'mentor' }[role]);
   }
 }

@@ -171,32 +171,43 @@ export default function DiscoverPage() {
   };
 
   return (
-    <AppShell
-      title="Discover"
-      description="Find founders, mentors, investors, and teams"
-      actions={
-        <Link href="/">
-          <Button variant="secondary">Home</Button>
-        </Link>
-      }
-    >
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <TabsList>
-            <TabsTrigger value="search" className="gap-2">
-              <Users className="h-4 w-4" />
-              Search
-            </TabsTrigger>
-            <TabsTrigger value="suggestions" className="gap-2">
-              <Sparkles className="h-4 w-4" />
-              For You
-            </TabsTrigger>
-            <TabsTrigger value="matches" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Top Matches
-            </TabsTrigger>
-          </TabsList>
+    <AppShell>
+      <div className="space-y-6">
+        {/* Context Bar */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Explore</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Discover founders, mentors, investors, and team members
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link href="/matches">
+              <Button variant="outline" size="sm" className="gap-2">
+                <TrendingUp className="h-4 w-4" />
+                View Matches
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <TabsList>
+              <TabsTrigger value="search" className="gap-2">
+                <Users className="h-4 w-4" />
+                Search
+              </TabsTrigger>
+              <TabsTrigger value="suggestions" className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                For You
+              </TabsTrigger>
+              <TabsTrigger value="matches" className="gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Top Matches
+              </TabsTrigger>
+            </TabsList>
 
           {/* View mode toggle */}
           <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-card p-1 shadow-sm">
@@ -436,6 +447,7 @@ export default function DiscoverPage() {
           onSend={handleSendConnection}
         />
       )}
+        </div>
     </AppShell>
   );
 }

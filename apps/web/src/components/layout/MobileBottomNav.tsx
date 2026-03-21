@@ -31,7 +31,7 @@ export function MobileBottomNav() {
       {bottomTabs.map((tab) => {
         const isActive =
           pathname === tab.path ||
-          (tab.path !== '/' && pathname.startsWith(tab.path));
+          (tab.path !== '/' && pathname?.startsWith(tab.path));
         const Icon = tab.icon;
         const badge = badgeCount(tab.badgeKey);
         return (

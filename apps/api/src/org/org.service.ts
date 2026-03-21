@@ -135,4 +135,73 @@ export class OrgService {
 
     return { cohorts, total };
   }
+
+  async getOrgMembers(slug: string, params?: { limit?: number; offset?: number }) {
+    const org = await this.prisma.user.findFirst({
+      where: { slug, role: 'org' },
+      select: { id: true },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    // Get members from all cohorts organized by this org
+    const [members, total] = await Promise.all([
+      this.prisma.cohortMember.findMany({
+        where: { cohort: { organizerId: org.id } },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              role: true,
+              profile: {
+                select: {
+                  displayName: true,
+                  avatarUrl: true,
+                  headline: true,
+                  location: true,
+                },
+              },
+            },
+          },
+          cohort: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        orderBy: { joinedAt: 'desc' },
+        take: params?.limit ?? 50,
+        skip: params?.offset ?? 0,
+      }),
+      this.prisma.cohortMember.count({
+        where: { cohort: { organizerId: org.id } },
+      }),
+    ]);
+
+    // Deduplicate members (a user might be in multiple cohorts)
+    const uniqueMembers = new Map<string, typeof members[0]>();
+    for (const member of members) {
+      if (!uniqueMembers.has(member.userId)) {
+        uniqueMembers.set(member.userId, member);
+      }
+    }
+
+    return {
+      members: Array.from(uniqueMembers.values()).map((m) => ({
+        id: m.user.id,
+        displayName: m.user.profile?.displayName ?? m.user.email,
+        avatarUrl: m.user.profile?.avatarUrl ?? null,
+        headline: m.user.profile?.headline ?? null,
+        location: m.user.profile?.location ?? null,
+        role: m.user.role,
+        cohortName: m.cohort.name,
+        joinedAt: m.joinedAt,
+      })),
+      total,
+    };
+  }
 }

@@ -93,7 +93,7 @@ export function MobileNav() {
                 {section}
               </p>
               {links.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+                const active = pathname === href || (href !== '/' && pathname?.startsWith(href));
                 return (
                   <Link
                     key={`${section}-${href}`}

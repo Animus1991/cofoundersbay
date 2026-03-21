@@ -33,6 +33,17 @@ export function SideNav() {
     try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
   }, []);
 
+  // Hide sidebar on auth pages
+  const isAuthPage =
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/forgot-password') ||
+    pathname?.startsWith('/reset-password') ||
+    pathname?.startsWith('/onboarding') ||
+    pathname?.startsWith('/auth');
+
+  if (isAuthPage) return null;
+
   const badgeFor = (href: string): number => {
     if (href === '/messages') return unreadMessages;
     if (href === '/connections') return pendingIntros;
@@ -95,7 +106,7 @@ export function SideNav() {
             <ul className="space-y-0.5 px-2">
               {links.map(({ href, label, icon: Icon }) => {
                 const active =
-                  pathname === href || (href !== '/' && pathname.startsWith(href));
+                  pathname === href || (href !== '/' && pathname?.startsWith(href));
                 const badge = badgeFor(href);
 
                 return (

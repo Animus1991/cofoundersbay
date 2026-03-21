@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X, UserPlus, MessageSquare } from 'lucide-react';
 import { ConversationList, type Conversation } from '@/components/messaging/ConversationList';
 import { ChatWindow, NoChatSelected, type Message } from '@/components/messaging/ChatWindow';
+import { ReportBlockModal } from '@/components/common/ReportBlockModal';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,8 @@ import {
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 import { useSession } from '@/hooks/useSession';
+import { useMessaging } from '@/contexts/MessagingContext';
+import type { ConversationValidationState, ValidationMode } from '@/components/messaging/ConversationValidation';
 
 function mapConversation(s: ConversationSummary): Conversation {
   const lastAt = s.lastMessage?.createdAt ?? s.updatedAt;
@@ -68,6 +71,7 @@ export default function MessagesPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
   const { hasSession, mounted: sessionReady } = useSession();
+  const canUseMessaging = sessionReady && hasSession;
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
@@ -79,6 +83,14 @@ export default function MessagesPage() {
   const [introRequests, setIntroRequests] = useState<ConnectionRequestItem[]>([]);
   const [introLoading, setIntroLoading] = useState(false);
   const [introResponding, setIntroResponding] = useState<Record<string, boolean>>({});
+  const [reportBlockModal, setReportBlockModal] = useState<{ open: boolean; mode: 'report' | 'block' | 'both' }>({ open: false, mode: 'both' });
+  const [validationStates, setValidationStates] = useState<Record<string, ConversationValidationState>>({});
+  const { setActiveConversationId, markConversationRead } = useMessaging();
+
+  useEffect(() => {
+    return () => { setActiveConversationId(null); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
   const selectedConversationIdRef = useRef<string | null>(null);
@@ -242,20 +254,12 @@ export default function MessagesPage() {
     };
   }, [hasSession, router, sessionReady, showError]);
 
-  if (!sessionReady || !hasSession) {
-    return (
-      <AppShell fullHeight contentClassName="min-h-0">
-        <div className="flex flex-1 items-center justify-center bg-background/40">
-          <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
-            Preparing your messages...
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
   // Load pending intro (connection) requests
   const loadIntroRequests = useCallback(async () => {
+    if (!canUseMessaging) {
+      return;
+    }
+
     setIntroLoading(true);
     try {
       const { connections } = await listConnectionRequests({ type: 'received', limit: 50 });
@@ -265,11 +269,15 @@ export default function MessagesPage() {
     } finally {
       setIntroLoading(false);
     }
-  }, []);
+  }, [canUseMessaging]);
 
   useEffect(() => {
+    if (!canUseMessaging) {
+      return;
+    }
+
     loadIntroRequests();
-  }, [loadIntroRequests]);
+  }, [canUseMessaging, loadIntroRequests]);
 
   const handleIntroRespond = async (id: string, action: 'accepted' | 'declined') => {
     setIntroResponding((prev) => ({ ...prev, [id]: true }));
@@ -304,10 +312,10 @@ export default function MessagesPage() {
   };
 
   // Handle URL param for direct messaging
-  const toUserId = searchParams.get('to');
-  const openConversationId = searchParams.get('c');
+  const toUserId = searchParams?.get('to');
+  const openConversationId = searchParams?.get('c');
   useEffect(() => {
-    if (!toUserId || openConversationId) return;
+    if (!canUseMessaging || !toUserId || openConversationId) return;
 
     let cancelled = false;
     const run = async () => {
@@ -334,17 +342,17 @@ export default function MessagesPage() {
     return () => {
       cancelled = true;
     };
-  }, [toUserId, showError, openConversationId]);
+  }, [canUseMessaging, toUserId, showError, openConversationId]);
 
   // Handle URL param for opening an existing conversation
   useEffect(() => {
-    if (!openConversationId) return;
+    if (!canUseMessaging || !openConversationId) return;
     const conv = conversations.find((c) => c.id === openConversationId);
     if (!conv) return;
     setSelectedConversation(conv);
     setIsMobileViewingChat(true);
     socketRef.current?.emit('conversation:join', { conversationId: conv.id });
-  }, [openConversationId, conversations]);
+  }, [canUseMessaging, openConversationId, conversations]);
 
   // Reset typing indicator when conversation changes
   useEffect(() => {
@@ -353,28 +361,30 @@ export default function MessagesPage() {
 
   // Load messages when conversation is selected
   useEffect(() => {
-    if (selectedConversation) {
-      let cancelled = false;
-      const run = async () => {
-        try {
-          const { messages: list } = await listConversationMessages(selectedConversation.id, 200);
-          if (cancelled) return;
-          setMessages(list.map((m) => mapMessage(m, currentUserId)));
-          setConversations((prev) =>
-            prev.map((c) => (c.id === selectedConversation.id ? { ...c, unreadCount: 0 } : c)),
-          );
-          socketRef.current?.emit('conversation:join', { conversationId: selectedConversation.id });
-        } catch (e) {
-          if (cancelled) return;
-          showError('Failed to load messages', e instanceof Error ? e.message : 'Please try again');
-        }
-      };
-      run();
-      return () => {
-        cancelled = true;
-      };
+    if (!canUseMessaging || !selectedConversation) {
+      return;
     }
-  }, [selectedConversation, currentUserId, showError]);
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const { messages: list } = await listConversationMessages(selectedConversation.id, 200);
+        if (cancelled) return;
+        setMessages(list.map((m) => mapMessage(m, currentUserId)));
+        setConversations((prev) =>
+          prev.map((c) => (c.id === selectedConversation.id ? { ...c, unreadCount: 0 } : c)),
+        );
+        socketRef.current?.emit('conversation:join', { conversationId: selectedConversation.id });
+      } catch (e) {
+        if (cancelled) return;
+        showError('Failed to load messages', e instanceof Error ? e.message : 'Please try again');
+      }
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [canUseMessaging, selectedConversation, currentUserId, showError]);
 
   // Typing indicator emit
   const handleTypingStart = useCallback(() => {
@@ -488,39 +498,68 @@ export default function MessagesPage() {
 
   const pendingIntrosCount = introRequests.length;
 
-  return (
-    <AppShell fullHeight>
-    <div className="flex h-full bg-background">
-      {/* Messenger sidebar — conversations + intros */}
-      <div
-        className={cn(
-          'w-full md:w-[320px] lg:w-[360px] border-r border-border/60 flex-shrink-0 flex flex-col bg-card',
-          isMobileViewingChat && 'hidden md:flex'
-        )}
-      >
-        <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex flex-col h-full">
-          <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
-            <TabsList className="w-full">
-              <TabsTrigger value="chats" className="flex-1 gap-1.5">
-                <MessageSquare className="h-3.5 w-3.5" />
-                Chats
-                {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
-                  <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
-                    {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)}
-                  </span>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="intros" className="flex-1 gap-1.5">
-                <UserPlus className="h-3.5 w-3.5" />
-                Intros
-                {pendingIntrosCount > 0 && (
-                  <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
-                    {pendingIntrosCount}
-                  </span>
-                )}
-              </TabsTrigger>
-            </TabsList>
+  if (!canUseMessaging) {
+    return (
+      <AppShell fullHeight contentClassName="min-h-0">
+        <div className="flex flex-1 items-center justify-center bg-background/40">
+          <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
+            Preparing your messages...
           </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell>
+      <div className="flex flex-col h-full">
+        {/* Context Bar */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
+            <p className="text-sm text-muted-foreground">
+              Connect with co-founders, mentors, and team members
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <MessageSquare className="h-4 w-4" />
+              New Message
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 min-h-0">
+          {/* Messenger sidebar — conversations + intros */}
+          <div
+            className={cn(
+              'w-full md:w-[320px] lg:w-[360px] border-r border-border/60 flex-shrink-0 flex flex-col bg-card',
+              isMobileViewingChat && 'hidden md:flex'
+            )}
+          >
+            <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex flex-col h-full">
+              <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
+                <TabsList className="w-full">
+                  <TabsTrigger value="chats" className="flex-1 gap-1.5">
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Chats
+                    {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
+                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                        {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="intros" className="flex-1 gap-1.5">
+                    <UserPlus className="h-3.5 w-3.5" />
+                    Intros
+                    {pendingIntrosCount > 0 && (
+                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
+                        {pendingIntrosCount}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+              </div>
 
           <TabsContent value="chats" className="flex-1 overflow-hidden mt-0">
             <ConversationList
@@ -528,6 +567,8 @@ export default function MessagesPage() {
               selectedId={selectedConversation?.id}
               onSelect={(conv) => {
                 setSelectedConversation(conv);
+                setActiveConversationId(conv.id);
+                markConversationRead(conv.id);
                 setIsMobileViewingChat(true);
               }}
               onNewMessage={() => {}}
@@ -629,29 +670,80 @@ export default function MessagesPage() {
         )}
       >
         {selectedConversation ? (
-          <ChatWindow
-            conversation={{
-              ...selectedConversation,
-              recipientHeadline: undefined,
-              lastSeen: undefined,
-            }}
-            messages={messages}
-            currentUserId={currentUserId}
-            onSendMessage={handleSendMessage}
-            onTypingStart={handleTypingStart}
-            onTypingStop={handleTypingStop}
-            isRecipientTyping={isRecipientTyping}
-            onBack={() => {
-              setIsMobileViewingChat(false);
-            }}
-            onReport={() => showError('Report submitted', 'We will review this conversation')}
-            onBlock={() => showError('User blocked', 'You will no longer receive messages from this user')}
-          />
+          <>
+            <ChatWindow
+              conversation={{
+                ...selectedConversation,
+                recipientHeadline: undefined,
+                lastSeen: undefined,
+              }}
+              messages={messages}
+              currentUserId={currentUserId}
+              onSendMessage={handleSendMessage}
+              onTypingStart={handleTypingStart}
+              onTypingStop={handleTypingStop}
+              isRecipientTyping={isRecipientTyping}
+              onBack={() => {
+                setIsMobileViewingChat(false);
+              }}
+              onReport={() => setReportBlockModal({ open: true, mode: 'report' })}
+              onBlock={() => setReportBlockModal({ open: true, mode: 'block' })}
+              validationState={validationStates[selectedConversation.id] ?? {
+                mode: 'casual' as const,
+                initiatedBy: null,
+                initiatedAt: null,
+                acceptedBy: null,
+                acceptedAt: null,
+                lastValidatedAt: null,
+                validationHash: null,
+                transcriptAvailable: false,
+              }}
+              onValidationModeChange={(mode) => {
+                setValidationStates((prev) => ({
+                  ...prev,
+                  [selectedConversation.id]: {
+                    ...(prev[selectedConversation.id] ?? {
+                      mode: 'casual' as const,
+                      initiatedBy: null,
+                      initiatedAt: null,
+                      acceptedBy: null,
+                      acceptedAt: null,
+                      lastValidatedAt: null,
+                      validationHash: null,
+                      transcriptAvailable: false,
+                    }),
+                    mode,
+                    initiatedBy: mode !== 'casual' ? currentUserId : null,
+                    initiatedAt: mode !== 'casual' ? new Date().toISOString() : null,
+                    transcriptAvailable: mode !== 'casual',
+                  },
+                }));
+              }}
+            />
+            <ReportBlockModal
+              open={reportBlockModal.open}
+              onOpenChange={(open) => setReportBlockModal((prev) => ({ ...prev, open }))}
+              userId={selectedConversation.recipientId}
+              userName={selectedConversation.recipientName}
+              mode={reportBlockModal.mode}
+              onBlocked={(blockedUserId) => {
+                setConversations((prev) => prev.filter((conversation) => conversation.recipientId !== blockedUserId));
+                setSelectedConversation((current) =>
+                  current?.recipientId === blockedUserId ? null : current,
+                );
+                setMessages((prev) =>
+                  selectedConversation?.recipientId === blockedUserId ? [] : prev,
+                );
+                setIsMobileViewingChat(false);
+              }}
+            />
+          </>
         ) : (
           <NoChatSelected />
         )}
       </div>
-    </div>
+        </div>
+      </div>
     </AppShell>
   );
 }

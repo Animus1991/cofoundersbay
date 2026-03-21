@@ -1,0 +1,336 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  listAutomationRules,
+  listAutomationExecutions,
+  setAutomationRuleStatus,
+  deleteAutomationRule,
+  triggerAutomationRule,
+  getAutomationExecutionLogs,
+  type AutomationRuleItem,
+  type AutomationExecutionItem,
+  type AutomationLogItem,
+} from '@/lib/api';
+import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/toast';
+import {
+  Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
+  CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
+  Activity, Settings, Layers, ListChecks,
+} from 'lucide-react';
+
+const TRIGGER_LABELS: Record<string, string> = {
+  user_signup: 'User Signup',
+  onboarding_incomplete: 'Onboarding Incomplete',
+  profile_incomplete: 'Profile Incomplete',
+  match_generated: 'Match Generated',
+  match_not_viewed: 'Match Not Viewed',
+  connection_request_sent: 'Connection Sent',
+  connection_not_answered: 'Connection Unanswered',
+  connection_accepted: 'Connection Accepted',
+  mentor_request_submitted: 'Mentor Request',
+  mentor_request_accepted: 'Mentor Accepted',
+  mentor_session_idle: 'Mentor Session Idle',
+  community_join: 'Community Join',
+  community_inactive: 'Community Inactive',
+  content_reported_threshold: 'Report Threshold',
+  tenant_setup_incomplete: 'Tenant Setup Incomplete',
+  subscription_trial_ending: 'Trial Ending',
+  subscription_failed_payment: 'Failed Payment',
+  subscription_canceled: 'Subscription Canceled',
+  user_inactive: 'User Inactive',
+  scheduled: 'Scheduled',
+  manual: 'Manual',
+};
+
+function statusBadge(status: string) {
+  const map: Record<string, string> = {
+    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    paused: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    draft: 'bg-muted text-muted-foreground',
+    archived: 'bg-muted text-muted-foreground/60 line-through',
+  };
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? 'bg-muted text-muted-foreground'}`}>
+      {status}
+    </span>
+  );
+}
+
+function execStatusIcon(status: string) {
+  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
+  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" />;
+  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
+  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
+  return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+}
+
+function LogPanel({ executionId }: { executionId: string }) {
+  const { data: logs = [], isLoading } = useQuery<AutomationLogItem[]>({
+    queryKey: ['automation-logs', executionId],
+    queryFn: () => getAutomationExecutionLogs(executionId),
+    enabled: !!executionId,
+  });
+
+  if (isLoading) return <p className="text-xs text-muted-foreground animate-pulse">Loading logs…</p>;
+
+  return (
+    <div className="space-y-1 max-h-48 overflow-y-auto font-mono text-xs">
+      {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
+      {logs.map(log => (
+        <div key={log.id} className="flex items-start gap-2">
+          {log.level === 'error' && <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />}
+          {log.level === 'warn' && <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />}
+          {log.level === 'info' && <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />}
+          <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
+            [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function AutomationsPage() {
+  const queryClient = useQueryClient();
+  const { success, error: showError } = useToast();
+  const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
+  const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
+
+  const { data: rulesData, isLoading: rulesLoading } = useQuery({
+    queryKey: ['automation-rules'],
+    queryFn: () => listAutomationRules({ limit: 100 }),
+  });
+
+  const { data: executions = [], isLoading: execLoading } = useQuery<AutomationExecutionItem[]>({
+    queryKey: ['automation-executions'],
+    queryFn: () => listAutomationExecutions({ limit: 50 }),
+    enabled: activeTab === 'executions',
+    refetchInterval: 10000,
+  });
+
+  const setStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'active' | 'paused' | 'archived' }) =>
+      setAutomationRuleStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      success('Rule status updated');
+    },
+    onError: () => showError('Failed to update status'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteAutomationRule(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['automation-rules'] });
+      success('Rule deleted');
+    },
+    onError: () => showError('Failed to delete rule'),
+  });
+
+  const triggerMutation = useMutation({
+    mutationFn: (id: string) => triggerAutomationRule(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['automation-executions'] });
+      success('Rule triggered manually');
+    },
+    onError: () => showError('Failed to trigger rule'),
+  });
+
+  const rules = rulesData?.rules ?? [];
+  const total = rulesData?.total ?? 0;
+  const activeCount = rules.filter(r => r.status === 'active').length;
+  const failureCount = rules.filter(r => r.failureCount > 0).length;
+
+  return (
+    <AppShell>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Automation Rules</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Event-driven workflows — triggers, conditions, actions
+            </p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
+            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600' },
+            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600' },
+            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600' },
+          ].map(stat => (
+            <Card key={stat.label} className="p-4 flex items-center gap-3">
+              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xl font-bold">{stat.value}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Tab toggle */}
+        <div className="flex border-b border-border/50 gap-1">
+          {(['rules', 'executions'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                activeTab === tab
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab === 'rules' ? 'Rules' : 'Execution Log'}
+            </button>
+          ))}
+        </div>
+
+        {/* Rules tab */}
+        {activeTab === 'rules' && (
+          <div className="space-y-3">
+            {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
+            {!rulesLoading && rules.length === 0 && (
+              <Card className="p-8 text-center">
+                <Layers className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
+              </Card>
+            )}
+            {rules.map(rule => (
+              <Card key={rule.id} className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm">{rule.name}</span>
+                      {statusBadge(rule.status)}
+                      <Badge variant="outline" className="text-xs">
+                        {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
+                      </Badge>
+                      {rule.tenantId && (
+                        <Badge variant="secondary" className="text-xs">Tenant</Badge>
+                      )}
+                    </div>
+                    {rule.description && (
+                      <p className="text-xs text-muted-foreground mt-1">{rule.description}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <span>Priority: {rule.priority}</span>
+                      <span>Runs: {rule.executionCount}</span>
+                      {rule.failureCount > 0 && (
+                        <span className="text-amber-600 font-medium">⚠ {rule.failureCount} failures</span>
+                      )}
+                      {rule.lastRunAt && (
+                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString()}</span>
+                      )}
+                      {rule.delaySeconds > 0 && (
+                        <span>Delay: {rule.delaySeconds}s</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Manual trigger"
+                      onClick={() => triggerMutation.mutate(rule.id)}
+                      disabled={triggerMutation.isPending}
+                    >
+                      <Play className="h-3.5 w-3.5" />
+                    </Button>
+                    {rule.status === 'active' ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Pause"
+                        onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
+                      >
+                        <Pause className="h-3.5 w-3.5" />
+                      </Button>
+                    ) : rule.status === 'paused' || rule.status === 'draft' ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title="Activate"
+                        onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
+                      >
+                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      title="Delete"
+                      onClick={() => {
+                        if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Executions tab */}
+        {activeTab === 'executions' && (
+          <div className="space-y-2">
+            {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
+            {!execLoading && executions.length === 0 && (
+              <Card className="p-8 text-center">
+                <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-muted-foreground text-sm">No executions yet.</p>
+              </Card>
+            )}
+            {executions.map(exec => (
+              <div key={exec.id}>
+                <Card
+                  className="p-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setSelectedExecution(selectedExecution === exec.id ? null : exec.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    {execStatusIcon(exec.status)}
+                    <span className="text-xs font-mono text-muted-foreground w-24 shrink-0">
+                      {exec.id.slice(0, 8)}…
+                    </span>
+                    <span className="text-xs text-muted-foreground flex-1">
+                      Rule: {exec.ruleId.slice(0, 8)}… · {exec.status}
+                      {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(exec.createdAt).toLocaleString()}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
+                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
+                  </div>
+                </Card>
+                {selectedExecution === exec.id && (
+                  <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
+                    {exec.errorMessage && (
+                      <p className="text-xs text-destructive mb-2 font-mono">{exec.errorMessage}</p>
+                    )}
+                    <LogPanel executionId={exec.id} />
+                  </Card>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </AppShell>
+  );
+}

@@ -3,22 +3,23 @@
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Mail, Lock, ArrowRight, Users, Zap, Shield, Eye, EyeOff, Building2 } from 'lucide-react';
 import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
+import { useTenant } from '@/components/providers/TenantContext';
 
 const HERO_POINTS = [
-  { icon: Users, text: 'Connect with 10,000+ founders & investors' },
-  { icon: Zap,   text: 'AI-matched to your exact startup stage' },
-  { icon: Shield, text: 'Verified profiles, private by default' },
+  'Connect with 10,000+ founders & investors',
+  'AI-matched to your exact startup stage',
+  'Verified profiles, private by default',
 ];
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { activeTenant, branding } = useTenant();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +63,7 @@ export default function LoginPage() {
 
   const handleSSOLogin = () => {
     if (!ssoDiscovery?.provider?.id) return;
-    const returnUrl = searchParams.get('returnUrl') || '/';
+    const returnUrl = searchParams?.get('returnUrl') || '/';
     window.location.href = getSSOLoginUrl(ssoDiscovery.provider.id, returnUrl);
   };
 
@@ -102,35 +103,39 @@ export default function LoginPage() {
       <main id="main-content" className="flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
-            <Logo size="sm" />
+            {activeTenant?.logoUrl ? (
+              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" />
+            ) : (
+              <Logo size="sm" />
+            )}
           </Link>
 
-          <h1 className="font-display text-3xl font-bold text-foreground">Welcome back</h1>
-          <p className="mt-2 text-muted-foreground">Sign in to continue building your network.</p>
+          <h1 className="font-display text-3xl font-bold text-foreground">
+            {activeTenant ? `Welcome to ${activeTenant.displayName ?? activeTenant.name}` : 'Welcome back'}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {branding?.dashboardWelcomeText ?? 'Sign in to continue building your network.'}
+          </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
-                <span className="mt-0.5 shrink-0">⚠️</span>
+                <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  required
-                  autoComplete="email"
-                  placeholder="you@startup.com"
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                autoComplete="email"
+                placeholder="you@startup.com"
+              />
               {checkingSSO && (
                 <p className="text-xs text-muted-foreground animate-pulse">Checking organization settings...</p>
               )}
@@ -140,7 +145,9 @@ export default function LoginPage() {
             {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-primary" />
+                  <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    SSO
+                  </span>
                   <span className="font-medium text-sm">
                     {ssoDiscovery.tenant?.name || 'Organization'} SSO detected
                   </span>
@@ -178,7 +185,6 @@ export default function LoginPage() {
                     <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot password?</Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
@@ -187,22 +193,21 @@ export default function LoginPage() {
                       required={!ssoDiscovery?.ssoRequired}
                       autoComplete="current-password"
                       placeholder="••••••••"
-                      className="pl-10 pr-10"
+                      className="pr-16"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
+                      {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full gap-2" size="lg">
+                <Button type="submit" disabled={loading} className="w-full" size="lg">
                   {loading ? 'Signing in…' : 'Sign in'}
-                  {!loading && <ArrowRight className="h-4 w-4" />}
                 </Button>
               </>
             )}
@@ -226,19 +231,23 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
         <div className="relative z-10 max-w-md text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
-            <LogoIcon size={72} />
+            {activeTenant?.logoUrl ? (
+              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 object-contain" />
+            ) : (
+              <LogoIcon size={72} />
+            )}
           </div>
           <h2 className="font-display text-3xl font-bold text-white">
-            Your next co-founder is waiting
+            {branding?.heroTitle ?? 'Your next co-founder is waiting'}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">
-            Join thousands of founders, mentors, and investors building the future together.
+            {branding?.heroSubtitle ?? 'Join thousands of founders, mentors, and investors building the future together.'}
           </p>
           <div className="mt-10 space-y-3 text-left">
-            {HERO_POINTS.map(({ icon: Icon, text }) => (
+            {HERO_POINTS.map((text, index) => (
               <div key={text} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
-                  <Icon className="h-4 w-4 text-white" />
+                  <span className="text-xs font-semibold text-white">{String(index + 1).padStart(2, '0')}</span>
                 </div>
                 <span className="text-sm text-white/85 font-medium">{text}</span>
               </div>

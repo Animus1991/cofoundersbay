@@ -155,6 +155,25 @@ export class AuthController {
   }
 
   @Throttle({ default: { ttl: 60000, limit: 3 } })
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: { email: string }) {
+    if (!body.email) throw new BadRequestException('Email is required');
+    await this.authService.requestPasswordReset(body.email);
+    return { ok: true, message: 'If that email exists, a password reset link has been sent.' };
+  }
+
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  @Post('reset-password')
+  async resetPassword(@Body() body: { token: string; password: string }) {
+    if (!body.token) throw new BadRequestException('Reset token is required');
+    if (!body.password || body.password.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters');
+    }
+    await this.authService.resetPassword(body.token, body.password);
+    return { ok: true, message: 'Password has been reset successfully. You can now log in.' };
+  }
+
+  @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Post('resend-verification')
   async resendVerification(@Body() body: { email: string }) {
     if (!body.email) throw new BadRequestException('Email is required');

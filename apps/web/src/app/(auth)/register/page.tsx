@@ -3,11 +3,6 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
-  Mail, Lock, ArrowRight,
-  Briefcase, GraduationCap, TrendingUp, Building2,
-  Star, Lightbulb, Globe, Eye, EyeOff,
-} from 'lucide-react';
 import { register as registerApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,32 +14,32 @@ const ROLES = [
     value: 'founder',
     label: 'Founder',
     description: 'Build and lead startups',
-    icon: Briefcase,
+    badge: 'F',
   },
   {
     value: 'mentor',
     label: 'Mentor',
     description: 'Coach and guide teams',
-    icon: GraduationCap,
+    badge: 'M',
   },
   {
     value: 'investor',
     label: 'Investor',
     description: 'Back early-stage teams',
-    icon: TrendingUp,
+    badge: 'I',
   },
   {
     value: 'org',
     label: 'Organization',
     description: 'Represent a company',
-    icon: Building2,
+    badge: 'O',
   },
 ] as const;
 
 const HERO_STATS = [
-  { icon: Star,      value: '10K+',   label: 'Active members' },
-  { icon: Lightbulb, value: '3.2K+',  label: 'Startups formed' },
-  { icon: Globe,     value: '80+',    label: 'Countries' },
+  { value: '10K+',  label: 'Active members', accent: 'from-amber-200/50 to-white/0' },
+  { value: '3.2K+', label: 'Startups formed', accent: 'from-emerald-200/50 to-white/0' },
+  { value: '80+',   label: 'Countries', accent: 'from-sky-200/50 to-white/0' },
 ];
 
 export default function RegisterPage() {
@@ -112,9 +107,9 @@ export default function RegisterPage() {
             Create your signal-rich profile and get matched with the right founders, mentors, and investors.
           </p>
           <div className="mt-10 grid grid-cols-3 gap-3">
-            {HERO_STATS.map(({ icon: Icon, value, label }) => (
+            {HERO_STATS.map(({ value, label, accent }) => (
               <div key={label} className="rounded-xl border border-white/10 bg-white/8 px-3 py-4 text-center backdrop-blur-sm">
-                <Icon className="mx-auto mb-2 h-5 w-5 text-white/80" />
+                <div className={`mx-auto mb-2 h-2.5 w-10 rounded-full bg-gradient-to-r ${accent}`} />
                 <p className="font-display text-xl font-bold text-white">{value}</p>
                 <p className="text-xs text-white/55">{label}</p>
               </div>
@@ -136,32 +131,27 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
               <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
-                <span className="mt-0.5 shrink-0">⚠️</span>
+                <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="reg-email" className="text-sm font-medium">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                <Input
-                  id="reg-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  placeholder="you@startup.com"
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                id="reg-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="you@startup.com"
+              />
             </div>
 
             <div className="space-y-2">
               <label htmlFor="reg-password" className="text-sm font-medium">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <Input
                   id="reg-password"
                   type={showPassword ? 'text' : 'password'}
@@ -171,15 +161,15 @@ export default function RegisterPage() {
                   minLength={8}
                   autoComplete="new-password"
                   placeholder="Min 8 characters"
-                  className="pl-10 pr-10"
+                  className="pr-16"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
               {passwordStrength && (
@@ -208,7 +198,6 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-2">
                 {ROLES.map((r) => {
                   const active = role === r.value;
-                  const Icon = r.icon;
                   return (
                     <button
                       key={r.value}
@@ -220,7 +209,13 @@ export default function RegisterPage() {
                           : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
-                      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <span
+                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                          active ? 'bg-primary/15 text-primary' : 'bg-background text-muted-foreground'
+                        }`}
+                      >
+                        {r.badge}
+                      </span>
                       <div>
                         <p className="font-medium leading-tight">{r.label}</p>
                         <p className="text-xs text-muted-foreground leading-tight mt-0.5">{r.description}</p>
@@ -231,9 +226,8 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full gap-2" size="lg">
+            <Button type="submit" disabled={loading} className="w-full" size="lg">
               {loading ? 'Creating account…' : 'Create account'}
-              {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
 
             <OAuthDivider />

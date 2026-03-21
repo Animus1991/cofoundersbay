@@ -56,6 +56,14 @@ export class ConnectionsController {
     return this.connections.respondToRequest(connectionId, user.id, input.status);
   }
 
+  @Post('block/:userId')
+  async blockUser(
+    @CurrentUser() user: { id: string },
+    @Param('userId') targetUserId: string,
+  ) {
+    return this.connections.blockUser(user.id, targetUserId);
+  }
+
   @Get('status/:userId')
   async getStatus(
     @CurrentUser() user: { id: string },

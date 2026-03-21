@@ -408,11 +408,186 @@ export class SSOService {
   async canUsePasswordLogin(email: string): Promise<boolean> {
     const discovery = await this.discoverByEmail(email);
     
-    if (!discovery) return true; // No SSO config, allow password
+    if (!discovery) return true;
     if (discovery.ssoMode === 'disabled') return true;
     if (discovery.ssoMode === 'optional') return true;
     if (discovery.ssoMode === 'required' && discovery.allowPasswordFallback) return true;
     
     return false;
+  }
+
+  /**
+   * Create an identity provider for a tenant
+   */
+  async createProvider(tenantId: string, data: {
+    providerType: 'saml' | 'oidc' | 'oauth2';
+    providerName: string;
+    isActive?: boolean;
+    samlEntryPoint?: string;
+    samlIssuer?: string;
+    samlCert?: string;
+    samlMetadataUrl?: string;
+    oidcIssuerUrl?: string;
+    oidcClientId?: string;
+    oidcClientSecret?: string;
+    oidcScopes?: string;
+    oidcAuthorizationUrl?: string;
+    oidcTokenUrl?: string;
+    oidcUserInfoUrl?: string;
+    loginButtonText?: string;
+    loginButtonColor?: string;
+    logoUrl?: string;
+  }) {
+    await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
+    return this.prisma.identityProvider.create({
+      data: { tenantId, ...data },
+    });
+  }
+
+  /**
+   * Update an existing identity provider
+   */
+  async updateProvider(providerId: string, data: Partial<{
+    providerName: string;
+    isActive: boolean;
+    samlEntryPoint: string;
+    samlIssuer: string;
+    samlCert: string;
+    samlMetadataUrl: string;
+    oidcIssuerUrl: string;
+    oidcClientId: string;
+    oidcClientSecret: string;
+    oidcScopes: string;
+    oidcAuthorizationUrl: string;
+    oidcTokenUrl: string;
+    oidcUserInfoUrl: string;
+    loginButtonText: string;
+    loginButtonColor: string;
+    logoUrl: string;
+  }>) {
+    const provider = await this.prisma.identityProvider.findUnique({ where: { id: providerId } });
+    if (!provider) throw new Error('Identity provider not found');
+    return this.prisma.identityProvider.update({ where: { id: providerId }, data });
+  }
+
+  /**
+   * Delete an identity provider
+   */
+  async deleteProvider(providerId: string) {
+    const provider = await this.prisma.identityProvider.findUnique({ where: { id: providerId } });
+    if (!provider) throw new Error('Identity provider not found');
+    return this.prisma.identityProvider.delete({ where: { id: providerId } });
+  }
+
+  /**
+   * Create or update SSO config for a tenant
+   */
+  async upsertSSOConfig(tenantId: string, providerId: string | null, data: {
+    ssoMode: 'disabled' | 'optional' | 'required';
+    allowedDomains?: string[];
+    enforceEmailDomain?: boolean;
+    autoProvisionEnabled?: boolean;
+    defaultRole?: string;
+    autoAssignToTenant?: boolean;
+    roleMappingRules?: Array<{ claim: string; value: string; role: string }>;
+    postLoginRedirect?: string;
+    requireProfileCompletion?: boolean;
+    sessionDurationHours?: number;
+    allowPasswordFallback?: boolean;
+  }) {
+    await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
+
+    const payload: Record<string, unknown> = {
+      ssoMode: data.ssoMode,
+      allowedDomains: data.allowedDomains ?? [],
+      enforceEmailDomain: data.enforceEmailDomain ?? true,
+      autoProvisionEnabled: data.autoProvisionEnabled ?? false,
+      defaultRole: data.defaultRole ?? 'founder',
+      autoAssignToTenant: data.autoAssignToTenant ?? true,
+      requireProfileCompletion: data.requireProfileCompletion ?? true,
+      sessionDurationHours: data.sessionDurationHours ?? 24,
+      allowPasswordFallback: data.allowPasswordFallback ?? false,
+    };
+    if (data.roleMappingRules !== undefined) payload['roleMappingRules'] = data.roleMappingRules;
+    if (data.postLoginRedirect !== undefined) payload['postLoginRedirect'] = data.postLoginRedirect;
+    if (providerId !== null) payload['identityProviderId'] = providerId;
+
+    const existing = await this.prisma.tenantSSOConfig.findUnique({ where: { tenantId } });
+    if (existing) {
+      return this.prisma.tenantSSOConfig.update({ where: { tenantId }, data: payload });
+    }
+    return this.prisma.tenantSSOConfig.create({ data: { tenantId, ...payload } });
+  }
+
+  /**
+   * Get SSO config for a tenant (admin)
+   */
+  async getSSOConfig(tenantId: string) {
+    return this.prisma.tenantSSOConfig.findUnique({
+      where: { tenantId },
+      include: { identityProvider: true },
+    });
+  }
+
+  /**
+   * List identity providers for a tenant
+   */
+  async listProviders(tenantId: string) {
+    return this.prisma.identityProvider.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get recent SSO auth events (admin audit view)
+   */
+  async getAuthEvents(params?: {
+    tenantId?: string;
+    limit?: number;
+    offset?: number;
+    eventType?: string;
+  }) {
+    const where: Record<string, unknown> = {};
+
+    if (params?.tenantId) {
+      where['identityProvider'] = { tenantId: params.tenantId };
+    }
+    if (params?.eventType) {
+      where['eventType'] = params.eventType;
+    }
+
+    return this.prisma.sSOAuthEvent.findMany({
+      where,
+      include: {
+        identityProvider: {
+          select: { id: true, providerName: true, tenantId: true, tenant: { select: { name: true, slug: true } } },
+        },
+        user: { select: { id: true, email: true, profile: { select: { displayName: true } } } },
+      },
+      take: params?.limit ?? 50,
+      skip: params?.offset ?? 0,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Get SSO stats for admin dashboard
+   */
+  async getStats() {
+    const [totalProviders, activeProviders, recentEvents, successEvents] = await Promise.all([
+      this.prisma.identityProvider.count(),
+      this.prisma.identityProvider.count({ where: { isActive: true } }),
+      this.prisma.sSOAuthEvent.count({
+        where: { createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+      }),
+      this.prisma.sSOAuthEvent.count({
+        where: {
+          eventType: 'login_success',
+          createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
+      }),
+    ]);
+    return { totalProviders, activeProviders, recentEvents, successEvents };
   }
 }

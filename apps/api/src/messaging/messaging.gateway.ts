@@ -48,7 +48,7 @@ function allowedOrigins(): string[] {
   const corsOriginEnv = process.env.CORS_ORIGIN;
   const origins = corsOriginEnv
     ? corsOriginEnv.split(',').map((o) => o.trim()).filter(Boolean)
-    : ['http://localhost:3000', 'http://localhost:3002'];
+    : ['http://localhost:3000'];
   return origins;
 }
 

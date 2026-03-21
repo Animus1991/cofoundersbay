@@ -1,14 +1,4 @@
 import { registerAs } from '@nestjs/config';
-import { networkInterfaces } from 'os';
-
-function getLanOrigins(ports: number[]): string[] {
-  const nets = networkInterfaces();
-  const ips = Object.values(nets)
-    .flatMap((x) => x ?? [])
-    .filter((n) => n.family === 'IPv4' && !n.internal)
-    .map((n) => n.address);
-  return ips.flatMap((ip) => ports.map((port) => `http://${ip}:${port}`));
-}
 
 export interface AppConfig {
   nodeEnv: string;
@@ -85,10 +75,10 @@ export default registerAs('app', () => ({
   port: parseInt(process.env.PORT || '3001', 10),
   apiPrefix: process.env.API_PREFIX || 'api',
   cors: {
-    origin: [
-      ...(process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3002,http://localhost:3003').split(','),
-      ...(process.env.NODE_ENV !== 'production' ? getLanOrigins([3000, 3002, 3003]) : []),
-    ],
+    origin: (process.env.CORS_ORIGIN || 'http://localhost:3000')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
     credentials: true,
   },
   rateLimit: {

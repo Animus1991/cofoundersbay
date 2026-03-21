@@ -539,6 +539,66 @@ export async function updateConversationFlags(
   });
 }
 
+// --- Conversation Validation ---
+
+export type ConversationValidationMode = 'casual' | 'one_party' | 'two_party';
+
+export type ConversationValidationStateApi = {
+  mode: ConversationValidationMode;
+  initiatedBy: string | null;
+  initiatedAt: string | null;
+  acceptedBy: string | null;
+  acceptedAt: string | null;
+  lastValidatedAt: string | null;
+  validationHash: string | null;
+  transcriptAvailable: boolean;
+};
+
+export async function getConversationValidation(
+  conversationId: string,
+): Promise<{ validationState: ConversationValidationStateApi }> {
+  return apiRequest(`/api/messages/conversations/${conversationId}/validation`);
+}
+
+export async function updateConversationValidationMode(
+  conversationId: string,
+  mode: ConversationValidationMode,
+): Promise<{ success: boolean; validationState: ConversationValidationStateApi }> {
+  return apiRequest(`/api/messages/conversations/${conversationId}/validation`, {
+    method: 'PUT',
+    body: JSON.stringify({ mode }),
+  });
+}
+
+export async function acceptConversationValidation(
+  conversationId: string,
+): Promise<{ success: boolean; validationState: ConversationValidationStateApi }> {
+  return apiRequest(`/api/messages/conversations/${conversationId}/validation/accept`, {
+    method: 'POST',
+  });
+}
+
+export async function declineConversationValidation(
+  conversationId: string,
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/messages/conversations/${conversationId}/validation/decline`, {
+    method: 'POST',
+  });
+}
+
+export async function exportConversationTranscript(
+  conversationId: string,
+  format: 'json' | 'txt',
+): Promise<Blob> {
+  const base = getApiBase();
+  const res = await fetch(
+    `${base}/api/messages/conversations/${conversationId}/transcript?format=${format}`,
+    { method: 'GET', credentials: 'include' },
+  );
+  if (!res.ok) throw new Error(`Transcript export failed: ${res.status}`);
+  return res.blob();
+}
+
 // --- Notifications ---
 
 export type NotificationItem = {
@@ -552,23 +612,38 @@ export type NotificationItem = {
   readAt: string | null;
 };
 
-export async function listNotifications(params?: { limit?: number; cursor?: string | null }): Promise<{
+export async function listNotifications(params?: {
+  limit?: number;
+  cursor?: string | null;
+  unread?: boolean;
+  type?: string;
+}): Promise<{
   notifications: NotificationItem[];
   nextCursor: string | null;
 }> {
   const sp = new URLSearchParams();
   if (params?.limit != null) sp.set('limit', String(params.limit));
   if (params?.cursor) sp.set('cursor', params.cursor);
+  if (params?.unread) sp.set('unread', 'true');
+  if (params?.type && params.type !== 'all') sp.set('type', params.type);
   const url = `/api/notifications${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
 }
 
+export async function getNotificationUnreadCount(): Promise<{ count: number }> {
+  return apiRequest('/api/notifications/unread-count');
+}
+
 export async function markNotificationRead(id: string): Promise<{ ok: true }> {
-  return apiRequest(`/api/notifications/${id}/read`, { method: 'POST' });
+  return apiRequest(`/api/notifications/${id}/read`, { method: 'PATCH' });
 }
 
 export async function markAllNotificationsRead(): Promise<{ ok: true }> {
-  return apiRequest('/api/notifications/read-all', { method: 'POST' });
+  return apiRequest('/api/notifications/mark-all-read', { method: 'POST' });
+}
+
+export async function deleteNotification(id: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/notifications/${id}`, { method: 'DELETE' });
 }
 
 // --- Billing (Stripe) ---
@@ -617,6 +692,20 @@ export type DashboardActivityItem = {
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   return apiRequest('/api/dashboard/stats');
+}
+
+export interface UserDashboardSummary {
+  pendingReceived: number;
+  totalConnections: number;
+  newConnectionsThisWeek: number;
+  unreadMessages: number;
+  unreadNotifications: number;
+  upcomingEvents: number;
+  activeMilestones: number;
+}
+
+export async function getDashboardMe(): Promise<UserDashboardSummary> {
+  return apiRequest('/api/dashboard/me');
 }
 
 export async function getDashboardActivity(params?: { limit?: number }): Promise<DashboardActivityItem[]> {
@@ -1092,12 +1181,132 @@ export async function respondToConnectionRequest(
   });
 }
 
+export async function blockUser(userId: string): Promise<{ connection: ConnectionRequestItem }> {
+  return apiRequest(`/api/connections/block/${userId}`, {
+    method: 'POST',
+  });
+}
+
 export async function getConnectionStatus(userId: string): Promise<{
   status: ConnectionStatus | null;
   connectionId: string | null;
   direction: 'sent' | 'received' | null;
 }> {
   return apiRequest(`/api/connections/status/${userId}`);
+}
+
+// --- Invites / Referrals ---
+
+export type InviteItem = {
+  id: string;
+  email: string;
+  message: string | null;
+  status: 'pending' | 'accepted' | 'expired' | 'cancelled';
+  createdAt: string;
+  acceptedAt: string | null;
+  expiresAt: string | null;
+};
+
+export type InviteStats = {
+  total: number;
+  pending: number;
+  accepted: number;
+  remaining: number;
+};
+
+export async function listInvites(params?: {
+  limit?: number;
+  status?: string;
+}): Promise<{ invites: InviteItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.status) sp.set('status', params.status);
+  return apiRequest(`/api/invites${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getInviteStats(): Promise<{ stats: InviteStats }> {
+  return apiRequest('/api/invites/stats');
+}
+
+export async function createInvite(body: {
+  email: string;
+  message?: string;
+}): Promise<{ invite: InviteItem }> {
+  return apiRequest('/api/invites', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function cancelInvite(id: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/invites/${id}`, { method: 'DELETE' });
+}
+
+// --- Endorsements ---
+
+export type EndorsementItem = {
+  id: string;
+  fromUserId: string;
+  fromUser: {
+    id: string;
+    displayName: string;
+    avatarUrl: string | null;
+    headline: string | null;
+  };
+  toUserId: string;
+  skill: string | null;
+  content: string;
+  relationship: string | null;
+  isPublic: boolean;
+  isApproved: boolean;
+  createdAt: string;
+};
+
+export type EndorsementStats = {
+  total: number;
+  pending: number;
+  given: number;
+};
+
+export async function getEndorsementsForUser(
+  userId: string,
+  options?: { includeUnapproved?: boolean },
+): Promise<{ endorsements: EndorsementItem[] }> {
+  const sp = new URLSearchParams();
+  if (options?.includeUnapproved) sp.set('includeUnapproved', 'true');
+  return apiRequest(`/api/endorsements/user/${userId}${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getPendingEndorsements(): Promise<{ endorsements: EndorsementItem[] }> {
+  return apiRequest('/api/endorsements/pending');
+}
+
+export async function getEndorsementStats(): Promise<{ stats: EndorsementStats }> {
+  return apiRequest('/api/endorsements/stats');
+}
+
+export async function createEndorsement(body: {
+  toUserId: string;
+  content: string;
+  skill?: string;
+  relationship?: string;
+}): Promise<{ endorsement: EndorsementItem }> {
+  return apiRequest('/api/endorsements', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function approveEndorsement(id: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/endorsements/${id}/approve`, { method: 'POST' });
+}
+
+export async function declineEndorsement(id: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/endorsements/${id}/decline`, { method: 'POST' });
+}
+
+export async function deleteEndorsement(id: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/endorsements/${id}`, { method: 'DELETE' });
 }
 
 // --- Jobs (full CRUD) ---
@@ -1879,6 +2088,27 @@ export async function getOrgCohorts(slug: string, params?: {
   return apiRequest(`/api/org/${slug}/cohorts?${sp}`);
 }
 
+export type OrgMember = {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  headline: string | null;
+  location: string | null;
+  role: string;
+  cohortName: string;
+  joinedAt: string;
+};
+
+export async function getOrgMembers(slug: string, params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<{ members: OrgMember[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/org/${slug}/members?${sp}`);
+}
+
 // ─── AI Features ─────────────────────────────────────────────────────────────
 
 export type ProfileSuggestions = {
@@ -1962,21 +2192,46 @@ export async function getMatchingStats(): Promise<{
 export type TenantBranding = {
   id: string;
   tenantId: string;
+  // Colors
   primaryColor?: string | null;
   secondaryColor?: string | null;
   accentColor?: string | null;
+  backgroundStyle?: string | null;
+  // Typography
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  // Media
+  heroImageUrl?: string | null;
+  websiteUrl?: string | null;
+  // Content
   heroTitle?: string | null;
   heroSubtitle?: string | null;
+  aboutText?: string | null;
   ctaLabel?: string | null;
+  ctaUrl?: string | null;
   onboardingIntroText?: string | null;
   dashboardWelcomeText?: string | null;
+  // Custom labels
+  communityNaming?: string | null;
+  roleLabels?: Record<string, string> | null;
+  // Contact & legal
   supportEmail?: string | null;
   privacyPolicyUrl?: string | null;
   termsUrl?: string | null;
+  cookiePolicyUrl?: string | null;
+  // Social
   linkedinUrl?: string | null;
   twitterUrl?: string | null;
+  instagramUrl?: string | null;
+  websiteFooterUrl?: string | null;
+  // Email
+  emailSignature?: string | null;
+  emailLogoUrl?: string | null;
+  emailFooterText?: string | null;
+  emailFromName?: string | null;
   isBrandingActive: boolean;
   publishedAt?: string | null;
+  updatedAt: string;
 };
 
 export type TenantItem = {
@@ -1984,17 +2239,40 @@ export type TenantItem = {
   slug: string;
   name: string;
   displayName?: string | null;
+  shortDescription?: string | null;
   description?: string | null;
+  aboutText?: string | null;
   website?: string | null;
   logoUrl?: string | null;
   faviconUrl?: string | null;
   status: 'draft' | 'active' | 'suspended';
   branding?: TenantBranding | null;
   createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantMemberItem = {
+  id: string;
+  tenantId: string;
+  userId: string;
+  role: string;
+  isActive: boolean;
+  joinedAt: string;
+  provisionedViaSSO: boolean;
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    profile?: { displayName: string; avatarUrl?: string | null; headline?: string | null } | null;
+  };
 };
 
 export async function getTenantBySlug(slug: string): Promise<TenantItem> {
-  return apiRequest(`/api/tenants/${slug}`);
+  return apiRequest(`/api/tenants/by-slug/${slug}`);
+}
+
+export async function getTenantById(id: string): Promise<TenantItem> {
+  return apiRequest(`/api/tenants/${id}`);
 }
 
 export async function listTenants(params?: { status?: string; limit?: number }): Promise<TenantItem[]> {
@@ -2002,6 +2280,74 @@ export async function listTenants(params?: { status?: string; limit?: number }):
   if (params?.status) sp.set('status', params.status);
   if (params?.limit != null) sp.set('limit', String(params.limit));
   return apiRequest(`/api/tenants${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function createTenant(data: {
+  slug: string;
+  name: string;
+  displayName?: string;
+  shortDescription?: string;
+  description?: string;
+  aboutText?: string;
+  website?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+}): Promise<TenantItem> {
+  return apiRequest('/api/tenants', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateTenant(id: string, data: Partial<{
+  name: string;
+  slug: string;
+  displayName: string;
+  shortDescription: string;
+  description: string;
+  aboutText: string;
+  website: string;
+  logoUrl: string;
+  faviconUrl: string;
+  status: 'draft' | 'active' | 'suspended';
+}>): Promise<TenantItem> {
+  return apiRequest(`/api/tenants/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteTenant(id: string): Promise<void> {
+  return apiRequest(`/api/tenants/${id}`, { method: 'DELETE' });
+}
+
+export async function getTenantBranding(tenantId: string): Promise<TenantBranding | null> {
+  return apiRequest(`/api/tenants/${tenantId}/branding`);
+}
+
+export async function updateTenantBranding(tenantId: string, data: Partial<Omit<TenantBranding, 'id' | 'tenantId' | 'publishedAt' | 'updatedAt'>>): Promise<TenantBranding> {
+  return apiRequest(`/api/tenants/${tenantId}/branding`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function publishTenantBranding(tenantId: string): Promise<TenantBranding> {
+  return apiRequest(`/api/tenants/${tenantId}/branding/publish`, { method: 'POST' });
+}
+
+export async function unpublishTenantBranding(tenantId: string): Promise<TenantBranding> {
+  return apiRequest(`/api/tenants/${tenantId}/branding/unpublish`, { method: 'POST' });
+}
+
+export async function getTenantMembers(tenantId: string, params?: { limit?: number; offset?: number }): Promise<TenantMemberItem[]> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/tenants/${tenantId}/members${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function addTenantMember(tenantId: string, userId: string, role?: string): Promise<TenantMemberItem> {
+  return apiRequest(`/api/tenants/${tenantId}/members`, { method: 'POST', body: JSON.stringify({ userId, role }) });
+}
+
+export async function updateTenantMember(tenantId: string, userId: string, data: { role?: string; isActive?: boolean }): Promise<TenantMemberItem> {
+  return apiRequest(`/api/tenants/${tenantId}/members/${userId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function removeTenantMember(tenantId: string, userId: string): Promise<void> {
+  return apiRequest(`/api/tenants/${tenantId}/members/${userId}`, { method: 'DELETE' });
 }
 
 // ── SSO / Enterprise Authentication ────────────────────────────────────────
@@ -2018,15 +2364,63 @@ export type SSOProviderInfo = {
   logoUrl?: string | null;
 };
 
+export type IdentityProviderItem = {
+  id: string;
+  tenantId: string;
+  providerType: SSOProviderType;
+  providerName: string;
+  isActive: boolean;
+  oidcIssuerUrl?: string | null;
+  oidcClientId?: string | null;
+  oidcScopes?: string | null;
+  samlEntryPoint?: string | null;
+  samlIssuer?: string | null;
+  samlMetadataUrl?: string | null;
+  loginButtonText?: string | null;
+  loginButtonColor?: string | null;
+  logoUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TenantSSOConfig = {
+  id: string;
+  tenantId: string;
+  identityProviderId?: string | null;
+  ssoMode: SSOMode;
+  allowedDomains: string[];
+  enforceEmailDomain: boolean;
+  autoProvisionEnabled: boolean;
+  defaultRole: string;
+  autoAssignToTenant: boolean;
+  roleMappingRules?: Array<{ claim: string; value: string; role: string }> | null;
+  postLoginRedirect?: string | null;
+  requireProfileCompletion: boolean;
+  sessionDurationHours: number;
+  allowPasswordFallback: boolean;
+  identityProvider?: IdentityProviderItem | null;
+};
+
+export type SSOAuthEvent = {
+  id: string;
+  identityProviderId: string;
+  userId?: string | null;
+  eventType: string;
+  email?: string | null;
+  externalId?: string | null;
+  ipAddress?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  createdAt: string;
+  identityProvider: { id: string; providerName: string; tenantId: string; tenant: { name: string; slug: string } };
+  user?: { id: string; email: string; profile?: { displayName: string } | null } | null;
+};
+
 export type SSODiscoveryResult = {
   ssoAvailable: boolean;
   ssoRequired?: boolean;
   allowPasswordLogin: boolean;
-  tenant?: {
-    id: string;
-    slug: string;
-    name: string;
-  };
+  tenant?: { id: string; slug: string; name: string };
   provider?: SSOProviderInfo | null;
 };
 
@@ -2045,39 +2439,907 @@ export type TenantMembershipItem = {
   };
 };
 
-/**
- * Discover SSO configuration by email domain
- */
+/** Discover SSO by email domain */
 export async function discoverSSOByEmail(email: string): Promise<SSODiscoveryResult> {
   return apiRequest(`/api/sso/discover?email=${encodeURIComponent(email)}`);
 }
 
-/**
- * Discover SSO configuration by tenant slug
- */
+/** Discover SSO by tenant slug */
 export async function discoverSSOByTenant(slug: string): Promise<SSODiscoveryResult> {
   return apiRequest(`/api/sso/discover/tenant/${slug}`);
 }
 
-/**
- * Check if password login is allowed for an email
- */
+/** Check if password login is allowed for an email */
 export async function canUsePasswordLogin(email: string): Promise<{ allowed: boolean }> {
   return apiRequest(`/api/sso/can-use-password?email=${encodeURIComponent(email)}`);
 }
 
-/**
- * Get current user's tenant memberships
- */
+/** Get current user's tenant memberships */
 export async function getUserTenantMemberships(): Promise<{ memberships: TenantMembershipItem[] }> {
   return apiRequest('/api/sso/memberships');
 }
 
-/**
- * Initiate SSO login - returns redirect URL
- */
+/** Initiate SSO login — returns redirect URL */
 export function getSSOLoginUrl(providerId: string, returnUrl?: string): string {
   const params = new URLSearchParams();
   if (returnUrl) params.set('returnUrl', returnUrl);
-  return `${getApiBase()}/sso/login/${providerId}${params.toString() ? `?${params}` : ''}`;
+  return `${getApiBase()}/api/sso/login/${providerId}${params.toString() ? `?${params}` : ''}`;
+}
+
+/** Get SSO platform stats (admin) */
+export async function getSSOStats(): Promise<{ totalProviders: number; activeProviders: number; recentEvents: number; successEvents: number }> {
+  return apiRequest('/api/sso/admin/stats');
+}
+
+/** Get SSO auth events (admin audit) */
+export async function getSSOAuthEvents(params?: { tenantId?: string; eventType?: string; limit?: number; offset?: number }): Promise<SSOAuthEvent[]> {
+  const sp = new URLSearchParams();
+  if (params?.tenantId) sp.set('tenantId', params.tenantId);
+  if (params?.eventType) sp.set('eventType', params.eventType);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/sso/admin/events${sp.toString() ? `?${sp}` : ''}`);
+}
+
+/** List identity providers for a tenant (admin) */
+export async function listSSOProviders(tenantId: string): Promise<IdentityProviderItem[]> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/providers`);
+}
+
+/** Create identity provider for a tenant (admin) */
+export async function createSSOProvider(tenantId: string, data: {
+  providerType: SSOProviderType;
+  providerName: string;
+  isActive?: boolean;
+  oidcIssuerUrl?: string;
+  oidcClientId?: string;
+  oidcClientSecret?: string;
+  oidcScopes?: string;
+  samlEntryPoint?: string;
+  samlIssuer?: string;
+  samlCert?: string;
+  samlMetadataUrl?: string;
+  loginButtonText?: string;
+  loginButtonColor?: string;
+  logoUrl?: string;
+}): Promise<IdentityProviderItem> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/providers`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+/** Update identity provider (admin) */
+export async function updateSSOProvider(providerId: string, data: Partial<Omit<IdentityProviderItem, 'id' | 'tenantId' | 'createdAt' | 'updatedAt'>>): Promise<IdentityProviderItem> {
+  return apiRequest(`/api/sso/providers/${providerId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/** Delete identity provider (admin) */
+export async function deleteSSOProvider(providerId: string): Promise<void> {
+  return apiRequest(`/api/sso/providers/${providerId}`, { method: 'DELETE' });
+}
+
+/** Get SSO config for a tenant (admin) */
+export async function getTenantSSOConfig(tenantId: string): Promise<TenantSSOConfig | null> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/config`);
+}
+
+/** Upsert SSO config for a tenant (admin) */
+export async function upsertTenantSSOConfig(tenantId: string, data: {
+  ssoMode: SSOMode;
+  providerId?: string;
+  allowedDomains?: string[];
+  enforceEmailDomain?: boolean;
+  autoProvisionEnabled?: boolean;
+  defaultRole?: string;
+  allowPasswordFallback?: boolean;
+  postLoginRedirect?: string;
+  sessionDurationHours?: number;
+}): Promise<TenantSSOConfig> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/config`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ─── Domain Mapping ───────────────────────────────────────────────────────────
+
+export type TenantDomainType = 'subdomain' | 'custom';
+export type DomainVerificationStatus = 'pending' | 'verified' | 'failed' | 'expired';
+
+export type TenantDomainItem = {
+  id: string;
+  tenantId: string;
+  domainType: TenantDomainType;
+  domainName: string;
+  isPrimary: boolean;
+  isActive: boolean;
+  sslStatus?: string | null;
+  sslExpiresAt?: string | null;
+  verificationStatus: DomainVerificationStatus;
+  verificationToken?: string | null;
+  verificationMethod?: string | null;
+  dnsInstructions?: string | null;
+  verifiedAt?: string | null;
+  lastVerificationCheck?: string | null;
+  redirectBehavior?: string | null;
+  customLandingEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DomainResolutionResult = {
+  tenant: {
+    id: string;
+    slug: string;
+    name: string;
+    displayName?: string | null;
+    logoUrl?: string | null;
+    faviconUrl?: string | null;
+    status: string;
+  } | null;
+  branding?: {
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+    accentColor?: string | null;
+    heroTitle?: string | null;
+    heroSubtitle?: string | null;
+    isBrandingActive: boolean;
+  } | null;
+  domain?: { id: string; domainType: TenantDomainType; isPrimary: boolean } | null;
+};
+
+export type DnsInstructions = {
+  verification: { type: string; name: string; value: string | null; ttl: number };
+  cname: { type: string; name: string; value: string; ttl: number };
+  instructions: string[];
+};
+
+/** Public: resolve tenant from a hostname */
+export async function resolveTenantFromDomain(domain: string): Promise<DomainResolutionResult> {
+  return apiRequest(`/api/tenants/resolve-domain?domain=${encodeURIComponent(domain)}`);
+}
+
+/** Admin: list domains for a tenant */
+export async function listTenantDomains(tenantId: string): Promise<{ domains: TenantDomainItem[] }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains`);
+}
+
+/** Admin: add subdomain */
+export async function addTenantSubdomain(tenantId: string, subdomain: string): Promise<{ domain: TenantDomainItem }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/subdomain`, { method: 'POST', body: JSON.stringify({ subdomain }) });
+}
+
+/** Admin: add custom domain */
+export async function addTenantCustomDomain(tenantId: string, domainName: string): Promise<{ domain: TenantDomainItem }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/custom`, { method: 'POST', body: JSON.stringify({ domainName }) });
+}
+
+/** Admin: get DNS setup instructions */
+export async function getDomainDnsInstructions(tenantId: string, domainId: string): Promise<DnsInstructions> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/${domainId}/dns-instructions`);
+}
+
+/** Admin: trigger DNS verification check */
+export async function verifyTenantDomain(tenantId: string, domainId: string): Promise<{ verified: boolean; message: string }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/${domainId}/verify`, { method: 'POST' });
+}
+
+/** Admin: set primary domain */
+export async function setTenantPrimaryDomain(tenantId: string, domainId: string): Promise<{ domain: TenantDomainItem }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/${domainId}/set-primary`, { method: 'POST' });
+}
+
+/** Admin: activate or deactivate domain */
+export async function toggleTenantDomainActive(tenantId: string, domainId: string, isActive: boolean): Promise<{ domain: TenantDomainItem }> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/${domainId}/active`, { method: 'PATCH', body: JSON.stringify({ isActive }) });
+}
+
+/** Admin: delete domain */
+export async function deleteTenantDomain(tenantId: string, domainId: string): Promise<void> {
+  return apiRequest(`/api/tenants/${tenantId}/domains/${domainId}`, { method: 'DELETE' });
+}
+
+// ── Automation Framework ───────────────────────────────────────────────────
+
+export type AutomationStatus = 'draft' | 'active' | 'paused' | 'archived';
+export type AutomationExecutionStatus = 'pending' | 'running' | 'completed' | 'failed' | 'skipped' | 'cancelled';
+
+export type AutomationRuleItem = {
+  id: string;
+  tenantId: string | null;
+  name: string;
+  description: string | null;
+  triggerType: string;
+  conditionDef: unknown | null;
+  actionDef: unknown;
+  delaySeconds: number;
+  scheduleExpression: string | null;
+  status: AutomationStatus;
+  priority: number;
+  executionCount: number;
+  lastRunAt: string | null;
+  nextRunAt: string | null;
+  failureCount: number;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { executions: number };
+};
+
+export type AutomationExecutionItem = {
+  id: string;
+  ruleId: string;
+  targetUserId: string | null;
+  targetEntityType: string | null;
+  targetEntityId: string | null;
+  status: AutomationExecutionStatus;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  result: unknown | null;
+  errorMessage: string | null;
+  retryCount: number;
+  createdAt: string;
+  _count?: { logs: number };
+};
+
+export type AutomationLogItem = {
+  id: string;
+  executionId: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  context: unknown | null;
+  createdAt: string;
+};
+
+export type TenantAutomationConfigItem = {
+  id: string;
+  tenantId: string;
+  automationsEnabled: boolean;
+  maxEmailsPerUserPerDay: number;
+  maxNotificationsPerDay: number;
+  quietHoursStart: number | null;
+  quietHoursEnd: number | null;
+  timezone: string;
+  onboardingAutomation: boolean;
+  matchingAutomation: boolean;
+  mentorshipAutomation: boolean;
+  communityAutomation: boolean;
+  billingAutomation: boolean;
+  reEngagementAutomation: boolean;
+};
+
+export type NotificationTemplateItem = {
+  id: string;
+  tenantId: string | null;
+  key: string;
+  name: string;
+  type: string;
+  subject: string | null;
+  bodyHtml: string | null;
+  bodyText: string | null;
+  variables: unknown | null;
+  isActive: boolean;
+};
+
+/** Admin: list automation rules */
+export async function listAutomationRules(params?: { tenantId?: string; status?: string; limit?: number }): Promise<{ rules: AutomationRuleItem[]; total: number }> {
+  const q = new URLSearchParams();
+  if (params?.tenantId) q.set('tenantId', params.tenantId);
+  if (params?.status) q.set('status', params.status);
+  if (params?.limit) q.set('limit', String(params.limit));
+  return apiRequest(`/api/automation/rules${q.toString() ? `?${q}` : ''}`);
+}
+
+/** Admin: get automation rule */
+export async function getAutomationRule(id: string): Promise<AutomationRuleItem> {
+  return apiRequest(`/api/automation/rules/${id}`);
+}
+
+/** Admin: create automation rule */
+export async function createAutomationRule(data: Partial<AutomationRuleItem>): Promise<AutomationRuleItem> {
+  return apiRequest('/api/automation/rules', { method: 'POST', body: JSON.stringify(data) });
+}
+
+/** Admin: update automation rule */
+export async function updateAutomationRule(id: string, data: Partial<AutomationRuleItem>): Promise<AutomationRuleItem> {
+  return apiRequest(`/api/automation/rules/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/** Admin: set rule status (active/paused/archived) */
+export async function setAutomationRuleStatus(id: string, status: AutomationStatus): Promise<AutomationRuleItem> {
+  return apiRequest(`/api/automation/rules/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+}
+
+/** Admin: delete automation rule */
+export async function deleteAutomationRule(id: string): Promise<void> {
+  return apiRequest(`/api/automation/rules/${id}`, { method: 'DELETE' });
+}
+
+/** Admin: manually trigger an automation rule */
+export async function triggerAutomationRule(id: string): Promise<{ queued: boolean }> {
+  return apiRequest(`/api/automation/rules/${id}/trigger`, { method: 'POST' });
+}
+
+/** Admin: list automation executions */
+export async function listAutomationExecutions(params?: { ruleId?: string; status?: string; limit?: number }): Promise<AutomationExecutionItem[]> {
+  const q = new URLSearchParams();
+  if (params?.ruleId) q.set('ruleId', params.ruleId);
+  if (params?.status) q.set('status', params.status);
+  if (params?.limit) q.set('limit', String(params.limit));
+  return apiRequest(`/api/automation/executions${q.toString() ? `?${q}` : ''}`);
+}
+
+/** Admin: get execution logs */
+export async function getAutomationExecutionLogs(executionId: string): Promise<AutomationLogItem[]> {
+  return apiRequest(`/api/automation/executions/${executionId}/logs`);
+}
+
+/** Admin: get tenant automation config */
+export async function getTenantAutomationConfig(tenantId: string): Promise<TenantAutomationConfigItem | null> {
+  return apiRequest(`/api/automation/config/${tenantId}`);
+}
+
+/** Admin: upsert tenant automation config */
+export async function upsertTenantAutomationConfig(tenantId: string, data: Partial<TenantAutomationConfigItem>): Promise<TenantAutomationConfigItem> {
+  return apiRequest(`/api/automation/config/${tenantId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+/** Admin: list notification templates */
+export async function listNotificationTemplates(tenantId?: string): Promise<NotificationTemplateItem[]> {
+  const q = tenantId ? `?tenantId=${tenantId}` : '';
+  return apiRequest(`/api/automation/templates${q}`);
+}
+
+// ── AI Matching ────────────────────────────────────────────────────────────
+
+export type MatchExplanationItem = {
+  dimension: string;
+  label: string;
+  weight: number;
+  score: number;
+};
+
+export type MatchSuggestion = {
+  userId: string;
+  score: number;
+  confidence: number;
+  reasons: string[];
+  explanation: MatchExplanationItem[];
+  profile: {
+    displayName: string;
+    headline: string | null;
+    avatarUrl: string | null;
+    location: string | null;
+    skills: { skillId: string; skill?: { name: string } }[];
+  } | null;
+};
+
+export type MatchFeedbackType = 'accepted' | 'declined' | 'ignored' | 'not_relevant' | 'not_now' | 'better_fit_wanted';
+
+/** Get AI-powered match recommendations */
+export async function getAIRecommendations(limit?: number): Promise<{ suggestions: MatchSuggestion[] }> {
+  const q = limit ? `?limit=${limit}` : '';
+  return apiRequest(`/api/recommendations${q}`);
+}
+
+/** Record rich match feedback (not relevant, not now, etc.) */
+export async function recordMatchFeedback(params: {
+  targetUserId: string;
+  feedback: MatchFeedbackType;
+  connectionStarted?: boolean;
+  conversationStarted?: boolean;
+}): Promise<{ ok: boolean }> {
+  return apiRequest('/api/recommendations/feedback', { method: 'POST', body: JSON.stringify(params) });
+}
+
+/** Record a behavioral signal (e.g. profile_view, match_click) */
+export async function recordBehavioralSignal(params: {
+  signalType: string;
+  targetId?: string;
+  targetType?: string;
+  value?: number;
+}): Promise<{ ok: boolean }> {
+  return apiRequest('/api/recommendations/signal', { method: 'POST', body: JSON.stringify(params) });
+}
+
+export interface MatchVsBreakdownItem {
+  key: string;
+  label: string;
+  score: number;
+  color: string;
+}
+
+export interface MatchVsStrength {
+  icon: string;
+  label: string;
+}
+
+export interface MatchVsFrictionPoint {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+export interface MatchVsWorkStyle {
+  axes: string[];
+  source: number[];
+  target: number[];
+}
+
+export interface MatchVsProfile {
+  id: string;
+  role: string;
+  displayName: string;
+  headline?: string;
+  avatarUrl?: string;
+  location?: string;
+}
+
+export interface MatchVsResult {
+  overall: { score: number; confidence: number };
+  breakdown: MatchVsBreakdownItem[];
+  badges: string[];
+  sharedStrengths: MatchVsStrength[];
+  frictionPoints: MatchVsFrictionPoint[];
+  workStyle: MatchVsWorkStyle;
+  reasons: string[];
+  sourceProfile: MatchVsProfile;
+  targetProfile: MatchVsProfile;
+}
+
+/** Get detailed two-user compatibility breakdown for the match detail page */
+export async function getMatchVs(targetUserId: string): Promise<MatchVsResult> {
+  return apiRequest(`/api/recommendations/vs/${targetUserId}`);
+}
+
+/** Get AI matching admin stats */
+export async function getMatchingAdminStats(): Promise<{
+  totalMatches: number;
+  activeModel: { version: string; weights: Record<string, number> } | null;
+  runningExperiments: number;
+  outcomes: { feedback: string; _count: number }[];
+}> {
+  return apiRequest('/api/recommendations/admin/stats');
+}
+
+// --- Password Reset ---
+
+export async function resetPassword(token: string, password: string): Promise<{ ok: boolean; message: string }> {
+  return apiRequest('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+  }, { retryOn401: false });
+}
+
+// --- Milestones ---
+
+export type MilestoneStatus = 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
+export type MilestonePriority = 'low' | 'medium' | 'high';
+
+export interface MilestoneCollaborator {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
+export interface Milestone {
+  id: string;
+  ownerId: string;
+  collaboratorId: string | null;
+  collaborator: MilestoneCollaborator | null;
+  title: string;
+  description: string | null;
+  status: MilestoneStatus;
+  priority: MilestonePriority;
+  category: string | null;
+  dueDate: string | null;
+  completedAt: string | null;
+  progress: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MilestoneSummary {
+  counts: Record<MilestoneStatus, number>;
+  total: number;
+  overdue: number;
+  dueSoon: number;
+  completionRate: number;
+}
+
+export async function listMilestones(params?: {
+  status?: MilestoneStatus;
+  priority?: MilestonePriority;
+  category?: string;
+  limit?: number;
+  cursor?: string | null;
+}): Promise<{ milestones: Milestone[]; nextCursor: string | null; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set('status', params.status);
+  if (params?.priority) sp.set('priority', params.priority);
+  if (params?.category) sp.set('category', params.category);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.cursor) sp.set('cursor', params.cursor);
+  return apiRequest(`/api/milestones${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getMilestoneSummary(): Promise<MilestoneSummary> {
+  return apiRequest('/api/milestones/summary');
+}
+
+export async function getMilestone(id: string): Promise<Milestone> {
+  return apiRequest(`/api/milestones/${id}`);
+}
+
+export async function createMilestone(data: {
+  title: string;
+  description?: string;
+  status?: MilestoneStatus;
+  priority?: MilestonePriority;
+  category?: string;
+  dueDate?: string;
+  progress?: number;
+  notes?: string;
+  collaboratorId?: string;
+}): Promise<Milestone> {
+  return apiRequest('/api/milestones', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateMilestone(id: string, data: Partial<{
+  title: string;
+  description: string;
+  status: MilestoneStatus;
+  priority: MilestonePriority;
+  category: string;
+  dueDate: string | null;
+  progress: number;
+  notes: string;
+  collaboratorId: string | null;
+}>): Promise<Milestone> {
+  return apiRequest(`/api/milestones/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteMilestone(id: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/milestones/${id}`, { method: 'DELETE' });
+}
+
+// --- Shortlist / Saved Profiles ---
+
+export interface ShortlistProfile {
+  displayName: string;
+  avatarUrl: string | null;
+  headline: string | null;
+  role: string | null;
+  location: string | null;
+  skills: string[];
+}
+
+export interface ShortlistItem {
+  id: string;
+  userId: string;
+  note: string | null;
+  savedAt: string;
+  profile: ShortlistProfile | null;
+}
+
+export async function listShortlist(params?: {
+  limit?: number;
+  cursor?: string | null;
+}): Promise<{ items: ShortlistItem[]; nextCursor: string | null }> {
+  const sp = new URLSearchParams();
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.cursor) sp.set('cursor', params.cursor);
+  return apiRequest(`/api/shortlist${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getShortlistIds(): Promise<{ ids: string[] }> {
+  return apiRequest('/api/shortlist/ids');
+}
+
+export async function saveToShortlist(userId: string, note?: string): Promise<{ ok: boolean; saved: boolean; id: string }> {
+  return apiRequest('/api/shortlist', { method: 'POST', body: JSON.stringify({ userId, note }) });
+}
+
+export async function removeFromShortlist(userId: string): Promise<{ ok: boolean; saved: boolean }> {
+  return apiRequest(`/api/shortlist/${userId}`, { method: 'DELETE' });
+}
+
+export async function updateShortlistNote(userId: string, note: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/shortlist/${userId}/note`, { method: 'PATCH', body: JSON.stringify({ note }) });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Research Workspace — FigJam-like research canvas
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ResearchNodeType = 'note' | 'document' | 'image' | 'pdf' | 'link' | 'reference';
+export type ResearchBoardVisibility = 'private' | 'team' | 'organization' | 'public';
+
+export interface ResearchBoardUpload {
+  id: string;
+  url: string;
+  mimeType: string | null;
+  originalName: string | null;
+  sizeBytes: number | null;
+}
+
+export interface ResearchNode {
+  id: string;
+  boardId: string;
+  type: ResearchNodeType;
+  title: string | null;
+  content: string | null;
+  url: string | null;
+  uploadId: string | null;
+  upload: ResearchBoardUpload | null;
+  posX: number;
+  posY: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  color: string | null;
+  collapsed: boolean;
+  locked: boolean;
+  refEntityType: string | null;
+  refEntityId: string | null;
+  metadata: unknown;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResearchConnector {
+  id: string;
+  boardId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string | null;
+  color: string | null;
+  style: string | null;
+  createdAt: string;
+}
+
+export interface ResearchBoard {
+  id: string;
+  ownerId: string;
+  title: string;
+  description: string | null;
+  visibility: ResearchBoardVisibility;
+  canvasState: unknown;
+  tags: string[];
+  color: string | null;
+  icon: string | null;
+  isPinned: boolean;
+  isArchived: boolean;
+  nodeCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResearchBoardFull extends ResearchBoard {
+  nodes: ResearchNode[];
+  connectors: ResearchConnector[];
+}
+
+// Board operations
+export async function listResearchBoards(): Promise<{ boards: ResearchBoard[] }> {
+  return apiRequest('/api/research/boards');
+}
+
+export async function getResearchBoard(boardId: string): Promise<{ board: ResearchBoardFull }> {
+  return apiRequest(`/api/research/boards/${boardId}`);
+}
+
+export async function createResearchBoard(data: {
+  title: string;
+  description?: string;
+  visibility?: ResearchBoardVisibility;
+  tags?: string[];
+  color?: string;
+  icon?: string;
+}): Promise<{ board: ResearchBoard }> {
+  return apiRequest('/api/research/boards', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateResearchBoard(
+  boardId: string,
+  data: {
+    title?: string;
+    description?: string;
+    visibility?: ResearchBoardVisibility;
+    canvasState?: unknown;
+    tags?: string[];
+    color?: string;
+    icon?: string;
+    isPinned?: boolean;
+    isArchived?: boolean;
+  },
+): Promise<{ board: ResearchBoard }> {
+  return apiRequest(`/api/research/boards/${boardId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteResearchBoard(boardId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/boards/${boardId}`, { method: 'DELETE' });
+}
+
+// Node operations
+export async function createResearchNode(
+  boardId: string,
+  data: {
+    type: ResearchNodeType;
+    title?: string;
+    content?: string;
+    url?: string;
+    uploadId?: string;
+    posX?: number;
+    posY?: number;
+    width?: number;
+    height?: number;
+    color?: string;
+    refEntityType?: string;
+    refEntityId?: string;
+    metadata?: unknown;
+    tags?: string[];
+  },
+): Promise<{ node: ResearchNode }> {
+  return apiRequest(`/api/research/boards/${boardId}/nodes`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateResearchNode(
+  nodeId: string,
+  data: {
+    title?: string;
+    content?: string;
+    url?: string;
+    posX?: number;
+    posY?: number;
+    width?: number;
+    height?: number;
+    zIndex?: number;
+    color?: string;
+    collapsed?: boolean;
+    locked?: boolean;
+    metadata?: unknown;
+    tags?: string[];
+  },
+): Promise<{ node: ResearchNode }> {
+  return apiRequest(`/api/research/nodes/${nodeId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function batchUpdateResearchNodes(
+  boardId: string,
+  updates: Array<{ id: string; posX?: number; posY?: number; width?: number; height?: number; zIndex?: number }>,
+): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/boards/${boardId}/nodes/batch`, { method: 'PATCH', body: JSON.stringify({ updates }) });
+}
+
+export async function deleteResearchNode(nodeId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/nodes/${nodeId}`, { method: 'DELETE' });
+}
+
+// Connector operations
+export async function createResearchConnector(
+  boardId: string,
+  data: { fromNodeId: string; toNodeId: string; label?: string; color?: string; style?: 'solid' | 'dashed' | 'dotted' },
+): Promise<{ connector: ResearchConnector }> {
+  return apiRequest(`/api/research/boards/${boardId}/connectors`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateResearchConnector(
+  connectorId: string,
+  data: { label?: string; color?: string; style?: 'solid' | 'dashed' | 'dotted' },
+): Promise<{ connector: ResearchConnector }> {
+  return apiRequest(`/api/research/connectors/${connectorId}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteResearchConnector(connectorId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/connectors/${connectorId}`, { method: 'DELETE' });
+}
+
+// Research asset upload
+export async function uploadResearchAsset(
+  file: File,
+): Promise<{ upload: { id: string; url: string; mimeType: string | null; originalName: string | null; sizeBytes: number | null } }> {
+  const form = new FormData();
+  form.append('file', file);
+  return apiRequest('/api/uploads/research-asset', { method: 'POST', body: form });
+}
+
+// ─── Research Collaborators ───────────────────────────────────────────────
+
+export interface ResearchCollaborator {
+  id?: string;
+  userId: string;
+  email: string;
+  role: 'owner' | 'admin' | 'editor' | 'viewer';
+  displayName: string | null;
+  avatarUrl: string | null;
+  headline: string | null;
+  addedAt: string | null;
+}
+
+export async function listResearchCollaborators(
+  boardId: string,
+): Promise<{ owner: ResearchCollaborator; collaborators: ResearchCollaborator[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/collaborators`);
+}
+
+export async function addResearchCollaborator(
+  boardId: string,
+  data: { userId: string; role: 'viewer' | 'editor' | 'admin' },
+): Promise<{ collaborator: ResearchCollaborator }> {
+  return apiRequest(`/api/research/boards/${boardId}/collaborators`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateResearchCollaborator(
+  boardId: string,
+  targetUserId: string,
+  role: 'viewer' | 'editor' | 'admin',
+): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/boards/${boardId}/collaborators/${targetUserId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function removeResearchCollaborator(boardId: string, targetUserId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/boards/${boardId}/collaborators/${targetUserId}`, { method: 'DELETE' });
+}
+
+// ─── Research Comments ───────────────────────────────────────────────────
+
+export interface ResearchComment {
+  id: string;
+  nodeId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatar: string | null;
+  body: string;
+  resolved: boolean;
+  posX: number | null;
+  posY: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listNodeComments(nodeId: string): Promise<{ comments: ResearchComment[] }> {
+  return apiRequest(`/api/research/nodes/${nodeId}/comments`);
+}
+
+export async function createNodeComment(
+  nodeId: string,
+  data: { body: string; posX?: number; posY?: number },
+): Promise<{ comment: ResearchComment }> {
+  return apiRequest(`/api/research/nodes/${nodeId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateNodeComment(
+  commentId: string,
+  data: { body?: string; resolved?: boolean },
+): Promise<{ comment: ResearchComment }> {
+  return apiRequest(`/api/research/comments/${commentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteNodeComment(commentId: string): Promise<{ ok: true }> {
+  return apiRequest(`/api/research/comments/${commentId}`, { method: 'DELETE' });
+}
+
+// ─── Research AI Analysis ────────────────────────────────────────────────
+
+export interface ResearchBoardAnalysis {
+  summary: string;
+  themes: string[];
+  insights: string[];
+  suggestedTags: string[];
+  connections: Array<{ from: string; to: string; reason: string }>;
+  gaps: string[];
+}
+
+export async function analyzeResearchBoard(boardId: string): Promise<{ analysis: ResearchBoardAnalysis }> {
+  return apiRequest(`/api/research/boards/${boardId}/analyze`, { method: 'POST' });
 }

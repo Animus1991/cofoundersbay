@@ -13,8 +13,9 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "dev:web": "npm run dev --prefix apps/web",
-    "dev:api": "npm run build -w @cofounderbay/shared && npm run prisma:generate --prefix apps/api && npm run prisma:push --prefix apps/api && npm run start:dev --prefix apps/api",
-    "dev:api:fast": "npm run build -w @cofounderbay/shared && npm run prisma:generate --prefix apps/api && npm run start:dev --prefix apps/api",
+    "dev:api": "node ./scripts/dev-api.cjs",
+    "dev:api:fast": "node ./scripts/dev-api.cjs",
+    "dev:api:setup": "node ./scripts/dev-api.cjs --force-db",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
     "db:generate": "npm run prisma:generate --prefix apps/api",
@@ -22,7 +23,7 @@
     "db:migrate": "npm run prisma:migrate --prefix apps/api",
     "db:studio": "npm run prisma:studio --prefix apps/api",
     "db:seed": "npm run db:seed --prefix apps/api",
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "preinstall": "node ./scripts/enforce-package-manager.cjs",
     "typecheck:libs": "tsc --build",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
@@ -32,7 +33,7 @@
     "prettier": "^3.8.1"
   },
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^25.0.0"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",

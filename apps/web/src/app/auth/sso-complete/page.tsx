@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 
@@ -13,10 +12,10 @@ export default function SSOCompletePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const userId = searchParams.get('userId');
-    const redirect = searchParams.get('redirect') || '/';
-    const errorParam = searchParams.get('error');
-    const message = searchParams.get('message');
+    const userId = searchParams?.get('userId');
+    const redirect = searchParams?.get('redirect') || '/';
+    const errorParam = searchParams?.get('error');
+    const message = searchParams?.get('message');
 
     if (errorParam) {
       setStatus('error');
@@ -63,7 +62,10 @@ export default function SSOCompletePage() {
 
         {status === 'loading' && (
           <div className="space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+            <div
+              aria-hidden="true"
+              className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
+            />
             <div>
               <h1 className="text-xl font-semibold">Completing sign in...</h1>
               <p className="text-muted-foreground mt-1">
@@ -75,7 +77,9 @@ export default function SSOCompletePage() {
 
         {status === 'success' && (
           <div className="space-y-4">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 text-xs font-semibold uppercase tracking-wide text-green-600">
+              OK
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-green-600">Sign in successful!</h1>
               <p className="text-muted-foreground mt-1">
@@ -87,7 +91,9 @@ export default function SSOCompletePage() {
 
         {status === 'error' && (
           <div className="space-y-4">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive">
+              !
+            </div>
             <div>
               <h1 className="text-xl font-semibold text-destructive">Sign in failed</h1>
               <p className="text-muted-foreground mt-1">

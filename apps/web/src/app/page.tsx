@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { cookies } from 'next/headers';
 import { DashboardHome } from './DashboardHome';
 import { LandingHome } from './LandingHome';

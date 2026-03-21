@@ -66,6 +66,20 @@ export class MessagingService {
     private readonly notifications: NotificationsService,
   ) {}
 
+  private async hasBlockedRelationship(userId: string, otherUserId: string): Promise<boolean> {
+    const blocked = await this.prisma.connectionRequest.findFirst({
+      where: {
+        status: 'blocked',
+        OR: [
+          { requesterId: userId, receiverId: otherUserId },
+          { requesterId: otherUserId, receiverId: userId },
+        ],
+      },
+      select: { id: true },
+    });
+    return !!blocked;
+  }
+
   async getConversationIdsForUser(userId: string): Promise<string[]> {
     const parts = await this.prisma.conversationParticipant.findMany({
       where: { userId },
@@ -84,6 +98,10 @@ export class MessagingService {
       select: { id: true },
     });
     if (!other) throw new NotFoundException('User not found');
+
+    if (await this.hasBlockedRelationship(userId, otherUserId)) {
+      throw new ForbiddenException('Cannot message this user');
+    }
 
     const existing = await this.prisma.conversation.findFirst({
       where: {
@@ -312,6 +330,24 @@ export class MessagingService {
     });
     if (!participant) throw new ForbiddenException('Not a participant');
 
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+      select: {
+        type: true,
+        participants: {
+          where: { userId: { not: userId } },
+          select: { userId: true },
+        },
+      },
+    });
+    if (!conversation) throw new NotFoundException('Conversation not found');
+    if (conversation.type === 'direct') {
+      const otherUserId = conversation.participants[0]?.userId;
+      if (otherUserId && await this.hasBlockedRelationship(userId, otherUserId)) {
+        throw new ForbiddenException('Cannot message this user');
+      }
+    }
+
     const message = await this.prisma.$transaction(async (tx) => {
       const created = await tx.message.create({
         data: {
@@ -406,6 +442,218 @@ export class MessagingService {
     );
 
     return dto;
+  }
+
+  // ── Conversation Validation ───────────────────────────────────────────────
+
+  private async ensureParticipant(userId: string, conversationId: string) {
+    const p = await this.prisma.conversationParticipant.findUnique({
+      where: { conversationId_userId: { conversationId, userId } },
+      select: { conversationId: true },
+    });
+    if (!p) throw new ForbiddenException('Not a participant in this conversation');
+    return p;
+  }
+
+  async getConversationValidation(userId: string, conversationId: string) {
+    await this.ensureParticipant(userId, conversationId);
+    const validation = await this.prisma.conversationValidation.findUnique({
+      where: { conversationId },
+    });
+    if (!validation) {
+      return {
+        mode: 'casual' as const,
+        initiatedBy: null,
+        initiatedAt: null,
+        acceptedBy: null,
+        acceptedAt: null,
+        lastValidatedAt: null,
+        validationHash: null,
+        transcriptAvailable: false,
+      };
+    }
+    return this.mapValidation(validation);
+  }
+
+  async updateConversationValidationMode(
+    userId: string,
+    conversationId: string,
+    mode: 'casual' | 'one_party' | 'two_party',
+  ) {
+    await this.ensureParticipant(userId, conversationId);
+
+    const isCasual = mode === 'casual';
+    const validation = await this.prisma.conversationValidation.upsert({
+      where: { conversationId },
+      create: {
+        conversationId,
+        mode,
+        initiatedById: isCasual ? null : userId,
+        initiatedAt: isCasual ? null : new Date(),
+        transcriptAvailable: !isCasual,
+      },
+      update: {
+        mode,
+        initiatedById: isCasual ? null : userId,
+        initiatedAt: isCasual ? null : new Date(),
+        acceptedById: null,
+        acceptedAt: null,
+        transcriptAvailable: !isCasual,
+        // Recompute hash on mode change
+        lastValidatedAt: isCasual ? null : new Date(),
+        validationHash: isCasual ? null : await this.computeValidationHash(conversationId),
+      },
+    });
+
+    // Notify other participants (transparency requirement)
+    if (!isCasual) {
+      const others = await this.prisma.conversationParticipant.findMany({
+        where: { conversationId, userId: { not: userId } },
+        select: { userId: true, user: { select: { email: true } } },
+      });
+      const modeLabel = mode === 'one_party' ? 'One-Party Validation' : 'Two-Party Validation';
+      await Promise.allSettled(
+        others.map((o) =>
+          this.notifications.createNotification({
+            userId: o.userId,
+            type: 'system',
+            title: 'Conversation validation mode changed',
+            body: `A participant has enabled ${modeLabel} for this conversation.`,
+            link: `/messages?c=${conversationId}`,
+          }),
+        ),
+      );
+    }
+
+    return { success: true, validationState: this.mapValidation(validation) };
+  }
+
+  async acceptConversationValidation(userId: string, conversationId: string) {
+    await this.ensureParticipant(userId, conversationId);
+    const existing = await this.prisma.conversationValidation.findUnique({
+      where: { conversationId },
+    });
+    if (!existing || existing.mode !== 'two_party') {
+      throw new BadRequestException('No pending two-party validation request');
+    }
+    if (existing.initiatedById === userId) {
+      throw new BadRequestException('You cannot accept your own validation request');
+    }
+
+    const hash = await this.computeValidationHash(conversationId);
+    const validation = await this.prisma.conversationValidation.update({
+      where: { conversationId },
+      data: {
+        acceptedById: userId,
+        acceptedAt: new Date(),
+        lastValidatedAt: new Date(),
+        validationHash: hash,
+        transcriptAvailable: true,
+      },
+    });
+
+    return { success: true, validationState: this.mapValidation(validation) };
+  }
+
+  async declineConversationValidation(userId: string, conversationId: string) {
+    await this.ensureParticipant(userId, conversationId);
+    await this.prisma.conversationValidation.upsert({
+      where: { conversationId },
+      create: { conversationId, mode: 'casual' },
+      update: {
+        mode: 'casual',
+        initiatedById: null,
+        initiatedAt: null,
+        acceptedById: null,
+        acceptedAt: null,
+        transcriptAvailable: false,
+        validationHash: null,
+      },
+    });
+    return { success: true };
+  }
+
+  async exportConversationTranscript(userId: string, conversationId: string, format: 'json' | 'txt') {
+    await this.ensureParticipant(userId, conversationId);
+    const validation = await this.prisma.conversationValidation.findUnique({
+      where: { conversationId },
+    });
+    if (!validation || !validation.transcriptAvailable) {
+      throw new BadRequestException('Transcript not available for this conversation');
+    }
+
+    const messages = await this.prisma.message.findMany({
+      where: { conversationId, deletedAt: null },
+      include: {
+        sender: { select: { id: true, profile: { select: { displayName: true } } } },
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    if (format === 'json') {
+      return {
+        contentType: 'application/json',
+        data: JSON.stringify({
+          conversationId,
+          exportedAt: new Date().toISOString(),
+          validationMode: validation.mode,
+          validationHash: validation.validationHash,
+          messages: messages.map((m) => ({
+            id: m.id,
+            senderId: m.senderId,
+            senderName: m.sender.profile?.displayName ?? m.senderId,
+            body: m.body,
+            createdAt: m.createdAt.toISOString(),
+          })),
+        }),
+      };
+    }
+
+    const lines = [
+      `Conversation Transcript — ${conversationId}`,
+      `Exported: ${new Date().toISOString()}`,
+      `Validation mode: ${validation.mode}`,
+      validation.validationHash ? `Hash: ${validation.validationHash}` : '',
+      '',
+      ...messages.map(
+        (m) =>
+          `[${m.createdAt.toISOString()}] ${m.sender.profile?.displayName ?? m.senderId}: ${m.body}`,
+      ),
+    ];
+    return { contentType: 'text/plain', data: lines.filter(Boolean).join('\n') };
+  }
+
+  private async computeValidationHash(conversationId: string): Promise<string> {
+    const { createHash } = await import('node:crypto');
+    const messages = await this.prisma.message.findMany({
+      where: { conversationId, deletedAt: null },
+      select: { id: true, body: true, senderId: true, createdAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const payload = messages.map((m) => `${m.createdAt.toISOString()}|${m.senderId}|${m.body}`).join('\n');
+    return createHash('sha256').update(payload).digest('hex');
+  }
+
+  private mapValidation(v: {
+    mode: string;
+    initiatedById: string | null;
+    initiatedAt: Date | null;
+    acceptedById: string | null;
+    acceptedAt: Date | null;
+    lastValidatedAt: Date | null;
+    validationHash: string | null;
+    transcriptAvailable: boolean;
+  }) {
+    return {
+      mode: v.mode as 'casual' | 'one_party' | 'two_party',
+      initiatedBy: v.initiatedById,
+      initiatedAt: v.initiatedAt?.toISOString() ?? null,
+      acceptedBy: v.acceptedById,
+      acceptedAt: v.acceptedAt?.toISOString() ?? null,
+      lastValidatedAt: v.lastValidatedAt?.toISOString() ?? null,
+      validationHash: v.validationHash,
+      transcriptAvailable: v.transcriptAvailable,
+    };
   }
 
   async setConversationFlags(userId: string, conversationId: string, flags: { isPinned?: boolean; isArchived?: boolean }) {

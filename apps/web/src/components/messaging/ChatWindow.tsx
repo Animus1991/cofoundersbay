@@ -35,6 +35,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
+import {
+  ConversationValidationMenu,
+  ConversationValidationBadge,
+  TranscriptExportButton,
+  ValidationHashDisplay,
+  type ConversationValidationState,
+  type ValidationMode,
+} from '@/components/messaging/ConversationValidation';
 import { cn } from '@/lib/utils';
 
 export type Message = {
@@ -74,6 +82,8 @@ type ChatWindowProps = {
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
   className?: string;
+  validationState?: ConversationValidationState;
+  onValidationModeChange?: (mode: ValidationMode) => void;
 };
 
 function formatTime(date: Date): string {
@@ -267,6 +277,8 @@ export function ChatWindow({
   isLoadingMore = false,
   onLoadMore,
   className,
+  validationState,
+  onValidationModeChange,
 }: ChatWindowProps) {
   const [inputValue, setInputValue] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -386,6 +398,22 @@ export function ChatWindow({
             </Link>
           </div>
           <div className="flex items-center gap-1">
+            {validationState && (
+              <ConversationValidationMenu
+                conversationId={conversation.id}
+                currentUserId={currentUserId}
+                otherUserId={conversation.recipientId}
+                otherUserName={conversation.recipientName}
+                validationState={validationState}
+                onModeChange={onValidationModeChange}
+              />
+            )}
+            {validationState && validationState.mode !== 'casual' && (
+              <TranscriptExportButton
+                conversationId={conversation.id}
+                validationState={validationState}
+              />
+            )}
             <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="h-4 w-4" />
             </Button>

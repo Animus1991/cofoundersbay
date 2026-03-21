@@ -1,21 +1,6 @@
 import type { NextConfig } from 'next';
-import { networkInterfaces } from 'os';
 
-function getLanIps(): string[] {
-  const nets = networkInterfaces();
-  return Object.values(nets)
-    .flatMap((x) => x ?? [])
-    .filter((n) => n.family === 'IPv4' && !n.internal)
-    .map((n) => n.address);
-}
-
-const allowedDevOrigins = Array.from(
-  new Set([
-    'localhost',
-    '127.0.0.1',
-    ...getLanIps(),
-  ]),
-);
+const allowedDevOrigins = ['localhost'];
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -59,43 +44,12 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Webpack optimizations for faster dev + smaller bundles
-  webpack: (config, { dev, isServer }) => {
-    if (!dev) {
-      // Production: split large vendor chunks for better caching
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            radix: {
-              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-              name: 'radix-ui',
-              chunks: 'all',
-              priority: 20,
-            },
-            tanstack: {
-              test: /[\\/]node_modules[\\/]@tanstack[\\/]/,
-              name: 'tanstack-query',
-              chunks: 'all',
-              priority: 20,
-            },
-            lucide: {
-              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
-              name: 'lucide',
-              chunks: 'all',
-              priority: 20,
-            },
-            framerMotion: {
-              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              name: 'framer-motion',
-              chunks: 'all',
-              priority: 20,
-            },
-          },
-        },
-      };
+  // Webpack passthrough — Next.js 15 handles chunking internally
+  webpack: (config, { dev }) => {
+    if (dev && process.platform === 'win32') {
+      config.cache = false;
     }
+
     return config;
   },
   

@@ -9,23 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Building2,
-  Plus,
-  Settings,
-  Palette,
-  Globe,
-  Mail,
-  FileText,
-  Eye,
-  Save,
-  X,
-  Upload,
-  Check,
-  AlertTriangle,
-  ExternalLink,
-  ChevronRight,
+  Building2, Plus, Settings, Palette, Globe, Mail, FileText,
+  Eye, Save, X, Upload, Check, AlertTriangle, ExternalLink,
+  ChevronRight, Trash2, Users, Image as ImageIcon, Type,
 } from 'lucide-react';
-import { listTenants, type TenantItem } from '@/lib/api';
+import {
+  listTenants, createTenant, updateTenant, deleteTenant,
+  updateTenantBranding, publishTenantBranding, unpublishTenantBranding,
+  type TenantItem, type TenantBranding,
+} from '@/lib/api';
 
 export default function TenantsAdminPage() {
   const queryClient = useQueryClient();
@@ -187,6 +179,9 @@ export default function TenantsAdminPage() {
   );
 }
 
+const FONT_OPTIONS = ['Inter', 'Roboto', 'Poppins', 'Open Sans', 'Playfair Display', 'Montserrat', 'Lato'];
+const BG_STYLES = ['flat', 'gradient', 'image', 'dark'];
+
 function TenantEditor({
   tenant,
   onClose,
@@ -196,38 +191,101 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const queryClient = useQueryClient();
   const isNew = !tenant;
   const [activeTab, setActiveTab] = useState('general');
-  const [formData, setFormData] = useState({
-    name: tenant?.name || '',
-    slug: tenant?.slug || '',
-    displayName: tenant?.displayName || '',
-    description: tenant?.description || '',
-    logoUrl: tenant?.logoUrl || '',
-    faviconUrl: '',
-    primaryColor: '#8b5cf6',
-    secondaryColor: '#6366f1',
-    accentColor: '#f59e0b',
-    heroTitle: '',
-    heroSubtitle: '',
-    supportEmail: '',
-    websiteUrl: '',
-    privacyPolicyUrl: '',
-    termsUrl: '',
-    linkedinUrl: '',
-    onboardingIntroText: '',
-    dashboardWelcomeText: '',
-  });
   const [previewMode, setPreviewMode] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const b = tenant?.branding;
+
+  const [general, setGeneral] = useState({
+    name: tenant?.name ?? '',
+    slug: tenant?.slug ?? '',
+    displayName: tenant?.displayName ?? '',
+    shortDescription: tenant?.shortDescription ?? '',
+    description: tenant?.description ?? '',
+    aboutText: tenant?.aboutText ?? '',
+    website: tenant?.website ?? '',
+    logoUrl: tenant?.logoUrl ?? '',
+    faviconUrl: tenant?.faviconUrl ?? '',
+    status: tenant?.status ?? 'draft',
+  });
+
+  const [branding, setBranding] = useState({
+    primaryColor: b?.primaryColor ?? '#8b5cf6',
+    secondaryColor: b?.secondaryColor ?? '#6366f1',
+    accentColor: b?.accentColor ?? '#f59e0b',
+    backgroundStyle: b?.backgroundStyle ?? 'flat',
+    headingFont: b?.headingFont ?? 'Inter',
+    bodyFont: b?.bodyFont ?? 'Inter',
+    heroImageUrl: b?.heroImageUrl ?? '',
+    heroTitle: b?.heroTitle ?? '',
+    heroSubtitle: b?.heroSubtitle ?? '',
+    aboutText: b?.aboutText ?? '',
+    ctaLabel: b?.ctaLabel ?? 'Get Started',
+    ctaUrl: b?.ctaUrl ?? '',
+    onboardingIntroText: b?.onboardingIntroText ?? '',
+    dashboardWelcomeText: b?.dashboardWelcomeText ?? '',
+    communityNaming: b?.communityNaming ?? '',
+    supportEmail: b?.supportEmail ?? '',
+    websiteUrl: b?.websiteUrl ?? '',
+    privacyPolicyUrl: b?.privacyPolicyUrl ?? '',
+    termsUrl: b?.termsUrl ?? '',
+    cookiePolicyUrl: b?.cookiePolicyUrl ?? '',
+    linkedinUrl: b?.linkedinUrl ?? '',
+    twitterUrl: b?.twitterUrl ?? '',
+    instagramUrl: b?.instagramUrl ?? '',
+    emailFromName: b?.emailFromName ?? '',
+    emailFooterText: b?.emailFooterText ?? '',
+  });
+
+  const createMut = useMutation({
+    mutationFn: () => createTenant({ ...general }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onError: (e: Error) => setSaveError(e.message),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: () => updateTenant(tenant!.id, { ...general }),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+    onError: (e: Error) => setSaveError(e.message),
+  });
+
+  const brandingMut = useMutation({
+    mutationFn: () => updateTenantBranding(tenant!.id, { ...branding }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+    onError: (e: Error) => setSaveError(e.message),
+  });
+
+  const publishMut = useMutation({
+    mutationFn: () => publishTenantBranding(tenant!.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+  });
+
+  const unpublishMut = useMutation({
+    mutationFn: () => unpublishTenantBranding(tenant!.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => deleteTenant(tenant!.id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] }); onSave(); },
+  });
+
+  const isSaving = createMut.isPending || updateMut.isPending;
+  const isBrandingSaving = brandingMut.isPending;
+
+  const handleSaveGeneral = () => {
+    setSaveError('');
+    if (isNew) createMut.mutate();
+    else updateMut.mutate();
   };
 
-  const handleSave = async () => {
-    // In real implementation, this would call the API
-    console.log('Saving tenant:', formData);
-    onSave();
+  const handleSaveBranding = () => {
+    setSaveError('');
+    if (!tenant) return;
+    brandingMut.mutate();
   };
 
   return (
@@ -235,14 +293,23 @@ function TenantEditor({
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between border-b shrink-0">
           <div>
-            <CardTitle>{isNew ? 'Create Tenant' : `Edit: ${tenant?.displayName || tenant?.name}`}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              {isNew ? 'Create Tenant' : (general.displayName || general.name)}
+              {tenant && (
+                <Badge variant={tenant.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                  {tenant.status}
+                </Badge>
+              )}
+            </CardTitle>
             <CardDescription>Configure organization settings and branding</CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-2">
-              <Eye className="h-4 w-4" />
-              {previewMode ? 'Edit' : 'Preview'}
-            </Button>
+            {!isNew && (
+              <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-2">
+                <Eye className="h-4 w-4" />
+                {previewMode ? 'Edit' : 'Preview'}
+              </Button>
+            )}
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -250,266 +317,299 @@ function TenantEditor({
         </CardHeader>
 
         <div className="flex-1 overflow-y-auto">
-          {previewMode ? (
-            <TenantPreview data={formData} />
+          {previewMode && !isNew ? (
+            <TenantPreview general={general} branding={branding} />
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
-              <TabsList className="mb-6">
-                <TabsTrigger value="general" className="gap-2">
-                  <Settings className="h-4 w-4" />
-                  General
-                </TabsTrigger>
-                <TabsTrigger value="branding" className="gap-2">
-                  <Palette className="h-4 w-4" />
-                  Branding
-                </TabsTrigger>
-                <TabsTrigger value="content" className="gap-2">
-                  <FileText className="h-4 w-4" />
-                  Content
-                </TabsTrigger>
-                <TabsTrigger value="links" className="gap-2">
-                  <Globe className="h-4 w-4" />
-                  Links
-                </TabsTrigger>
+              <TabsList className="mb-6 flex-wrap h-auto gap-1">
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" />General</TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" />Colors & Fonts</TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Media</TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Content</TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Links & Legal</TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" />Email</TabsTrigger>}
               </TabsList>
 
-              <TabsContent value="general" className="space-y-4">
+              {saveError && (
+                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  {saveError}
+                </div>
+              )}
+
+              {/* General tab */}
+              <TabsContent value="general" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Internal Name</label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
-                      placeholder="acme-corp"
-                    />
+                    <label className="text-sm font-medium">Internal Name *</label>
+                    <Input value={general.name} onChange={e => setGeneral(p => ({ ...p, name: e.target.value }))} placeholder="acme-corp" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">URL Slug</label>
-                    <Input
-                      value={formData.slug}
-                      onChange={(e) => handleChange('slug', e.target.value)}
-                      placeholder="acme"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Accessible at /t/{formData.slug || 'slug'}
-                    </p>
+                    <label className="text-sm font-medium">URL Slug *</label>
+                    <Input value={general.slug} onChange={e => setGeneral(p => ({ ...p, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))} placeholder="acme" />
+                    <p className="text-xs text-muted-foreground">Public URL: /t/{general.slug || 'slug'}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Display Name</label>
+                    <Input value={general.displayName} onChange={e => setGeneral(p => ({ ...p, displayName: e.target.value }))} placeholder="Acme Corporation" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Website</label>
+                    <Input value={general.website} onChange={e => setGeneral(p => ({ ...p, website: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Display Name</label>
-                  <Input
-                    value={formData.displayName}
-                    onChange={(e) => handleChange('displayName', e.target.value)}
-                    placeholder="Acme Corporation"
-                  />
+                  <label className="text-sm font-medium">Short Description</label>
+                  <Input value={general.shortDescription} onChange={e => setGeneral(p => ({ ...p, shortDescription: e.target.value }))} placeholder="One-line description shown in listings" maxLength={160} />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleChange('description', e.target.value)}
-                    placeholder="Brief description of the organization..."
-                    className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
+                  <label className="text-sm font-medium">Full Description</label>
+                  <textarea value={general.description} onChange={e => setGeneral(p => ({ ...p, description: e.target.value }))} placeholder="Detailed description of the organization..." className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">About Text (long-form landing page)</label>
+                  <textarea value={general.aboutText} onChange={e => setGeneral(p => ({ ...p, aboutText: e.target.value }))} placeholder="Full about section displayed on the tenant landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Logo URL</label>
+                    <Input value={general.logoUrl} onChange={e => setGeneral(p => ({ ...p, logoUrl: e.target.value }))} placeholder="https://cdn.acme.com/logo.png" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Favicon URL</label>
+                    <Input value={general.faviconUrl} onChange={e => setGeneral(p => ({ ...p, faviconUrl: e.target.value }))} placeholder="https://cdn.acme.com/favicon.ico" />
+                  </div>
+                </div>
+                {!isNew && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Status</label>
+                    <div className="flex gap-2">
+                      {(['draft', 'active', 'suspended'] as const).map(s => (
+                        <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                          {s.charAt(0).toUpperCase() + s.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-end pt-2">
+                  <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
+                    <Save className="h-4 w-4" />
+                    {isSaving ? 'Saving…' : isNew ? 'Create Tenant' : 'Save General'}
+                  </Button>
                 </div>
               </TabsContent>
 
-              <TabsContent value="branding" className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Logo URL</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={formData.logoUrl}
-                          onChange={(e) => handleChange('logoUrl', e.target.value)}
-                          placeholder="https://..."
-                        />
-                        <Button variant="outline" size="icon">
-                          <Upload className="h-4 w-4" />
-                        </Button>
+              {/* Colors & Fonts tab */}
+              <TabsContent value="branding" className="space-y-6 mt-0">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm">Color Palette</h4>
+                  <div className="grid grid-cols-3 gap-4">
+                    {([['primaryColor', 'Primary'], ['secondaryColor', 'Secondary'], ['accentColor', 'Accent']] as const).map(([key, label]) => (
+                      <div key={key} className="space-y-2">
+                        <label className="text-sm font-medium">{label}</label>
+                        <div className="flex gap-2">
+                          <input type="color" value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
+                          <Input value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Favicon URL</label>
-                      <Input
-                        value={formData.faviconUrl}
-                        onChange={(e) => handleChange('faviconUrl', e.target.value)}
-                        placeholder="https://..."
-                      />
-                    </div>
+                    ))}
                   </div>
-                  <div className="space-y-4">
-                    {formData.logoUrl ? (
-                      <div className="p-4 rounded-lg border bg-muted/30">
-                        <p className="text-xs text-muted-foreground mb-2">Logo Preview</p>
-                        <img src={formData.logoUrl} alt="Logo" className="h-16 object-contain" />
-                      </div>
-                    ) : (
-                      <div className="p-4 rounded-lg border bg-muted/30 h-24 flex items-center justify-center">
-                        <p className="text-sm text-muted-foreground">No logo uploaded</p>
-                      </div>
-                    )}
+                  <div className="p-3 rounded-lg border flex gap-2">
+                    {['primaryColor', 'secondaryColor', 'accentColor'].map(k => (
+                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: (branding as any)[k] }} />
+                    ))}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium">Color Palette</h4>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Primary Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={formData.primaryColor}
-                          onChange={(e) => handleChange('primaryColor', e.target.value)}
-                          className="h-10 w-14 rounded border cursor-pointer"
-                        />
-                        <Input
-                          value={formData.primaryColor}
-                          onChange={(e) => handleChange('primaryColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Secondary Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={formData.secondaryColor}
-                          onChange={(e) => handleChange('secondaryColor', e.target.value)}
-                          className="h-10 w-14 rounded border cursor-pointer"
-                        />
-                        <Input
-                          value={formData.secondaryColor}
-                          onChange={(e) => handleChange('secondaryColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Accent Color</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="color"
-                          value={formData.accentColor}
-                          onChange={(e) => handleChange('accentColor', e.target.value)}
-                          className="h-10 w-14 rounded border cursor-pointer"
-                        />
-                        <Input
-                          value={formData.accentColor}
-                          onChange={(e) => handleChange('accentColor', e.target.value)}
-                          className="flex-1"
-                        />
-                      </div>
-                    </div>
+                  <h4 className="font-medium text-sm">Background Style</h4>
+                  <div className="flex gap-2 flex-wrap">
+                    {BG_STYLES.map(s => (
+                      <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
+                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
                   </div>
-                  <div className="p-4 rounded-lg border">
-                    <p className="text-xs text-muted-foreground mb-3">Color Preview</p>
-                    <div className="flex gap-2">
-                      <div
-                        className="h-10 w-24 rounded"
-                        style={{ backgroundColor: formData.primaryColor }}
-                      />
-                      <div
-                        className="h-10 w-24 rounded"
-                        style={{ backgroundColor: formData.secondaryColor }}
-                      />
-                      <div
-                        className="h-10 w-24 rounded"
-                        style={{ backgroundColor: formData.accentColor }}
-                      />
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="h-4 w-4" />Typography</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Heading Font</label>
+                      <select value={branding.headingFont} onChange={e => setBranding(p => ({ ...p, headingFont: e.target.value }))}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Body Font</label>
+                      <select value={branding.bodyFont} onChange={e => setBranding(p => ({ ...p, bodyFont: e.target.value }))}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        {FONT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
                     </div>
                   </div>
                 </div>
+                {!isNew && (
+                  <div className="flex justify-end pt-2 gap-2">
+                    <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
+                      <Save className="h-4 w-4" />
+                      {isBrandingSaving ? 'Saving…' : 'Save Colors & Fonts'}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
-              <TabsContent value="content" className="space-y-4">
+              {/* Media tab */}
+              <TabsContent value="media" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Hero Title</label>
-                  <Input
-                    value={formData.heroTitle}
-                    onChange={(e) => handleChange('heroTitle', e.target.value)}
-                    placeholder="Welcome to Our Innovation Hub"
-                  />
+                  <label className="text-sm font-medium">Hero Image URL</label>
+                  <Input value={branding.heroImageUrl} onChange={e => setBranding(p => ({ ...p, heroImageUrl: e.target.value }))} placeholder="https://cdn.acme.com/hero-banner.jpg" />
+                  <p className="text-xs text-muted-foreground">Displayed as hero background on /t/{general.slug || 'slug'}</p>
+                </div>
+                {branding.heroImageUrl && (
+                  <div className="rounded-lg overflow-hidden border">
+                    <img src={branding.heroImageUrl} alt="Hero preview" className="w-full h-40 object-cover" />
+                  </div>
+                )}
+                {!isNew && (
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
+                      <Save className="h-4 w-4" />
+                      {isBrandingSaving ? 'Saving…' : 'Save Media'}
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Content tab */}
+              <TabsContent value="content" className="space-y-4 mt-0">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Hero Title</label>
+                    <Input value={branding.heroTitle} onChange={e => setBranding(p => ({ ...p, heroTitle: e.target.value }))} placeholder="Welcome to Our Innovation Hub" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">CTA Button Label</label>
+                    <Input value={branding.ctaLabel} onChange={e => setBranding(p => ({ ...p, ctaLabel: e.target.value }))} placeholder="Get Started" />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Hero Subtitle</label>
-                  <textarea
-                    value={formData.heroSubtitle}
-                    onChange={(e) => handleChange('heroSubtitle', e.target.value)}
-                    placeholder="Connect with founders, mentors, and investors..."
-                    className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
+                  <textarea value={branding.heroSubtitle} onChange={e => setBranding(p => ({ ...p, heroSubtitle: e.target.value }))} placeholder="Connect with founders, mentors, and investors..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Onboarding Intro Text</label>
-                  <textarea
-                    value={formData.onboardingIntroText}
-                    onChange={(e) => handleChange('onboardingIntroText', e.target.value)}
-                    placeholder="Welcome! Let's set up your profile..."
-                    className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
+                  <label className="text-sm font-medium">CTA URL</label>
+                  <Input value={branding.ctaUrl} onChange={e => setBranding(p => ({ ...p, ctaUrl: e.target.value }))} placeholder="/register or https://..." />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Dashboard Welcome Message</label>
-                  <textarea
-                    value={formData.dashboardWelcomeText}
-                    onChange={(e) => handleChange('dashboardWelcomeText', e.target.value)}
-                    placeholder="Here's what's happening in your network..."
-                    className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
+                  <label className="text-sm font-medium">About / Long-form Content</label>
+                  <textarea value={branding.aboutText} onChange={e => setBranding(p => ({ ...p, aboutText: e.target.value }))} placeholder="About section content shown on the landing page..." className="w-full min-h-[100px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Onboarding Intro Text</label>
+                    <textarea value={branding.onboardingIntroText} onChange={e => setBranding(p => ({ ...p, onboardingIntroText: e.target.value }))} placeholder="Welcome! Let's set up your profile..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Dashboard Welcome Message</label>
+                    <textarea value={branding.dashboardWelcomeText} onChange={e => setBranding(p => ({ ...p, dashboardWelcomeText: e.target.value }))} placeholder="Here's what's happening..." className="w-full min-h-[70px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Community Naming</label>
+                  <Input value={branding.communityNaming} onChange={e => setBranding(p => ({ ...p, communityNaming: e.target.value }))} placeholder='Custom label e.g. "Program", "Cohort", "Network"' />
+                  <p className="text-xs text-muted-foreground">Replaces the word "community" in the UI for this tenant</p>
+                </div>
+                {!isNew && (
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
+                      <Save className="h-4 w-4" />
+                      {isBrandingSaving ? 'Saving…' : 'Save Content'}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
-              <TabsContent value="links" className="space-y-4">
+              {/* Links & Legal tab */}
+              <TabsContent value="links" className="space-y-4 mt-0">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Support Email</label>
-                    <Input
-                      type="email"
-                      value={formData.supportEmail}
-                      onChange={(e) => handleChange('supportEmail', e.target.value)}
-                      placeholder="support@acme.com"
-                    />
+                    <Input type="email" value={branding.supportEmail} onChange={e => setBranding(p => ({ ...p, supportEmail: e.target.value }))} placeholder="support@acme.com" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Website URL</label>
-                    <Input
-                      value={formData.websiteUrl}
-                      onChange={(e) => handleChange('websiteUrl', e.target.value)}
-                      placeholder="https://acme.com"
-                    />
+                    <label className="text-sm font-medium">Branding Website URL</label>
+                    <Input value={branding.websiteUrl} onChange={e => setBranding(p => ({ ...p, websiteUrl: e.target.value }))} placeholder="https://acme.com" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Privacy Policy URL</label>
-                    <Input
-                      value={formData.privacyPolicyUrl}
-                      onChange={(e) => handleChange('privacyPolicyUrl', e.target.value)}
-                      placeholder="https://acme.com/privacy"
-                    />
+                    <Input value={branding.privacyPolicyUrl} onChange={e => setBranding(p => ({ ...p, privacyPolicyUrl: e.target.value }))} placeholder="https://acme.com/privacy" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Terms of Service URL</label>
-                    <Input
-                      value={formData.termsUrl}
-                      onChange={(e) => handleChange('termsUrl', e.target.value)}
-                      placeholder="https://acme.com/terms"
-                    />
+                    <Input value={branding.termsUrl} onChange={e => setBranding(p => ({ ...p, termsUrl: e.target.value }))} placeholder="https://acme.com/terms" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">LinkedIn URL</label>
-                  <Input
-                    value={formData.linkedinUrl}
-                    onChange={(e) => handleChange('linkedinUrl', e.target.value)}
-                    placeholder="https://linkedin.com/company/acme"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cookie Policy URL</label>
+                    <Input value={branding.cookiePolicyUrl} onChange={e => setBranding(p => ({ ...p, cookiePolicyUrl: e.target.value }))} placeholder="https://acme.com/cookies" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">LinkedIn</label>
+                    <Input value={branding.linkedinUrl} onChange={e => setBranding(p => ({ ...p, linkedinUrl: e.target.value }))} placeholder="https://linkedin.com/company/acme" />
+                  </div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Twitter / X</label>
+                    <Input value={branding.twitterUrl} onChange={e => setBranding(p => ({ ...p, twitterUrl: e.target.value }))} placeholder="https://x.com/acme" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Instagram</label>
+                    <Input value={branding.instagramUrl} onChange={e => setBranding(p => ({ ...p, instagramUrl: e.target.value }))} placeholder="https://instagram.com/acme" />
+                  </div>
+                </div>
+                {!isNew && (
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
+                      <Save className="h-4 w-4" />
+                      {isBrandingSaving ? 'Saving…' : 'Save Links'}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
+
+              {/* Email tab */}
+              {!isNew && (
+                <TabsContent value="email" className="space-y-4 mt-0">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Email Sender Name</label>
+                      <Input value={branding.emailFromName} onChange={e => setBranding(p => ({ ...p, emailFromName: e.target.value }))} placeholder="Acme Startup Network" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Email Footer Text</label>
+                    <textarea value={branding.emailFooterText} onChange={e => setBranding(p => ({ ...p, emailFooterText: e.target.value }))} placeholder="© 2025 Acme Corp. All rights reserved. | Powered by CoFounderBay" className="w-full min-h-[80px] rounded-md border border-input bg-background px-3 py-2 text-sm resize-none" />
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
+                      <Save className="h-4 w-4" />
+                      {isBrandingSaving ? 'Saving…' : 'Save Email Settings'}
+                    </Button>
+                  </div>
+                </TabsContent>
+              )}
             </Tabs>
           )}
         </div>
@@ -517,22 +617,40 @@ function TenantEditor({
         <div className="flex justify-between items-center p-4 border-t shrink-0">
           <div className="flex items-center gap-2">
             {tenant && (
-              <Button variant="outline" size="sm" className="gap-2" asChild>
-                <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  View Public Page
-                </a>
-              </Button>
+              <>
+                <Button variant="outline" size="sm" className="gap-2" asChild>
+                  <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    View Public Page
+                  </a>
+                </Button>
+                {b?.isBrandingActive ? (
+                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50">
+                    Unpublish Branding
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
+                    <Check className="h-4 w-4" />
+                    Publish Branding
+                  </Button>
+                )}
+              </>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} className="gap-2">
-              <Save className="h-4 w-4" />
-              {isNew ? 'Create Tenant' : 'Save Changes'}
-            </Button>
+          <div className="flex gap-2">
+            {tenant && (
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            )}
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            {isNew && (
+              <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
+                <Plus className="h-4 w-4" />
+                {isSaving ? 'Creating…' : 'Create Tenant'}
+              </Button>
+            )}
           </div>
         </div>
       </Card>
@@ -540,19 +658,23 @@ function TenantEditor({
   );
 }
 
-function TenantPreview({ data }: { data: Record<string, string> }) {
+function TenantPreview({
+  general,
+  branding,
+}: {
+  general: { displayName: string; logoUrl: string; name: string };
+  branding: { primaryColor: string; secondaryColor: string; accentColor: string; heroTitle: string; heroSubtitle: string; ctaLabel: string; ctaUrl: string; heroImageUrl: string; aboutText: string; supportEmail: string };
+}) {
+  const displayName = general.displayName || general.name || 'Organization';
   return (
     <div className="p-6">
       <div className="rounded-lg border overflow-hidden">
         {/* Preview Header */}
-        <div
-          className="p-4 flex items-center justify-between"
-          style={{ backgroundColor: data.primaryColor }}
-        >
-          {data.logoUrl ? (
-            <img src={data.logoUrl} alt="" className="h-8 object-contain" />
+        <div className="p-4 flex items-center justify-between" style={{ backgroundColor: branding.primaryColor }}>
+          {general.logoUrl ? (
+            <img src={general.logoUrl} alt="" className="h-8 object-contain" />
           ) : (
-            <span className="text-white font-semibold">{data.displayName || 'Organization'}</span>
+            <span className="text-white font-semibold">{displayName}</span>
           )}
           <div className="flex gap-2">
             <div className="h-8 w-16 rounded bg-white/20" />
@@ -561,33 +683,34 @@ function TenantPreview({ data }: { data: Record<string, string> }) {
         </div>
 
         {/* Preview Hero */}
-        <div className="p-8 text-center bg-gradient-to-b from-muted/50 to-background">
-          <h1 className="text-2xl font-bold mb-2">
-            {data.heroTitle || 'Welcome to ' + (data.displayName || 'Our Platform')}
-          </h1>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            {data.heroSubtitle || 'Connect with founders, mentors, and investors in our ecosystem.'}
-          </p>
+        <div
+          className="p-8 text-center relative"
+          style={branding.heroImageUrl ? { backgroundImage: `url(${branding.heroImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: `linear-gradient(135deg, ${branding.primaryColor}22, ${branding.secondaryColor}22)` }}
+        >
+          <h1 className="text-2xl font-bold mb-2">{branding.heroTitle || `Welcome to ${displayName}`}</h1>
+          <p className="text-muted-foreground max-w-md mx-auto">{branding.heroSubtitle || 'Connect with founders, mentors, and investors in our ecosystem.'}</p>
           <div className="mt-6 flex justify-center gap-3">
-            <button
-              className="px-4 py-2 rounded-lg text-white text-sm font-medium"
-              style={{ backgroundColor: data.primaryColor }}
-            >
-              Get Started
+            <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: branding.primaryColor }}>
+              {branding.ctaLabel || 'Get Started'}
             </button>
-            <button
-              className="px-4 py-2 rounded-lg text-sm font-medium border"
-              style={{ borderColor: data.primaryColor, color: data.primaryColor }}
-            >
+            <button className="px-4 py-2 rounded-lg text-sm font-medium border" style={{ borderColor: branding.primaryColor, color: branding.primaryColor }}>
               Learn More
             </button>
           </div>
         </div>
 
+        {/* About section */}
+        {branding.aboutText && (
+          <div className="p-6 bg-muted/20">
+            <h2 className="text-lg font-semibold mb-2">About</h2>
+            <p className="text-sm text-muted-foreground">{branding.aboutText}</p>
+          </div>
+        )}
+
         {/* Preview Footer */}
         <div className="p-4 border-t bg-muted/30 text-center text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} {data.displayName || 'Organization'}. All rights reserved.</p>
-          {data.supportEmail && <p className="mt-1">Contact: {data.supportEmail}</p>}
+          <p>© {new Date().getFullYear()} {displayName}. All rights reserved.</p>
+          {branding.supportEmail && <p className="mt-1">Contact: {branding.supportEmail}</p>}
         </div>
       </div>
     </div>

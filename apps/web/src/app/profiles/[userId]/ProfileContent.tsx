@@ -204,12 +204,15 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     }, []);
 
   const connButtonLabel =
-    connStatus?.status === 'accepted'
+    connStatus?.status === 'blocked'
+      ? 'Blocked'
+      : connStatus?.status === 'accepted'
       ? 'Connected'
       : connStatus?.status === 'pending' && connStatus.direction === 'sent'
         ? 'Request sent'
         : 'Connect';
 
+  const isBlocked = connStatus?.status === 'blocked';
   const isConnected = connStatus?.status === 'accepted';
   const isPendingSent = connStatus?.status === 'pending' && connStatus.direction === 'sent';
 
@@ -280,12 +283,12 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                   <Button
                     className="w-full gap-2"
                     onClick={handleConnect}
-                    disabled={connecting || isConnected || isPendingSent}
-                    variant={isConnected ? 'secondary' : 'default'}
+                    disabled={connecting || isConnected || isPendingSent || isBlocked}
+                    variant={isConnected || isBlocked ? 'secondary' : 'default'}
                   >
                     {connecting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : isConnected ? (
+                    ) : isConnected || isBlocked ? (
                       <UserCheck className="h-4 w-4" />
                     ) : (
                       <UserPlus className="h-4 w-4" />
@@ -296,7 +299,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant="outline"
                     className="w-full gap-2"
                     onClick={handleMessage}
-                    disabled={messaging}
+                    disabled={messaging || isBlocked}
                   >
                     {messaging ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

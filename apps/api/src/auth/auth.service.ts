@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException, Optional } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
 import { randomBytes, createHash } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterInput, LoginInput } from '@cofounderbay/shared';
+import { AutomationService } from '../automation/automation.service';
 
 export interface TokenPair {
   accessToken: string;
@@ -27,6 +28,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    @Optional() private readonly automation?: AutomationService,
   ) {
     this.emailVerificationRequired =
       this.config.get<string>('EMAIL_VERIFICATION_REQUIRED') === 'true';
@@ -53,6 +55,13 @@ export class AuthService {
     });
 
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
+
+    this.automation?.fire({
+      triggerType: 'user_signup',
+      targetUserId: user.id,
+      payload: { role: user.role, email: user.email },
+    }).catch(() => {});
+
     return {
       user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified },
       tokens,
@@ -126,6 +135,57 @@ export class AuthService {
     const newHash = await argon2.hash(newPassword, { type: argon2.argon2id });
     await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: newHash } });
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: { id: true, passwordHash: true },
+    });
+    // Always succeed (prevent email enumeration)
+    if (!user || !user.passwordHash) return;
+
+    const token = randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: { passwordResetToken: token, passwordResetExpires: expires } as any,
+    });
+
+    // Trigger automation if configured (sends reset email)
+    this.automation?.fire({
+      triggerType: 'password_reset_requested',
+      targetUserId: user.id,
+      payload: { token, expires: expires.toISOString() },
+    }).catch(() => {});
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const user = await (this.prisma.user as any).findFirst({
+      where: { passwordResetToken: token },
+      select: { id: true, passwordResetExpires: true },
+    }) as { id: string; passwordResetExpires: Date | null } | null;
+
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Password reset token is invalid or has expired');
+    }
+
+    const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (this.prisma.user as any).update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+    // Revoke all refresh tokens for security
+    await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
   }
 
   async validateUser(userId: string): Promise<{ id: string; email: string; role: string } | null> {

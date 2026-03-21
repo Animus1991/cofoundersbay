@@ -9,18 +9,20 @@ const PUBLIC_PATHS = new Set([
   '/reset-password',
   '/verify-email',
   '/auth/oauth-callback',
+  '/auth/sso-complete',
   '/manifest.json',
   '/site.webmanifest',
   '/robots.txt',
 ]);
 
 const PUBLIC_PREFIXES = [
-  '/profiles/',  // public profile pages
-  '/events/',    // public event pages
+  '/profiles/',
+  '/events/',
+  '/t/',         // tenant public landing pages /t/[slug]
   '/_next/',
   '/favicon',
   '/uploads/',
-  '/api/',       // API calls handled by backend
+  '/api/',
 ];
 
 const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|svg|webp|css|js|json|webmanifest|txt|xml|woff2?|ttf|otf|map)$/;
@@ -31,36 +33,72 @@ function isPublicPath(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+/** The platform's own top-level domain (used for subdomain detection in prod) */
+const PLATFORM_DOMAIN = process.env.NEXT_PUBLIC_PLATFORM_DOMAIN || 'cofounderbay.com';
 
-  // Always allow public paths
-  if (isPublicPath(pathname)) {
-    return NextResponse.next();
+/**
+ * Try to detect tenant slug from the request hostname.
+ * - Subdomain pattern: athens.cofounderbay.com → slug "athens"
+ * - Custom domain: founders.uni.edu → resolved via API
+ * In dev (localhost / 127.0.0.1), no domain-based tenant is inferred.
+ */
+function extractTenantSlugFromHostname(hostname: string): string | null {
+  if (!hostname) return null;
+  // Strip port
+  const host = hostname.split(':')[0];
+
+  // Skip localhost / loopback
+  if (host === 'localhost' || host === '127.0.0.1' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return null;
   }
 
-  // Check for cfb_session — non-httpOnly presence cookie set by backend on login
-  // cfb_access is httpOnly (not readable by middleware), cfb_session is the JS-readable indicator
-  const hasSession = request.cookies.has('cfb_session');
+  // Platform subdomain: athens.cofounderbay.com
+  const subdomainPattern = new RegExp(`^([^.]+)\\.${PLATFORM_DOMAIN.replace('.', '\\.')}$`);
+  const match = host.match(subdomainPattern);
+  if (match) {
+    const sub = match[1].toLowerCase();
+    // Skip reserved subs
+    if (!['www', 'app', 'api', 'admin', 'mail', 'cdn', 'static'].includes(sub)) {
+      return sub;
+    }
+  }
 
+  return null; // Custom domains resolved client-side via resolveTenantFromDomain()
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') || '';
+
+  const response = NextResponse.next();
+
+  // ── Domain-aware tenant injection ──────────────────────────────────────────
+  const tenantSlug = extractTenantSlugFromHostname(hostname);
+  if (tenantSlug) {
+    response.headers.set('x-tenant-slug', tenantSlug);
+    response.headers.set('x-tenant-hostname', hostname.split(':')[0]);
+  }
+
+  // Always allow public paths (after setting tenant headers)
+  if (isPublicPath(pathname)) {
+    return response;
+  }
+
+  // ── Auth guard ─────────────────────────────────────────────────────────────
+  const hasSession = request.cookies.has('cfb_session');
   if (!hasSession) {
-    // Redirect to login, preserving the intended destination
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
+    // Preserve tenant context through login redirect
+    if (tenantSlug) loginUrl.searchParams.set('tenant', tenantSlug);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except:
-     * - _next/static  (Next.js assets)
-     * - _next/image   (Next.js image optimisation)
-     * - favicon.ico
-     */
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

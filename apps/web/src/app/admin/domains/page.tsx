@@ -1,0 +1,384 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  listTenants,
+  listTenantDomains,
+  addTenantSubdomain,
+  addTenantCustomDomain,
+  verifyTenantDomain,
+  setTenantPrimaryDomain,
+  toggleTenantDomainActive,
+  deleteTenantDomain,
+  getDomainDnsInstructions,
+  type TenantItem,
+  type TenantDomainItem,
+  type DnsInstructions,
+} from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Globe,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  RefreshCw,
+  Star,
+  StarOff,
+  Power,
+  Copy,
+  ChevronDown,
+  ChevronRight,
+  Link2,
+} from 'lucide-react';
+
+function statusBadge(status: TenantDomainItem['verificationStatus']) {
+  switch (status) {
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="h-3 w-3" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="h-3 w-3" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="h-3 w-3" />Expired</Badge>;
+  }
+}
+
+function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions }) {
+  const copy = (text: string) => navigator.clipboard.writeText(text);
+  return (
+    <div className="mt-3 rounded-lg border border-border/60 bg-muted/40 p-4 space-y-3 text-sm">
+      <p className="font-semibold text-foreground">DNS Setup Instructions</p>
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Step 1 – Verification TXT Record</p>
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
+          <span className="text-muted-foreground">Type</span>
+          <span>{instructions.verification.type}</span>
+          <span />
+          <span className="text-muted-foreground">Name</span>
+          <span className="break-all">{instructions.verification.name}</span>
+          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <span className="text-muted-foreground">Value</span>
+          <span className="break-all">{instructions.verification.value}</span>
+          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <span className="text-muted-foreground">TTL</span>
+          <span>{instructions.verification.ttl}</span>
+          <span />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Step 2 – CNAME Record</p>
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 font-mono text-xs bg-background rounded p-2 border border-border/50">
+          <span className="text-muted-foreground">Type</span>
+          <span>{instructions.cname.type}</span>
+          <span />
+          <span className="text-muted-foreground">Name</span>
+          <span className="break-all">{instructions.cname.name}</span>
+          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <span className="text-muted-foreground">Value</span>
+          <span className="break-all">{instructions.cname.value}</span>
+          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+        </div>
+      </div>
+      <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
+        {instructions.instructions.map((line, i) => <li key={i}>{line}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+function DomainRow({
+  domain,
+  tenantId,
+  onRefresh,
+}: {
+  domain: TenantDomainItem;
+  tenantId: string;
+  onRefresh: () => void;
+}) {
+  const qc = useQueryClient();
+  const [showDns, setShowDns] = useState(false);
+  const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
+  const [loadingDns, setLoadingDns] = useState(false);
+
+  const verify = useMutation({
+    mutationFn: () => verifyTenantDomain(tenantId, domain.id),
+    onSuccess: onRefresh,
+  });
+  const setPrimary = useMutation({
+    mutationFn: () => setTenantPrimaryDomain(tenantId, domain.id),
+    onSuccess: onRefresh,
+  });
+  const toggle = useMutation({
+    mutationFn: (active: boolean) => toggleTenantDomainActive(tenantId, domain.id, active),
+    onSuccess: onRefresh,
+  });
+  const remove = useMutation({
+    mutationFn: () => deleteTenantDomain(tenantId, domain.id),
+    onSuccess: onRefresh,
+  });
+
+  const handleShowDns = async () => {
+    if (domain.domainType !== 'custom') return;
+    if (dnsInstructions) { setShowDns(!showDns); return; }
+    setLoadingDns(true);
+    try {
+      const result = await getDomainDnsInstructions(tenantId, domain.id);
+      setDnsInstructions(result);
+      setShowDns(true);
+    } finally {
+      setLoadingDns(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3 min-w-0">
+          <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
+              {domain.isPrimary && <Badge variant="secondary" className="text-xs">Primary</Badge>}
+              <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
+              {statusBadge(domain.verificationStatus)}
+              {domain.isActive
+                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
+                : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
+              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs">SSL</Badge>}
+            </div>
+            {domain.verifiedAt && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
+            <>
+              <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} className="gap-1 h-7 text-xs">
+                <Link2 className="h-3 w-3" />
+                DNS Setup
+                {showDns ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
+                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} />
+                Verify
+              </Button>
+            </>
+          )}
+          {!domain.isPrimary && domain.isActive && (
+            <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
+              <Star className="h-3 w-3" />
+              Set Primary
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => toggle.mutate(!domain.isActive)}
+            disabled={toggle.isPending}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
+          >
+            <Power className="h-3 w-3" />
+            {domain.isActive ? 'Deactivate' : 'Activate'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => { if (confirm('Delete this domain?')) remove.mutate(); }}
+            disabled={remove.isPending}
+            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+
+      {showDns && dnsInstructions && <DnsInstructionsPanel instructions={dnsInstructions} />}
+    </div>
+  );
+}
+
+function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
+  const qc = useQueryClient();
+  const [subdomainInput, setSubdomainInput] = useState('');
+  const [customDomainInput, setCustomDomainInput] = useState('');
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['tenant', tenant.id, 'domains'],
+    queryFn: () => listTenantDomains(tenant.id),
+    staleTime: 30_000,
+  });
+
+  const addSub = useMutation({
+    mutationFn: () => addTenantSubdomain(tenant.id, subdomainInput.trim()),
+    onSuccess: () => { setSubdomainInput(''); refetch(); },
+  });
+  const addCustom = useMutation({
+    mutationFn: () => addTenantCustomDomain(tenant.id, customDomainInput.trim()),
+    onSuccess: () => { setCustomDomainInput(''); refetch(); },
+  });
+
+  const domains = data?.domains ?? [];
+
+  return (
+    <div className="space-y-4">
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading domains...</p>
+      ) : domains.length === 0 ? (
+        <p className="text-sm text-muted-foreground">No domains configured yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {domains.map((d) => (
+            <DomainRow key={d.id} domain={d} tenantId={tenant.id} onRefresh={refetch} />
+          ))}
+        </div>
+      )}
+
+      {/* Add subdomain */}
+      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
+        <p className="text-sm font-medium">Add Platform Subdomain</p>
+        <p className="text-xs text-muted-foreground">Your org will be accessible at <code className="bg-muted px-1 rounded">[subdomain].cofounderbay.com</code></p>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              placeholder="e.g. athens"
+              value={subdomainInput}
+              onChange={(e) => setSubdomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+              className="pr-40"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+              .cofounderbay.com
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => addSub.mutate()}
+            disabled={addSub.isPending || !subdomainInput.trim()}
+            className="gap-1"
+          >
+            <Plus className="h-3 w-3" />
+            Add
+          </Button>
+        </div>
+        {addSub.isError && <p className="text-xs text-destructive">{(addSub.error as Error).message}</p>}
+      </div>
+
+      {/* Add custom domain */}
+      <div className="rounded-lg border border-dashed border-border/70 p-4 space-y-3">
+        <p className="text-sm font-medium">Add Custom Domain</p>
+        <p className="text-xs text-muted-foreground">Use your own domain like <code className="bg-muted px-1 rounded">founders.youruni.edu</code></p>
+        <div className="flex gap-2">
+          <Input
+            placeholder="e.g. founders.university.edu"
+            value={customDomainInput}
+            onChange={(e) => setCustomDomainInput(e.target.value.toLowerCase())}
+            className="flex-1"
+          />
+          <Button
+            size="sm"
+            onClick={() => addCustom.mutate()}
+            disabled={addCustom.isPending || !customDomainInput.trim()}
+            className="gap-1"
+          >
+            <Plus className="h-3 w-3" />
+            Add
+          </Button>
+        </div>
+        {addCustom.isError && <p className="text-xs text-destructive">{(addCustom.error as Error).message}</p>}
+      </div>
+    </div>
+  );
+}
+
+export default function DomainsAdminPage() {
+  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(null);
+
+  const { data: tenantsData, isLoading } = useQuery({
+    queryKey: ['admin', 'tenants'],
+    queryFn: () => listTenants({ limit: 100 }),
+    staleTime: 60_000,
+  });
+
+  const tenants = tenantsData ?? [];
+  const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
+
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Domain Management</h1>
+        <p className="text-muted-foreground mt-1">
+          Configure subdomains and custom domains for each tenant organization.
+        </p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Tenant selector */}
+        <Card className="h-fit">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Organizations</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <p className="text-sm text-muted-foreground px-4 py-3">Loading...</p>
+            ) : tenants.length === 0 ? (
+              <p className="text-sm text-muted-foreground px-4 py-3">No tenants found.</p>
+            ) : (
+              <div className="divide-y divide-border/50">
+                {tenants.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setSelectedTenantId(t.id)}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors ${
+                      selectedTenantId === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
+                    }`}
+                  >
+                    {t.logoUrl
+                      ? <img src={t.logoUrl} alt="" className="h-6 w-6 rounded" />
+                      : <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center"><Globe className="h-3 w-3 text-primary" /></div>}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{t.slug}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Domain panel */}
+        <div>
+          {!selectedTenant ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Select an organization to manage its domains</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" />}
+                  <div>
+                    <CardTitle>{selectedTenant.displayName || selectedTenant.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">/{selectedTenant.slug}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <TenantDomainPanel tenant={selectedTenant} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

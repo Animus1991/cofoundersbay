@@ -38,6 +38,11 @@ import { MatchingModule } from './matching/matching.module';
 import { AIModule } from './ai/ai.module';
 import { TenantModule } from './tenant/tenant.module';
 import { SSOModule } from './sso/sso.module';
+import { AutomationModule } from './automation/automation.module';
+import { MilestonesModule } from './milestones/milestones.module';
+import { ShortlistModule } from './shortlist/shortlist.module';
+import { EndorsementsModule } from './endorsements/endorsements.module';
+import { ResearchModule } from './research/research.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -99,6 +104,11 @@ function findEnvFiles(): string[] {
     AIModule,
     TenantModule,
     SSOModule,
+    AutomationModule,
+    MilestonesModule,
+    ShortlistModule,
+    EndorsementsModule,
+    ResearchModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:

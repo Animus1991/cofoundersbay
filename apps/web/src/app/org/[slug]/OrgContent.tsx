@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getOrgOpportunities, getOrgCohorts, type OrgProfile, type OpportunityItem, type CohortItem } from '@/lib/api';
+import { getOrgOpportunities, getOrgCohorts, getOrgMembers, type OrgProfile, type OpportunityItem, type CohortItem, type OrgMember } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
 import { AppShell } from '@/components/layout/AppShell';
 
@@ -31,8 +31,14 @@ export function OrgContent({ org, slug }: OrgContentProps) {
     queryFn: () => getOrgCohorts(slug),
   });
 
+  const { data: membersData, isLoading: membersLoading } = useQuery({
+    queryKey: ['org-members', slug],
+    queryFn: () => getOrgMembers(slug),
+  });
+
   const opportunities: OpportunityItem[] = opportunitiesData?.opportunities ?? [];
   const cohorts: CohortItem[] = cohortsData?.cohorts ?? [];
+  const members: OrgMember[] = membersData?.members ?? [];
 
   return (
     <AppShell>
@@ -141,6 +147,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               Programs
               {cohorts.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{cohorts.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="members" className="text-sm gap-1.5">
+              <Users className="h-3.5 w-3.5" />
+              Members
+              {members.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{members.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="about" className="text-sm gap-1.5">
@@ -263,6 +276,74 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           {cohort.startDate && (
                             <span>Starts {new Date(cohort.startDate).toLocaleDateString()}</span>
                           )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Members */}
+          <TabsContent value="members" className="space-y-3">
+            {membersLoading ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="pt-5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-muted" />
+                        <div className="space-y-2 flex-1">
+                          <div className="h-3.5 bg-muted rounded w-24" />
+                          <div className="h-3 bg-muted rounded w-32" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : members.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+                  <h3 className="text-sm font-semibold text-foreground mb-1">No members yet</h3>
+                  <p className="text-xs text-muted-foreground">Members will appear here when they join programs.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {members.map((member) => (
+                  <Card key={member.id} className="group hover:border-border transition-all duration-150">
+                    <CardContent className="pt-5 pb-4">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="h-10 w-10 shrink-0">
+                          <AvatarImage src={member.avatarUrl ?? undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                            {member.displayName?.[0]?.toUpperCase() ?? 'M'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <a
+                            href={`/profiles/${member.id}`}
+                            className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+                          >
+                            {member.displayName}
+                          </a>
+                          {member.headline && (
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{member.headline}</p>
+                          )}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            <Badge variant="outline" className="text-[10px] h-5">
+                              {member.cohortName}
+                            </Badge>
+                            {member.location && (
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <MapPin className="h-2.5 w-2.5" />
+                                {member.location}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
