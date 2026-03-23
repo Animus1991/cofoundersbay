@@ -145,7 +145,7 @@ export default function GroupsModerationPage() {
 
   return (
     <AppShell>
-      <div className="container max-w-4xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">

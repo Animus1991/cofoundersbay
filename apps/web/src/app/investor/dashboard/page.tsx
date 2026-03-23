@@ -144,7 +144,7 @@ function _InvestorDashboardPage_legacy() {
 
   return (
     <AppShell>
-      <div className="container max-w-6xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

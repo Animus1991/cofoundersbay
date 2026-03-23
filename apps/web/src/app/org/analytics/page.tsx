@@ -151,7 +151,7 @@ export default function OrgAnalyticsPage() {
 
   return (
     <AppShell>
-      <div className="container max-w-6xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>

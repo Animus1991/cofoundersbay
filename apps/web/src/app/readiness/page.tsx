@@ -423,12 +423,12 @@ export default function ReadinessPage() {
   const weakDims      = dimensions.filter((d) => scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'critical' || scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'needs-work');
 
   if (isLoading) {
-    return <AppShell><div className="container max-w-5xl py-6"><ReadinessSkeleton /></div></AppShell>;
+    return <AppShell><div className="py-6"><ReadinessSkeleton /></div></AppShell>;
   }
 
   return (
     <AppShell>
-      <div className="container max-w-5xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>

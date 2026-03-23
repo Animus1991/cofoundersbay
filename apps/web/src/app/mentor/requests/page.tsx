@@ -196,7 +196,7 @@ export default function MentorRequestsPage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="container max-w-4xl py-6 flex items-center justify-center min-h-[400px]">
+        <div className="py-6 flex items-center justify-center min-h-[400px]">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </AppShell>
@@ -206,7 +206,7 @@ export default function MentorRequestsPage() {
   if (error) {
     return (
       <AppShell>
-        <div className="container max-w-4xl py-6">
+        <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
@@ -227,7 +227,7 @@ export default function MentorRequestsPage() {
 
   return (
     <AppShell>
-      <div className="container max-w-4xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

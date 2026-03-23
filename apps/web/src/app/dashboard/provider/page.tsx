@@ -238,7 +238,7 @@ export default function ProviderDashboard() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="container max-w-7xl py-6 space-y-6">
+        <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
@@ -252,7 +252,7 @@ export default function ProviderDashboard() {
 
   return (
     <AppShell>
-      <div className="container max-w-7xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

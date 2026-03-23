@@ -189,7 +189,7 @@ export default function FounderDashboard() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="container max-w-7xl py-6 space-y-6">
+        <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
           <div className="grid gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
@@ -201,7 +201,7 @@ export default function FounderDashboard() {
 
   return (
     <AppShell>
-      <div className="container max-w-7xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4">

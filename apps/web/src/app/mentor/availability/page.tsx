@@ -135,7 +135,7 @@ export default function MentorAvailabilityPage() {
   if (!mounted) {
     return (
       <AppShell>
-        <div className="container max-w-5xl py-6 space-y-6">
+        <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-72" />
           <div className="grid gap-4 md:grid-cols-3">
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
@@ -147,7 +147,7 @@ export default function MentorAvailabilityPage() {
 
   return (
     <AppShell>
-      <div className="container max-w-5xl py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
