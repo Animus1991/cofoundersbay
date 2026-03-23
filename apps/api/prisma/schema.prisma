@@ -536,6 +536,24 @@ model User {
   // Public profile
   publicProfile               PublicProfile?              @relation("PublicProfile")
 
+  // Feed system
+  feedPosts                   FeedPost[]                  @relation("FeedPosts")
+  feedComments                FeedComment[]               @relation("FeedComments")
+  feedLikes                   FeedLike[]                  @relation("FeedLikes")
+  feedBookmarks               FeedBookmark[]              @relation("FeedBookmarks")
+
+  // Support tickets
+  supportTickets              SupportTicket[]             @relation("SupportTickets")
+  assignedTickets             SupportTicket[]             @relation("AssignedTickets")
+  ticketMessages              TicketMessage[]             @relation("TicketMessages")
+
+  // Saved searches
+  savedSearches               SavedSearch[]               @relation("SavedSearches")
+
+  // Platform announcements
+  platformAnnouncements       PlatformAnnouncement[]      @relation("PlatformAnnouncements")
+  announcementDismissals      AnnouncementDismissal[]     @relation("AnnouncementDismissals")
+
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
   @@index([createdAt])
@@ -5525,4 +5543,372 @@ model PublicProfile {
 
   @@index([slug])
   @@index([isPublished])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feed Post — Community and platform-wide feed content
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FeedPostType {
+  text
+  announcement
+  milestone_share
+  workspace_update
+  question
+  poll
+  event_share
+  resource_share
+}
+
+enum FeedPostVisibility {
+  public
+  connections_only
+  community_only
+  tenant_only
+  private
+}
+
+model FeedPost {
+  id            String             @id @default(uuid())
+  authorId      String
+  author        User               @relation("FeedPosts", fields: [authorId], references: [id], onDelete: Cascade)
+
+  postType      FeedPostType       @default(text)
+  visibility    FeedPostVisibility @default(public)
+
+  title         String?
+  content       String             @db.Text
+  richContent   Json?              // structured content blocks
+
+  // Optional attachments
+  mediaUrls     String[]           @default([])
+  linkPreview   Json?              // { url, title, description, image }
+
+  // Linked entities
+  communityId   String?
+  workspaceId   String?
+  milestoneId   String?
+  tenantId      String?
+
+  // Engagement metrics
+  likeCount     Int                @default(0)
+  commentCount  Int                @default(0)
+  shareCount    Int                @default(0)
+  viewCount     Int                @default(0)
+
+  // Moderation
+  isHidden      Boolean            @default(false)
+  isPinned      Boolean            @default(false)
+  moderationNote String?
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  // Relations
+  comments      FeedComment[]
+  likes         FeedLike[]
+  bookmarks     FeedBookmark[]
+
+  @@index([authorId])
+  @@index([communityId, createdAt])
+  @@index([tenantId, createdAt])
+  @@index([visibility, createdAt])
+  @@index([postType, createdAt])
+  @@index([isPinned, createdAt])
+}
+
+model FeedComment {
+  id          String   @id @default(uuid())
+  postId      String
+  post        FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User     @relation("FeedComments", fields: [authorId], references: [id], onDelete: Cascade)
+
+  content     String   @db.Text
+  parentId    String?  // for nested replies
+
+  likeCount   Int      @default(0)
+  isHidden    Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model FeedLike {
+  id        String   @id @default(uuid())
+  postId    String
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("FeedLikes", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+model FeedBookmark {
+  id        String   @id @default(uuid())
+  postId    String
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("FeedBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Support Ticket — Help desk and user support system
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TicketStatus {
+  open
+  in_progress
+  waiting_on_user
+  waiting_on_support
+  resolved
+  closed
+}
+
+enum TicketPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum TicketCategory {
+  account
+  billing
+  technical
+  feature_request
+  bug_report
+  matching
+  messaging
+  workspace
+  community
+  program
+  other
+}
+
+model SupportTicket {
+  id            String          @id @default(uuid())
+  userId        String
+  user          User            @relation("SupportTickets", fields: [userId], references: [id], onDelete: Cascade)
+
+  ticketNumber  String          @unique // e.g. "CFB-2024-00001"
+  subject       String
+  description   String          @db.Text
+
+  category      TicketCategory
+  priority      TicketPriority  @default(medium)
+  status        TicketStatus    @default(open)
+
+  // Assignment
+  assignedToId  String?
+  assignedTo    User?           @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  // Context
+  tenantId      String?
+  workspaceId   String?
+  linkedEntityType String?
+  linkedEntityId   String?
+
+  // Metadata
+  tags          String[]        @default([])
+  attachmentUrls String[]       @default([])
+
+  // Timestamps
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Relations
+  messages      TicketMessage[]
+
+  @@index([userId])
+  @@index([assignedToId])
+  @@index([status, priority])
+  @@index([category, status])
+  @@index([tenantId, status])
+  @@index([createdAt])
+}
+
+model TicketMessage {
+  id          String        @id @default(uuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User          @relation("TicketMessages", fields: [authorId], references: [id], onDelete: Cascade)
+
+  content     String        @db.Text
+  isInternal  Boolean       @default(false) // internal notes not visible to user
+  attachmentUrls String[]   @default([])
+
+  createdAt   DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([authorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Saved Search — User's saved search queries and filters
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum SavedSearchType {
+  cofounder
+  mentor
+  investor
+  startup
+  opportunity
+  program
+  community
+  member
+  job
+}
+
+model SavedSearch {
+  id            String          @id @default(uuid())
+  userId        String
+  user          User            @relation("SavedSearches", fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  searchType    SavedSearchType
+  
+  // Search parameters stored as JSON
+  query         String?         // text query
+  filters       Json            // { industries: [], skills: [], stages: [], locations: [], etc. }
+  sortBy        String?
+  sortOrder     String?         @default("desc")
+
+  // Alert settings
+  alertEnabled  Boolean         @default(false)
+  alertFrequency String?        @default("daily") // "instant", "daily", "weekly"
+  lastAlertAt   DateTime?
+
+  // Usage tracking
+  useCount      Int             @default(0)
+  lastUsedAt    DateTime?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([userId, searchType])
+  @@index([alertEnabled, lastAlertAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Platform Announcement — System-wide announcements and banners
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AnnouncementType {
+  info
+  warning
+  success
+  maintenance
+  feature
+  promotion
+}
+
+enum AnnouncementTarget {
+  all
+  founders
+  mentors
+  investors
+  tenants
+  specific_roles
+}
+
+model PlatformAnnouncement {
+  id            String             @id @default(uuid())
+  authorId      String
+  author        User               @relation("PlatformAnnouncements", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title         String
+  content       String             @db.Text
+  announcementType AnnouncementType @default(info)
+
+  // Targeting
+  target        AnnouncementTarget @default(all)
+  targetRoles   String[]           @default([])
+  targetTenantIds String[]         @default([])
+
+  // Display settings
+  isActive      Boolean            @default(true)
+  isPinned      Boolean            @default(false)
+  showBanner    Boolean            @default(false)
+  bannerColor   String?
+
+  // Scheduling
+  startsAt      DateTime           @default(now())
+  expiresAt     DateTime?
+
+  // Link
+  actionUrl     String?
+  actionLabel   String?
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  // Track dismissals
+  dismissals    AnnouncementDismissal[]
+
+  @@index([isActive, startsAt])
+  @@index([target, isActive])
+  @@index([isPinned, isActive])
+}
+
+model AnnouncementDismissal {
+  id              String              @id @default(uuid())
+  announcementId  String
+  announcement    PlatformAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User                @relation("AnnouncementDismissals", fields: [userId], references: [id], onDelete: Cascade)
+
+  dismissedAt     DateTime            @default(now())
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feature Flag — Runtime feature toggles for gradual rollouts
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FeatureFlag {
+  id            String   @id @default(uuid())
+  key           String   @unique // e.g. "ai_workspace_generation"
+  name          String
+  description   String?
+
+  isEnabled     Boolean  @default(false)
+  
+  // Rollout percentage (0-100)
+  rolloutPercentage Int  @default(0)
+
+  // Targeting rules
+  enabledForRoles   String[]  @default([])
+  enabledForTenants String[]  @default([])
+  enabledForUsers   String[]  @default([])
+
+  // Plan-based access
+  requiredPlan      String?   // "free", "pro", "enterprise"
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([key])
+  @@index([isEnabled])
 }
