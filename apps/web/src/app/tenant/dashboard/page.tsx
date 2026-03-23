@@ -12,6 +12,10 @@ import {
   ChevronRight,
   Rocket,
   GraduationCap,
+  Target,
+  Activity,
+  Settings,
+  UserPlus,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +24,25 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import {
+  AreaChart, Area, BarChart, Bar,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+} from 'recharts';
+
+const MEMBER_GROWTH = [
+  { month: 'Oct', members: 98 },
+  { month: 'Nov', members: 112 },
+  { month: 'Dec', members: 125 },
+  { month: 'Jan', members: 134 },
+  { month: 'Feb', members: 145 },
+  { month: 'Mar', members: 156 },
+];
+
+const PROGRAM_ENGAGEMENT = [
+  { name: 'Spring Accel', sessions: 24, milestones: 18 },
+  { name: 'AI Lab', sessions: 12, milestones: 8 },
+  { name: 'Bootcamp', sessions: 32, milestones: 28 },
+];
 
 function StatCard({
   title,
@@ -82,28 +105,21 @@ export default function TenantDashboardPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="container max-w-6xl py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Tenant Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage your organization on CoFounderBay
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/tenant/branding">
-                <Building2 className="mr-2 h-4 w-4" />
-                Branding
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/tenant/settings">Settings</Link>
-            </Button>
-          </div>
+    <AppShell
+      title="Tenant Dashboard"
+      description="Manage your organization on CoFounderBay"
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/tenant/branding"><Building2 className="mr-1.5 h-4 w-4" /> Branding</Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link href="/tenant/settings"><Settings className="mr-1.5 h-4 w-4" /> Settings</Link>
+          </Button>
         </div>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -193,13 +209,62 @@ export default function TenantDashboardPage() {
           </Card>
         </div>
 
+        {/* Charts Row */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Member Growth</CardTitle>
+                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={MEMBER_GROWTH} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <defs>
+                    <linearGradient id="memberFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                  <Area type="monotone" dataKey="members" stroke="hsl(var(--primary))" fill="url(#memberFill)" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Program Engagement</CardTitle>
+                <Badge variant="secondary" className="text-[10px]">Active programs</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={PROGRAM_ENGAGEMENT} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                  <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
+                  <Bar dataKey="milestones" fill="#4ade80" radius={[4, 4, 0, 0]} name="Milestones" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Upcoming Events */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg">Upcoming Events</CardTitle>
-            <Button variant="ghost" size="sm">
-              <Calendar className="mr-2 h-4 w-4" />
-              Add Event
+            <CardTitle className="text-sm">Upcoming Events</CardTitle>
+            <Button variant="ghost" size="sm" className="gap-1.5">
+              <Calendar className="h-3.5 w-3.5" /> Add Event
             </Button>
           </CardHeader>
           <CardContent>
@@ -210,13 +275,30 @@ export default function TenantDashboardPage() {
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{event.date}</span>
                   </div>
-                  <p className="font-medium">{event.name}</p>
+                  <p className="font-medium text-sm">{event.name}</p>
                   <Badge variant="outline" className="mt-2 text-xs">{event.type}</Badge>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-blue-600' },
+            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-purple-600' },
+            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-emerald-600' },
+            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-amber-600' },
+          ].map(({ label, icon: Icon, href, color }) => (
+            <Button key={label} variant="outline" className="h-auto py-3 flex-col gap-1.5" asChild>
+              <Link href={href}>
+                <Icon className={cn('h-5 w-5', color)} />
+                <span className="text-xs">{label}</span>
+              </Link>
+            </Button>
+          ))}
+        </div>
       </div>
     </AppShell>
   );
