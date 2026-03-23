@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -13,6 +13,10 @@ import {
   Edit,
   Trash2,
   GraduationCap,
+  Rocket,
+  Target,
+  TrendingUp,
+  CheckCircle2,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
@@ -46,6 +50,8 @@ type Cohort = {
   startDate: string;
   endDate: string;
   progress: number;
+  avgReadiness?: number;
+  mentorCoverage?: number; // % of startups with assigned mentor
 };
 
 function CohortCard({ cohort }: { cohort: Cohort }) {
@@ -81,13 +87,31 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 {cohort.startDate} - {cohort.endDate}
               </span>
             </div>
-            {cohort.status === 'active' && (
-              <div className="mt-3">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Progress</span>
-                  <span className="font-medium">{cohort.progress}%</span>
+            {cohort.status !== 'recruiting' && (
+              <div className="mt-3 space-y-2">
+                <div>
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-muted-foreground">Program Progress</span>
+                    <span className="font-medium">{cohort.progress}%</span>
+                  </div>
+                  <Progress value={cohort.progress} className="h-1.5" />
                 </div>
-                <Progress value={cohort.progress} className="h-2" />
+                {cohort.avgReadiness != null && (
+                  <div>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-muted-foreground">Avg Readiness</span>
+                      <span className="font-medium">{cohort.avgReadiness}%</span>
+                    </div>
+                    <Progress value={cohort.avgReadiness} className="h-1.5" />
+                  </div>
+                )}
+                <div className="flex items-center gap-3 text-[11px]">
+                  {cohort.mentorCoverage != null && (
+                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600' : 'text-amber-600')}>
+                      <CheckCircle2 className="h-3 w-3" /> {cohort.mentorCoverage}% mentor coverage
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -126,12 +150,15 @@ export default function OrgCohortsPage() {
 
   // Mock data
   const cohorts: Cohort[] = [
-    { id: '1', name: 'Cohort 2025-A', program: 'Spring Accelerator 2025', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65 },
-    { id: '2', name: 'AI Lab Cohort 1', program: 'AI Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30 },
-    { id: '3', name: 'Bootcamp March', program: 'Pre-seed Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90 },
-    { id: '4', name: 'Cohort 2024-C', program: 'Fall Accelerator 2024', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100 },
+    { id: '1', name: 'Cohort 2025-A', program: 'Spring Accelerator 2025', status: 'active', startups: 12, mentors: 8, startDate: 'Jan 2025', endDate: 'Apr 2025', progress: 65, avgReadiness: 72, mentorCoverage: 92 },
+    { id: '2', name: 'AI Lab Cohort 1', program: 'AI Innovation Lab', status: 'active', startups: 8, mentors: 5, startDate: 'Feb 2025', endDate: 'Aug 2025', progress: 30, avgReadiness: 58, mentorCoverage: 75 },
+    { id: '3', name: 'Bootcamp March', program: 'Pre-seed Bootcamp', status: 'active', startups: 8, mentors: 4, startDate: 'Mar 2025', endDate: 'Mar 2025', progress: 90, avgReadiness: 81, mentorCoverage: 100 },
+    { id: '4', name: 'Cohort 2024-C', program: 'Fall Accelerator 2024', status: 'completed', startups: 10, mentors: 8, startDate: 'Sep 2024', endDate: 'Dec 2024', progress: 100, avgReadiness: 88, mentorCoverage: 100 },
     { id: '5', name: 'Summer 2025', program: 'Summer Accelerator 2025', status: 'recruiting', startups: 0, mentors: 0, startDate: 'Jun 2025', endDate: 'Sep 2025', progress: 0 },
   ];
+
+  const totalStartups = useMemo(() => cohorts.reduce((s, c) => s + c.startups, 0), []);
+  const totalMentors = useMemo(() => cohorts.reduce((s, c) => s + c.mentors, 0), []);
 
   const filteredCohorts = cohorts.filter((c) => {
     const matchesSearch =
@@ -143,21 +170,12 @@ export default function OrgCohortsPage() {
   });
 
   return (
-    <AppShell>
-      <div className="container max-w-4xl py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Cohorts</h1>
-            <p className="text-muted-foreground">
-              Manage program cohorts and participants
-            </p>
-          </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Cohort
-          </Button>
-        </div>
+    <AppShell
+      title="Cohorts"
+      description="Manage program cohorts and participants"
+      actions={<Button className="gap-1.5"><Plus className="h-4 w-4" /> Create Cohort</Button>}
+    >
+      <div className="space-y-6">
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -184,37 +202,23 @@ export default function OrgCohortsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Cohorts</p>
-              <p className="text-2xl font-bold">{cohorts.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
-                {cohorts.filter((c) => c.status === 'active').length}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Startups</p>
-              <p className="text-2xl font-bold">
-                {cohorts.reduce((acc, c) => acc + c.startups, 0)}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Recruiting</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {cohorts.filter((c) => c.status === 'recruiting').length}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Cohorts', value: cohorts.length, icon: Award, color: 'text-primary' },
+            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, color: 'text-green-600' },
+            { label: 'Total Startups', value: totalStartups, icon: Rocket, color: 'text-blue-600' },
+            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, color: 'text-purple-600' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div>
+                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Cohorts List */}
