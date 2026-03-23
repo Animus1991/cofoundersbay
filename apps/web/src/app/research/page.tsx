@@ -8,6 +8,7 @@ import {
   FileText, Image as ImageIcon, Link as LinkIcon, StickyNote,
   Grid3X3, List, Loader2, FolderOpen, Sparkles,
 } from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -186,33 +187,32 @@ export default function ResearchBoardsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <AppShell title="Research Workspace" description="Visual research boards for startup ecosystem intelligence">
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AppShell>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <p className="text-destructive mb-4">Failed to load research boards</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
-          Retry
-        </Button>
-      </div>
+      <AppShell title="Research Workspace" description="Visual research boards for startup ecosystem intelligence">
+        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+          <p className="text-destructive mb-4">Failed to load research boards</p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
+            Retry
+          </Button>
+        </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="container max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Research Workspace</h1>
-          <p className="text-muted-foreground mt-1">
-            Visual research boards for startup ecosystem intelligence
-          </p>
-        </div>
+    <AppShell
+      title="Research Workspace"
+      description="Visual research boards for startup ecosystem intelligence"
+      actions={
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2">
             <Sparkles className="h-4 w-4" />
@@ -223,7 +223,8 @@ export default function ResearchBoardsPage() {
             New Board
           </Button>
         </div>
-      </div>
+      }
+    >
 
       {/* Search and View Toggle */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -435,7 +436,7 @@ export default function ResearchBoardsPage() {
         onClose={() => setTemplatesDialogOpen(false)}
         onSelectTemplate={handleSelectTemplate}
       />
-    </div>
+    </AppShell>
   );
 }
 

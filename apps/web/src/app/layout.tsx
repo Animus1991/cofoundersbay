@@ -13,6 +13,7 @@ import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
+import { DemoDataProvider } from '@/contexts/DemoDataContext';
 
 export const metadata: Metadata = {
   title: {
@@ -66,11 +67,13 @@ export default function RootLayout({
                   <ToastProvider>
                     <PopupChatProvider>
                       <MessagingProvider>
-                        <RoleTheme>
-                          <OfflineBanner />
-                          {children}
-                          <GlobalFloatingUi />
-                        </RoleTheme>
+                        <DemoDataProvider>
+                          <RoleTheme>
+                            <OfflineBanner />
+                            {children}
+                            <GlobalFloatingUi />
+                          </RoleTheme>
+                        </DemoDataProvider>
                       </MessagingProvider>
                     </PopupChatProvider>
                   </ToastProvider>

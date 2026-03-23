@@ -10,6 +10,7 @@ import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { NotificationsBell } from './NotificationsBell';
+import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 
 const CommandPalette = dynamic(
@@ -62,6 +63,7 @@ export function TopBar() {
 
         {/* Actions */}
         <div className="flex items-center gap-1">
+          <DemoDataToggle />
           <ThemeSwitcher />
           <NotificationsBell />
           <MobileNav />

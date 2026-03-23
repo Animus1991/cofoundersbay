@@ -221,7 +221,7 @@ export default function ActivityPage() {
 
   return (
     <AppShell title="Activity Feed" description="Track your network activity, notifications, and events">
-      <div className="mx-auto max-w-5xl space-y-5">
+      <div className="space-y-5">
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

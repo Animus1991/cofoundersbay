@@ -162,7 +162,7 @@ export default function InvitePage() {
       title="Invite People"
       description="Grow your network by inviting co-founders, mentors, and investors"
     >
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="space-y-6">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
           {statsLoading ? (

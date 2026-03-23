@@ -278,7 +278,7 @@ export default function SearchPage() {
 
   return (
     <AppShell title="Search" description="Find people, jobs, events, and more">
-      <div className="mx-auto max-w-3xl">
+      <div className="">
         {/* Search Input */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-4 -mx-4 px-4 pt-2">
           <div className="relative">

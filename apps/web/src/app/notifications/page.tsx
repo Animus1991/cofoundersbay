@@ -300,7 +300,7 @@ export default function NotificationsPage() {
       title="Notifications"
       description="Stay on top of your connections, messages, and activity"
     >
-      <div className="mx-auto max-w-2xl">
+      <div className="">
         {/* Stats bar */}
         {unreadCount > 0 && (
           <div className="mb-4 flex flex-wrap items-center gap-2">

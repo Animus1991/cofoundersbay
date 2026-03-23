@@ -385,7 +385,7 @@ export default function CoachingPage() {
       title="Coaching"
       description="Accountability, clarity, and execution coaching for founders and teams"
     >
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

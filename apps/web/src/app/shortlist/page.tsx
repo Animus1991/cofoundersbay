@@ -347,7 +347,7 @@ export default function ShortlistPage() {
 
   return (
     <AppShell title="Saved Profiles" description="Profiles you've bookmarked to revisit, compare, and reach out to">
-      <div className="mx-auto max-w-3xl space-y-5">
+      <div className="space-y-5">
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

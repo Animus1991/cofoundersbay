@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import {
   getDashboardStats,
@@ -155,6 +156,7 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
 
 export default function FounderDashboard() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],

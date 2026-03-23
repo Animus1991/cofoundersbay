@@ -438,7 +438,7 @@ export default function ExpertReviewsPage() {
       title="Expert Reviews"
       description="Get structured feedback on your pitch, financials, strategy, and more from domain experts"
     >
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
