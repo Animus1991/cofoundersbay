@@ -115,10 +115,11 @@ export const navSections: NavSection[] = [
   {
     section: 'Workspace',
     links: [
-      { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
       { href: '/builder', label: 'Startup Builder', icon: Rocket },
       { href: '/research', label: 'Research Canvas', icon: Grid3X3 },
       { href: '/milestones', label: 'Milestones', icon: Flag },
+      { href: '/calendar', label: 'Calendar', icon: Calendar },
       { href: '/messages', label: 'Messages', icon: MessageCircle, badge: 'messages' },
     ],
   },

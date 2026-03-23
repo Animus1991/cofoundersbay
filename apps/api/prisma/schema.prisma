@@ -530,6 +530,12 @@ model User {
   // Notification channel preferences
   notificationChannels        UserNotificationChannel[]   @relation("NotificationChannels")
 
+  // Calendar
+  calendarEvents              CalendarEvent[]             @relation("CalendarEvents")
+
+  // Public profile
+  publicProfile               PublicProfile?              @relation("PublicProfile")
+
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
   @@index([createdAt])
@@ -3747,11 +3753,12 @@ enum FeatureFlagScope {
   tenant
   user
   role
+  plan
 }
 
 model FeatureFlag {
   id           String           @id @default(uuid())
-  key          String           // e.g. "ai_matching_v2", "builder_financials"
+  key          String           @unique // e.g. "ai_matching_v2", "builder_financials"
   name         String
   description  String?
   scope        FeatureFlagScope @default(global)
@@ -3760,8 +3767,15 @@ model FeatureFlag {
   // Rollout percentage (0-100), null = all
   rolloutPct   Int?
   
-  // Applicable role (if scope = role)
-  targetRole   String?
+  // Targeting
+  targetRole   String?          // If scope = role
+  planKeys     String[]         @default([]) // If scope = plan: ["starter", "pro"]
+  enabledFor   String[]         @default([]) // explicit user/tenant ids
+  
+  // Metadata
+  tags         String[]         @default([])
+  expiresAt    DateTime?
+  createdById  String?
   
   // Tenant override FK handled via TenantFeatureFlag
   createdAt    DateTime         @default(now())
@@ -3769,9 +3783,10 @@ model FeatureFlag {
   
   tenantOverrides TenantFeatureFlag[]
 
-  @@unique([key, scope])
+  @@index([key])
   @@index([isEnabled])
   @@index([scope])
+  @@index([scope, isEnabled])
 }
 
 model TenantFeatureFlag {
@@ -4796,47 +4811,7 @@ model WorkspaceComment {
   @@index([isResolved])
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Feature Flags — Platform-wide and tenant-level feature gates
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum FeatureFlagScope {
-  platform     // applies to all users
-  tenant       // applies to specific tenant
-  user         // applies to specific user
-  plan         // enabled for users on a specific billing plan
-}
-
-model FeatureFlag {
-  id               String           @id @default(uuid())
-  key              String           @unique
-  name             String
-  description      String?
-  scope            FeatureFlagScope @default(platform)
-
-  // Targeting
-  tenantId         String?          // If scope = tenant
-  userId           String?          // If scope = user
-  planKeys         String[]         @default([]) // If scope = plan: ["starter", "pro", "enterprise"]
-
-  // State
-  isEnabled        Boolean          @default(false)
-  rolloutPercent   Int              @default(100) // 0-100 for gradual rollout
-  enabledFor       String[]         @default([]) // explicit user/tenant ids
-
-  // Metadata
-  tags             String[]         @default([])
-  expiresAt        DateTime?
-  createdById      String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  @@index([key])
-  @@index([scope])
-  @@index([tenantId])
-  @@index([isEnabled])
-  @@index([scope, isEnabled])
-}
+// (FeatureFlag model defined earlier — see line ~3752)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Payment Records — Individual transaction history
@@ -5453,4 +5428,101 @@ model UserNotificationChannel {
   @@index([userId])
   @@index([userId, channel])
   @@index([userId, isEnabled])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Calendar Event — Unified schedule: sessions, milestones, events, deadlines
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CalendarEventType {
+  milestone
+  session
+  event
+  deadline
+  meeting
+  reminder
+}
+
+model CalendarEvent {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation("CalendarEvents", fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?           @db.Text
+  eventType     CalendarEventType
+  allDay        Boolean           @default(false)
+
+  startAt       DateTime
+  endAt         DateTime?
+
+  location      String?
+  isVirtual     Boolean           @default(false)
+  meetingUrl    String?
+
+  // Priority & status
+  priority      String?           // "high", "medium", "low"
+  status        String            @default("scheduled") // "scheduled", "completed", "cancelled"
+
+  // Linked entities
+  workspaceId   String?
+  milestoneId   String?
+  programId     String?
+  tenantId      String?
+
+  // Recurrence (simple pattern, null = one-off)
+  recurrence    String?           // "daily", "weekly", "biweekly", "monthly"
+  recurrenceEnd DateTime?
+
+  // Participants (user IDs)
+  participantIds String[]         @default([])
+
+  // Reminders
+  reminderMinutes Int?            // minutes before event to send reminder
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([userId, startAt])
+  @@index([userId, eventType])
+  @@index([startAt])
+  @@index([tenantId, startAt])
+  @@index([workspaceId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Public Profile — Shareable external profile link with controlled visibility
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PublicProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation("PublicProfile", fields: [userId], references: [id], onDelete: Cascade)
+
+  slug          String   @unique // e.g. "john-doe-founder"
+  isPublished   Boolean  @default(false)
+
+  // Visibility controls
+  showEmail     Boolean  @default(false)
+  showLocation  Boolean  @default(true)
+  showSkills    Boolean  @default(true)
+  showBio       Boolean  @default(true)
+  showPortfolio Boolean  @default(true)
+  showStats     Boolean  @default(false)
+
+  // Custom sections
+  customHeadline String?
+  customBio      String? @db.Text
+  socialLinks    Json?   // { linkedin, twitter, github, website }
+
+  // Analytics
+  viewCount     Int      @default(0)
+  lastViewedAt  DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isPublished])
 }
