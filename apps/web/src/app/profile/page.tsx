@@ -26,6 +26,15 @@ import {
   Rocket,
   Users,
   DollarSign,
+  Star,
+  Award,
+  Activity,
+  ExternalLink,
+  FolderOpen,
+  Plus,
+  Zap,
+  BarChart3,
+  BadgeCheck,
 } from 'lucide-react';
 import { getMeProfile } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -385,6 +394,27 @@ export default function ProfilePage() {
 
           {/* Verification status */}
           <VerificationCard email={profile.email} />
+
+          {/* Reputation / Stats mini-card */}
+          <Card className="animate-fade-in">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Activity Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-2 pt-0">
+              {[
+                { icon: Users,    label: 'Connections', value: '—', color: 'text-violet-500' },
+                { icon: Star,     label: 'Endorsements',value: '—', color: 'text-amber-500'  },
+                { icon: Activity, label: 'Activity',    value: '—', color: 'text-blue-500'   },
+                { icon: Award,    label: 'Achievements', value: '—', color: 'text-emerald-500'},
+              ].map(({ icon: Icon, label, value, color }) => (
+                <div key={label} className="flex flex-col items-center rounded-lg bg-secondary/40 px-2 py-2.5">
+                  <Icon className={`h-4 w-4 mb-1 ${color}`} />
+                  <span className="text-base font-bold text-foreground">{value}</span>
+                  <span className="text-[10px] text-muted-foreground">{label}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right column: bio + role details */}
@@ -433,6 +463,47 @@ export default function ProfilePage() {
             );
           })()}
 
+          {/* Skill proficiency bars */}
+          {profile.skills && profile.skills.length > 0 && (
+            <Card className="animate-fade-in stagger-3">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />Skill Proficiency
+                  </CardTitle>
+                  <Link href="/profile/edit">
+                    <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                      <Plus className="h-3 w-3" />Add
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-0">
+                {profile.skills.slice(0, 6).map((s, i) => {
+                  const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
+                  const pct = lvl === 'expert' ? 88 - i * 3 : lvl === 'intermediate' ? 62 - i * 4 : 38 - i * 3;
+                  return (
+                    <div key={s.skillId} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-foreground">{s.skillName}</span>
+                        <span className="text-muted-foreground capitalize">{lvl}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all duration-700"
+                          style={{ width: `${Math.max(pct, 20)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {profile.skills.length > 6 && (
+                  <p className="text-xs text-muted-foreground text-center">+{profile.skills.length - 6} more skills</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Role-specific details */}
           {Object.keys(rolePayload).length > 0 && (
             <div className="animate-fade-in stagger-3">
@@ -440,11 +511,41 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* Portfolio placeholder */}
+          <Card className="animate-fade-in">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FolderOpen className="h-4 w-4 text-primary" />Portfolio &amp; Showcase
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+                  <Plus className="h-3 w-3" />Add item
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
+                  <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Showcase your work</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Add projects, publications, awards, or certifications</p>
+                </div>
+                <Link href="/profile/edit">
+                  <Button variant="secondary" size="sm" className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" />Add portfolio item
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
             <Card className="animate-fade-in">
               <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Your profile is sparse. Add a bio and role details to get better matches.
                 </p>
                 <Link href="/profile/edit">

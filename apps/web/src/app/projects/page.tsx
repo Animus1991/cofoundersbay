@@ -6,6 +6,7 @@ import {
   Plus, Search, Filter, LayoutGrid, List, Users, Calendar,
   Target, Rocket, Clock, MoreVertical, Star, MessageSquare,
   ExternalLink, ChevronRight, Briefcase, Zap, TrendingUp,
+  Sparkles, Globe, UserPlus, BarChart3, Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -314,11 +315,25 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
   );
 }
 
+const STAGE_PILLS = [
+  { value: 'all',        label: 'All Stages',  icon: Layers    },
+  { value: 'idea',       label: 'Idea',        icon: Zap       },
+  { value: 'validating', label: 'Validating',  icon: Target    },
+  { value: 'building',   label: 'Building',    icon: Rocket    },
+  { value: 'launched',   label: 'Launched',    icon: Globe     },
+  { value: 'scaling',    label: 'Scaling',     icon: TrendingUp},
+];
+
 export default function ProjectsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [industryFilter, setIndustryFilter] = useState<string>('all');
+
+  const totalProjects = MOCK_PROJECTS.length;
+  const buildingCount = MOCK_PROJECTS.filter((p) => p.status === 'building' || p.status === 'launched' || p.status === 'scaling').length;
+  const openRolesCount = MOCK_PROJECTS.reduce((acc, p) => acc + p.rolesNeeded.length, 0);
+  const industries = [...new Set(MOCK_PROJECTS.map((p) => p.industry))];
 
   const filteredProjects = MOCK_PROJECTS.filter((p) => {
     if (searchQuery && !p.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -330,7 +345,8 @@ export default function ProjectsPage() {
     return true;
   });
 
-  const industries = [...new Set(MOCK_PROJECTS.map((p) => p.industry))];
+  const featuredProjects = filteredProjects.filter((p) => p.isStarred);
+  const regularProjects  = filteredProjects.filter((p) => !p.isStarred);
 
   return (
     <AppShell>
@@ -351,6 +367,31 @@ export default function ProjectsPage() {
           </Button>
         </div>
 
+        {/* Stats bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Projects',  value: totalProjects,             icon: Layers,     color: 'text-violet-500', bg: 'bg-violet-500/10' },
+            { label: 'Active / Building', value: buildingCount,           icon: Rocket,     color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
+            { label: 'Open Roles',      value: openRolesCount,            icon: UserPlus,   color: 'text-emerald-500',bg: 'bg-emerald-500/10'},
+            { label: 'Industries',      value: industries.length,         icon: BarChart3,  color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
+          ].map((s) => {
+            const SIcon = s.icon;
+            return (
+              <Card key={s.label} className="border-border/40">
+                <CardContent className="flex items-center gap-3 p-3">
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg)}>
+                    <SIcon className={cn('h-4 w-4', s.color)} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
         {/* Tabs */}
         <Tabs defaultValue="discover" className="space-y-4">
           <TabsList>
@@ -366,25 +407,12 @@ export default function ProjectsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search projects..."
+                  placeholder="Search by name, description, industry..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stages</SelectItem>
-                  <SelectItem value="idea">Idea</SelectItem>
-                  <SelectItem value="validating">Validating</SelectItem>
-                  <SelectItem value="building">Building</SelectItem>
-                  <SelectItem value="launched">Launched</SelectItem>
-                  <SelectItem value="scaling">Scaling</SelectItem>
-                </SelectContent>
-              </Select>
               <Select value={industryFilter} onValueChange={setIndustryFilter}>
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Industry" />
@@ -415,6 +443,34 @@ export default function ProjectsPage() {
                 </Button>
               </div>
             </div>
+
+            {/* Stage filter pills */}
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {STAGE_PILLS.map((pill) => {
+                const PIcon = pill.icon;
+                const isActive = statusFilter === pill.value;
+                return (
+                  <button
+                    key={pill.value}
+                    onClick={() => setStatusFilter(pill.value)}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap',
+                      isActive
+                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                        : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                    )}
+                  >
+                    <PIcon className="h-3 w-3" />
+                    {pill.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Results count */}
+            {filteredProjects.length > 0 && (
+              <p className="text-xs text-muted-foreground">{filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''} found</p>
+            )}
 
             {/* Projects Grid/List */}
             {filteredProjects.length === 0 ? (

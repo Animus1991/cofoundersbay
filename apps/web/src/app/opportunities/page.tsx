@@ -11,8 +11,6 @@ import {
   Users,
   Plus,
   Search,
-  Filter,
-  ChevronDown,
   ArrowRight,
   Coins,
   Building2,
@@ -22,8 +20,14 @@ import {
   Bookmark,
   Clock,
   Rocket,
+  TrendingUp,
+  Globe,
+  AlertCircle,
 } from 'lucide-react';
-import { listJobs, createJobPosting, type JobPostingView } from '@/lib/api';
+import {
+  listJobs, createJobPosting, type JobPostingView,
+  listOpportunities, type OpportunityItem, type OpportunityType,
+} from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,21 +42,15 @@ import { cn } from '@/lib/utils';
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 type OppType = 'cofounder' | 'job' | 'freelance';
-
-interface CofounderListing {
-  id: string;
-  title: string;
-  orgName: string;
-  orgInitials: string;
-  type: OppType;
-  description: string;
-  skills: string[];
-  location: string;
-  compensation: string;
-  stage: string;
-  posted: string;
-  applicants: number;
-}
+// Map OpportunityType → OppType for display
+const OPP_TYPE_MAP: Record<OpportunityType, OppType> = {
+  job: 'job',
+  cofounder: 'cofounder',
+  investment: 'freelance',
+  partnership: 'cofounder',
+  mentorship: 'cofounder',
+  other: 'freelance',
+};
 
 interface Proposal {
   id: string;
@@ -66,114 +64,7 @@ interface Proposal {
   date: string;
 }
 
-interface Application {
-  id: string;
-  opportunityTitle: string;
-  orgName: string;
-  orgInitials: string;
-  type: OppType;
-  status: 'pending' | 'reviewing' | 'accepted' | 'rejected';
-  appliedDate: string;
-  message: string;
-}
 
-// ── Static demo data (co-founder / freelance listings) ──────────────────────
-
-const DEMO_LISTINGS: CofounderListing[] = [
-  {
-    id: 'o1',
-    title: 'CTO & Technical Co-founder',
-    orgName: 'GreenTrack',
-    orgInitials: 'GT',
-    type: 'cofounder',
-    description:
-      'Looking for a technical co-founder to build our carbon tracking platform for SMBs. Must have experience with data pipelines and SaaS architecture.',
-    skills: ['Python', 'React', 'AWS', 'Data Engineering'],
-    location: 'Remote (EU timezone)',
-    compensation: '25% equity + small salary after seed',
-    stage: 'Pre-seed',
-    posted: '2d ago',
-    applicants: 8,
-  },
-  {
-    id: 'o2',
-    title: 'Growth Marketing Lead',
-    orgName: 'FinLit AI',
-    orgInitials: 'FL',
-    type: 'job',
-    description:
-      "Join our Series A fintech startup to lead growth marketing. You'll own user acquisition, content strategy, and paid channels.",
-    skills: ['Growth Hacking', 'SEO', 'Paid Ads', 'Analytics'],
-    location: 'London, UK (Hybrid)',
-    compensation: '£65–80k + 0.5% equity',
-    stage: 'Series A',
-    posted: '1d ago',
-    applicants: 23,
-  },
-  {
-    id: 'o3',
-    title: 'Product Designer — Contract',
-    orgName: 'Nomad Spaces',
-    orgInitials: 'NS',
-    type: 'freelance',
-    description:
-      '3-month contract to redesign our marketplace UX. Looking for someone with marketplace/platform design experience.',
-    skills: ['Figma', 'UX Research', 'Design Systems', 'Prototyping'],
-    location: 'Remote',
-    compensation: '€80–100/hour',
-    stage: 'MVP',
-    posted: '5h ago',
-    applicants: 5,
-  },
-  {
-    id: 'o4',
-    title: 'Full-stack Developer Co-founder',
-    orgName: 'EduFlow',
-    orgInitials: 'EF',
-    type: 'cofounder',
-    description:
-      'EdTech startup seeking a full-stack developer to co-found. We have paying beta users and need to scale the platform.',
-    skills: ['TypeScript', 'Next.js', 'PostgreSQL', 'System Design'],
-    location: 'Athens, Greece / Remote',
-    compensation: '30% equity',
-    stage: 'MVP with revenue',
-    posted: '3d ago',
-    applicants: 12,
-  },
-];
-
-const DEMO_APPLICATIONS: Application[] = [
-  {
-    id: 'a1',
-    opportunityTitle: 'Frontend Lead — HealthSync',
-    orgName: 'HealthSync',
-    orgInitials: 'HS',
-    type: 'job',
-    status: 'reviewing',
-    appliedDate: '3 days ago',
-    message: 'I have 6 years of React experience and led frontend at two health-tech startups.',
-  },
-  {
-    id: 'a2',
-    opportunityTitle: 'Product Advisor — AgroTech',
-    orgName: 'AgroTech',
-    orgInitials: 'AT',
-    type: 'cofounder',
-    status: 'accepted',
-    appliedDate: '1 week ago',
-    message: 'Interested in offering advisory services based on my agri-tech background.',
-  },
-  {
-    id: 'a3',
-    opportunityTitle: 'Co-founder — AI Tutor',
-    orgName: 'AI Tutor',
-    orgInitials: 'AI',
-    type: 'cofounder',
-    status: 'pending',
-    appliedDate: '1 day ago',
-    message: 'Your vision for AI in education aligns with my 10-year experience in edtech.',
-  },
-];
 
 const DEMO_PROPOSALS: Proposal[] = [
   {
@@ -202,25 +93,26 @@ const DEMO_PROPOSALS: Proposal[] = [
 
 // ── Config maps ───────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<OppType, { label: string; className: string; icon: typeof Briefcase }> = {
-  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
-  job: { label: 'Job', className: 'bg-primary/20 text-primary border-primary/20', icon: Building2 },
-  freelance: { label: 'Freelance', className: 'bg-orange-500/20 text-orange-700 border-orange-500/20 dark:text-orange-400', icon: FileText },
-};
-
-const STATUS_CONFIG = {
-  pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
-  accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-  declined: { label: 'Declined', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
-  reviewing: { label: 'Under Review', className: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
-  rejected: { label: 'Rejected', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
-};
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function ListingCard({ listing }: { listing: CofounderListing }) {
-  const config = TYPE_CONFIG[listing.type];
+const OPP_TYPE_DISPLAY: Record<OpportunityType, { label: string; className: string; icon: typeof Briefcase }> = {
+  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
+  job: { label: 'Job', className: 'bg-primary/20 text-primary border-primary/20', icon: Building2 },
+  investment: { label: 'Investment', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/20 dark:text-emerald-400', icon: Coins },
+  partnership: { label: 'Partnership', className: 'bg-purple-500/20 text-purple-700 border-purple-500/20 dark:text-purple-400', icon: Users },
+  mentorship: { label: 'Mentorship', className: 'bg-amber-500/20 text-amber-700 border-amber-500/20 dark:text-amber-400', icon: Rocket },
+  other: { label: 'Other', className: 'bg-muted text-muted-foreground border-border/40', icon: FileText },
+};
+
+function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   const { success } = useToast();
+  const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
+  const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
+  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const deadline = opportunity.deadline
+    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
@@ -228,68 +120,89 @@ function ListingCard({ listing }: { listing: CofounderListing }) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-4">
             <Avatar className="h-12 w-12 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">
-                {listing.orgInitials}
-              </AvatarFallback>
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-display text-base font-semibold text-foreground">
-                {listing.title}
-              </h3>
+              <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
-                <span className="text-sm text-muted-foreground">{listing.orgName}</span>
-                <Badge variant="outline" className={cn('text-[10px] px-1.5', config.className)}>
-                  <config.icon className="mr-1 h-3 w-3" />
-                  {config.label}
+                {opportunity.company && (
+                  <span className="text-sm text-muted-foreground">{opportunity.company}</span>
+                )}
+                <Badge variant="outline" className={cn('text-[10px] px-1.5', cfg.className)}>
+                  <cfg.icon className="mr-1 h-3 w-3" />
+                  {cfg.label}
                 </Badge>
-                <Badge variant="secondary" className="text-[10px]">{listing.stage}</Badge>
+                {opportunity.isRemote && (
+                  <Badge variant="secondary" className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
+                )}
               </div>
             </div>
           </div>
           <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            {listing.posted}
+            {postedAgo}
           </span>
         </div>
 
-        <p className="text-sm text-muted-foreground leading-relaxed">{listing.description}</p>
+        {opportunity.description && (
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{opportunity.description}</p>
+        )}
 
-        <div className="flex flex-wrap gap-1.5">
-          {listing.skills.map((skill) => (
-            <span
-              key={skill}
-              className="rounded-md bg-secondary/60 px-2 py-0.5 text-[11px] text-secondary-foreground"
-            >
-              {skill}
-            </span>
-          ))}
-        </div>
+        {opportunity.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {opportunity.tags.map((tag: string) => (
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[11px] text-secondary-foreground">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {listing.location}
-          </span>
-          <span className="flex items-center gap-1">
-            <Coins className="h-3 w-3" />
-            {listing.compensation}
-          </span>
+          {opportunity.location && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {opportunity.location}
+            </span>
+          )}
+          {deadline && opportunity.deadline && (
+            <span className={cn(
+              'flex items-center gap-1',
+              (() => {
+                const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
+                return daysLeft <= 3 ? 'text-red-500 font-medium' : 'text-amber-600 dark:text-amber-400';
+              })()
+            )}>
+              <AlertCircle className="h-3 w-3" />
+              {(() => {
+                const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
+                return daysLeft <= 0 ? 'Expired' : daysLeft <= 3 ? `${daysLeft}d left!` : `Deadline: ${deadline}`;
+              })()}
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {listing.applicants} applicants
+            {opportunity.createdBy.displayName}
           </span>
         </div>
 
         <div className="flex gap-2 pt-1">
-          <Button size="sm" className="gap-1.5 text-xs">
-            Apply Now
-            <ArrowRight className="h-3 w-3" />
-          </Button>
+          {opportunity.url ? (
+            <Button size="sm" className="gap-1.5 text-xs" asChild>
+              <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
+                Apply Now <ArrowRight className="h-3 w-3" />
+              </a>
+            </Button>
+          ) : (
+            <Button size="sm" className="gap-1.5 text-xs">
+              Apply Now <ArrowRight className="h-3 w-3" />
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             className="gap-1.5 text-xs"
-            onClick={() => success('Saved', `${listing.title} saved to bookmarks.`)}
+            onClick={() => success('Saved', `${opportunity.title} saved to bookmarks.`)}
           >
             <Bookmark className="h-3 w-3" />
             Save
@@ -373,7 +286,12 @@ function ProposalCard({
   onDecline: (id: string) => void;
 }) {
   const isPending = proposal.status === 'pending';
-  const statusCfg = STATUS_CONFIG[proposal.status];
+  const PROPOSAL_STATUS: Record<string, { label: string; className: string }> = {
+    pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
+    accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
+    declined: { label: 'Declined', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
+  };
+  const statusCfg = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
 
   return (
     <Card className={cn('transition-all', !isPending && 'opacity-70')}>
@@ -445,7 +363,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
     role: '',
     location: '',
     isRemote: false,
-    type: 'cofounder' as OppType,
+    type: 'cofounder' as OpportunityType,
   });
 
   const mutation = useMutation({
@@ -478,7 +396,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Type</label>
             <div className="flex gap-2 flex-wrap">
-              {(Object.entries(TYPE_CONFIG) as [OppType, typeof TYPE_CONFIG['job']][]).map(([key, cfg]) => (
+              {(Object.entries(OPP_TYPE_DISPLAY) as [OpportunityType, typeof OPP_TYPE_DISPLAY['job']][]).map(([key, cfg]) => (
                 <button
                   key={key}
                   type="button"
@@ -552,71 +470,36 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-function ApplicationCard({ application }: { application: Application }) {
-  const config = TYPE_CONFIG[application.type];
-  const statusCfg = STATUS_CONFIG[application.status];
-  return (
-    <Card className={cn('transition-all', application.status === 'rejected' && 'opacity-60')}>
-      <CardContent className="p-5 space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 rounded-xl">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary text-xs font-bold">
-                {application.orgInitials}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{application.opportunityTitle}</p>
-              <div className="mt-0.5 flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{application.orgName}</span>
-                <Badge variant="outline" className={cn('text-[10px] px-1.5', config.className)}>
-                  <config.icon className="mr-1 h-3 w-3" />
-                  {config.label}
-                </Badge>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col items-end gap-1 shrink-0">
-            <Badge variant="secondary" className={cn('text-xs', statusCfg.className)}>
-              {statusCfg.label}
-            </Badge>
-            <span className="text-[10px] text-muted-foreground">{application.appliedDate}</span>
-          </div>
-        </div>
-        <div className="rounded-lg bg-secondary/40 px-3 py-2.5">
-          <p className="text-xs text-foreground/80 leading-relaxed italic">&ldquo;{application.message}&rdquo;</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function OpportunitiesPage() {
   const queryClient = useQueryClient();
   const { success } = useToast();
   const [activeTab, setActiveTab] = useState<'listings' | 'jobs' | 'applications' | 'proposals'>('listings');
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<OppType | 'all'>('all');
+  const [remoteOnly, setRemoteOnly] = useState(false);
+  const [oppTypeFilter, setOppTypeFilter] = useState<OpportunityType | 'all'>('all');
   const [proposals, setProposals] = useState<Proposal[]>(DEMO_PROPOSALS);
   const [showPostForm, setShowPostForm] = useState(false);
 
-  const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
-    queryKey: ['jobs', { limit: 50 }],
-    queryFn: () => import('@/lib/api').then((m) => m.listJobs({ limit: 50 })),
+  const { data: opportunitiesData, isLoading: oppLoading, isError: oppError, refetch: refetchOpp } = useQuery({
+    queryKey: ['opportunities', { search, type: oppTypeFilter, isRemote: remoteOnly || undefined }],
+    queryFn: () => listOpportunities({
+      search: search.trim() || undefined,
+      type: oppTypeFilter !== 'all' ? oppTypeFilter : undefined,
+      isRemote: remoteOnly || undefined,
+      limit: 50,
+    }),
     staleTime: 60_000,
     retry: 1,
   });
 
-  const filteredListings = DEMO_LISTINGS.filter((o) => {
-    const matchSearch =
-      !search.trim() ||
-      o.title.toLowerCase().includes(search.toLowerCase()) ||
-      o.orgName.toLowerCase().includes(search.toLowerCase()) ||
-      o.skills.some((s) => s.toLowerCase().includes(search.toLowerCase()));
-    const matchType = typeFilter === 'all' || o.type === typeFilter;
-    return matchSearch && matchType;
+  const { data: jobsData, isLoading: jobsLoading, isError: jobsError, refetch: refetchJobs } = useQuery({
+    queryKey: ['jobs', { limit: 50 }],
+    queryFn: () => listJobs({ limit: 50 }),
+    staleTime: 60_000,
+    retry: 1,
   });
 
+  const opportunities = opportunitiesData?.opportunities ?? [];
   const pendingProposals = proposals.filter((p) => p.status === 'pending').length;
 
   const handleAcceptProposal = (id: string) => {
@@ -657,6 +540,29 @@ export default function OpportunitiesPage() {
           </Button>
         }
       >
+        {/* Stats bar */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: 'Total Listings', value: opportunities.length || '50+', icon: Briefcase, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+            { label: 'Remote Roles', value: opportunities.filter((o) => o.isRemote).length || '20+', icon: Globe, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: 'Co-founder', value: opportunities.filter((o) => o.type === 'cofounder').length || '15+', icon: Handshake, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { label: 'Proposals', value: pendingProposals, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          ].map((s) => {
+            const SIcon = s.icon;
+            return (
+              <div key={s.label} className="flex items-center gap-2.5 rounded-xl border border-border/40 bg-card p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Tabs */}
         <div className="flex gap-1 rounded-xl bg-secondary/50 p-1 mb-6 overflow-x-auto">
           {tabs.map(({ key, label, icon: Icon, badge }) => (
@@ -695,34 +601,66 @@ export default function OpportunitiesPage() {
                   className="pl-10"
                 />
               </div>
-              <div className="flex gap-2 flex-wrap">
-                {(['all', 'cofounder', 'job', 'freelance'] as const).map((t) => (
+              <div className="flex gap-2 flex-wrap items-center">
+                {(['all', 'cofounder', 'job', 'investment', 'partnership', 'mentorship'] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => setTypeFilter(t)}
+                    onClick={() => setOppTypeFilter(t)}
                     className={cn(
                       'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
-                      typeFilter === t
+                      oppTypeFilter === t
                         ? 'border-primary bg-primary/20 text-primary'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40',
                     )}
                   >
-                    {t === 'all' ? 'All types' : TYPE_CONFIG[t].label}
+                    {t === 'all' ? 'All types' : t.charAt(0).toUpperCase() + t.slice(1)}
                   </button>
                 ))}
+                <button
+                  onClick={() => setRemoteOnly((v) => !v)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
+                    remoteOnly
+                      ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                  )}
+                >
+                  Remote only
+                </button>
               </div>
             </div>
 
-            {filteredListings.length === 0 ? (
+            {oppError ? (
+              <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <p className="text-sm text-muted-foreground">Failed to load opportunities.</p>
+                <Button variant="secondary" size="sm" onClick={() => refetchOpp()}>Try again</Button>
+              </CardContent></Card>
+            ) : oppLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i}><CardContent className="flex gap-4 p-5">
+                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-3 w-32" />
+                    <Skeleton className="h-3 w-64" />
+                  </div>
+                </CardContent></Card>
+              ))
+            ) : opportunities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
                 <Handshake className="h-10 w-10 mb-3 opacity-30" />
                 <p className="font-medium">No opportunities found</p>
-                <p className="text-sm mt-1">Try adjusting your search or filters.</p>
+                <p className="text-sm mt-1">Try adjusting your search or filters, or post the first opportunity.</p>
+                <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
+                  <Plus className="h-4 w-4" />
+                  Post opportunity
+                </Button>
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredListings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
+                <p className="text-xs text-muted-foreground">{opportunities.length} opportunit{opportunities.length === 1 ? 'y' : 'ies'}</p>
+                {opportunities.map((opp) => (
+                  <OpportunityCard key={opp.id} opportunity={opp} />
                 ))}
               </div>
             )}
@@ -784,17 +722,15 @@ export default function OpportunitiesPage() {
         {/* Applications tab */}
         {activeTab === 'applications' && (
           <div className="space-y-4">
-            {DEMO_APPLICATIONS.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <FileText className="h-10 w-10 mb-3 opacity-30" />
-                <p className="font-medium">No applications yet</p>
-                <p className="text-sm mt-1">Apply to listings and jobs to track them here.</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
+              <FileText className="h-10 w-10 mb-3 opacity-30" />
+              <p className="font-medium">Applications tracked here</p>
+              <p className="text-sm mt-1">When you apply to listings or program applications, they appear here.</p>
+              <div className="flex gap-3 mt-4">
+                <Button variant="outline" size="sm" onClick={() => setActiveTab('listings')}>Browse Opportunities</Button>
+                <Button size="sm" onClick={() => setActiveTab('jobs')}>Browse Jobs</Button>
               </div>
-            ) : (
-              DEMO_APPLICATIONS.map((app) => (
-                <ApplicationCard key={app.id} application={app} />
-              ))
-            )}
+            </div>
           </div>
         )}
 

@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useCallback, useTransition } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
   Search, Users, Plus, TrendingUp, Lock, Globe, CheckCircle2,
   UserPlus, MessageCircle, LogOut, Loader2, RefreshCw, Sparkles,
+  Layers, BookOpen, Rocket, Star, ArrowRight, Zap,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -26,26 +27,78 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 
 const CATEGORIES = ['All', 'Founders', 'Tech', 'Marketing', 'Design', 'Finance', 'Product', 'Operations', 'Legal'];
 
+const TYPE_FILTERS = [
+  { value: 'all',      label: 'All',      icon: Layers },
+  { value: 'industry', label: 'Industry', icon: Rocket },
+  { value: 'stage',    label: 'Stage',    icon: TrendingUp },
+  { value: 'role',     label: 'Role',     icon: Users },
+  { value: 'learning', label: 'Learning', icon: BookOpen },
+];
+
+const COVER_GRADIENTS = [
+  'from-violet-500/30 to-indigo-500/20',
+  'from-emerald-500/30 to-teal-500/20',
+  'from-orange-500/30 to-amber-500/20',
+  'from-pink-500/30 to-rose-500/20',
+  'from-blue-500/30 to-cyan-500/20',
+  'from-purple-500/30 to-fuchsia-500/20',
+];
+
+const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
+  industry: { bg: 'bg-blue-500/15', text: 'text-blue-600' },
+  stage:    { bg: 'bg-amber-500/15', text: 'text-amber-600' },
+  role:     { bg: 'bg-violet-500/15', text: 'text-violet-600' },
+  learning: { bg: 'bg-emerald-500/15', text: 'text-emerald-600' },
+};
+
 function GroupCard({
   group,
   onToggle,
   loading,
+  index = 0,
 }: {
   group: GroupView;
   onToggle: (id: string, isMember: boolean) => void;
   loading: boolean;
+  index?: number;
 }) {
   const router = useRouter();
+  const gradientClass = COVER_GRADIENTS[index % COVER_GRADIENTS.length];
+  const groupType = (group.category?.toLowerCase() ?? 'industry') as string;
+  const typeColor = TYPE_COLORS[groupType] ?? TYPE_COLORS['industry'];
   return (
     <Card
-      className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer"
+      className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer overflow-hidden"
       onClick={() => router.push(`/groups/${group.id}`)}
     >
-      {group.coverImageUrl && (
+      {/* Cover Image */}
+      {group.coverImageUrl ? (
         <div
-          className="h-24 w-full rounded-t-xl bg-cover bg-center"
+          className="h-28 w-full bg-cover bg-center relative"
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
-        />
+        >
+          <div className="absolute top-2 left-2">
+            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+              {groupType}
+            </span>
+          </div>
+          {group.privacy === 'private' && (
+            <div className="absolute top-2 right-2">
+              <Globe className="h-3.5 w-3.5 text-white/80" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={cn('h-28 w-full rounded-t-xl bg-gradient-to-br relative', gradientClass)}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Users className="h-10 w-10 text-white/20" />
+          </div>
+          <div className="absolute top-2 left-2">
+            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+              {groupType}
+            </span>
+          </div>
+        </div>
       )}
       <CardContent className="p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
@@ -128,16 +181,18 @@ function GroupsGrid({
   groups,
   onToggle,
   loadingId,
+  offset = 0,
 }: {
   groups: GroupView[];
   onToggle: (id: string, isMember: boolean) => void;
   loadingId: string | null;
+  offset?: number;
 }) {
   if (groups.length === 0) return null;
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {groups.map((g) => (
-        <GroupCard key={g.id} group={g} onToggle={onToggle} loading={loadingId === g.id} />
+      {groups.map((g, i) => (
+        <GroupCard key={g.id} group={g} onToggle={onToggle} loading={loadingId === g.id} index={offset + i} />
       ))}
     </div>
   );
@@ -152,6 +207,7 @@ export default function GroupsPage() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [sort, setSort] = useState<'popular' | 'recent' | 'trending'>('popular');
+  const [typeFilter, setTypeFilter] = useState('all');
 
   const discoverQuery = useQuery({
     queryKey: ['groups', 'discover', selectedCategory, searchQuery, sort],
@@ -196,18 +252,26 @@ export default function GroupsPage() {
   const discoverGroups = discoverQuery.data?.groups ?? [];
   const myGroups = (myGroupsQuery.data?.groups ?? []) as GroupView[];
 
-  const displayGroups = activeTab === 'my-groups' ? myGroups : discoverGroups;
+  const filteredDiscover = typeFilter === 'all' ? discoverGroups : discoverGroups.filter((g) =>
+    g.category?.toLowerCase() === typeFilter
+  );
+
+  const displayGroups = activeTab === 'my-groups' ? myGroups : filteredDiscover;
   const topGroups = displayGroups.slice(0, 4);
   const restGroups = displayGroups.slice(4);
 
+  const totalGroups = discoverGroups.length;
+  const myGroupsCount = myGroups.length;
+  const trendingGroup = discoverGroups.find((g) => g.postCount > 0) ?? discoverGroups[0];
+
   return (
     <AppShell
-      title="Groups"
-      description="Join communities, share knowledge, and connect with like-minded founders"
+      title="Communities"
+      description="Join industry and stage-specific communities to learn and connect"
       actions={
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="h-4 w-4" />
-          Create Group
+          Create Community
         </Button>
       }
     >
@@ -222,12 +286,36 @@ export default function GroupsPage() {
         />
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="space-y-5">
+      {/* Stats strip */}
+      <div className="grid grid-cols-3 gap-3 mb-5">
+        {[
+          { label: 'Total Communities', value: totalGroups || '5+', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+          { label: 'Joined', value: myGroupsCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'Active Now', value: discoverGroups.filter((g) => g.postCount > 0).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        ].map((s) => {
+          const SIcon = s.icon;
+          return (
+            <Card key={s.label} className="border-border/40">
+              <CardContent className="flex items-center gap-3 p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <TabsList className="grid w-full max-w-xs grid-cols-2">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="my-groups">
-              My Groups
+              My Communities
               {myGroups.length > 0 && (
                 <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">
                   {myGroups.length}
@@ -263,12 +351,35 @@ export default function GroupsPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search groups by name, topic, or tag..."
+                  placeholder="Search communities by name, topic, or tags..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
+              {/* Type filter tabs — Figma-inspired */}
+              <div className="flex gap-2">
+                {TYPE_FILTERS.map((tf) => {
+                  const TIcon = tf.icon;
+                  const isActive = typeFilter === tf.value;
+                  return (
+                    <button
+                      key={tf.value}
+                      onClick={() => setTypeFilter(tf.value)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all whitespace-nowrap',
+                        isActive
+                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                          : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+                      )}
+                    >
+                      <TIcon className="h-3 w-3" />
+                      {tf.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Category chips */}
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {CATEGORIES.map((cat) => (
                   <button
@@ -315,18 +426,44 @@ export default function GroupsPage() {
             </div>
           )}
 
+          {/* Trending banner */}
+          {activeTab === 'discover' && !discoverQuery.isLoading && trendingGroup && (
+            <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5 px-4 py-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
+                <Star className="h-4 w-4 text-amber-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground">
+                  🔥 Trending: <span className="text-amber-600">{trendingGroup.name}</span>
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
+              </div>
+              <button
+                onClick={() => {/* navigate */}}
+                className="shrink-0 text-xs text-amber-600 hover:underline flex items-center gap-1"
+              >
+                View <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+
+          {/* Result count */}
+          {!discoverQuery.isLoading && displayGroups.length > 0 && (
+            <p className="text-xs text-muted-foreground px-0.5">{displayGroups.length} {activeTab === 'my-groups' ? 'joined' : 'found'}</p>
+          )}
+
           {/* Featured top row */}
           {!discoverQuery.isLoading && topGroups.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Groups'}
+                  {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
                 </h2>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                {topGroups.map((g) => (
-                  <GroupCard key={g.id} group={g} onToggle={handleToggle} loading={loadingId === g.id} />
+                {topGroups.map((g, i) => (
+                  <GroupCard key={g.id} group={g} onToggle={handleToggle} loading={loadingId === g.id} index={i} />
                 ))}
               </div>
             </div>
@@ -336,9 +473,9 @@ export default function GroupsPage() {
           {!discoverQuery.isLoading && restGroups.length > 0 && (
             <div className="space-y-3">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {activeTab === 'my-groups' ? 'More Groups' : 'All Groups'}
+                {activeTab === 'my-groups' ? 'More Communities' : 'All Communities'}
               </h2>
-              <GroupsGrid groups={restGroups} onToggle={handleToggle} loadingId={loadingId} />
+              <GroupsGrid groups={restGroups} onToggle={handleToggle} loadingId={loadingId} offset={topGroups.length} />
             </div>
           )}
 

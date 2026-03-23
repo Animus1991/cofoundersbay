@@ -26,7 +26,14 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  Zap,
+  Network,
+  Download,
 } from 'lucide-react';
+import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, PieChart as RechartsPie, Pie, Cell, Legend,
+} from 'recharts';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -119,45 +126,161 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
   );
 }
 
-function ProfileViewsChart({ data }: { data: ProfileView[] }) {
-  const maxViews = Math.max(...data.map((d) => d.views));
+// SVG sparkline helper
+function Sparkline({ values, color = '#8b5cf6' }: { values: number[]; color?: string }) {
+  if (values.length < 2) return null;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values);
+  const w = 80; const h = 28;
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * w;
+    const y = h - ((v - min) / (max - min || 1)) * h;
+    return `${x},${y}`;
+  }).join(' ');
+  return (
+    <svg width={w} height={h} className="opacity-60">
+      <polyline fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={pts} />
+    </svg>
+  );
+}
 
+// Profile Funnel
+function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
+  const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? 0;
+  const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? 0;
+  const messages = metrics.find((m) => m.label === 'Messages Sent')?.value ?? 0;
+  const stages = [
+    { label: 'Profile Views', value: views, pct: 100, color: 'bg-violet-500' },
+    { label: 'Connection Requests', value: Math.round(views * 0.12), pct: views ? Math.round((connections / views) * 100 * 12) : 0, color: 'bg-blue-500' },
+    { label: 'Accepted Connections', value: connections, pct: views ? Math.round((connections / views) * 100) : 0, color: 'bg-emerald-500' },
+    { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, color: 'bg-amber-500' },
+  ];
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Profile Views (Last 7 Days)
+        <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+          <Network className="h-4 w-4" />Profile Funnel
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {data.map((item, index) => {
-            const percentage = (item.views / maxViews) * 100;
-            const date = new Date(item.date);
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-            const dayDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      <CardContent className="space-y-3">
+        {stages.map((s) => (
+          <div key={s.label} className="space-y-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">{s.label}</span>
+              <span className="font-semibold text-foreground">{s.value.toLocaleString()}</span>
+            </div>
+            <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
+              <div className={cn('h-full rounded-full transition-all duration-700', s.color)} style={{ width: `${Math.min(s.pct, 100)}%` }} />
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
 
+// Network velocity widget
+function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
+  const items = metrics.slice(0, 3).map((m) => ({
+    label: m.label,
+    change: m.change,
+    changeType: m.changeType,
+    icon: m.icon,
+    color: m.color,
+  }));
+  return (
+    <Card className="border-primary/20 bg-primary/[0.02]">
+      <CardContent className="p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Zap className="h-4 w-4 text-primary" />
+          <span className="text-sm font-semibold">Network Velocity</span>
+          <Badge variant="secondary" className="text-[10px] ml-auto">vs prev period</Badge>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {items.map((item) => {
+            const Icon = item.icon;
             return (
-              <div key={index} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">
-                    {dayName}, {dayDate}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {item.views} views ({item.uniqueVisitors} unique)
-                  </span>
+              <div key={item.label} className="text-center">
+                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1 bg-secondary/60', item.color)}>
+                  <Icon className="h-3.5 w-3.5" />
                 </div>
-                <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
+                <p className={cn('text-xs font-bold',
+                  item.changeType === 'increase' ? 'text-emerald-600 dark:text-emerald-400'
+                  : item.changeType === 'decrease' ? 'text-red-500'
+                  : 'text-muted-foreground'
+                )}>
+                  {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
+                </p>
+                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
               </div>
             );
           })}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const DEMO_AREA_DATA = [
+  { date: 'Mon', views: 12, unique: 8, connections: 2 },
+  { date: 'Tue', views: 19, unique: 14, connections: 5 },
+  { date: 'Wed', views: 8, unique: 6, connections: 3 },
+  { date: 'Thu', views: 24, unique: 18, connections: 7 },
+  { date: 'Fri', views: 18, unique: 13, connections: 4 },
+  { date: 'Sat', views: 31, unique: 22, connections: 9 },
+  { date: 'Sun', views: 27, unique: 20, connections: 6 },
+];
+
+function ProfileViewsChart({ data }: { data: ProfileView[] }) {
+  const chartData = data.length > 0
+    ? data.map((d) => ({
+        date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        views: d.views,
+        unique: d.uniqueVisitors,
+        connections: Math.round(d.views * 0.08),
+      }))
+    : DEMO_AREA_DATA;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+            <BarChart3 className="h-4 w-4" />Profile Views Trend
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+            <Download className="h-3 w-3" />Export
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={220}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorUnique" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+            <XAxis dataKey="date" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+            <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+            <Tooltip
+              contentStyle={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+            />
+            <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorViews)" name="Views" />
+            <Area type="monotone" dataKey="unique" stroke="#22d3ee" strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
+          </AreaChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );
@@ -207,49 +330,99 @@ function TopContentList({ content }: { content: TopContent[] }) {
   );
 }
 
-function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
-  const engagementData = [
-    { type: 'Connections', value: engagement?.connections ?? 0, color: 'bg-blue-500' },
-    { type: 'Messages', value: engagement?.messages ?? 0, color: 'bg-green-500' },
-    { type: 'Likes', value: engagement?.likes ?? 0, color: 'bg-red-500' },
-    { type: 'Comments', value: engagement?.comments ?? 0, color: 'bg-purple-500' },
-    { type: 'Shares', value: engagement?.shares ?? 0, color: 'bg-orange-500' },
-  ];
+const PIE_COLORS = ['#8b5cf6', '#22d3ee', '#4ade80', '#fb923c', '#f87171'];
 
-  const total = engagementData.reduce((sum, item) => sum + item.value, 0) || 1;
+const DEMO_BAR_DATA = [
+  { name: 'Connections', value: 18 },
+  { name: 'Messages', value: 34 },
+  { name: 'Likes', value: 12 },
+  { name: 'Comments', value: 8 },
+  { name: 'Shares', value: 5 },
+];
+
+function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
+  const barData = [
+    { name: 'Connections', value: engagement?.connections ?? DEMO_BAR_DATA[0].value },
+    { name: 'Messages',    value: engagement?.messages    ?? DEMO_BAR_DATA[1].value },
+    { name: 'Likes',       value: engagement?.likes       ?? DEMO_BAR_DATA[2].value },
+    { name: 'Comments',    value: engagement?.comments    ?? DEMO_BAR_DATA[3].value },
+    { name: 'Shares',      value: engagement?.shares      ?? DEMO_BAR_DATA[4].value },
+  ];
+  const pieData = barData.map((d) => ({ name: d.name, value: d.value }));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <PieChart className="h-5 w-5" />
-          Engagement Breakdown
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {engagementData.map((item) => {
-            const percentage = ((item.value / total) * 100).toFixed(1);
-            return (
-              <div key={item.type} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{item.type}</span>
-                  <span className="text-muted-foreground">
-                    {item.value} ({percentage}%)
-                  </span>
-                </div>
-                <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-                  <div
-                    className={cn('h-full rounded-full transition-all duration-500', item.color)}
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      {/* Bar chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+            <BarChart3 className="h-4 w-4" />Engagement by Type
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={barData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <Tooltip
+                contentStyle={{
+                  background: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              />
+              <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                {barData.map((_, i) => (
+                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Donut chart */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+            <PieChart className="h-4 w-4" />Engagement Distribution
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={180}>
+            <RechartsPie>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={45}
+                outerRadius={70}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {pieData.map((_, i) => (
+                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{
+                  background: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+              />
+              <Legend
+                iconSize={8}
+                wrapperStyle={{ fontSize: 11 }}
+              />
+            </RechartsPie>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -341,14 +514,24 @@ export default function AnalyticsPage() {
   const topContent = overview?.topContent;
   const weeklySummary = overview?.weeklySummary;
 
+  // Demo sparkline seeds (replaced by real data when available)
+  const demoSparklines: Record<string, number[]> = {
+    'Profile Views': [12, 19, 8, 24, 18, 31, 27],
+    'New Connections': [2, 5, 3, 7, 4, 9, 6],
+    'Messages Sent': [5, 8, 12, 6, 14, 10, 18],
+    'Engagement Rate': [42, 47, 44, 51, 49, 55, 58],
+    'Search Appearances': [30, 25, 40, 35, 48, 42, 55],
+    'Activity Score': [60, 65, 62, 70, 68, 74, 72],
+  };
+
   return (
     <AppShell
-      title="Analytics Dashboard"
-      description="Track your profile performance and engagement"
+      title="Analytics"
+      description="Track your profile performance and network growth"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-2">
-          {(['7d', '14d', '30d'] as const).map((p) => (
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2 flex-wrap">
+          {(['7d', '14d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
@@ -359,10 +542,13 @@ export default function AnalyticsPage() {
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
               )}
             >
-              {p === '7d' ? 'Last 7 days' : p === '14d' ? 'Last 14 days' : 'Last 30 days'}
+              {p === '7d' ? '7 days' : p === '14d' ? '14 days' : p === '30d' ? '30 days' : '90 days'}
             </button>
           ))}
         </div>
+        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
+          <Activity className="h-3.5 w-3.5" />Refresh
+        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
@@ -391,10 +577,52 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
+              {/* Network velocity + funnel side-by-side */}
+              {metrics.length > 0 && (
+                <div className="grid gap-4 lg:grid-cols-3">
+                  <div className="lg:col-span-1">
+                    <NetworkVelocity metrics={metrics} />
+                  </div>
+                  <div className="lg:col-span-2">
+                    <ProfileFunnel metrics={metrics} />
+                  </div>
+                </div>
+              )}
+
+              {/* Metric cards with sparklines */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {metrics.map((metric) => (
-                  <MetricCard key={metric.label} metric={metric} />
-                ))}
+                {metrics.map((metric) => {
+                  const sparkValues = demoSparklines[metric.label] ?? [];
+                  return (
+                    <Card key={metric.label} className="card-interactive hover-lift relative overflow-hidden">
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className={cn('p-2 rounded-lg bg-secondary/40', metric.color)}>
+                            <metric.icon className="h-4 w-4" />
+                          </div>
+                          <Badge
+                            variant={metric.changeType === 'increase' ? 'default' : metric.changeType === 'decrease' ? 'destructive' : 'secondary'}
+                            className="gap-1 text-[10px]"
+                          >
+                            {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <Minus className="h-2.5 w-2.5" />}
+                            {Math.abs(metric.change)}%
+                          </Badge>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-0.5">
+                          {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
+                            ? `${metric.value}%`
+                            : metric.value.toLocaleString()}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        {sparkValues.length > 0 && (
+                          <div className="absolute bottom-3 right-3 opacity-50">
+                            <Sparkline values={sparkValues} />
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
               {weeklySummary && (

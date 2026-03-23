@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { Calendar, Grid, List, MapPin, Plus, Search, Video } from 'lucide-react';
+import { Calendar, Grid, List, MapPin, Plus, Search, Video, CheckCircle2 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import { useToast } from '@/components/ui/toast';
 import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { Card, CardContent } from '@/components/ui/card';
 
 type ViewMode = 'grid' | 'list';
 type EventFilter = 'all' | 'online' | 'in-person' | 'hybrid';
@@ -118,6 +119,31 @@ export default function EventsPage() {
         </Link>
       }
     >
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Total Events', value: events.length || '40+', icon: Calendar, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+          { label: 'Online', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'In-Person', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { label: 'RSVP\'d', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        ].map((s) => {
+          const SIcon = s.icon;
+          return (
+            <Card key={s.label} className="border-border/40">
+              <CardContent className="flex items-center gap-2.5 p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>

@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
@@ -9,7 +9,6 @@ import {
   Target,
   RefreshCw,
   UserPlus,
-  MessageCircle,
   Star,
   ThumbsUp,
   ThumbsDown,
@@ -22,7 +21,12 @@ import {
   Clock,
   Search,
   ShieldCheck,
+  BookmarkPlus,
+  Filter,
+  X,
+  Info,
 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,7 +35,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/toast';
 import {
   getRecommendations,
@@ -73,23 +76,79 @@ function MatchScoreBadge({ score }: { score: number }) {
 }
 
 // Dimension score bar for explanation
-function ExplanationBar({ items }: { items: MatchExplanationItem[] }) {
+function ExplanationBar({ items, maxItems = 3 }: { items: MatchExplanationItem[]; maxItems?: number }) {
   if (!items || items.length === 0) return null;
   return (
-    <div className="mt-2 mb-3 space-y-1">
-      {items.slice(0, 3).map((item) => (
+    <div className="mt-2 mb-3 space-y-1.5">
+      {items.slice(0, maxItems).map((item) => (
         <div key={item.dimension} className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-24 shrink-0">{item.label}</span>
+          <span className="text-xs text-muted-foreground w-28 shrink-0">{item.label}</span>
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary/70 rounded-full transition-all"
+              className={cn(
+                'h-full rounded-full transition-all',
+                item.score >= 0.8 ? 'bg-emerald-500' : item.score >= 0.6 ? 'bg-blue-500' : 'bg-amber-400'
+              )}
               style={{ width: `${Math.round(item.score * 100)}%` }}
             />
           </div>
-          <span className="text-xs text-muted-foreground w-8 text-right">{Math.round(item.score * 100)}%</span>
+          <span className="text-xs font-medium w-8 text-right">{Math.round(item.score * 100)}%</span>
         </div>
       ))}
     </div>
+  );
+}
+
+// Full match score breakdown modal
+function BreakdownModal({
+  open, onClose, displayName, score, explanation, reasons,
+}: {
+  open: boolean;
+  onClose: () => void;
+  displayName: string;
+  score: number;
+  explanation: MatchExplanationItem[];
+  reasons: string[];
+}) {
+  const color = score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : 'text-amber-600';
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-primary" />
+            Match Score Breakdown
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+            <span className="text-sm text-muted-foreground">Overall Match Score</span>
+            <span className={cn('text-3xl font-bold', color)}>{score}%</span>
+          </div>
+          {explanation.length > 0 ? (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Score by Dimension</p>
+              <ExplanationBar items={explanation} maxItems={explanation.length} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Dimension breakdown not available for this match.</p>
+          )}
+          {reasons.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
+              <div className="flex flex-wrap gap-1.5">
+                {reasons.map((r, i) => (
+                  <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Scores are based on skills, industry, goals, experience, and availability alignment with <strong>{displayName}</strong>.
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -139,10 +198,11 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
   );
 }
 
-function RecommendationCard({ hit, onConnect, onFeedback }: {
+function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
   hit: (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
   onConnect: (userId: string) => void;
   onFeedback: (userId: string, fb: MatchFeedbackType) => void;
+  onSave?: (userId: string) => void;
 }) {
   // Support both old SearchHit shape and new MatchSuggestion shape
   const userId = (hit as any).userId;
@@ -159,8 +219,18 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
 
   const RoleIcon = ROLE_ICON[role ?? 'founder'] ?? Users;
   const [showExplanation, setShowExplanation] = useState(false);
+  const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   return (
+    <>
+    <BreakdownModal
+      open={breakdownOpen}
+      onClose={() => setBreakdownOpen(false)}
+      displayName={displayName}
+      score={score}
+      explanation={explanation}
+      reasons={reasons}
+    />
     <Card className="group hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
@@ -214,14 +284,13 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
                     {r}
                   </Badge>
                 ))}
-                {explanation.length > 0 && (
-                  <button
-                    onClick={() => setShowExplanation(p => !p)}
-                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                  >
-                    {showExplanation ? 'Hide details' : 'Why this match?'}
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowExplanation(p => !p)}
+                  className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
+                >
+                  <Info className="h-3 w-3" />
+                  {showExplanation ? 'Hide' : 'Why this match?'}
+                </button>
               </div>
             )}
 
@@ -247,13 +316,22 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
                 <UserPlus className="h-3.5 w-3.5" />
                 Connect
               </Button>
-              <Link href={`/matches/${userId}`}>
-                <Button size="sm" variant="outline" className="gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  Full Breakdown
-                </Button>
-              </Link>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
+                <TrendingUp className="h-3.5 w-3.5" />
+                Score Breakdown
+              </Button>
               <div className="ml-auto flex items-center gap-1">
+                {onSave && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-muted-foreground hover:text-blue-600"
+                    title="Save match"
+                    onClick={() => onSave(userId)}
+                  >
+                    <BookmarkPlus className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -270,6 +348,7 @@ function RecommendationCard({ hit, onConnect, onFeedback }: {
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }
 
@@ -299,12 +378,15 @@ function Skeleton3() {
 }
 
 export default function RecommendationsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'founders' | 'mentors' | 'investors'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'founders' | 'mentors' | 'investors' | 'saved'>('all');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [minScore, setMinScore] = useState(0);
+  const [showFilter, setShowFilter] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
 
-  const role = activeTab === 'all' ? undefined : activeTab.replace(/s$/, '');
+  const role = (activeTab === 'all' || activeTab === 'saved') ? undefined : activeTab.replace(/s$/, '');
 
   const { data: recsData, isLoading: recsLoading, isError: recsError, refetch: refetchRecs } = useQuery({
     queryKey: ['recommendations', role, refreshKey],
@@ -344,13 +426,21 @@ export default function RecommendationsPage() {
     },
   });
 
-  const recommendations = recsData?.suggestions ?? [];
+  const allRecommendations = recsData?.suggestions ?? [];
+  const recommendations = activeTab === 'saved'
+    ? allRecommendations.filter((h) => savedIds.has((h as any).userId))
+    : allRecommendations.filter((h) => ((h as any).score ?? (h as any).matchScore ?? 0) >= minScore);
   const weeklyRecs = digestData?.recommendations ?? [];
   const stats = digestData?.stats ?? statsData;
 
   const handleRefresh = () => {
     setRefreshKey((k) => k + 1);
     queryClient.invalidateQueries({ queryKey: ['weekly-digest'] });
+  };
+
+  const handleSave = (userId: string) => {
+    setSavedIds((prev) => { const s = new Set(prev); s.has(userId) ? s.delete(userId) : s.add(userId); return s; });
+    toastSuccess(savedIds.has(userId) ? 'Removed from saved' : 'Saved to your list');
   };
 
   return (
@@ -366,7 +456,7 @@ export default function RecommendationsPage() {
     >
       <div className="space-y-5">
         {/* Stats header */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:grid-rows-1">
           {[
             { label: 'New Matches', value: recommendations.length, icon: Target },
             { label: 'This Week', value: weeklyRecs.length, icon: Sparkles },
@@ -424,6 +514,44 @@ export default function RecommendationsPage() {
           </Card>
         )}
 
+        {/* Score filter bar */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant={showFilter ? 'secondary' : 'outline'}
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setShowFilter(p => !p)}
+          >
+            <Filter className="h-3.5 w-3.5" />
+            Filter
+            {minScore > 0 && <span className="ml-1 text-xs text-primary font-semibold">≥{minScore}%</span>}
+          </Button>
+          {showFilter && (
+            <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">
+              <span className="text-xs text-muted-foreground shrink-0">Min score:</span>
+              <input
+                type="range"
+                min={0}
+                max={90}
+                step={10}
+                value={minScore}
+                onChange={(e) => setMinScore(Number(e.target.value))}
+                className="flex-1 accent-primary"
+              />
+              <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
+              {minScore > 0 && (
+                <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+          <span className="ml-auto text-xs text-muted-foreground">
+            {recommendations.length} match{recommendations.length !== 1 ? 'es' : ''}
+            {savedIds.size > 0 && ` · ${savedIds.size} saved`}
+          </span>
+        </div>
+
         {/* Tab list */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
@@ -443,6 +571,15 @@ export default function RecommendationsPage() {
               <DollarSign className="h-3.5 w-3.5" />
               Investors
             </TabsTrigger>
+            <TabsTrigger value="saved" className="gap-1.5">
+              <BookmarkPlus className="h-3.5 w-3.5" />
+              Saved
+              {savedIds.size > 0 && (
+                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {savedIds.size}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-4 space-y-3">
@@ -453,6 +590,12 @@ export default function RecommendationsPage() {
                 <p className="text-sm text-muted-foreground">Failed to load recommendations.</p>
                 <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}>Retry</Button>
               </CardContent></Card>
+            ) : activeTab === 'saved' && savedIds.size === 0 ? (
+              <Card><CardContent className="py-14 text-center">
+                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                <h3 className="font-semibold mb-1">No saved matches yet</h3>
+                <p className="text-sm text-muted-foreground">Bookmark matches you want to revisit later.</p>
+              </CardContent></Card>
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard
@@ -460,6 +603,7 @@ export default function RecommendationsPage() {
                   hit={hit as any}
                   onConnect={(uid) => connectMutation.mutate(uid)}
                   onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
+                  onSave={handleSave}
                 />
               ))
             ) : (
@@ -468,11 +612,13 @@ export default function RecommendationsPage() {
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
                   <h3 className="font-semibold mb-1">No recommendations yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Complete your profile to unlock personalized matches
+                    {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
                   </p>
-                  <Link href="/profile/edit">
-                    <Button size="sm">Complete Profile</Button>
-                  </Link>
+                  {minScore > 0 ? (
+                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}>Clear Filter</Button>
+                  ) : (
+                    <Link href="/profile/edit"><Button size="sm">Complete Profile</Button></Link>
+                  )}
                 </CardContent>
               </Card>
             )}

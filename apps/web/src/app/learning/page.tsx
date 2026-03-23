@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles } from 'lucide-react';
+import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, Users, BarChart3 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
+import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,34 @@ interface Resource {
 }
 
 const CATEGORIES = ['All', 'Fundraising', 'Product', 'Marketing', 'Sales', 'Leadership', 'Tech'];
+
+const TYPE_FILTERS = [
+  { key: 'all', label: 'All Types' },
+  { key: 'course', label: 'Courses' },
+  { key: 'guide', label: 'Guides' },
+  { key: 'video', label: 'Videos' },
+  { key: 'article', label: 'Articles' },
+] as const;
+type TypeFilterKey = typeof TYPE_FILTERS[number]['key'];
+
+interface LearningPath {
+  id: string;
+  title: string;
+  description: string;
+  steps: number;
+  duration: string;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  progress: number; // 0-100
+  color: string;
+  icon: React.ElementType;
+}
+
+const LEARNING_PATHS: LearningPath[] = [
+  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'from-violet-500/20 to-purple-500/20 border-violet-500/30', icon: Target },
+  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30', icon: TrendingUp },
+  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'from-amber-500/20 to-orange-500/20 border-amber-500/30', icon: BarChart3 },
+  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30', icon: Users },
+];
 
 const DEMO_RESOURCES: Resource[] = [
   {
@@ -121,10 +150,10 @@ const DEMO_RESOURCES: Resource[] = [
 ];
 
 const TYPE_CONFIG = {
-  article: { label: 'Article', icon: FileText, color: 'text-blue-500' },
-  video: { label: 'Video', icon: Video, color: 'text-purple-500' },
-  course: { label: 'Course', icon: BookOpen, color: 'text-emerald-500' },
-  guide: { label: 'Guide', icon: Award, color: 'text-amber-500' },
+  article: { label: 'Article', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+  video:   { label: 'Video',   icon: Video,    color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  course:  { label: 'Course',  icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  guide:   { label: 'Guide',   icon: Award,    color: 'text-amber-500', bg: 'bg-amber-500/10' },
 };
 
 const DIFFICULTY_CONFIG = {
@@ -136,92 +165,103 @@ const DIFFICULTY_CONFIG = {
 function ResourceCard({ resource }: { resource: Resource }) {
   const typeConfig = TYPE_CONFIG[resource.type] ?? TYPE_CONFIG.article;
   const difficultyConfig = DIFFICULTY_CONFIG[resource.difficulty] ?? DIFFICULTY_CONFIG.beginner;
+  const [saved, setSaved] = React.useState(false);
 
   return (
-    <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary/60', typeConfig.color)}>
-              <typeConfig.icon className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-display text-base font-semibold text-foreground line-clamp-2 mb-1">
-                {resource.title}
-              </h3>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary" className="text-[10px]">
-                  {typeConfig.label}
+    <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 flex flex-col">
+      <CardContent className="p-5 flex flex-col flex-1 gap-3">
+        {/* Type icon + title */}
+        <div className="flex items-start gap-3">
+          <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', typeConfig.bg, typeConfig.color)}>
+            <typeConfig.icon className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1.5 leading-snug">
+              {resource.title}
+            </h3>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
+                {typeConfig.label}
+              </Badge>
+              <Badge variant="secondary" className={cn('text-[10px] h-4 px-1.5', difficultyConfig.color)}>
+                {difficultyConfig.label}
+              </Badge>
+              {resource.isFeatured && (
+                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary">
+                  Featured
                 </Badge>
-                <Badge variant="secondary" className={cn('text-[10px]', difficultyConfig.color)}>
-                  {difficultyConfig.label}
-                </Badge>
-              </div>
+              )}
             </div>
           </div>
+          <button
+            onClick={() => setSaved(!saved)}
+            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary' : 'text-muted-foreground/40 hover:text-muted-foreground')}
+          >
+            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
+          </button>
         </div>
 
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 flex-1">
           {resource.description}
         </p>
 
         {resource.tags && resource.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1">
             {resource.tags.slice(0, 3).map((tag) => (
-              <span
-                key={tag}
-                className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground"
-              >
-                {tag}
-              </span>
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{tag}</span>
             ))}
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-2 border-t border-border/40">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs font-medium text-foreground">{resource.author}</p>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span>{resource.authorRole}</span>
+        <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-auto">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
               {resource.duration && (
-                <>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {resource.duration}
-                  </div>
-                </>
+                <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{resource.duration}</span>
+              )}
+              {resource.completedBy && (
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{resource.completedBy.toLocaleString()}</span>
               )}
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => window.open(resource.url, '_blank')}
-          >
+          <Button variant="default" size="sm" className="gap-1 h-7 text-xs shrink-0" onClick={() => window.open(resource.url, '_blank')}>
             {resource.type === 'video' || resource.type === 'course' ? (
-              <>
-                <Play className="h-3 w-3" />
-                Watch
-              </>
+              <><Play className="h-3 w-3" />Start</>
             ) : (
-              <>
-                <ExternalLink className="h-3 w-3" />
-                Read
-              </>
+              <><ExternalLink className="h-3 w-3" />Open</>
             )}
           </Button>
         </div>
-
-        {resource.completedBy && (
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Award className="h-3 w-3" />
-            <span>{resource.completedBy.toLocaleString()} completed</span>
-          </div>
-        )}
       </CardContent>
     </Card>
+  );
+}
+
+function LearningPathCard({ path }: { path: LearningPath }) {
+  const Icon = path.icon;
+  return (
+    <div className={cn('relative rounded-xl border bg-gradient-to-br p-4 transition-all hover:shadow-md cursor-pointer', path.color)}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>
+          <Icon className="h-4.5 w-4.5 text-foreground" />
+        </div>
+        {path.progress > 0 && (
+          <Badge variant="secondary" className="text-[10px] bg-background/60">{path.progress}% done</Badge>
+        )}
+      </div>
+      <h3 className="font-semibold text-sm text-foreground mb-1">{path.title}</h3>
+      <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
+      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
+        <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{path.steps} modules</span>
+        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{path.duration}</span>
+      </div>
+      {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
+      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary">
+        {path.progress > 0 ? 'Continue path' : 'Start path'}
+        <ChevronRight className="h-3 w-3" />
+      </div>
+    </div>
   );
 }
 
@@ -254,6 +294,7 @@ function backendToResource(r: LearningResourceItem): Resource {
 export default function LearningPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'saved' | 'completed'>('all');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [typeFilter, setTypeFilter] = useState<TypeFilterKey>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: meData } = useQuery({
@@ -302,26 +343,76 @@ export default function LearningPage() {
   }).slice(0, 4);
 
   // If backend is handling filtering, skip client-side filter; otherwise apply client-side
-  const filteredResources = learningData?.resources?.length
-    ? allResources  // already filtered by backend via query params
-    : allResources.filter((resource) => {
-        const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
-        const matchesSearch =
-          !searchQuery.trim() ||
-          resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-        return matchesCategory && matchesSearch;
-      });
+  const filteredResources = (learningData?.resources?.length ? allResources : allResources).filter((resource) => {
+    const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
+    const matchesType = typeFilter === 'all' || resource.type === typeFilter;
+    const matchesSearch =
+      !searchQuery.trim() ||
+      resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      resource.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      resource.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCategory && matchesType && matchesSearch;
+  });
 
   const featuredResources = filteredResources.filter((r) => r.isFeatured);
   const regularResources = filteredResources.filter((r) => !r.isFeatured);
 
+  const inProgressPaths = LEARNING_PATHS.filter((p) => p.progress > 0 && p.progress < 100);
+  const totalResourceCount = allResources.length;
+  const courseCount = allResources.filter((r) => r.type === 'course').length;
+  const totalHours = Math.round(allResources.reduce((acc, r) => {
+    const match = r.duration?.match(/(\d+\.?\d*)/);
+    return acc + (match ? parseFloat(match[1]) : 0);
+  }, 0));
+
   return (
     <AppShell
-      title="Learning"
+      title="Learning Hub"
       description="Courses, guides, and resources to grow your startup"
     >
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { label: 'Resources', value: totalResourceCount, icon: BookOpen, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+          { label: 'Courses', value: courseCount, icon: Play, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { label: 'Total Hours', value: `${totalHours}h`, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { label: 'In Progress', value: inProgressPaths.length, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+        ].map((s) => {
+          const SIcon = s.icon;
+          return (
+            <Card key={s.label} className="border-border/40">
+              <CardContent className="flex items-center gap-2.5 p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Learning Paths */}
+      {activeTab === 'all' && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
+            </div>
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
+              View all <ChevronRight className="h-3 w-3" />
+            </Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {LEARNING_PATHS.map((path) => <LearningPathCard key={path.id} path={path} />)}
+          </div>
+        </div>
+      )}
+
       {/* Recommended for you */}
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
@@ -359,6 +450,22 @@ export default function LearningPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+            </div>
+
+            {/* Type filter chips */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {TYPE_FILTERS.map((tf) => (
+                <button
+                  key={tf.key}
+                  onClick={() => setTypeFilter(tf.key)}
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
+                    typeFilter === tf.key
+                      ? 'border-primary bg-primary/20 text-primary'
+                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                  )}
+                >{tf.label}</button>
+              ))}
             </div>
 
             {/* Category filters */}

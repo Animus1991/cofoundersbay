@@ -422,7 +422,7 @@ function AchievementsSkeleton() {
 }
 
 export default function AchievementsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked' | 'leaderboard'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { data: rawAchievements, isLoading, isError, refetch } = useQuery({
@@ -466,7 +466,7 @@ export default function AchievementsPage() {
   });
 
   const categories = [
-    { value: 'all', label: 'All Categories' },
+    { value: 'all', label: 'All' },
     { value: 'networking', label: 'Networking', icon: Users },
     { value: 'engagement', label: 'Engagement', icon: Heart },
     { value: 'profile', label: 'Profile', icon: Star },
@@ -474,10 +474,22 @@ export default function AchievementsPage() {
     { value: 'special', label: 'Special', icon: Crown },
   ];
 
+  const LEADERBOARD = [
+    { rank: 1, name: 'Nikos Papadakis', points: 4200, level: 21, badge: 'Legend', avatar: '' },
+    { rank: 2, name: 'Elena Papadopoulos', points: 3850, level: 19, badge: 'Expert', avatar: '' },
+    { rank: 3, name: 'Marcus Chen', points: 3100, level: 15, badge: 'Rising Star', avatar: '' },
+    { rank: 4, name: 'Andreea Ionescu', points: 2800, level: 14, badge: 'Rising Star', avatar: '' },
+    { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
+  ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
+
+  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600' };
+
+  const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
+
   return (
     <AppShell
       title="Achievements & Badges"
-      description="Track your progress and unlock achievements"
+      description="Track your progress, unlock badges, and climb the leaderboard"
     >
       <div className="space-y-4">
         {isLoading ? (
@@ -489,39 +501,41 @@ export default function AchievementsPage() {
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <TabsList>
-                  <TabsTrigger value="all" className="gap-2">
-                    <Award className="h-4 w-4" />
-                    All ({achievements?.length})
+                  <TabsTrigger value="all" className="gap-1.5 text-xs">
+                    <Award className="h-3.5 w-3.5" /> All ({achievements?.length})
                   </TabsTrigger>
-                  <TabsTrigger value="unlocked" className="gap-2">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Unlocked ({achievements?.filter((a) => a.unlocked).length})
+                  <TabsTrigger value="unlocked" className="gap-1.5 text-xs">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
                   </TabsTrigger>
-                  <TabsTrigger value="locked" className="gap-2">
-                    <Lock className="h-4 w-4" />
-                    Locked ({achievements?.filter((a) => !a.unlocked).length})
+                  <TabsTrigger value="locked" className="gap-1.5 text-xs">
+                    <Lock className="h-3.5 w-3.5" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
+                  </TabsTrigger>
+                  <TabsTrigger value="leaderboard" className="gap-1.5 text-xs">
+                    <Trophy className="h-3.5 w-3.5" /> Leaderboard
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => {
-                    const Icon = category.icon;
-                    return (
-                      <Badge
-                        key={category.value}
-                        variant={categoryFilter === category.value ? 'default' : 'outline'}
-                        className="cursor-pointer gap-1.5"
-                        onClick={() => setCategoryFilter(category.value)}
-                      >
-                        {Icon && <Icon className="h-3 w-3" />}
-                        {category.label}
-                      </Badge>
-                    );
-                  })}
-                </div>
+                {activeTab !== 'leaderboard' && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {categories.map((category) => {
+                      const Icon = category.icon;
+                      return (
+                        <Badge
+                          key={category.value}
+                          variant={categoryFilter === category.value ? 'default' : 'outline'}
+                          className="cursor-pointer gap-1 text-xs"
+                          onClick={() => setCategoryFilter(category.value)}
+                        >
+                          {Icon && <Icon className="h-3 w-3" />}
+                          {category.label}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              <TabsContent value={activeTab} className="mt-4 space-y-4">
+              <TabsContent value="all" className="mt-4 space-y-4">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -531,12 +545,137 @@ export default function AchievementsPage() {
                     <CardContent className="py-12 text-center">
                       <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
                       <h3 className="text-lg font-semibold mb-2">No achievements found</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Try adjusting your filters
-                      </p>
+                      <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
+
+              <TabsContent value="unlocked" className="mt-4 space-y-4">
+                {filteredAchievements && filteredAchievements.length > 0 ? (
+                  filteredAchievements.map((achievement) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  ))
+                ) : (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No unlocked achievements</h3>
+                      <p className="text-sm text-muted-foreground">Start engaging to unlock your first badge!</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="locked" className="mt-4 space-y-4">
+                {filteredAchievements && filteredAchievements.length > 0 ? (
+                  filteredAchievements.map((achievement) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} />
+                  ))
+                ) : (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <p className="text-sm text-muted-foreground">All badges unlocked in this category!</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="leaderboard" className="mt-4">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {/* Leaderboard table */}
+                  <div className="sm:col-span-2">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-yellow-500" /> Community Leaderboard
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-1 px-2">
+                        {LEADERBOARD.map((user) => (
+                          <div
+                            key={user.rank}
+                            className={cn(
+                              'flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                              (user as any).isMe ? 'bg-primary/5 border border-primary/20' : 'hover:bg-muted/50',
+                            )}
+                          >
+                            <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
+                              {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
+                            </span>
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                              {user.name[0]}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary')}>
+                                {user.name}{(user as any).isMe && ' (You)'}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">Level {user.level} · {user.badge}</p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString()}</p>
+                              <p className="text-[10px] text-muted-foreground">pts</p>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Recent unlocks */}
+                  <div>
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Zap className="h-4 w-4 text-amber-500" /> Recently Unlocked
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {RECENT_UNLOCKS.length > 0 ? RECENT_UNLOCKS.map((a) => {
+                          const Icon = a.icon;
+                          return (
+                            <div key={a.id} className="flex items-center gap-2.5">
+                              <div className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
+                                <Icon className={cn('h-4 w-4', TIER_COLORS[a.tier])} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium truncate">{a.title}</p>
+                                <p className="text-[11px] text-muted-foreground">
+                                  {a.unlockedAt?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                </p>
+                              </div>
+                              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 shrink-0">{a.points}pts</Badge>
+                            </div>
+                          );
+                        }) : (
+                          <p className="text-xs text-muted-foreground text-center py-4">No unlocks yet</p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Tier breakdown */}
+                    <Card className="mt-4">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Tier Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        {(['platinum','gold','silver','bronze'] as const).map((tier) => {
+                          const count = achievements.filter((a) => a.tier === tier && a.unlocked).length;
+                          const total = achievements.filter((a) => a.tier === tier).length;
+                          return (
+                            <div key={tier} className="flex items-center gap-2">
+                              <Medal className={cn('h-4 w-4 shrink-0', TIER_COLORS[tier])} />
+                              <span className="text-xs capitalize text-muted-foreground w-16">{tier}</span>
+                              <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
+                              <span className="text-[11px] text-muted-foreground w-8 text-right">{count}/{total}</span>
+                            </div>
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </>

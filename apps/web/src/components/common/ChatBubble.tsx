@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, X } from 'lucide-react';
+import { MessageCircle, X, GripVertical } from 'lucide-react';
 import { useMessagingUnreadCount } from '@/contexts/MessagingContext';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
+import { useDraggable } from '@/hooks/useDraggable';
 
 /**
  * Floating chat bubble shown on all pages except /messages.
@@ -17,6 +18,13 @@ export function ChatBubble() {
   const { toggle } = usePopupChat();
   const [mounted, setMounted] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+
+  // Draggable functionality
+  const { position, isDragging, dragHandleProps } = useDraggable({
+    storageKey: 'cfb-chat-bubble-position',
+    initialPosition: { x: 0, y: 0 },
+    boundaryPadding: 20,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -37,7 +45,12 @@ export function ChatBubble() {
   if (hidden) return null;
 
   return (
-    <div className="fixed bottom-11 right-6 z-50 flex flex-col items-end gap-2">
+    <div 
+      className="fixed bottom-11 right-6 z-50 flex flex-col items-end gap-2"
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+      }}
+    >
       {/* Unread badge tooltip */}
       {unreadMessages > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-2 rounded-full bg-card border border-border/60 px-3 py-1 shadow-md">
@@ -56,6 +69,20 @@ export function ChatBubble() {
         >
           <X className="h-3.5 w-3.5" />
         </button>
+
+        {/* Drag handle */}
+        <div
+          {...dragHandleProps}
+          className={cn(
+            'flex items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground shadow-sm',
+            'hover:text-foreground hover:bg-muted transition-colors',
+            isDragging && 'scale-95 opacity-80 bg-muted',
+          )}
+          style={{ width: '28px', height: '28px', ...dragHandleProps.style }}
+          title="Drag to move"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </div>
 
         {/* Main bubble */}
         <button

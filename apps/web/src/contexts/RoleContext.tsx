@@ -1,0 +1,322 @@
+'use client';
+
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+
+// Role types matching backend
+export type UserRoleType =
+  | 'aspiring_founder'
+  | 'existing_founder'
+  | 'cofounder_candidate'
+  | 'technical_talent'
+  | 'business_operator'
+  | 'mentor'
+  | 'advisor'
+  | 'coach'
+  | 'course_creator'
+  | 'incubator_admin'
+  | 'accelerator_admin'
+  | 'university_admin'
+  | 'venture_studio_admin'
+  | 'angel_investor'
+  | 'vc_scout'
+  | 'vc_analyst'
+  | 'syndicate_manager'
+  | 'service_provider'
+  | 'legal_partner'
+  | 'finance_advisor'
+  | 'recruiter'
+  | 'platform_admin';
+
+export type RoleFacetScope = 'global' | 'tenant' | 'workspace' | 'community' | 'program';
+
+export interface RoleFacet {
+  id: string;
+  roleType: UserRoleType;
+  scope: RoleFacetScope;
+  scopeId?: string;
+  isPrimary: boolean;
+  isVerified: boolean;
+}
+
+export interface DashboardConfig {
+  defaultRoute: string;
+  dashboardWidgets: string[];
+  sidebarItems: string[];
+  features: string[];
+}
+
+export interface OrganizationContext {
+  id: string;
+  name: string;
+  type: string;
+  role: string;
+}
+
+export interface TenantContext {
+  id: string;
+  name: string;
+  slug: string;
+  role: string;
+}
+
+export interface RoleContextState {
+  primaryRole: UserRoleType | null;
+  allRoles: RoleFacet[];
+  permissions: string[];
+  dashboard: DashboardConfig | null;
+  organizations: OrganizationContext[];
+  tenants: TenantContext[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface RoleContextValue extends RoleContextState {
+  refreshRoles: () => Promise<void>;
+  switchPrimaryRole: (roleId: string) => Promise<void>;
+  addRole: (roleType: UserRoleType, scope?: RoleFacetScope, scopeId?: string) => Promise<void>;
+  removeRole: (roleId: string) => Promise<void>;
+  hasPermission: (permission: string) => boolean;
+  hasAnyPermission: (permissions: string[]) => boolean;
+  hasAllPermissions: (permissions: string[]) => boolean;
+  isRoleActive: (roleType: UserRoleType) => boolean;
+  navigateToDashboard: () => void;
+}
+
+const RoleContext = createContext<RoleContextValue | undefined>(undefined);
+
+const getApiBase = () => {
+  if (typeof window === 'undefined') return 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+};
+
+async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
+  const response = await fetch(`${getApiBase()}${endpoint}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Request failed' }));
+    throw new Error(error.message || 'Request failed');
+  }
+
+  return response.json();
+}
+
+export function RoleProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const [state, setState] = useState<RoleContextState>({
+    primaryRole: null,
+    allRoles: [],
+    permissions: [],
+    dashboard: null,
+    organizations: [],
+    tenants: [],
+    isLoading: true,
+    error: null,
+  });
+
+  const refreshRoles = useCallback(async () => {
+    try {
+      setState((prev) => ({ ...prev, isLoading: true, error: null }));
+      const context = await fetchWithAuth('/api/roles/dashboard-context');
+      setState({
+        primaryRole: context.primaryRole,
+        allRoles: context.allRoles,
+        permissions: context.permissions,
+        dashboard: context.dashboard,
+        organizations: context.organizations,
+        tenants: context.tenants,
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to load roles',
+      }));
+    }
+  }, []);
+
+  const switchPrimaryRole = useCallback(async (roleId: string) => {
+    try {
+      await fetchWithAuth(`/api/roles/${roleId}/set-primary`, { method: 'PATCH' });
+      await refreshRoles();
+    } catch (error) {
+      console.error('Failed to switch primary role:', error);
+      throw error;
+    }
+  }, [refreshRoles]);
+
+  const addRole = useCallback(async (
+    roleType: UserRoleType,
+    scope: RoleFacetScope = 'global',
+    scopeId?: string,
+  ) => {
+    try {
+      await fetchWithAuth('/api/roles/add', {
+        method: 'POST',
+        body: JSON.stringify({ roleType, scope, scopeId }),
+      });
+      await refreshRoles();
+    } catch (error) {
+      console.error('Failed to add role:', error);
+      throw error;
+    }
+  }, [refreshRoles]);
+
+  const removeRole = useCallback(async (roleId: string) => {
+    try {
+      await fetchWithAuth(`/api/roles/${roleId}`, { method: 'DELETE' });
+      await refreshRoles();
+    } catch (error) {
+      console.error('Failed to remove role:', error);
+      throw error;
+    }
+  }, [refreshRoles]);
+
+  const hasPermission = useCallback((permission: string): boolean => {
+    if (state.permissions.includes('*')) return true;
+    return state.permissions.includes(permission);
+  }, [state.permissions]);
+
+  const hasAnyPermission = useCallback((permissions: string[]): boolean => {
+    if (state.permissions.includes('*')) return true;
+    return permissions.some((p) => state.permissions.includes(p));
+  }, [state.permissions]);
+
+  const hasAllPermissions = useCallback((permissions: string[]): boolean => {
+    if (state.permissions.includes('*')) return true;
+    return permissions.every((p) => state.permissions.includes(p));
+  }, [state.permissions]);
+
+  const isRoleActive = useCallback((roleType: UserRoleType): boolean => {
+    return state.allRoles.some((r) => r.roleType === roleType);
+  }, [state.allRoles]);
+
+  const navigateToDashboard = useCallback(() => {
+    if (state.dashboard?.defaultRoute) {
+      router.push(state.dashboard.defaultRoute);
+    } else {
+      router.push('/dashboard');
+    }
+  }, [router, state.dashboard]);
+
+  useEffect(() => {
+    refreshRoles();
+  }, [refreshRoles]);
+
+  const value: RoleContextValue = {
+    ...state,
+    refreshRoles,
+    switchPrimaryRole,
+    addRole,
+    removeRole,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    isRoleActive,
+    navigateToDashboard,
+  };
+
+  return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
+}
+
+export function useRole() {
+  const context = useContext(RoleContext);
+  if (context === undefined) {
+    throw new Error('useRole must be used within a RoleProvider');
+  }
+  return context;
+}
+
+// HOC for role-based access control
+export function withRoleGuard<P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  requiredPermissions: string[],
+  requireAll = false,
+) {
+  return function RoleGuardedComponent(props: P) {
+    const { hasAnyPermission, hasAllPermissions, isLoading, primaryRole } = useRole();
+    const router = useRouter();
+
+    useEffect(() => {
+      if (!isLoading) {
+        const hasAccess = requireAll
+          ? hasAllPermissions(requiredPermissions)
+          : hasAnyPermission(requiredPermissions);
+
+        if (!hasAccess) {
+          router.push('/unauthorized');
+        }
+      }
+    }, [isLoading, hasAnyPermission, hasAllPermissions, router]);
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        </div>
+      );
+    }
+
+    const hasAccess = requireAll
+      ? hasAllPermissions(requiredPermissions)
+      : hasAnyPermission(requiredPermissions);
+
+    if (!hasAccess) {
+      return null;
+    }
+
+    return <WrappedComponent {...props} />;
+  };
+}
+
+// Hook for conditional rendering based on permissions
+export function usePermissionCheck(permissions: string[], requireAll = false): boolean {
+  const { hasAnyPermission, hasAllPermissions, isLoading } = useRole();
+
+  if (isLoading) return false;
+
+  return requireAll ? hasAllPermissions(permissions) : hasAnyPermission(permissions);
+}
+
+// Component for conditional rendering
+export function PermissionGate({
+  children,
+  permissions,
+  requireAll = false,
+  fallback = null,
+}: {
+  children: ReactNode;
+  permissions: string[];
+  requireAll?: boolean;
+  fallback?: ReactNode;
+}) {
+  const hasAccess = usePermissionCheck(permissions, requireAll);
+  return hasAccess ? <>{children}</> : <>{fallback}</>;
+}
+
+// Role-specific gate
+export function RoleGate({
+  children,
+  roles,
+  fallback = null,
+}: {
+  children: ReactNode;
+  roles: UserRoleType[];
+  fallback?: ReactNode;
+}) {
+  const { allRoles, isLoading } = useRole();
+
+  if (isLoading) return null;
+
+  const hasRole = allRoles.some((r) => roles.includes(r.roleType));
+  return hasRole ? <>{children}</> : <>{fallback}</>;
+}

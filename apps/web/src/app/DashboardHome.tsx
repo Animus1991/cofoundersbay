@@ -15,6 +15,16 @@ import {
   UserPlus,
   Users,
   Zap,
+  Gauge,
+  Rocket,
+  GraduationCap,
+  Briefcase,
+  BarChart3,
+  BookOpen,
+  Target,
+  Activity,
+  Star,
+  Building2,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -34,7 +44,11 @@ import {
   getRecommendations,
   listConnectionRequests,
   listEvents,
+  listMilestones,
+  getMilestoneSummary,
   type SearchHit,
+  type Milestone,
+  type MilestoneSummary,
 } from '@/lib/api';
 
 function getTimeBasedGreeting(): string {
@@ -214,6 +228,21 @@ export function DashboardHome() {
     enabled: queryEnabled,
   });
   const recentActivity = activityData ?? [];
+
+  const { data: milestonesData } = useQuery({
+    queryKey: ['milestones', 'in_progress', 3],
+    queryFn: () => listMilestones({ status: 'in_progress' as const, limit: 3 }),
+    staleTime: 60_000,
+    enabled: queryEnabled,
+  });
+  const activeMilestonesList: Milestone[] = milestonesData?.milestones ?? [];
+
+  const { data: milestoneSummary } = useQuery<MilestoneSummary>({
+    queryKey: ['milestones', 'summary'],
+    queryFn: getMilestoneSummary,
+    staleTime: 5 * 60_000,
+    enabled: queryEnabled,
+  });
 
   const unreadMessages = meSummary?.unreadMessages ?? 0;
   const activeMilestones = meSummary?.activeMilestones ?? 0;
@@ -496,15 +525,95 @@ export function DashboardHome() {
               </CardContent>
             </Card>
 
+            {/* Milestone Summary */}
+            {milestoneSummary && milestoneSummary.total > 0 && (
+              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardContent className="p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Gauge className="h-4 w-4 text-primary" />
+                      Milestone Progress
+                    </h2>
+                    <Link href="/milestones" className="text-xs text-primary hover:underline">Details</Link>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
+                      <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-secondary" />
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"
+                          strokeDasharray={`${milestoneSummary.completionRate * 87.96 / 100} 87.96`} strokeLinecap="round" />
+                      </svg>
+                      <span className="absolute text-base font-bold text-foreground">{milestoneSummary.completionRate}%</span>
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">Total</span>
+                        <span className="font-medium">{milestoneSummary.total}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">In Progress</span>
+                        <span className="font-medium text-amber-600">{milestoneSummary.counts.in_progress ?? 0}</span>
+                      </div>
+                      {milestoneSummary.overdue > 0 && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-muted-foreground">Overdue</span>
+                          <span className="font-medium text-red-600">{milestoneSummary.overdue}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Link href="/readiness">
+                    <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
+                      <Target className="h-3.5 w-3.5" />
+                      View Readiness
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Active Milestones */}
+            {activeMilestonesList.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Flag className="h-4 w-4 text-amber-500" />
+                      Active Milestones
+                    </h2>
+                    <Link href="/milestones" className="text-xs text-primary hover:underline">View all</Link>
+                  </div>
+                  <div className="space-y-2">
+                    {activeMilestonesList.map((m: { id: string; title: string; priority: string; dueDate?: string | null }) => (
+                      <Link key={m.id} href="/milestones"
+                        className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 transition-colors hover:bg-secondary"
+                      >
+                        <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-red-500' : m.priority === 'medium' ? 'bg-amber-500' : 'bg-muted-foreground')} />
+                        <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
+                        {m.dueDate && (
+                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                            {new Date(m.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Quick Links */}
             <Card>
               <CardContent className="p-4">
                 <h2 className="mb-3 text-sm font-semibold text-foreground">Quick Links</h2>
                 <div className="space-y-1">
                   {[
-                    { href: '/research', label: 'Research Workspace', icon: Sparkles },
-                    { href: '/mentoring', label: 'Find a Mentor', icon: Users },
-                    { href: '/groups', label: 'Communities', icon: Users },
+                    { href: '/builder', label: 'Startup Builder', icon: Rocket },
+                    { href: '/mentoring', label: 'Find a Mentor', icon: GraduationCap },
+                    { href: '/opportunities', label: 'Opportunities', icon: Briefcase },
+                    { href: '/groups', label: 'Communities', icon: Building2 },
+                    { href: '/learning', label: 'Learning Hub', icon: BookOpen },
+                    { href: '/analytics', label: 'My Analytics', icon: BarChart3 },
                   ].map((link) => (
                     <Link
                       key={link.href}

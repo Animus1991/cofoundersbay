@@ -19,6 +19,132 @@ enum Role {
   super_admin
 }
 
+// ── Multi-Role / Persona System ────────────────────────────────────────────────
+// A user can have multiple role facets simultaneously (e.g., founder + mentor)
+
+enum UserRoleType {
+  aspiring_founder
+  existing_founder
+  cofounder_candidate
+  technical_talent
+  business_operator
+  mentor
+  advisor
+  coach
+  course_creator
+  incubator_admin
+  accelerator_admin
+  university_admin
+  venture_studio_admin
+  angel_investor
+  vc_scout
+  vc_analyst
+  syndicate_manager
+  service_provider
+  legal_partner
+  finance_advisor
+  recruiter
+  platform_admin
+}
+
+enum RoleFacetScope {
+  global
+  tenant
+  workspace
+  community
+  program
+}
+
+enum OrganizationType {
+  incubator
+  accelerator
+  university
+  venture_studio
+  innovation_hub
+  vc_fund
+  angel_syndicate
+  public_body
+  service_provider
+  corporate_innovation
+  chamber
+  cluster
+  ngo
+}
+
+enum OrganizationMemberRole {
+  owner
+  admin
+  program_manager
+  mentor
+  reviewer
+  member
+}
+
+enum ProgramType {
+  accelerator
+  incubator
+  course
+  competition
+  grant
+  challenge
+  bootcamp
+  fellowship
+}
+
+enum ProgramStatus {
+  draft
+  upcoming
+  active
+  completed
+  archived
+}
+
+enum ProgramParticipantRole {
+  participant
+  mentor
+  judge
+  organizer
+  reviewer
+  observer
+}
+
+enum ProgramParticipantStatus {
+  applied
+  accepted
+  active
+  completed
+  dropped
+  rejected
+}
+
+enum MentorAvailabilityStatus {
+  available
+  limited
+  unavailable
+  by_invitation
+}
+
+enum InvestorType {
+  angel
+  vc
+  scout
+  syndicate
+  cvc
+  family_office
+  institutional
+}
+
+enum ServiceProviderType {
+  legal
+  accounting
+  development
+  design
+  marketing
+  recruiting
+  consulting
+  coaching
+}
+
 enum ConversationType {
   direct
   group
@@ -88,6 +214,28 @@ enum NotificationType {
   event_rsvp
   system
   billing
+  mentor_request
+  mentor_session_reminder
+  mentor_review_received
+  match_suggestion
+  endorsement_received
+  endorsement_request
+  workspace_comment
+  workspace_review
+  workspace_invite
+  program_application
+  program_accepted
+  program_rejected
+  milestone_due
+  milestone_completed
+  group_invite
+  group_post
+  referral_converted
+  follow_new
+  ai_generation_complete
+  expert_review_submitted
+  coaching_session_reminder
+  fundraising_update
 }
 
 enum ConnectionStatus {
@@ -263,6 +411,124 @@ model User {
   researchBoardsOwned         ResearchBoard[]             @relation("ResearchBoardsOwned")
   researchBoardCollaborations ResearchBoardCollaborator[] @relation("ResearchBoardCollaborations")
   researchComments            ResearchComment[]           @relation("ResearchComments")
+
+  // Startup Builder
+  builderWorkspacesOwned      BuilderWorkspace[]          @relation("BuilderWorkspacesOwned")
+  builderCollaborations       BuilderCollaborator[]       @relation("BuilderCollaborations")
+  builderCommentsAuthored     BuilderComment[]            @relation("BuilderCommentsAuthored")
+  builderSectionComments      BuilderSectionComment[]     @relation("BuilderSectionCommentsAuthored")
+  builderReviewsRequested     BuilderReview[]             @relation("BuilderReviewsRequested")
+  builderReviewsAssigned      BuilderReview[]             @relation("BuilderReviewsAssigned")
+  builderAIGenerations        BuilderAIGeneration[]       @relation("BuilderAIGenerations")
+  builderExports              BuilderExport[]             @relation("BuilderExports")
+  builderActivities           BuilderActivityLog[]        @relation("BuilderActivities")
+
+  // Multi-Role / Persona System
+  roleFacets                  UserRoleFacet[]
+
+  // Organization System
+  organizationMemberships     OrganizationMembership[]
+  organizationsCreated        Organization[]              @relation("OrganizationsCreated")
+  organizationMentorRoles     OrganizationMentor[]
+
+  // Program System
+  programParticipations       ProgramParticipant[]
+  programsCreated             Program[]                   @relation("ProgramsCreated")
+
+  // Stakeholder Profiles
+  mentorProfile               MentorProfile?
+  investorProfile             InvestorProfile?
+  serviceProviderProfile      ServiceProviderProfile?
+
+  // Mentorship Relationships
+  mentorshipsAsMentor         MentorshipRelationship[]    @relation("MentorshipAsMentor")
+  mentorshipsAsMentee         MentorshipRelationship[]    @relation("MentorshipAsMentee")
+  mentorshipSessionsAsMentor  MentorshipSession[]         @relation("SessionAsMentor")
+  mentorshipSessionsAsMentee  MentorshipSession[]         @relation("SessionAsMentee")
+  mentorRequestsSent          MentorRequest[]             @relation("MentorRequestsSent")
+  mentorRequestsReceived      MentorRequest[]             @relation("MentorRequestsReceived")
+
+  // Preferences & Matching
+  userPreference              UserPreference?
+  matchProfile                MatchProfile?
+  userAchievements            UserAchievement[]
+  onboardingProgress          OnboardingProgress?
+  matchSuggestionsAsSource    MatchSuggestion[]           @relation("MatchSuggestionsAsSource")
+  matchSuggestionsAsTarget    MatchSuggestion[]           @relation("MatchSuggestionsAsTarget")
+
+  // Fundraising
+  fundraisingRounds           FundraisingRound[]          @relation("FundraisingRoundOwner")
+  pipelineLeadsAdded          InvestorPipelineLead[]      @relation("PipelineLeadsAdded")
+  dataRoomDocsUploaded        DataRoomDocument[]          @relation("DataRoomDocsUploaded")
+
+  // Coaching
+  coachingSessionsAsCoach     CoachingSession[]           @relation("CoachingSessions_Coach")
+  coachingSessionsAsClient    CoachingSession[]           @relation("CoachingSessions_Client")
+
+  // Expert Reviews
+  expertReviewsRequested      ExpertReview[]              @relation("ExpertReviews_Requester")
+  expertReviewsAssigned       ExpertReview[]              @relation("ExpertReviews_Expert")
+
+  // Service Marketplace
+  serviceOffers               ServiceOffer[]              @relation("ServiceOffers_Provider")
+  serviceInquiriesAsClient    ServiceInquiry[]            @relation("ServiceInquiries_Client")
+  serviceInquiriesAsProvider  ServiceInquiry[]            @relation("ServiceInquiries_Provider")
+
+  // Startup Snapshot (investor view)
+  startupSnapshots            StartupSnapshot[]           @relation("StartupSnapshots")
+
+  // Product Requirements
+  productRequirementDocs      ProductRequirementDoc[]     @relation("PRDAuthor")
+
+  // Startup Applications
+  startupApplications         StartupApplication[]        @relation("ApplicationsSubmitted")
+
+  // Workspace Comments
+  workspaceComments           WorkspaceComment[]          @relation("WorkspaceCommentAuthor")
+
+  // Billing & Usage
+  paymentRecords              PaymentRecord[]             @relation("UserPayments")
+  usageRecords                UsageRecord[]               @relation("UserUsageRecords")
+
+  // Safety — Block system
+  blocksGiven                 UserBlock[]                 @relation("BlocksGiven")
+  blocksReceived              UserBlock[]                 @relation("BlocksReceived")
+
+  // Audit log
+  auditLogs                   AuditLog[]                  @relation("AuditLogsActor")
+
+  // Skill endorsements
+  skillEndorsementsGiven      SkillEndorsement[]          @relation("SkillEndorsementsGiven")
+  skillEndorsementsReceived   SkillEndorsement[]          @relation("SkillEndorsementsReceived")
+
+  // Referrals
+  referralsMade               Referral[]                  @relation("ReferralsMade")
+  referralsReceived           Referral[]                  @relation("ReferralsReceived")
+
+  // Follow
+  followers                   UserFollow[]                @relation("Followers")
+  following                   UserFollow[]                @relation("Following")
+
+  // Digest preference
+  digestPreference            ActivityDigestPreference?   @relation("DigestPreference")
+
+  // Portfolio
+  portfolioItems              ProfilePortfolioItem[]      @relation("PortfolioItems")
+
+  // AI Assistant
+  aiAssistantSessions         AIAssistantSession[]        @relation("AIAssistantSessions")
+
+  // Reputation
+  reputationScore             UserReputationScore?        @relation("ReputationScore")
+
+  // Readiness history
+  readinessReports            StartupReadinessReport[]    @relation("ReadinessReports")
+
+  // Data room access logs
+  dataRoomAccesses            DataRoomAccessLog[]         @relation("DataRoomAccesses")
+
+  // Notification channel preferences
+  notificationChannels        UserNotificationChannel[]   @relation("NotificationChannels")
 
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
@@ -979,6 +1245,11 @@ model Tenant {
   tenantDomains     TenantDomain[]
   automationRules   AutomationRule[]
   automationConfig  TenantAutomationConfig?
+  organizations     Organization[]
+  featureFlags      TenantFeatureFlag[]
+  webhooks          Webhook[]
+  apiKeys           ApiKey[]
+  announcements     Announcement[]
 
   @@index([slug])
   @@index([status])
@@ -1349,6 +1620,7 @@ model Subscription {
   // Relations
   invoices        Invoice[]
   seatAllocations SeatAllocation[]
+  payments        PaymentRecord[]
 
   @@index([userId])
   @@index([tenantId])
@@ -2082,4 +2354,3103 @@ model ResearchComment {
 
   @@index([nodeId])
   @@index([authorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Startup Builder — Comprehensive Startup Formation & Execution OS
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum BuilderWorkspaceStatus {
+  draft
+  active
+  archived
+  completed
+}
+
+enum BuilderWorkspaceVisibility {
+  private
+  team
+  organization
+  public
+}
+
+enum BuilderDocumentType {
+  idea_core
+  business_model_canvas
+  market_analysis
+  pitch_deck
+  mvp_plan
+  financial_plan
+  technical_architecture
+  prd
+  branding_kit
+  application
+  custom
+}
+
+enum BuilderDocumentStatus {
+  draft
+  in_progress
+  review
+  approved
+  archived
+}
+
+enum BuilderCollaboratorRole {
+  owner
+  editor
+  commenter
+  viewer
+}
+
+enum BuilderCommentStatus {
+  open
+  resolved
+  archived
+}
+
+enum BuilderReviewStatus {
+  pending
+  approved
+  changes_requested
+  rejected
+}
+
+enum ApplicationTemplateType {
+  yc
+  techstars
+  university_incubator
+  grant
+  custom
+}
+
+enum ReadinessDimension {
+  team
+  market
+  product
+  business
+  funding
+  execution
+}
+
+// ── Builder Workspace ─────────────────────────────────────────────────────────
+// Central hub for a startup's formation documents and collaboration
+
+model BuilderWorkspace {
+  id          String                    @id @default(uuid())
+  ownerId     String
+  owner       User                      @relation("BuilderWorkspacesOwned", fields: [ownerId], references: [id], onDelete: Cascade)
+  tenantId    String?                   // Optional organization/tenant ownership
+  
+  // Basic info
+  name        String
+  slug        String                    @unique
+  description String?                   @db.Text
+  logoUrl     String?
+  
+  // Status & visibility
+  status      BuilderWorkspaceStatus    @default(draft)
+  visibility  BuilderWorkspaceVisibility @default(private)
+  
+  // Startup metadata
+  startupName     String?
+  industry        String?
+  stage           String?               // "idea", "validation", "mvp", "growth", "scale"
+  targetMarket    String?
+  foundingDate    DateTime?
+  
+  // Settings
+  settings        Json?                 // { aiProvider, defaultLanguage, exportFormat, etc. }
+  
+  // Timestamps
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  archivedAt  DateTime?
+  
+  // Relations
+  documents       BuilderDocument[]
+  collaborators   BuilderCollaborator[]
+  readinessScores BuilderReadinessScore[]
+  aiGenerations   BuilderAIGeneration[]
+  versions        BuilderWorkspaceVersion[]
+  applications    BuilderApplication[]
+  activityLogs    BuilderActivityLog[]
+
+  // Extended relations
+  fundraisingRounds    FundraisingRound[]
+  dataRoomDocuments    DataRoomDocument[]
+  startupSnapshot      StartupSnapshot?
+  techArchitecture     TechArchitecture?
+  productRequirements  ProductRequirementDoc[]
+  venturePortfolio     VenturePortfolio?       @relation("VenturePortfolioWorkspace")
+  startupApplications  StartupApplication[]    @relation("WorkspaceApplications")
+  workspaceComments    WorkspaceComment[]      @relation("WorkspaceComments")
+  
+  @@index([ownerId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([visibility])
+  @@index([slug])
+  @@index([createdAt])
+}
+
+// ── Builder Document ──────────────────────────────────────────────────────────
+// Individual documents within a workspace (BMC, Pitch Deck, etc.)
+
+model BuilderDocument {
+  id            String                @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Document identity
+  type          BuilderDocumentType
+  title         String
+  description   String?               @db.Text
+  
+  // Content (JSON structure varies by document type)
+  content       Json                  // Full document content
+  contentSchema String?               // Schema version for content structure
+  
+  // Status & metadata
+  status        BuilderDocumentStatus @default(draft)
+  completionPercent Int               @default(0)
+  lastEditedById String?
+  
+  // AI generation tracking
+  aiGenerated   Boolean               @default(false)
+  aiModel       String?               // "gpt-4", "claude-3", etc.
+  aiPromptHash  String?               // Hash of prompt used for generation
+  
+  // Versioning
+  version       Int                   @default(1)
+  isLatest      Boolean               @default(true)
+  parentId      String?               // Previous version reference
+  
+  // Timestamps
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  publishedAt   DateTime?
+  
+  // Relations
+  comments      BuilderComment[]
+  reviews       BuilderReview[]
+  versions      BuilderDocumentVersion[]
+  sections      BuilderDocumentSection[]
+  
+  @@index([workspaceId])
+  @@index([type])
+  @@index([status])
+  @@index([isLatest])
+  @@index([createdAt])
+}
+
+// ── Builder Document Section ──────────────────────────────────────────────────
+// Granular sections within a document for targeted editing and commenting
+
+model BuilderDocumentSection {
+  id            String          @id @default(uuid())
+  documentId    String
+  document      BuilderDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Section identity
+  sectionKey    String          // e.g., "value_propositions", "customer_segments", "slide_1"
+  sectionTitle  String
+  sortOrder     Int             @default(0)
+  
+  // Content
+  content       Json            // Section-specific content
+  
+  // Status
+  isComplete    Boolean         @default(false)
+  confidence    Int?            // 0-100 confidence score
+  
+  // AI metadata
+  aiGenerated   Boolean         @default(false)
+  aiSuggestions Json?           // AI-suggested improvements
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  // Relations
+  comments      BuilderSectionComment[]
+  
+  @@unique([documentId, sectionKey])
+  @@index([documentId])
+  @@index([sectionKey])
+}
+
+// ── Builder Document Version ──────────────────────────────────────────────────
+// Version history for documents
+
+model BuilderDocumentVersion {
+  id            String          @id @default(uuid())
+  documentId    String
+  document      BuilderDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Version info
+  version       Int
+  versionLabel  String?         // "v1.0", "Draft 2", "Final", etc.
+  
+  // Content snapshot
+  content       Json
+  
+  // Change tracking
+  changesSummary String?        @db.Text
+  changedById   String?
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  
+  @@unique([documentId, version])
+  @@index([documentId])
+  @@index([createdAt])
+}
+
+// ── Builder Workspace Version ─────────────────────────────────────────────────
+// Snapshot of entire workspace state
+
+model BuilderWorkspaceVersion {
+  id            String           @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Version info
+  version       Int
+  versionLabel  String?
+  description   String?          @db.Text
+  
+  // Snapshot
+  snapshot      Json             // Full workspace state
+  
+  // Metadata
+  createdById   String?
+  createdAt     DateTime         @default(now())
+  
+  @@unique([workspaceId, version])
+  @@index([workspaceId])
+  @@index([createdAt])
+}
+
+// ── Builder Collaborator ──────────────────────────────────────────────────────
+// Team members with access to a workspace
+
+model BuilderCollaborator {
+  id            String                  @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                    @relation("BuilderCollaborations", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Role & permissions
+  role          BuilderCollaboratorRole @default(viewer)
+  permissions   Json?                   // Fine-grained permissions override
+  
+  // Status
+  isActive      Boolean                 @default(true)
+  invitedById   String?
+  invitedAt     DateTime                @default(now())
+  acceptedAt    DateTime?
+  lastAccessAt  DateTime?
+  
+  // Notification preferences
+  notifyOnComments Boolean              @default(true)
+  notifyOnChanges  Boolean              @default(false)
+  notifyOnReviews  Boolean              @default(true)
+  
+  @@unique([workspaceId, userId])
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([role])
+}
+
+// ── Builder Comment ───────────────────────────────────────────────────────────
+// Comments on documents
+
+model BuilderComment {
+  id            String              @id @default(uuid())
+  documentId    String
+  document      BuilderDocument     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User                @relation("BuilderCommentsAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Comment content
+  body          String              @db.Text
+  
+  // Location (for inline comments)
+  sectionKey    String?             // Which section the comment is on
+  anchorText    String?             // Text being commented on
+  anchorStart   Int?                // Character position start
+  anchorEnd     Int?                // Character position end
+  
+  // Threading
+  parentId      String?
+  parent        BuilderComment?     @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       BuilderComment[]    @relation("CommentReplies")
+  
+  // Status
+  status        BuilderCommentStatus @default(open)
+  resolvedById  String?
+  resolvedAt    DateTime?
+  
+  // Timestamps
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  @@index([documentId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ── Builder Section Comment ───────────────────────────────────────────────────
+// Comments specifically on document sections
+
+model BuilderSectionComment {
+  id            String                 @id @default(uuid())
+  sectionId     String
+  section       BuilderDocumentSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  authorId      String
+  author        User                   @relation("BuilderSectionCommentsAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Comment content
+  body          String                 @db.Text
+  
+  // Threading
+  parentId      String?
+  parent        BuilderSectionComment? @relation("SectionCommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       BuilderSectionComment[] @relation("SectionCommentReplies")
+  
+  // Status
+  status        BuilderCommentStatus   @default(open)
+  resolvedById  String?
+  resolvedAt    DateTime?
+  
+  // Timestamps
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  
+  @@index([sectionId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([status])
+}
+
+// ── Builder Review ────────────────────────────────────────────────────────────
+// Formal review requests for documents (mentor reviews, advisor feedback)
+
+model BuilderReview {
+  id            String              @id @default(uuid())
+  documentId    String
+  document      BuilderDocument     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  // Review participants
+  requestedById String
+  requestedBy   User                @relation("BuilderReviewsRequested", fields: [requestedById], references: [id], onDelete: Cascade)
+  reviewerId    String
+  reviewer      User                @relation("BuilderReviewsAssigned", fields: [reviewerId], references: [id], onDelete: Cascade)
+  
+  // Review content
+  title         String?
+  instructions  String?             @db.Text
+  
+  // Status
+  status        BuilderReviewStatus @default(pending)
+  feedback      String?             @db.Text
+  rating        Int?                // 1-5 rating
+  
+  // Timestamps
+  requestedAt   DateTime            @default(now())
+  dueDate       DateTime?
+  completedAt   DateTime?
+  
+  @@index([documentId])
+  @@index([requestedById])
+  @@index([reviewerId])
+  @@index([status])
+}
+
+// ── Builder Readiness Score ───────────────────────────────────────────────────
+// Readiness assessment across multiple dimensions
+
+model BuilderReadinessScore {
+  id            String             @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Score data
+  dimension     ReadinessDimension
+  score         Int                // 0-100
+  maxScore      Int                @default(100)
+  
+  // Criteria breakdown
+  criteria      Json               // [{ id, name, completed, weight, evidence }]
+  
+  // Status
+  status        String             @default("needs-work") // "excellent", "good", "needs-work", "critical"
+  
+  // Recommendations
+  recommendations Json?            // AI-generated recommendations
+  blockers      Json?              // Critical blockers identified
+  
+  // Timestamps
+  assessedAt    DateTime           @default(now())
+  assessedById  String?
+  
+  // Version tracking
+  version       Int                @default(1)
+  
+  @@unique([workspaceId, dimension, version])
+  @@index([workspaceId])
+  @@index([dimension])
+  @@index([assessedAt])
+}
+
+// ── Builder AI Generation ─────────────────────────────────────────────────────
+// Track AI generation requests and results
+
+model BuilderAIGeneration {
+  id            String           @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User             @relation("BuilderAIGenerations", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Request details
+  documentType  BuilderDocumentType?
+  sectionKey    String?
+  prompt        String           @db.Text
+  promptHash    String           // For caching/deduplication
+  
+  // AI configuration
+  model         String           // "gpt-4", "claude-3-opus", etc.
+  temperature   Float            @default(0.7)
+  maxTokens     Int?
+  
+  // Response
+  response      Json?            // Generated content
+  tokensUsed    Int?
+  latencyMs     Int?
+  
+  // Status
+  status        String           @default("pending") // "pending", "completed", "failed", "cached"
+  errorMessage  String?          @db.Text
+  
+  // Cost tracking
+  costCents     Int?             // Cost in cents
+  
+  // Timestamps
+  createdAt     DateTime         @default(now())
+  completedAt   DateTime?
+  
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([documentType])
+  @@index([promptHash])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ── Builder Application ───────────────────────────────────────────────────────
+// Accelerator/grant applications generated from workspace data
+
+model BuilderApplication {
+  id            String                  @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  // Application identity
+  templateType  ApplicationTemplateType
+  templateName  String                  // "Y Combinator W25", "Techstars NYC", etc.
+  
+  // Content
+  answers       Json                    // { questionId: answer }
+  
+  // Status
+  status        String                  @default("draft") // "draft", "in_progress", "completed", "submitted"
+  completionPercent Int                 @default(0)
+  
+  // Submission tracking
+  deadline      DateTime?
+  submittedAt   DateTime?
+  submissionUrl String?
+  
+  // Timestamps
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  
+  @@index([workspaceId])
+  @@index([templateType])
+  @@index([status])
+  @@index([deadline])
+}
+
+// ── Builder Template ──────────────────────────────────────────────────────────
+// Reusable templates for documents and applications
+
+model BuilderTemplate {
+  id            String              @id @default(uuid())
+  
+  // Template identity
+  type          BuilderDocumentType
+  name          String
+  description   String?             @db.Text
+  
+  // Content
+  content       Json                // Template structure
+  schema        String?             // Schema version
+  
+  // Categorization
+  category      String?             // "startup", "saas", "marketplace", etc.
+  industry      String?
+  stage         String?             // "idea", "seed", "series-a", etc.
+  
+  // Visibility
+  isPublic      Boolean             @default(false)
+  isOfficial    Boolean             @default(false) // Platform-provided template
+  tenantId      String?             // Tenant-specific template
+  createdById   String?
+  
+  // Usage tracking
+  usageCount    Int                 @default(0)
+  rating        Float?              // Average rating
+  
+  // Timestamps
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  @@index([type])
+  @@index([isPublic])
+  @@index([isOfficial])
+  @@index([tenantId])
+  @@index([category])
+}
+
+// ── Builder Application Template ──────────────────────────────────────────────
+// Templates for accelerator/grant applications
+
+model BuilderApplicationTemplate {
+  id            String                  @id @default(uuid())
+  
+  // Template identity
+  templateType  ApplicationTemplateType
+  name          String                  // "Y Combinator", "Techstars", etc.
+  description   String?                 @db.Text
+  
+  // Questions
+  questions     Json                    // [{ id, question, maxLength, tips, required }]
+  
+  // Metadata
+  deadline      String?                 // "Rolling", "March 15", etc.
+  website       String?
+  
+  // Visibility
+  isActive      Boolean                 @default(true)
+  
+  // Timestamps
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  
+  @@index([templateType])
+  @@index([isActive])
+}
+
+// ── Builder Export ────────────────────────────────────────────────────────────
+// Track document exports (PDF, PPTX, etc.)
+
+model BuilderExport {
+  id            String          @id @default(uuid())
+  documentId    String?
+  workspaceId   String?
+  userId        String
+  user          User            @relation("BuilderExports", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Export details
+  format        String          // "pdf", "pptx", "docx", "json"
+  fileName      String
+  fileUrl       String?
+  fileSizeBytes Int?
+  
+  // Status
+  status        String          @default("pending") // "pending", "processing", "completed", "failed"
+  errorMessage  String?
+  
+  // Timestamps
+  createdAt     DateTime        @default(now())
+  completedAt   DateTime?
+  expiresAt     DateTime?       // When the file will be deleted
+  
+  @@index([userId])
+  @@index([documentId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ── Builder Activity Log ──────────────────────────────────────────────────────
+// Audit trail for workspace activities
+
+model BuilderActivityLog {
+  id            String           @id @default(uuid())
+  workspaceId   String
+  workspace     BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?            @relation("BuilderActivities", fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Activity details
+  action        String           // "document.created", "document.edited", "comment.added", etc.
+  entityType    String?          // "document", "comment", "review", etc.
+  entityId      String?
+  
+  // Change details
+  changes       Json?            // { field: { old, new } }
+  metadata      Json?            // Additional context
+  
+  // Timestamps
+  createdAt     DateTime         @default(now())
+  
+  @@index([workspaceId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Multi-Role / Persona System — Users can have multiple role facets
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserRoleFacet {
+  id          String         @id @default(uuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  roleType    UserRoleType
+  scope       RoleFacetScope @default(global)
+  scopeId     String?        // tenantId, workspaceId, communityId, programId depending on scope
+  
+  isActive    Boolean        @default(true)
+  isPrimary   Boolean        @default(false) // Primary role for dashboard routing
+  
+  // Role-specific metadata
+  metadata    Json?          // Additional role-specific data
+  
+  // Verification
+  isVerified  Boolean        @default(false)
+  verifiedAt  DateTime?
+  verifiedBy  String?        // Admin userId who verified
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  
+  @@unique([userId, roleType, scope, scopeId])
+  @@index([userId])
+  @@index([roleType])
+  @@index([scope])
+  @@index([isActive])
+  @@index([isPrimary])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Organization System — Business entities (separate from Tenant for white-label)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Organization {
+  id              String           @id @default(uuid())
+  tenantId        String?          // Optional link to tenant for white-label
+  tenant          Tenant?          @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  createdById     String
+  createdBy       User             @relation("OrganizationsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  // Identity
+  type            OrganizationType
+  name            String
+  slug            String           @unique
+  displayName     String?
+  description     String?          @db.Text
+  tagline         String?
+  
+  // Contact & Web
+  website         String?
+  email           String?
+  phone           String?
+  
+  // Branding
+  logoUrl         String?
+  coverImageUrl   String?
+  primaryColor    String?          // Hex color
+  
+  // Location
+  country         String?
+  city            String?
+  address         String?
+  timezone        String?
+  
+  // Focus areas
+  industries      String[]         @default([])
+  stages          String[]         @default([]) // Startup stages they work with
+  focusAreas      String[]         @default([])
+  
+  // Status
+  isVerified      Boolean          @default(false)
+  isActive        Boolean          @default(true)
+  isFeatured      Boolean          @default(false)
+  
+  // Settings
+  settings        Json?            // Organization-specific settings
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Relations
+  memberships       OrganizationMembership[]
+  programs          Program[]
+  mentorPool        OrganizationMentor[]
+  venturePortfolios VenturePortfolio[]
+  
+  @@index([type])
+  @@index([slug])
+  @@index([tenantId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([createdAt])
+}
+
+model OrganizationMembership {
+  id              String                 @id @default(uuid())
+  organizationId  String
+  organization    Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  role            OrganizationMemberRole @default(member)
+  title           String?                // Job title within org
+  department      String?
+  
+  isActive        Boolean                @default(true)
+  joinedAt        DateTime               @default(now())
+  invitedBy       String?                // userId of inviter
+  
+  // Permissions override
+  permissions     Json?                  // Fine-grained permissions
+  
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([role])
+  @@index([isActive])
+}
+
+model OrganizationMentor {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Mentor assignment details
+  expertiseAreas  String[]     @default([])
+  maxMentees      Int?
+  currentMentees  Int          @default(0)
+  
+  isActive        Boolean      @default(true)
+  assignedAt      DateTime     @default(now())
+  assignedBy      String?
+  
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([isActive])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Program System — Cohorts, Accelerators, Courses, Competitions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Program {
+  id                  String        @id @default(uuid())
+  organizationId      String
+  organization        Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tenantId            String?
+  createdById         String
+  createdBy           User          @relation("ProgramsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  
+  // Identity
+  name                String
+  slug                String
+  description         String?       @db.Text
+  shortDescription    String?
+  
+  // Type & Status
+  programType         ProgramType
+  status              ProgramStatus @default(draft)
+  
+  // Dates
+  startDate           DateTime?
+  endDate             DateTime?
+  applicationDeadline DateTime?
+  
+  // Capacity
+  capacity            Int?
+  currentParticipants Int           @default(0)
+  
+  // Visibility
+  isPublic            Boolean       @default(true)
+  isFeatured          Boolean       @default(false)
+  
+  // Branding
+  logoUrl             String?
+  coverImageUrl       String?
+  
+  // Content
+  curriculum          Json?         // Program curriculum/milestones
+  requirements        Json?         // Application requirements
+  benefits            Json?         // What participants get
+  
+  // Settings
+  settings            Json?         // Program-specific settings
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  
+  // Relations
+  participants        ProgramParticipant[]
+  milestones          ProgramMilestone[]
+  
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@index([tenantId])
+  @@index([programType])
+  @@index([status])
+  @@index([isPublic])
+  @@index([startDate])
+}
+
+model ProgramParticipant {
+  id          String                   @id @default(uuid())
+  programId   String
+  program     Program                  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  userId      String?                  // Individual participant
+  user        User?                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?                  // Link to BuilderWorkspace for startup teams
+  
+  // Role & Status
+  role        ProgramParticipantRole   @default(participant)
+  status      ProgramParticipantStatus @default(applied)
+  
+  // Progress
+  progress    Int                      @default(0) // 0-100
+  score       Float?                   // Evaluation score
+  rank        Int?                     // Ranking within cohort
+  
+  // Application
+  application Json?                    // Application answers
+  appliedAt   DateTime?
+  acceptedAt  DateTime?
+  
+  // Notes
+  notes       String?                  @db.Text
+  feedback    Json?                    // Mentor/judge feedback
+  
+  joinedAt    DateTime                 @default(now())
+  completedAt DateTime?
+  
+  @@unique([programId, userId])
+  @@index([programId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([role])
+  @@index([status])
+}
+
+model ProgramMilestone {
+  id          String   @id @default(uuid())
+  programId   String
+  program     Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  
+  title       String
+  description String?  @db.Text
+  dueDate     DateTime?
+  sortOrder   Int      @default(0)
+  
+  // Requirements
+  requirements Json?   // What needs to be completed
+  deliverables Json?   // Expected deliverables
+  
+  isRequired  Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([programId])
+  @@index([dueDate])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stakeholder Profiles — Mentor, Investor, Service Provider
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MentorProfile {
+  id                  String                  @id @default(uuid())
+  userId              String                  @unique
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional Info
+  headline            String?
+  bio                 String?                 @db.Text
+  expertiseSummary    String?                 @db.Text
+  
+  // Expertise
+  industries          String[]                @default([])
+  startupStages       String[]                @default([])
+  skills              String[]                @default([])
+  specializations     String[]                @default([])
+  
+  // Experience
+  yearsExperience     Int?
+  mentoringSince      DateTime?
+  totalMentees        Int                     @default(0)
+  totalSessions       Int                     @default(0)
+  
+  // Availability
+  availabilityStatus  MentorAvailabilityStatus @default(available)
+  hoursPerWeek        Int?
+  sessionFormats      String[]                @default([]) // "video", "in_person", "async"
+  sessionDuration     Int                     @default(30) // minutes
+  timezone            String?
+  
+  // Pricing
+  isFree              Boolean                 @default(true)
+  hourlyRate          Int?                    // in cents
+  currency            String                  @default("USD")
+  
+  // Ratings
+  avgRating           Float?
+  totalReviews        Int                     @default(0)
+  
+  // Verification
+  isVerified          Boolean                 @default(false)
+  verifiedAt          DateTime?
+  
+  // Status
+  isActive            Boolean                 @default(true)
+  isAcceptingRequests Boolean                 @default(true)
+  
+  // Settings
+  preferences         Json?                   // Mentee preferences
+  settings            Json?
+  
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  
+  @@index([userId])
+  @@index([availabilityStatus])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([avgRating])
+}
+
+model InvestorProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Investor Type
+  investorType    InvestorType
+  
+  // Firm Info
+  firmName        String?
+  firmRole        String?
+  firmWebsite     String?
+  firmLogoUrl     String?
+  
+  // Investment Criteria
+  checkSizeMin    Int?         // in USD
+  checkSizeMax    Int?
+  
+  // Focus
+  industries      String[]     @default([])
+  stages          String[]     @default([]) // "pre-seed", "seed", "series-a"
+  geographies     String[]     @default([])
+  businessModels  String[]     @default([]) // "b2b", "b2c", "marketplace"
+  
+  // Track Record
+  portfolioCount  Int?
+  exitsCount      Int?
+  investingSince  DateTime?
+  
+  // Bio
+  bio             String?      @db.Text
+  investmentThesis String?     @db.Text
+  
+  // Availability
+  isActivelyScouting Boolean   @default(true)
+  acceptsColdOutreach Boolean  @default(false)
+  
+  // Verification
+  isVerified      Boolean      @default(false)
+  verifiedAt      DateTime?
+  
+  // Status
+  isActive        Boolean      @default(true)
+  isPublic        Boolean      @default(true)
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  
+  @@index([userId])
+  @@index([investorType])
+  @@index([isActive])
+  @@index([isVerified])
+  @@index([isActivelyScouting])
+}
+
+model ServiceProviderProfile {
+  id              String              @id @default(uuid())
+  userId          String              @unique
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Service Type
+  serviceType     ServiceProviderType
+  
+  // Company Info
+  companyName     String?
+  companyWebsite  String?
+  companyLogoUrl  String?
+  
+  // Services
+  services        Json?               // [{ name, description, pricing }]
+  headline        String?
+  description     String?             @db.Text
+  
+  // Focus
+  industries      String[]            @default([])
+  startupStages   String[]            @default([])
+  
+  // Pricing
+  pricingModel    String?             // "hourly", "project", "retainer", "equity"
+  startingPrice   Int?                // in cents
+  currency        String              @default("USD")
+  
+  // Track Record
+  clientsServed   Int?
+  yearsInBusiness Int?
+  
+  // Ratings
+  avgRating       Float?
+  totalReviews    Int                 @default(0)
+  
+  // Verification
+  isVerified      Boolean             @default(false)
+  verifiedAt      DateTime?
+  
+  // Status
+  isActive        Boolean             @default(true)
+  isAcceptingClients Boolean          @default(true)
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@index([userId])
+  @@index([serviceType])
+  @@index([isActive])
+  @@index([isVerified])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enhanced Mentorship System — Relationships, Sessions, Requests
+// ─────────────────────────────────────────────────────────────────────────────
+
+model MentorshipRelationship {
+  id              String    @id @default(uuid())
+  mentorId        String
+  mentor          User      @relation("MentorshipAsMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId        String
+  mentee          User      @relation("MentorshipAsMentee", fields: [menteeId], references: [id], onDelete: Cascade)
+  
+  // Context
+  workspaceId     String?   // Optional link to startup workspace
+  programId       String?   // If part of a program
+  organizationId  String?   // If through an organization
+  
+  // Status
+  status          String    @default("active") // "pending", "active", "paused", "completed", "terminated"
+  
+  // Goals
+  goals           Json?     // Mentorship goals
+  focusAreas      String[]  @default([])
+  
+  // Progress
+  totalSessions   Int       @default(0)
+  lastSessionAt   DateTime?
+  
+  // Notes
+  mentorNotes     String?   @db.Text
+  menteeNotes     String?   @db.Text
+  
+  // Dates
+  startedAt       DateTime  @default(now())
+  endedAt         DateTime?
+  nextSessionAt   DateTime?
+  
+  // Relations
+  sessions        MentorshipSession[]
+  goals           MentorshipGoal[]
+  
+  @@unique([mentorId, menteeId])
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([workspaceId])
+  @@index([programId])
+  @@index([status])
+}
+
+model MentorshipSession {
+  id                  String               @id @default(uuid())
+  relationshipId      String
+  relationship        MentorshipRelationship @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+  mentorId            String
+  mentor              User                 @relation("SessionAsMentor", fields: [mentorId], references: [id], onDelete: Cascade)
+  menteeId            String
+  mentee              User                 @relation("SessionAsMentee", fields: [menteeId], references: [id], onDelete: Cascade)
+  
+  // Session Details
+  title               String?
+  description         String?              @db.Text
+  
+  // Scheduling
+  scheduledAt         DateTime
+  duration            Int                  @default(30) // minutes
+  timezone            String?
+  
+  // Meeting
+  meetingType         String               @default("video") // "video", "in_person", "phone", "chat"
+  meetingUrl          String?
+  meetingLocation     String?
+  
+  // Status
+  status              String               @default("scheduled") // "scheduled", "confirmed", "in_progress", "completed", "cancelled", "no_show"
+  
+  // Notes
+  agenda              String?              @db.Text
+  mentorNotes         String?              @db.Text
+  menteeNotes         String?              @db.Text
+  actionItems         Json?                // [{ task, assignee, dueDate, completed }]
+  
+  // Feedback
+  mentorRating        Int?                 // 1-5
+  menteeRating        Int?                 // 1-5
+  mentorFeedback      String?              @db.Text
+  menteeFeedback      String?              @db.Text
+  
+  // Recording
+  recordingUrl        String?
+  transcriptUrl       String?
+  
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  completedAt         DateTime?
+  
+  @@index([relationshipId])
+  @@index([mentorId])
+  @@index([menteeId])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model MentorRequest {
+  id              String   @id @default(uuid())
+  requesterId     String
+  requester       User     @relation("MentorRequestsSent", fields: [requesterId], references: [id], onDelete: Cascade)
+  mentorId        String
+  mentor          User     @relation("MentorRequestsReceived", fields: [mentorId], references: [id], onDelete: Cascade)
+  
+  // Context
+  workspaceId     String?  // Optional link to startup workspace
+  programId       String?  // If through a program
+  
+  // Request Details
+  message         String   @db.Text
+  goals           String?  @db.Text
+  focusAreas      String[] @default([])
+  
+  // Availability
+  preferredFormat String?  // "video", "in_person", "async"
+  preferredTimes  Json?    // Preferred meeting times
+  
+  // Status
+  status          String   @default("pending") // "pending", "accepted", "declined", "expired"
+  
+  // Response
+  responseMessage String?  @db.Text
+  respondedAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+  expiresAt       DateTime?
+  
+  @@unique([requesterId, mentorId])
+  @@index([requesterId])
+  @@index([mentorId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Preferences & Matching Profile
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserPreference {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Startup Preferences
+  startupStageInterest  String[] @default([]) // "idea", "validation", "mvp", "growth"
+  roleInterest          String[] @default([]) // "founder", "cofounder", "advisor", "investor"
+  commitmentLevel       String?  // "full_time", "part_time", "advisory", "flexible"
+  
+  // Work Preferences
+  remotePreference      String?  // "remote", "hybrid", "onsite", "flexible"
+  geographyPreference   String[] @default([])
+  timezonePreference    String?
+  
+  // Industry & Domain
+  industryPreferences   String[] @default([])
+  excludedIndustries    String[] @default([])
+  
+  // Work Style
+  workStyle             Json?    // { pace, communication, decisionMaking, etc. }
+  values                String[] @default([])
+  
+  // Risk & Equity
+  riskTolerance         String?  // "low", "medium", "high"
+  equityExpectation     String?  // "none", "small", "significant", "majority"
+  
+  // Notification Preferences
+  emailNotifications    Boolean  @default(true)
+  pushNotifications     Boolean  @default(true)
+  matchNotifications    Boolean  @default(true)
+  messageNotifications  Boolean  @default(true)
+  
+  // Privacy
+  profileVisibility     String   @default("public") // "public", "connections", "private"
+  showInMatching        Boolean  @default(true)
+  showInSearch          Boolean  @default(true)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@index([userId])
+}
+
+model MatchProfile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // What I'm looking for
+  lookingForRoles     String[] @default([]) // "cofounder", "mentor", "investor", "advisor"
+  lookingForSkills    String[] @default([])
+  lookingForIndustries String[] @default([])
+  
+  // What I offer
+  offeredRoles        String[] @default([])
+  offeredSkills       String[] @default([])
+  offeredExperience   String?  @db.Text
+  
+  // Startup context
+  hasStartup          Boolean  @default(false)
+  startupStage        String?
+  startupIndustry     String?
+  
+  // Availability
+  isActivelyLooking   Boolean  @default(true)
+  availableFrom       DateTime?
+  
+  // Exclusions
+  excludedConditions  String[] @default([])
+  
+  // Visibility
+  visibilityEnabled   Boolean  @default(true)
+  
+  // Matching weights (user can adjust importance)
+  weights             Json?    // { skills: 0.3, industry: 0.2, location: 0.2, ... }
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([isActivelyLooking])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Match Suggestions
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum MatchSuggestionStatus {
+  pending
+  viewed
+  saved
+  dismissed
+  connected
+}
+
+model MatchSuggestion {
+  id            String                @id @default(uuid())
+  sourceUserId  String
+  sourceUser    User                  @relation("MatchSuggestionsAsSource", fields: [sourceUserId], references: [id], onDelete: Cascade)
+  targetUserId  String
+  targetUser    User                  @relation("MatchSuggestionsAsTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  
+  // Scores (0-100)
+  overallScore     Float
+  confidenceScore  Float              @default(0.0)
+  skillScore       Float              @default(0.0)
+  industryScore    Float              @default(0.0)
+  locationScore    Float              @default(0.0)
+  stageScore       Float              @default(0.0)
+  valuesScore      Float              @default(0.0)
+  
+  // Explanation
+  reasons          String[]           @default([])
+  sharedStrengths  String[]           @default([])
+  frictionPoints   String[]           @default([])
+  whyThisMatch     String?            @db.Text
+  
+  // Status
+  status           MatchSuggestionStatus @default(pending)
+  viewedAt         DateTime?
+  savedAt          DateTime?
+  dismissedAt      DateTime?
+  dismissReason    String?
+  
+  // Meta
+  algorithmVersion String?            @default("v1")
+  generatedAt      DateTime           @default(now())
+  expiresAt        DateTime?
+  
+  @@unique([sourceUserId, targetUserId])
+  @@index([sourceUserId, status])
+  @@index([targetUserId])
+  @@index([overallScore])
+  @@index([generatedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feature Flags
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FeatureFlagScope {
+  global
+  tenant
+  user
+  role
+}
+
+model FeatureFlag {
+  id           String           @id @default(uuid())
+  key          String           // e.g. "ai_matching_v2", "builder_financials"
+  name         String
+  description  String?
+  scope        FeatureFlagScope @default(global)
+  isEnabled    Boolean          @default(false)
+  
+  // Rollout percentage (0-100), null = all
+  rolloutPct   Int?
+  
+  // Applicable role (if scope = role)
+  targetRole   String?
+  
+  // Tenant override FK handled via TenantFeatureFlag
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  tenantOverrides TenantFeatureFlag[]
+
+  @@unique([key, scope])
+  @@index([isEnabled])
+  @@index([scope])
+}
+
+model TenantFeatureFlag {
+  id            String      @id @default(uuid())
+  tenantId      String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  featureFlagId String
+  featureFlag   FeatureFlag @relation(fields: [featureFlagId], references: [id], onDelete: Cascade)
+  isEnabled     Boolean
+  overriddenAt  DateTime    @default(now())
+
+  @@unique([tenantId, featureFlagId])
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plan Tiers
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PlanBillingInterval {
+  monthly
+  quarterly
+  annual
+  lifetime
+}
+
+model PlanTier {
+  id                  String              @id @default(uuid())
+  key                 String              @unique // "free", "pro", "team", "enterprise"
+  name                String
+  tagline             String?
+  description         String?             @db.Text
+  
+  // Pricing
+  priceCents          Int                 @default(0)
+  currency            String              @default("USD")
+  billingInterval     PlanBillingInterval @default(monthly)
+  stripePriceId       String?             @unique
+  stripeProductId     String?
+  
+  // Limits
+  maxWorkspaces       Int?                // null = unlimited
+  maxTeamMembers      Int?
+  maxStorageMb        Int?
+  maxAiGenerations    Int?                // per month
+  maxMentorSessions   Int?                // per month
+  
+  // Features (flags as JSON object)
+  features            Json                @default("{}")
+  
+  // Status
+  isActive            Boolean             @default(true)
+  isPublic            Boolean             @default(true)
+  sortOrder           Int                 @default(0)
+  
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  
+  @@index([isActive, isPublic])
+  @@index([sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Webhooks
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum WebhookStatus {
+  active
+  paused
+  failed
+  revoked
+}
+
+model Webhook {
+  id          String        @id @default(uuid())
+  tenantId    String?
+  tenant      Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  name        String
+  url         String
+  secret      String        // HMAC signing secret (hashed)
+  events      String[]      @default([]) // ["user.created", "connection.accepted", ...]
+  
+  status      WebhookStatus @default(active)
+  
+  // Stats
+  totalSent   Int           @default(0)
+  failCount   Int           @default(0)
+  lastSentAt  DateTime?
+  lastErrorAt DateTime?
+  lastError   String?       @db.Text
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  deliveries  WebhookDelivery[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model WebhookDelivery {
+  id          String   @id @default(uuid())
+  webhookId   String
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  
+  eventType   String
+  payload     Json
+  statusCode  Int?
+  response    String?  @db.Text
+  duration    Int?     // ms
+  
+  success     Boolean  @default(false)
+  sentAt      DateTime @default(now())
+  
+  @@index([webhookId, sentAt])
+  @@index([eventType])
+  @@index([success])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Achievements & Gamification
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AchievementCategory {
+  onboarding
+  matching
+  collaboration
+  builder
+  community
+  mentoring
+  milestone
+  program
+  streak
+  platform
+}
+
+model AchievementDefinition {
+  id           String              @id @default(uuid())
+  key          String              @unique // "first_match", "workspace_complete", etc.
+  name         String
+  description  String
+  category     AchievementCategory
+  iconUrl      String?
+  points       Int                 @default(10)
+  
+  // Trigger condition (stored as JSON rule definition)
+  condition    Json
+  
+  isActive     Boolean             @default(true)
+  createdAt    DateTime            @default(now())
+  
+  userAchievements UserAchievement[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model UserAchievement {
+  id              String                @id @default(uuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievementId   String
+  achievement     AchievementDefinition @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  
+  unlockedAt      DateTime              @default(now())
+  seenAt          DateTime?
+  
+  // Context in which it was unlocked
+  contextType     String?               // "workspace", "program", "connection"
+  contextId       String?
+
+  @@unique([userId, achievementId])
+  @@index([userId, unlockedAt])
+  @@index([achievementId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Announcements & System Messages
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AnnouncementAudience {
+  all
+  founders
+  mentors
+  investors
+  orgs
+  tenant
+  program
+}
+
+model Announcement {
+  id          String               @id @default(uuid())
+  tenantId    String?
+  tenant      Tenant?              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  title       String
+  body        String               @db.Text
+  ctaLabel    String?
+  ctaUrl      String?
+  
+  audience    AnnouncementAudience @default(all)
+  targetRole  String?
+  
+  // Scheduling
+  startsAt    DateTime             @default(now())
+  expiresAt   DateTime?
+  
+  isDismissable Boolean            @default(true)
+  isPinned      Boolean            @default(false)
+  
+  createdById String?
+  createdAt   DateTime             @default(now())
+  
+  dismissals  AnnouncementDismissal[]
+
+  @@index([tenantId, startsAt])
+  @@index([audience])
+  @@index([isPinned])
+}
+
+model AnnouncementDismissal {
+  userId         String
+  announcementId String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  dismissedAt    DateTime     @default(now())
+
+  @@id([userId, announcementId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Onboarding Progress
+// ─────────────────────────────────────────────────────────────────────────────
+
+model OnboardingProgress {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Step completion flags
+  profileComplete   Boolean @default(false)
+  skillsAdded       Boolean @default(false)
+  photoUploaded     Boolean @default(false)
+  preferencesSet    Boolean @default(false)
+  firstConnection   Boolean @default(false)
+  firstMessage      Boolean @default(false)
+  workspaceCreated  Boolean @default(false)
+  firstMilestone    Boolean @default(false)
+  
+  // Computed
+  completionPct     Int     @default(0)
+  
+  // Timestamps
+  completedAt       DateTime?
+  lastStepAt        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([completionPct])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API Keys (for external integrations)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ApiKeyStatus {
+  active
+  revoked
+  expired
+}
+
+model ApiKey {
+  id          String       @id @default(uuid())
+  tenantId    String?
+  tenant      Tenant?      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId      String?
+  
+  name        String
+  keyHash     String       @unique  // SHA-256 hash of the actual key
+  keyPrefix   String       // First 8 chars for display: "cfb_xxxx"
+  
+  scopes      String[]     @default([]) // ["read:matches", "write:workspaces", ...]
+  status      ApiKeyStatus @default(active)
+  
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  
+  createdAt   DateTime     @default(now())
+  revokedAt   DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([keyPrefix])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fundraising — Round Tracker, Investor Pipeline, Data Room
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FundraisingRoundType {
+  pre_seed
+  seed
+  series_a
+  series_b
+  series_c
+  bridge
+  safe
+  convertible_note
+  grant
+  revenue_based
+  other
+}
+
+enum FundraisingRoundStatus {
+  planning
+  active
+  closing
+  closed
+  cancelled
+}
+
+enum InvestorLeadStatus {
+  prospect
+  contacted
+  meeting
+  due_diligence
+  committed
+  passed
+  inactive
+}
+
+enum DataRoomDocCategory {
+  pitch
+  financials
+  legal
+  product
+  market
+  team
+  traction
+  other
+}
+
+enum DataRoomDocStatus {
+  draft
+  ready
+  shared
+  archived
+}
+
+model FundraisingRound {
+  id               String                 @id @default(uuid())
+  workspaceId      String?
+  workspace        BuilderWorkspace?      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ownerId          String
+  owner            User                   @relation("FundraisingRoundOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  name             String                 // "Seed Round", "Series A"
+  roundType        FundraisingRoundType   @default(seed)
+  status           FundraisingRoundStatus @default(planning)
+
+  targetAmount     Decimal?               @db.Decimal(18, 2)
+  raisedAmount     Decimal                @default(0) @db.Decimal(18, 2)
+  currency         String                 @default("USD")
+
+  preMoneyValuation Decimal?              @db.Decimal(18, 2)
+  equityOffered    Decimal?               @db.Decimal(5, 4) // e.g. 0.15 = 15%
+
+  leadInvestorName String?
+  leadInvestorId   String?                // Link to platform investor profile
+
+  closingDate      DateTime?
+  announcedAt      DateTime?
+
+  description      String?                @db.Text
+  terms            Json?                  // Term sheet key points
+
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  leads            InvestorPipelineLead[]
+  documents        DataRoomDocument[]
+
+  @@index([ownerId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([ownerId, status])
+}
+
+model InvestorPipelineLead {
+  id               String             @id @default(uuid())
+  roundId          String
+  round            FundraisingRound   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  addedById        String
+  addedBy          User               @relation("PipelineLeadsAdded", fields: [addedById], references: [id], onDelete: Cascade)
+
+  // Investor info
+  investorName     String
+  investorFirm     String?
+  investorEmail    String?
+  investorLinkedIn String?
+  investorType     String?            // "angel", "vc", "syndicate", "family_office", "scout"
+  isVerifiedOnPlatform Boolean        @default(false)
+  platformUserId   String?            // Link to CoFounderBay investor profile
+
+  // Stage
+  status           InvestorLeadStatus @default(prospect)
+  checkSizeMin     Decimal?           @db.Decimal(18, 2)
+  checkSizeMax     Decimal?           @db.Decimal(18, 2)
+  committedAmount  Decimal?           @db.Decimal(18, 2)
+  currency         String             @default("USD")
+
+  // Tracking
+  lastContactAt    DateTime?
+  nextFollowUpAt   DateTime?
+  meetingScheduledAt DateTime?
+  notes            String?            @db.Text
+
+  introducedVia    String?            // How they were introduced
+  warmth           String?            // "cold", "warm", "hot"
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([roundId])
+  @@index([addedById])
+  @@index([roundId, status])
+  @@index([status])
+}
+
+model DataRoomDocument {
+  id               String              @id @default(uuid())
+  roundId          String?
+  round            FundraisingRound?   @relation(fields: [roundId], references: [id], onDelete: SetNull)
+  workspaceId      String?
+  workspace        BuilderWorkspace?   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  uploadedById     String
+  uploadedBy       User                @relation("DataRoomDocsUploaded", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  name             String
+  description      String?
+  category         DataRoomDocCategory @default(other)
+  status           DataRoomDocStatus   @default(draft)
+  isRequired       Boolean             @default(false)
+
+  // File
+  fileUrl          String?
+  fileName         String?
+  fileMimeType     String?
+  fileSizeBytes    Int?
+
+  // Access control
+  isPublic         Boolean             @default(false)
+  sharedWithLeads  Boolean             @default(false)
+  viewCount        Int                 @default(0)
+
+  version          Int                 @default(1)
+  notes            String?             @db.Text
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  accessLogs       DataRoomAccessLog[]
+
+  @@index([roundId])
+  @@index([workspaceId])
+  @@index([uploadedById])
+  @@index([roundId, category])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Coaching Sessions (distinct from Mentoring — process-oriented accountability)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CoachingSessionStatus {
+  scheduled
+  confirmed
+  in_progress
+  completed
+  cancelled
+  no_show
+}
+
+enum CoachingSessionType {
+  accountability
+  clarity
+  team_dynamics
+  execution
+  strategy
+  wellbeing
+  other
+}
+
+model CoachingSession {
+  id              String               @id @default(uuid())
+  coachId         String
+  coach           User                 @relation("CoachingSessions_Coach", fields: [coachId], references: [id], onDelete: Cascade)
+  clientId        String
+  client          User                 @relation("CoachingSessions_Client", fields: [clientId], references: [id], onDelete: Cascade)
+
+  workspaceId     String?              // Optional workspace context
+  programId       String?              // If part of org program
+
+  sessionType     CoachingSessionType  @default(accountability)
+  title           String?
+  agenda          String?              @db.Text
+
+  scheduledAt     DateTime
+  durationMinutes Int                  @default(45)
+  timezone        String?
+
+  meetingUrl      String?
+  meetingLocation String?
+
+  status          CoachingSessionStatus @default(scheduled)
+
+  // Session notes
+  coachNotes      String?              @db.Text
+  clientNotes     String?              @db.Text
+  actionItems     Json?                // [{ task, owner, dueDate, done }]
+  keyInsights     String?              @db.Text
+
+  // Feedback
+  coachRating     Int?                 // 1–5
+  clientRating    Int?                 // 1–5
+  coachFeedback   String?              @db.Text
+  clientFeedback  String?              @db.Text
+
+  // Next session
+  nextSessionAt   DateTime?
+  followUpNotes   String?              @db.Text
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  completedAt     DateTime?
+
+  @@index([coachId])
+  @@index([clientId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([coachId, status])
+  @@index([clientId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Expert / Advisor Reviews (domain-specific structured feedback)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ExpertReviewStatus {
+  requested
+  accepted
+  in_progress
+  submitted
+  declined
+  expired
+}
+
+enum ExpertReviewType {
+  pitch_deck
+  business_model
+  financial_model
+  legal_structure
+  market_analysis
+  go_to_market
+  technical_architecture
+  product_strategy
+  general
+}
+
+model ExpertReview {
+  id               String            @id @default(uuid())
+  requesterId      String
+  requester        User              @relation("ExpertReviews_Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  expertId         String
+  expert           User              @relation("ExpertReviews_Expert", fields: [expertId], references: [id], onDelete: Cascade)
+
+  workspaceId      String?           // Workspace/startup context
+
+  reviewType       ExpertReviewType  @default(general)
+  status           ExpertReviewStatus @default(requested)
+
+  // Request
+  requestMessage   String?           @db.Text
+  documentsJson    Json?             // List of documents/URLs shared
+
+  // Review output
+  summaryFeedback  String?           @db.Text
+  strengthsJson    Json?             // [{ area, comment }]
+  improvementsJson Json?             // [{ area, recommendation }]
+  scoreOverall     Int?              // 1–10
+  scoresByArea     Json?             // { "market": 7, "team": 9, ... }
+
+  // Compensation
+  isPaid           Boolean           @default(false)
+  agreedFee        Decimal?          @db.Decimal(10, 2)
+  currency         String            @default("USD")
+
+  // Timing
+  requestedAt      DateTime          @default(now())
+  acceptedAt       DateTime?
+  dueDate          DateTime?
+  submittedAt       DateTime?
+  
+  rating           Int?              // Requester rates review 1-5
+  ratingComment    String?           @db.Text
+
+  @@index([requesterId])
+  @@index([expertId])
+  @@index([workspaceId])
+  @@index([status])
+  @@index([reviewType, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Service Offers & Inquiries (Marketplace — structured provider offerings)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ServiceOfferStatus {
+  draft
+  active
+  paused
+  archived
+}
+
+enum ServicePricingModel {
+  fixed
+  hourly
+  monthly_retainer
+  project_based
+  equity
+  free
+  contact_for_pricing
+}
+
+enum ServiceInquiryStatus {
+  open
+  in_discussion
+  accepted
+  declined
+  completed
+  cancelled
+}
+
+model ServiceOffer {
+  id                String             @id @default(uuid())
+  providerId        String
+  provider          User               @relation("ServiceOffers_Provider", fields: [providerId], references: [id], onDelete: Cascade)
+
+  title             String
+  description       String             @db.Text
+  shortTagline      String?
+
+  category          String             // "legal", "finance", "design", "dev", "marketing", "strategy", etc.
+  subcategory       String?
+  tags              String[]           @default([])
+
+  pricingModel      ServicePricingModel @default(contact_for_pricing)
+  priceFrom         Decimal?           @db.Decimal(10, 2)
+  priceTo           Decimal?           @db.Decimal(10, 2)
+  currency          String             @default("USD")
+  pricingNotes      String?
+
+  deliverables      Json?              // [{ item, description }]
+  deliveryDays      Int?
+  revisionsIncluded Int?
+
+  // Targeting
+  targetStartupStages String[]         @default([])  // "idea", "mvp", "growth"
+  targetIndustries    String[]         @default([])
+
+  // Credibility
+  portfolioUrls     String[]           @default([])
+  testimonialsJson  Json?              // [{ name, role, comment, rating }]
+  completedProjects Int                @default(0)
+
+  status            ServiceOfferStatus @default(draft)
+  isFeatured        Boolean            @default(false)
+  viewCount         Int                @default(0)
+  inquiryCount      Int                @default(0)
+  avgRating         Decimal?           @db.Decimal(3, 2)
+  reviewCount       Int                @default(0)
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  inquiries         ServiceInquiry[]
+
+  @@index([providerId])
+  @@index([status])
+  @@index([category])
+  @@index([isFeatured])
+  @@index([providerId, status])
+}
+
+model ServiceInquiry {
+  id               String              @id @default(uuid())
+  offerId          String
+  offer            ServiceOffer        @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  clientId         String
+  client           User                @relation("ServiceInquiries_Client", fields: [clientId], references: [id], onDelete: Cascade)
+  providerId       String
+  provider         User                @relation("ServiceInquiries_Provider", fields: [providerId], references: [id], onDelete: Cascade)
+
+  workspaceId      String?
+  status           ServiceInquiryStatus @default(open)
+
+  message          String              @db.Text
+  budgetEstimate   Decimal?            @db.Decimal(10, 2)
+  currency         String              @default("USD")
+  timelineExpected String?
+
+  // Response
+  responseMessage  String?             @db.Text
+  agreedScope      String?             @db.Text
+  agreedPrice      Decimal?            @db.Decimal(10, 2)
+
+  // Outcome
+  rating           Int?                // 1–5
+  reviewComment    String?             @db.Text
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  resolvedAt       DateTime?
+
+  @@index([offerId])
+  @@index([clientId])
+  @@index([providerId])
+  @@index([status])
+  @@index([providerId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Startup Snapshot — Investor-Facing Summary (VC/Scout Scouting Feed)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model StartupSnapshot {
+  id               String   @id @default(uuid())
+  workspaceId      String   @unique
+  workspace        BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  ownerId          String
+  owner            User     @relation("StartupSnapshots", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Computed / cached headline data
+  startupName      String?
+  tagline          String?
+  industry         String?
+  stage            String?
+  businessModel    String?
+  location         String?
+
+  // Traction signals
+  monthlyRevenue   Decimal?   @db.Decimal(18, 2)
+  mrr              Decimal?   @db.Decimal(18, 2)
+  userCount        Int?
+  growthRateMonthly Decimal?  @db.Decimal(5, 4)  // 0.15 = 15%
+  revenueModel     String?
+
+  // Team signals
+  teamSize         Int?
+  founderCount     Int?
+  technicalCofounder Boolean  @default(false)
+  hasAdvisors      Boolean    @default(false)
+
+  // Fundraising
+  isRaisingNow     Boolean    @default(false)
+  currentRoundType String?
+  targetAmount     Decimal?   @db.Decimal(18, 2)
+  raisedSoFar      Decimal?   @db.Decimal(18, 2)
+  currency         String     @default("USD")
+
+  // Readiness
+  readinessScore   Int?
+  deckReady        Boolean    @default(false)
+
+  // Visibility
+  isPublicToInvestors Boolean  @default(false)
+
+  // Cache metadata
+  lastComputedAt   DateTime   @default(now())
+  viewCount        Int        @default(0)
+
+  @@index([ownerId])
+  @@index([isRaisingNow, stage])
+  @@index([industry])
+  @@index([readinessScore])
+  @@index([isPublicToInvestors])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Workspace Builder Extensions — Tech Architecture & Product Requirements
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TechArchitecture {
+  id               String   @id @default(uuid())
+  workspaceId      String   @unique
+  workspace        BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Stack overview
+  frontendStack    String[] @default([])   // ["Next.js", "React", "TailwindCSS"]
+  backendStack     String[] @default([])   // ["NestJS", "Node.js"]
+  databaseStack    String[] @default([])   // ["PostgreSQL", "Redis"]
+  infrastructureStack String[] @default([]) // ["AWS", "Vercel", "Docker"]
+  aiMlStack        String[] @default([])
+  thirdPartyServices String[] @default([]) // ["Stripe", "Twilio", "SendGrid"]
+
+  // Architecture decisions
+  architectureType String?            // "monolith", "microservices", "serverless", "modular_monolith"
+  deploymentModel  String?            // "cloud", "hybrid", "on_premise"
+
+  // Technical docs
+  architectureDiagramUrl String?
+  systemDesignNotes String?          @db.Text
+  scalingStrategy  String?            @db.Text
+  securityNotes    String?            @db.Text
+
+  // Constraints
+  technicalDebt    String?            @db.Text
+  openTechnicalRisks String?          @db.Text
+
+  // AI context
+  aiGeneratedDraft Boolean            @default(false)
+  aiPromptUsed     String?
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([workspaceId])
+}
+
+model ProductRequirementDoc {
+  id               String   @id @default(uuid())
+  workspaceId      String
+  workspace        BuilderWorkspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User     @relation("PRDAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  title            String
+  version          String             @default("1.0")
+  status           String             @default("draft") // "draft", "review", "approved", "deprecated"
+
+  // PRD Content
+  problemStatement String?            @db.Text
+  targetUsers      String?            @db.Text
+  goals            Json?              // [{ goal, metric, target }]
+  nonGoals         String?            @db.Text
+  assumptions      String?            @db.Text
+
+  // Features
+  featuresJson     Json?              // [{ name, priority, description, acceptanceCriteria }]
+  userStoriesJson  Json?              // [{ persona, want, soThat }]
+  mvpScope         Json?              // Minimal viable feature set
+
+  // Design
+  wireframesUrl    String?
+  designSystemNotes String?           @db.Text
+
+  // Success metrics
+  kpis             Json?              // [{ metric, baseline, target, timeframe }]
+
+  // AI context
+  aiGeneratedDraft Boolean            @default(false)
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([workspaceId])
+  @@index([authorId])
+  @@index([workspaceId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Venture Portfolio Tracking (for Venture Studio / VC internal use)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum VentureStatus {
+  ideation
+  validation
+  building
+  launched
+  scaling
+  exited
+  failed
+  inactive
+}
+
+model VenturePortfolio {
+  id               String        @id @default(uuid())
+  organizationId   String
+  organization     Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  workspaceId      String?       @unique
+  workspace        BuilderWorkspace? @relation("VenturePortfolioWorkspace", fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  startupName      String
+  description      String?       @db.Text
+  status           VentureStatus @default(ideation)
+  industry         String?
+  stage            String?
+
+  // Financial
+  totalInvested    Decimal?      @db.Decimal(18, 2)
+  currentValuation Decimal?      @db.Decimal(18, 2)
+  equityHeld       Decimal?      @db.Decimal(5, 4)  // e.g. 0.20 = 20%
+  currency         String        @default("USD")
+
+  // Key dates
+  investedAt       DateTime?
+  exitedAt         DateTime?
+  exitType         String?       // "acquisition", "ipo", "writeoff", "secondary"
+
+  notes            String?       @db.Text
+  keyMetrics       Json?
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Startup Application (for programs, competitions, grants)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ApplicationStatus {
+  draft
+  submitted
+  under_review
+  shortlisted
+  accepted
+  rejected
+  withdrawn
+}
+
+model StartupApplication {
+  id               String             @id @default(uuid())
+  applicantId      String
+  applicant        User               @relation("ApplicationsSubmitted", fields: [applicantId], references: [id], onDelete: Cascade)
+  workspaceId      String?
+  workspace        BuilderWorkspace?  @relation("WorkspaceApplications", fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  // Target
+  programId        String?
+  tenantId         String?
+  externalUrl      String?            // For external program applications
+
+  programName      String?            // Denormalized for display
+  organizationName String?
+
+  status           ApplicationStatus  @default(draft)
+
+  // Application content
+  coverLetter      String?            @db.Text
+  answersJson      Json?              // { questionId: answer }
+  attachmentsJson  Json?              // [{ name, url, type }]
+
+  // Review
+  reviewScore      Int?               // 1-100
+  reviewNotes      String?            @db.Text
+  reviewedById     String?
+  reviewedAt       DateTime?
+
+  submittedAt      DateTime?
+  decidedAt        DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([applicantId])
+  @@index([workspaceId])
+  @@index([programId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([applicantId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Workspace Collaboration — Comments & Annotations (cross-section)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum WorkspaceCommentType {
+  general
+  suggestion
+  question
+  issue
+  approval
+}
+
+model WorkspaceComment {
+  id               String              @id @default(uuid())
+  workspaceId      String
+  workspace        BuilderWorkspace    @relation("WorkspaceComments", fields: [workspaceId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User                @relation("WorkspaceCommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  // Context
+  sectionType      String?             // "idea_core", "bmc", "market_analysis", etc.
+  sectionKey       String?             // Specific field/block reference
+  anchorText       String?             // Quoted text being annotated
+
+  commentType      WorkspaceCommentType @default(general)
+  content          String              @db.Text
+
+  // Thread
+  parentId         String?
+  parent           WorkspaceComment?   @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          WorkspaceComment[]  @relation("CommentThread")
+
+  isResolved       Boolean             @default(false)
+  resolvedAt       DateTime?
+  resolvedById     String?
+
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  @@index([workspaceId])
+  @@index([authorId])
+  @@index([workspaceId, sectionType])
+  @@index([parentId])
+  @@index([isResolved])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feature Flags — Platform-wide and tenant-level feature gates
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FeatureFlagScope {
+  platform     // applies to all users
+  tenant       // applies to specific tenant
+  user         // applies to specific user
+  plan         // enabled for users on a specific billing plan
+}
+
+model FeatureFlag {
+  id               String           @id @default(uuid())
+  key              String           @unique
+  name             String
+  description      String?
+  scope            FeatureFlagScope @default(platform)
+
+  // Targeting
+  tenantId         String?          // If scope = tenant
+  userId           String?          // If scope = user
+  planKeys         String[]         @default([]) // If scope = plan: ["starter", "pro", "enterprise"]
+
+  // State
+  isEnabled        Boolean          @default(false)
+  rolloutPercent   Int              @default(100) // 0-100 for gradual rollout
+  enabledFor       String[]         @default([]) // explicit user/tenant ids
+
+  // Metadata
+  tags             String[]         @default([])
+  expiresAt        DateTime?
+  createdById      String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([key])
+  @@index([scope])
+  @@index([tenantId])
+  @@index([isEnabled])
+  @@index([scope, isEnabled])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Payment Records — Individual transaction history
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  pending
+  processing
+  succeeded
+  failed
+  refunded
+  partially_refunded
+  disputed
+  canceled
+}
+
+enum PaymentType {
+  subscription_charge
+  one_time
+  addon
+  refund
+  credit_adjustment
+  manual_charge
+}
+
+model PaymentRecord {
+  id                   String         @id @default(uuid())
+  subscriptionId       String?
+  subscription         Subscription?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  userId               String?
+  user                 User?          @relation("UserPayments", fields: [userId], references: [id], onDelete: SetNull)
+
+  // Amount
+  amountUsd            Decimal        @db.Decimal(10, 2)
+  currency             String         @default("USD")
+  exchangeRate         Decimal?       @db.Decimal(10, 6)
+
+  status               PaymentStatus  @default(pending)
+  paymentType          PaymentType    @default(subscription_charge)
+
+  // Provider details
+  stripePaymentIntentId String?       @unique
+  stripeInvoiceId      String?
+  stripeChargeId       String?
+
+  // Invoice
+  invoiceNumber        String?        @unique
+  invoiceUrl           String?
+  receiptUrl           String?
+  description          String?
+
+  // Refund tracking
+  refundedAmount       Decimal?       @db.Decimal(10, 2)
+  refundedAt           DateTime?
+  refundReason         String?
+
+  // Dispute
+  disputeId            String?
+  disputeStatus        String?
+
+  failureCode          String?
+  failureMessage       String?
+
+  metadata             Json?
+  paidAt               DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([subscriptionId])
+  @@index([userId])
+  @@index([status])
+  @@index([paymentType])
+  @@index([userId, status])
+  @@index([stripePaymentIntentId])
+  @@index([paidAt])
+  @@index([status, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Usage Tracking — For metered billing and plan limit enforcement
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum UsageMetric {
+  ai_credits
+  api_calls
+  storage_bytes
+  workspaces
+  team_members
+  mentor_sessions
+  exports
+  messages
+}
+
+model UsageRecord {
+  id               String        @id @default(uuid())
+  userId           String?
+  user             User?         @relation("UserUsageRecords", fields: [userId], references: [id], onDelete: Cascade)
+  tenantId         String?
+
+  metric           UsageMetric
+  quantity         Decimal       @db.Decimal(18, 4)
+  unit             String        @default("count")
+
+  // Period
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+
+  // Reference
+  entityType       String?       // "workspace", "message", "export", etc.
+  entityId         String?
+
+  recordedAt       DateTime      @default(now())
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([metric])
+  @@index([userId, metric])
+  @@index([userId, metric, billingPeriodStart])
+  @@index([billingPeriodStart, billingPeriodEnd])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Coupon / Promo Codes
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum DiscountType {
+  percentage
+  fixed_amount
+}
+
+model PromoCode {
+  id               String       @id @default(uuid())
+  code             String       @unique
+  description      String?
+
+  discountType     DiscountType
+  discountValue    Decimal      @db.Decimal(10, 2)  // 20 = 20% or $20
+
+  // Limits
+  maxRedemptions   Int?
+  redemptionCount  Int          @default(0)
+  maxPerUser       Int          @default(1)
+
+  // Eligibility
+  applicablePlans  String[]     @default([])  // empty = all plans
+  minimumAmountUsd Decimal?     @db.Decimal(10, 2)
+
+  // Validity
+  isActive         Boolean      @default(true)
+  validFrom        DateTime     @default(now())
+  validUntil       DateTime?
+
+  // Stripe
+  stripeCouponId   String?
+  stripePromoCodeId String?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+  @@index([isActive, validUntil])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Block — Blocking system for safety & trust
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserBlock {
+  id          String   @id @default(uuid())
+  blockerId   String
+  blocker     User     @relation("BlocksGiven", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId   String
+  blocked     User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  reason      String?
+
+  createdAt   DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Audit Log — Platform-wide action log for governance and compliance
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String?
+  actor        User?    @relation("AuditLogsActor", fields: [actorId], references: [id], onDelete: SetNull)
+  tenantId     String?
+
+  action       String   // "user.suspend", "workspace.delete", "tenant.update"
+  entityType   String   // "user", "workspace", "tenant", "message", ...
+  entityId     String?
+
+  ipAddress    String?
+  userAgent    String?
+  metadataJson Json?
+
+  createdAt    DateTime @default(now())
+
+  @@index([actorId])
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([tenantId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skill Endorsement — Skill-level endorsements (LinkedIn-style)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SkillEndorsement {
+  id          String   @id @default(uuid())
+  fromUserId  String
+  fromUser    User     @relation("SkillEndorsementsGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId    String
+  toUser      User     @relation("SkillEndorsementsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  skill       String   // e.g. "Product Strategy", "Fundraising"
+
+  createdAt   DateTime @default(now())
+
+  @@unique([fromUserId, toUserId, skill])
+  @@index([toUserId])
+  @@index([toUserId, skill])
+  @@index([fromUserId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Referral — Invite & Grow tracking
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ReferralStatus {
+  pending    // invitee received link but not registered
+  registered // invitee signed up
+  converted  // invitee completed onboarding / upgraded
+}
+
+model Referral {
+  id            String         @id @default(uuid())
+  referrerId    String
+  referrer      User           @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  refereeId     String?
+  referee       User?          @relation("ReferralsReceived", fields: [refereeId], references: [id], onDelete: SetNull)
+
+  code          String         @unique // referral code used
+  email         String?        // invited email if direct invite
+  status        ReferralStatus @default(pending)
+
+  // Reward
+  rewardType    String?        // "credits", "plan_days", "badge"
+  rewardValue   Decimal?       @db.Decimal(10, 2)
+  rewardGranted Boolean        @default(false)
+  rewardedAt    DateTime?
+
+  registeredAt  DateTime?
+  convertedAt   DateTime?
+  createdAt     DateTime       @default(now())
+
+  @@index([referrerId])
+  @@index([refereeId])
+  @@index([code])
+  @@index([status])
+  @@index([referrerId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Follow — Follow system for content creators, mentors, orgs
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserFollow {
+  id           String   @id @default(uuid())
+  followerId   String
+  follower     User     @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId  String
+  following    User     @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Activity Digest — Aggregated weekly/daily activity for email notifications
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum DigestFrequency {
+  daily
+  weekly
+  never
+}
+
+model ActivityDigestPreference {
+  id         String          @id @default(uuid())
+  userId     String          @unique
+  user       User            @relation("DigestPreference", fields: [userId], references: [id], onDelete: Cascade)
+
+  frequency  DigestFrequency @default(weekly)
+  lastSentAt DateTime?
+
+  updatedAt  DateTime        @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Profile Portfolio — Showcase items (projects, publications, achievements)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum PortfolioItemType {
+  project
+  publication
+  award
+  certification
+  patent
+  open_source
+  case_study
+  press
+  other
+}
+
+model ProfilePortfolioItem {
+  id          String            @id @default(uuid())
+  userId      String
+  user        User              @relation("PortfolioItems", fields: [userId], references: [id], onDelete: Cascade)
+
+  type        PortfolioItemType @default(project)
+  title       String
+  description String?           @db.Text
+  url         String?
+  imageUrl    String?
+
+  // Dates
+  startDate   DateTime?
+  endDate     DateTime?
+  isCurrent   Boolean           @default(false)
+
+  // Metadata
+  tags        String[]          @default([])
+  isFeatured  Boolean           @default(false)
+  sortOrder   Int               @default(0)
+
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([userId, type])
+  @@index([userId, isFeatured])
+  @@index([userId, sortOrder])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Assistant Session — Chat history with the platform AI assistant
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AIAssistantContext {
+  general
+  workspace_builder
+  pitch_deck
+  fundraising
+  mentor_prep
+  match_explanation
+  program_application
+  readiness_coach
+}
+
+model AIAssistantSession {
+  id          String              @id @default(uuid())
+  userId      String
+  user        User                @relation("AIAssistantSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  context     AIAssistantContext  @default(general)
+  entityType  String?             // "workspace", "program", etc.
+  entityId    String?             // Reference to a specific workspace/program
+
+  title       String?             // Auto-generated summary title
+  isArchived  Boolean             @default(false)
+
+  messages    AIAssistantMessage[]
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([userId])
+  @@index([userId, context])
+  @@index([userId, isArchived, updatedAt])
+}
+
+enum AIMessageRole {
+  user
+  assistant
+  system
+}
+
+model AIAssistantMessage {
+  id          String             @id @default(uuid())
+  sessionId   String
+  session     AIAssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  role        AIMessageRole
+  content     String             @db.Text
+  tokensUsed  Int?
+
+  // Action metadata (when AI suggested actions)
+  actionType  String?            // "generate_section", "suggest_match", etc.
+  actionMeta  Json?
+
+  createdAt   DateTime           @default(now())
+
+  @@index([sessionId])
+  @@index([sessionId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Reputation Score — Computed contribution & trust score per user
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserReputationScore {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation("ReputationScore", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Overall score (0–100)
+  overallScore        Int      @default(0)
+
+  // Dimension scores (0–100 each)
+  profileCompleteness Int      @default(0)
+  networkActivity     Int      @default(0)
+  communityContrib    Int      @default(0)
+  mentorActivity      Int      @default(0)
+  workspaceActivity   Int      @default(0)
+  endorsementsScore   Int      @default(0)
+
+  // Trust signals
+  isVerified          Boolean  @default(false)
+  verifiedAt          DateTime?
+  verificationMethod  String?  // "manual", "linkedin", "email_domain"
+  trustTier           Int      @default(1) // 1-5 trust tiers
+
+  // Badges earned
+  badges              String[] @default([])
+
+  // Leaderboard
+  globalRank          Int?
+  weeklyDelta         Int      @default(0) // score change this week
+
+  calculatedAt        DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([overallScore])
+  @@index([globalRank])
+  @@index([isVerified])
+  @@index([trustTier])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Startup Readiness Report — Time-series snapshot of readiness assessment
+// Enables history charts and progress tracking on /readiness page
+// ─────────────────────────────────────────────────────────────────────────────
+
+model StartupReadinessReport {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation("ReadinessReports", fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId   String?
+
+  // Overall snapshot score (0–100)
+  overallScore  Int
+
+  // Per-dimension scores (0–100 each, mirrors ReadinessDimension enum)
+  teamScore      Int      @default(0)
+  marketScore    Int      @default(0)
+  productScore   Int      @default(0)
+  businessScore  Int      @default(0)
+  fundingScore   Int      @default(0)
+  executionScore Int      @default(0)
+
+  // Context
+  assessmentType String   @default("auto") // "auto", "manual", "ai_assisted"
+  notes          String?  @db.Text
+
+  // Benchmark comparison data
+  industryBenchmark Int?  // Average score for same industry/stage cohort
+  stagePercentile   Int?  // Percentile vs startups at same stage (0–100)
+
+  // Triggered by (e.g., after completing a criterion or workspace edit)
+  triggeredBy   String?  // "criterion_update", "workspace_save", "manual", "scheduled"
+
+  snapshotAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, snapshotAt])
+  @@index([workspaceId])
+  @@index([snapshotAt])
+  @@index([overallScore])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data Room Access Log — Investor access tracking per document
+// Enables transparency in fundraising data room activity
+// ─────────────────────────────────────────────────────────────────────────────
+
+model DataRoomAccessLog {
+  id           String           @id @default(uuid())
+  documentId   String
+  document     DataRoomDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  accessorId   String
+  accessor     User             @relation("DataRoomAccesses", fields: [accessorId], references: [id], onDelete: Cascade)
+
+  // Access metadata
+  ipAddress    String?
+  userAgent    String?
+  durationSecs Int?             // Time spent viewing (seconds)
+
+  // Context
+  roundId      String?          // Which fundraising round context
+  source       String?          // "email_link", "direct", "investor_pipeline", "data_room_share"
+
+  // NDA / terms accepted at time of access
+  ndaAccepted  Boolean          @default(false)
+
+  accessedAt   DateTime         @default(now())
+
+  @@index([documentId])
+  @@index([accessorId])
+  @@index([documentId, accessedAt])
+  @@index([accessorId, accessedAt])
+  @@index([roundId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mentorship Goal — Structured, trackable goals within a mentorship relationship
+// Replaces the untyped Json goals field with a proper relational model
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum MentorshipGoalStatus {
+  active
+  in_progress
+  completed
+  paused
+  cancelled
+}
+
+model MentorshipGoal {
+  id             String                 @id @default(uuid())
+  relationshipId String
+  relationship   MentorshipRelationship @relation(fields: [relationshipId], references: [id], onDelete: Cascade)
+  createdById    String                 // mentor or mentee who set the goal
+
+  title          String
+  description    String?                @db.Text
+  category       String?                // "fundraising", "product", "team", "personal_growth", "skills", "network"
+  targetDate     DateTime?
+
+  status         MentorshipGoalStatus   @default(active)
+  progressPct    Int                    @default(0) // 0–100
+
+  // Success criteria (OKR-style)
+  successCriteria String?               @db.Text
+  keyResults      String[]              @default([])
+
+  // Session tracking
+  lastDiscussedAt DateTime?
+  checkInNotes    String?               @db.Text
+
+  // Completion
+  completedAt     DateTime?
+  completionNote  String?               @db.Text
+
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([relationshipId])
+  @@index([relationshipId, status])
+  @@index([targetDate])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// User Notification Channel — Granular per-user, per-channel, per-category
+// Extends UserPreference with fine-grained control per notification category
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum NotificationDeliveryChannel {
+  in_app
+  email
+  push
+  sms
+}
+
+model UserNotificationChannel {
+  id         String                      @id @default(uuid())
+  userId     String
+  user       User                        @relation("NotificationChannels", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Channel + category combination
+  channel    NotificationDeliveryChannel
+  category   String                      // "matches", "messages", "connections", "program", "milestone", "community", "system", "fundraising"
+
+  isEnabled  Boolean                     @default(true)
+
+  // Digest control
+  frequency  String                      @default("instant") // "instant", "daily", "weekly", "never"
+
+  // Quiet hours (stored as "HH:MM" 24h strings, null = no quiet hours)
+  quietFrom  String?
+  quietUntil String?
+
+  updatedAt  DateTime                    @updatedAt
+
+  @@unique([userId, channel, category])
+  @@index([userId])
+  @@index([userId, channel])
+  @@index([userId, isEnabled])
 }

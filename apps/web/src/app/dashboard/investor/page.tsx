@@ -1,0 +1,451 @@
+'use client';
+
+import { useEffect } from 'react';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  BarChart3,
+  Briefcase,
+  Building2,
+  ChevronRight,
+  DollarSign,
+  Eye,
+  Filter,
+  LineChart,
+  PieChart,
+  Rocket,
+  Search,
+  Star,
+  Target,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { AppShell } from '@/components/layout/AppShell';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { useSession } from '@/hooks/useSession';
+import { cn } from '@/lib/utils';
+import { getMeProfile } from '@/lib/api';
+
+function getTimeBasedGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  subtext,
+  trend,
+  href,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: number | string;
+  subtext?: string;
+  trend?: { value: number; positive: boolean };
+  href?: string;
+}) {
+  const content = (
+    <Card className="relative overflow-hidden transition-all hover:shadow-md">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">{label}</p>
+            <p className="text-2xl font-bold tabular-nums">{value}</p>
+            {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+            {trend && (
+              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+                {trend.positive ? '+' : ''}{trend.value}% this month
+              </p>
+            )}
+          </div>
+          <div className="rounded-lg bg-primary/10 p-2">
+            <Icon className="h-5 w-5 text-primary" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return href ? <Link href={href}>{content}</Link> : content;
+}
+
+function StartupCard({ startup }: { startup: any }) {
+  const stageColors: Record<string, string> = {
+    'pre-seed': 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+    'seed': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    'series-a': 'bg-green-500/10 text-green-600 border-green-500/20',
+    'series-b': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  };
+
+  return (
+    <Link
+      href={`/startups/${startup.id}`}
+      className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
+    >
+      <Avatar className="h-12 w-12 rounded-lg">
+        <AvatarImage src={startup.logoUrl} />
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+          {startup.name?.[0]?.toUpperCase() ?? '?'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium truncate">{startup.name}</p>
+          {startup.isHot && (
+            <Badge variant="destructive" className="h-5 text-[10px]">HOT</Badge>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-1">{startup.description}</p>
+        <div className="flex items-center gap-2 mt-1.5">
+          <Badge variant="outline" className={cn('text-[10px] h-5', stageColors[startup.stage] || '')}>
+            {startup.stage}
+          </Badge>
+          <span className="text-xs text-muted-foreground">{startup.industry}</span>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-sm font-semibold text-primary">{startup.raising}</p>
+        <p className="text-xs text-muted-foreground">{startup.matchScore}% match</p>
+      </div>
+    </Link>
+  );
+}
+
+function DealCard({ deal }: { deal: any }) {
+  const statusColors: Record<string, string> = {
+    'reviewing': 'bg-blue-500/10 text-blue-600',
+    'due-diligence': 'bg-amber-500/10 text-amber-600',
+    'negotiating': 'bg-purple-500/10 text-purple-600',
+    'closed': 'bg-green-500/10 text-green-600',
+    'passed': 'bg-gray-500/10 text-gray-600',
+  };
+
+  return (
+    <div className="flex items-center gap-3 rounded-lg border p-3">
+      <Avatar className="h-10 w-10 rounded-lg">
+        <AvatarImage src={deal.logoUrl} />
+        <AvatarFallback className="rounded-lg bg-muted">
+          {deal.name?.[0]?.toUpperCase() ?? '?'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{deal.name}</p>
+        <p className="text-xs text-muted-foreground">{deal.stage} · {deal.amount}</p>
+      </div>
+      <Badge className={cn('text-xs', statusColors[deal.status] || '')}>
+        {deal.status.replace('-', ' ')}
+      </Badge>
+    </div>
+  );
+}
+
+function PortfolioItem({ company }: { company: any }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border p-3">
+      <Avatar className="h-10 w-10 rounded-lg">
+        <AvatarImage src={company.logoUrl} />
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+          {company.name?.[0]?.toUpperCase() ?? '?'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{company.name}</p>
+        <p className="text-xs text-muted-foreground">Invested {company.investedDate}</p>
+      </div>
+      <div className="text-right">
+        <p className={cn(
+          'text-sm font-semibold',
+          company.returnMultiple >= 1 ? 'text-green-500' : 'text-red-500'
+        )}>
+          {company.returnMultiple}x
+        </p>
+        <p className="text-xs text-muted-foreground">{company.currentValue}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function InvestorDashboard() {
+  const { hasSession, mounted } = useSession();
+
+  const { data: profile } = useQuery({
+    queryKey: ['me-profile'],
+    queryFn: getMeProfile,
+    enabled: hasSession && mounted,
+  });
+
+  const displayName = profile?.profile?.displayName || 'Investor';
+
+  // Mock data - replace with actual API calls
+  const investorStats = {
+    dealFlow: 24,
+    activeDeals: 5,
+    portfolioCompanies: 12,
+    totalInvested: '$2.4M',
+    portfolioValue: '$8.7M',
+    avgReturn: '3.6x',
+  };
+
+  const trendingStartups = [
+    { id: '1', name: 'NeuralFlow AI', description: 'Enterprise AI automation platform', stage: 'seed', industry: 'AI/ML', raising: '$1.5M', matchScore: 92, isHot: true, logoUrl: null },
+    { id: '2', name: 'GreenGrid', description: 'Sustainable energy management', stage: 'pre-seed', industry: 'CleanTech', raising: '$500K', matchScore: 87, isHot: false, logoUrl: null },
+    { id: '3', name: 'HealthSync', description: 'Patient data interoperability', stage: 'seed', industry: 'HealthTech', raising: '$2M', matchScore: 84, isHot: true, logoUrl: null },
+  ];
+
+  const activeDeals = [
+    { id: '1', name: 'TechVenture', stage: 'Seed', amount: '$500K', status: 'due-diligence', logoUrl: null },
+    { id: '2', name: 'DataFlow', stage: 'Series A', amount: '$2M', status: 'negotiating', logoUrl: null },
+    { id: '3', name: 'CloudScale', stage: 'Seed', amount: '$750K', status: 'reviewing', logoUrl: null },
+  ];
+
+  const portfolio = [
+    { id: '1', name: 'AIStartup', investedDate: 'Jan 2024', returnMultiple: 2.4, currentValue: '$600K', logoUrl: null },
+    { id: '2', name: 'FinTech Co', investedDate: 'Mar 2023', returnMultiple: 1.8, currentValue: '$450K', logoUrl: null },
+    { id: '3', name: 'SaaS Platform', investedDate: 'Jun 2023', returnMultiple: 3.2, currentValue: '$800K', logoUrl: null },
+  ];
+
+  if (!mounted) {
+    return (
+      <AppShell>
+        <div className="container max-w-7xl py-6 space-y-6">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid gap-4 md:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-24" />
+            ))}
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell>
+      <div className="container max-w-7xl py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              {getTimeBasedGreeting()}, {displayName}
+            </h1>
+            <p className="text-muted-foreground">
+              Your investment portfolio and deal flow
+            </p>
+          </div>
+          <Badge variant="outline" className="gap-1.5">
+            <DollarSign className="h-3.5 w-3.5" />
+            Investor
+          </Badge>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard
+            icon={Briefcase}
+            label="Deal Flow"
+            value={investorStats.dealFlow}
+            subtext="This month"
+            trend={{ value: 18, positive: true }}
+          />
+          <StatCard
+            icon={Target}
+            label="Active Deals"
+            value={investorStats.activeDeals}
+            subtext="In pipeline"
+          />
+          <StatCard
+            icon={Building2}
+            label="Portfolio"
+            value={investorStats.portfolioCompanies}
+            subtext={investorStats.portfolioValue}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Avg Return"
+            value={investorStats.avgReturn}
+            subtext="Multiple"
+          />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Trending Startups */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Rocket className="h-4 w-4 text-primary" />
+                    Trending Startups
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="h-8">
+                      <Filter className="mr-1.5 h-3.5 w-3.5" />
+                      Filter
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href="/discover">
+                        View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {trendingStartups.map((startup) => (
+                  <StartupCard key={startup.id} startup={startup} />
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Active Deals */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    Active Deals
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/investor/pipeline">
+                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {activeDeals.map((deal) => (
+                  <DealCard key={deal.id} deal={deal} />
+                ))}
+                {activeDeals.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No active deals in pipeline
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Portfolio Performance */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <PieChart className="h-4 w-4 text-primary" />
+                    Portfolio Companies
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/investor/portfolio">
+                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {portfolio.map((company) => (
+                  <PortfolioItem key={company.id} company={company} />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2">
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/discover?type=startup">
+                    <Search className="mr-2 h-4 w-4" />
+                    Find Startups
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/shortlist">
+                    <Star className="mr-2 h-4 w-4" />
+                    View Shortlist
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/analytics">
+                    <LineChart className="mr-2 h-4 w-4" />
+                    Portfolio Analytics
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Investment Thesis */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Investment Focus</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Preferred Stages</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="secondary">Pre-seed</Badge>
+                    <Badge variant="secondary">Seed</Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Industries</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="outline">AI/ML</Badge>
+                    <Badge variant="outline">FinTech</Badge>
+                    <Badge variant="outline">SaaS</Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1.5">Check Size</p>
+                  <p className="text-sm font-medium">$100K - $500K</p>
+                </div>
+                <Button variant="secondary" size="sm" className="w-full" asChild>
+                  <Link href="/profile">
+                    Edit Preferences
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Recent Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <span className="text-muted-foreground">Viewed NeuralFlow AI</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-2 w-2 rounded-full bg-blue-500" />
+                  <span className="text-muted-foreground">Shortlisted GreenGrid</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-2 w-2 rounded-full bg-purple-500" />
+                  <span className="text-muted-foreground">Meeting with HealthSync</span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  );
+}

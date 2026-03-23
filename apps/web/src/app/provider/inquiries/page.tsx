@@ -1,0 +1,237 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import {
+  MessageSquare,
+  Search,
+  Filter,
+  MoreVertical,
+  Mail,
+  Clock,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+
+type Inquiry = {
+  id: string;
+  clientName: string;
+  clientAvatar?: string;
+  clientCompany?: string;
+  service: string;
+  message: string;
+  receivedAt: string;
+  status: 'new' | 'replied' | 'converted' | 'declined';
+};
+
+function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
+  const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
+    new: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Mail },
+    replied: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
+    converted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
+    declined: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: XCircle },
+  };
+
+  const config = statusConfig[inquiry.status];
+  const StatusIcon = config.icon;
+
+  return (
+    <Card className="transition-all hover:shadow-md hover:border-primary/30">
+      <CardContent className="p-4">
+        <div className="flex gap-4">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={inquiry.clientAvatar} />
+            <AvatarFallback>{inquiry.clientName[0]?.toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold">{inquiry.clientName}</span>
+                  <Badge variant="outline" className={cn('text-xs', config.color)}>
+                    <StatusIcon className="mr-1 h-3 w-3" />
+                    {inquiry.status}
+                  </Badge>
+                </div>
+                {inquiry.clientCompany && (
+                  <p className="text-sm text-muted-foreground">{inquiry.clientCompany}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{inquiry.receivedAt}</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>Reply</DropdownMenuItem>
+                    <DropdownMenuItem>Mark as Converted</DropdownMenuItem>
+                    <DropdownMenuItem>View Profile</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive">Decline</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+            <Badge variant="secondary" className="mt-2 text-xs">
+              {inquiry.service}
+            </Badge>
+            <p className="text-sm text-muted-foreground mt-2">{inquiry.message}</p>
+            {inquiry.status === 'new' && (
+              <div className="flex gap-2 mt-3">
+                <Button size="sm">Reply</Button>
+                <Button size="sm" variant="outline">View Details</Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function ProviderInquiriesPage() {
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+
+  // Mock data
+  const inquiries: Inquiry[] = [
+    {
+      id: '1',
+      clientName: 'John Doe',
+      clientCompany: 'TechStart Inc',
+      service: 'Startup Legal Package',
+      message: 'Hi, I need help with my startup incorporation documents. We are a team of 3 co-founders and need founder agreements as well.',
+      receivedAt: '2 hours ago',
+      status: 'new',
+    },
+    {
+      id: '2',
+      clientName: 'Jane Smith',
+      clientCompany: 'GreenTech Co',
+      service: 'Financial Model Creation',
+      message: 'Looking for help with our Series A financial model. We need 5-year projections with multiple scenarios.',
+      receivedAt: '1 day ago',
+      status: 'replied',
+    },
+    {
+      id: '3',
+      clientName: 'Mike Johnson',
+      clientCompany: 'DataFlow',
+      service: 'Contract Review',
+      message: 'Need to review our terms of service and privacy policy before launch.',
+      receivedAt: '2 days ago',
+      status: 'converted',
+    },
+    {
+      id: '4',
+      clientName: 'Sarah Williams',
+      clientCompany: 'HealthPulse',
+      service: 'Startup Legal Package',
+      message: 'Interested in your legal package. Can you provide more details on what is included?',
+      receivedAt: '3 days ago',
+      status: 'new',
+    },
+    {
+      id: '5',
+      clientName: 'Tom Brown',
+      service: 'Pitch Deck Design',
+      message: 'Looking for a pitch deck redesign for our upcoming fundraise.',
+      receivedAt: '1 week ago',
+      status: 'declined',
+    },
+  ];
+
+  const filteredInquiries = inquiries.filter((i) => {
+    const matchesSearch =
+      !search ||
+      i.clientName.toLowerCase().includes(search.toLowerCase()) ||
+      i.service.toLowerCase().includes(search.toLowerCase());
+    const matchesTab = activeTab === 'all' || i.status === activeTab;
+    return matchesSearch && matchesTab;
+  });
+
+  const counts = {
+    all: inquiries.length,
+    new: inquiries.filter((i) => i.status === 'new').length,
+    replied: inquiries.filter((i) => i.status === 'replied').length,
+    converted: inquiries.filter((i) => i.status === 'converted').length,
+  };
+
+  return (
+    <AppShell>
+      <div className="container max-w-4xl py-6 space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Inquiries</h1>
+          <p className="text-muted-foreground">
+            Manage incoming service inquiries
+          </p>
+        </div>
+
+        {/* Search */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search inquiries..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="all">
+              All <Badge variant="secondary" className="ml-1">{counts.all}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="new">
+              New <Badge variant="secondary" className="ml-1">{counts.new}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="replied">
+              Replied <Badge variant="secondary" className="ml-1">{counts.replied}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="converted">
+              Converted <Badge variant="secondary" className="ml-1">{counts.converted}</Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="mt-4 space-y-3">
+            {filteredInquiries.map((inquiry) => (
+              <InquiryCard key={inquiry.id} inquiry={inquiry} />
+            ))}
+            {filteredInquiries.length === 0 && (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                  <h3 className="font-medium">No inquiries found</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {activeTab === 'all'
+                      ? 'You have no inquiries yet'
+                      : `No ${activeTab} inquiries`}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </AppShell>
+  );
+}

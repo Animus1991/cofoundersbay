@@ -22,6 +22,12 @@ import {
   Eye,
   EyeOff,
   Link2,
+  Globe,
+  Lock,
+  AlertTriangle,
+  Trash2,
+  Download,
+  Activity,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -67,6 +73,46 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
         }`}
       />
     </button>
+  );
+}
+
+const PRIVACY_ITEMS = [
+  { id: 'publicProfile',  icon: Eye,      label: 'Public profile',      desc: 'Anyone can view your profile page' },
+  { id: 'showLocation',   icon: Globe,    label: 'Show location',        desc: 'Display city/region on your profile' },
+  { id: 'searchable',     icon: Lock,     label: 'Appear in search',     desc: 'Show up in member search and recommendations' },
+  { id: 'showActivity',   icon: Activity, label: 'Show recent activity', desc: 'Visible to connections on your profile' },
+] as const;
+
+function PrivacyCard() {
+  const [flags, setFlags] = useState<Record<string, boolean>>({
+    publicProfile: true, showLocation: true, searchable: true, showActivity: false,
+  });
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
+          Privacy & Visibility
+        </CardTitle>
+        <CardDescription>Control who can see your profile and activity.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {PRIVACY_ITEMS.map(({ id, icon: Icon, label, desc }) => (
+          <div key={id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">{label}</p>
+                <p className="text-xs text-muted-foreground">{desc}</p>
+              </div>
+            </div>
+            <Toggle checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -459,6 +505,9 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Privacy & Visibility */}
+          <PrivacyCard />
+
           {/* Account section */}
           <Card>
             <CardHeader>
@@ -491,8 +540,40 @@ export default function SettingsPage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                To delete your account, contact support.
+                To delete your account or export your data, contact support.
               </p>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-destructive/30">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+              <CardDescription>Irreversible actions that affect your account permanently.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="rounded-xl border border-border/60 p-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Export your data</p>
+                  <p className="text-xs text-muted-foreground">Download all your profile, connections, and activity data as a ZIP archive.</p>
+                </div>
+                <Button variant="outline" size="sm" className="shrink-0 gap-2">
+                  <Download className="h-3.5 w-3.5" />Export
+                </Button>
+              </div>
+              <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-destructive">Delete account</p>
+                  <p className="text-xs text-muted-foreground">Permanently remove your account and all associated data. This cannot be undone.</p>
+                </div>
+                <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => success('Contact support', 'Email support@cofounderbay.com to request account deletion.')}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />Delete
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>

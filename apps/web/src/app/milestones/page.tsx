@@ -6,7 +6,9 @@ import {
   Flag, Plus, CheckCircle2, Clock, AlertTriangle, XCircle,
   ChevronDown, Filter, Calendar, BarChart3, Edit2, Trash2,
   Target, TrendingUp, Users, RefreshCw, MoreVertical,
+  Search, LayoutGrid, LayoutList, X,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -279,6 +281,9 @@ export default function MilestonesPage() {
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<MilestoneStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -301,7 +306,12 @@ export default function MilestonesPage() {
     staleTime: 60_000,
   });
 
-  const milestones = data?.milestones ?? [];
+  const allMilestones = data?.milestones ?? [];
+  const milestones = allMilestones.filter((m) => {
+    if (categoryFilter !== 'all' && m.category !== categoryFilter) return false;
+    if (searchQuery && !m.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  });
 
   const createMut = useMutation({
     mutationFn: createMilestone,
@@ -377,6 +387,40 @@ export default function MilestonesPage() {
           <SummaryBar summary={summaryData} />
         )}
 
+        {/* Search + Category filter */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-48">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search milestones..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {['all', 'product', 'fundraising', 'hiring', 'partnerships', 'growth', 'other'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={cn(
+                  'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
+                  categoryFilter === cat
+                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {cat === 'all' ? 'All' : CATEGORY_LABELS[cat] ?? cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Filters + view */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Status tabs */}
@@ -405,7 +449,7 @@ export default function MilestonesPage() {
             ))}
           </div>
 
-          {/* Priority + Refresh */}
+          {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-secondary/30 px-3 py-1.5">
               <Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -419,6 +463,16 @@ export default function MilestonesPage() {
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </select>
+            </div>
+            <div className="flex items-center rounded-lg border border-border/50 bg-secondary/30 p-0.5 gap-0.5">
+              <button
+                onClick={() => setViewMode('list')}
+                className={cn('rounded p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              ><LayoutList className="h-3.5 w-3.5" /></button>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={cn('rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              ><LayoutGrid className="h-3.5 w-3.5" /></button>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
@@ -459,7 +513,7 @@ export default function MilestonesPage() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className={cn(viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2' : 'space-y-3')}>
             {milestones.map((m) => (
               <MilestoneCard
                 key={m.id}

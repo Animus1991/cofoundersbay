@@ -1,10 +1,10 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { navSections } from './nav-links';
+import { navSections, getNavSectionsForRole, type NavSection } from './nav-links';
 import { useSidebar } from './SidebarContext';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
@@ -33,6 +33,12 @@ export function SideNav() {
     try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
   }, []);
 
+  // Get role-based navigation sections
+  const sections: NavSection[] = useMemo(() => {
+    if (!user?.role) return navSections;
+    return getNavSectionsForRole(user.role);
+  }, [user?.role]);
+
   // Hide sidebar on auth pages
   const isAuthPage =
     pathname?.startsWith('/login') ||
@@ -44,9 +50,10 @@ export function SideNav() {
 
   if (isAuthPage) return null;
 
-  const badgeFor = (href: string): number => {
-    if (href === '/messages') return unreadMessages;
-    if (href === '/connections') return pendingIntros;
+  const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
+    if (badgeType === 'messages' || href === '/messages') return unreadMessages;
+    if (badgeType === 'connections' || href === '/connections') return pendingIntros;
+    if (badgeType === 'notifications' || href === '/notifications') return 0; // TODO: Add notifications count when available
     return 0;
   };
 
@@ -94,7 +101,7 @@ export function SideNav() {
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
-        {navSections.map(({ section, links }) => (
+        {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
               <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
@@ -104,10 +111,10 @@ export function SideNav() {
               <div className="mx-3 my-2 h-px bg-border/50" />
             )}
             <ul className="space-y-0.5 px-2">
-              {links.map(({ href, label, icon: Icon }) => {
+              {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
                 const active =
                   pathname === href || (href !== '/' && pathname?.startsWith(href));
-                const badge = badgeFor(href);
+                const badge = badgeFor(href, badgeType);
 
                 return (
                   <li key={`${section}-${href}`}>

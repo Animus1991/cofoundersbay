@@ -13,13 +13,21 @@ import {
   TrendingUp,
   Users,
   ArrowRight,
+  Rocket,
+  GraduationCap,
+  DollarSign,
+  Briefcase,
+  Star,
+  BadgeCheck,
+  Filter,
+  X as XIcon,
 } from 'lucide-react';
 import {
   searchProfiles, getRecommendations, sendConnectionRequest, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
@@ -32,6 +40,23 @@ const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m)
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 
 type ViewMode = 'grid' | 'list' | 'match';
+type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
+
+const ROLE_FILTERS: { value: RoleFilter; label: string; icon: React.ElementType; color: string }[] = [
+  { value: 'all',              label: 'All',             icon: Users,       color: 'text-foreground' },
+  { value: 'founder',         label: 'Founders',        icon: Rocket,      color: 'text-violet-500' },
+  { value: 'cofounder',       label: 'Co-founders',     icon: Users,       color: 'text-blue-500'   },
+  { value: 'mentor',          label: 'Mentors',         icon: GraduationCap, color: 'text-emerald-500' },
+  { value: 'investor',        label: 'Investors',       icon: DollarSign,  color: 'text-amber-500'  },
+  { value: 'service_provider',label: 'Service Providers', icon: Briefcase, color: 'text-pink-500'   },
+];
+
+const PLATFORM_STATS = [
+  { label: 'Active Founders',  value: '1,200+', icon: Rocket      },
+  { label: 'Expert Mentors',   value: '180+',   icon: GraduationCap },
+  { label: 'Successful Matches', value: '450+', icon: Star        },
+  { label: 'Communities',      value: '25+',    icon: Users       },
+];
 
 type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
 type MatchReason = { type: MatchReasonType; text: string; score: number };
@@ -71,6 +96,7 @@ export default function DiscoverPage() {
   const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [activeTab, setActiveTab] = useState<'search' | 'suggestions' | 'matches'>('search');
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
 
   // Connection request dialog
   const [connectionTarget, setConnectionTarget] = useState<ProfileCardData | null>(null);
@@ -170,10 +196,16 @@ export default function DiscoverPage() {
     success('Profile saved', `${profile.displayName} added to your bookmarks`);
   };
 
+  // Apply role filter to hits
+  const filteredHits = roleFilter === 'all' ? hits : hits.filter((h) =>
+    h.role?.toLowerCase().includes(roleFilter.replace('_', ' ')) ||
+    h.role?.toLowerCase() === roleFilter
+  );
+
   return (
     <AppShell>
-      <div className="space-y-6">
-        {/* Context Bar */}
+      <div className="space-y-5">
+        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">Explore</h1>
@@ -191,8 +223,28 @@ export default function DiscoverPage() {
           </div>
         </div>
 
+        {/* Platform stats bar */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {PLATFORM_STATS.map((s) => {
+            const SIcon = s.icon;
+            return (
+              <Card key={s.label} className="border-border/40 bg-gradient-to-br from-card to-muted/20">
+                <CardContent className="flex items-center gap-3 p-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <SIcon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <TabsList>
               <TabsTrigger value="search" className="gap-2">
@@ -230,6 +282,40 @@ export default function DiscoverPage() {
           </div>
         </div>
 
+        {/* Role filter chips - shown for search & suggestions tabs */}
+        {activeTab !== 'matches' && (
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            {ROLE_FILTERS.map((rf) => {
+              const RIcon = rf.icon;
+              const isActive = roleFilter === rf.value;
+              return (
+                <button
+                  key={rf.value}
+                  onClick={() => setRoleFilter(rf.value)}
+                  className={cn(
+                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    isActive
+                      ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                      : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
+                  )}
+                >
+                  <RIcon className={cn('h-3 w-3', isActive ? 'text-primary-foreground' : rf.color)} />
+                  {rf.label}
+                </button>
+              );
+            })}
+            {roleFilter !== 'all' && (
+              <button
+                onClick={() => setRoleFilter('all')}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <XIcon className="h-3 w-3" /> Clear
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Search Tab */}
         <TabsContent value="search" className="space-y-8 mt-6">
           {/* Filters */}
@@ -253,6 +339,44 @@ export default function DiscoverPage() {
             </div>
           )}
 
+          {/* Featured strip when no query */}
+          {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
+            <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <BadgeCheck className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
+                <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {hits.slice(0, 4).map((h) => (
+                  <Link key={h.id} href={`/profile/${h.userId}`}
+                    className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {h.displayName?.charAt(0) ?? '?'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate max-w-[100px]">{h.displayName}</p>
+                      <p className="text-[10px] text-muted-foreground truncate max-w-[100px]">{h.role}</p>
+                    </div>
+                    {h.matchScore !== undefined && (
+                      <span className={cn(
+                        'ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                        h.matchScore >= 80 ? 'bg-emerald-500/15 text-emerald-600' : h.matchScore >= 60 ? 'bg-blue-500/15 text-blue-600' : 'bg-muted text-muted-foreground',
+                      )}>{h.matchScore}%</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loading && filteredHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
+            <div className="flex flex-col items-center gap-3 py-10 text-center">
+              <p className="text-sm text-muted-foreground">No {roleFilter.replace('_', ' ')}s found. Try clearing the role filter.</p>
+              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary hover:underline">Show all roles</button>
+            </div>
+          )}
+
           {!loading && hits.length === 0 && (
             <EmptyState
               title="No profiles found"
@@ -267,7 +391,7 @@ export default function DiscoverPage() {
             />
           )}
 
-          {!loading && hits.length > 0 && (
+          {!loading && filteredHits.length > 0 && (
             <AnimatedList
               animation="fade-in-up"
               staggerDelay={50}
@@ -276,7 +400,7 @@ export default function DiscoverPage() {
                 viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
               )}
             >
-              {hits.map((hit) => {
+              {filteredHits.map((hit) => {
                 const profile = hitToProfile(hit);
                 return (
                   <ProfileCard

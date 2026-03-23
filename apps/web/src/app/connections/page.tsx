@@ -15,6 +15,7 @@ import {
   Compass,
   Handshake,
   Quote,
+  TrendingUp,
 } from 'lucide-react';
 import {
   listConnectionRequests,
@@ -34,6 +35,7 @@ import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CollaborationStarter, PostAcceptCollaborationModal } from '@/components/collaboration/CollaborationStarter';
+import { cn } from '@/lib/utils';
 
 function ConnectionCard({
   connection,
@@ -295,6 +297,31 @@ export default function ConnectionsPage() {
         </Link>
       }
     >
+      {/* Stats bar */}
+      {!isLoading && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: 'Connected', value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+            { label: 'Intro Requests', value: introCount, icon: Handshake, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { label: 'Sent Pending', value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { label: 'Total Interactions', value: (data?.connections ?? []).length, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          ].map((s) => {
+            const SIcon = s.icon;
+            return (
+              <div key={s.label} className="flex items-center gap-2.5 rounded-xl border border-border/40 bg-card p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <SIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">

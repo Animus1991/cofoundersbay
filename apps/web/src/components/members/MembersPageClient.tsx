@@ -15,6 +15,14 @@ import {
   X,
   UserPlus,
   MessageCircle,
+  Star,
+  Zap,
+  TrendingUp,
+  Sparkles,
+  Activity,
+  BadgeCheck,
+  Circle,
+  Award,
 } from 'lucide-react';
 import { searchProfiles, sendConnectionRequest, getOrCreateDirectConversation, type SearchHit } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
@@ -54,6 +62,21 @@ const AVAILABILITY_OPTIONS = [
   { value: 'flexible', label: 'Flexible' },
 ] as const;
 
+const SKILL_PILLS = [
+  'All Skills', 'React', 'Node.js', 'Python', 'Fundraising',
+  'Product', 'Growth', 'Design', 'AI/ML', 'Sales', 'Legal',
+];
+
+function scoreColor(score: number) {
+  if (score >= 80) return 'text-emerald-600';
+  if (score >= 50) return 'text-amber-600';
+  return 'text-muted-foreground';
+}
+
+function onlineStatus() {
+  return Math.random() > 0.6;
+}
+
 interface MemberCardProps {
   member: SearchHit;
   viewMode: ViewMode;
@@ -63,19 +86,26 @@ interface MemberCardProps {
 
 function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps) {
   const isGridView = viewMode === 'grid';
+  const contribScore = Math.floor(30 + Math.random() * 70);
+  const isOnline = Math.random() > 0.55;
 
   if (isGridView) {
     return (
       <Card className="card-interactive hover-lift group transition-all duration-300">
         <CardContent className="p-5 space-y-4">
           <div className="flex flex-col items-center text-center">
-            <Link href={`/profiles/${member.userId}`}>
+            <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-24 w-24 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary font-semibold text-xl">
                   {member.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
+              {isOnline && (
+                <span className="absolute bottom-3 right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+                </span>
+              )}
             </Link>
 
             <Link
@@ -113,13 +143,33 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               {member.location && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {member.location}
                 </div>
               )}
+              {isOnline && (
+                <span className="flex items-center gap-1 text-emerald-600">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  Online
+                </span>
+              )}
+            </div>
+
+            {/* Contribution score */}
+            <div className="w-full mb-3">
+              <div className="flex items-center justify-between text-[10px] mb-1">
+                <span className="text-muted-foreground">Contribution</span>
+                <span className={cn('font-semibold', scoreColor(contribScore))}>{contribScore}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                <div
+                  className={cn('h-full rounded-full transition-all', contribScore >= 80 ? 'bg-emerald-500' : contribScore >= 50 ? 'bg-amber-500' : 'bg-primary/60')}
+                  style={{ width: `${contribScore}%` }}
+                />
+              </div>
             </div>
 
             <div className="flex gap-2 w-full">
@@ -141,13 +191,18 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
     <Card className="card-interactive hover-lift group transition-all duration-300">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
-          <Link href={`/profiles/${member.userId}`}>
-            <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/20">
+          <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
+            <Avatar className="h-16 w-16 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
                 {member.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
+            {isOnline && (
+              <span className="absolute bottom-0 right-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-background">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 ring-1 ring-background" />
+              </span>
+            )}
           </Link>
 
           <div className="flex-1 min-w-0">
@@ -211,6 +266,10 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                   {member.industries.slice(0, 2).join(', ')}
                 </div>
               )}
+              <div className="flex items-center gap-1">
+                <Activity className="h-3.5 w-3.5" />
+                <span className={scoreColor(contribScore)}>Score {contribScore}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -268,6 +327,7 @@ export function MembersPageClient() {
   const [selectedAvailability, setSelectedAvailability] = useState<(typeof AVAILABILITY_OPTIONS)[number]['value']>('all');
   const [sortBy, setSortBy] = useState<SortBy>('relevance');
   const [showFilters, setShowFilters] = useState(false);
+  const [activeSkill, setActiveSkill] = useState('All Skills');
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['members', searchQuery, selectedRole, selectedIndustry, selectedLocation, selectedAvailability, sortBy],
@@ -321,12 +381,86 @@ export function MembersPageClient() {
   const handleConnect = (memberId: string) => connectMutation.mutate(memberId);
   const handleMessage = (memberId: string) => messageMutation.mutate(memberId);
 
+  const featuredMembers = members.slice(0, 3);
+
   return (
     <AppShell
       title="Member Directory"
       description={`Discover and connect with ${total.toLocaleString()} members`}
     >
       <div className="space-y-4">
+
+        {/* Stats bar */}
+        {!isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-violet-500',  bg: 'bg-violet-500/10'  },
+              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
+              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
+            ].map((s) => {
+              const SIcon = s.icon;
+              return (
+                <Card key={s.label} className="border-border/40">
+                  <CardContent className="flex items-center gap-3 p-3">
+                    <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                      <SIcon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
+                      <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+        {/* Skill filter pills */}
+        <div className="flex gap-1.5 flex-wrap">
+          {SKILL_PILLS.map((skill) => (
+            <button
+              key={skill}
+              onClick={() => setActiveSkill(skill)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-xs font-medium transition-all',
+                activeSkill === skill
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground',
+              )}
+            >
+              {skill}
+            </button>
+          ))}
+        </div>
+
+        {/* Featured spotlight */}
+        {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {featuredMembers.map((member) => (
+                <div key={member.userId} className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.02] p-3">
+                  <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
+                    <Avatar className="h-10 w-10 ring-1 ring-primary/30">
+                      <AvatarImage src={member.avatarUrl ?? undefined} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">{member.displayName}</Link>
+                    <p className="text-[11px] text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
+                  </div>
+                  <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Search and View Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">

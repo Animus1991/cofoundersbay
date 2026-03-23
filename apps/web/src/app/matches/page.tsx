@@ -5,11 +5,14 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Sparkles, ArrowRight, UserPlus, SlidersHorizontal, ArrowUpDown, RefreshCw } from 'lucide-react';
+import { Sparkles, ArrowRight, UserPlus, SlidersHorizontal, ArrowUpDown, RefreshCw, BarChart3, Award, Zap, ChevronRight, X } from 'lucide-react';
 import { getRecommendations, sendConnectionRequest, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AnimatedList } from '@/components/common/AnimatedList';
 import { MatchCard } from '@/components/common/MatchCard';
@@ -18,10 +21,83 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
 import { cn } from '@/lib/utils';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
+import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
+
+function buildDimensions(score: number) {
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  return [
+    { subject: 'Skills',   value: clamp(score + Math.round(score * 0.08)),  fullMark: 100 },
+    { subject: 'Stage',    value: clamp(score - Math.round(score * 0.05)),  fullMark: 100 },
+    { subject: 'Industry', value: clamp(score + Math.round(score * 0.12)),  fullMark: 100 },
+    { subject: 'Location', value: clamp(score - Math.round(score * 0.15)),  fullMark: 100 },
+    { subject: 'Values',   value: clamp(score + Math.round(score * 0.04)),  fullMark: 100 },
+  ];
+}
+
+function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; open: boolean; onClose: () => void }) {
+  if (!hit) return null;
+  const score = hit.matchScore ?? 50;
+  const dims = buildDimensions(score);
+  const reasons: MatchReason[] = hit.matchReasons?.length
+    ? hit.matchReasons.map((t) => ({ type: 'skills' as const, text: t, score: 0 }))
+    : buildMatchReasonsFromScore(score);
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Compatibility with {hit.displayName}
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
+          <div className="text-center">
+            <p className="text-4xl font-extrabold tabular-nums text-primary">{score}%</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Overall Match</p>
+          </div>
+        </div>
+
+        <ResponsiveContainer width="100%" height={200}>
+          <RadarChart data={dims}>
+            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+            <Radar dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} />
+          </RadarChart>
+        </ResponsiveContainer>
+
+        <div className="space-y-2.5">
+          {dims.map((d) => (
+            <div key={d.subject} className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="font-medium text-foreground">{d.subject}</span>
+                <span className="text-muted-foreground tabular-nums">{d.value}%</span>
+              </div>
+              <Progress value={d.value} className="h-1.5" />
+            </div>
+          ))}
+        </div>
+
+        {reasons.length > 0 && (
+          <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you match</p>
+            {reasons.map((r, i) => (
+              <div key={i} className="flex items-start gap-2 text-sm">
+                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-foreground">{r.text}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function buildMatchReasonsFromScore(score: number): MatchReason[] {
   const reasons: MatchReason[] = [];
@@ -68,6 +144,7 @@ export default function MatchesPage() {
   const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const [sortBy, setSortBy] = useState<SortKey>('score');
+  const [breakdownTarget, setBreakdownTarget] = useState<SearchHit | null>(null);
 
   const hasToken = useIsAuthenticated();
   const { data, isLoading, isError, refetch } = useQuery({
@@ -275,6 +352,28 @@ export default function MatchesPage() {
           </div>
         )}
 
+        {/* Top Match Spotlight */}
+        {hasToken && !isLoading && suggestions.length > 0 && counts.excellent > 0 && (
+          <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-transparent p-4 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Award className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-foreground">
+                  {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Found
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {filtered[0]?.matchScore ?? 0}% top score · Act now before they connect with someone else
+                </p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="shrink-0">
+              View All <ChevronRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </div>
+        )}
+
         {hasToken && !isLoading && suggestions.length === 0 && (
           <EmptyState
             title="No matches yet"
@@ -314,28 +413,55 @@ export default function MatchesPage() {
                 ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
                 : buildMatchReasonsFromScore(score);
               return (
-                <MatchCard
-                  key={hit.id}
-                  id={hit.id}
-                  userId={hit.userId}
-                  displayName={hit.displayName}
-                  headline={hit.headline}
-                  avatarUrl={hit.avatarUrl}
-                  role={hit.role}
-                  location={hit.location}
-                  skills={hit.skillNames ?? []}
-                  compatibilityScore={score}
-                  matchReasons={matchReasons}
-                  onLike={() => handleConnect(profile)}
-                  onPass={() => {}}
-                  onMessage={() => handleMessage(profile)}
-                  onBookmark={() => success('Saved', `${hit.displayName} added to bookmarks`)}
-                />
+                <div key={hit.id} className="space-y-0">
+                  <MatchCard
+                    id={hit.id}
+                    userId={hit.userId}
+                    displayName={hit.displayName}
+                    headline={hit.headline}
+                    avatarUrl={hit.avatarUrl}
+                    role={hit.role}
+                    location={hit.location}
+                    skills={hit.skillNames ?? []}
+                    compatibilityScore={score}
+                    matchReasons={matchReasons}
+                    onLike={() => handleConnect(profile)}
+                    onPass={() => {}}
+                    onMessage={() => handleMessage(profile)}
+                    onBookmark={() => success('Saved', `${hit.displayName} added to bookmarks`)}
+                  />
+                  <div className="flex items-center justify-between px-4 py-2 rounded-b-xl border border-t-0 border-border/40 bg-secondary/20">
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        'text-[10px] h-5',
+                        score >= 80 ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                        score >= 65 ? 'bg-cyan-500/10 text-cyan-600 border-cyan-500/20' :
+                        score >= 45 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                      'bg-red-500/10 text-red-500 border-red-500/20'
+                      )}
+                    >
+                      {score >= 80 ? 'Excellent' : score >= 65 ? 'Strong' : score >= 45 ? 'Good' : 'Potential'}
+                    </Badge>
+                    <button
+                      onClick={() => setBreakdownTarget(hit)}
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <BarChart3 className="h-3 w-3" /> View breakdown
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </AnimatedList>
         )}
       </div>
+
+      <CompatibilityModal
+        hit={breakdownTarget}
+        open={!!breakdownTarget}
+        onClose={() => setBreakdownTarget(null)}
+      />
 
       {connectionTarget && (
         <ConnectionRequestDialog

@@ -682,7 +682,7 @@ export type DashboardStats = {
 
 export type DashboardActivityItem = {
   id: string;
-  type: 'connection' | 'event';
+  type: 'connection' | 'event' | 'match' | 'message' | 'milestone' | 'achievement' | 'endorsement' | 'job' | 'system' | 'invite';
   title: string;
   author?: string;
   timeAgo: string;
@@ -1021,6 +1021,262 @@ export async function updateMentorBooking(
     method: 'PATCH',
     body: JSON.stringify(body),
   });
+}
+
+// --- Mentorship System (comprehensive) ---
+
+export type MentorProfileItem = {
+  id: string;
+  userId: string;
+  displayName: string;
+  headline: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+  location: string | null;
+  industries: string[];
+  skills: string[];
+  startupStages: string[];
+  yearsExperience: number | null;
+  availabilityStatus: 'available' | 'limited' | 'unavailable';
+  isFree: boolean;
+  hourlyRate: number | null;
+  currency: string | null;
+  sessionCount: number;
+  rating: number | null;
+  reviewCount: number;
+};
+
+export type MentorRequestItem = {
+  id: string;
+  requesterId: string;
+  mentorId: string;
+  message: string;
+  goals: string | null;
+  focusAreas: string[];
+  preferredFormat: string | null;
+  status: 'pending' | 'accepted' | 'declined' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
+  requester: {
+    id: string;
+    displayName: string;
+    headline: string | null;
+    avatarUrl: string | null;
+    role: string;
+  };
+  mentor: {
+    id: string;
+    displayName: string;
+    headline: string | null;
+    avatarUrl: string | null;
+  };
+};
+
+export type MentorshipRelationshipItem = {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  status: 'active' | 'paused' | 'completed' | 'cancelled';
+  goals: Record<string, unknown> | null;
+  focusAreas: string[];
+  startedAt: string;
+  completedAt: string | null;
+  nextSessionAt: string | null;
+  totalSessions: number;
+  mentor: {
+    id: string;
+    displayName: string;
+    headline: string | null;
+    avatarUrl: string | null;
+  };
+  mentee: {
+    id: string;
+    displayName: string;
+    headline: string | null;
+    avatarUrl: string | null;
+    role: string;
+  };
+};
+
+export type MentorshipSessionItem = {
+  id: string;
+  relationshipId: string;
+  title: string | null;
+  description: string | null;
+  scheduledAt: string;
+  duration: number;
+  timezone: string | null;
+  meetingType: 'video' | 'in_person' | 'chat' | null;
+  meetingUrl: string | null;
+  meetingLocation: string | null;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  agenda: string | null;
+  mentorNotes: string | null;
+  menteeNotes: string | null;
+  actionItems: Record<string, unknown>[] | null;
+  mentorRating: number | null;
+  menteeRating: number | null;
+  createdAt: string;
+};
+
+export type MentorDashboardStats = {
+  activeMentees: number;
+  pendingRequests: number;
+  completedMentorships: number;
+  upcomingSessions: number;
+  totalSessions: number;
+  averageRating: number | null;
+  recentActivity: Array<{
+    type: 'request' | 'session' | 'message';
+    description: string;
+    timestamp: string;
+  }>;
+};
+
+export async function discoverMentors(params?: {
+  industries?: string[];
+  skills?: string[];
+  startupStages?: string[];
+  availabilityStatus?: string;
+  isFree?: boolean;
+  search?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ mentors: MentorProfileItem[]; total: number; page: number; totalPages: number }> {
+  const sp = new URLSearchParams();
+  if (params?.industries?.length) sp.set('industries', params.industries.join(','));
+  if (params?.skills?.length) sp.set('skills', params.skills.join(','));
+  if (params?.startupStages?.length) sp.set('startupStages', params.startupStages.join(','));
+  if (params?.availabilityStatus) sp.set('availabilityStatus', params.availabilityStatus);
+  if (params?.isFree !== undefined) sp.set('isFree', String(params.isFree));
+  if (params?.search) sp.set('search', params.search);
+  if (params?.page) sp.set('page', String(params.page));
+  if (params?.limit) sp.set('limit', String(params.limit));
+  return apiRequest(`/api/mentorship/mentors${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function getMentorProfile(userId: string): Promise<{ mentor: MentorProfileItem }> {
+  return apiRequest(`/api/mentorship/mentors/${userId}`);
+}
+
+export async function sendMentorRequest(body: {
+  mentorId: string;
+  message: string;
+  goals?: string;
+  focusAreas?: string[];
+  preferredFormat?: string;
+  workspaceId?: string;
+  programId?: string;
+}): Promise<{ request: MentorRequestItem }> {
+  return apiRequest('/api/mentorship/requests', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getMySentMentorRequests(): Promise<{ requests: MentorRequestItem[] }> {
+  return apiRequest('/api/mentorship/requests/sent');
+}
+
+export async function getMyReceivedMentorRequests(): Promise<{ requests: MentorRequestItem[] }> {
+  return apiRequest('/api/mentorship/requests/received');
+}
+
+export async function respondToMentorRequest(
+  requestId: string,
+  body: { accept: boolean; responseMessage?: string },
+): Promise<{ request: MentorRequestItem; relationship?: MentorshipRelationshipItem }> {
+  return apiRequest(`/api/mentorship/requests/${requestId}/respond`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getMyMentorships(
+  role: 'mentor' | 'mentee' = 'mentee',
+): Promise<{ relationships: MentorshipRelationshipItem[] }> {
+  return apiRequest(`/api/mentorship/relationships?role=${role}`);
+}
+
+export async function getMentorshipById(id: string): Promise<{ relationship: MentorshipRelationshipItem }> {
+  return apiRequest(`/api/mentorship/relationships/${id}`);
+}
+
+export async function updateMentorship(
+  id: string,
+  body: {
+    status?: string;
+    goals?: Record<string, unknown>;
+    focusAreas?: string[];
+    mentorNotes?: string;
+    menteeNotes?: string;
+    nextSessionAt?: string;
+  },
+): Promise<{ relationship: MentorshipRelationshipItem }> {
+  return apiRequest(`/api/mentorship/relationships/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function scheduleMentorshipSession(
+  relationshipId: string,
+  body: {
+    title?: string;
+    description?: string;
+    scheduledAt: string;
+    duration?: number;
+    timezone?: string;
+    meetingType?: 'video' | 'in_person' | 'chat';
+    meetingUrl?: string;
+    meetingLocation?: string;
+    agenda?: string;
+  },
+): Promise<{ session: MentorshipSessionItem }> {
+  return apiRequest(`/api/mentorship/relationships/${relationshipId}/sessions`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getMentorshipSessions(
+  relationshipId: string,
+): Promise<{ sessions: MentorshipSessionItem[] }> {
+  return apiRequest(`/api/mentorship/relationships/${relationshipId}/sessions`);
+}
+
+export async function updateMentorshipSession(
+  sessionId: string,
+  body: {
+    title?: string;
+    description?: string;
+    scheduledAt?: string;
+    duration?: number;
+    meetingType?: string;
+    meetingUrl?: string;
+    status?: string;
+    agenda?: string;
+    mentorNotes?: string;
+    menteeNotes?: string;
+    actionItems?: Record<string, unknown>[];
+    mentorRating?: number;
+    menteeRating?: number;
+    mentorFeedback?: string;
+    menteeFeedback?: string;
+  },
+): Promise<{ session: MentorshipSessionItem }> {
+  return apiRequest(`/api/mentorship/sessions/${sessionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function getUpcomingMentorshipSessions(): Promise<{ sessions: MentorshipSessionItem[] }> {
+  return apiRequest('/api/mentorship/sessions/upcoming');
+}
+
+export async function getMentorDashboardStats(): Promise<MentorDashboardStats> {
+  return apiRequest('/api/mentorship/dashboard/mentor');
 }
 
 // --- Moderation / Admin ---
@@ -3342,4 +3598,174 @@ export interface ResearchBoardAnalysis {
 
 export async function analyzeResearchBoard(boardId: string): Promise<{ analysis: ResearchBoardAnalysis }> {
   return apiRequest(`/api/research/boards/${boardId}/analyze`, { method: 'POST' });
+}
+
+// ─── Programs ────────────────────────────────────────────────────────────────
+
+export interface ProgramItem {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  programType: string;
+  status: string;
+  startDate: string | null;
+  endDate: string | null;
+  applicationDeadline: string | null;
+  capacity: number | null;
+  isRemote: boolean;
+  location: string | null;
+  industries: string[];
+  benefits: string[];
+  requirements: Record<string, unknown> | null;
+  curriculum: Record<string, unknown> | null;
+  settings: Record<string, unknown> | null;
+  applicationCount: number;
+  participantCount: number;
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+    logoUrl: string | null;
+    organizationType: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgramParticipantItem {
+  id: string;
+  userId: string;
+  status: string;
+  role: string | null;
+  appliedAt: string;
+  acceptedAt: string | null;
+  completedAt: string | null;
+  user: { id: string; profile: { displayName: string | null; avatarUrl: string | null } | null };
+}
+
+export async function listPrograms(params?: {
+  programType?: string;
+  status?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<{ programs: ProgramItem[]; total: number }> {
+  const q = new URLSearchParams();
+  if (params?.programType) q.set('programType', params.programType);
+  if (params?.status) q.set('status', params.status);
+  if (params?.search) q.set('search', params.search);
+  if (params?.limit) q.set('limit', String(params.limit));
+  if (params?.offset) q.set('offset', String(params.offset));
+  return apiRequest(`/api/programs?${q}`);
+}
+
+export async function getProgram(id: string): Promise<{ program: ProgramItem }> {
+  return apiRequest(`/api/programs/${id}`);
+}
+
+export async function getMyPrograms(): Promise<{ programs: ProgramItem[] }> {
+  return apiRequest(`/api/programs/my-programs`);
+}
+
+export async function applyToProgram(
+  id: string,
+  application?: Record<string, unknown>,
+): Promise<{ participant: ProgramParticipantItem }> {
+  return apiRequest(`/api/programs/${id}/apply`, {
+    method: 'POST',
+    body: JSON.stringify({ application }),
+  });
+}
+
+export async function getProgramParticipants(
+  id: string,
+  params?: { status?: string; role?: string },
+): Promise<{ participants: ProgramParticipantItem[] }> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  if (params?.role) q.set('role', params.role);
+  return apiRequest(`/api/programs/${id}/participants?${q}`);
+}
+
+// ─── Builder Readiness ───────────────────────────────────────────────────────
+
+export interface ReadinessScore {
+  id: string;
+  workspaceId: string;
+  dimension: string;
+  score: number;
+  maxScore: number;
+  criteria: Array<{ id: string; name: string; completed: boolean; weight: number; notes?: string }>;
+  recommendations: string[];
+  assessedAt: string;
+}
+
+export interface ReadinessOverall {
+  overallScore: number;
+  overallMax: number;
+  dimensions: ReadinessScore[];
+  lastAssessedAt: string | null;
+  acceleratorReadiness: number;
+  investorReadiness: number;
+}
+
+export async function assessReadiness(dto: {
+  workspaceId: string;
+  dimensions?: string[];
+}): Promise<{ assessment: ReadinessOverall }> {
+  return apiRequest(`/api/builder/readiness/assess`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function updateReadinessCriterion(
+  workspaceId: string,
+  dto: { dimension: string; criterionId: string; completed: boolean; notes?: string },
+): Promise<{ score: ReadinessScore }> {
+  return apiRequest(`/api/builder/workspaces/${workspaceId}/readiness/criterion`, {
+    method: 'PATCH',
+    body: JSON.stringify(dto),
+  });
+}
+
+// ─── Builder Applications ────────────────────────────────────────────────────
+
+export interface BuilderApplicationItem {
+  id: string;
+  workspaceId: string;
+  targetProgram: string;
+  targetOrganization: string | null;
+  status: string;
+  content: Record<string, unknown>;
+  submittedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listBuilderApplications(
+  workspaceId: string,
+): Promise<{ applications: BuilderApplicationItem[] }> {
+  return apiRequest(`/api/builder/workspaces/${workspaceId}/applications`);
+}
+
+export async function createBuilderApplication(
+  workspaceId: string,
+  data: { targetProgram: string; targetOrganization?: string; content?: Record<string, unknown> },
+): Promise<{ application: BuilderApplicationItem }> {
+  return apiRequest(`/api/builder/workspaces/${workspaceId}/applications`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateBuilderApplication(
+  applicationId: string,
+  data: Partial<BuilderApplicationItem>,
+): Promise<{ application: BuilderApplicationItem }> {
+  return apiRequest(`/api/builder/applications/${applicationId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
 }

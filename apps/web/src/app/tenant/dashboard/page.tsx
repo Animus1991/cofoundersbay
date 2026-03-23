@@ -1,0 +1,223 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import {
+  Building2,
+  Users,
+  Award,
+  TrendingUp,
+  Calendar,
+  MoreVertical,
+  ChevronRight,
+  Rocket,
+  GraduationCap,
+} from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
+function StatCard({
+  title,
+  value,
+  change,
+  icon: Icon,
+  iconColor,
+}: {
+  title: string;
+  value: string | number;
+  change?: string;
+  icon: React.ElementType;
+  iconColor?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3">
+          <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
+            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary')} />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold">{value}</p>
+            {change && (
+              <p className="text-xs text-muted-foreground">{change}</p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function TenantDashboardPage() {
+  // Mock data
+  const stats = {
+    totalMembers: 156,
+    activePrograms: 4,
+    startups: 28,
+    mentors: 12,
+  };
+
+  const recentMembers = [
+    { id: '1', name: 'John Doe', role: 'Founder', joinedAt: '2 days ago', avatarUrl: '' },
+    { id: '2', name: 'Jane Smith', role: 'Mentor', joinedAt: '3 days ago', avatarUrl: '' },
+    { id: '3', name: 'Mike Johnson', role: 'Founder', joinedAt: '1 week ago', avatarUrl: '' },
+  ];
+
+  const activePrograms = [
+    { id: '1', name: 'Spring Accelerator 2025', startups: 12, progress: 65, status: 'active' },
+    { id: '2', name: 'AI Innovation Lab', startups: 8, progress: 30, status: 'active' },
+    { id: '3', name: 'Pre-seed Bootcamp', startups: 8, progress: 90, status: 'ending_soon' },
+  ];
+
+  const upcomingEvents = [
+    { id: '1', name: 'Demo Day', date: 'Mar 28, 2025', type: 'Event' },
+    { id: '2', name: 'Mentor Office Hours', date: 'Mar 25, 2025', type: 'Session' },
+    { id: '3', name: 'Investor Pitch Night', date: 'Apr 5, 2025', type: 'Event' },
+  ];
+
+  return (
+    <AppShell>
+      <div className="container max-w-6xl py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Tenant Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your organization on CoFounderBay
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/tenant/branding">
+                <Building2 className="mr-2 h-4 w-4" />
+                Branding
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/tenant/settings">Settings</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatCard
+            title="Total Members"
+            value={stats.totalMembers}
+            change="+12 this month"
+            icon={Users}
+          />
+          <StatCard
+            title="Active Programs"
+            value={stats.activePrograms}
+            icon={Award}
+            iconColor="bg-purple-500"
+          />
+          <StatCard
+            title="Startups"
+            value={stats.startups}
+            change="+5 this month"
+            icon={Rocket}
+            iconColor="bg-blue-500"
+          />
+          <StatCard
+            title="Mentors"
+            value={stats.mentors}
+            icon={GraduationCap}
+            iconColor="bg-green-500"
+          />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Active Programs */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg">Active Programs</CardTitle>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/tenant/programs">
+                  View All
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {activePrograms.map((program) => (
+                <div key={program.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{program.name}</span>
+                      <Badge variant={program.status === 'ending_soon' ? 'destructive' : 'secondary'} className="text-xs">
+                        {program.status === 'ending_soon' ? 'Ending Soon' : 'Active'}
+                      </Badge>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{program.startups} startups</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress value={program.progress} className="h-2 flex-1" />
+                    <span className="text-xs text-muted-foreground w-10">{program.progress}%</span>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Recent Members */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">Recent Members</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {recentMembers.map((member) => (
+                <div key={member.id} className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={member.avatarUrl} />
+                    <AvatarFallback>{member.name[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{member.name}</p>
+                    <p className="text-xs text-muted-foreground">{member.role}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{member.joinedAt}</span>
+                </div>
+              ))}
+              <Button variant="outline" className="w-full mt-2" size="sm" asChild>
+                <Link href="/tenant/members">View All Members</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Upcoming Events */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg">Upcoming Events</CardTitle>
+            <Button variant="ghost" size="sm">
+              <Calendar className="mr-2 h-4 w-4" />
+              Add Event
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3">
+              {upcomingEvents.map((event) => (
+                <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">{event.date}</span>
+                  </div>
+                  <p className="font-medium">{event.name}</p>
+                  <Badge variant="outline" className="mt-2 text-xs">{event.type}</Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppShell>
+  );
+}

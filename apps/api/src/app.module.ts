@@ -43,6 +43,10 @@ import { MilestonesModule } from './milestones/milestones.module';
 import { ShortlistModule } from './shortlist/shortlist.module';
 import { EndorsementsModule } from './endorsements/endorsements.module';
 import { ResearchModule } from './research/research.module';
+import { BuilderModule } from './builder/builder.module';
+import { RolesModule } from './roles/roles.module';
+import { OrganizationModule } from './organization/organization.module';
+import { MentorshipModule } from './mentorship/mentorship.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -109,6 +113,10 @@ function findEnvFiles(): string[] {
     ShortlistModule,
     EndorsementsModule,
     ResearchModule,
+    BuilderModule,
+    RolesModule,
+    OrganizationModule,
+    MentorshipModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:

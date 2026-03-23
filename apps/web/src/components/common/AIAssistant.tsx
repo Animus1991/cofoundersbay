@@ -13,10 +13,12 @@ import {
   HelpCircle,
   Lightbulb,
   MessageSquare,
+  GripVertical,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useDraggable } from '@/hooks/useDraggable';
 
 interface Message {
   id: string;
@@ -157,6 +159,13 @@ export function AIAssistant() {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  // Draggable functionality - position is offset from default bottom-left position
+  const { position, isDragging, dragHandleProps } = useDraggable({
+    storageKey: 'cfb-ai-assistant-position',
+    initialPosition: { x: 0, y: 0 },
+    boundaryPadding: 20,
+  });
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -213,26 +222,48 @@ export function AIAssistant() {
   const shouldHide = pathname?.startsWith('/messages');
   if (shouldHide) return null;
 
-  // Closed state - show floating button
+  // Closed state - show floating button (moved 60px more to the right: left-11 (44px) + 60px = 104px ≈ left-[104px])
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className={cn(
-          'fixed bottom-11 left-6 z-50 flex items-center justify-center',
-          'rounded-full shadow-lg transition-all duration-200',
-          'bg-gradient-to-br from-violet-500 to-purple-600 text-white',
-          'hover:from-violet-600 hover:to-purple-700 hover:scale-105 active:scale-95',
-          'outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
-        )}
-        style={{ width: '52px', height: '52px' }}
-        aria-label="Open AI Assistant"
+      <div
+        className="fixed bottom-11 left-[104px] z-50 flex items-center gap-1"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+        }}
       >
-        <Bot className="h-6 w-6" />
-        <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center">
-          <Sparkles className="h-3 w-3 text-yellow-300 animate-pulse" />
-        </span>
-      </button>
+        {/* Drag handle */}
+        <div
+          {...dragHandleProps}
+          className={cn(
+            'flex items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-500 text-white/80 shadow-md',
+            'hover:from-violet-500 hover:to-purple-600 transition-all duration-150',
+            isDragging && 'scale-95 opacity-80',
+          )}
+          style={{ width: '28px', height: '28px', ...dragHandleProps.style }}
+          title="Drag to move"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </div>
+        
+        {/* Main button */}
+        <button
+          onClick={() => setIsOpen(true)}
+          className={cn(
+            'flex items-center justify-center',
+            'rounded-full shadow-lg transition-all duration-200',
+            'bg-gradient-to-br from-violet-500 to-purple-600 text-white',
+            'hover:from-violet-600 hover:to-purple-700 hover:scale-105 active:scale-95',
+            'outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2',
+          )}
+          style={{ width: '52px', height: '52px' }}
+          aria-label="Open AI Assistant"
+        >
+          <Bot className="h-6 w-6" />
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center">
+            <Sparkles className="h-3 w-3 text-yellow-300 animate-pulse" />
+          </span>
+        </button>
+      </div>
     );
   }
 
@@ -240,19 +271,38 @@ export function AIAssistant() {
   if (isMinimized) {
     return (
       <div
-        className="fixed bottom-28 left-6 z-40 flex items-center gap-2.5 cursor-pointer
-          rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5
-          hover:shadow-xl transition-all duration-150 animate-in slide-in-from-bottom-2"
-        onClick={() => setIsMinimized(false)}
+        className="fixed bottom-28 left-[104px] z-40 flex items-center gap-1 animate-in slide-in-from-bottom-2"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+        }}
       >
-        <Bot className="h-4 w-4 text-white" />
-        <span className="text-sm font-medium text-white">AI Assistant</span>
-        <button
-          onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsMinimized(false); }}
-          className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
+        {/* Drag handle */}
+        <div
+          {...dragHandleProps}
+          className={cn(
+            'flex items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-500 text-white/80 shadow-md',
+            'hover:from-violet-500 hover:to-purple-600 transition-all duration-150',
+            isDragging && 'scale-95 opacity-80',
+          )}
+          style={{ width: '24px', height: '24px', ...dragHandleProps.style }}
+          title="Drag to move"
         >
-          <X className="h-3.5 w-3.5 text-white/80" />
-        </button>
+          <GripVertical className="h-3 w-3" />
+        </div>
+        
+        <div
+          className="flex items-center gap-2.5 cursor-pointer rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5 hover:shadow-xl transition-all duration-150"
+          onClick={() => setIsMinimized(false)}
+        >
+          <Bot className="h-4 w-4 text-white" />
+          <span className="text-sm font-medium text-white">AI Assistant</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsOpen(false); setIsMinimized(false); }}
+            className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
+          >
+            <X className="h-3.5 w-3.5 text-white/80" />
+          </button>
+        </div>
       </div>
     );
   }
@@ -260,13 +310,30 @@ export function AIAssistant() {
   // Full popup
   return (
     <div
-      className="fixed bottom-28 left-6 z-40 flex flex-col rounded-2xl border border-border
+      className="fixed bottom-28 left-[104px] z-40 flex flex-col rounded-2xl border border-border
         bg-card shadow-2xl overflow-hidden
         animate-in slide-in-from-bottom-4 fade-in duration-200"
-      style={{ width: 380, height: 520 }}
+      style={{ 
+        width: 380, 
+        height: 520,
+        transform: `translate(${position.x}px, ${position.y}px)`,
+      }}
     >
-      {/* Header */}
+      {/* Header with drag handle */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-border/60 bg-gradient-to-r from-violet-500 to-purple-600">
+        {/* Drag handle */}
+        <div
+          {...dragHandleProps}
+          className={cn(
+            'flex items-center justify-center rounded-md text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors',
+            isDragging && 'text-white/90 bg-white/10',
+          )}
+          style={{ width: '24px', height: '24px', ...dragHandleProps.style }}
+          title="Drag to move"
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+        
         <div className="flex items-center gap-2 flex-1">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
             <Bot className="h-4 w-4 text-white" />

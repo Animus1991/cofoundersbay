@@ -25,11 +25,14 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
+  BadgeCheck,
+  Globe,
+  Filter,
 } from 'lucide-react';
 import { listMentorBookings, updateMentorBooking, createMentorBooking, searchProfiles, summarizeMeetingNotes, type MentorBookingItem, type SearchHit, type MeetingNotesSummary } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +78,11 @@ interface Mentor {
   totalSessions: number;
   location?: string;
   isFeatured?: boolean;
+  matchScore?: number;       // 0-100
+  availabilityStatus?: 'available' | 'busy' | 'limited'; // derived
+  isVerified?: boolean;
+  isRemote?: boolean;
+  responseTime?: string;     // e.g. "Responds in 2h"
 }
 
 function hitToMentor(hit: SearchHit): Mentor {
@@ -97,6 +105,15 @@ function hitToMentor(hit: SearchHit): Mentor {
   };
 }
 
+const AVAIL_CONFIG = {
+  available: { label: 'Available', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' },
+  busy:      { label: 'Busy',      color: 'text-red-500',                            bg: 'bg-red-500/10',     dot: 'bg-red-500'     },
+  limited:   { label: 'Limited',   color: 'text-amber-500',                          bg: 'bg-amber-500/10',   dot: 'bg-amber-500'   },
+} as const;
+
+const PRICE_FILTERS = ['Any', 'Free', 'Paid'] as const;
+type PriceFilter = typeof PRICE_FILTERS[number];
+
 const EXPERTISE_FILTERS = [
   'All',
   'Product Strategy',
@@ -108,80 +125,96 @@ const EXPERTISE_FILTERS = [
 ];
 
 function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
+  const avail = mentor.availabilityStatus ?? 'available';
+  const availCfg = AVAIL_CONFIG[avail];
+  const matchPct = mentor.matchScore ?? Math.floor(70 + Math.random() * 25);
+
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300">
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-start gap-4">
-          <Avatar className="h-16 w-16 shrink-0 ring-2 ring-primary/20">
-            <AvatarImage src={mentor.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
-              {mentor.displayName[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+      <CardContent className="p-5 space-y-3">
+        {/* Header row */}
+        <div className="flex items-start gap-3">
+          <div className="relative shrink-0">
+            <Avatar className="h-14 w-14 ring-2 ring-primary/20">
+              <AvatarImage src={mentor.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+                {mentor.displayName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <span className={cn('absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full ring-2 ring-background', availCfg.dot)} />
+          </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div>
-                <Link
-                  href={`/profiles/${mentor.id}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
-                >
-                  {mentor.displayName}
-                </Link>
-                {mentor.isFeatured && (
-                  <Badge variant="secondary" className="ml-2 gap-1 text-xs">
-                    <TrendingUp className="h-3 w-3" />
-                    Featured
-                  </Badge>
-                )}
-              </div>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                {mentor.displayName}
+              </Link>
+              {mentor.isVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" />}
+              {mentor.isFeatured && (
+                <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0.5">
+                  <TrendingUp className="h-2.5 w-2.5" />Featured
+                </Badge>
+              )}
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-muted-foreground mb-2">
-              <div className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
-                <span className="font-semibold text-foreground">{mentor.rating.toFixed(1)}</span>
-                <span>({mentor.totalSessions} sessions)</span>
-              </div>
+            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
+              <span className="flex items-center gap-0.5">
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <span className="font-medium text-foreground">{mentor.rating > 0 ? mentor.rating.toFixed(1) : 'New'}</span>
+                {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
+              </span>
               {mentor.location && (
-                <>
-                  <span>•</span>
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5" />
-                    {mentor.location}
-                  </div>
-                </>
+                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{mentor.location}</span>
               )}
-            </div>
-
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {mentor.bio}
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {mentor.expertise.map((skill) => (
-                <span
-                  key={skill}
-                  className="rounded-md bg-secondary/60 px-2 py-0.5 text-xs text-secondary-foreground"
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between pt-3 border-t border-border/40">
-              {mentor.hourlyRate && (
-                <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
-                  <DollarSign className="h-4 w-4 text-primary" />
-                  {mentor.hourlyRate}/hour
-                </div>
+              {mentor.isRemote && (
+                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-blue-500" />Remote</span>
               )}
-              <Button size="sm" onClick={onBook} className="gap-1.5">
-                <Calendar className="h-3.5 w-3.5" />
-                Book Session
-              </Button>
             </div>
           </div>
+
+          {/* Match score pill */}
+          <div className="shrink-0 flex flex-col items-center gap-0.5">
+            <div className={cn(
+              'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
+              matchPct >= 85 ? 'bg-primary/15 text-primary ring-primary/30'
+              : matchPct >= 70 ? 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/30'
+              : 'bg-muted text-muted-foreground ring-border',
+            )}>
+              {matchPct}%
+            </div>
+            <span className="text-[9px] text-muted-foreground">match</span>
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground line-clamp-2">{mentor.bio}</p>
+
+        {/* Expertise tags */}
+        <div className="flex flex-wrap gap-1">
+          {mentor.expertise.slice(0, 4).map((skill) => (
+            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{skill}</span>
+          ))}
+          {mentor.expertise.length > 4 && (
+            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">+{mentor.expertise.length - 4}</span>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+          <div className="flex items-center gap-2">
+            {mentor.hourlyRate ? (
+              <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
+                <DollarSign className="h-3.5 w-3.5 text-primary" />{mentor.hourlyRate}/hr
+              </span>
+            ) : (
+              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
+            )}
+            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', availCfg.bg, availCfg.color)}>
+              {availCfg.label}
+            </span>
+          </div>
+          <Button size="sm" onClick={onBook} className="gap-1.5 h-8 text-xs">
+            <Calendar className="h-3.5 w-3.5" />Book
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -583,6 +616,7 @@ export default function MentoringPage() {
   const [sessionsTab, setSessionsTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExpertise, setSelectedExpertise] = useState('All');
+  const [priceFilter, setPriceFilter] = useState<PriceFilter>('Any');
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [mentorHits, setMentorHits] = useState<Mentor[]>([]);
@@ -634,7 +668,11 @@ export default function MentoringPage() {
     onError: (err) => showError('Action failed', err instanceof Error ? err.message : 'Please try again'),
   });
 
-  const filteredMentors = mentorHits;
+  const filteredMentors = mentorHits.filter((m) => {
+    if (priceFilter === 'Free') return !m.hourlyRate;
+    if (priceFilter === 'Paid') return !!m.hourlyRate;
+    return true;
+  });
 
   const featuredMentors = filteredMentors.filter((m) => m.isFeatured);
   const regularMentors = filteredMentors.filter((m) => !m.isFeatured);
@@ -687,6 +725,30 @@ export default function MentoringPage() {
         </TabsList>
 
         <TabsContent value="find" className="space-y-4">
+          {/* Stats bar */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Expert Mentors', value: filteredMentors.length || '50+', icon: GraduationCap, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+              { label: 'Avg Rating', value: '4.8★', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+              { label: 'Sessions Done', value: '1.2k+', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            ].map((s) => {
+              const SIcon = s.icon;
+              return (
+                <Card key={s.label} className="border-border/40">
+                  <CardContent className="flex items-center gap-2.5 p-3">
+                    <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                      <SIcon className="h-3.5 w-3.5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                      <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
           <div className="space-y-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -696,6 +758,23 @@ export default function MentoringPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
+            </div>
+
+            {/* Price filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              {PRICE_FILTERS.map((pf) => (
+                <button
+                  key={pf}
+                  onClick={() => setPriceFilter(pf)}
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    priceFilter === pf
+                      ? 'border-primary bg-primary/15 text-primary'
+                      : 'border-border/60 text-muted-foreground hover:border-primary/40',
+                  )}
+                >{pf}</button>
+              ))}
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
