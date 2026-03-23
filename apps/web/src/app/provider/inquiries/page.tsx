@@ -11,6 +11,9 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  TrendingUp,
+  DollarSign,
+  Inbox,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
@@ -36,6 +39,7 @@ type Inquiry = {
   message: string;
   receivedAt: string;
   status: 'new' | 'replied' | 'converted' | 'declined';
+  budget?: string;
 };
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
@@ -119,6 +123,7 @@ export default function ProviderInquiriesPage() {
       message: 'Hi, I need help with my startup incorporation documents. We are a team of 3 co-founders and need founder agreements as well.',
       receivedAt: '2 hours ago',
       status: 'new',
+      budget: '$2,000-3,000',
     },
     {
       id: '2',
@@ -128,6 +133,7 @@ export default function ProviderInquiriesPage() {
       message: 'Looking for help with our Series A financial model. We need 5-year projections with multiple scenarios.',
       receivedAt: '1 day ago',
       status: 'replied',
+      budget: '$3,500-5,000',
     },
     {
       id: '3',
@@ -137,6 +143,7 @@ export default function ProviderInquiriesPage() {
       message: 'Need to review our terms of service and privacy policy before launch.',
       receivedAt: '2 days ago',
       status: 'converted',
+      budget: '$1,500',
     },
     {
       id: '4',
@@ -146,6 +153,7 @@ export default function ProviderInquiriesPage() {
       message: 'Interested in your legal package. Can you provide more details on what is included?',
       receivedAt: '3 days ago',
       status: 'new',
+      budget: '$2,500',
     },
     {
       id: '5',
@@ -154,8 +162,12 @@ export default function ProviderInquiriesPage() {
       message: 'Looking for a pitch deck redesign for our upcoming fundraise.',
       receivedAt: '1 week ago',
       status: 'declined',
+      budget: '$800',
     },
   ];
+
+  const conversionRate = Math.round((inquiries.filter((i) => i.status === 'converted').length / Math.max(inquiries.length, 1)) * 100);
+  const responseRate = Math.round(((inquiries.filter((i) => i.status === 'replied' || i.status === 'converted').length) / Math.max(inquiries.length, 1)) * 100);
 
   const filteredInquiries = inquiries.filter((i) => {
     const matchesSearch =
@@ -174,14 +186,30 @@ export default function ProviderInquiriesPage() {
   };
 
   return (
-    <AppShell>
-      <div className="container max-w-4xl py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Inquiries</h1>
-          <p className="text-muted-foreground">
-            Manage incoming service inquiries
-          </p>
+    <AppShell
+      title="Inquiries"
+      description="Manage incoming service inquiries"
+    >
+      <div className="space-y-6">
+
+        {/* Stats strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary' },
+            { label: 'New', value: counts.new, icon: Mail, color: 'text-blue-600' },
+            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-emerald-600' },
+            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-amber-600' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div>
+                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Search */}
