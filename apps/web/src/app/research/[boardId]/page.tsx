@@ -8,10 +8,12 @@ import {
   FileText, Image as ImageIcon, Link as LinkIcon, MoreVertical,
   Trash2, Lock, Unlock, Loader2, Save, Settings, Users, Share2,
   Move, MousePointer2, Hand, Grid3X3, Sparkles, Map, MessageCircle,
-  Filter,
+  Filter, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/layout/SidebarContext';
+import { SideNav } from '@/components/layout/SideNav';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -378,38 +380,80 @@ export default function ResearchBoardPage() {
     e.preventDefault();
   }, []);
 
+  const { expanded, toggle } = useSidebar();
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="h-screen bg-background">
+        <SideNav />
+        <div
+          className={cn(
+            'h-screen flex items-center justify-center transition-[margin-left] duration-200 ease-out',
+            expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          )}
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       </div>
     );
   }
 
   if (error || !board) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <p className="text-destructive mb-4">Failed to load board</p>
-        <Button onClick={() => router.push('/research')}>Back to Boards</Button>
+      <div className="h-screen bg-background">
+        <SideNav />
+        <div
+          className={cn(
+            'h-screen flex flex-col items-center justify-center transition-[margin-left] duration-200 ease-out',
+            expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          )}
+        >
+          <p className="text-destructive mb-4">Failed to load board</p>
+          <Button onClick={() => router.push('/research')}>Back to Boards</Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-background">
-      {/* Toolbar */}
-      <div className="h-14 border-b bg-card/95 backdrop-blur flex items-center justify-between px-4 shrink-0 z-50">
-        <div className="flex items-center gap-4">
-          <Link href="/research">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back
+    <div className="h-screen bg-background overflow-hidden">
+      {/* Sidebar */}
+      <SideNav />
+
+      {/* Main content area - offset by sidebar */}
+      <div
+        className={cn(
+          'h-screen flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
+          expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+        )}
+      >
+        {/* Toolbar */}
+        <div className="h-14 border-b bg-card/95 backdrop-blur flex items-center justify-between px-4 shrink-0 z-50">
+          <div className="flex items-center gap-3">
+            {/* Sidebar toggle for mobile/collapsed state */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggle}
+              className="hidden lg:flex h-8 w-8 p-0"
+              title={expanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              {expanded ? (
+                <PanelLeftClose className="h-4 w-4" />
+              ) : (
+                <PanelLeftOpen className="h-4 w-4" />
+              )}
             </Button>
-          </Link>
-          <div className="h-6 w-px bg-border" />
-          <h1 className="font-semibold truncate max-w-[200px]">{board.title}</h1>
-          <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-2" />
-        </div>
+            <Link href="/research">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            </Link>
+            <div className="h-6 w-px bg-border" />
+            <h1 className="font-semibold truncate max-w-[200px]">{board.title}</h1>
+            <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-2" />
+          </div>
 
         <div className="flex items-center gap-2">
           {/* Tool buttons */}
@@ -771,6 +815,7 @@ export default function ResearchBoardPage() {
           currentUserId={currentUser.id}
         />
       )}
+      </div>
     </div>
   );
 }

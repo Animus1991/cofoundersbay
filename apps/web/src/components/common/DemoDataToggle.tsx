@@ -1,6 +1,6 @@
 'use client';
 
-import { Database, DatabaseZap } from 'lucide-react';
+import { Database, DatabaseZap, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -14,6 +14,9 @@ import { cn } from '@/lib/utils';
 /**
  * Global toggle button for showing/hiding sample demo data across all pages.
  * Positioned in the TopBar for consistent access.
+ * 
+ * When ON: Shows full sample data for all components on every page
+ * When OFF: Shows empty/skeleton states for components
  */
 export function DemoDataToggle({ className }: { className?: string }) {
   const { showDemoData, toggleDemoData } = useDemoData();
@@ -23,29 +26,39 @@ export function DemoDataToggle({ className }: { className?: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="ghost"
+            variant={showDemoData ? 'default' : 'outline'}
             size="sm"
             onClick={toggleDemoData}
             className={cn(
-              'h-8 w-8 p-0 relative',
-              showDemoData && 'text-primary',
+              'h-8 gap-1.5 px-2.5 text-xs font-medium transition-all',
+              showDemoData 
+                ? 'bg-primary/90 hover:bg-primary text-primary-foreground shadow-sm' 
+                : 'border-dashed text-muted-foreground hover:text-foreground hover:border-solid',
               className
             )}
             aria-label={showDemoData ? 'Hide sample data' : 'Show sample data'}
           >
             {showDemoData ? (
-              <DatabaseZap className="h-4 w-4" />
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Demo</span>
+              </>
             ) : (
-              <Database className="h-4 w-4 text-muted-foreground" />
-            )}
-            {showDemoData && (
-              <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-primary" />
+              <>
+                <EyeOff className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Demo</span>
+              </>
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" align="center">
-          <p className="text-xs">
-            {showDemoData ? 'Sample data ON — click to hide' : 'Sample data OFF — click to show'}
+        <TooltipContent side="bottom" align="center" className="max-w-[200px]">
+          <p className="text-xs font-medium mb-1">
+            {showDemoData ? 'Sample Data: ON' : 'Sample Data: OFF'}
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {showDemoData 
+              ? 'Click to hide sample data and see empty component states' 
+              : 'Click to show sample data across all pages'}
           </p>
         </TooltipContent>
       </Tooltip>
