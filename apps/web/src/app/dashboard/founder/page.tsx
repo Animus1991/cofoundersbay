@@ -69,6 +69,21 @@ const FUNDRAISING_DEMO = {
   committedCount: 2,
 };
 
+type EventType = 'mentorship' | 'deadline' | 'event' | 'pitch';
+const EVENT_CONFIG: Record<EventType, { color: string; bg: string }> = {
+  mentorship: { color: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/30' },
+  deadline: { color: 'text-rose-600', bg: 'bg-rose-100 dark:bg-rose-900/30' },
+  event: { color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+  pitch: { color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+};
+
+const DEMO_EVENTS = [
+  { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, date: '2026-03-26', time: '14:00', daysLeft: 2 },
+  { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, date: '2026-03-28', time: '23:59', daysLeft: 4 },
+  { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, date: '2026-04-02', time: '18:00', daysLeft: 9 },
+  { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, date: '2026-04-10', time: '10:00', daysLeft: 17 },
+];
+
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function StatCard({
@@ -518,15 +533,49 @@ export default function FounderDashboard() {
                   </Link>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="rounded-lg bg-muted/40 p-3 text-center">
-                  <p className="text-xs text-muted-foreground">No events this week</p>
-                  <Link href="/events">
-                    <Button variant="ghost" size="sm" className="mt-1.5 h-6 text-[11px] gap-1">
-                      Browse events <ArrowRight className="h-3 w-3" />
-                    </Button>
-                  </Link>
-                </div>
+              <CardContent className="space-y-2.5">
+                {showDemoData ? (
+                  DEMO_EVENTS.slice(0, 3).map((event) => {
+                    const cfg = EVENT_CONFIG[event.type];
+                    const isUrgent = event.daysLeft <= 3;
+                    return (
+                      <div
+                        key={event.id}
+                        className={cn(
+                          'flex items-start gap-2.5 rounded-lg border p-2.5 transition-colors',
+                          isUrgent ? 'border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-900/10' : 'border-border/60'
+                        )}
+                      >
+                        <div className={cn('mt-0.5 rounded-md p-1.5 shrink-0', cfg.bg)}>
+                          <Calendar className={cn('h-3 w-3', cfg.color)} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {event.time}
+                            </span>
+                            <span className={cn(
+                              'text-[10px] font-medium',
+                              isUrgent ? 'text-rose-600' : event.daysLeft <= 7 ? 'text-amber-600' : 'text-muted-foreground'
+                            )}>
+                              {event.daysLeft === 0 ? 'Today' : event.daysLeft === 1 ? 'Tomorrow' : `In ${event.daysLeft}d`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="rounded-lg bg-muted/40 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">No events this week</p>
+                    <Link href="/events">
+                      <Button variant="ghost" size="sm" className="mt-1.5 h-6 text-[11px] gap-1">
+                        Browse events <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

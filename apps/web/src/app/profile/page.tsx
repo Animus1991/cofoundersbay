@@ -46,6 +46,7 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { ContributionGraph } from '@/components/shared/ContributionGraph';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
@@ -413,6 +414,23 @@ export default function ProfilePage() {
                   <span className="text-[10px] text-muted-foreground">{label}</span>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Contribution Graph */}
+          <Card className="animate-fade-in">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Activity Graph
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 overflow-x-auto">
+              <ContributionGraph 
+                weeks={26} 
+                colorScheme="primary" 
+                size="sm"
+                showDays={false}
+              />
             </CardContent>
           </Card>
         </div>
