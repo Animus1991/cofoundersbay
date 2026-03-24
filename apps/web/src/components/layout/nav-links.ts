@@ -379,7 +379,7 @@ export const adminNavSections: NavSection[] = [
     links: [
       { href: '/admin/analytics', label: 'Global Analytics', icon: BarChart3 },
       { href: '/admin/billing', label: 'Billing & Plans', icon: DollarSign },
-      { href: '/admin/automation', label: 'Automations', icon: Workflow },
+      { href: '/admin/automations', label: 'Automations', icon: Workflow },
       { href: '/admin/taxonomy', label: 'Taxonomy', icon: Boxes },
       { href: '/admin/sso', label: 'SSO Config', icon: Lock },
       { href: '/admin/domains', label: 'Domain Mapping', icon: Globe },
