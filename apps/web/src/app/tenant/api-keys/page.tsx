@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type ApiKey = {
@@ -95,20 +96,16 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
 }
 
 export default function TenantApiKeysPage() {
-  return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <KeyRound className="h-6 w-6 text-primary" />
-              API Keys
-            </h1>
-            <p className="text-muted-foreground">Manage API keys for programmatic access to your tenant data</p>
-          </div>
-          <Button><Plus className="mr-2 h-4 w-4" />Create API Key</Button>
-        </div>
+  const { showDemoData } = useDemoData();
+  const keys = showDemoData ? MOCK_KEYS : [];
 
+  return (
+    <AppShell
+      title="API Keys"
+      description="Manage API keys for programmatic access to your tenant data"
+      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Create API Key</Button>}
+    >
+      <div className="space-y-5">
         <Card className="border-amber-500/20 bg-amber-500/5">
           <CardContent className="p-4 flex items-center gap-3">
             <Shield className="h-5 w-5 text-amber-500 shrink-0" />
@@ -116,9 +113,18 @@ export default function TenantApiKeysPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-3">
-          {MOCK_KEYS.map(k => <KeyRow key={k.id} apiKey={k} />)}
-        </div>
+        {keys.length === 0 ? (
+          <div className="py-16 text-center rounded-lg border border-dashed">
+            <KeyRound className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="font-medium">No API keys yet</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">Create an API key to enable programmatic access</p>
+            <Button size="sm"><Plus className="mr-2 h-4 w-4" />Create API Key</Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {keys.map(k => <KeyRow key={k.id} apiKey={k} />)}
+          </div>
+        )}
       </div>
     </AppShell>
   );

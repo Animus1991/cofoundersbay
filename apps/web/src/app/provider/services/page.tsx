@@ -27,6 +27,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type Service = {
@@ -117,11 +119,7 @@ function ServiceCard({ service }: { service: Service }) {
   );
 }
 
-export default function ProviderServicesPage() {
-  const [search, setSearch] = useState('');
-
-  // Mock data
-  const services: Service[] = [
+const MOCK_SERVICES: Service[] = [
     {
       id: '1',
       name: 'Startup Legal Package',
@@ -176,26 +174,30 @@ export default function ProviderServicesPage() {
     },
   ];
 
+export default function ProviderServicesPage() {
+  const { showDemoData } = useDemoData();
+  const [search, setSearch] = useState('');
+
+  const services = showDemoData ? MOCK_SERVICES : [];
   const filteredServices = services.filter((s) =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">My Services</h1>
-            <p className="text-muted-foreground">
-              Manage your service offerings
-            </p>
-          </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Service
-          </Button>
-        </div>
+    <AppShell
+      title="My Services"
+      description="Manage your service offerings"
+      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Service</Button>}
+    >
+      <div className="space-y-6">
+        {!showDemoData && services.length === 0 && (
+          <EmptyState
+            illustration="default"
+            title="No services listed"
+            description="Create your first service offering to start receiving bookings."
+            action={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Service</Button>}
+          />
+        )}
 
         {/* Search */}
         <div className="relative max-w-md">

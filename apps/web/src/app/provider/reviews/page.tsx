@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type Review = {
@@ -97,11 +99,7 @@ function ReviewCard({ review }: { review: Review }) {
   );
 }
 
-export default function ProviderReviewsPage() {
-  const [search, setSearch] = useState('');
-
-  // Mock data
-  const reviews: Review[] = [
+const MOCK_REVIEWS: Review[] = [
     {
       id: '1',
       clientName: 'Sarah Williams',
@@ -146,6 +144,11 @@ export default function ProviderReviewsPage() {
     },
   ];
 
+export default function ProviderReviewsPage() {
+  const { showDemoData } = useDemoData();
+  const [search, setSearch] = useState('');
+
+  const reviews = showDemoData ? MOCK_REVIEWS : [];
   const filteredReviews = reviews.filter(
     (r) =>
       !search ||
@@ -160,16 +163,21 @@ export default function ProviderReviewsPage() {
     percentage: (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100,
   }));
 
+  if (!showDemoData && reviews.length === 0) {
+    return (
+      <AppShell title="Reviews" description="See what clients are saying about your services">
+        <EmptyState
+          illustration="default"
+          title="No client reviews yet"
+          description="Reviews will appear here once clients rate your completed service engagements."
+        />
+      </AppShell>
+    );
+  }
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reviews</h1>
-          <p className="text-muted-foreground">
-            See what clients are saying about your services
-          </p>
-        </div>
+    <AppShell title="Reviews" description="See what clients are saying about your services">
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2">

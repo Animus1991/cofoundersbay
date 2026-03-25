@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ArrowRight,
   Activity,
+  MoreVertical,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -25,8 +26,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
-import { MoreVertical } from 'lucide-react';
 
 type WebhookItem = {
   id: string;
@@ -124,42 +125,52 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
 }
 
 export default function TenantWebhooksPage() {
-  return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Webhook className="h-6 w-6 text-primary" />
-              Webhooks
-            </h1>
-            <p className="text-muted-foreground">Send real-time event notifications to external services</p>
-          </div>
-          <Button><Plus className="mr-2 h-4 w-4" />Add Webhook</Button>
-        </div>
+  const { showDemoData } = useDemoData();
+  const webhooks = showDemoData ? MOCK_WEBHOOKS : [];
 
-        <div className="grid gap-4 md:grid-cols-3">
+  const avgSuccess = webhooks.length > 0
+    ? Math.round(webhooks.reduce((s, w) => s + w.successRate, 0) / webhooks.length)
+    : 0;
+
+  return (
+    <AppShell
+      title="Webhooks"
+      description="Send real-time event notifications to external services"
+      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Webhook</Button>}
+    >
+      <div className="space-y-5">
+        <div className="grid gap-3 md:grid-cols-3">
           {[
-            { label: 'Active Webhooks', value: MOCK_WEBHOOKS.filter(w => w.isActive).length },
-            { label: 'Total Deliveries', value: MOCK_WEBHOOKS.reduce((s, w) => s + w.totalDeliveries, 0) },
-            { label: 'Avg Success Rate', value: `${Math.round(MOCK_WEBHOOKS.reduce((s, w) => s + w.successRate, 0) / MOCK_WEBHOOKS.length)}%` },
+            { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },
+            { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },
+            { label: 'Avg Success Rate', value: `${avgSuccess}%` },
           ].map(s => (
             <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-2xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 
-        <div className="space-y-3">
-          {MOCK_WEBHOOKS.map(w => <WebhookCard key={w.id} webhook={w} />)}
-        </div>
-
-        <Card className="border-dashed">
-          <CardContent className="p-6 text-center">
-            <Webhook className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="text-sm font-medium">Add a new webhook endpoint</p>
-            <p className="text-xs text-muted-foreground mt-1">Connect Zapier, Slack, or any HTTP endpoint</p>
-            <Button size="sm" className="mt-4"><Plus className="mr-1.5 h-4 w-4" />Add Webhook</Button>
-          </CardContent>
-        </Card>
+        {webhooks.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="p-12 text-center">
+              <Webhook className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+              <p className="font-medium">No webhooks configured</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">Connect Zapier, Slack, or any HTTP endpoint to receive real-time events</p>
+              <Button size="sm"><Plus className="mr-1.5 h-4 w-4" />Add Webhook</Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="space-y-3">
+              {webhooks.map(w => <WebhookCard key={w.id} webhook={w} />)}
+            </div>
+            <Card className="border-dashed">
+              <CardContent className="p-4 text-center">
+                <p className="text-sm text-muted-foreground">Add another endpoint</p>
+                <Button size="sm" variant="outline" className="mt-2"><Plus className="mr-1.5 h-4 w-4" />Add Webhook</Button>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </AppShell>
   );

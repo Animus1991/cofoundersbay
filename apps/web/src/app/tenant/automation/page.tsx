@@ -28,6 +28,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type AutomationRule = {
@@ -110,33 +111,38 @@ function AutomationCard({ rule }: { rule: AutomationRule }) {
 }
 
 export default function TenantAutomationPage() {
-  return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Workflow className="h-6 w-6 text-primary" />
-              Automations
-            </h1>
-            <p className="text-muted-foreground">Automate repetitive tasks and workflows for your organization</p>
-          </div>
-          <Button><Plus className="mr-2 h-4 w-4" />Create Automation</Button>
-        </div>
+  const { showDemoData } = useDemoData();
+  const automations = showDemoData ? MOCK_AUTOMATIONS : [];
 
-        <div className="grid gap-4 md:grid-cols-3">
+  return (
+    <AppShell
+      title="Automations"
+      description="Automate repetitive tasks and workflows for your organization"
+      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Create Automation</Button>}
+    >
+      <div className="space-y-5">
+        <div className="grid gap-3 md:grid-cols-3">
           {[
-            { label: 'Active Rules', value: MOCK_AUTOMATIONS.filter(a => a.isActive).length },
-            { label: 'Total Runs (30d)', value: MOCK_AUTOMATIONS.reduce((s, a) => s + a.runsCount, 0) },
-            { label: 'Time Saved', value: '~12h' },
+            { label: 'Active Rules', value: automations.filter(a => a.isActive).length },
+            { label: 'Total Runs (30d)', value: automations.reduce((s, a) => s + a.runsCount, 0) },
+            { label: 'Time Saved', value: automations.length > 0 ? '~12h' : '0h' },
           ].map(s => (
             <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-2xl font-bold">{s.value}</p></CardContent></Card>
           ))}
         </div>
 
-        <div className="space-y-3">
-          {MOCK_AUTOMATIONS.map(rule => <AutomationCard key={rule.id} rule={rule} />)}
-        </div>
+        {automations.length === 0 ? (
+          <div className="py-16 text-center rounded-lg border border-dashed">
+            <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="font-medium">No automation rules yet</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">Create rules to automate onboarding, notifications, and workflows</p>
+            <Button size="sm"><Plus className="mr-2 h-4 w-4" />Create Automation</Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {automations.map(rule => <AutomationCard key={rule.id} rule={rule} />)}
+          </div>
+        )}
       </div>
     </AppShell>
   );

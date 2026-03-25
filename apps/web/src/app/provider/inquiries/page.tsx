@@ -28,6 +28,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type Inquiry = {
@@ -109,12 +111,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   );
 }
 
-export default function ProviderInquiriesPage() {
-  const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
-
-  // Mock data
-  const inquiries: Inquiry[] = [
+const MOCK_INQUIRIES: Inquiry[] = [
     {
       id: '1',
       clientName: 'John Doe',
@@ -165,6 +162,13 @@ export default function ProviderInquiriesPage() {
       budget: '$800',
     },
   ];
+
+export default function ProviderInquiriesPage() {
+  const { showDemoData } = useDemoData();
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+
+  const inquiries = showDemoData ? MOCK_INQUIRIES : [];
 
   const conversionRate = Math.round((inquiries.filter((i) => i.status === 'converted').length / Math.max(inquiries.length, 1)) * 100);
   const responseRate = Math.round(((inquiries.filter((i) => i.status === 'replied' || i.status === 'converted').length) / Math.max(inquiries.length, 1)) * 100);

@@ -3,21 +3,9 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  FolderKanban,
-  Search,
-  Filter,
-  Plus,
-  MoreVertical,
-  ChevronRight,
-  Star,
-  Calendar,
-  MessageSquare,
-  DollarSign,
-  TrendingUp,
-  Target,
-  Eye,
-  ArrowRight,
-  Zap,
+  FolderKanban, Search, Filter, Plus, MoreVertical,
+  Star, DollarSign, TrendingUp, Target, ArrowRight, Zap,
+  MessageSquare, Calendar, Users, Telescope,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
@@ -27,11 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 
 type PipelineStage = 'discovered' | 'reviewing' | 'meeting' | 'due_diligence' | 'negotiating' | 'invested' | 'passed';
@@ -113,11 +100,7 @@ function DealCard({ deal }: { deal: Deal }) {
   );
 }
 
-export default function InvestorPipelinePage() {
-  const [search, setSearch] = useState('');
-
-  // Mock data
-  const deals: Deal[] = [
+const MOCK_DEALS: Deal[] = [
     { id: '1', name: 'NeuralFlow AI', industry: 'AI/ML', stage: 'Seed', pipelineStage: 'discovered', readinessScore: 85, askAmount: 500000, addedAt: 'Mar 20', lastActivity: '2 hours ago', starred: true, founderName: 'Alex Georgiou', teamSize: 3 },
     { id: '2', name: 'GreenGrid', industry: 'CleanTech', stage: 'Pre-seed', pipelineStage: 'discovered', readinessScore: 72, askAmount: 200000, addedAt: 'Mar 18', lastActivity: '1 day ago', starred: false, founderName: 'Maria Sotiropoulou', teamSize: 2 },
     { id: '3', name: 'PayStream', industry: 'FinTech', stage: 'Seed', pipelineStage: 'reviewing', readinessScore: 91, askAmount: 750000, addedAt: 'Mar 15', lastActivity: '3 hours ago', starred: true, founderName: 'Nikos Papas', teamSize: 4 },
@@ -128,8 +111,15 @@ export default function InvestorPipelinePage() {
     { id: '8', name: 'FoodTech Pro', industry: 'FoodTech', stage: 'Seed', pipelineStage: 'invested', readinessScore: 95, askAmount: 450000, addedAt: 'Feb 15', lastActivity: 'Closed Feb 20', starred: true, founderName: 'Ioanna Vlachou', teamSize: 4 },
   ];
 
-  const totalPipelineValue = useMemo(() => deals.reduce((s, d) => s + (d.askAmount ?? 0), 0), []);
-  const avgReadiness = useMemo(() => Math.round(deals.reduce((s, d) => s + d.readinessScore, 0) / deals.length), []);
+export default function InvestorPipelinePage() {
+  const { showDemoData } = useDemoData();
+  const [search, setSearch] = useState('');
+  const [showPassed, setShowPassed] = useState(false);
+
+  const deals = showDemoData ? MOCK_DEALS : [];
+
+  const totalPipelineValue = useMemo(() => deals.reduce((s, d) => s + (d.askAmount ?? 0), 0), [deals]);
+  const avgReadiness = useMemo(() => deals.length > 0 ? Math.round(deals.reduce((s, d) => s + d.readinessScore, 0) / deals.length) : 0, [deals]);
 
   const filteredDeals = deals.filter((d) =>
     !search || d.name.toLowerCase().includes(search.toLowerCase())
@@ -138,19 +128,59 @@ export default function InvestorPipelinePage() {
   const getDealsByStage = (stage: PipelineStage) =>
     filteredDeals.filter((d) => d.pipelineStage === stage);
 
+  const visibleStages = showPassed
+    ? PIPELINE_STAGES
+    : PIPELINE_STAGES.filter((s) => s.key !== 'passed' as PipelineStage);
+
+  if (!showDemoData && deals.length === 0) {
+    return (
+      <AppShell title="Investment Pipeline" description="Track deals through your investment process">
+        <EmptyState
+          illustration="rocket"
+          title="No deals in pipeline"
+          description="Start scouting startups to build your investment pipeline."
+          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 h-4 w-4" />Scout Startups</Link></Button>}
+        />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       title="Investment Pipeline"
       description="Track deals through your investment process"
       actions={
-        <Button asChild>
-          <Link href="/investor/scouting">
-            <Plus className="mr-2 h-4 w-4" /> Add Deal
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowPassed(!showPassed)}>
+            {showPassed ? 'Hide Passed' : 'Show Passed'}
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/investor/scouting"><Plus className="mr-2 h-4 w-4" />Add Deal</Link>
+          </Button>
+        </div>
       }
     >
       <div className="space-y-6">
+
+        {/* Stats Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary' },
+            { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-emerald-600' },
+            { label: 'Avg Readiness', value: `${avgReadiness}%`, icon: Target, color: 'text-blue-600' },
+            { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-green-600' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label}>
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div>
+                  <p className="text-lg font-bold tabular-nums">{value}</p>
+                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Search */}
         <div className="flex gap-3">
@@ -171,7 +201,7 @@ export default function InvestorPipelinePage() {
 
         {/* Kanban Board */}
         <div className="flex gap-4 overflow-x-auto pb-4">
-          {PIPELINE_STAGES.map((stage) => {
+          {visibleStages.map((stage) => {
             const stageDeals = getDealsByStage(stage.key);
             return (
               <div key={stage.key} className="flex-shrink-0 w-72">
@@ -197,25 +227,6 @@ export default function InvestorPipelinePage() {
           })}
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary' },
-            { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-emerald-600' },
-            { label: 'Avg Readiness', value: `${avgReadiness}%`, icon: Target, color: 'text-blue-600' },
-            { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-green-600' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
-              <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
-                <div>
-                  <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
 
         {/* Conversion Funnel */}
         <Card>

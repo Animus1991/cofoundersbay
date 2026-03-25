@@ -3,28 +3,42 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Briefcase,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Calendar,
-  MoreVertical,
-  ExternalLink,
-  Users,
+  Briefcase, TrendingUp, TrendingDown, DollarSign,
+  MoreVertical, ExternalLink, Users, PieChart, Download,
 } from 'lucide-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
+  CartesianGrid, Tooltip as RechartsTooltip, PieChart as RPieChart,
+  Pie, Cell, Legend,
+} from 'recharts';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/common/EmptyState';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+
+const PORTFOLIO_VALUE_HISTORY = [
+  { month: 'Oct', value: 200 },
+  { month: 'Nov', value: 215 },
+  { month: 'Dec', value: 250 },
+  { month: 'Jan', value: 310 },
+  { month: 'Feb', value: 445 },
+  { month: 'Mar', value: 535 },
+];
+
+const SECTOR_DISTRIBUTION = [
+  { name: 'FoodTech', value: 50, color: '#f97316' },
+  { name: 'Cybersecurity', value: 100, color: '#6366f1' },
+  { name: 'Enterprise', value: 75, color: '#0ea5e9' },
+  { name: 'Logistics', value: 50, color: '#22c55e' },
+];
 
 type Investment = {
   id: string;
@@ -40,6 +54,13 @@ type Investment = {
   teamSize: number;
   lastUpdate: string;
 };
+
+const MOCK_INVESTMENTS: Investment[] = [
+  { id: '1', name: 'FoodTech Pro', industry: 'FoodTech', investedAt: 'Feb 2025', amount: '$50K', currentValue: '$75K', returnPct: 50, stage: 'Seed', status: 'active', teamSize: 5, lastUpdate: '1 week ago' },
+  { id: '2', name: 'CloudSecure', industry: 'Cybersecurity', investedAt: 'Jan 2025', amount: '$100K', currentValue: '$120K', returnPct: 20, stage: 'Series A', status: 'active', teamSize: 12, lastUpdate: '3 days ago' },
+  { id: '3', name: 'DataVault', industry: 'Enterprise', investedAt: 'Dec 2024', amount: '$75K', currentValue: '$90K', returnPct: 20, stage: 'Seed', status: 'active', teamSize: 8, lastUpdate: '2 weeks ago' },
+  { id: '4', name: 'QuickShip', industry: 'Logistics', investedAt: 'Oct 2024', amount: '$50K', currentValue: '$250K', returnPct: 400, stage: 'Series B', status: 'exited', teamSize: 25, lastUpdate: 'Exited Mar 2025' },
+];
 
 function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
@@ -127,114 +148,113 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 }
 
 export default function InvestorPortfolioPage() {
-  // Mock data
-  const investments: Investment[] = [
-    {
-      id: '1',
-      name: 'FoodTech Pro',
-      industry: 'FoodTech',
-      investedAt: 'Feb 2025',
-      amount: '$50K',
-      currentValue: '$75K',
-      returnPct: 50,
-      stage: 'Seed',
-      status: 'active',
-      teamSize: 5,
-      lastUpdate: '1 week ago',
-    },
-    {
-      id: '2',
-      name: 'CloudSecure',
-      industry: 'Cybersecurity',
-      investedAt: 'Jan 2025',
-      amount: '$100K',
-      currentValue: '$120K',
-      returnPct: 20,
-      stage: 'Series A',
-      status: 'active',
-      teamSize: 12,
-      lastUpdate: '3 days ago',
-    },
-    {
-      id: '3',
-      name: 'DataVault',
-      industry: 'Enterprise',
-      investedAt: 'Dec 2024',
-      amount: '$75K',
-      currentValue: '$90K',
-      returnPct: 20,
-      stage: 'Seed',
-      status: 'active',
-      teamSize: 8,
-      lastUpdate: '2 weeks ago',
-    },
-    {
-      id: '4',
-      name: 'QuickShip',
-      industry: 'Logistics',
-      investedAt: 'Oct 2024',
-      amount: '$50K',
-      currentValue: '$250K',
-      returnPct: 400,
-      stage: 'Series B',
-      status: 'exited',
-      teamSize: 25,
-      lastUpdate: 'Exited Mar 2025',
-    },
-  ];
+  const { showDemoData } = useDemoData();
+  const investments = showDemoData ? MOCK_INVESTMENTS : [];
+  const valueHistory = showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
+  const sectorData = showDemoData ? SECTOR_DISTRIBUTION : [];
 
   const totalInvested = 275000;
   const totalValue = 535000;
   const totalReturn = ((totalValue - totalInvested) / totalInvested) * 100;
 
+  if (!showDemoData && investments.length === 0) {
+    return (
+      <AppShell title="Portfolio" description="Track your investments and returns">
+        <EmptyState
+          illustration="default"
+          title="No portfolio companies yet"
+          description="Start investing through your deal pipeline to build your portfolio."
+          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 h-4 w-4" />View Pipeline</Link></Button>}
+        />
+      </AppShell>
+    );
+  }
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Portfolio</h1>
-            <p className="text-muted-foreground">
-              Track your investments and returns
-            </p>
-          </div>
-          <Button variant="outline">
-            <ExternalLink className="mr-2 h-4 w-4" />
-            Export Report
-          </Button>
+    <AppShell
+      title="Portfolio"
+      description="Track your investments and returns"
+      actions={
+        <Button variant="outline" size="sm">
+          <Download className="mr-2 h-4 w-4" />Export Report
+        </Button>
+      }
+    >
+      <div className="space-y-6">
+        {/* Summary Stats */}
+        <div className="grid gap-3 sm:grid-cols-4">
+          {[
+            { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
+            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary' },
+            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600' },
+            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label}>
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div>
+                  <p className="text-xl font-bold tabular-nums">{value}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Summary Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Invested</p>
-              <p className="text-2xl font-bold">${(totalInvested / 1000).toFixed(0)}K</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Current Value</p>
-              <p className="text-2xl font-bold">${(totalValue / 1000).toFixed(0)}K</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Total Return</p>
-              <p className="text-2xl font-bold text-green-600">+{totalReturn.toFixed(0)}%</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">Companies</p>
-              <p className="text-2xl font-bold">{investments.length}</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Charts */}
+        <Tabs defaultValue="performance">
+          <TabsList>
+            <TabsTrigger value="performance">Value Over Time</TabsTrigger>
+            <TabsTrigger value="sectors">Sector Mix</TabsTrigger>
+          </TabsList>
+          <TabsContent value="performance">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Portfolio Value (K USD)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={valueHistory}>
+                    <defs>
+                      <linearGradient id="portGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}K`} />
+                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Value']} />
+                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#portGrad)" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="sectors">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Investment by Sector (K USD)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <RPieChart>
+                    <Pie data={sectorData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: $${value}K`} labelLine={false}>
+                      {sectorData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Invested']} />
+                  </RPieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Portfolio List */}
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Investments</h2>
           {investments.map((investment) => (
             <InvestmentCard key={investment.id} investment={investment} />
           ))}
