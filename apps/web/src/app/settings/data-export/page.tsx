@@ -285,7 +285,7 @@ export default function DataExportPage() {
         </div>
 
         {/* GDPR Info */}
-        <Card className="mb-6 border-primary/20 bg-primary/5">
+        <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
               <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -313,7 +313,7 @@ export default function DataExportPage() {
         )}
 
         {/* New Export Request */}
-        <Card className="border-border/60">
+        <Card className="shadow-sm border-border/50">
           <CardHeader>
             <CardTitle className="text-base">Request New Export</CardTitle>
             <CardDescription>

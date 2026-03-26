@@ -248,8 +248,8 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
     <Card
       className={cn(
-        'card-interactive transition-all',
-        achievement.unlocked ? 'hover-lift' : 'opacity-75'
+        'transition-all shadow-sm border-border/50',
+        achievement.unlocked ? 'hover:shadow-md' : 'opacity-75'
       )}
     >
       <CardContent className="p-5">
@@ -334,8 +334,8 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
     100;
 
   return (
-    <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background">
-      <CardContent className="p-6">
+    <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border/50 animate-fade-in">
+      <CardContent className="p-6 md:p-8">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -491,7 +491,7 @@ export default function AchievementsPage() {
       title="Achievements & Badges"
       description="Track your progress, unlock badges, and climb the leaderboard"
     >
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-5xl mx-auto pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (
@@ -500,17 +500,17 @@ export default function AchievementsPage() {
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <TabsList>
-                  <TabsTrigger value="all" className="gap-1.5 text-xs">
+                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
+                  <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <Award className="h-3.5 w-3.5" /> All ({achievements?.length})
                   </TabsTrigger>
-                  <TabsTrigger value="unlocked" className="gap-1.5 text-xs">
+                  <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <CheckCircle2 className="h-3.5 w-3.5" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
                   </TabsTrigger>
-                  <TabsTrigger value="locked" className="gap-1.5 text-xs">
+                  <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <Lock className="h-3.5 w-3.5" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
                   </TabsTrigger>
-                  <TabsTrigger value="leaderboard" className="gap-1.5 text-xs">
+                  <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <Trophy className="h-3.5 w-3.5" /> Leaderboard
                   </TabsTrigger>
                 </TabsList>
@@ -535,7 +535,7 @@ export default function AchievementsPage() {
                 )}
               </div>
 
-              <TabsContent value="all" className="mt-4 space-y-4">
+              <TabsContent value="all" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -551,7 +551,7 @@ export default function AchievementsPage() {
                 )}
               </TabsContent>
 
-              <TabsContent value="unlocked" className="mt-4 space-y-4">
+              <TabsContent value="unlocked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -567,7 +567,7 @@ export default function AchievementsPage() {
                 )}
               </TabsContent>
 
-              <TabsContent value="locked" className="mt-4 space-y-4">
+              <TabsContent value="locked" className="mt-4 space-y-4 animate-in fade-in slide-in-from-bottom-2">
                 {filteredAchievements && filteredAchievements.length > 0 ? (
                   filteredAchievements.map((achievement) => (
                     <AchievementCard key={achievement.id} achievement={achievement} />
@@ -582,7 +582,7 @@ export default function AchievementsPage() {
                 )}
               </TabsContent>
 
-              <TabsContent value="leaderboard" className="mt-4">
+              <TabsContent value="leaderboard" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
                 <div className="grid gap-4 sm:grid-cols-3">
                   {/* Leaderboard table */}
                   <div className="sm:col-span-2">

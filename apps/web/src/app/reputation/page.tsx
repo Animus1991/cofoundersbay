@@ -19,6 +19,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 type ReputationCategory = {
@@ -284,7 +285,7 @@ function CategoryCard({ category }: { category: ReputationCategory }) {
   const percentage = (category.score / category.maxScore) * 100;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -433,24 +434,22 @@ export default function ReputationPage() {
   const totalBadges = BADGES.length;
 
   return (
-    <AppShell>
-      <div className="container max-w-5xl py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
-              Reputation Score
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Your trust and credibility on CoFounderBay
-            </p>
-          </div>
+    <AppShell
+      title="Reputation Score"
+      description="Your trust and credibility on CoFounderBay"
+      actions={
+        <div className="flex items-center gap-2">
+          <Link href="/profile">
+            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+              <Shield className="h-4 w-4" />
+              My Profile
+            </Button>
+          </Link>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Eye className="h-4 w-4 mr-1" />
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Eye className="h-4 w-4" />
                   Public View
                 </Button>
               </TooltipTrigger>
@@ -460,33 +459,36 @@ export default function ReputationPage() {
             </Tooltip>
           </TooltipProvider>
         </div>
+      }
+    >
+      <div className="max-w-5xl mx-auto space-y-6 pb-10">
 
         {/* Main Score Card */}
-        <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-center gap-6">
+        <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm border-border/50 animate-fade-in">
+          <CardContent className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
               <ScoreRing score={totalScore} maxScore={100} size="lg" />
               <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
                   {totalScore >= 80 ? 'Excellent' : totalScore >= 60 ? 'Good' : totalScore >= 40 ? 'Fair' : 'Building'}
                 </h2>
                 <p className="text-muted-foreground mt-1">
                   Your reputation score is based on {REPUTATION_CATEGORIES.length} categories
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
                     <Trophy className="h-4 w-4 text-amber-500" />
-                    <span className="text-sm">
+                    <span className="text-sm font-medium">
                       {earnedBadges}/{totalBadges} badges
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
                     <TrendingUp className="h-4 w-4 text-emerald-500" />
-                    <span className="text-sm">+15 this month</span>
+                    <span className="text-sm font-medium">+15 this month</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
                     <Users className="h-4 w-4 text-blue-500" />
-                    <span className="text-sm">Top 20%</span>
+                    <span className="text-sm font-medium">Top 20%</span>
                   </div>
                 </div>
               </div>
@@ -496,13 +498,22 @@ export default function ReputationPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="badges">Badges</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+          <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
+            <TabsTrigger value="overview" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+              <Shield className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+              <Award className="h-4 w-4" />
+              Badges ({earnedBadges}/{totalBadges})
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+              <TrendingUp className="h-4 w-4" />
+              History
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
+          <TabsContent value="overview" className="mt-6 animate-in fade-in slide-in-from-bottom-2">
             <div className="grid gap-6 md:grid-cols-2">
               {REPUTATION_CATEGORIES.map((category) => (
                 <CategoryCard key={category.id} category={category} />
@@ -510,7 +521,7 @@ export default function ReputationPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="badges" className="mt-6">
+          <TabsContent value="badges" className="mt-6 animate-in fade-in slide-in-from-bottom-2">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {BADGES.map((badge) => (
                 <BadgeCard key={badge.id} badge={badge} />
@@ -518,10 +529,10 @@ export default function ReputationPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="history" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+          <TabsContent value="history" className="mt-6 animate-in fade-in slide-in-from-bottom-2">
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="border-b border-border/50">
+                <CardTitle className="text-lg">Recent Activity</CardTitle>
                 <CardDescription>
                   Changes to your reputation score
                 </CardDescription>
@@ -536,48 +547,35 @@ export default function ReputationPage() {
         </Tabs>
 
         {/* Tips Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
+            <CardTitle className="text-lg flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               Tips to Improve Your Score
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex gap-3">
-                <div className="rounded-lg bg-blue-500/10 p-2 h-fit">
-                  <Users className="h-4 w-4 text-blue-500" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Complete your profile</p>
-                  <p className="text-xs text-muted-foreground">
-                    Add portfolio items and experience
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="rounded-lg bg-emerald-500/10 p-2 h-fit">
-                  <MessageCircle className="h-4 w-4 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Engage with community</p>
-                  <p className="text-xs text-muted-foreground">
-                    Post updates and help others
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="rounded-lg bg-purple-500/10 p-2 h-fit">
-                  <ThumbsUp className="h-4 w-4 text-purple-500" />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">Get endorsements</p>
-                  <p className="text-xs text-muted-foreground">
-                    Ask connections to endorse your skills
-                  </p>
-                </div>
-              </div>
+              {[
+                { icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
+                { icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },
+                { icon: ThumbsUp, color: 'text-purple-500', bg: 'bg-purple-500/10', title: 'Get endorsements', desc: 'Ask connections to endorse your skills', href: '/connections' },
+              ].map((tip) => {
+                const TipIcon = tip.icon;
+                return (
+                  <Link key={tip.title} href={tip.href}>
+                    <div className="flex gap-3 rounded-xl border border-border/40 p-3 hover:bg-muted/40 hover:border-primary/30 transition-all cursor-pointer">
+                      <div className={cn('rounded-lg p-2 h-fit', tip.bg)}>
+                        <TipIcon className={cn('h-4 w-4', tip.color)} />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{tip.title}</p>
+                        <p className="text-xs text-muted-foreground">{tip.desc}</p>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </CardContent>
         </Card>

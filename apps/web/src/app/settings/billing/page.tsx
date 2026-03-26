@@ -156,14 +156,16 @@ export default function UserBillingPage() {
   const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="h-4 w-4 text-muted-foreground" />;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6 max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Billing & Subscription</h1>
-            <p className="text-muted-foreground text-sm">Manage your plan, invoices, and billing details.</p>
-          </div>
+    <AppShell
+      title="Billing & Subscription"
+      description="Manage your plan, invoices, and billing details"
+      actions={
+        <div className="flex items-center gap-2">
+          <Link href="/settings">
+            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+              Settings
+            </Button>
+          </Link>
           <Link href="/pricing">
             <Button variant="outline" size="sm" className="gap-2">
               View plans
@@ -171,10 +173,13 @@ export default function UserBillingPage() {
             </Button>
           </Link>
         </div>
+      }
+    >
+      <div className="space-y-6 max-w-3xl mx-auto pb-10">
 
         {/* Current Plan */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-base">Current Plan</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -295,8 +300,8 @@ export default function UserBillingPage() {
         )}
 
         {/* Billing Contact */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="pb-3 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-base">Billing Contact</CardTitle>
@@ -402,8 +407,8 @@ export default function UserBillingPage() {
         </Card>
 
         {/* Invoice history */}
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="pb-3 border-b border-border/50">
             <CardTitle className="text-base">Invoice History</CardTitle>
           </CardHeader>
           <CardContent className="p-0">

@@ -88,8 +88,8 @@ function PrivacyCard() {
     publicProfile: true, showLocation: true, searchable: true, showActivity: false,
   });
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
           Privacy & Visibility
@@ -239,11 +239,11 @@ export default function SettingsPage() {
       )}
 
       {hasToken && (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-5xl mx-auto pb-10">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Billing */}
-            <Card>
-              <CardHeader>
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-primary" />
                   Billing
@@ -324,8 +324,8 @@ export default function SettingsPage() {
             </Card>
 
             {/* Notifications */}
-            <Card>
-              <CardHeader>
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Bell className="h-5 w-5 text-primary" />
                   Notification preferences
@@ -370,8 +370,8 @@ export default function SettingsPage() {
           </div>
 
           {/* Password Change */}
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-border/50">
+            <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
                 <KeyRound className="h-5 w-5 text-primary" />
                 Change password
@@ -420,8 +420,8 @@ export default function SettingsPage() {
           </Card>
 
           {/* Security — 2FA */}
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-border/50">
+            <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
                 Security
@@ -439,8 +439,8 @@ export default function SettingsPage() {
           </Card>
 
           {/* Connected accounts */}
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-border/50">
+            <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Link2 className="h-5 w-5 text-primary" />
                 Connected accounts
@@ -509,8 +509,8 @@ export default function SettingsPage() {
           <PrivacyCard />
 
           {/* Account section */}
-          <Card>
-            <CardHeader>
+          <Card className="shadow-sm border-border/50">
+            <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
                 Account

@@ -275,7 +275,7 @@ function PostCard({
   const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
@@ -424,14 +424,14 @@ function TrendingTopics() {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
           <Flame className="h-4 w-4 text-orange-500" />
           Trending Topics
         </h3>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-4">
         <div className="space-y-3">
           {topics.map((topic, i) => (
             <a
@@ -462,14 +462,14 @@ function SuggestedConnections() {
   ];
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
           Suggested Connections
         </h3>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-4">
         <div className="space-y-3">
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
@@ -548,22 +548,23 @@ export default function FeedPage() {
   };
 
   return (
-    <AppShell>
-      <div className="container max-w-6xl py-6">
+    <AppShell
+      title="Feed"
+      description="Stay updated with your network"
+      actions={
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="following">Following</TabsTrigger>
+            <TabsTrigger value="trending">Trending</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      }
+    >
+      <div className="max-w-6xl mx-auto pb-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main Feed */}
           <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-foreground">Feed</h1>
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-                <TabsList>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="following">Following</TabsTrigger>
-                  <TabsTrigger value="trending">Trending</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
 
             {/* Create Post */}
             <CreatePostCard onPost={handlePost} />
@@ -592,7 +593,7 @@ export default function FeedPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 hidden lg:block">
+          <div className="space-y-6 hidden lg:block sticky top-6 self-start">
             <TrendingTopics />
             <SuggestedConnections />
           </div>

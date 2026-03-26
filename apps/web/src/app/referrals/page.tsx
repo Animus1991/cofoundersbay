@@ -146,8 +146,8 @@ function ReferralLink({ code }: { code: string }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
           <Share2 className="h-5 w-5 text-primary" />
           Your Referral Link
@@ -198,8 +198,8 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
   const CurrentIcon = currentTier.icon;
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
           <Award className="h-5 w-5 text-primary" />
           Your Tier
@@ -364,18 +364,11 @@ export default function ReferralsPage() {
   });
 
   return (
-    <AppShell>
-      <div className="container max-w-5xl py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Gift className="h-6 w-6 text-primary" />
-            Referral Program
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Invite friends and earn rewards when they join CoFounderBay
-          </p>
-        </div>
+    <AppShell
+      title="Referral Program"
+      description="Invite friends and earn rewards when they join CoFounderBay"
+    >
+      <div className="max-w-5xl mx-auto space-y-6 pb-10">
 
         {/* Stats */}
         <StatsCards referrals={referrals} />
@@ -387,8 +380,8 @@ export default function ReferralsPage() {
             <ReferralLink code={referralCode} />
 
             {/* Referrals List */}
-            <Card>
-              <CardHeader>
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle>Your Referrals</CardTitle>
                   <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
@@ -422,8 +415,8 @@ export default function ReferralsPage() {
             <TierProgress referrals={successfulReferrals} currentTier={currentTier} />
 
             {/* How It Works */}
-            <Card>
-              <CardHeader>
+            <Card className="shadow-sm border-border/50">
+              <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
                   How It Works

@@ -313,36 +313,35 @@ export default function NotificationPreferencesPage() {
   };
 
   return (
-    <AppShell>
-      <div className="max-w-3xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/settings">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">Notification Preferences</h1>
-            <p className="text-muted-foreground">
-              Control how and when you receive notifications
-            </p>
-          </div>
-          <Button onClick={handleSave} disabled={savePrefs.isPending}>
+    <AppShell
+      title="Notification Preferences"
+      description="Control how and when you receive notifications"
+      actions={
+        <div className="flex items-center gap-2">
+          <Link href="/settings">
+            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+              <ArrowLeft className="h-4 w-4" />
+              Settings
+            </Button>
+          </Link>
+          <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
             {savePrefs.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4" />
             )}
             Save Changes
           </Button>
         </div>
+      }
+    >
+      <div className="max-w-3xl mx-auto space-y-6 pb-10">
 
         {/* Global Settings */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="h-5 w-5" />
+              <Bell className="h-5 w-5 text-primary" />
               Global Settings
             </CardTitle>
           </CardHeader>
@@ -419,8 +418,8 @@ export default function NotificationPreferencesPage() {
         </Card>
 
         {/* Automation Notifications */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
               <Zap className="h-5 w-5 text-primary" />
               Automation Notifications

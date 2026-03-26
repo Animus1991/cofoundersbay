@@ -162,7 +162,7 @@ export default function InvitePage() {
       title="Invite People"
       description="Grow your network by inviting co-founders, mentors, and investors"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto pb-10">
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
           {statsLoading ? (
@@ -179,8 +179,8 @@ export default function InvitePage() {
         </div>
 
         {/* Invite form */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               Send an Invitation
@@ -247,10 +247,10 @@ export default function InvitePage() {
         </Card>
 
         {/* Invite history */}
-        <Card>
-          <CardHeader>
+        <Card className="shadow-sm border-border/50">
+          <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
+              <Clock className="h-5 w-5 text-muted-foreground" />
               Invite History
             </CardTitle>
           </CardHeader>
