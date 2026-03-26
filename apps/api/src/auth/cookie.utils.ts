@@ -44,7 +44,7 @@ export function setAuthCookies(
 
   res.cookie(COOKIE_NAMES.REFRESH_TOKEN, refreshToken, {
     ...baseCookieOptions(merged.refreshMaxAge),
-    path: '/api/v1/auth', // only sent to auth endpoints
+    path: '/api/auth', // only sent to auth endpoints
     ...(merged.domain ? { domain: merged.domain } : {}),
   });
 
@@ -70,6 +70,7 @@ export function clearAuthCookies(res: Response, domain?: string) {
   };
 
   res.clearCookie(COOKIE_NAMES.ACCESS_TOKEN, opts);
+  res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { ...opts, path: '/api/auth' });
   res.clearCookie(COOKIE_NAMES.REFRESH_TOKEN, { ...opts, path: '/api/v1/auth' });
   res.clearCookie(COOKIE_NAMES.SESSION, { httpOnly: false, secure: IS_PROD, sameSite: 'lax', path: '/', ...(domain ? { domain } : {}) });
 }

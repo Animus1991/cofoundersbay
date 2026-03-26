@@ -35,6 +35,10 @@ import {
   Zap,
   BarChart3,
   BadgeCheck,
+  Calendar,
+  MessageSquare,
+  Link as LinkIcon,
+  User,
 } from 'lucide-react';
 import { getMeProfile } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -49,6 +53,8 @@ import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
+
+const UserIcon = User;
 
 function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> }) {
   const items = [
@@ -135,7 +141,7 @@ function VerificationCard({ email }: { email?: string | null }) {
 }
 
 const ROLE_ICONS: Record<string, React.ElementType> = {
-  founder: Briefcase,
+  founder: Rocket,
   mentor: GraduationCap,
   investor: TrendingUp,
   org: Building2,
@@ -197,14 +203,14 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     : null;
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Icon className="h-4 w-4 text-primary" />
-          {role.charAt(0).toUpperCase() + role.slice(1)} details
+    <Card className="shadow-sm border-border/50">
+      <CardHeader className="pb-3 border-b border-border/50">
+        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          <Icon className="h-5 w-5 text-primary" />
+          {role.charAt(0).toUpperCase() + role.slice(1)} Details
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 pt-5">
         {role === 'founder' && (
           <>
             {renderValue(payload.stage, 'Startup stage')}
@@ -299,157 +305,125 @@ export default function ProfilePage() {
       description="Your public presence in the CoFounderBay ecosystem"
       actions={
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleShare} title="Copy profile link">
+          <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
+            <Share2 className="h-4 w-4" />
+            Share Profile
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
             <Share2 className="h-4 w-4" />
           </Button>
           <Link href="/profile/edit">
-            <Button className="gap-2">
+            <Button size="sm" className="gap-2">
               <Edit className="h-4 w-4" />
-              Edit profile
+              Edit Profile
             </Button>
           </Link>
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-        {/* Left column: identity card */}
-        <div className="space-y-4">
-          <Card className="animate-fade-in">
-            <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
-              <div className="relative">
-                <Avatar className="h-24 w-24 ring-4 ring-primary/20">
+      <div className="space-y-6 max-w-6xl mx-auto pb-10">
+        {/* Cover Photo & Basic Identity Header */}
+        <div className="relative rounded-2xl overflow-hidden border bg-card shadow-sm animate-fade-in">
+          {/* Cover Photo */}
+          <div className="h-48 md:h-64 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary w-full relative">
+            <div className="absolute inset-0 bg-grid-white/10" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(var(--primary-rgb), 0.1) 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+          </div>
+          
+          <div className="px-6 sm:px-8 pb-6 md:pb-8 relative">
+            <div className="flex flex-col md:flex-row gap-6 md:items-end -mt-16 md:-mt-20">
+              <div className="relative inline-block">
+                <Avatar className="h-32 w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-3xl font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 rounded-full bg-background p-0.5">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title="Verified Member">
+                  <BadgeCheck className="h-6 w-6 text-blue-500" />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold text-foreground">{profile.displayName}</h2>
-                {profile.headline && (
-                  <p className="text-sm text-muted-foreground">{profile.headline}</p>
-                )}
-                <div className="flex justify-center pt-1">
-                  <RoleBadge role={profile.role} />
+              <div className="flex-1 space-y-3 pt-2 md:pt-0">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                      {profile.displayName}
+                    </h1>
+                    {profile.headline ? (
+                      <p className="text-base md:text-lg text-muted-foreground font-medium">
+                        {profile.headline}
+                      </p>
+                    ) : (
+                      <p className="text-base text-muted-foreground italic opacity-70">
+                        No headline set
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-3 shrink-0">
+                    <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
+                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                      Open to work
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium pt-1">
+                  {profile.location && (
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4" />
+                      {profile.location}
+                    </div>
+                  )}
+                  {profile.timezone && (
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      {profile.timezone}
+                    </div>
+                  )}
+                  {profile.languages?.length ? (
+                    <div className="flex items-center gap-1.5">
+                      <Languages className="h-4 w-4" />
+                      {profile.languages.join(', ')}
+                    </div>
+                  ) : null}
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
+                    Joined {new Date().getFullYear()}
+                  </div>
                 </div>
               </div>
-
-              <div className="w-full space-y-2 text-sm text-muted-foreground">
-                {profile.location && (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
-                    {profile.location}
-                  </p>
-                )}
-                {profile.timezone && (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0" />
-                    {profile.timezone}
-                  </p>
-                )}
-                {profile.languages?.length ? (
-                  <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="h-3.5 w-3.5 shrink-0" />
-                    {profile.languages.join(' · ')}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="flex w-full gap-2 pt-2">
-                <Link href="/profile/edit" className="flex-1">
-                  <Button variant="secondary" className="w-full gap-2" size="sm">
-                    <Edit className="h-3.5 w-3.5" />
-                    Edit
-                  </Button>
-                </Link>
-                <Button variant="outline" size="sm" onClick={handleShare} className="gap-2">
-                  <Share2 className="h-3.5 w-3.5" />
-                  Share
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Profile completion meter */}
-          <ProfileCompletionCard profile={profile} />
-
-          {/* Skills */}
-          {profile.skills?.length ? (
-            <Card className="animate-fade-in stagger-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Skills
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-wrap gap-2 pt-0">
-                {profile.skills.map((s) => (
-                  <SkillChip key={s.skillId} label={s.skillName} />
-                ))}
-              </CardContent>
-            </Card>
-          ) : null}
-
-          {/* Verification status */}
-          <VerificationCard email={profile.email} />
-
-          {/* Reputation / Stats mini-card */}
-          <Card className="animate-fade-in">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Activity Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-2 pt-0">
-              {[
-                { icon: Users,    label: 'Connections', value: '—', color: 'text-violet-500' },
-                { icon: Star,     label: 'Endorsements',value: '—', color: 'text-amber-500'  },
-                { icon: Activity, label: 'Activity',    value: '—', color: 'text-blue-500'   },
-                { icon: Award,    label: 'Achievements', value: '—', color: 'text-emerald-500'},
-              ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="flex flex-col items-center rounded-lg bg-secondary/40 px-2 py-2.5">
-                  <Icon className={`h-4 w-4 mb-1 ${color}`} />
-                  <span className="text-base font-bold text-foreground">{value}</span>
-                  <span className="text-[10px] text-muted-foreground">{label}</span>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Contribution Graph */}
-          <Card className="animate-fade-in">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Activity Graph
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0 overflow-x-auto">
-              <ContributionGraph 
-                weeks={26} 
-                colorScheme="primary" 
-                size="sm"
-                showDays={false}
-              />
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Right column: bio + role details */}
-        <div className="space-y-4">
-          {/* Bio */}
-          {profile.bio && (
-            <Card className="animate-fade-in stagger-2">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">About</CardTitle>
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          {/* Main content column */}
+          <div className="space-y-6">
+            {/* Bio */}
+            <Card className="animate-fade-in stagger-1 shadow-sm border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <UserIcon className="h-5 w-5 text-primary" />
+                  About
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {profile.bio}
-                </p>
+              <CardContent className="pt-5">
+                {profile.bio ? (
+                  <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                    {profile.bio}
+                  </p>
+                ) : (
+                  <div className="text-center py-6 bg-secondary/20 rounded-lg border border-dashed border-border/50">
+                    <p className="text-sm text-muted-foreground mb-3">Your bio is empty. Tell the community about yourself!</p>
+                    <Link href="/profile/edit">
+                      <Button variant="outline" size="sm">Add Bio</Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
-          )}
 
           {/* Intent cards — What I'm looking for */}
           {(() => {
@@ -462,18 +436,23 @@ export default function ProfilePage() {
             ].filter((c) => c.value);
             if (!cards.length) return null;
             return (
-              <Card className="animate-fade-in stagger-3">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">What I&apos;m Looking For</CardTitle>
+              <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    What I&apos;m Looking For
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-3 sm:grid-cols-2 pt-0">
+                <CardContent className="grid gap-4 sm:grid-cols-2 pt-5">
                   {cards.map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="rounded-xl border border-border/30 bg-secondary/30 p-3.5">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Icon className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{label}</span>
+                    <div key={label} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                          <Icon className="h-4 w-4" />
+                        </div>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
                       </div>
-                      <p className="text-sm font-medium text-foreground">{value}</p>
+                      <p className="text-sm font-medium text-foreground pl-1">{value}</p>
                     </div>
                   ))}
                 </CardContent>
@@ -481,78 +460,86 @@ export default function ProfilePage() {
             );
           })()}
 
+          {/* Role-specific details */}
+          {Object.keys(rolePayload).length > 0 && (
+            <div className="animate-fade-in stagger-2">
+              <RoleDetails role={profile.role} payload={rolePayload} />
+            </div>
+          )}
+
           {/* Skill proficiency bars */}
           {profile.skills && profile.skills.length > 0 && (
-            <Card className="animate-fade-in stagger-3">
-              <CardHeader className="pb-3">
+            <Card className="animate-fade-in stagger-3 shadow-sm border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-primary" />Skill Proficiency
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    Top Skills & Proficiency
                   </CardTitle>
                   <Link href="/profile/edit">
-                    <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-                      <Plus className="h-3 w-3" />Add
+                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                      <Plus className="h-3.5 w-3.5" /> Add
                     </Button>
                   </Link>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3 pt-0">
-                {profile.skills.slice(0, 6).map((s, i) => {
-                  const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
-                  const pct = lvl === 'expert' ? 88 - i * 3 : lvl === 'intermediate' ? 62 - i * 4 : 38 - i * 3;
-                  return (
-                    <div key={s.skillId} className="space-y-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-foreground">{s.skillName}</span>
-                        <span className="text-muted-foreground capitalize">{lvl}</span>
+              <CardContent className="pt-5">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {profile.skills.slice(0, 6).map((s, i) => {
+                    const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
+                    const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
+                    return (
+                      <div key={s.skillId} className="space-y-1.5 bg-secondary/20 p-3 rounded-lg border border-border/50">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold text-foreground">{s.skillName}</span>
+                          <Badge variant="secondary" className="text-[10px] capitalize bg-background">{lvl}</Badge>
+                        </div>
+                        <div className="h-2 rounded-full bg-secondary overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-primary transition-all duration-1000 ease-out"
+                            style={{ width: `${Math.max(pct, 20)}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-secondary/60 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary transition-all duration-700"
-                          style={{ width: `${Math.max(pct, 20)}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
                 {profile.skills.length > 6 && (
-                  <p className="text-xs text-muted-foreground text-center">+{profile.skills.length - 6} more skills</p>
+                  <div className="mt-4 pt-4 border-t border-border/50 text-center">
+                    <Button variant="link" size="sm" className="text-muted-foreground h-auto p-0">
+                      Show all {profile.skills.length} skills
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>
           )}
 
-          {/* Role-specific details */}
-          {Object.keys(rolePayload).length > 0 && (
-            <div className="animate-fade-in stagger-3">
-              <RoleDetails role={profile.role} payload={rolePayload} />
-            </div>
-          )}
-
           {/* Portfolio placeholder */}
-          <Card className="animate-fade-in">
-            <CardHeader className="pb-3">
+          <Card className="animate-fade-in shadow-sm border-border/50">
+            <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FolderOpen className="h-4 w-4 text-primary" />Portfolio &amp; Showcase
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <FolderOpen className="h-5 w-5 text-primary" />
+                  Portfolio &amp; Showcase
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-                  <Plus className="h-3 w-3" />Add item
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                  <Plus className="h-3.5 w-3.5" /> Add
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-3 py-6 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                  <FolderOpen className="h-5 w-5 text-muted-foreground" />
+            <CardContent className="pt-5">
+              <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <FolderOpen className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Showcase your work</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Add projects, publications, awards, or certifications</p>
+                  <p className="text-sm font-medium text-foreground">Showcase your best work</p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">Add projects, startups, publications, or key achievements to stand out.</p>
                 </div>
-                <Link href="/profile/edit">
-                  <Button variant="secondary" size="sm" className="gap-1.5">
-                    <Plus className="h-3.5 w-3.5" />Add portfolio item
+                <Link href="/profile/edit" className="mt-2">
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" /> Add First Item
                   </Button>
                 </Link>
               </div>
@@ -561,20 +548,109 @@ export default function ProfilePage() {
 
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
-            <Card className="animate-fade-in">
+            <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
               <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Your profile is sparse. Add a bio and role details to get better matches.
-                </p>
+                <div className="p-3 bg-background rounded-full shadow-sm mb-2">
+                  <Activity className="h-8 w-8 text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-lg">Your profile is looking bare</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    Profiles with bios and role details receive 4x more connection requests. Take 2 minutes to fill it out!
+                  </p>
+                </div>
                 <Link href="/profile/edit">
-                  <Button className="gap-2">
+                  <Button className="gap-2 mt-2">
                     <Edit className="h-4 w-4" />
-                    Complete your profile
+                    Complete Profile Now
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           )}
+        </div>
+
+        {/* Right sidebar column */}
+        <div className="space-y-6">
+          {/* Action Card */}
+          <Card className="shadow-sm border-border/50 sticky top-6">
+            <CardContent className="p-5 space-y-4">
+              <Link href="/profile/edit" className="block w-full">
+                <Button className="w-full gap-2 font-medium" size="lg">
+                  <Edit className="h-4 w-4" />
+                  Edit Profile
+                </Button>
+              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
+                  <LinkIcon className="h-4 w-4" />
+                  Copy Link
+                </Button>
+                <Link href="/settings/general" className="block w-full">
+                  <Button variant="outline" className="w-full gap-2">
+                    <Zap className="h-4 w-4" />
+                    Settings
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Profile completion meter */}
+          <ProfileCompletionCard profile={profile} />
+
+          {/* Verification status */}
+          <VerificationCard email={profile.email} />
+
+          {/* Reputation / Stats mini-card */}
+          <Card className="animate-fade-in shadow-sm border-border/50">
+            <CardHeader className="pb-3 border-b border-border/50">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Activity & Reputation
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 grid grid-cols-2 gap-3">
+              {[
+                { icon: Users,    label: 'Connections', value: '0', color: 'text-violet-500', bg: 'bg-violet-500/10' },
+                { icon: Star,     label: 'Endorsements',value: '0', color: 'text-amber-500', bg: 'bg-amber-500/10'  },
+                { icon: MessageSquare, label: 'Posts', value: '0', color: 'text-blue-500', bg: 'bg-blue-500/10'   },
+                { icon: Award,    label: 'Achievements', value: '0', color: 'text-emerald-500', bg: 'bg-emerald-500/10'},
+              ].map(({ icon: Icon, label, value, color, bg }) => (
+                <div key={label} className="flex flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
+                  <div className={`p-2 rounded-full ${bg} mb-2`}>
+                    <Icon className={`h-4 w-4 ${color}`} />
+                  </div>
+                  <span className="text-lg font-bold text-foreground leading-none">{value}</span>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">{label}</span>
+                </div>
+              ))}
+              <div className="col-span-2 mt-2">
+                <Link href="/reputation">
+                  <Button variant="secondary" className="w-full text-xs h-8">View Reputation Dashboard</Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Contribution Graph */}
+          <Card className="animate-fade-in shadow-sm border-border/50">
+            <CardHeader className="pb-3 border-b border-border/50">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Activity Graph
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 overflow-hidden">
+              <div className="-mx-2 scale-95 transform origin-left">
+                <ContributionGraph 
+                  weeks={18} 
+                  colorScheme="primary" 
+                  size="sm"
+                  showDays={false}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         </div>
       </div>
     </AppShell>

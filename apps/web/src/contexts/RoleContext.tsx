@@ -2,6 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from '@/hooks/useSession';
+import { apiRequest } from '@/lib/api';
 
 // Role types matching backend
 export type UserRoleType =
@@ -71,6 +73,8 @@ export interface RoleContextState {
   error: string | null;
 }
 
+type DashboardContextResponse = Omit<RoleContextState, 'isLoading' | 'error'>;
+
 interface RoleContextValue extends RoleContextState {
   refreshRoles: () => Promise<void>;
   switchPrimaryRole: (roleId: string) => Promise<void>;
@@ -85,58 +89,39 @@ interface RoleContextValue extends RoleContextState {
 
 const RoleContext = createContext<RoleContextValue | undefined>(undefined);
 
-const getApiBase = () => {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const EMPTY_ROLE_STATE: DashboardContextResponse = {
+  primaryRole: null,
+  allRoles: [],
+  permissions: [],
+  dashboard: null,
+  organizations: [],
+  tenants: [],
 };
-
-async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
-  const response = await fetch(`${getApiBase()}${endpoint}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-  if (response.status === 401) {
-    // Session expired — clear client-side session indicators and broadcast logout
-    if (typeof document !== 'undefined') {
-      document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
-      document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
-    }
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('cfb:logout'));
-    }
-    throw new Error('Session expired');
-  }
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || 'Request failed');
-  }
-
-  return response.json();
-}
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const { hasSession, mounted } = useSession();
   const [state, setState] = useState<RoleContextState>({
-    primaryRole: null,
-    allRoles: [],
-    permissions: [],
-    dashboard: null,
-    organizations: [],
-    tenants: [],
+    ...EMPTY_ROLE_STATE,
     isLoading: true,
     error: null,
   });
 
   const refreshRoles = useCallback(async () => {
+    if (!mounted) return;
+
+    if (!hasSession) {
+      setState({
+        ...EMPTY_ROLE_STATE,
+        isLoading: false,
+        error: null,
+      });
+      return;
+    }
+
     try {
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      const context = await fetchWithAuth('/api/roles/dashboard-context');
+      const context = await apiRequest<DashboardContextResponse>('/api/roles/dashboard-context');
       setState({
         primaryRole: context.primaryRole,
         allRoles: context.allRoles,
@@ -154,11 +139,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         error: error instanceof Error ? error.message : 'Failed to load roles',
       }));
     }
-  }, []);
+  }, [hasSession, mounted]);
 
   const switchPrimaryRole = useCallback(async (roleId: string) => {
     try {
-      await fetchWithAuth(`/api/roles/${roleId}/set-primary`, { method: 'PATCH' });
+      await apiRequest(`/api/roles/${roleId}/set-primary`, { method: 'PATCH' });
       await refreshRoles();
     } catch (error) {
       console.error('Failed to switch primary role:', error);
@@ -172,7 +157,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     scopeId?: string,
   ) => {
     try {
-      await fetchWithAuth('/api/roles/add', {
+      await apiRequest('/api/roles/add', {
         method: 'POST',
         body: JSON.stringify({ roleType, scope, scopeId }),
       });
@@ -185,7 +170,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
   const removeRole = useCallback(async (roleId: string) => {
     try {
-      await fetchWithAuth(`/api/roles/${roleId}`, { method: 'DELETE' });
+      await apiRequest(`/api/roles/${roleId}`, { method: 'DELETE' });
       await refreshRoles();
     } catch (error) {
       console.error('Failed to remove role:', error);
@@ -221,7 +206,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   }, [router, state.dashboard]);
 
   useEffect(() => {
-    refreshRoles();
+    void refreshRoles();
   }, [refreshRoles]);
 
   const value: RoleContextValue = {
@@ -255,7 +240,7 @@ export function withRoleGuard<P extends object>(
   requireAll = false,
 ) {
   return function RoleGuardedComponent(props: P) {
-    const { hasAnyPermission, hasAllPermissions, isLoading, primaryRole } = useRole();
+    const { hasAnyPermission, hasAllPermissions, isLoading } = useRole();
     const router = useRouter();
 
     useEffect(() => {
@@ -268,7 +253,7 @@ export function withRoleGuard<P extends object>(
           router.push('/unauthorized');
         }
       }
-    }, [isLoading, hasAnyPermission, hasAllPermissions, router]);
+    }, [isLoading, hasAnyPermission, hasAllPermissions, router, requiredPermissions, requireAll]);
 
     if (isLoading) {
       return (

@@ -13,22 +13,18 @@ import {
   Github,
   Briefcase,
   Target,
-  Clock,
-  Languages,
-  DollarSign,
   GraduationCap,
   Rocket,
   TrendingUp,
   Building2,
   Save,
   ArrowLeft,
-  Plus,
   X,
   Loader2,
   Sparkles,
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
+  LayoutDashboard,
+  ShieldAlert,
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -39,8 +35,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RoleBadge } from '@/components/common/RoleBadge';
-import { ProfileCompletionCard, calculateProfileCompletion } from '@/components/common/ProfileCompletion';
+import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 
@@ -514,131 +509,178 @@ export default function ProfileEditPage() {
   }
 
   const completionFields = calculateProfileCompletion(form as Record<string, unknown>);
+  const totalCompletionWeight = completionFields.reduce((sum, field) => sum + field.weight, 0);
+  const completedCompletionWeight = completionFields
+    .filter((field) => field.completed)
+    .reduce((sum, field) => sum + field.weight, 0);
+  const completionPercentage = totalCompletionWeight === 0
+    ? 0
+    : Math.round((completedCompletionWeight / totalCompletionWeight) * 100);
+  const missingCompletionFields = completionFields.filter((field) => !field.completed);
 
   return (
     <AppShell
       title="Edit Profile"
+      description="Update your personal details and how you appear to others"
       actions={
         <div className="flex items-center gap-2">
           <Link href="/profile">
-            <Button variant="ghost" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
               <ArrowLeft className="h-4 w-4" />
               Cancel
             </Button>
           </Link>
-          <Button onClick={handleSave} disabled={saving} className="gap-2">
+          <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save changes
           </Button>
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px] max-w-6xl mx-auto pb-10">
         {/* Main content */}
         <div className="space-y-6">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="basic" className="gap-2">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent mb-6 overflow-x-auto hide-scrollbar">
+              <TabsTrigger 
+                value="basic" 
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
                 <User className="h-4 w-4" />
                 Basic Info
               </TabsTrigger>
-              <TabsTrigger value="role" className="gap-2">
+              <TabsTrigger 
+                value="role" 
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
                 <Briefcase className="h-4 w-4" />
                 Role Details
               </TabsTrigger>
-              <TabsTrigger value="links" className="gap-2">
+              <TabsTrigger 
+                value="links" 
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
                 <Globe className="h-4 w-4" />
-                Links
+                Social Links
+              </TabsTrigger>
+              <TabsTrigger 
+                value="portfolio" 
+                className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Portfolio
               </TabsTrigger>
             </TabsList>
 
             {/* Basic Info */}
-            <TabsContent value="basic" className="space-y-6 mt-6">
+            <TabsContent value="basic" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Avatar */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Profile Photo</CardTitle>
-                  <CardDescription>A profile photo helps others recognize you</CardDescription>
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-4 border-b border-border/50">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Camera className="h-5 w-5 text-primary" />
+                    Profile Photo
+                  </CardTitle>
+                  <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
                 </CardHeader>
-                <CardContent className="flex items-center gap-6">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={form.avatarUrl || undefined} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-2xl">
-                      {form.displayName[0]?.toUpperCase() || '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-2">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <Input
-                        placeholder="Avatar URL (optional)"
-                        value={form.avatarUrl}
-                        onChange={(e) => updateField('avatarUrl', e.target.value)}
-                      />
-                      <input
-                        ref={avatarFileRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          e.target.value = '';
-                          if (!file) return;
-
-                          setUploadingAvatar(true);
-                          try {
-                            const { upload } = await uploadAvatar(file);
-                            updateField('avatarUrl', upload.url);
-                            success('Avatar uploaded', 'Your photo has been updated');
-                          } catch (err) {
-                            showError('Upload failed', err instanceof Error ? err.message : 'Please try again');
-                          } finally {
-                            setUploadingAvatar(false);
-                          }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="gap-2"
-                        disabled={uploadingAvatar}
+                <CardContent className="pt-6">
+                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div className="relative group">
+                      <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
+                        <AvatarImage src={form.avatarUrl || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                          {form.displayName[0]?.toUpperCase() || '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <button 
                         onClick={() => avatarFileRef.current?.click()}
+                        className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        type="button"
                       >
-                        {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-                        Upload
-                      </Button>
+                        <Camera className="h-8 w-8 text-white" />
+                      </button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Upload an image (max 5MB) or paste a URL.
-                    </p>
+                    <div className="space-y-4 flex-1 w-full">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Input
+                          placeholder="Paste image URL or click Upload..."
+                          value={form.avatarUrl}
+                          onChange={(e) => updateField('avatarUrl', e.target.value)}
+                          className="flex-1"
+                        />
+                        <input
+                          ref={avatarFileRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = '';
+                            if (!file) return;
+
+                            setUploadingAvatar(true);
+                            try {
+                              const { upload } = await uploadAvatar(file);
+                              updateField('avatarUrl', upload.url);
+                              success('Avatar uploaded', 'Your photo has been updated');
+                            } catch (err) {
+                              showError('Upload failed', err instanceof Error ? err.message : 'Please try again');
+                            } finally {
+                              setUploadingAvatar(false);
+                            }
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          className="gap-2 sm:w-auto w-full"
+                          disabled={uploadingAvatar}
+                          onClick={() => avatarFileRef.current?.click()}
+                        >
+                          {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                          Upload New
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Name & Headline */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">Name & Headline</CardTitle>
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-4 border-b border-border/50">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                        <User className="h-5 w-5 text-primary" />
+                        Personal Identity
+                      </CardTitle>
+                      <CardDescription>How you'll appear across the platform</CardDescription>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                      className="gap-2 text-primary border-primary/30 hover:bg-primary/10 self-start"
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
                       {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                      {aiLoading ? 'Analyzing...' : 'Improve with AI'}
+                      {aiLoading ? 'Analyzing Profile...' : 'AI Suggestions'}
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name *</label>
+                    <label className="text-sm font-medium">Display Name <span className="text-destructive">*</span></label>
                     <Input
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
-                      placeholder="Your name"
+                      placeholder="e.g. Jane Doe"
+                      className="max-w-md"
                     />
                   </div>
                   <div className="space-y-2">
@@ -646,108 +688,105 @@ export default function ProfileEditPage() {
                     <Input
                       value={form.headline}
                       onChange={(e) => updateField('headline', e.target.value)}
-                      placeholder="e.g., Founder @ StartupXYZ | Building the future of..."
+                      placeholder="e.g., 3x Founder | Building AI SaaS | ex-Google"
                     />
+                    <p className="text-xs text-muted-foreground">Appears directly below your name everywhere on the site.</p>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Bio</label>
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">About / Bio</label>
+                      <span className={cn("text-xs", form.bio.length > 400 ? "text-amber-500" : "text-muted-foreground")}>
+                        {form.bio.length}/500
+                      </span>
+                    </div>
                     <Textarea
                       value={form.bio}
                       onChange={(e) => updateField('bio', e.target.value)}
-                      placeholder="Tell others about yourself..."
-                      rows={4}
+                      placeholder="Tell the community about your background, what you're working on, and what you're looking for..."
+                      rows={5}
+                      className="resize-y"
                     />
-                    <p className="text-xs text-muted-foreground">{form.bio.length}/500</p>
                   </div>
 
                   {/* AI Suggestions panel */}
                   {showAISuggestions && aiSuggestions && (
-                    <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <div className="rounded-xl border border-primary/30 bg-gradient-to-r from-primary/5 to-transparent p-5 space-y-4 shadow-sm animate-in fade-in slide-in-from-top-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-semibold text-primary">AI Suggestions</span>
-                          <Badge variant="secondary" className="text-xs">
-                            {aiSuggestions.completionScore}% complete
+                          <div className="p-1.5 bg-primary/20 rounded-md">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                          </div>
+                          <span className="font-semibold text-foreground">AI Review</span>
+                          <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
+                            {aiSuggestions.completionScore}% Optimization Score
                           </Badge>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowAISuggestions(false)}>
-                          <X className="h-3 w-3" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
 
-                      {aiSuggestions.headline && (
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-medium text-muted-foreground">Suggested headline:</p>
-                          <div className="flex items-start gap-2">
-                            <p className="text-sm text-foreground flex-1 bg-background rounded-md px-3 py-2 border border-border">
-                              {aiSuggestions.headline}
-                            </p>
-                            <Button size="sm" variant="outline" className="shrink-0 gap-1"
-                              onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
-                              <CheckCircle2 className="h-3 w-3" /> Apply
-                            </Button>
+                      <div className="space-y-4 pt-2">
+                        {aiSuggestions.headline && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Headline</p>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                              <p className="text-sm text-foreground flex-1 bg-background/80 rounded-lg px-4 py-2.5 border border-border shadow-sm italic">
+                                "{aiSuggestions.headline}"
+                              </p>
+                              <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
+                                onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {aiSuggestions.bio && (
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-medium text-muted-foreground">Suggested bio:</p>
-                          <div className="flex items-start gap-2">
-                            <p className="text-sm text-foreground flex-1 bg-background rounded-md px-3 py-2 border border-border">
-                              {aiSuggestions.bio}
-                            </p>
-                            <Button size="sm" variant="outline" className="shrink-0 gap-1"
-                              onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
-                              <CheckCircle2 className="h-3 w-3" /> Apply
-                            </Button>
+                        {aiSuggestions.bio && (
+                          <div className="space-y-2">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Suggested Bio</p>
+                            <div className="flex flex-col gap-3">
+                              <p className="text-sm text-foreground bg-background/80 rounded-lg px-4 py-3 border border-border shadow-sm whitespace-pre-wrap">
+                                {aiSuggestions.bio}
+                              </p>
+                              <Button size="sm" variant="secondary" className="gap-1.5 self-start"
+                                onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply Bio
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {aiSuggestions.improvements.length > 0 && (
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-medium text-muted-foreground">Improvements:</p>
-                          <ul className="space-y-1">
-                            {aiSuggestions.improvements.map((imp, i) => (
-                              <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
-                                <span className="text-primary mt-0.5">•</span>
-                                {imp}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      {aiSuggestions.missingElements.length > 0 && (
-                        <div className="space-y-1.5">
-                          <p className="text-xs font-medium text-muted-foreground">Missing:</p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {aiSuggestions.missingElements.map((el, i) => (
-                              <Badge key={i} variant="outline" className="text-xs text-amber-600 border-amber-200">
-                                {el}
-                              </Badge>
-                            ))}
+                        {aiSuggestions.improvements.length > 0 && (
+                          <div className="space-y-2 pt-2 border-t border-border/50">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actionable Feedback</p>
+                            <ul className="space-y-2">
+                              {aiSuggestions.improvements.map((imp, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                                  <div className="mt-0.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                                  <span>{imp}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Location */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Location
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-4 border-b border-border/50">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    Location & Timezone
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4 sm:grid-cols-2">
+                <CardContent className="grid gap-5 sm:grid-cols-2 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">City / Country</label>
+                    <label className="text-sm font-medium">City, Country</label>
                     <Input
                       value={form.location}
                       onChange={(e) => updateField('location', e.target.value)}
@@ -766,46 +805,55 @@ export default function ProfileEditPage() {
               </Card>
 
               {/* Skills & Industries */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Skills & Expertise</CardTitle>
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-4 border-b border-border/50">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Skills & Expertise
+                  </CardTitle>
+                  <CardDescription>What are your core strengths and areas of focus?</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 pt-6">
                   <TagInput
-                    label="Skills"
+                    label="Core Skills (Max 15)"
                     value={form.skills}
                     onChange={(v) => updateField('skills', v)}
                     suggestions={skillCatalog.length ? skillCatalog.map((s) => s.name) : expertiseOptions}
-                    placeholder="Add a skill..."
+                    placeholder="Type a skill and press Enter..."
                     max={15}
                   />
-                  <TagInput
-                    label="Industries"
-                    value={form.industries}
-                    onChange={(v) => updateField('industries', v)}
-                    suggestions={industryOptions}
-                    placeholder="Add an industry..."
-                    max={5}
-                  />
-                  <TagInput
-                    label="Languages"
-                    value={form.languages}
-                    onChange={(v) => updateField('languages', v)}
-                    suggestions={['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese']}
-                    placeholder="Add a language..."
-                    max={5}
-                  />
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <TagInput
+                      label="Industries"
+                      value={form.industries}
+                      onChange={(v) => updateField('industries', v)}
+                      suggestions={industryOptions}
+                      placeholder="e.g. Fintech, AI..."
+                      max={5}
+                    />
+                    <TagInput
+                      label="Languages"
+                      value={form.languages}
+                      onChange={(v) => updateField('languages', v)}
+                      suggestions={['English', 'Greek', 'Spanish', 'French', 'German', 'Chinese']}
+                      placeholder="e.g. English, Greek..."
+                      max={5}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             {/* Role Details */}
-            <TabsContent value="role" className="space-y-6 mt-6">
+            <TabsContent value="role" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               {/* Role Selector */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Your Role</CardTitle>
-                  <CardDescription>Select your primary role in the ecosystem</CardDescription>
+              <Card className="shadow-sm border-primary/20 bg-primary/5">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Your Primary Role
+                  </CardTitle>
+                  <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1006,58 +1054,80 @@ export default function ProfileEditPage() {
               )}
             </TabsContent>
 
-            {/* Links */}
-            <TabsContent value="links" className="space-y-6 mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Social & Professional Links</CardTitle>
-                  <CardDescription>Help others learn more about you</CardDescription>
+            {/* Social Links */}
+            <TabsContent value="links" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-4 border-b border-border/50">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Globe className="h-5 w-5 text-primary" />
+                    Web & Social Links
+                  </CardTitle>
+                  <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
                 </CardHeader>
+                <CardContent className="space-y-5 pt-6">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" /> Personal Website
+                      </label>
+                      <Input
+                        value={form.websiteUrl}
+                        onChange={(e) => updateField('websiteUrl', e.target.value)}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Linkedin className="h-4 w-4 text-blue-600" /> LinkedIn
+                      </label>
+                      <Input
+                        value={form.linkedinUrl}
+                        onChange={(e) => updateField('linkedinUrl', e.target.value)}
+                        placeholder="https://linkedin.com/in/..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Github className="h-4 w-4" /> GitHub
+                      </label>
+                      <Input
+                        value={form.githubUrl}
+                        onChange={(e) => updateField('githubUrl', e.target.value)}
+                        placeholder="https://github.com/..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 5.964H5.078z"/>
+                        </svg>
+                        X (Twitter)
+                      </label>
+                      <Input
+                        value={form.twitterUrl}
+                        onChange={(e) => updateField('twitterUrl', e.target.value)}
+                        placeholder="https://x.com/..."
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Portfolio Tab */}
+            <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
+              <Card className="shadow-sm border-border/50 text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <Globe className="h-4 w-4" />
-                      Website
-                    </label>
-                    <Input
-                      value={form.websiteUrl}
-                      onChange={(e) => updateField('websiteUrl', e.target.value)}
-                      placeholder="https://yourwebsite.com"
-                    />
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+                    <LayoutDashboard className="h-8 w-8" />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <Linkedin className="h-4 w-4" />
-                      LinkedIn
-                    </label>
-                    <Input
-                      value={form.linkedinUrl}
-                      onChange={(e) => updateField('linkedinUrl', e.target.value)}
-                      placeholder="https://linkedin.com/in/yourprofile"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <Github className="h-4 w-4" />
-                      GitHub
-                    </label>
-                    <Input
-                      value={form.githubUrl}
-                      onChange={(e) => updateField('githubUrl', e.target.value)}
-                      placeholder="https://github.com/yourusername"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <span className="text-lg">𝕏</span>
-                      X (Twitter)
-                    </label>
-                    <Input
-                      value={form.twitterUrl}
-                      onChange={(e) => updateField('twitterUrl', e.target.value)}
-                      placeholder="https://x.com/yourhandle"
-                    />
-                  </div>
+                  <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Soon you'll be able to add detailed case studies, pitch decks, past startups, and comprehensive project showcases to your profile.
+                  </p>
+                  <Button variant="outline" className="mt-4" onClick={() => setActiveTab('basic')}>
+                    Go back to Basic Info
+                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1066,43 +1136,67 @@ export default function ProfileEditPage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Profile completion */}
-          <ProfileCompletionCard fields={completionFields} />
-
-          {/* Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Preview</CardTitle>
+          <Card className="shadow-sm border-border/50 sticky top-6">
+            <CardHeader className="pb-4 border-b border-border/50">
+              <CardTitle className="text-base font-semibold">Profile Strength</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={form.avatarUrl || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary">
-                    {form.displayName[0]?.toUpperCase() || '?'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground truncate">
-                      {form.displayName || 'Your name'}
-                    </span>
-                    <RoleBadge role={form.role} size="sm" />
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {form.headline || 'Your headline'}
-                  </p>
+            <CardContent className="space-y-5 pt-5">
+              <div className="space-y-2">
+                <div className="flex justify-between items-end">
+                  <span className="text-3xl font-bold text-primary">{completionPercentage}%</span>
+                  <span className="text-sm text-muted-foreground pb-1">Complete</span>
+                </div>
+                <div className="h-2.5 rounded-full bg-secondary overflow-hidden">
+                  <div 
+                    className={cn(
+                      "h-full rounded-full transition-all duration-1000",
+                      completionPercentage >= 80 ? "bg-emerald-500" :
+                      completionPercentage >= 50 ? "bg-primary" : "bg-amber-500"
+                    )}
+                    style={{ width: `${completionPercentage}%` }}
+                  />
                 </div>
               </div>
-              {form.skills.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {form.skills.slice(0, 3).map((s) => (
-                    <Badge key={s} variant="secondary" className="text-xs">
-                      {s}
-                    </Badge>
-                  ))}
+              
+              <div className="space-y-2.5 pt-2">
+                <p className="text-sm font-medium text-foreground">Missing items:</p>
+                <ul className="space-y-2">
+                  {missingCompletionFields.length === 0 ? (
+                    <li className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/10 p-2 rounded-md">
+                      <CheckCircle2 className="h-4 w-4" /> Your profile is fully complete!
+                    </li>
+                  ) : (
+                    missingCompletionFields.slice(0, 4).map((item) => (
+                      <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <ShieldAlert className="h-4 w-4 text-amber-500" />
+                        <span className="capitalize">{item.label}</span>
+                      </li>
+                    ))
+                  )}
+                  {missingCompletionFields.length > 4 && (
+                    <li className="text-xs text-muted-foreground text-center pt-1 italic">
+                      + {missingCompletionFields.length - 4} more items
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="pt-4 border-t border-border/50 space-y-3">
+                <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Save Changes
+                </Button>
+                <div className="flex gap-2">
+                  <Link href="/profile" className="flex-1">
+                    <Button variant="outline" className="w-full text-xs h-9">
+                      View Profile
+                    </Button>
+                  </Link>
+                  <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
+                    Add Links
+                  </Button>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         </div>
