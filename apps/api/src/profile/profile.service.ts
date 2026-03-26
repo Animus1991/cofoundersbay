@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProfileIndexService } from '../jobs/profile-index.service';
 import { CacheService } from '../common/cache/cache.service';
+import { AutomationService } from '../automation/automation.service';
 import { Prisma } from '@prisma/client';
 import type { CreateProfileInput, UpdateProfileInput } from '@cofounderbay/shared';
 
@@ -11,6 +12,7 @@ export class ProfileService {
     private readonly prisma: PrismaService,
     private readonly profileIndex: ProfileIndexService,
     private readonly cache: CacheService,
+    @Optional() private readonly automation?: AutomationService,
   ) {}
 
   private profileSelect = {
@@ -207,6 +209,20 @@ export class ProfileService {
     });
 
     void this.profileIndex.schedule(profile.id, userId).catch(() => {});
+
+    const completionScore = [
+      profileData.displayName,
+      profileData.headline,
+      profileData.bio,
+      profileData.avatarUrl,
+      profileData.location,
+    ].filter(Boolean).length;
+    const isComplete = completionScore >= 4;
+    this.automation?.fire({
+      triggerType: isComplete ? 'profile_complete' : 'profile_incomplete',
+      targetUserId: userId,
+      payload: { completionScore, isFirstTime: !existing },
+    }).catch(() => {});
 
     // Invalidate cache for this profile
     await this.invalidateProfileCache(userId);

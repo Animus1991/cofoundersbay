@@ -46,9 +46,12 @@ import {
   listEvents,
   listMilestones,
   getMilestoneSummary,
+  discoverMentors,
+  getMyGroups,
   type SearchHit,
   type Milestone,
   type MilestoneSummary,
+  type MentorProfileItem,
 } from '@/lib/api';
 
 function getTimeBasedGreeting(): string {
@@ -126,6 +129,53 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         </span>
         <span className="text-[10px] text-muted-foreground">match</span>
       </div>
+    </Link>
+  );
+}
+
+function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
+  return (
+    <Link
+      href={`/mentoring?mentor=${mentor.userId}`}
+      className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm"
+    >
+      <Avatar className="h-9 w-9 shrink-0">
+        <AvatarImage src={mentor.avatarUrl ?? undefined} />
+        <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-sm font-semibold">
+          {mentor.displayName?.[0]?.toUpperCase() ?? 'M'}
+        </AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">{mentor.displayName}</p>
+        <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
+      </div>
+      {mentor.isFree ? (
+        <span className="shrink-0 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
+      ) : mentor.hourlyRate ? (
+        <span className="shrink-0 text-[10px] text-muted-foreground">${mentor.hourlyRate}/h</span>
+      ) : null}
+    </Link>
+  );
+}
+
+function CommunityRow({ group }: { group: { id: string; name: string; memberCount: number; category?: string | null; avatarUrl?: string | null } }) {
+  return (
+    <Link
+      href={`/groups/${group.id}`}
+      className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/50"
+    >
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+        {group.avatarUrl ? (
+          <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
+        ) : (
+          <Building2 className="h-4 w-4 text-primary" />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">{group.name}</p>
+        <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
+      </div>
+      <ChevronRight className="h-4 w-4 shrink-0 opacity-40" />
     </Link>
   );
 }
@@ -227,7 +277,7 @@ export function DashboardHome() {
     staleTime: 60_000,
     enabled: queryEnabled,
   });
-  const recentActivity = activityData ?? [];
+  const recentActivity = activityData?.items ?? [];
 
   const { data: milestonesData } = useQuery({
     queryKey: ['milestones', 'in_progress', 3],
@@ -243,6 +293,22 @@ export function DashboardHome() {
     staleTime: 5 * 60_000,
     enabled: queryEnabled,
   });
+
+  const { data: mentorsData } = useQuery({
+    queryKey: ['mentors', 'dashboard-suggestions'],
+    queryFn: () => discoverMentors({ limit: 3, availabilityStatus: 'available' }),
+    staleTime: 5 * 60_000,
+    enabled: queryEnabled,
+  });
+  const mentorSuggestions: MentorProfileItem[] = (mentorsData?.mentors ?? []).slice(0, 3);
+
+  const { data: myGroupsData } = useQuery({
+    queryKey: ['groups', 'my'],
+    queryFn: getMyGroups,
+    staleTime: 2 * 60_000,
+    enabled: queryEnabled,
+  });
+  const myGroups = (myGroupsData?.groups ?? []).slice(0, 4);
 
   const unreadMessages = meSummary?.unreadMessages ?? 0;
   const activeMilestones = meSummary?.activeMilestones ?? 0;
@@ -434,6 +500,50 @@ export function DashboardHome() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Mentor Suggestions */}
+            {mentorSuggestions.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <GraduationCap className="h-4 w-4 text-emerald-500" />
+                      Mentor Suggestions
+                    </h2>
+                    <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                      Browse all <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                  <div className="space-y-2">
+                    {mentorSuggestions.map((mentor) => (
+                      <MentorSuggestionCard key={mentor.userId} mentor={mentor} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* My Communities */}
+            {myGroups.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Users className="h-4 w-4 text-blue-500" />
+                      My Communities
+                    </h2>
+                    <Link href="/groups" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                      All groups <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                  <div className="space-y-1">
+                    {myGroups.map((group) => (
+                      <CommunityRow key={group.id} group={group} />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Upcoming Events */}
             {upcomingEvents.length > 0 && (

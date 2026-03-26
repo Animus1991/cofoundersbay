@@ -33,6 +33,30 @@ export const LazyAreaChart = dynamic(
   }
 );
 
+export const LazyPieChart = dynamic(
+  () => import('recharts').then((mod) => ({ default: mod.PieChart })),
+  {
+    loading: () => <Skeleton className="h-64 w-full rounded-xl" />,
+    ssr: false,
+  }
+);
+
+export const LazyRadarChart = dynamic(
+  () => import('recharts').then((mod) => ({ default: mod.RadarChart })),
+  {
+    loading: () => <Skeleton className="h-64 w-full rounded-xl" />,
+    ssr: false,
+  }
+);
+
+export const LazyResponsiveContainer = dynamic(
+  () => import('recharts').then((mod) => ({ default: mod.ResponsiveContainer })),
+  {
+    loading: () => <Skeleton className="h-full w-full rounded-xl" />,
+    ssr: false,
+  }
+);
+
 // Command palette (heavy with fuzzy search)
 export const LazyCommandPalette = dynamic(
   () => import('@/components/common/CommandPalette').then((mod) => ({ default: mod.CommandPalette })),

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -29,6 +28,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
 
@@ -194,6 +194,7 @@ function ReviewCard({ review }: { review: any }) {
 
 export default function ProviderDashboard() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],
@@ -203,37 +204,43 @@ export default function ProviderDashboard() {
 
   const displayName = profile?.profile?.displayName || 'Provider';
 
-  // Mock data - replace with actual API calls
-  const providerStats = {
+  const providerStats = showDemoData ? {
     activeServices: 5,
     totalClients: 34,
     activeProjects: 8,
     pendingInquiries: 4,
     monthlyRevenue: '$12,450',
     avgRating: 4.9,
+  } : {
+    activeServices: 0,
+    totalClients: 0,
+    activeProjects: 0,
+    pendingInquiries: 0,
+    monthlyRevenue: '$0',
+    avgRating: 0,
   };
 
-  const services = [
+  const services = showDemoData ? [
     { id: '1', name: 'Legal Consultation', category: 'Legal', bookings: 23, price: '$150/hr', isActive: true },
     { id: '2', name: 'Pitch Deck Design', category: 'Design', bookings: 18, price: '$500', isActive: true },
     { id: '3', name: 'Financial Modeling', category: 'Finance', bookings: 12, price: '$300', isActive: true },
-  ];
+  ] : [];
 
-  const activeProjects = [
+  const activeProjects = showDemoData ? [
     { id: '1', title: 'Series A Pitch Deck', clientName: 'TechFlow AI', status: 'active', value: '$1,500', clientAvatar: null },
     { id: '2', title: 'Legal Review', clientName: 'GreenGrid', status: 'pending', value: '$800', clientAvatar: null },
     { id: '3', title: 'Financial Model', clientName: 'HealthSync', status: 'active', value: '$1,200', clientAvatar: null },
-  ];
+  ] : [];
 
-  const pendingInquiries = [
+  const pendingInquiries = showDemoData ? [
     { id: '1', name: 'Alex Chen', service: 'Legal Consultation', message: 'Need help with term sheet review for our seed round.', avatarUrl: null },
     { id: '2', name: 'Sarah Kim', service: 'Pitch Deck Design', message: 'Looking for a complete redesign of our investor deck.', avatarUrl: null },
-  ];
+  ] : [];
 
-  const recentReviews = [
+  const recentReviews = showDemoData ? [
     { id: '1', name: 'Mike Johnson', rating: 5, comment: 'Excellent work on our pitch deck. Highly recommend!', date: '2 days ago', avatarUrl: null },
     { id: '2', name: 'Lisa Wang', rating: 5, comment: 'Very professional and thorough legal review.', date: '1 week ago', avatarUrl: null },
-  ];
+  ] : [];
 
   if (!mounted) {
     return (
@@ -385,19 +392,31 @@ export default function ProviderDashboard() {
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/services">
                     <Package className="mr-2 h-4 w-4" />
-                    Add New Service
+                    Manage Services
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/mentor/availability">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Set Availability
+                  <Link href="/provider/inquiries">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    View Inquiries
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/provider/reviews">
+                    <Star className="mr-2 h-4 w-4" />
+                    My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/analytics">
                     <TrendingUp className="mr-2 h-4 w-4" />
-                    View Earnings
+                    Earnings & Analytics
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/profile/edit">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Edit Provider Profile
                   </Link>
                 </Button>
               </CardContent>

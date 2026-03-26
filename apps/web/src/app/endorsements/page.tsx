@@ -2,6 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDemoData } from '@/contexts/DemoDataContext';
+import {
+  getMeProfile,
+  getEndorsementsForUser,
+  getEndorsementStats,
+  approveEndorsement,
+  declineEndorsement,
+  type EndorsementItem,
+} from '@/lib/api';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, MessageSquare,
   User, ChevronRight, Award, TrendingUp, BadgeCheck, Quote,
@@ -269,15 +279,104 @@ function RequestPanel() {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+function mapApiItem(item: EndorsementItem): Endorsement {
+  return {
+    id: item.id,
+    fromUserId: item.fromUserId,
+    fromUserName: item.fromUser.displayName,
+    fromUserAvatar: item.fromUser.avatarUrl ?? undefined,
+    fromUserRole: item.fromUser.headline ?? undefined,
+    toUserId: item.toUserId,
+    toUserName: 'Me',
+    skill: item.skill ?? undefined,
+    content: item.content,
+    relationship: item.relationship ?? undefined,
+    isApproved: item.isApproved,
+    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+  };
+}
+
 export default function EndorsementsPage() {
-  const [received, setReceived] = useState(RECEIVED);
-  const pendingCount = received.filter(e => !e.isApproved).length;
+  const { showDemoData } = useDemoData();
+  const qc = useQueryClient();
+
+  // Demo-mode local state
+  const [demoReceived, setDemoReceived] = useState(RECEIVED);
+
+  // Real API: current user
+  const { data: meData } = useQuery({
+    queryKey: ['me', 'profile'],
+    queryFn: getMeProfile,
+    staleTime: 300_000,
+    enabled: !showDemoData,
+  });
+  const meId = meData?.profile?.userId;
+
+  // Real API: received endorsements
+  const { data: receivedData } = useQuery({
+    queryKey: ['endorsements', 'received', meId],
+    queryFn: () => getEndorsementsForUser(meId!, { includeUnapproved: true }),
+    enabled: !showDemoData && !!meId,
+    staleTime: 60_000,
+  });
+
+  // Real API: stats
+  const { data: statsData } = useQuery({
+    queryKey: ['endorsements', 'stats'],
+    queryFn: getEndorsementStats,
+    enabled: !showDemoData,
+    staleTime: 60_000,
+  });
+
+  // Computed data
+  const received: Endorsement[] = showDemoData
+    ? demoReceived
+    : (receivedData?.endorsements.map(mapApiItem) ?? []);
+  const given: Endorsement[] = showDemoData ? GIVEN : [];
+
+  const mySkills: SkillEndorsement[] = showDemoData
+    ? MY_SKILLS
+    : (() => {
+        const skillMap = new Map<string, { count: number; endorsers: { name: string }[] }>();
+        for (const e of received.filter(r => r.isApproved)) {
+          if (!e.skill) continue;
+          const entry = skillMap.get(e.skill) ?? { count: 0, endorsers: [] };
+          entry.count++;
+          entry.endorsers.push({ name: e.fromUserName });
+          skillMap.set(e.skill, entry);
+        }
+        return Array.from(skillMap.entries())
+          .map(([skill, data]) => ({ skill, ...data }))
+          .sort((a, b) => b.count - a.count);
+      })();
+
+  const pendingCount = !showDemoData
+    ? (statsData?.stats?.pending ?? received.filter(e => !e.isApproved).length)
+    : received.filter(e => !e.isApproved).length;
+
+  // Mutations
+  const approveMutation = useMutation({
+    mutationFn: approveEndorsement,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+  });
+  const declineMutation = useMutation({
+    mutationFn: declineEndorsement,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['endorsements'] }),
+  });
 
   const handleApprove = (id: string) => {
-    setReceived(prev => prev.map(e => e.id === id ? { ...e, isApproved: true } : e));
+    if (showDemoData) {
+      setDemoReceived(prev => prev.map(e => e.id === id ? { ...e, isApproved: true } : e));
+    } else {
+      approveMutation.mutate(id);
+    }
   };
   const handleDecline = (id: string) => {
-    setReceived(prev => prev.filter(e => e.id !== id));
+    if (showDemoData) {
+      setDemoReceived(prev => prev.filter(e => e.id !== id));
+    } else {
+      declineMutation.mutate(id);
+    }
   };
 
   return (
@@ -288,8 +387,8 @@ export default function EndorsementsPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: Star, label: 'Received', value: received.length, color: 'text-primary' },
-              { icon: Handshake, label: 'Given', value: GIVEN.length, color: 'text-green-600' },
+              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary' },
+              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600' },
               { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600' },
             ].map(s => (
               <Card key={s.label}>
@@ -313,7 +412,7 @@ export default function EndorsementsPage() {
                   Received
                   {pendingCount > 0 && <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{pendingCount}</Badge>}
                 </TabsTrigger>
-                <TabsTrigger value="given">Given ({GIVEN.length})</TabsTrigger>
+                <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
               </TabsList>
               <Button size="sm" className="h-8 gap-1.5 text-xs">
                 <Plus className="h-3.5 w-3.5" />Give Endorsement
@@ -339,8 +438,8 @@ export default function EndorsementsPage() {
             </TabsContent>
 
             <TabsContent value="given" className="space-y-3 mt-4">
-              {GIVEN.map(e => <EndorsementCard key={e.id} endorsement={e} type="given" />)}
-              {GIVEN.length === 0 && (
+              {given.map(e => <EndorsementCard key={e.id} endorsement={e} type="given" />)}
+              {given.length === 0 && (
                 <Card><CardContent className="py-12 text-center">
                   <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="font-medium">No endorsements given yet</p>
@@ -353,7 +452,7 @@ export default function EndorsementsPage() {
 
         {/* Right: Sidebar */}
         <div className="space-y-4">
-          <SkillsGrid skills={MY_SKILLS} />
+          <SkillsGrid skills={mySkills} />
           <RequestPanel />
         </div>
       </div>

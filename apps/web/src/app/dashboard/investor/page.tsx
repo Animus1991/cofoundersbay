@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -29,6 +28,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
 
@@ -89,7 +89,7 @@ function StartupCard({ startup }: { startup: any }) {
 
   return (
     <Link
-      href={`/startups/${startup.id}`}
+      href={`/investor/scouting`}
       className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <Avatar className="h-12 w-12 rounded-lg">
@@ -177,6 +177,7 @@ function PortfolioItem({ company }: { company: any }) {
 
 export default function InvestorDashboard() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],
@@ -186,33 +187,39 @@ export default function InvestorDashboard() {
 
   const displayName = profile?.profile?.displayName || 'Investor';
 
-  // Mock data - replace with actual API calls
-  const investorStats = {
+  const investorStats = showDemoData ? {
     dealFlow: 24,
     activeDeals: 5,
     portfolioCompanies: 12,
     totalInvested: '$2.4M',
     portfolioValue: '$8.7M',
     avgReturn: '3.6x',
+  } : {
+    dealFlow: 0,
+    activeDeals: 0,
+    portfolioCompanies: 0,
+    totalInvested: '$0',
+    portfolioValue: '$0',
+    avgReturn: '—',
   };
 
-  const trendingStartups = [
+  const trendingStartups = showDemoData ? [
     { id: '1', name: 'NeuralFlow AI', description: 'Enterprise AI automation platform', stage: 'seed', industry: 'AI/ML', raising: '$1.5M', matchScore: 92, isHot: true, logoUrl: null },
     { id: '2', name: 'GreenGrid', description: 'Sustainable energy management', stage: 'pre-seed', industry: 'CleanTech', raising: '$500K', matchScore: 87, isHot: false, logoUrl: null },
     { id: '3', name: 'HealthSync', description: 'Patient data interoperability', stage: 'seed', industry: 'HealthTech', raising: '$2M', matchScore: 84, isHot: true, logoUrl: null },
-  ];
+  ] : [];
 
-  const activeDeals = [
+  const activeDeals = showDemoData ? [
     { id: '1', name: 'TechVenture', stage: 'Seed', amount: '$500K', status: 'due-diligence', logoUrl: null },
     { id: '2', name: 'DataFlow', stage: 'Series A', amount: '$2M', status: 'negotiating', logoUrl: null },
     { id: '3', name: 'CloudScale', stage: 'Seed', amount: '$750K', status: 'reviewing', logoUrl: null },
-  ];
+  ] : [];
 
-  const portfolio = [
+  const portfolio = showDemoData ? [
     { id: '1', name: 'AIStartup', investedDate: 'Jan 2024', returnMultiple: 2.4, currentValue: '$600K', logoUrl: null },
     { id: '2', name: 'FinTech Co', investedDate: 'Mar 2023', returnMultiple: 1.8, currentValue: '$450K', logoUrl: null },
     { id: '3', name: 'SaaS Platform', investedDate: 'Jun 2023', returnMultiple: 3.2, currentValue: '$800K', logoUrl: null },
-  ];
+  ] : [];
 
   if (!mounted) {
     return (
@@ -367,21 +374,33 @@ export default function InvestorDashboard() {
               </CardHeader>
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/discover?type=startup">
+                  <Link href="/investor/scouting">
                     <Search className="mr-2 h-4 w-4" />
-                    Find Startups
+                    Scout Startups
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/shortlist">
+                  <Link href="/investor/watchlist">
                     <Star className="mr-2 h-4 w-4" />
-                    View Shortlist
+                    My Watchlist
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/analytics">
+                  <Link href="/investor/pipeline">
+                    <Target className="mr-2 h-4 w-4" />
+                    Deal Pipeline
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/investor/portfolio">
                     <LineChart className="mr-2 h-4 w-4" />
-                    Portfolio Analytics
+                    Portfolio
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/investor/analytics">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    Analytics
                   </Link>
                 </Button>
               </CardContent>

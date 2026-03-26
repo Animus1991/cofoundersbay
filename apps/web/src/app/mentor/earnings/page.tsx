@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
@@ -54,7 +55,6 @@ const MOCK_MONTHLY = [
   { month: 'Jan', earned: 570, sessions: 6 },
 ];
 
-const maxEarned = Math.max(...MOCK_MONTHLY.map(m => m.earned));
 
 function formatCurrency(cents: number, currency = 'USD') {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(cents);
@@ -101,6 +101,7 @@ function StatCard({
 
 export default function MentorEarningsPage() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
   const [period, setPeriod] = useState('this_month');
 
   const { data: profile } = useQuery({
@@ -109,10 +110,14 @@ export default function MentorEarningsPage() {
     enabled: hasSession && mounted,
   });
 
-  const totalEarned = MOCK_TRANSACTIONS.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.amount, 0);
-  const pendingAmount = MOCK_TRANSACTIONS.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
-  const totalSessions = MOCK_TRANSACTIONS.length;
-  const avgPerSession = totalSessions > 0 ? totalEarned / MOCK_TRANSACTIONS.filter(t => t.status === 'paid').length : 0;
+  const transactions = showDemoData ? MOCK_TRANSACTIONS : [];
+  const monthlyData = showDemoData ? MOCK_MONTHLY : [];
+
+  const totalEarned = transactions.filter(t => t.status === 'paid').reduce((sum, t) => sum + t.amount, 0);
+  const pendingAmount = transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0);
+  const totalSessions = transactions.length;
+  const paidCount = transactions.filter(t => t.status === 'paid').length;
+  const avgPerSession = paidCount > 0 ? totalEarned / paidCount : 0;
 
   if (!mounted) {
     return (
@@ -205,7 +210,7 @@ export default function MentorEarningsPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
-                  {MOCK_TRANSACTIONS.map(tx => (
+                  {transactions.map(tx => (
                     <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={tx.mentee.avatarUrl ?? undefined} />
@@ -248,12 +253,12 @@ export default function MentorEarningsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-end gap-3 h-48">
-                  {MOCK_MONTHLY.map(m => (
+                  {monthlyData.map(m => (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                       <span className="text-xs font-semibold text-primary">{formatCurrency(m.earned)}</span>
                       <div
                         className="w-full rounded-t bg-primary/80 hover:bg-primary transition-colors min-h-[4px]"
-                        style={{ height: `${(m.earned / maxEarned) * 160}px` }}
+                        style={{ height: `${monthlyData.length ? (m.earned / Math.max(...monthlyData.map(d => d.earned))) * 160 : 4}px` }}
                         title={`${m.sessions} sessions`}
                       />
                       <span className="text-xs text-muted-foreground">{m.month}</span>
@@ -263,16 +268,16 @@ export default function MentorEarningsPage() {
                 <div className="border-t border-border my-4" />
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-xl font-bold">{formatCurrency(MOCK_MONTHLY.reduce((s, m) => s + m.earned, 0))}</p>
+                    <p className="text-xl font-bold">{formatCurrency(monthlyData.reduce((s, m) => s + m.earned, 0))}</p>
                     <p className="text-xs text-muted-foreground">6-month total</p>
                   </div>
                   <div>
-                    <p className="text-xl font-bold">{MOCK_MONTHLY.reduce((s, m) => s + m.sessions, 0)}</p>
+                    <p className="text-xl font-bold">{monthlyData.reduce((s, m) => s + m.sessions, 0)}</p>
                     <p className="text-xs text-muted-foreground">Total sessions</p>
                   </div>
                   <div>
                     <p className="text-xl font-bold">
-                      {formatCurrency(MOCK_MONTHLY.reduce((s, m) => s + m.earned, 0) / MOCK_MONTHLY.reduce((s, m) => s + m.sessions, 0))}
+                      {(() => { const tot = monthlyData.reduce((s, m) => s + m.sessions, 0); return formatCurrency(tot ? monthlyData.reduce((s, m) => s + m.earned, 0) / tot : 0); })()}
                     </p>
                     <p className="text-xs text-muted-foreground">Avg per session</p>
                   </div>

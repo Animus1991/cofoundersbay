@@ -142,10 +142,11 @@ async function refreshAccessToken(): Promise<void> {
   }
 }
 
-const REQUEST_TIMEOUT_MS = 8_000;
-const NETWORK_RETRY_ATTEMPTS = 2;
-const NETWORK_RETRY_DELAY_MS = 800;
-const API_CIRCUIT_BREAKER_MS = 5_000;
+const REQUEST_TIMEOUT_MS = 6_000;        // 6 s — faster failure surfacing
+const NETWORK_RETRY_ATTEMPTS = 0;        // No retry inside fetchWithNetworkRetry;
+                                         // React Query / callers own their own retry.
+const API_CIRCUIT_BREAKER_LEVELS = [5_000, 15_000, 60_000, 300_000]; // 5s→15s→60s→5min
+let circuitBreakerLevel = 0;
 let apiUnavailableUntil = 0;
 let apiReachable = true;
 
@@ -155,7 +156,9 @@ function broadcastApiReachability(reachable: boolean) {
 }
 
 function markApiUnavailable() {
-  apiUnavailableUntil = Date.now() + API_CIRCUIT_BREAKER_MS;
+  const delay = API_CIRCUIT_BREAKER_LEVELS[circuitBreakerLevel];
+  apiUnavailableUntil = Date.now() + delay;
+  circuitBreakerLevel = Math.min(circuitBreakerLevel + 1, API_CIRCUIT_BREAKER_LEVELS.length - 1);
   if (apiReachable) {
     apiReachable = false;
     broadcastApiReachability(false);
@@ -164,6 +167,7 @@ function markApiUnavailable() {
 
 function markApiReachable() {
   apiUnavailableUntil = 0;
+  circuitBreakerLevel = 0; // Reset backoff level on success
   if (!apiReachable) {
     apiReachable = true;
     broadcastApiReachability(true);
@@ -190,28 +194,27 @@ async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Re
     throw new ApiNetworkError('The API is restarting or temporarily unavailable. Please try again in a moment.');
   }
 
-  let lastError: unknown;
+  // NETWORK_RETRY_ATTEMPTS = 0: single attempt — React Query / callers own retry logic.
+  // This prevents the 2.4 s wasted retry-delay cascade on connection-refused failures.
   for (let attempt = 0; attempt <= NETWORK_RETRY_ATTEMPTS; attempt++) {
     try {
       const response = await fetchWithTimeout(url, init);
       markApiReachable();
       return response;
     } catch (err) {
-      lastError = err;
+      // TypeError = network error (connection refused, DNS failure, offline)
+      // AbortError = request timed out via our AbortController
       const isNetworkErr = err instanceof TypeError || (err instanceof DOMException && err.name === 'AbortError');
       if (!isNetworkErr) throw err;
-      if (attempt === NETWORK_RETRY_ATTEMPTS) {
-        markApiUnavailable();
-        throw new ApiNetworkError('Unable to reach the API server.', err);
-      }
-      await new Promise((r) => setTimeout(r, NETWORK_RETRY_DELAY_MS * (attempt + 1)));
+      markApiUnavailable();
+      throw new ApiNetworkError('Unable to reach the API server.', err);
     }
   }
   markApiUnavailable();
-  throw new ApiNetworkError('Unable to reach the API server.', lastError);
+  throw new ApiNetworkError('Unable to reach the API server.');
 }
 
-async function apiRequest<T>(
+export async function apiRequest<T>(
   path: string,
   init?: RequestInit,
   opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
@@ -404,6 +407,29 @@ export async function listSkills(category?: string): Promise<Skill[]> {
   if (category) sp.set('category', category);
   const url = `/api/skills${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest<Skill[]>(url, undefined, { retryOn401: false });
+}
+
+export type AdminSkillItem = { id: string; name: string; slug: string; category: string | null; count: number };
+
+export async function adminListSkills(params?: { q?: string; category?: string; limit?: number; offset?: number }): Promise<{ items: AdminSkillItem[]; total: number }> {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set('q', params.q);
+  if (params?.category) sp.set('category', params.category);
+  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
+  return apiRequest(`/api/admin/skills${sp.toString() ? `?${sp}` : ''}`);
+}
+
+export async function adminCreateSkill(body: { name: string; slug: string; category?: string }): Promise<AdminSkillItem> {
+  return apiRequest('/api/admin/skills', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export async function adminUpdateSkill(skillId: string, body: { name?: string; slug?: string; category?: string | null }): Promise<AdminSkillItem> {
+  return apiRequest(`/api/admin/skills/${skillId}`, { method: 'PATCH', body: JSON.stringify(body) });
+}
+
+export async function adminDeleteSkill(skillId: string): Promise<void> {
+  return apiRequest(`/api/admin/skills/${skillId}`, { method: 'DELETE' });
 }
 
 // --- Search & recommendations ---
@@ -646,18 +672,187 @@ export async function deleteNotification(id: string): Promise<{ ok: true }> {
   return apiRequest(`/api/notifications/${id}`, { method: 'DELETE' });
 }
 
-// --- Billing (Stripe) ---
+export type NotificationPreferences = {
+  digestFrequency: 'daily' | 'weekly' | 'never';
+};
+
+export async function getNotificationPreferences(): Promise<NotificationPreferences> {
+  return apiRequest('/api/notifications/preferences');
+}
+
+export async function updateNotificationPreferences(data: Partial<NotificationPreferences>): Promise<{ ok: true }> {
+  return apiRequest('/api/notifications/preferences', { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+// ── Billing ────────────────────────────────────────────────────────────────
+
+export type BillingCycle = 'monthly' | 'annual';
+export type SubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'paused';
+export type PlanType = 'free' | 'individual_premium' | 'team' | 'organization' | 'enterprise';
+
+export type BillingPlanItem = {
+  id: string;
+  name: string;
+  displayName: string;
+  description: string | null;
+  planType: PlanType;
+  priceMonthly: number;
+  priceAnnual: number;
+  currency: string;
+  seatLimit: number | null;
+  storageGb: number;
+  features: Record<string, unknown>;
+  isPublic: boolean;
+  isActive: boolean;
+  sortOrder: number;
+  stripeProductId: string | null;
+  stripePriceIdMonthly: string | null;
+  stripePriceIdAnnual: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type BillingSubscription = {
   id: string;
-  status: string;
-  priceId: string | null;
-  currentPeriodEnd: string | null;
+  userId: string | null;
+  tenantId: string | null;
+  planId: string;
+  plan: BillingPlanItem;
+  billingCycle: BillingCycle;
+  status: SubscriptionStatus;
+  startDate: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  trialStart: string | null;
+  trialEnd: string | null;
+  canceledAt: string | null;
   cancelAtPeriodEnd: boolean;
+  seatLimit: number | null;
+  activeSeatCount: number;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  featureOverrides: Record<string, unknown> | null;
+  createdAt: string;
+  updatedAt: string;
 };
+
+export type InvoiceLine = {
+  id: string;
+  description: string;
+  quantity: number;
+  unitAmount: number;
+  amount: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+};
+
+export type BillingInvoice = {
+  id: string;
+  subscriptionId: string;
+  invoiceNumber: string;
+  status: string;
+  subtotal: number;
+  tax: number;
+  total: number;
+  amountPaid: number;
+  amountDue: number;
+  currency: string;
+  periodStart: string;
+  periodEnd: string;
+  dueDate: string | null;
+  paidAt: string | null;
+  billingName: string | null;
+  billingEmail: string | null;
+  hostedInvoiceUrl: string | null;
+  invoicePdf: string | null;
+  lines: InvoiceLine[];
+  createdAt: string;
+};
+
+export type BillingContact = {
+  id: string;
+  subscriptionId: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  company: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
+  country: string;
+  vatId: string | null;
+  taxId: string | null;
+  legalName: string | null;
+};
+
+export type SeatAllocation = {
+  id: string;
+  subscriptionId: string;
+  userId: string;
+  user: { id: string; email: string };
+  isActive: boolean;
+  allocatedAt: string;
+  deactivatedAt: string | null;
+  allocatedBy: string | null;
+};
+
+export type PromotionCodeItem = {
+  id: string;
+  code: string;
+  discountType: string;
+  discountValue: number;
+  currency: string | null;
+  maxRedemptions: number | null;
+  timesRedeemed: number;
+  validFrom: string;
+  validUntil: string | null;
+  applicablePlans: string[];
+  firstTimeOnly: boolean;
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type AdminBillingStats = {
+  totalSubs: number;
+  activeSubs: number;
+  trialingSubs: number;
+  pastDueSubs: number;
+  totalRevenueCents: number;
+  mrrCents: number;
+  plans: BillingPlanItem[];
+};
+
+// ── Public plan listing ────────────────────────────────────────────────────
+
+export async function listBillingPlans(): Promise<{ plans: BillingPlanItem[] }> {
+  return apiRequest('/api/billing/plans');
+}
+
+// ── User subscription & billing ────────────────────────────────────────────
 
 export async function getBillingSubscription(): Promise<{ subscription: BillingSubscription | null }> {
   return apiRequest('/api/billing/subscription');
+}
+
+export async function getUserInvoices(): Promise<{ invoices: BillingInvoice[] }> {
+  return apiRequest('/api/billing/invoices');
+}
+
+export async function checkFeatureAccess(feature: string): Promise<{ allowed: boolean; reason?: string }> {
+  return apiRequest(`/api/billing/feature/${encodeURIComponent(feature)}`);
+}
+
+export async function getBillingContact(): Promise<{ billingContact: BillingContact | null }> {
+  return apiRequest('/api/billing/subscription/billing-contact');
+}
+
+export async function upsertBillingContact(data: Partial<BillingContact>): Promise<BillingContact> {
+  return apiRequest('/api/billing/subscription/billing-contact', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 export async function createBillingCheckout(priceId?: string): Promise<{ url: string | null; id: string }> {
@@ -669,6 +864,91 @@ export async function createBillingCheckout(priceId?: string): Promise<{ url: st
 
 export async function createBillingPortal(): Promise<{ url: string }> {
   return apiRequest('/api/billing/portal', { method: 'POST' });
+}
+
+// ── Tenant billing ─────────────────────────────────────────────────────────
+
+export async function getTenantBillingSubscription(tenantId: string): Promise<{ subscription: BillingSubscription | null }> {
+  return apiRequest(`/api/billing/tenant/${tenantId}`);
+}
+
+export async function listTenantSeats(tenantId: string): Promise<{ seats: SeatAllocation[] }> {
+  return apiRequest(`/api/billing/tenant/${tenantId}/seats`);
+}
+
+export async function allocateTenantSeat(tenantId: string, userId: string): Promise<SeatAllocation> {
+  return apiRequest(`/api/billing/tenant/${tenantId}/seats`, {
+    method: 'POST',
+    body: JSON.stringify({ userId }),
+  });
+}
+
+export async function revokeTenantSeat(tenantId: string, userId: string): Promise<void> {
+  return apiRequest(`/api/billing/tenant/${tenantId}/seats/${userId}`, { method: 'DELETE' });
+}
+
+export async function upsertTenantBillingContact(tenantId: string, data: Partial<BillingContact>): Promise<BillingContact> {
+  return apiRequest(`/api/billing/tenant/${tenantId}/billing-contact`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+// ── Admin billing ──────────────────────────────────────────────────────────
+
+export async function getAdminBillingStats(): Promise<AdminBillingStats> {
+  return apiRequest('/api/billing/admin/stats');
+}
+
+export async function listAdminSubscriptions(params?: { status?: string; planId?: string; search?: string }): Promise<BillingSubscription[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  if (params?.planId) q.set('planId', params.planId);
+  if (params?.search) q.set('search', params.search);
+  return apiRequest(`/api/billing/admin/subscriptions?${q.toString()}`);
+}
+
+export async function listAdminInvoices(params?: { status?: string; search?: string }): Promise<BillingInvoice[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  if (params?.search) q.set('search', params.search);
+  return apiRequest(`/api/billing/admin/invoices?${q.toString()}`);
+}
+
+export async function adminCreatePlan(data: Partial<BillingPlanItem>): Promise<BillingPlanItem> {
+  return apiRequest('/api/billing/admin/plans', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function adminUpdatePlan(id: string, data: Partial<BillingPlanItem>): Promise<BillingPlanItem> {
+  return apiRequest(`/api/billing/admin/plans/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function adminDeletePlan(id: string): Promise<void> {
+  return apiRequest(`/api/billing/admin/plans/${id}`, { method: 'DELETE' });
+}
+
+export async function adminOverrideSubscription(id: string, data: { planId?: string; featureOverrides?: Record<string, unknown>; reason?: string }): Promise<BillingSubscription> {
+  return apiRequest(`/api/billing/admin/subscriptions/${id}/override`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function adminExtendTrial(id: string, days: number): Promise<BillingSubscription> {
+  return apiRequest(`/api/billing/admin/subscriptions/${id}/extend-trial`, { method: 'POST', body: JSON.stringify({ days }) });
+}
+
+export async function adminCancelSubscription(id: string, immediate = false): Promise<BillingSubscription> {
+  return apiRequest(`/api/billing/admin/subscriptions/${id}/cancel`, { method: 'POST', body: JSON.stringify({ immediate }) });
+}
+
+export async function listCoupons(): Promise<PromotionCodeItem[]> {
+  return apiRequest('/api/billing/admin/coupons');
+}
+
+export async function createCoupon(data: Partial<PromotionCodeItem>): Promise<PromotionCodeItem> {
+  return apiRequest('/api/billing/admin/coupons', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function deleteCoupon(id: string): Promise<void> {
+  return apiRequest(`/api/billing/admin/coupons/${id}`, { method: 'DELETE' });
 }
 
 // --- Dashboard ---
@@ -708,9 +988,16 @@ export async function getDashboardMe(): Promise<UserDashboardSummary> {
   return apiRequest('/api/dashboard/me');
 }
 
-export async function getDashboardActivity(params?: { limit?: number }): Promise<DashboardActivityItem[]> {
+export type DashboardActivityPage = {
+  items: DashboardActivityItem[];
+  total: number;
+  hasMore: boolean;
+};
+
+export async function getDashboardActivity(params?: { limit?: number; offset?: number }): Promise<DashboardActivityPage> {
   const sp = new URLSearchParams();
-  if (params?.limit != null) sp.set('limit', String(params.limit));
+  if (params?.limit  != null) sp.set('limit',  String(params.limit));
+  if (params?.offset != null) sp.set('offset', String(params.offset));
   const url = `/api/dashboard/activity${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
 }
@@ -2790,6 +3077,34 @@ export async function upsertTenantSSOConfig(tenantId: string, data: {
   sessionDurationHours?: number;
 }): Promise<TenantSSOConfig> {
   return apiRequest(`/api/sso/tenants/${tenantId}/config`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ── SSO Email Domain Mappings (email → SSO discovery) ─────────────────────────
+
+export type SSODomainMapping = {
+  id: string;
+  domain: string;
+  tenantId: string;
+  isVerified: boolean;
+  autoRedirectToSSO: boolean;
+  verifiedAt?: string | null;
+  createdAt: string;
+};
+
+export async function listSSODomainMappings(tenantId: string): Promise<SSODomainMapping[]> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/domains`);
+}
+
+export async function createSSODomainMapping(tenantId: string, domain: string, autoRedirectToSSO = false): Promise<SSODomainMapping> {
+  return apiRequest(`/api/sso/tenants/${tenantId}/domains`, { method: 'POST', body: JSON.stringify({ domain, autoRedirectToSSO }) });
+}
+
+export async function deleteSSODomainMapping(id: string): Promise<void> {
+  return apiRequest(`/api/sso/domains/${id}`, { method: 'DELETE' });
+}
+
+export async function verifySSODomainMapping(id: string): Promise<SSODomainMapping> {
+  return apiRequest(`/api/sso/domains/${id}/verify`, { method: 'POST' });
 }
 
 // ─── Domain Mapping ───────────────────────────────────────────────────────────

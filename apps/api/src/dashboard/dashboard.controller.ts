@@ -21,8 +21,12 @@ export class DashboardController {
 
   @Get('dashboard/activity')
   @UseGuards(JwtAuthGuard)
-  async getActivity(@Query('limit') limit?: string) {
-    const parsed = limit ? parseInt(limit, 10) : 10;
-    return this.dashboard.getActivity(Math.min(Math.max(parsed, 1), 50));
+  async getActivity(
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,
+  ) {
+    const parsedLimit  = Math.min(Math.max(parseInt(limit  ?? '20', 10) || 20, 1), 100);
+    const parsedOffset = Math.max(parseInt(offset ?? '0', 10) || 0, 0);
+    return this.dashboard.getActivity(parsedLimit, parsedOffset);
   }
 }

@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   Calendar,
-  CheckCircle,
   ChevronRight,
   Clock,
+  DollarSign,
   GraduationCap,
   MessageCircle,
   Star,
@@ -26,6 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
 
@@ -142,12 +142,9 @@ function RequestCard({ request }: { request: any }) {
         <p className="text-sm font-medium">{request.name}</p>
         <p className="text-xs text-muted-foreground line-clamp-2">{request.message}</p>
         <div className="flex gap-2 mt-2">
-          <Button size="sm" variant="default" className="h-7 text-xs">
-            Accept
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs">
-            Decline
-          </Button>
+          <Link href="/mentor/requests">
+            <Button size="sm" variant="default" className="h-7 text-xs">Review Request</Button>
+          </Link>
         </div>
       </div>
     </div>
@@ -156,6 +153,7 @@ function RequestCard({ request }: { request: any }) {
 
 export default function MentorDashboard() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],
@@ -165,31 +163,44 @@ export default function MentorDashboard() {
 
   const displayName = profile?.profile?.displayName || 'Mentor';
 
-  // Mock data - replace with actual API calls
-  const mentorStats = {
+  const mentorStats = showDemoData ? {
     activeMentees: 8,
     totalSessions: 47,
     avgRating: 4.8,
     pendingRequests: 3,
     upcomingSessions: 4,
     hoursThisMonth: 12,
+    earningsThisMonth: '$1,280',
+  } : {
+    activeMentees: 0,
+    totalSessions: 0,
+    avgRating: 0,
+    pendingRequests: 0,
+    upcomingSessions: 0,
+    hoursThisMonth: 0,
+    earningsThisMonth: '$0',
   };
 
-  const mentees = [
+  const mentees = showDemoData ? [
     { id: '1', name: 'Alex Chen', startup: 'TechFlow AI', sessionsCompleted: 6, avatarUrl: null },
     { id: '2', name: 'Sarah Johnson', startup: 'GreenCommute', sessionsCompleted: 4, avatarUrl: null },
     { id: '3', name: 'Mike Rodriguez', startup: 'HealthTrack', sessionsCompleted: 3, avatarUrl: null },
-  ];
+  ] : [];
 
-  const upcomingSessions = [
+  const upcomingSessions = showDemoData ? [
     { id: '1', menteeName: 'Alex Chen', scheduledAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), duration: 30 },
     { id: '2', menteeName: 'Sarah Johnson', scheduledAt: new Date(Date.now() + 26 * 60 * 60 * 1000).toISOString(), duration: 45 },
-  ];
+  ] : [];
 
-  const pendingRequests = [
+  const pendingRequests = showDemoData ? [
     { id: '1', name: 'Jordan Lee', message: 'Hi! I\'m building a fintech startup and would love your guidance on product-market fit.', avatarUrl: null },
     { id: '2', name: 'Emma Wilson', message: 'Looking for mentorship on scaling my SaaS business. Your experience would be invaluable.', avatarUrl: null },
-  ];
+  ] : [];
+
+  const nextSession = upcomingSessions[0];
+  const nextSessionMinsAway = nextSession
+    ? Math.round((new Date(nextSession.scheduledAt).getTime() - Date.now()) / 60000)
+    : null;
 
   if (!mounted) {
     return (
@@ -225,6 +236,21 @@ export default function MentorDashboard() {
           </Badge>
         </div>
 
+        {/* Next Session Banner */}
+        {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
+          <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Video className="h-4 w-4 text-blue-500" />
+              <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
+            </div>
+            <Link href="/mentor/sessions">
+              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-500/10 transition-colors">
+                Join Now
+              </button>
+            </Link>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard
@@ -249,9 +275,42 @@ export default function MentorDashboard() {
             icon={Clock}
             label="Upcoming"
             value={mentorStats.upcomingSessions}
-            subtext="Next in 2 hours"
+            subtext="Sessions scheduled"
           />
         </div>
+
+        {/* Earnings Banner */}
+        {showDemoData && (
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link href="/mentor/earnings">
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
+                <DollarSign className="h-5 w-5 text-emerald-500 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Earnings this month</p>
+                  <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/mentor/reviews">
+              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
+                <Star className="h-5 w-5 text-amber-500 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Average rating</p>
+                  <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/mentor/sessions">
+              <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
+                <Video className="h-5 w-5 text-primary shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Hours this month</p>
+                  <p className="text-lg font-bold text-primary">{mentorStats.hoursThisMonth}h</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Main Content */}
@@ -345,15 +404,27 @@ export default function MentorDashboard() {
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/learning">
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Share Resources
+                  <Link href="/mentor/requests">
+                    <UserCheck className="mr-2 h-4 w-4" />
+                    Mentorship Requests
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/profile/edit">
+                  <Link href="/mentor/reviews">
+                    <Star className="mr-2 h-4 w-4" />
+                    My Reviews
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/mentor/earnings">
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    Earnings
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/mentor/profile">
                     <TrendingUp className="mr-2 h-4 w-4" />
-                    Update Profile
+                    Mentor Profile
                   </Link>
                 </Button>
               </CardContent>

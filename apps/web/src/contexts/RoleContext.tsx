@@ -100,6 +100,18 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     },
   });
 
+  if (response.status === 401) {
+    // Session expired — clear client-side session indicators and broadcast logout
+    if (typeof document !== 'undefined') {
+      document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
+      document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cfb:logout'));
+    }
+    throw new Error('Session expired');
+  }
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }));
     throw new Error(error.message || 'Request failed');

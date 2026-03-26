@@ -125,11 +125,13 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
   });
 
   const socketRef = useRef<ReturnType<typeof createMessagingSocket> | null>(null);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Tracks whether the API is reachable — updated by cfb:api-online/offline events
+  const apiOnlineRef = useRef(true);
 
   // ── Bootstrap unread map from REST ──────────────────────────────────────────
   const refreshUnread = useCallback(async () => {
-    if (!hasSession) return;
+    if (!hasSession || !apiOnlineRef.current) return;
     try {
       const { conversations } = await listMessageConversations();
       const map: Record<string, number> = {};
@@ -141,6 +143,39 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       // silently ignore — stale values are acceptable
     }
   }, [hasSession]);
+
+  // ── Track API availability — pause everything when server is down ────────────
+  useEffect(() => {
+    const handleOffline = () => {
+      apiOnlineRef.current = false;
+      // Disconnect socket immediately — Socket.IO will reconnect via its own
+      // backoff policy when the server comes back up.
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+    const handleOnline = () => {
+      apiOnlineRef.current = true;
+      // Re-bootstrap unread count and reconnect socket if session is active
+      if (sessionReady && hasSession && !socketRef.current) {
+        refreshUnread();
+        const socket = createMessagingSocket();
+        socketRef.current = socket;
+        socket.on('message:new', ({ message }: { message: MessageItem }) => {
+          const convId = message.conversationId;
+          if (!convId) return;
+          dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
+        });
+      }
+    };
+    window.addEventListener('cfb:api-offline', handleOffline);
+    window.addEventListener('cfb:api-online', handleOnline);
+    return () => {
+      window.removeEventListener('cfb:api-offline', handleOffline);
+      window.removeEventListener('cfb:api-online', handleOnline);
+    };
+  }, [sessionReady, hasSession, refreshUnread]);
 
   // ── Shared socket for unread tracking only ──────────────────────────────────
   // This socket listens for new-message events to update the unread count in
@@ -164,8 +199,10 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Periodic refresh every 90 s as a safety net
-    refreshTimerRef.current = setInterval(refreshUnread, 90_000);
+    // Periodic refresh every 90 s as a safety net — skipped if API is offline
+    refreshTimerRef.current = setInterval(() => {
+      if (apiOnlineRef.current) refreshUnread();
+    }, 90_000);
 
     return () => {
       socket.disconnect();

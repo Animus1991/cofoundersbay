@@ -16,78 +16,28 @@ import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { getEndorsementsForUser, type EndorsementItem } from '@/lib/api';
+import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 
-const MOCK_PROFILE = {
-  id: 'u1',
-  username: 'sarahchen',
-  firstName: 'Sarah',
-  lastName: 'Chen',
-  avatar: undefined,
-  role: 'founder',
-  headline: 'Serial Entrepreneur | AI/ML Expert | Building the Future of Sustainability',
-  bio: `I'm a passionate entrepreneur with 10+ years of experience building technology companies. After a successful exit from my previous startup, I'm now focused on using AI to tackle climate change.
-
-Currently looking for a technical co-founder to join me on my next venture in the CleanTech space. If you're excited about using technology to make a real environmental impact, let's connect!
-
-I believe in building diverse, inclusive teams and creating products that genuinely help people and the planet.`,
-  location: 'San Francisco, CA',
-  timezone: 'PST (UTC-8)',
-  website: 'https://sarahchen.com',
-  linkedin: 'https://linkedin.com/in/sarahchen',
-  twitter: 'https://twitter.com/sarahchen',
-  github: 'https://github.com/sarahchen',
-  email: 'sarah@example.com',
-  isVerified: true,
-  isAvailable: true,
-  lookingFor: ['Technical Co-founder', 'CTO', 'Lead Engineer'],
-  skills: ['Machine Learning', 'Python', 'Product Strategy', 'Fundraising', 'Team Building', 'Go-to-Market', 'B2B Sales'],
-  interests: ['AI/ML', 'Climate Tech', 'Sustainability', 'B2B SaaS', 'Impact Investing'],
-  experience: [
-    {
-      title: 'Founder & CEO',
-      company: 'EcoTrack (Current)',
-      period: '2024 - Present',
-      description: 'Building AI-powered carbon footprint tracking for businesses.',
-    },
-    {
-      title: 'Co-founder & CEO',
-      company: 'DataFlow (Acquired)',
-      period: '2018 - 2023',
-      description: 'Built and scaled a data analytics platform to $10M ARR. Acquired by TechCorp.',
-    },
-    {
-      title: 'Product Manager',
-      company: 'Google',
-      period: '2014 - 2018',
-      description: 'Led product development for Google Cloud AI products.',
-    },
-  ],
-  education: [
-    {
-      degree: 'MBA',
-      school: 'Stanford Graduate School of Business',
-      year: '2014',
-    },
-    {
-      degree: 'BS Computer Science',
-      school: 'MIT',
-      year: '2010',
-    },
-  ],
-  achievements: [
-    'Forbes 30 Under 30 (2020)',
-    'TechCrunch Disrupt Finalist',
-    'Y Combinator W18',
-  ],
-  // testimonials removed - now fetched from API
-  stats: {
-    connections: 342,
-    projects: 3,
-    endorsements: 28,
-  },
-  joinedAt: new Date('2024-01-15'),
-};
+function deriveProfileFields(profile: PublicProfile) {
+  const rp = (profile.rolePayload ?? {}) as Record<string, unknown>;
+  const nameParts = (profile.displayName ?? '').trim().split(' ');
+  const firstName = nameParts[0] ?? 'User';
+  const lastName = nameParts.slice(1).join(' ') || '';
+  const skills = (profile.skills ?? []).map((s) => s.skillName ?? s.skillId);
+  const interests = (rp.interests as string[] | undefined) ?? [];
+  const experience = (rp.experience as Array<{ title: string; company: string; period: string; description?: string }> | undefined) ?? [];
+  const education = (rp.education as Array<{ degree: string; school: string; year?: string }> | undefined) ?? [];
+  const achievements = (rp.achievements as string[] | undefined) ?? [];
+  const lookingFor = (rp.lookingFor as string[] | undefined) ?? [];
+  const isVerified = Boolean(rp.isVerified ?? rp.verified);
+  const isAvailable = Boolean(rp.isAvailable ?? rp.available ?? rp.openToOpportunities);
+  const website = (rp.website ?? rp.websiteUrl) as string | undefined;
+  const linkedin = (rp.linkedin ?? rp.linkedinUrl) as string | undefined;
+  const twitter = (rp.twitter ?? rp.twitterUrl) as string | undefined;
+  const github = (rp.github ?? rp.githubUrl) as string | undefined;
+  const joinedAt = new Date(profile.createdAt);
+  return { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt };
+}
 
 function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
   return (
@@ -139,21 +89,79 @@ function EndorsementsSkeleton() {
   );
 }
 
+function ProfilePageSkeleton() {
+  return (
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <Card><CardContent className="pt-6"><div className="flex gap-6"><Skeleton className="h-28 w-28 rounded-full shrink-0" /><div className="flex-1 space-y-3"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-72" /><Skeleton className="h-4 w-32" /></div></div></CardContent></Card>
+          <Card><CardHeader><Skeleton className="h-5 w-24" /></CardHeader><CardContent className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></CardContent></Card>
+          <Card><CardHeader><Skeleton className="h-5 w-32" /></CardHeader><CardContent><div className="flex flex-wrap gap-2">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-6 w-20 rounded-full" />)}</div></CardContent></Card>
+        </div>
+        <div className="space-y-4">
+          <Card><CardContent className="pt-6"><div className="grid grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} className="text-center"><Skeleton className="h-8 w-12 mx-auto mb-1" /><Skeleton className="h-3 w-16 mx-auto" /></div>)}</div></CardContent></Card>
+          <Card><CardHeader><Skeleton className="h-5 w-20" /></CardHeader><CardContent><div className="flex flex-wrap gap-2">{[1,2,3,4].map(i => <Skeleton key={i} className="h-6 w-16 rounded-full" />)}</div></CardContent></Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PublicProfilePage() {
   const params = useParams();
   const username = params?.username as string;
 
-  const profile = MOCK_PROFILE;
+  const { data: profile, isLoading: profileLoading, isError } = useQuery({
+    queryKey: ['public-profile', username],
+    queryFn: () => getPublicProfile(username),
+    staleTime: 60_000,
+    retry: 1,
+    enabled: !!username,
+  });
 
-  // Fetch real endorsements from API
-  // Note: In production, you'd fetch the user by username first to get their ID
+  const derived = profile ? deriveProfileFields(profile) : null;
+
   const { data: endorsementsData, isLoading: endorsementsLoading } = useQuery({
-    queryKey: ['endorsements', profile.id],
-    queryFn: () => getEndorsementsForUser(profile.id),
+    queryKey: ['endorsements', profile?.userId],
+    queryFn: () => getEndorsementsForUser(profile!.userId),
+    enabled: !!profile?.userId,
     staleTime: 60_000,
   });
 
   const endorsements = endorsementsData?.endorsements ?? [];
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+        <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+          <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-sm font-bold text-primary-foreground">C</span></div>
+              <span className="font-semibold text-foreground">CoFounderBay</span>
+            </Link>
+          </div>
+        </header>
+        <ProfilePageSkeleton />
+      </div>
+    );
+  }
+
+  if (isError || !profile || !derived) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
+        <div className="text-center space-y-4 p-8">
+          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
+            <Users className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
+          <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
+          <Link href="/discover"><Button variant="outline">Browse Profiles</Button></Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt } = derived;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -186,23 +194,23 @@ export default function PublicProfilePage() {
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row gap-6">
                   <Avatar className="h-28 w-28 shrink-0">
-                    <AvatarImage src={profile.avatar} />
+                    <AvatarImage src={profile.avatarUrl ?? undefined} />
                     <AvatarFallback className="text-3xl bg-primary/10 text-primary">
-                      {profile.firstName[0]}{profile.lastName[0]}
+                      {firstName[0]}{lastName[0] || firstName[1] || ''}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-3">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h1 className="text-2xl font-bold text-foreground">
-                          {profile.firstName} {profile.lastName}
+                          {firstName} {lastName}
                         </h1>
-                        {profile.isVerified && (
+                        {isVerified && (
                           <CheckCircle2 className="h-5 w-5 text-primary" />
                         )}
                         <RoleBadge role={profile.role} />
                       </div>
-                      <p className="text-muted-foreground mt-1">{profile.headline}</p>
+                      <p className="text-muted-foreground mt-1">{profile.headline ?? ''}</p>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -218,9 +226,15 @@ export default function PublicProfilePage() {
                           {profile.timezone}
                         </span>
                       )}
+                      {profile.role && (
+                        <span className="flex items-center gap-1 capitalize">
+                          <Briefcase className="h-4 w-4" />
+                          {profile.role}
+                        </span>
+                      )}
                     </div>
 
-                    {profile.isAvailable && (
+                    {isAvailable && (
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
                         <Zap className="h-3 w-3 mr-1" />
                         Open to Opportunities
@@ -228,13 +242,17 @@ export default function PublicProfilePage() {
                     )}
 
                     <div className="flex flex-wrap gap-2 pt-2">
-                      <Button className="gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Message
+                      <Button className="gap-2" asChild>
+                        <Link href={`/register?action=message&user=${username}`}>
+                          <MessageSquare className="h-4 w-4" />
+                          Message
+                        </Link>
                       </Button>
-                      <Button variant="outline" className="gap-2">
-                        <UserPlus className="h-4 w-4" />
-                        Connect
+                      <Button variant="outline" className="gap-2" asChild>
+                        <Link href={`/register?action=connect&user=${username}`}>
+                          <UserPlus className="h-4 w-4" />
+                          Connect
+                        </Link>
                       </Button>
                       <Button variant="ghost" size="icon">
                         <Share2 className="h-4 w-4" />
@@ -252,7 +270,7 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="prose prose-sm dark:prose-invert max-w-none">
-                  {profile.bio.split('\n\n').map((p, i) => (
+                  {(profile.bio ?? '').split('\n\n').map((p, i) => (
                     <p key={i} className="text-muted-foreground">{p}</p>
                   ))}
                 </div>
@@ -260,7 +278,7 @@ export default function PublicProfilePage() {
             </Card>
 
             {/* Looking For */}
-            {profile.lookingFor.length > 0 && (
+            {lookingFor.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -270,7 +288,7 @@ export default function PublicProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {profile.lookingFor.map((role) => (
+                    {lookingFor.map((role) => (
                       <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary">
                         {role}
                       </Badge>
@@ -281,6 +299,7 @@ export default function PublicProfilePage() {
             )}
 
             {/* Experience */}
+            {experience.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -289,7 +308,7 @@ export default function PublicProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {profile.experience.map((exp, i) => (
+                {experience.map((exp, i) => (
                   <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border/60')}>
                     <div className="flex items-start gap-4">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
@@ -299,15 +318,17 @@ export default function PublicProfilePage() {
                         <h4 className="font-semibold text-foreground">{exp.title}</h4>
                         <p className="text-sm text-muted-foreground">{exp.company}</p>
                         <p className="text-xs text-muted-foreground mt-1">{exp.period}</p>
-                        <p className="text-sm text-muted-foreground mt-2">{exp.description}</p>
+                        {exp.description && <p className="text-sm text-muted-foreground mt-2">{exp.description}</p>}
                       </div>
                     </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
+            )}
 
             {/* Education */}
+            {education.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -316,7 +337,7 @@ export default function PublicProfilePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {profile.education.map((edu, i) => (
+                {education.map((edu, i) => (
                   <div key={i} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
                       <GraduationCap className="h-5 w-5 text-muted-foreground" />
@@ -324,12 +345,13 @@ export default function PublicProfilePage() {
                     <div>
                       <h4 className="font-semibold text-foreground">{edu.degree}</h4>
                       <p className="text-sm text-muted-foreground">{edu.school}</p>
-                      <p className="text-xs text-muted-foreground">{edu.year}</p>
+                      {edu.year && <p className="text-xs text-muted-foreground">{edu.year}</p>}
                     </div>
                   </div>
                 ))}
               </CardContent>
             </Card>
+            )}
 
             {/* Endorsements / Testimonials */}
             <Card>
@@ -363,7 +385,7 @@ export default function PublicProfilePage() {
                       No endorsements yet
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Be the first to endorse {profile.firstName}
+                      Be the first to endorse {firstName}
                     </p>
                   </div>
                 )}
@@ -378,11 +400,11 @@ export default function PublicProfilePage() {
               <CardContent className="pt-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{profile.stats.connections}</div>
+                    <div className="text-2xl font-bold text-foreground">{(profile.rolePayload as any)?.connectionsCount ?? '—'}</div>
                     <div className="text-xs text-muted-foreground">Connections</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-foreground">{profile.stats.projects}</div>
+                    <div className="text-2xl font-bold text-foreground">{(profile.rolePayload as any)?.projectsCount ?? '—'}</div>
                     <div className="text-xs text-muted-foreground">Projects</div>
                   </div>
                   <div>
@@ -402,7 +424,8 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {profile.skills.map((skill) => (
+                  {skills.length === 0 && <p className="text-sm text-muted-foreground">No skills listed</p>}
+                  {skills.map((skill) => (
                     <Badge key={skill} variant="secondary">{skill}</Badge>
                   ))}
                 </div>
@@ -416,7 +439,8 @@ export default function PublicProfilePage() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-1.5">
-                  {profile.interests.map((interest) => (
+                  {interests.length === 0 && <p className="text-sm text-muted-foreground">No interests listed</p>}
+                  {interests.map((interest) => (
                     <Badge key={interest} variant="outline">{interest}</Badge>
                   ))}
                 </div>
@@ -424,7 +448,7 @@ export default function PublicProfilePage() {
             </Card>
 
             {/* Achievements */}
-            {profile.achievements.length > 0 && (
+            {achievements.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -434,7 +458,7 @@ export default function PublicProfilePage() {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {profile.achievements.map((achievement, i) => (
+                    {achievements.map((achievement, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
                         <Award className="h-4 w-4 text-amber-500 shrink-0" />
                         <span className="text-muted-foreground">{achievement}</span>
@@ -451,49 +475,36 @@ export default function PublicProfilePage() {
                 <CardTitle className="text-base">Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {profile.website && (
-                  <a
-                    href={profile.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                {!website && !linkedin && !twitter && !github && (
+                  <p className="text-sm text-muted-foreground">No links added</p>
+                )}
+                {website && (
+                  <a href={website} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <Globe className="h-4 w-4" />
-                    <span className="truncate">{profile.website.replace('https://', '')}</span>
+                    <span className="truncate">{website.replace(/^https?:\/\//, '')}</span>
                     <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
                   </a>
                 )}
-                {profile.linkedin && (
-                  <a
-                    href={profile.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                {linkedin && (
+                  <a href={linkedin} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <Linkedin className="h-4 w-4" />
                     <span>LinkedIn</span>
                     <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
                   </a>
                 )}
-                {profile.twitter && (
-                  <a
-                    href={profile.twitter}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                {twitter && (
+                  <a href={twitter} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <Twitter className="h-4 w-4" />
-                    <span>Twitter</span>
+                    <span>Twitter / X</span>
                     <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
                   </a>
                 )}
-                {profile.github && (
-                  <a
-                    href={profile.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
+                {github && (
+                  <a href={github} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
                     <Github className="h-4 w-4" />
                     <span>GitHub</span>
                     <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
@@ -507,7 +518,7 @@ export default function PublicProfilePage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span>Member since {profile.joinedAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                  <span>Member since {joinedAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                 </div>
               </CardContent>
             </Card>
@@ -516,10 +527,10 @@ export default function PublicProfilePage() {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6 text-center">
                 <h3 className="font-semibold text-foreground mb-2">
-                  Want to connect with {profile.firstName}?
+                  Want to connect with {firstName}?
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Join CoFounderBay to message and connect with founders like {profile.firstName}.
+                  Join CoFounderBay to message and connect with founders like {firstName}.
                 </p>
                 <Button className="w-full" asChild>
                   <Link href="/register">Join CoFounderBay Free</Link>

@@ -238,25 +238,29 @@ export function ChatPopup() {
 
     const init = async () => {
       try {
-        // get current user id
-        const rawUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-        let uid = '';
-        if (rawUser) {
-          try { uid = (JSON.parse(rawUser) as { id?: string }).id ?? ''; } catch { uid = ''; }
-        }
+        // ── Resolve user ID (skip if already cached) ─────────────────────────
+        let uid = currentUserId;
         if (!uid) {
-          const { user } = await getMe();
-          uid = user.id;
+          const rawUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+          if (rawUser) {
+            try { uid = (JSON.parse(rawUser) as { id?: string }).id ?? ''; } catch { uid = ''; }
+          }
+          if (!uid) {
+            const { user } = await getMe();
+            uid = user.id;
+          }
+          if (!mounted) return;
+          setCurrentUserId(uid);
         }
-        if (!mounted) return;
-        setCurrentUserId(uid);
 
-        const { conversations: list } = await listMessageConversations();
-        if (!mounted) return;
-        const mapped = list.map(mapConversation);
-        setConversations(mapped);
+        // ── Fetch conversations (skip if cached from previous open) ──────────
+        if (conversations.length === 0) {
+          const { conversations: list } = await listMessageConversations();
+          if (!mounted) return;
+          setConversations(list.map(mapConversation));
+        }
 
-        // Connect socket
+        // ── Always reconnect socket ──────────────────────────────────────────
         const socket = createMessagingSocket();
         socketRef.current = socket;
         socket.on('message:new', onNew);
@@ -265,7 +269,7 @@ export function ChatPopup() {
         socket.on('typing:stop', onTypingStop);
         socket.on('presence:update', onPresence);
 
-        // If initialUserId, open that DM
+        // ── If initialUserId, open or create that DM ─────────────────────────
         if (initialUserId) {
           const { conversationId } = await getOrCreateDirectConversation(initialUserId);
           if (!mounted) return;
@@ -293,18 +297,29 @@ export function ChatPopup() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, sessionReady, hasSession]);
 
-  // ── disconnect on close ─────────────────────────────────────────────────────
+  // ── disconnect socket on close but keep conversation data for fast reopen ─
   useEffect(() => {
     if (!isOpen && socketRef.current) {
       socketRef.current.disconnect();
+      socketRef.current = null;
+      setInitialized(false); // will reconnect socket on next open
+    }
+  }, [isOpen]);
+
+  // ── clear everything on logout ──────────────────────────────────────────────
+  useEffect(() => {
+    const handleLogout = () => {
+      socketRef.current?.disconnect();
       socketRef.current = null;
       setInitialized(false);
       setSelected(null);
       setMessages([]);
       setConversations([]);
       setCurrentUserId('');
-    }
-  }, [isOpen]);
+    };
+    window.addEventListener('cfb:logout', handleLogout);
+    return () => window.removeEventListener('cfb:logout', handleLogout);
+  }, []);
 
   // ── load messages when conversation selected ────────────────────────────────
   useEffect(() => {

@@ -1,60 +1,19 @@
-// Builder API client - uses the same apiRequest pattern as api.ts
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
-function getCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(/(?:^|;\s*)cfb_csrf=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-async function builderRequest<T>(
-  endpoint: string,
-  init?: RequestInit,
-): Promise<T> {
-  const url = `${API_BASE}/api${endpoint}`;
-  const headers = new Headers(init?.headers ?? {});
-  const isForm = typeof FormData !== 'undefined' && init?.body instanceof FormData;
-  if (!headers.has('Content-Type') && !isForm) headers.set('Content-Type', 'application/json');
-
-  const method = (init?.method ?? 'GET').toUpperCase();
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const csrf = getCsrfToken();
-    if (csrf) headers.set('x-csrf-token', csrf);
-  }
-
-  const res = await fetch(url, { ...init, headers, credentials: 'include' });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(errorData.message || `Request failed: ${res.status}`);
-  }
-
-  const contentType = res.headers.get('content-type') ?? '';
-  if (!contentType.includes('application/json')) {
-    return undefined as T;
-  }
-
-  const text = await res.text();
-  if (!text) return undefined as T;
-
-  const parsed = JSON.parse(text);
-  // Unwrap NestJS ResponseInterceptor envelope
-  if (parsed?.success === true && 'data' in parsed) {
-    return parsed.data as T;
-  }
-  return parsed as T;
-}
+// Builder API client — routes all requests through the shared apiRequest helper
+// so builder endpoints benefit from the circuit breaker, 6s timeout,
+// cfb:api-offline events, 401→token-refresh retry, and proper error classes.
+import { apiRequest } from '@/lib/api';
 
 const api = {
-  get: <T>(endpoint: string) => builderRequest<T>(endpoint),
+  get: <T>(endpoint: string) =>
+    apiRequest<T>(`/api${endpoint}`),
   post: <T>(endpoint: string, body?: unknown) =>
-    builderRequest<T>(endpoint, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+    apiRequest<T>(`/api${endpoint}`, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
   put: <T>(endpoint: string, body?: unknown) =>
-    builderRequest<T>(endpoint, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
+    apiRequest<T>(`/api${endpoint}`, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   patch: <T>(endpoint: string, body?: unknown) =>
-    builderRequest<T>(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
-  delete: <T>(endpoint: string) => builderRequest<T>(endpoint, { method: 'DELETE' }),
+    apiRequest<T>(`/api${endpoint}`, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
+  delete: <T>(endpoint: string) =>
+    apiRequest<T>(`/api${endpoint}`, { method: 'DELETE' }),
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

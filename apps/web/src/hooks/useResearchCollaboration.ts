@@ -97,7 +97,13 @@ export function useResearchCollaboration({
     const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
     const socket = io(`${apiBase}/research`, {
       withCredentials: true,
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'] as string[],
+      reconnection: true,
+      reconnectionAttempts: 8,
+      reconnectionDelay: 3_000,
+      reconnectionDelayMax: 60_000,
+      randomizationFactor: 0.4,
+      timeout: 10_000,
     });
 
     socketRef.current = socket;

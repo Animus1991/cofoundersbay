@@ -9,6 +9,8 @@ import {
   deleteAutomationRule,
   triggerAutomationRule,
   getAutomationExecutionLogs,
+  createAutomationRule,
+  updateAutomationRule,
   type AutomationRuleItem,
   type AutomationExecutionItem,
   type AutomationLogItem,
@@ -17,12 +19,231 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
-  Activity, Settings, Layers, ListChecks,
+  Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
+
+const TRIGGER_TYPES = [
+  'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
+  'connection_request_sent','connection_not_answered','connection_accepted',
+  'mentor_request_submitted','mentor_request_accepted','mentor_session_idle',
+  'community_join','community_inactive','content_reported_threshold',
+  'tenant_setup_incomplete','subscription_trial_ending','subscription_failed_payment',
+  'subscription_canceled','subscription_seat_limit','user_inactive','scheduled','manual',
+] as const;
+
+const ACTION_TYPES = [
+  'send_in_app_notification','send_email','generate_matches',
+  'flag_for_admin_review','send_admin_alert','update_user_field',
+  'webhook_call','trigger_another_rule','log_event',
+] as const;
+
+function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const { success, error: toastError } = useToast();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [triggerType, setTriggerType] = useState(TRIGGER_TYPES[0] as string);
+  const [actionType, setActionType] = useState(ACTION_TYPES[0] as string);
+  const [actionParamsRaw, setActionParamsRaw] = useState('{"title":"Notification","body":"Message body"}');
+  const [delaySeconds, setDelaySeconds] = useState('0');
+  const [priority, setPriority] = useState('100');
+  const [paramsError, setParamsError] = useState('');
+
+  const create = useMutation({
+    mutationFn: () => {
+      let params: Record<string, unknown>;
+      try { params = JSON.parse(actionParamsRaw); } catch { throw new Error('Action params must be valid JSON'); }
+      return createAutomationRule({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        triggerType,
+        actionDef: { type: actionType, params },
+        delaySeconds: parseInt(delaySeconds, 10) || 0,
+        priority: parseInt(priority, 10) || 100,
+      });
+    },
+    onSuccess: () => {
+      success('Rule created');
+      onCreated();
+      onClose();
+      setName(''); setDescription(''); setActionParamsRaw('{"title":"Notification","body":"Message body"}');
+    },
+    onError: (e: Error) => toastError(e.message),
+  });
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-lg font-semibold">Create Automation Rule</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="p-5 space-y-4 flex-1">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Rule Name *</label>
+            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Description</label>
+            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this rule do?" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Trigger</label>
+            <select
+              value={triggerType}
+              onChange={e => setTriggerType(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Action Type</label>
+            <select
+              value={actionType}
+              onChange={e => setActionType(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <textarea
+              value={actionParamsRaw}
+              onChange={e => { setActionParamsRaw(e.target.value); setParamsError(''); }}
+              rows={5}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+              placeholder='{"title": "Hello", "body": "Message"}'
+            />
+            {paramsError && <p className="text-xs text-destructive">{paramsError}</p>}
+            <p className="text-xs text-muted-foreground">
+              Keys depend on action type: <code>title</code>/<code>body</code> for notifications, <code>subject</code>/<code>bodyHtml</code> for emails, <code>url</code>/<code>method</code> for webhooks.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Delay (seconds)</label>
+              <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Priority (lower = first)</label>
+              <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
+            </div>
+          </div>
+        </div>
+        <div className="p-5 border-t flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => create.mutate()} disabled={create.isPending || !name.trim()}>
+            {create.isPending ? 'Creating…' : 'Create Rule'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleItem; onClose: () => void; onSaved: () => void }) {
+  const { success, error: toastError } = useToast();
+  const [name, setName] = useState(rule.name);
+  const [description, setDescription] = useState(rule.description ?? '');
+  const [triggerType, setTriggerType] = useState(rule.triggerType);
+  const [actionType, setActionType] = useState((rule.actionDef as any)?.type ?? ACTION_TYPES[0]);
+  const [actionParamsRaw, setActionParamsRaw] = useState(JSON.stringify((rule.actionDef as any)?.params ?? {}, null, 2));
+  const [delaySeconds, setDelaySeconds] = useState(String(rule.delaySeconds ?? 0));
+  const [priority, setPriority] = useState(String(rule.priority ?? 100));
+
+  const save = useMutation({
+    mutationFn: () => {
+      let params: Record<string, unknown>;
+      try { params = JSON.parse(actionParamsRaw); } catch { throw new Error('Action params must be valid JSON'); }
+      return updateAutomationRule(rule.id, {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        triggerType,
+        actionDef: { type: actionType, params },
+        delaySeconds: parseInt(delaySeconds, 10) || 0,
+        priority: parseInt(priority, 10) || 100,
+      });
+    },
+    onSuccess: () => { success('Rule updated'); onSaved(); onClose(); },
+    onError: (e: Error) => toastError(e.message),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="text-lg font-semibold">Edit Rule</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="p-5 space-y-4 flex-1">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Rule Name *</label>
+            <Input value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Description</label>
+            <Input value={description} onChange={e => setDescription(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Trigger</label>
+            <select
+              value={triggerType}
+              onChange={e => setTriggerType(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {TRIGGER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Action Type</label>
+            <select
+              value={actionType}
+              onChange={e => setActionType(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {ACTION_TYPES.map(a => <option key={a} value={a}>{a.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium">Action Params (JSON)</label>
+            <textarea
+              value={actionParamsRaw}
+              onChange={e => setActionParamsRaw(e.target.value)}
+              rows={5}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Delay (seconds)</label>
+              <Input type="number" min="0" value={delaySeconds} onChange={e => setDelaySeconds(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Priority</label>
+              <Input type="number" min="1" value={priority} onChange={e => setPriority(e.target.value)} />
+            </div>
+          </div>
+        </div>
+        <div className="p-5 border-t flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
+            {save.isPending ? 'Saving…' : 'Save Changes'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -101,6 +322,8 @@ export default function AutomationsPage() {
   const { success, error: showError } = useToast();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
   const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editRule, setEditRule] = useState<AutomationRuleItem | null>(null);
 
   const { data: rulesData, isLoading: rulesLoading } = useQuery({
     queryKey: ['automation-rules'],
@@ -158,7 +381,23 @@ export default function AutomationsPage() {
               Event-driven workflows — triggers, conditions, actions
             </p>
           </div>
+          <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
+            <Plus className="h-3.5 w-3.5" />New Rule
+          </Button>
         </div>
+
+        <CreateRuleSlideOver
+          open={showCreate}
+          onClose={() => setShowCreate(false)}
+          onCreated={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+        />
+        {editRule && (
+          <EditRuleSlideOver
+            rule={editRule}
+            onClose={() => setEditRule(null)}
+            onSaved={() => queryClient.invalidateQueries({ queryKey: ['automation-rules'] })}
+          />
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -237,6 +476,15 @@ export default function AutomationsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      title="Edit rule"
+                      onClick={() => setEditRule(rule)}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"

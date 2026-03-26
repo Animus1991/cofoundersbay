@@ -510,4 +510,64 @@ export class AdminService {
       meta: { note: params.note, banUser: params.banUser },
     });
   }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Taxonomy / Skill Management
+  // ─────────────────────────────────────────────────────────────────
+
+  async listSkillsAdmin(params: { q?: string; category?: string; limit?: number; offset?: number }) {
+    const { q, category, limit = 100, offset = 0 } = params;
+    const where = {
+      ...(category ? { category } : {}),
+      ...(q ? { name: { contains: q, mode: 'insensitive' as const } } : {}),
+    };
+    const [items, total] = await Promise.all([
+      this.prisma.skill.findMany({
+        where,
+        orderBy: [{ category: 'asc' }, { name: 'asc' }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          category: true,
+          _count: { select: { profiles: true } },
+        },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.skill.count({ where }),
+    ]);
+    return {
+      items: items.map((s) => ({ ...s, count: s._count.profiles })),
+      total,
+    };
+  }
+
+  async createSkill(adminId: string, body: { name: string; slug: string; category?: string }) {
+    const skill = await this.prisma.skill.create({
+      data: { name: body.name, slug: body.slug, category: body.category ?? null },
+      select: { id: true, name: true, slug: true, category: true },
+    });
+    await this.audit.log({ actorId: adminId, action: 'skill.create', entityType: 'skill', entityId: skill.id, meta: { name: skill.name } });
+    return skill;
+  }
+
+  async updateSkill(adminId: string, skillId: string, body: { name?: string; slug?: string; category?: string | null }) {
+    const existing = await this.prisma.skill.findUnique({ where: { id: skillId } });
+    if (!existing) throw new NotFoundException('Skill not found');
+    const skill = await this.prisma.skill.update({
+      where: { id: skillId },
+      data: { ...(body.name !== undefined && { name: body.name }), ...(body.slug !== undefined && { slug: body.slug }), ...(body.category !== undefined && { category: body.category }) },
+      select: { id: true, name: true, slug: true, category: true },
+    });
+    await this.audit.log({ actorId: adminId, action: 'skill.update', entityType: 'skill', entityId: skillId, meta: body });
+    return skill;
+  }
+
+  async deleteSkill(adminId: string, skillId: string) {
+    const existing = await this.prisma.skill.findUnique({ where: { id: skillId } });
+    if (!existing) throw new NotFoundException('Skill not found');
+    await this.prisma.skill.delete({ where: { id: skillId } });
+    await this.audit.log({ actorId: adminId, action: 'skill.delete', entityType: 'skill', entityId: skillId, meta: { name: existing.name } });
+  }
 }

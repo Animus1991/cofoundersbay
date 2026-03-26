@@ -84,6 +84,10 @@ async function main() {
   let stoppingServer = false;
   let restartChain = Promise.resolve();
   let isShuttingDown = false;
+  let crashRestartCount = 0;
+  let lastCrashRestartAt = 0;
+  const MAX_CRASH_RESTARTS = 5;
+  const CRASH_RESTART_WINDOW_MS = 60_000; // Reset counter if >60s since last crash
 
   const entryCandidates = [
     path.join(distDir, 'main.js'),
@@ -159,13 +163,41 @@ async function main() {
       }
 
       if (signal) {
+        // Intentional signal (e.g. SIGTERM from compiler restart) — no auto-restart needed.
         console.error(`API process exited via signal ${signal}`);
         return;
       }
 
-      if ((code ?? 0) !== 0) {
-        console.error(`API process exited with code ${code}`);
+      // Runtime crash — attempt automatic restart so the developer doesn't need to
+      // manually restart the process after every unhandled exception.
+      const now = Date.now();
+      if (now - lastCrashRestartAt > CRASH_RESTART_WINDOW_MS) {
+        crashRestartCount = 0; // Enough time has passed — reset the crash counter
       }
+      lastCrashRestartAt = now;
+      crashRestartCount += 1;
+
+      if ((code ?? 0) !== 0) {
+        console.error(`[dev] API process crashed with exit code ${code}.`);
+      } else {
+        console.warn(`[dev] API process exited unexpectedly with code 0.`);
+      }
+
+      if (crashRestartCount > MAX_CRASH_RESTARTS) {
+        console.error(
+          `[dev] API crashed ${crashRestartCount} times in ${CRASH_RESTART_WINDOW_MS / 1000}s — stopping auto-restart to avoid a loop.\n` +
+          `      Fix the runtime error above and save a file to trigger a manual restart.`,
+        );
+        return;
+      }
+
+      const delayMs = Math.min(1_000 * crashRestartCount, 5_000); // 1s, 2s, 3s, 4s, 5s cap
+      console.log(`[dev] Auto-restarting API in ${delayMs / 1000}s (attempt ${crashRestartCount}/${MAX_CRASH_RESTARTS})...`);
+      setTimeout(() => {
+        if (!isShuttingDown) {
+          scheduleRestart();
+        }
+      }, delayMs);
     });
 
     serverProcess.on('error', (error) => {
@@ -188,6 +220,9 @@ async function main() {
     }
 
     if (match[1] === '0') {
+      // Successful compile → intentional restart. Reset the runtime crash counter
+      // so crash tracking is scoped to the current compiled binary only.
+      crashRestartCount = 0;
       scheduleRestart();
       return;
     }

@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 // ── Mock analytics data ───────────────────────────────────────────────────────
 
@@ -76,7 +77,6 @@ const MOCK_TOP_SERVICES = [
   { name: 'Fundraising Legal', inquiries: 2, revenue: 0, rating: null },
 ];
 
-const maxViews = Math.max(...MOCK_WEEKLY_VIEWS.map(d => d.views));
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
   if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-green-500" />;
@@ -131,7 +131,15 @@ function MetricCard({
 
 export default function ProviderAnalyticsPage() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
   const [period, setPeriod] = useState('30d');
+
+  const overview = showDemoData ? MOCK_OVERVIEW : null;
+  const weeklyViews = showDemoData ? MOCK_WEEKLY_VIEWS : [];
+  const conversions = showDemoData ? MOCK_CONVERSIONS : [];
+  const trafficSources = showDemoData ? MOCK_TRAFFIC_SOURCES : [];
+  const topServices = showDemoData ? MOCK_TOP_SERVICES : [];
+  const maxViews = weeklyViews.length ? Math.max(...weeklyViews.map(d => d.views)) : 1;
 
   if (!mounted) {
     return (
@@ -177,52 +185,16 @@ export default function ProviderAnalyticsPage() {
         </div>
 
         {/* Metric Grid */}
+        {overview && (
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <MetricCard
-            icon={Eye}
-            label="Profile Views"
-            value={MOCK_OVERVIEW.profileViews.value}
-            change={MOCK_OVERVIEW.profileViews.change}
-            trend={MOCK_OVERVIEW.profileViews.trend}
-          />
-          <MetricCard
-            icon={MessageCircle}
-            label="Inquiries"
-            value={MOCK_OVERVIEW.inquiries.value}
-            change={MOCK_OVERVIEW.inquiries.change}
-            trend={MOCK_OVERVIEW.inquiries.trend}
-          />
-          <MetricCard
-            icon={Users}
-            label="Active Projects"
-            value={MOCK_OVERVIEW.activeProjects.value}
-            change={MOCK_OVERVIEW.activeProjects.change}
-            trend={MOCK_OVERVIEW.activeProjects.trend}
-          />
-          <MetricCard
-            icon={Star}
-            label="Avg. Rating"
-            value={MOCK_OVERVIEW.avgRating.value}
-            change={MOCK_OVERVIEW.avgRating.change}
-            trend={MOCK_OVERVIEW.avgRating.trend}
-          />
-          <MetricCard
-            icon={DollarSign}
-            label="Revenue"
-            value={MOCK_OVERVIEW.revenue.value}
-            change={MOCK_OVERVIEW.revenue.change}
-            trend={MOCK_OVERVIEW.revenue.trend}
-            format="currency"
-          />
-          <MetricCard
-            icon={Clock}
-            label="Response Rate"
-            value={MOCK_OVERVIEW.responseRate.value}
-            change={MOCK_OVERVIEW.responseRate.change}
-            trend={MOCK_OVERVIEW.responseRate.trend}
-            format="percent"
-          />
+          <MetricCard icon={Eye} label="Profile Views" value={overview.profileViews.value} change={overview.profileViews.change} trend={overview.profileViews.trend} />
+          <MetricCard icon={MessageCircle} label="Inquiries" value={overview.inquiries.value} change={overview.inquiries.change} trend={overview.inquiries.trend} />
+          <MetricCard icon={Users} label="Active Projects" value={overview.activeProjects.value} change={overview.activeProjects.change} trend={overview.activeProjects.trend} />
+          <MetricCard icon={Star} label="Avg. Rating" value={overview.avgRating.value} change={overview.avgRating.change} trend={overview.avgRating.trend} />
+          <MetricCard icon={DollarSign} label="Revenue" value={overview.revenue.value} change={overview.revenue.change} trend={overview.revenue.trend} format="currency" />
+          <MetricCard icon={Clock} label="Response Rate" value={overview.responseRate.value} change={overview.responseRate.change} trend={overview.responseRate.trend} format="percent" />
         </div>
+        )}
 
         <Tabs defaultValue="overview">
           <TabsList>
@@ -240,7 +212,7 @@ export default function ProviderAnalyticsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-end gap-2 h-44">
-                    {MOCK_WEEKLY_VIEWS.map(d => (
+                    {weeklyViews.map(d => (
                       <div key={d.day} className="flex-1 flex flex-col items-center gap-1">
                         <div className="w-full flex flex-col gap-0.5">
                           <div
@@ -268,7 +240,7 @@ export default function ProviderAnalyticsPage() {
                   <CardTitle className="text-base">Traffic Sources</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {MOCK_TRAFFIC_SOURCES.map(src => (
+                  {trafficSources.map(src => (
                     <div key={src.source}>
                       <div className="flex items-center justify-between text-sm mb-1">
                         <span className="text-muted-foreground">{src.source}</span>
@@ -294,7 +266,7 @@ export default function ProviderAnalyticsPage() {
                 <CardTitle className="text-base">Client Acquisition Funnel</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {MOCK_CONVERSIONS.map((stage, i) => (
+                {conversions.map((stage, i) => (
                   <div key={stage.stage} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
@@ -329,7 +301,7 @@ export default function ProviderAnalyticsPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border">
-                  {MOCK_TOP_SERVICES.map(svc => (
+                  {topServices.map(svc => (
                     <div key={svc.name} className="flex items-center gap-4 px-4 py-3">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium">{svc.name}</p>

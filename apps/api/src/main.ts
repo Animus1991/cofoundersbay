@@ -35,6 +35,20 @@ import { requestIdMiddleware } from './common/filters/http-exception.filter';
 import appConfig from './common/config/app.config';
 import { Logger } from 'nestjs-pino';
 
+// ── Process-level crash guards ─────────────────────────────────────────────────
+// Ensure crash reasons are ALWAYS written to stderr before the process exits.
+// Without these, runtime crashes can be silent — the dev script sees an exit
+// code but no error message, making root-cause analysis very difficult.
+process.on('unhandledRejection', (reason) => {
+  console.error('[FATAL] Unhandled promise rejection:', reason);
+  process.exit(1);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught exception:', err);
+  process.exit(1);
+});
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     rawBody: true,

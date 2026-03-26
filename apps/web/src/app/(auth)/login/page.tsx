@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { login, discoverSSOByEmail, getSSOLoginUrl, type SSODiscoveryResult } from '@/lib/api';
@@ -16,7 +16,7 @@ const HERO_POINTS = [
   'Verified profiles, private by default',
 ];
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { activeTenant, branding } = useTenant();
@@ -63,7 +63,7 @@ export default function LoginPage() {
 
   const handleSSOLogin = () => {
     if (!ssoDiscovery?.provider?.id) return;
-    const returnUrl = searchParams?.get('returnUrl') || '/';
+    const returnUrl = searchParams?.get('redirect') || searchParams?.get('returnUrl') || '/';
     window.location.href = getSSOLoginUrl(ssoDiscovery.provider.id, returnUrl);
   };
 
@@ -80,8 +80,8 @@ export default function LoginPage() {
         // Store only display data (name, role, avatar) — auth tokens are in httpOnly cookies
         localStorage.setItem('user', JSON.stringify(user));
       }
-      // Redirect to dashboard — it will auto-redirect to /onboarding if profile incomplete
-      router.push('/');
+      const redirectTo = searchParams?.get('redirect') || searchParams?.get('returnUrl') || '/';
+      router.push(redirectTo);
     } catch (err) {
       submittingRef.current = false;
       const msg = err instanceof Error ? err.message : 'Login failed';
@@ -256,5 +256,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }

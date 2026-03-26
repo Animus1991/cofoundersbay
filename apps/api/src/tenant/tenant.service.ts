@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenantMemberRole } from '@prisma/client';
 
 export type TenantCreateInput = {
   slug: string;
@@ -176,7 +177,7 @@ export class TenantService {
     });
   }
 
-  async addMember(tenantId: string, userId: string, role: string = 'member', invitedBy?: string) {
+  async addMember(tenantId: string, userId: string, role: TenantMemberRole = TenantMemberRole.member, invitedBy?: string) {
     await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
     await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
 
@@ -198,7 +199,7 @@ export class TenantService {
     });
   }
 
-  async updateMember(tenantId: string, userId: string, data: { role?: string; isActive?: boolean }) {
+  async updateMember(tenantId: string, userId: string, data: { role?: TenantMemberRole; isActive?: boolean }) {
     const membership = await this.prisma.tenantMembership.findUnique({
       where: { tenantId_userId: { tenantId, userId } },
     });

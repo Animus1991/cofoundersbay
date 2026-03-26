@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import Link from 'next/link';
 import {
   ArrowLeft, X, Plus, MessageSquare, UserPlus, Check, Minus,
@@ -297,25 +298,27 @@ function AddUserSlot({ onAdd }: { onAdd: () => void }) {
 
 export default function MatchComparePage() {
   const router = useRouter();
+  const { showDemoData } = useDemoData();
   const searchParams = useSearchParams();
   
   // Get user IDs from URL params
   const userIds = searchParams?.get('ids')?.split(',').filter(Boolean) || ['u1', 'u2'];
   
+  const allUsers = showDemoData ? MOCK_USERS : [];
   const [selectedIds, setSelectedIds] = useState<string[]>(userIds.slice(0, 3));
 
   const selectedUsers = useMemo(() => {
     return selectedIds
-      .map((id) => MOCK_USERS.find((u) => u.id === id))
+      .map((id) => allUsers.find((u) => u.id === id))
       .filter((u): u is CompareUser => u !== undefined);
-  }, [selectedIds]);
+  }, [selectedIds, allUsers]);
 
   const removeUser = (id: string) => {
     setSelectedIds(selectedIds.filter((uid) => uid !== id));
   };
 
   const addUser = () => {
-    const available = MOCK_USERS.find((u) => !selectedIds.includes(u.id));
+    const available = allUsers.find((u) => !selectedIds.includes(u.id));
     if (available) {
       setSelectedIds([...selectedIds, available.id]);
     }

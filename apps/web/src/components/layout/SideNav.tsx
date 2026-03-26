@@ -1,10 +1,11 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { navSections, getNavSectionsForRole, type NavSection } from './nav-links';
+import { getSectionsForMode, type NavSection, type SidebarMode } from './nav-modes';
+import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
@@ -20,10 +21,12 @@ type StoredUser = {
 
 export function SideNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const { expanded, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
   const [user, setUser] = useState<StoredUser>(null);
   const [mounted, setMounted] = useState(false);
+  const [mode, setMode] = useState<SidebarMode>('work');
 
   useEffect(() => {
     setMounted(true);
@@ -31,13 +34,32 @@ export function SideNav() {
     const raw = localStorage.getItem('user');
     if (!raw) return;
     try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
+    // Restore saved mode preference
+    const savedMode = localStorage.getItem('cfb:sidebar-mode') as SidebarMode | null;
+    if (savedMode && ['work', 'explore', 'account'].includes(savedMode)) {
+      setMode(savedMode);
+    }
   }, []);
 
-  // Get role-based navigation sections
-  const sections: NavSection[] = useMemo(() => {
-    if (!user?.role) return navSections;
-    return getNavSectionsForRole(user.role);
-  }, [user?.role]);
+  // Redirect to login when session expires
+  useEffect(() => {
+    const handleLogout = () => {
+      router.replace('/login');
+    };
+    window.addEventListener('cfb:logout', handleLogout);
+    return () => window.removeEventListener('cfb:logout', handleLogout);
+  }, [router]);
+
+  // Handle mode change with persistence
+  const handleModeChange = useCallback((newMode: SidebarMode) => {
+    setMode(newMode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cfb:sidebar-mode', newMode);
+    }
+  }, []);
+
+  // Get sections for current mode and role
+  const sections: NavSection[] = getSectionsForMode(mode, user?.role);
 
   // Hide sidebar on auth pages
   const isAuthPage =
@@ -98,6 +120,9 @@ export function SideNav() {
           </button>
         )}
       </div>
+
+      {/* ── Mode Switcher ── */}
+      <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={expanded} />
 
       {/* ── Navigation ── */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">

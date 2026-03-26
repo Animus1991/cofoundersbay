@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   ConflictException,
   BadRequestException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type {
@@ -30,7 +31,10 @@ const profileSelect = {
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly automation?: any,
+  ) {}
 
   // ── Create group ──────────────────────────────────────────────────────────
 
@@ -221,6 +225,14 @@ export class GroupsService {
       data: { groupId, userId, role: 'member' },
       include: { user: { select: profileSelect } },
     });
+
+    this.automation?.fire?.({
+      triggerType: 'community_join',
+      targetUserId: userId,
+      targetEntityType: 'group',
+      targetEntityId: groupId,
+      payload: { groupName: group.name, privacy: group.privacy },
+    }).catch(() => {});
 
     return {
       member: {

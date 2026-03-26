@@ -406,6 +406,7 @@ export const tenantAdminNavSections: NavSection[] = [
     section: 'Tenant Config',
     links: [
       { href: '/tenant/branding', label: 'Branding', icon: Lightbulb },
+      { href: '/tenant/domains', label: 'Domains', icon: Globe },
       { href: '/tenant/sso', label: 'SSO / Auth', icon: Lock },
       { href: '/tenant/webhooks', label: 'Webhooks', icon: Webhook },
       { href: '/tenant/api-keys', label: 'API Keys', icon: KeyRound },

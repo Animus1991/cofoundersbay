@@ -10,12 +10,16 @@ const PUBLIC_PATHS = new Set([
   '/verify-email',
   '/auth/oauth-callback',
   '/auth/sso-complete',
+  '/pricing',
+  '/terms',
+  '/privacy',
   '/manifest.json',
   '/site.webmanifest',
   '/robots.txt',
 ]);
 
 const PUBLIC_PREFIXES = [
+  '/p/',         // public user profile pages /p/[username]
   '/profiles/',
   '/events/',
   '/t/',         // tenant public landing pages /t/[slug]

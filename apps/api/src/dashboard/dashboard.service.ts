@@ -11,7 +11,7 @@ export type DashboardStats = {
 
 export type ActivityItem = {
   id: string;
-  type: 'connection' | 'event';
+  type: 'connection' | 'event' | 'milestone' | 'achievement';
   title: string;
   author?: string;
   timeAgo: string;
@@ -170,39 +170,47 @@ export class DashboardService {
     };
   }
 
-  async getActivity(limit = 10): Promise<ActivityItem[]> {
-    return this.cache.getOrSet(`dashboard:activity:${limit}`, async () => {
+  async getActivity(limit = 10, offset = 0): Promise<{ items: ActivityItem[]; total: number; hasMore: boolean }> {
+    const cacheKey = `dashboard:activity:${limit}:${offset}`;
+    return this.cache.getOrSet(cacheKey, async () => {
       const now = new Date();
-      const [connections, events] = await Promise.all([
+      const fetchLimit = limit + offset + 20; // over-fetch to calculate total
+
+      const [connections, events, milestones, achievements] = await Promise.all([
         this.prisma.connectionRequest.findMany({
           where: { status: 'accepted' },
           orderBy: { respondedAt: 'desc' },
-          take: limit,
+          take: fetchLimit,
           include: {
-            requester: {
-              select: {
-                profile: { select: { displayName: true } },
-              },
-            },
-            receiver: {
-              select: {
-                profile: { select: { displayName: true } },
-              },
-            },
+            requester: { select: { profile: { select: { displayName: true } } } },
+            receiver:  { select: { profile: { select: { displayName: true } } } },
           },
         }),
         this.prisma.event.findMany({
-          where: { startAt: { gte: now } },
-          orderBy: { startAt: 'asc' },
-          take: Math.floor(limit / 2),
+          where: { startAt: { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) } },
+          orderBy: { createdAt: 'desc' },
+          take: Math.ceil(fetchLimit / 3),
           include: {
-            creator: {
-              select: {
-                profile: { select: { displayName: true } },
-              },
-            },
+            creator: { select: { profile: { select: { displayName: true } } } },
           },
         }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.prisma as any).milestone
+          ? (this.prisma as any).milestone.findMany({
+              where: { status: { in: ['completed', 'in_progress'] } },
+              orderBy: { updatedAt: 'desc' },
+              take: Math.ceil(fetchLimit / 3),
+              include: { owner: { select: { profile: { select: { displayName: true } } } } },
+            }).catch(() => [])
+          : Promise.resolve([]),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (this.prisma as any).achievement
+          ? (this.prisma as any).achievement.findMany({
+              orderBy: { awardedAt: 'desc' },
+              take: Math.ceil(fetchLimit / 4),
+              include: { user: { select: { profile: { select: { displayName: true } } } } },
+            }).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
       const items: ActivityItem[] = [];
@@ -210,7 +218,7 @@ export class DashboardService {
       for (const c of connections) {
         if (!c.respondedAt) continue;
         const requesterName = c.requester.profile?.displayName ?? 'Someone';
-        const receiverName = c.receiver.profile?.displayName ?? 'Someone';
+        const receiverName  = c.receiver.profile?.displayName  ?? 'Someone';
         items.push({
           id: `conn-${c.id}`,
           type: 'connection',
@@ -233,8 +241,34 @@ export class DashboardService {
         });
       }
 
+      for (const m of milestones as any[]) {
+        items.push({
+          id: `ms-${m.id}`,
+          type: 'milestone',
+          title: m.status === 'completed' ? `Milestone completed: ${m.title}` : `Milestone in progress: ${m.title}`,
+          author: m.owner?.profile?.displayName ?? undefined,
+          timeAgo: formatTimeAgo(m.updatedAt ?? m.createdAt),
+          href: '/milestones',
+          createdAt: (m.updatedAt ?? m.createdAt).toISOString(),
+        });
+      }
+
+      for (const a of achievements as any[]) {
+        items.push({
+          id: `ach-${a.id}`,
+          type: 'achievement',
+          title: `Achievement unlocked: ${a.title ?? a.type ?? 'New badge'}`,
+          author: a.user?.profile?.displayName ?? undefined,
+          timeAgo: formatTimeAgo(a.awardedAt ?? a.createdAt),
+          href: '/achievements',
+          createdAt: (a.awardedAt ?? a.createdAt).toISOString(),
+        });
+      }
+
       items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      return items.slice(0, limit);
+      const total = items.length;
+      const paged = items.slice(offset, offset + limit);
+      return { items: paged, total, hasMore: offset + limit < total };
     }, { ttl: 30, tags: ['dashboard'] });
   }
 }

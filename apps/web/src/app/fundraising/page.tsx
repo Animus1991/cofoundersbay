@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   DollarSign, TrendingUp, Users, FileText, Target, CheckCircle2,
   Clock, Plus, ChevronRight, Zap, Lock, Unlock, BarChart3,
@@ -389,21 +390,24 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
 // ── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function FundraisingPage() {
-  const round = MOCK_ROUND;
+  const { showDemoData } = useDemoData();
+  const round = showDemoData ? MOCK_ROUND : null;
+  const leads = showDemoData ? MOCK_LEADS : [];
+  const dataRoomDocs = showDemoData ? DATA_ROOM_DOCS : [];
   const pipelineByStage = PIPELINE_STAGES.reduce((acc, s) => {
-    acc[s] = MOCK_LEADS.filter(l => l.status === s).length;
+    acc[s] = leads.filter(l => l.status === s).length;
     return acc;
   }, {} as Record<string, number>);
 
-  const totalLeads = MOCK_LEADS.length;
-  const activeLeads = MOCK_LEADS.filter(l => ['contacted', 'meeting', 'dd'].includes(l.status)).length;
-  const committed = MOCK_LEADS.filter(l => l.status === 'committed').length;
+  const totalLeads = leads.length;
+  const activeLeads = leads.filter(l => ['contacted', 'meeting', 'dd'].includes(l.status)).length;
+  const committed = leads.filter(l => l.status === 'committed').length;
 
   return (
     <AppShell title="Fundraising" description="Track your round, manage investor pipeline, and organize your data room">
       <div className="space-y-6">
         {/* Active Round */}
-        <RoundCard round={round} />
+        {round && <RoundCard round={round} />}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -411,7 +415,7 @@ export default function FundraisingPage() {
             { icon: Users, label: 'Total Leads', value: totalLeads, color: 'text-primary' },
             { icon: Zap, label: 'Active Conversations', value: activeLeads, color: 'text-amber-600' },
             { icon: CheckCircle2, label: 'Committed', value: committed, color: 'text-green-600' },
-            { icon: BarChart3, label: 'Conversion Rate', value: `${Math.round((committed / totalLeads) * 100)}%`, color: 'text-blue-600' },
+            { icon: BarChart3, label: 'Conversion Rate', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', color: 'text-blue-600' },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-4 flex items-center gap-3">
@@ -454,15 +458,15 @@ export default function FundraisingPage() {
           </div>
 
           <TabsContent value="pipeline" className="mt-4">
-            <InvestorListView leads={MOCK_LEADS} />
+            <InvestorListView leads={leads} />
           </TabsContent>
 
           <TabsContent value="kanban" className="mt-4">
-            <PipelineView leads={MOCK_LEADS} />
+            <PipelineView leads={leads} />
           </TabsContent>
 
           <TabsContent value="dataroom" className="mt-4">
-            <DataRoomView docs={DATA_ROOM_DOCS} />
+            <DataRoomView docs={dataRoomDocs} />
           </TabsContent>
         </Tabs>
 

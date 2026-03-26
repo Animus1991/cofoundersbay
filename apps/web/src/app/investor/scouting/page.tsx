@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Compass,
   Search,
@@ -180,6 +181,7 @@ const ALL_STARTUPS: Startup[] = [
 ];
 
 export default function InvestorScoutingPage() {
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [industry, setIndustry] = useState('all');
   const [stage, setStage] = useState('all');
@@ -187,11 +189,12 @@ export default function InvestorScoutingPage() {
   const [sortBy, setSortBy] = useState('match');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  const industries = useMemo(() => ['all', ...new Set(ALL_STARTUPS.map(s => s.industry))], []);
-  const stages = useMemo(() => ['all', ...new Set(ALL_STARTUPS.map(s => s.stage))], []);
+  const startups = showDemoData ? ALL_STARTUPS : [];
+  const industries = useMemo(() => ['all', ...new Set(startups.map(s => s.industry))], [startups]);
+  const stages = useMemo(() => ['all', ...new Set(startups.map(s => s.stage))], [startups]);
 
   const filtered = useMemo(() => {
-    let list = ALL_STARTUPS.filter(s => {
+    let list = startups.filter(s => {
       const q = search.toLowerCase();
       return (
         (!search || s.name.toLowerCase().includes(q) || s.tagline.toLowerCase().includes(q) || s.industry.toLowerCase().includes(q)) &&
@@ -204,9 +207,9 @@ export default function InvestorScoutingPage() {
     else if (sortBy === 'readiness') list = [...list].sort((a, b) => b.readinessScore - a.readinessScore);
     else if (sortBy === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
     return list;
-  }, [search, industry, stage, model, sortBy]);
+  }, [startups, search, industry, stage, model, sortBy]);
 
-  const featured = ALL_STARTUPS.filter(s => s.isFeatured);
+  const featured = startups.filter(s => s.isFeatured);
   const activeFilters = [industry !== 'all' && industry, stage !== 'all' && stage, model !== 'all' && model].filter(Boolean) as string[];
 
   return (

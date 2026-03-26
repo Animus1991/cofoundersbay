@@ -19,7 +19,10 @@ export type AdminAction =
   | 'cohort.delete'
   | 'cohort.add_member'
   | 'cohort.remove_member'
-  | 'settings.update';
+  | 'settings.update'
+  | 'skill.create'
+  | 'skill.update'
+  | 'skill.delete';
 
 export interface AuditLogEntry {
   id: string;

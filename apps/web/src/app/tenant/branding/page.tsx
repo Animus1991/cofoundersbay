@@ -1,14 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Lightbulb,
-  Upload,
-  Palette,
-  Type,
-  Image,
-  Save,
-  Eye,
+  Palette, Type, FileText, Link2, Mail, Tag,
+  Eye, Save, Globe, AlertCircle, CheckCircle2,
+  Loader2, ExternalLink, Settings, Building2, Image,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
@@ -17,270 +14,757 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { useTenant } from '@/components/providers/TenantContext';
+import {
+  getTenantBranding,
+  updateTenantBranding,
+  publishTenantBranding,
+  unpublishTenantBranding,
+  type TenantBranding,
+} from '@/lib/api';
+
+// ── Color swatch + input ───────────────────────────────────────────────────────
+
+function ColorField({
+  label,
+  value,
+  onChange,
+  description,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  description?: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <input
+            type="color"
+            value={value || '#6366f1'}
+            onChange={(e) => onChange(e.target.value)}
+            className="sr-only"
+            id={`color-${label}`}
+          />
+          <label
+            htmlFor={`color-${label}`}
+            className="block w-10 h-10 rounded-lg border-2 border-border cursor-pointer hover:border-primary/50 transition-colors shadow-sm"
+            style={{ backgroundColor: value || '#6366f1' }}
+          />
+        </div>
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#6366f1"
+          className="flex-1 font-mono text-sm"
+          maxLength={7}
+        />
+      </div>
+      {description && <p className="text-xs text-muted-foreground">{description}</p>}
+    </div>
+  );
+}
+
+const GOOGLE_FONTS = [
+  'Inter', 'Poppins', 'Roboto', 'Open Sans', 'Lato', 'Nunito',
+  'Playfair Display', 'Merriweather', 'Source Serif Pro', 'DM Sans',
+  'Plus Jakarta Sans', 'Outfit', 'Raleway', 'Montserrat',
+];
+
+const BG_STYLES = [
+  { value: 'gradient', label: 'Gradient' },
+  { value: 'flat', label: 'Flat' },
+  { value: 'image', label: 'Hero Image' },
+  { value: 'dark', label: 'Dark' },
+];
+
+type FormState = Omit<TenantBranding, 'id' | 'tenantId' | 'publishedAt' | 'updatedAt' | 'isBrandingActive'>;
+
+const DEFAULT_FORM: FormState = {
+  primaryColor: '#6366f1',
+  secondaryColor: '#8b5cf6',
+  accentColor: '#22d3ee',
+  backgroundStyle: 'gradient',
+  headingFont: 'Inter',
+  bodyFont: 'Inter',
+  heroImageUrl: '',
+  websiteUrl: '',
+  heroTitle: '',
+  heroSubtitle: '',
+  aboutText: '',
+  ctaLabel: 'Get Started',
+  ctaUrl: '',
+  onboardingIntroText: '',
+  dashboardWelcomeText: '',
+  communityNaming: '',
+  roleLabels: {},
+  supportEmail: '',
+  privacyPolicyUrl: '',
+  termsUrl: '',
+  cookiePolicyUrl: '',
+  linkedinUrl: '',
+  twitterUrl: '',
+  instagramUrl: '',
+  websiteFooterUrl: '',
+  emailSignature: '',
+  emailLogoUrl: '',
+  emailFooterText: '',
+  emailFromName: '',
+};
 
 export default function TenantBrandingPage() {
-  const [primaryColor, setPrimaryColor] = useState('#6366f1');
-  const [secondaryColor, setSecondaryColor] = useState('#8b5cf6');
-  const [accentColor, setAccentColor] = useState('#22d3ee');
+  const qc = useQueryClient();
+  const { activeTenant } = useTenant();
+  const tenantId = activeTenant?.id ?? '';
+  const tenantSlug = activeTenant?.slug ?? '';
+
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM);
+  const [saved, setSaved] = useState(false);
+
+  const { data: branding, isLoading } = useQuery({
+    queryKey: ['tenant-branding', tenantId],
+    queryFn: () => getTenantBranding(tenantId),
+    enabled: !!tenantId,
+  });
+
+  // Sync remote branding into form once loaded
+  useEffect(() => {
+    if (!branding) return;
+    setForm({
+      primaryColor: branding.primaryColor ?? DEFAULT_FORM.primaryColor,
+      secondaryColor: branding.secondaryColor ?? DEFAULT_FORM.secondaryColor,
+      accentColor: branding.accentColor ?? DEFAULT_FORM.accentColor,
+      backgroundStyle: branding.backgroundStyle ?? DEFAULT_FORM.backgroundStyle,
+      headingFont: branding.headingFont ?? DEFAULT_FORM.headingFont,
+      bodyFont: branding.bodyFont ?? DEFAULT_FORM.bodyFont,
+      heroImageUrl: branding.heroImageUrl ?? '',
+      websiteUrl: branding.websiteUrl ?? '',
+      heroTitle: branding.heroTitle ?? '',
+      heroSubtitle: branding.heroSubtitle ?? '',
+      aboutText: branding.aboutText ?? '',
+      ctaLabel: branding.ctaLabel ?? 'Get Started',
+      ctaUrl: branding.ctaUrl ?? '',
+      onboardingIntroText: branding.onboardingIntroText ?? '',
+      dashboardWelcomeText: branding.dashboardWelcomeText ?? '',
+      communityNaming: branding.communityNaming ?? '',
+      roleLabels: branding.roleLabels ?? {},
+      supportEmail: branding.supportEmail ?? '',
+      privacyPolicyUrl: branding.privacyPolicyUrl ?? '',
+      termsUrl: branding.termsUrl ?? '',
+      cookiePolicyUrl: branding.cookiePolicyUrl ?? '',
+      linkedinUrl: branding.linkedinUrl ?? '',
+      twitterUrl: branding.twitterUrl ?? '',
+      instagramUrl: branding.instagramUrl ?? '',
+      websiteFooterUrl: branding.websiteFooterUrl ?? '',
+      emailSignature: branding.emailSignature ?? '',
+      emailLogoUrl: branding.emailLogoUrl ?? '',
+      emailFooterText: branding.emailFooterText ?? '',
+      emailFromName: branding.emailFromName ?? '',
+    });
+  }, [branding]);
+
+  const setField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setSaved(false);
+  };
+
+  const saveMutation = useMutation({
+    mutationFn: (data: FormState) => updateTenantBranding(tenantId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    },
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: () => publishTenantBranding(tenantId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] }),
+  });
+
+  const unpublishMutation = useMutation({
+    mutationFn: () => unpublishTenantBranding(tenantId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] }),
+  });
+
+  const handleSave = () => saveMutation.mutate(form);
+  const handlePreview = () => {
+    if (tenantSlug) window.open(`/t/${tenantSlug}`, '_blank');
+  };
+
+  const roleLabels = (form.roleLabels as Record<string, string>) ?? {};
+  const setRoleLabel = (role: string, label: string) => {
+    setField('roleLabels', { ...roleLabels, [role]: label });
+  };
+
+  if (!tenantId) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center py-24">
+          <div className="text-center space-y-2">
+            <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" />
+            <p className="text-lg font-medium">No organization context</p>
+            <p className="text-sm text-muted-foreground">You must be a member of an organization to manage branding.</p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
-      <div className="py-6 space-y-6">
+      <div className="py-6 space-y-6 max-w-5xl">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Branding</h1>
-            <p className="text-muted-foreground">
-              Customize your organization's appearance
+            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+              <Palette className="h-6 w-6 text-primary" />
+              Branding
+            </h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Customize your organization's visual identity and content
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <Eye className="mr-2 h-4 w-4" />
-              Preview
-            </Button>
-            <Button>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
+          <div className="flex items-center gap-2">
+            {branding?.isBrandingActive ? (
+              <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Published
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5" />
+                Draft
+              </Badge>
+            )}
+            {tenantSlug && (
+              <Button variant="outline" size="sm" onClick={handlePreview}>
+                <Eye className="mr-1.5 h-4 w-4" />
+                Preview
+                <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saveMutation.isPending}
+            >
+              {saveMutation.isPending ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : saved ? (
+                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+              ) : (
+                <Save className="mr-1.5 h-4 w-4" />
+              )}
+              {saved ? 'Saved!' : 'Save Changes'}
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="general" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="colors">Colors</TabsTrigger>
-            <TabsTrigger value="typography">Typography</TabsTrigger>
-            <TabsTrigger value="assets">Assets</TabsTrigger>
-          </TabsList>
+        {saveMutation.isError && (
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            Failed to save changes. Please try again.
+          </div>
+        )}
 
-          {/* General */}
-          <TabsContent value="general" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Organization Identity</CardTitle>
-                <CardDescription>
-                  Basic information about your organization
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="orgName">Organization Name</Label>
-                  <Input id="orgName" defaultValue="TechHub Accelerator" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tagline">Tagline</Label>
-                  <Input id="tagline" defaultValue="Empowering the next generation of founders" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    rows={3}
-                    defaultValue="TechHub Accelerator is a leading startup accelerator focused on early-stage tech companies."
-                  />
-                </div>
-              </CardContent>
-            </Card>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <Tabs defaultValue="colors" className="space-y-6">
+            <TabsList className="flex-wrap h-auto gap-1">
+              <TabsTrigger value="colors"><Palette className="mr-1.5 h-3.5 w-3.5" />Colors</TabsTrigger>
+              <TabsTrigger value="typography"><Type className="mr-1.5 h-3.5 w-3.5" />Typography</TabsTrigger>
+              <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" />Assets</TabsTrigger>
+              <TabsTrigger value="content"><FileText className="mr-1.5 h-3.5 w-3.5" />Content</TabsTrigger>
+              <TabsTrigger value="labels"><Tag className="mr-1.5 h-3.5 w-3.5" />Labels</TabsTrigger>
+              <TabsTrigger value="legal"><Globe className="mr-1.5 h-3.5 w-3.5" />Legal & Social</TabsTrigger>
+              <TabsTrigger value="email"><Mail className="mr-1.5 h-3.5 w-3.5" />Email</TabsTrigger>
+              <TabsTrigger value="publish"><Settings className="mr-1.5 h-3.5 w-3.5" />Publish</TabsTrigger>
+            </TabsList>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Domain</CardTitle>
-                <CardDescription>
-                  Use your own domain for a white-label experience
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="domain">Custom Domain</Label>
-                  <Input id="domain" placeholder="portal.yourdomain.com" />
-                  <p className="text-xs text-muted-foreground">
-                    Point your domain's CNAME record to portal.cofounderbay.com
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            {/* ── Colors ── */}
+            <TabsContent value="colors" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Brand Colors</CardTitle>
+                  <CardDescription>Define your organization's color palette. These are applied as CSS variables throughout the platform.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <ColorField
+                      label="Primary Color"
+                      value={form.primaryColor ?? '#6366f1'}
+                      onChange={(v) => setField('primaryColor', v)}
+                      description="Buttons, links, accents"
+                    />
+                    <ColorField
+                      label="Secondary Color"
+                      value={form.secondaryColor ?? '#8b5cf6'}
+                      onChange={(v) => setField('secondaryColor', v)}
+                      description="Secondary actions, hover states"
+                    />
+                    <ColorField
+                      label="Accent Color"
+                      value={form.accentColor ?? '#22d3ee'}
+                      onChange={(v) => setField('accentColor', v)}
+                      description="Highlights, badges, tags"
+                    />
+                  </div>
 
-          {/* Colors */}
-          <TabsContent value="colors" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Brand Colors</CardTitle>
-                <CardDescription>
-                  Define your organization's color palette
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
-                    <Label>Primary Color</Label>
-                    <div className="flex gap-2">
-                      <div
-                        className="w-12 h-10 rounded-lg border cursor-pointer"
-                        style={{ backgroundColor: primaryColor }}
-                      />
+                    <Label>Background Style</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {BG_STYLES.map((s) => (
+                        <button
+                          key={s.value}
+                          type="button"
+                          onClick={() => setField('backgroundStyle', s.value)}
+                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                            form.backgroundStyle === s.value
+                              ? 'border-primary bg-primary/10 text-primary'
+                              : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border p-5 space-y-3">
+                    <p className="text-sm font-medium text-muted-foreground">Live Preview</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button style={{ backgroundColor: form.primaryColor ?? undefined }}>Primary</Button>
+                      <Button
+                        variant="outline"
+                        style={{
+                          borderColor: form.secondaryColor ?? undefined,
+                          color: form.secondaryColor ?? undefined,
+                        }}
+                      >
+                        Secondary
+                      </Button>
+                      <Button variant="ghost" style={{ color: form.accentColor ?? undefined }}>
+                        Accent
+                      </Button>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <div className="h-6 w-16 rounded" style={{ backgroundColor: form.primaryColor ?? '#6366f1' }} />
+                      <div className="h-6 w-16 rounded" style={{ backgroundColor: form.secondaryColor ?? '#8b5cf6' }} />
+                      <div className="h-6 w-16 rounded" style={{ backgroundColor: form.accentColor ?? '#22d3ee' }} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Typography ── */}
+            <TabsContent value="typography" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Typography</CardTitle>
+                  <CardDescription>Choose Google Fonts for headings and body text. They are loaded dynamically per tenant.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {(['headingFont', 'bodyFont'] as const).map((key) => (
+                    <div key={key} className="space-y-2">
+                      <Label>{key === 'headingFont' ? 'Heading Font' : 'Body Font'}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {GOOGLE_FONTS.map((font) => (
+                          <button
+                            key={font}
+                            type="button"
+                            onClick={() => setField(key, font)}
+                            className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
+                              form[key] === font
+                                ? 'border-primary bg-primary/10 text-primary font-medium'
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                          >
+                            {font}
+                          </button>
+                        ))}
+                      </div>
                       <Input
-                        value={primaryColor}
-                        onChange={(e) => setPrimaryColor(e.target.value)}
-                        className="flex-1"
+                        value={form[key] ?? ''}
+                        onChange={(e) => setField(key, e.target.value)}
+                        placeholder="Custom font name..."
+                        className="mt-2 max-w-sm"
+                      />
+                    </div>
+                  ))}
+                  <div className="rounded-lg border p-5">
+                    <p className="text-xs text-muted-foreground mb-3">Preview</p>
+                    <p className="text-2xl font-bold mb-1" style={{ fontFamily: form.headingFont ?? 'Inter' }}>
+                      {activeTenant?.displayName ?? activeTenant?.name ?? 'Organization Name'}
+                    </p>
+                    <p className="text-muted-foreground" style={{ fontFamily: form.bodyFont ?? 'Inter' }}>
+                      Empowering founders to build the future. Your mission starts here.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Assets ── */}
+            <TabsContent value="assets" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Media Assets</CardTitle>
+                  <CardDescription>Provide URLs for your logo, favicon, and hero image. Use a CDN or image hosting service.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {[
+                    { key: 'heroImageUrl' as const, label: 'Hero / Banner Image URL', hint: 'Displayed on the public landing page. Recommended: 1920×1080px.' },
+                    { key: 'emailLogoUrl' as const, label: 'Email Logo URL', hint: 'Shown in email headers. Transparent PNG recommended.' },
+                  ].map(({ key, label, hint }) => (
+                    <div key={key} className="space-y-2">
+                      <Label>{label}</Label>
+                      <Input
+                        value={form[key] ?? ''}
+                        onChange={(e) => setField(key, e.target.value)}
+                        placeholder="https://..."
+                      />
+                      <p className="text-xs text-muted-foreground">{hint}</p>
+                      {form[key] && (
+                        <img
+                          src={form[key] as string}
+                          alt="Preview"
+                          className="mt-2 max-h-24 rounded-lg border object-contain"
+                          onError={(e) => (e.currentTarget.style.display = 'none')}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Content ── */}
+            <TabsContent value="content" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Landing Page Content</CardTitle>
+                  <CardDescription>Text shown on the public tenant landing page at /t/{'{slug}'}.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Hero Title</Label>
+                      <Input
+                        value={form.heroTitle ?? ''}
+                        onChange={(e) => setField('heroTitle', e.target.value)}
+                        placeholder="Your next co-founder is waiting"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Hero Subtitle</Label>
+                      <Input
+                        value={form.heroSubtitle ?? ''}
+                        onChange={(e) => setField('heroSubtitle', e.target.value)}
+                        placeholder="Build, connect, grow with your community"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CTA Button Label</Label>
+                      <Input
+                        value={form.ctaLabel ?? ''}
+                        onChange={(e) => setField('ctaLabel', e.target.value)}
+                        placeholder="Get Started"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CTA Button URL</Label>
+                      <Input
+                        value={form.ctaUrl ?? ''}
+                        onChange={(e) => setField('ctaUrl', e.target.value)}
+                        placeholder="/register"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Secondary Color</Label>
-                    <div className="flex gap-2">
-                      <div
-                        className="w-12 h-10 rounded-lg border cursor-pointer"
-                        style={{ backgroundColor: secondaryColor }}
-                      />
+                    <Label>About Text</Label>
+                    <Textarea
+                      rows={4}
+                      value={form.aboutText ?? ''}
+                      onChange={(e) => setField('aboutText', e.target.value)}
+                      placeholder="Long-form description shown on your public landing page..."
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Platform Copy</CardTitle>
+                  <CardDescription>Customized text inside the platform for your members.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Dashboard Welcome Message</Label>
+                    <Input
+                      value={form.dashboardWelcomeText ?? ''}
+                      onChange={(e) => setField('dashboardWelcomeText', e.target.value)}
+                      placeholder="Welcome back! Continue building your network."
+                    />
+                    <p className="text-xs text-muted-foreground">Shown on login page and dashboard header.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Onboarding Introduction</Label>
+                    <Textarea
+                      rows={3}
+                      value={form.onboardingIntroText ?? ''}
+                      onChange={(e) => setField('onboardingIntroText', e.target.value)}
+                      placeholder="Welcome to [Organization]! Let's set up your profile..."
+                    />
+                    <p className="text-xs text-muted-foreground">Displayed at the start of the onboarding flow.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Labels ── */}
+            <TabsContent value="labels" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Custom Naming</CardTitle>
+                  <CardDescription>Override default platform terminology with organization-specific language.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Community Naming</Label>
+                    <Input
+                      value={form.communityNaming ?? ''}
+                      onChange={(e) => setField('communityNaming', e.target.value)}
+                      placeholder="Community (default)"
+                    />
+                    <p className="text-xs text-muted-foreground">Replace "Community" with e.g. "Program", "Cohort", "Circle".</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Role Labels</CardTitle>
+                  <CardDescription>Customize how user roles are displayed to your members.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { role: 'founder', default: 'Founder' },
+                    { role: 'investor', default: 'Investor' },
+                    { role: 'mentor', default: 'Mentor' },
+                    { role: 'member', default: 'Member' },
+                  ].map(({ role, default: def }) => (
+                    <div key={role} className="flex items-center gap-3">
+                      <span className="w-20 text-sm text-muted-foreground capitalize">{def}</span>
+                      <span className="text-muted-foreground">→</span>
                       <Input
-                        value={secondaryColor}
-                        onChange={(e) => setSecondaryColor(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 max-w-xs"
+                        value={roleLabels[role] ?? ''}
+                        onChange={(e) => setRoleLabel(role, e.target.value)}
+                        placeholder={def}
+                      />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Legal & Social ── */}
+            <TabsContent value="legal" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact & Legal</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      { key: 'supportEmail' as const, label: 'Support Email', placeholder: 'support@yourorg.com', type: 'email' },
+                      { key: 'websiteUrl' as const, label: 'Organization Website', placeholder: 'https://yourorg.com', type: 'url' },
+                      { key: 'privacyPolicyUrl' as const, label: 'Privacy Policy URL', placeholder: 'https://...', type: 'url' },
+                      { key: 'termsUrl' as const, label: 'Terms of Service URL', placeholder: 'https://...', type: 'url' },
+                      { key: 'cookiePolicyUrl' as const, label: 'Cookie Policy URL', placeholder: 'https://...', type: 'url' },
+                    ].map(({ key, label, placeholder }) => (
+                      <div key={key} className="space-y-2">
+                        <Label>{label}</Label>
+                        <Input
+                          value={form[key] ?? ''}
+                          onChange={(e) => setField(key, e.target.value)}
+                          placeholder={placeholder}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Social Links</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      { key: 'linkedinUrl' as const, label: 'LinkedIn', placeholder: 'https://linkedin.com/company/...' },
+                      { key: 'twitterUrl' as const, label: 'Twitter / X', placeholder: 'https://twitter.com/...' },
+                      { key: 'instagramUrl' as const, label: 'Instagram', placeholder: 'https://instagram.com/...' },
+                      { key: 'websiteFooterUrl' as const, label: 'Footer Website', placeholder: 'https://...' },
+                    ].map(({ key, label, placeholder }) => (
+                      <div key={key} className="space-y-2">
+                        <Label>{label}</Label>
+                        <div className="flex items-center gap-2">
+                          <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Input
+                            value={form[key] ?? ''}
+                            onChange={(e) => setField(key, e.target.value)}
+                            placeholder={placeholder}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Email ── */}
+            <TabsContent value="email" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Email Branding</CardTitle>
+                  <CardDescription>Customize how your organization appears in outgoing emails.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label>Sender Name</Label>
+                      <Input
+                        value={form.emailFromName ?? ''}
+                        onChange={(e) => setField('emailFromName', e.target.value)}
+                        placeholder="TechHub Accelerator"
+                      />
+                      <p className="text-xs text-muted-foreground">Shown as "From" in emails.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email Logo URL</Label>
+                      <Input
+                        value={form.emailLogoUrl ?? ''}
+                        onChange={(e) => setField('emailLogoUrl', e.target.value)}
+                        placeholder="https://..."
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>Accent Color</Label>
-                    <div className="flex gap-2">
-                      <div
-                        className="w-12 h-10 rounded-lg border cursor-pointer"
-                        style={{ backgroundColor: accentColor }}
-                      />
-                      <Input
-                        value={accentColor}
-                        onChange={(e) => setAccentColor(e.target.value)}
-                        className="flex-1"
-                      />
-                    </div>
+                    <Label>Email Footer Text</Label>
+                    <Textarea
+                      rows={2}
+                      value={form.emailFooterText ?? ''}
+                      onChange={(e) => setField('emailFooterText', e.target.value)}
+                      placeholder="© 2025 TechHub Accelerator. Powered by CoFounderBay."
+                    />
                   </div>
-                </div>
-
-                <div className="p-4 rounded-lg border">
-                  <p className="text-sm font-medium mb-3">Preview</p>
-                  <div className="flex gap-2">
-                    <Button style={{ backgroundColor: primaryColor }}>Primary Button</Button>
-                    <Button variant="outline" style={{ borderColor: secondaryColor, color: secondaryColor }}>
-                      Secondary
-                    </Button>
-                    <Button variant="ghost" style={{ color: accentColor }}>Accent Link</Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Typography */}
-          <TabsContent value="typography" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Typography</CardTitle>
-                <CardDescription>
-                  Customize fonts for your organization
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Heading Font</Label>
-                  <Input defaultValue="Inter" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Body Font</Label>
-                  <Input defaultValue="Inter" />
-                </div>
-                <div className="p-4 rounded-lg border mt-4">
-                  <p className="text-sm font-medium mb-3">Preview</p>
-                  <h2 className="text-2xl font-bold mb-2">Heading Example</h2>
-                  <p className="text-muted-foreground">
-                    This is body text that demonstrates how your typography choices will appear across the platform.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Assets */}
-          <TabsContent value="assets" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Logo</CardTitle>
-                <CardDescription>
-                  Upload your organization's logo
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label>Primary Logo</Label>
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                      <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <Label>Email Signature</Label>
+                    <Textarea
+                      rows={3}
+                      value={form.emailSignature ?? ''}
+                      onChange={(e) => setField('emailSignature', e.target.value)}
+                      placeholder="The TechHub Accelerator Team&#10;support@techhub.com | techhub.com"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ── Publish ── */}
+            <TabsContent value="publish" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Publish Branding</CardTitle>
+                  <CardDescription>
+                    When active, your branding is applied to all members who access the platform through your organization.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div>
+                      <p className="font-medium">Branding Status</p>
                       <p className="text-sm text-muted-foreground">
-                        Drop your logo here or click to upload
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PNG, SVG up to 2MB
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Logo (Dark Mode)</Label>
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer bg-gray-900">
-                      <Upload className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-400">
-                        Drop your logo here or click to upload
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        PNG, SVG up to 2MB
+                        {branding?.isBrandingActive
+                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString()}` : ''}`
+                          : 'Not yet published — save changes first, then publish.'}
                       </p>
                     </div>
+                    <Switch
+                      checked={branding?.isBrandingActive ?? false}
+                      onCheckedChange={(checked) => {
+                        if (checked) publishMutation.mutate();
+                        else unpublishMutation.mutate();
+                      }}
+                      disabled={publishMutation.isPending || unpublishMutation.isPending}
+                    />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Favicon</CardTitle>
-                <CardDescription>
-                  The icon that appears in browser tabs
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-lg border flex items-center justify-center bg-muted">
-                    <Image className="h-6 w-6 text-muted-foreground" />
+                  <div className="rounded-lg border p-4 space-y-3">
+                    <p className="text-sm font-medium">Safeguards</p>
+                    <ul className="space-y-1.5 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        Primary color defined
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        Hero title set
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        Support email configured
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        Legal links provided
+                      </li>
+                    </ul>
                   </div>
-                  <Button variant="outline">
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload Favicon
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Cover Image</CardTitle>
-                <CardDescription>
-                  Background image for login and landing pages
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed rounded-lg p-12 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                  <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    Drop your cover image here or click to upload
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Recommended: 1920x1080px, PNG or JPG
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                  {tenantSlug && (
+                    <Button variant="outline" className="w-full" onClick={handlePreview}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Preview Public Landing Page
+                      <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" />
+                    </Button>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button className="flex-1" onClick={handleSave} disabled={saveMutation.isPending}>
+                      {saveMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Save className="mr-2 h-4 w-4" />
+                      )}
+                      Save Draft
+                    </Button>
+                    {!branding?.isBrandingActive && (
+                      <Button
+                        variant="default"
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        onClick={() => { saveMutation.mutate(form); publishMutation.mutate(); }}
+                        disabled={saveMutation.isPending || publishMutation.isPending}
+                      >
+                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        Save & Publish
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </AppShell>
   );

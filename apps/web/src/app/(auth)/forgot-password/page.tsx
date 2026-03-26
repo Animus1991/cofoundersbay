@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { MailCheck, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/brand/Logo';
@@ -45,8 +46,8 @@ export default function ForgotPasswordPage() {
 
         {sent ? (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20 px-6 py-8 text-center space-y-3">
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
-              Sent
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15">
+              <MailCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <h2 className="font-semibold text-foreground">Check your inbox</h2>
             <p className="text-sm text-muted-foreground">
@@ -76,7 +77,9 @@ export default function ForgotPasswordPage() {
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full" size="lg">
-              {loading ? 'Sending…' : 'Send reset link'}
+              {loading ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending…</>
+              ) : 'Send reset link'}
             </Button>
           </form>
         )}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Eye,
   Bell,
@@ -293,14 +294,18 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
 }
 
 export default function InvestorWatchlistPage() {
+  const { showDemoData } = useDemoData();
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const filtered = MOCK_WATCHED.filter(
+  const watched = showDemoData ? MOCK_WATCHED : [];
+  const activity = showDemoData ? MOCK_ACTIVITY : [];
+
+  const filtered = watched.filter(
     s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.tagline.toLowerCase().includes(search.toLowerCase())
   );
 
-  const alertCount = MOCK_WATCHED.filter(s => s.alertsEnabled).length;
+  const alertCount = watched.filter(s => s.alertsEnabled).length;
 
   return (
     <AppShell>
@@ -333,10 +338,10 @@ export default function InvestorWatchlistPage() {
         {/* Summary Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { label: 'Watching', value: MOCK_WATCHED.length, icon: Eye },
+            { label: 'Watching', value: watched.length, icon: Eye },
             { label: 'Alerts On', value: alertCount, icon: Bell },
-            { label: 'New Activity', value: MOCK_ACTIVITY.length, icon: Zap },
-            { label: 'Avg Match', value: `${Math.round(MOCK_WATCHED.reduce((s, w) => s + w.matchScore, 0) / MOCK_WATCHED.length)}%`, icon: Star },
+            { label: 'New Activity', value: activity.length, icon: Zap },
+            { label: 'Avg Match', value: watched.length ? `${Math.round(watched.reduce((s, w) => s + w.matchScore, 0) / watched.length)}%` : '—', icon: Star },
           ].map(stat => (
             <Card key={stat.label}>
               <CardContent className="p-4 flex items-center justify-between">
@@ -354,8 +359,8 @@ export default function InvestorWatchlistPage() {
 
         <Tabs defaultValue="watchlist">
           <TabsList>
-            <TabsTrigger value="watchlist">My Watchlist ({MOCK_WATCHED.length})</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity ({MOCK_ACTIVITY.length})</TabsTrigger>
+            <TabsTrigger value="watchlist">My Watchlist ({watched.length})</TabsTrigger>
+            <TabsTrigger value="activity">Recent Activity ({activity.length})</TabsTrigger>
           </TabsList>
 
           {/* Watchlist Tab */}
@@ -407,7 +412,7 @@ export default function InvestorWatchlistPage() {
 
           {/* Activity Feed Tab */}
           <TabsContent value="activity" className="space-y-3">
-            {MOCK_ACTIVITY.map(item => {
+            {activity.map(item => {
               const cfg = ACTIVITY_TYPE_CONFIG[item.type];
               return (
                 <Card key={item.id} className="transition-all hover:border-primary/20">

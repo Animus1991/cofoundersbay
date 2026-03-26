@@ -30,6 +30,13 @@ export function createMessagingSocket(accessToken?: string | null): Socket<Serve
     auth: accessToken ? { token: accessToken } : undefined,
     withCredentials: true,
     transports: ['websocket'],
+    // Reconnection: exponential backoff, give up after 8 attempts (~6 min total)
+    reconnection: true,
+    reconnectionAttempts: 8,
+    reconnectionDelay: 3_000,      // 3 s initial delay
+    reconnectionDelayMax: 60_000,  // 60 s maximum delay
+    randomizationFactor: 0.4,      // ±40% jitter prevents thundering herd
+    timeout: 10_000,
   });
 }
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SSOMode, SSOProviderType } from '@prisma/client';
+import { SSOMode, SSOProviderType, TenantMemberRole } from '@prisma/client';
 
 export interface SSODiscoveryResult {
   tenantId: string;
@@ -277,9 +277,9 @@ export class SSOService {
 
       if (!existingMembership) {
         // Apply role mapping rules
-        let role = 'member';
+        let role: TenantMemberRole = TenantMemberRole.member;
         if (ssoConfig.roleMappingRules && rawClaims) {
-          role = this.applyRoleMappingRules(ssoConfig.roleMappingRules as any[], rawClaims);
+          role = this.applyRoleMappingRules(ssoConfig.roleMappingRules as any[], rawClaims) as TenantMemberRole;
         }
 
         await this.prisma.tenantMembership.create({
@@ -568,6 +568,44 @@ export class SSOService {
       take: params?.limit ?? 50,
       skip: params?.offset ?? 0,
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * List domain mappings for a tenant
+   */
+  async listDomainMappings(tenantId: string) {
+    return this.prisma.domainMapping.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  /**
+   * Create a domain mapping for SSO discovery
+   */
+  async createDomainMapping(tenantId: string, domain: string, autoRedirectToSSO = false) {
+    await this.prisma.tenant.findUniqueOrThrow({ where: { id: tenantId } });
+    const clean = domain.toLowerCase().replace(/^@/, '').trim();
+    return this.prisma.domainMapping.create({
+      data: { domain: clean, tenantId, autoRedirectToSSO },
+    });
+  }
+
+  /**
+   * Delete a domain mapping
+   */
+  async deleteDomainMapping(id: string) {
+    return this.prisma.domainMapping.delete({ where: { id } });
+  }
+
+  /**
+   * Mark a domain mapping as verified
+   */
+  async verifyDomainMapping(id: string) {
+    return this.prisma.domainMapping.update({
+      where: { id },
+      data: { isVerified: true, verifiedAt: new Date() },
     });
   }
 

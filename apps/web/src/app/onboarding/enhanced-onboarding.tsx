@@ -21,6 +21,11 @@ import {
   Briefcase,
   GraduationCap,
   Building2,
+  Heart,
+  Coffee,
+  MapPin,
+  Search,
+  Filter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +45,8 @@ const STEPS = [
   { id: 'role', title: 'What\'s your role?', icon: Target },
   { id: 'profile', title: 'Build your profile', icon: Users },
   { id: 'skills', title: 'Your expertise', icon: Lightbulb },
+  { id: 'values', title: 'Values & Work Style', icon: Heart },
+  { id: 'match-prefs', title: 'Match Preferences', icon: Search },
   { id: 'preferences', title: 'Preferences', icon: Globe },
   { id: 'review', title: 'Review & Launch', icon: Rocket },
 ];
@@ -122,6 +129,55 @@ const INDUSTRIES = [
 
 const STAGES = ['Idea', 'MVP', 'Traction', 'Scaling', 'Established'];
 
+const WORK_STYLES = [
+  { id: 'async-first', label: 'Async-first', icon: '📬' },
+  { id: 'real-time', label: 'Real-time collab', icon: '⚡' },
+  { id: 'morning-person', label: 'Morning person', icon: '🌅' },
+  { id: 'night-owl', label: 'Night owl', icon: '🦉' },
+  { id: 'deep-work', label: 'Deep work blocks', icon: '🎯' },
+  { id: 'flexible', label: 'Flexible hours', icon: '🔄' },
+  { id: 'structured', label: 'Structured schedule', icon: '📅' },
+  { id: 'remote-only', label: 'Remote only', icon: '🌍' },
+  { id: 'in-person', label: 'In-person preferred', icon: '🤝' },
+];
+
+const CORE_VALUES = [
+  'Mission-driven',
+  'Fast iteration',
+  'Quality over speed',
+  'Work-life balance',
+  'Ambitious growth',
+  'Customer obsession',
+  'Radical transparency',
+  'Diversity & inclusion',
+  'Sustainability',
+  'Technical excellence',
+  'Ownership mindset',
+  'Frugality',
+];
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'full-time', label: 'Full-time (40h/week)' },
+  { value: 'part-time', label: 'Part-time (20h/week)' },
+  { value: 'few-hours', label: 'A few hours/week' },
+  { value: 'flexible', label: 'Flexible / project-based' },
+];
+
+const LOOKING_FOR_ROLES = [
+  'Technical Co-founder',
+  'Business Co-founder',
+  'CTO',
+  'CPO',
+  'CMO',
+  'Lead Engineer',
+  'Designer',
+  'Advisor',
+  'Mentor',
+  'Investor',
+  'Service Provider',
+  'Community Member',
+];
+
 interface OnboardingData {
   role: string;
   displayName: string;
@@ -138,6 +194,16 @@ interface OnboardingData {
     locationPreference: string;
     commitment: string;
     notificationFrequency: string;
+  };
+  values: {
+    workStyle: string[];
+    coreValues: string[];
+    availability: string;
+  };
+  matchPrefs: {
+    lookingFor: string[];
+    industries: string[];
+    stages: string[];
   };
 }
 
@@ -161,6 +227,16 @@ export default function EnhancedOnboardingPage() {
       locationPreference: '',
       commitment: '',
       notificationFrequency: 'daily',
+    },
+    values: {
+      workStyle: [],
+      coreValues: [],
+      availability: '',
+    },
+    matchPrefs: {
+      lookingFor: [],
+      industries: [],
+      stages: [],
     },
   });
   const [loading, setLoading] = useState(false);
@@ -239,7 +315,17 @@ export default function EnhancedOnboardingPage() {
         timezone: data.timezone,
         languages: data.languages,
         avatarUrl,
-        rolePayload: data.rolePayload,
+        rolePayload: {
+          ...data.rolePayload,
+          workStyle: data.values.workStyle,
+          coreValues: data.values.coreValues,
+          availability: data.values.availability,
+          lookingFor: data.matchPrefs.lookingFor,
+          industries: data.matchPrefs.industries,
+          stages: data.matchPrefs.stages,
+          remote: data.preferences.remote,
+          commitment: data.preferences.commitment,
+        },
         skillIds: data.skills,
       });
     } finally {
@@ -272,6 +358,10 @@ export default function EnhancedOnboardingPage() {
             skillsData={skillsData}
           />
         );
+      case 'values':
+        return <ValuesStep data={data} setData={setData} />;
+      case 'match-prefs':
+        return <MatchPrefsStep data={data} setData={setData} />;
       case 'preferences':
         return <PreferencesStep data={data} setData={setData} />;
       case 'review':
@@ -371,7 +461,8 @@ export default function EnhancedOnboardingPage() {
               className="gap-2"
               disabled={
                 (STEPS[currentStep].id === 'role' && !data.role) ||
-                (STEPS[currentStep].id === 'profile' && (!data.displayName || !data.bio))
+                (STEPS[currentStep].id === 'profile' && (!data.displayName || !data.bio)) ||
+                (STEPS[currentStep].id === 'values' && (data.values.workStyle.length === 0 || !data.values.availability))
               }
             >
               Next
@@ -912,6 +1003,69 @@ function ReviewStep({
           )}
         </div>
 
+        {/* Values & Work Style Summary */}
+        {(data.values.workStyle.length > 0 || data.values.coreValues.length > 0) && (
+          <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+            <h4 className="font-medium">Values & Work Style</h4>
+            {data.values.availability && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Availability:</span>
+                <span>{AVAILABILITY_OPTIONS.find(a => a.value === data.values.availability)?.label ?? data.values.availability}</span>
+              </div>
+            )}
+            {data.values.workStyle.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Work style</p>
+                <div className="flex flex-wrap gap-1">
+                  {data.values.workStyle.map(id => {
+                    const ws = WORK_STYLES.find(w => w.id === id);
+                    return <Badge key={id} variant="secondary" className="text-xs">{ws?.icon} {ws?.label ?? id}</Badge>;
+                  })}
+                </div>
+              </div>
+            )}
+            {data.values.coreValues.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Core values</p>
+                <div className="flex flex-wrap gap-1">
+                  {data.values.coreValues.map(v => <Badge key={v} variant="outline" className="text-xs">{v}</Badge>)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Match Preferences Summary */}
+        {(data.matchPrefs.lookingFor.length > 0 || data.matchPrefs.industries.length > 0 || data.matchPrefs.stages.length > 0) && (
+          <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+            <h4 className="font-medium">Match Preferences</h4>
+            {data.matchPrefs.lookingFor.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Looking for</p>
+                <div className="flex flex-wrap gap-1">
+                  {data.matchPrefs.lookingFor.map(r => <Badge key={r} variant="secondary" className="text-xs">{r}</Badge>)}
+                </div>
+              </div>
+            )}
+            {data.matchPrefs.industries.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Industries</p>
+                <div className="flex flex-wrap gap-1">
+                  {data.matchPrefs.industries.map(i => <Badge key={i} variant="outline" className="text-xs">{i}</Badge>)}
+                </div>
+              </div>
+            )}
+            {data.matchPrefs.stages.length > 0 && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Startup stages</p>
+                <div className="flex flex-wrap gap-1">
+                  {data.matchPrefs.stages.map(s => <Badge key={s} variant="outline" className="text-xs">{s}</Badge>)}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Preferences Summary */}
         <div className="p-4 bg-muted/50 rounded-lg">
           <h4 className="font-medium mb-2">Preferences</h4>
@@ -949,6 +1103,216 @@ function ReviewStep({
         <p className="text-xs text-muted-foreground text-center">
           By launching your profile, you agree to our Terms of Service and Privacy Policy
         </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: OnboardingData) => void }) {
+  const toggleWorkStyle = (id: string) => {
+    const updated = data.values.workStyle.includes(id)
+      ? data.values.workStyle.filter(w => w !== id)
+      : [...data.values.workStyle, id];
+    setData({ ...data, values: { ...data.values, workStyle: updated } });
+  };
+
+  const toggleCoreValue = (val: string) => {
+    const updated = data.values.coreValues.includes(val)
+      ? data.values.coreValues.filter(v => v !== val)
+      : [...data.values.coreValues, val];
+    setData({ ...data, values: { ...data.values, coreValues: updated } });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Heart className="h-5 w-5 text-rose-500" />
+          Values & Work Style
+        </CardTitle>
+        <p className="text-muted-foreground">Help us find people who match your working rhythm and values</p>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        {/* Availability */}
+        <div>
+          <label className="block text-sm font-medium mb-3">Availability <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {AVAILABILITY_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setData({ ...data, values: { ...data.values, availability: opt.value } })}
+                className={cn(
+                  'p-3 rounded-lg border-2 text-left transition-all',
+                  data.values.availability === opt.value
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                <span className="text-sm font-medium">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Work Style */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Work Style <span className="text-red-500">*</span></label>
+          <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {WORK_STYLES.map(ws => (
+              <button
+                key={ws.id}
+                type="button"
+                onClick={() => toggleWorkStyle(ws.id)}
+                className={cn(
+                  'p-3 rounded-lg border-2 text-left flex items-center gap-2 transition-all',
+                  data.values.workStyle.includes(ws.id)
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                <span className="text-lg">{ws.icon}</span>
+                <span className="text-xs font-medium leading-tight">{ws.label}</span>
+              </button>
+            ))}
+          </div>
+          {data.values.workStyle.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">{data.values.workStyle.length} selected</p>
+          )}
+        </div>
+
+        {/* Core Values */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Core Values</label>
+          <p className="text-xs text-muted-foreground mb-3">Choose up to 5 that resonate most with you</p>
+          <div className="flex flex-wrap gap-2">
+            {CORE_VALUES.map(val => {
+              const selected = data.values.coreValues.includes(val);
+              const maxReached = data.values.coreValues.length >= 5;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => toggleCoreValue(val)}
+                  disabled={!selected && maxReached}
+                  className={cn(
+                    'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
+                    selected
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : maxReached
+                        ? 'border-border text-muted-foreground opacity-40 cursor-not-allowed'
+                        : 'border-border hover:border-primary/40'
+                  )}
+                >
+                  {val}
+                </button>
+              );
+            })}
+          </div>
+          {data.values.coreValues.length >= 5 && (
+            <p className="text-xs text-amber-500 mt-2">Maximum 5 values selected</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: OnboardingData) => void }) {
+  const toggle = (field: 'lookingFor' | 'industries' | 'stages', val: string) => {
+    const current = data.matchPrefs[field];
+    const updated = current.includes(val) ? current.filter(v => v !== val) : [...current, val];
+    setData({ ...data, matchPrefs: { ...data.matchPrefs, [field]: updated } });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Search className="h-5 w-5 text-primary" />
+          Match Preferences
+        </CardTitle>
+        <p className="text-muted-foreground">Tell us what you're looking for so we can find your best matches</p>
+      </CardHeader>
+      <CardContent className="space-y-8">
+        {/* Looking For */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Who are you looking for?</label>
+          <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
+          <div className="flex flex-wrap gap-2">
+            {LOOKING_FOR_ROLES.map(role => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => toggle('lookingFor', role)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
+                  data.matchPrefs.lookingFor.includes(role)
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+          {data.matchPrefs.lookingFor.length > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">{data.matchPrefs.lookingFor.length} selected</p>
+          )}
+        </div>
+
+        {/* Industries */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Industry Focus</label>
+          <p className="text-xs text-muted-foreground mb-3">Which industries interest you most?</p>
+          <div className="flex flex-wrap gap-2">
+            {INDUSTRIES.map(ind => (
+              <button
+                key={ind}
+                type="button"
+                onClick={() => toggle('industries', ind)}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
+                  data.matchPrefs.industries.includes(ind)
+                    ? 'border-primary bg-primary/10 border-primary text-primary'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                {ind}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Startup Stages */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Preferred Startup Stage</label>
+          <p className="text-xs text-muted-foreground mb-3">What stages are you most interested in working with?</p>
+          <div className="flex flex-wrap gap-2">
+            {STAGES.map(stage => (
+              <button
+                key={stage}
+                type="button"
+                onClick={() => toggle('stages', stage)}
+                className={cn(
+                  'px-4 py-2 rounded-lg text-sm border-2 font-medium transition-all',
+                  data.matchPrefs.stages.includes(stage)
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover:border-primary/40'
+                )}
+              >
+                {stage}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {data.matchPrefs.lookingFor.length === 0 && data.matchPrefs.industries.length === 0 && (
+          <p className="text-sm text-center text-muted-foreground py-2 italic">
+            You can skip this step — we'll refine your preferences later from your profile settings.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

@@ -106,9 +106,36 @@ export class AutomationService {
 
   // ── Trigger handling ───────────────────────────────────────────────────────
 
+  // ── Category → config field mapping ────────────────────────────────────────
+
+  private static readonly TRIGGER_CATEGORY_MAP: Record<string, string> = {
+    user_signup: 'onboardingAutomation',
+    onboarding_incomplete: 'onboardingAutomation',
+    profile_incomplete: 'onboardingAutomation',
+    profile_complete: 'onboardingAutomation',
+    match_generated: 'matchingAutomation',
+    match_not_viewed: 'matchingAutomation',
+    connection_request_sent: 'matchingAutomation',
+    connection_not_answered: 'matchingAutomation',
+    connection_accepted: 'matchingAutomation',
+    mentor_request_submitted: 'mentorshipAutomation',
+    mentor_request_accepted: 'mentorshipAutomation',
+    mentor_session_idle: 'mentorshipAutomation',
+    community_join: 'communityAutomation',
+    community_inactive: 'communityAutomation',
+    subscription_trial_ending: 'billingAutomation',
+    subscription_failed_payment: 'billingAutomation',
+    subscription_canceled: 'billingAutomation',
+    subscription_seat_limit: 'billingAutomation',
+    user_inactive: 'reEngagementAutomation',
+    tenant_setup_incomplete: 'onboardingAutomation',
+    content_reported_threshold: 'onboardingAutomation',
+  };
+
   /**
    * Entry point: fires when a platform event occurs.
    * Finds all matching active rules and enqueues or runs them.
+   * Enforces: category flags, quiet hours, deduplication cooldown.
    */
   async fire(ctx: TriggerContext): Promise<void> {
     const rules = await this.prisma.automationRule.findMany({
@@ -120,13 +147,64 @@ export class AutomationService {
       orderBy: { priority: 'asc' },
     });
 
+    if (rules.length === 0) return;
+
+    // Load tenant config (best-effort) for spam checks
+    const tenantId = ctx.tenantId ?? rules.find(r => r.tenantId)?.tenantId ?? null;
+    const tenantConfig = tenantId
+      ? await this.prisma.tenantAutomationConfig.findUnique({ where: { tenantId } }).catch(() => null)
+      : null;
+
+    // Master kill-switch
+    if (tenantConfig && tenantConfig.automationsEnabled === false) return;
+
+    // Quiet-hours check (UTC hour comparison)
+    if (tenantConfig?.quietHoursStart != null && tenantConfig?.quietHoursEnd != null) {
+      const nowHour = new Date().getUTCHours();
+      const { quietHoursStart: qStart, quietHoursEnd: qEnd } = tenantConfig;
+      const inQuiet = qStart < qEnd
+        ? nowHour >= qStart && nowHour < qEnd
+        : nowHour >= qStart || nowHour < qEnd;
+      if (inQuiet) {
+        this.logger.debug(`Automation suppressed: quiet hours (${qStart}–${qEnd} UTC) for tenant ${tenantId}`);
+        return;
+      }
+    }
+
+    // Category flag check
+    const categoryField = AutomationService.TRIGGER_CATEGORY_MAP[ctx.triggerType];
+    if (categoryField && tenantConfig && (tenantConfig as any)[categoryField] === false) {
+      this.logger.debug(`Automation suppressed: category ${categoryField} disabled for tenant ${tenantId}`);
+      return;
+    }
+
     for (const rule of rules) {
       try {
+        // Condition evaluation
         const conditionsMet = this.evaluateConditions(
           rule.conditionDef as ConditionDef | null,
           ctx.payload ?? {},
         );
         if (!conditionsMet) continue;
+
+        // Deduplication: skip if same rule+user ran within cooldown window (1h default)
+        if (ctx.targetUserId) {
+          const cooldownMs = rule.delaySeconds > 0 ? rule.delaySeconds * 1000 + 3_600_000 : 3_600_000;
+          const since = new Date(Date.now() - cooldownMs);
+          const recent = await this.prisma.automationExecution.findFirst({
+            where: {
+              ruleId: rule.id,
+              targetUserId: ctx.targetUserId,
+              status: { in: ['completed', 'running', 'pending'] },
+              scheduledAt: { gte: since },
+            },
+            select: { id: true },
+          });
+          if (recent) {
+            this.logger.debug(`Automation dedup: rule ${rule.id} already ran for user ${ctx.targetUserId} within cooldown`);
+            continue;
+          }
+        }
 
         await this.scheduleExecution(rule.id, ctx, rule.delaySeconds);
       } catch (err: any) {
@@ -321,6 +399,60 @@ export class AutomationService {
 
       case 'log_event': {
         await this.addLog(execution.id, 'info', (params.message as string) ?? 'Event logged', params.context as any);
+        break;
+      }
+
+      case 'update_user_field': {
+        if (!userId) throw new Error('targetUserId required for update_user_field');
+        const field = params.field as string;
+        const value = params.value;
+        const SAFE_FIELDS: Record<string, boolean> = {
+          hasCompletedOnboarding: true, moderationStatus: true,
+        };
+        if (!SAFE_FIELDS[field]) {
+          throw new Error(`Field "${field}" is not allowed for update_user_field action`);
+        }
+        await this.prisma.user.update({ where: { id: userId }, data: { [field]: value } as any });
+        await this.addLog(execution.id, 'info', `Set user.${field} = ${JSON.stringify(value)}`);
+        break;
+      }
+
+      case 'webhook_call': {
+        const url = params.url as string;
+        if (!url) throw new Error('url required for webhook_call action');
+        const method = ((params.method as string) ?? 'POST').toUpperCase();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          ...(params.headers as Record<string, string> ?? {}),
+        };
+        const body = params.body ? JSON.stringify(params.body) : JSON.stringify({
+          ruleId: execution.ruleId,
+          executionId: execution.id,
+          targetUserId: execution.targetUserId,
+          targetEntityType: execution.targetEntityType,
+          targetEntityId: execution.targetEntityId,
+          timestamp: new Date().toISOString(),
+        });
+        const response = await fetch(url, { method, headers, body: method !== 'GET' ? body : undefined });
+        if (!response.ok) {
+          throw new Error(`Webhook returned ${response.status}: ${await response.text().catch(() => '')}`);
+        }
+        await this.addLog(execution.id, 'info', `Webhook ${method} ${url} → ${response.status}`);
+        break;
+      }
+
+      case 'trigger_another_rule': {
+        const targetRuleId = params.ruleId as string;
+        if (!targetRuleId) throw new Error('ruleId required for trigger_another_rule action');
+        const targetRule = await this.prisma.automationRule.findUnique({ where: { id: targetRuleId } });
+        if (!targetRule || targetRule.status !== 'active') break;
+        await this.scheduleExecution(targetRuleId, {
+          triggerType: targetRule.triggerType,
+          targetUserId: execution.targetUserId,
+          targetEntityType: execution.targetEntityType,
+          targetEntityId: execution.targetEntityId,
+        }, 0);
+        await this.addLog(execution.id, 'info', `Triggered chain rule ${targetRuleId}`);
         break;
       }
 

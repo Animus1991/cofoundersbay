@@ -3,6 +3,7 @@ import {
   Param, Body, Query, UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { TenantService, TenantCreateInput, TenantUpdateInput, TenantBrandingInput } from './tenant.service';
+import { TenantMemberRole } from '@prisma/client';
 import { TenantDomainService } from './tenant-domain.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -156,7 +157,7 @@ export class TenantController {
     @Param('id') id: string,
     @Body() body: { userId: string; role?: string },
   ) {
-    return this.tenants.addMember(id, body.userId, body.role);
+    return this.tenants.addMember(id, body.userId, body.role as TenantMemberRole | undefined);
   }
 
   /** Admin: update member role / active status */
@@ -168,7 +169,7 @@ export class TenantController {
     @Param('userId') userId: string,
     @Body() body: { role?: string; isActive?: boolean },
   ) {
-    return this.tenants.updateMember(id, userId, body);
+    return this.tenants.updateMember(id, userId, body as { role?: TenantMemberRole; isActive?: boolean });
   }
 
   /** Admin: remove member */

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   TrendingUp, Users, Sparkles, Bell, Calendar, MessageCircle,
@@ -9,7 +9,7 @@ import {
   UserCheck, Target, BarChart3, CheckCircle2, X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getDashboardActivity, listNotifications, markAllNotificationsRead, type DashboardActivityItem, type NotificationItem } from '@/lib/api';
+import { getDashboardActivity, listNotifications, markAllNotificationsRead, type DashboardActivityItem, type NotificationItem, type DashboardActivityPage } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -167,16 +167,45 @@ function DateGroupHeader({ label }: { label: string }) {
 
 // ── Main page ────────────────────────────────────────────────────────────────
 
+const PAGE_SIZE = 25;
+
 export default function ActivityPage() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState<'network' | 'notifications' | 'events'>('network');
   const [typeFilter, setTypeFilter] = useState<ActivityType>('all');
+  const [offset, setOffset] = useState(0);
+  const [allItems, setAllItems] = useState<DashboardActivityItem[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const { data: activityData, isLoading: activityLoading, isError: activityError, refetch: refetchActivity } = useQuery({
-    queryKey: ['dashboard-activity', 50],
-    queryFn: () => getDashboardActivity({ limit: 50 }),
+  const { data: activityData, isLoading: activityLoading, isError: activityError, refetch: refetchActivity } = useQuery<DashboardActivityPage>({
+    queryKey: ['dashboard-activity', PAGE_SIZE],
+    queryFn: () => getDashboardActivity({ limit: PAGE_SIZE, offset: 0 }),
     staleTime: 30_000,
   });
+
+  // Sync initial query data into accumulated items state
+  useEffect(() => {
+    if (activityData) {
+      setAllItems(activityData.items);
+      setHasMore(activityData.hasMore);
+      setOffset(activityData.items.length);
+    }
+  }, [activityData]);
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const more = await getDashboardActivity({ limit: PAGE_SIZE, offset });
+      setAllItems((prev) => [...prev, ...more.items]);
+      setHasMore(more.hasMore);
+      setOffset((prev) => prev + more.items.length);
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const { data: notifData, isLoading: notifLoading, isError: notifError, refetch: refetchNotif } = useQuery({
     queryKey: ['notifications-activity'],
@@ -190,7 +219,7 @@ export default function ActivityPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications-activity'] }),
   });
 
-  const activityItems = activityData ?? [];
+  const activityItems = allItems;
   const notifications = notifData?.notifications ?? [];
   const unreadCount = notifications.filter((n) => !n.readAt).length;
   const eventItems = activityItems.filter((i) => i.type === 'event');
@@ -358,6 +387,24 @@ export default function ActivityPage() {
                     </>
                   )}
                 </div>
+                {hasMore && typeFilter === 'all' && !activityLoading && !activityError && (
+                  <div className="mt-3 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? (
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      )}
+                      {loadingMore ? 'Loading…' : 'Load more'}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {/* Notifications */}

@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import {
   Building2, Shield, Plus, Check, X, AlertTriangle,
-  Key, Activity, ChevronRight, RefreshCw, Trash2, ExternalLink,
-  Lock, ShieldCheck, ShieldOff,
+  Key, Activity, ChevronRight, RefreshCw, Trash2,
+  Lock, ShieldCheck, ShieldOff, Globe,
 } from 'lucide-react';
 import {
   listTenants,
@@ -22,12 +22,17 @@ import {
   deleteSSOProvider,
   getTenantSSOConfig,
   upsertTenantSSOConfig,
+  listSSODomainMappings,
+  createSSODomainMapping,
+  deleteSSODomainMapping,
+  verifySSODomainMapping,
   type TenantItem,
   type SSOMode,
   type SSOProviderType,
   type IdentityProviderItem,
   type TenantSSOConfig,
   type SSOAuthEvent,
+  type SSODomainMapping,
 } from '@/lib/api';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
@@ -241,6 +246,10 @@ function SSOConfigPanel({
   const [allowPasswordFallback, setAllowPasswordFallback] = useState(true);
   const [defaultRole, setDefaultRole] = useState('member');
   const [sessionDurationHours, setSessionDurationHours] = useState(24);
+  const [roleMappingRules, setRoleMappingRules] = useState<{claim:string;value:string;role:string}[]>([]);
+  const [activeTab, setActiveTab] = useState<'providers'|'policy'|'domains'>('providers');
+  const [newDomain, setNewDomain] = useState('');
+  const [newDomainAutoRedirect, setNewDomainAutoRedirect] = useState(false);
 
   const [showNewProvider, setShowNewProvider] = useState(false);
   const [providerType, setProviderType] = useState<SSOProviderType>('oidc');
@@ -318,6 +327,31 @@ function SSOConfigPanel({
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'sso', 'providers', tenantId] }),
   });
 
+  const { data: domainMappings, isLoading: domainsLoading } = useQuery({
+    queryKey: ['admin', 'sso', 'domains', tenantId],
+    queryFn: () => listSSODomainMappings(tenantId),
+  });
+
+  const addDomainMut = useMutation({
+    mutationFn: () => createSSODomainMapping(tenantId, newDomain, newDomainAutoRedirect),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'sso', 'domains', tenantId] });
+      setNewDomain('');
+      setNewDomainAutoRedirect(false);
+    },
+    onError: (e: Error) => setSaveError(e.message),
+  });
+
+  const deleteDomainMut = useMutation({
+    mutationFn: (id: string) => deleteSSODomainMapping(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'sso', 'domains', tenantId] }),
+  });
+
+  const verifyDomainMut = useMutation({
+    mutationFn: (id: string) => verifySSODomainMapping(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin', 'sso', 'domains', tenantId] }),
+  });
+
   const toggleActive = (p: IdentityProviderItem) =>
     updateSSOProvider(p.id, { isActive: !p.isActive }).then(() =>
       queryClient.invalidateQueries({ queryKey: ['admin', 'sso', 'providers', tenantId] })
@@ -341,8 +375,20 @@ function SSOConfigPanel({
             </div>
           )}
 
+          {/* Tab nav */}
+          <div className="flex gap-1 border-b pb-2">
+            {(['providers','policy','domains'] as const).map(tab => (
+              <button key={tab} type="button" onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors capitalize ${
+                  activeTab === tab ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted/50'
+                }`}>
+                {tab === 'providers' ? 'Providers' : tab === 'policy' ? 'Policy' : 'Email Domains'}
+              </button>
+            ))}
+          </div>
+
           {/* Identity Providers */}
-          <div className="space-y-3">
+          <div className={`space-y-3 ${activeTab !== 'providers' ? 'hidden' : ''}`}>
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Identity Providers</label>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
@@ -456,7 +502,7 @@ function SSOConfigPanel({
           </div>
 
           {/* SSO Policy */}
-          <div className="space-y-4 pt-2 border-t">
+          <div className={`space-y-4 pt-2 ${activeTab !== 'policy' ? 'hidden' : ''}`}>
             <h4 className="text-sm font-semibold">Authentication Policy</h4>
 
             <div className="space-y-2">
@@ -526,6 +572,82 @@ function SSOConfigPanel({
               </>
             )}
           </div>
+
+          {/* Domain Mappings */}
+          {activeTab === 'domains' && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold">Email Domain Mappings</h4>
+              <p className="text-xs text-muted-foreground">Users entering emails at these domains will be offered this tenant&apos;s SSO on the login page.</p>
+
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-sm shrink-0">@</span>
+                <input
+                  value={newDomain}
+                  onChange={e => setNewDomain(e.target.value.replace('@',''))}
+                  placeholder="uoa.gr"
+                  className="flex-1 h-9 rounded-md border border-input bg-background px-3 text-sm"
+                />
+                <label className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 cursor-pointer">
+                  <input type="checkbox" checked={newDomainAutoRedirect} onChange={e => setNewDomainAutoRedirect(e.target.checked)} className="rounded" />
+                  Auto-redirect
+                </label>
+                <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1 shrink-0">
+                  <Plus className="h-3.5 w-3.5" />Add
+                </Button>
+              </div>
+
+              {domainsLoading ? (
+                <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-10 rounded-lg bg-muted/50 animate-pulse" />)}</div>
+              ) : !domainMappings?.length ? (
+                <div className="p-4 rounded-lg border border-dashed text-center text-sm text-muted-foreground">
+                  <Globe className="h-6 w-6 mx-auto mb-1" />
+                  No email domains mapped for this tenant
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {domainMappings.map((m: SSODomainMapping) => (
+                    <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border">
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm font-medium">@{m.domain}</span>
+                        {m.isVerified
+                          ? <span className="text-xs text-green-600">✓ Verified</span>
+                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary hover:underline">Mark verified</button>}
+                        {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
+                      </div>
+                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <h4 className="text-sm font-semibold pt-2">Role Mapping Rules</h4>
+              <p className="text-xs text-muted-foreground">Map IdP claim values to platform roles on first SSO login.</p>
+              <div className="space-y-2">
+                {roleMappingRules.map((r, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
+                    <input value={r.claim} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,claim:e.target.value} : x))}
+                      placeholder="Claim" className="h-8 rounded-md border border-input bg-background px-2 text-xs" />
+                    <input value={r.value} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,value:e.target.value} : x))}
+                      placeholder="Value" className="h-8 rounded-md border border-input bg-background px-2 text-xs" />
+                    <select value={r.role} onChange={e => setRoleMappingRules(rules => rules.map((x,idx) => idx===i ? {...x,role:e.target.value} : x))}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-xs">
+                      {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
+                    </select>
+                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setRoleMappingRules(r => [...r, {claim:'',value:'',role:'member'}])}
+                  className="text-xs text-primary hover:underline flex items-center gap-1">
+                  <Plus className="h-3 w-3" />Add rule
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-2 border-t">
             <Button variant="outline" onClick={onClose}>Cancel</Button>

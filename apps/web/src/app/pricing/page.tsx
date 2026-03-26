@@ -1,5 +1,8 @@
 'use client';
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Full rewrite — pricing page backed by real /api/billing/plans data
+// ──────────────────────────────────────────────────────────────────────────────
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -25,6 +28,9 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { listBillingPlans, createBillingCheckout, type BillingPlanItem } from '@/lib/api';
+import { formatCents, annualSavingsPct } from '@/lib/billing';
+import { useSession } from '@/hooks/useSession';
 
 type PlanFeature = {
   name: string;
@@ -56,6 +62,7 @@ const FEATURES: PlanFeature[] = [
 const PLANS = [
   {
     id: 'free',
+    apiName: 'free',
     name: 'Free',
     description: 'Perfect for getting started',
     priceMonthly: 0,
@@ -75,6 +82,7 @@ const PLANS = [
   },
   {
     id: 'pro',
+    apiName: 'premium',
     name: 'Pro',
     description: 'For serious founders & mentors',
     priceMonthly: 19,
@@ -96,6 +104,7 @@ const PLANS = [
   },
   {
     id: 'team',
+    apiName: 'team',
     name: 'Team',
     description: 'For accelerators & organizations',
     priceMonthly: 99,
@@ -110,12 +119,13 @@ const PLANS = [
       'Up to 25 team members',
       'Organization branding',
       'Advanced analytics',
-      'Cohort management',
+      'Program management',
       'Email support',
     ],
   },
   {
     id: 'enterprise',
+    apiName: 'enterprise',
     name: 'Enterprise',
     description: 'For large institutions',
     priceMonthly: null,
@@ -127,7 +137,7 @@ const PLANS = [
     cta: 'Contact Sales',
     features: [
       'Everything in Team',
-      'Unlimited team members',
+      'Unlimited seats',
       'Custom domain',
       'SSO integration',
       'API access',
@@ -150,6 +160,44 @@ function FeatureCheck({ value }: { value: boolean | string }) {
 
 export default function PricingPage() {
   const [annual, setAnnual] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const { hasSession } = useSession();
+
+  const { data: plansData } = useQuery({
+    queryKey: ['billing', 'plans'],
+    queryFn: listBillingPlans,
+    staleTime: 10 * 60_000,
+  });
+
+  const apiPlans = plansData?.plans ?? [];
+
+  async function handleCheckout(plan: typeof PLANS[0]) {
+    if (plan.id === 'enterprise') { window.location.href = '/contact'; return; }
+    if (!hasSession) { window.location.href = '/register'; return; }
+    const apiPlan = apiPlans.find(p => p.name === plan.apiName);
+    const priceId = annual ? apiPlan?.stripePriceIdAnnual : apiPlan?.stripePriceIdMonthly;
+    setCheckoutLoading(plan.id);
+    try {
+      const { url } = await createBillingCheckout(priceId ?? undefined);
+      if (url) window.location.href = url;
+      else window.location.href = '/settings/billing';
+    } finally {
+      setCheckoutLoading(null);
+    }
+  }
+
+  // Use real API prices if available, fall back to static
+  function getPlanPrice(plan: typeof PLANS[0]) {
+    const api = apiPlans.find(p => p.name === plan.apiName);
+    if (!api) return annual ? plan.priceAnnual : plan.priceMonthly;
+    return annual ? Math.round(api.priceAnnual / 100) : Math.round(api.priceMonthly / 100);
+  }
+
+  function getSavings(plan: typeof PLANS[0]) {
+    const api = apiPlans.find(p => p.name === plan.apiName);
+    if (!api || api.priceMonthly === 0) return plan.id === 'pro' ? 30 : plan.id === 'team' ? 24 : 0;
+    return annualSavingsPct(api.priceMonthly, api.priceAnnual);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,16 +217,16 @@ export default function PricingPage() {
 
           {/* Billing toggle */}
           <div className="mt-8 flex items-center justify-center gap-3">
-            <span className={cn('text-sm font-medium', !annual && 'text-foreground', annual && 'text-muted-foreground')}>
+            <span className={cn('text-sm font-medium', !annual ? 'text-foreground' : 'text-muted-foreground')}>
               Monthly
             </span>
             <Switch checked={annual} onCheckedChange={setAnnual} />
-            <span className={cn('text-sm font-medium', annual && 'text-foreground', !annual && 'text-muted-foreground')}>
+            <span className={cn('text-sm font-medium', annual ? 'text-foreground' : 'text-muted-foreground')}>
               Annual
             </span>
             {annual && (
               <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600">
-                Save 30%
+                Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
               </Badge>
             )}
           </div>
@@ -190,22 +238,22 @@ export default function PricingPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
-            const price = annual ? plan.priceAnnual : plan.priceMonthly;
+            const price = getPlanPrice(plan);
             const isEnterprise = plan.id === 'enterprise';
+            const isFree = plan.id === 'free';
+            const savings = getSavings(plan);
 
             return (
               <Card
                 key={plan.id}
                 className={cn(
                   'relative flex flex-col transition-all duration-300 hover:shadow-lg',
-                  plan.popular && 'border-primary shadow-glow-sm ring-1 ring-primary/20'
+                  plan.popular && 'border-primary ring-1 ring-primary/20'
                 )}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground shadow-sm">
-                      Most Popular
-                    </Badge>
+                    <Badge className="bg-primary text-primary-foreground shadow-sm">Most Popular</Badge>
                   </div>
                 )}
 
@@ -225,13 +273,14 @@ export default function PricingPage() {
                     ) : (
                       <div className="flex items-baseline gap-1">
                         <span className="text-4xl font-bold text-foreground">${price}</span>
-                        <span className="text-muted-foreground">/{annual ? 'year' : 'month'}</span>
+                        <span className="text-muted-foreground">/{annual ? 'yr' : 'mo'}</span>
                       </div>
                     )}
-                    {!isEnterprise && annual && (plan.priceMonthly ?? 0) > 0 && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        ${Math.round((plan.priceAnnual ?? 0) / 12)}/month billed annually
-                      </p>
+                    {!isEnterprise && !isFree && annual && savings > 0 && (
+                      <p className="mt-1 text-xs text-green-600 font-medium">{savings}% off vs monthly</p>
+                    )}
+                    {!isEnterprise && !isFree && !annual && (
+                      <p className="mt-1 text-xs text-muted-foreground">Save {savings}% with annual billing</p>
                     )}
                   </div>
 
@@ -249,12 +298,11 @@ export default function PricingPage() {
                   <Button
                     className={cn('w-full gap-2', plan.popular && 'bg-primary hover:bg-primary/90')}
                     variant={plan.popular ? 'default' : 'outline'}
-                    asChild
+                    disabled={checkoutLoading === plan.id}
+                    onClick={() => handleCheckout(plan)}
                   >
-                    <Link href={isEnterprise ? '/contact' : '/register'}>
-                      {plan.cta}
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
+                    {checkoutLoading === plan.id ? 'Redirecting…' : plan.cta}
+                    {checkoutLoading !== plan.id && <ArrowRight className="h-4 w-4" />}
                   </Button>
                 </CardContent>
               </Card>

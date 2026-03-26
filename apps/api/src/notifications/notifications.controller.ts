@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch } from '@nestjs/common';
+import { Controller, Get, Param, Post, Delete, Query, UseGuards, Patch, Body } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PrismaService } from '../prisma/prisma.service';
@@ -98,6 +98,31 @@ export class NotificationsController {
     await this.prisma.notification.deleteMany({
       where: { userId: user.id },
     });
+    return { ok: true };
+  }
+
+  @Get('preferences')
+  async getPreferences(@CurrentUser() user: { id: string }) {
+    const digest = await this.prisma.activityDigestPreference.findUnique({
+      where: { userId: user.id },
+    });
+    return {
+      digestFrequency: digest?.frequency ?? 'weekly',
+    };
+  }
+
+  @Patch('preferences')
+  async updatePreferences(
+    @CurrentUser() user: { id: string },
+    @Body() body: { digestFrequency?: 'daily' | 'weekly' | 'never' },
+  ) {
+    if (body.digestFrequency) {
+      await this.prisma.activityDigestPreference.upsert({
+        where: { userId: user.id },
+        create: { userId: user.id, frequency: body.digestFrequency },
+        update: { frequency: body.digestFrequency },
+      });
+    }
     return { ok: true };
   }
 }

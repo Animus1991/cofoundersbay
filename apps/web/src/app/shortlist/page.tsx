@@ -187,7 +187,7 @@ function ShortlistCard({
               <button onClick={() => setEditingNote((v) => !v)} title="Edit note" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <Edit2 className="h-3.5 w-3.5" />
               </button>
-              <Link href={`/messages?user=${item.userId}`} title="Message" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/messages?to=${item.userId}`} title="Message" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <MessageCircle className="h-3.5 w-3.5" />
               </Link>
               <Link href={`/profiles/${item.userId}`} title="View profile" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">

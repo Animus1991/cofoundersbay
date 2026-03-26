@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { SubscriptionStatus, BillingCycle } from '@prisma/client';
 import Stripe from 'stripe';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from './stripe.service';
+import { AutomationService } from '../automation/automation.service';
 
 @Injectable()
 export class BillingService {
@@ -11,6 +12,7 @@ export class BillingService {
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
     private readonly stripeSvc: StripeService,
+    @Optional() private readonly automation?: AutomationService,
   ) {}
 
   private webBaseUrl(): string {
@@ -171,6 +173,42 @@ export class BillingService {
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
         await this.syncFromStripeSubscription(sub);
+        if (sub.status === 'canceled') {
+          const existingSub = await this.prisma.subscription.findFirst({
+            where: { stripeSubscriptionId: sub.id },
+            select: { id: true, userId: true, tenantId: true },
+          });
+          if (existingSub?.userId) {
+            this.automation?.fire({
+              triggerType: 'subscription_canceled',
+              targetUserId: existingSub.userId,
+              targetEntityType: 'subscription',
+              targetEntityId: existingSub.id,
+              tenantId: existingSub.tenantId ?? undefined,
+            }).catch(() => {});
+          }
+        }
+        return;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
+        if (customerId) {
+          const existingSub = await this.prisma.subscription.findFirst({
+            where: { stripeCustomerId: customerId },
+            select: { id: true, userId: true, tenantId: true },
+          });
+          if (existingSub?.userId) {
+            this.automation?.fire({
+              triggerType: 'subscription_failed_payment',
+              targetUserId: existingSub.userId,
+              targetEntityType: 'subscription',
+              targetEntityId: existingSub.id,
+              tenantId: existingSub.tenantId ?? undefined,
+              payload: { attemptCount: invoice.attempt_count },
+            }).catch(() => {});
+          }
+        }
         return;
       }
       default:
@@ -220,6 +258,293 @@ export class BillingService {
       default:
         return 'past_due' as SubscriptionStatus;
     }
+  }
+
+  // ── Feature Gating ─────────────────────────────────────────────────────────
+
+  async getFeatureAccess(userId: string, feature: string): Promise<{ allowed: boolean; reason?: string }> {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { userId, status: { in: ['active', 'trialing'] } },
+      include: { plan: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!sub) return { allowed: false, reason: 'no_subscription' };
+
+    // featureOverrides at subscription level take absolute priority
+    const overrides = (sub as Record<string, unknown>).featureOverrides as Record<string, unknown> | null;
+    if (overrides && feature in overrides) {
+      return { allowed: Boolean(overrides[feature]) };
+    }
+
+    const features = sub.plan.features as Record<string, unknown>;
+    const value = features[feature];
+    if (value === undefined || value === false || value === null) {
+      return { allowed: false, reason: 'plan_limit' };
+    }
+    return { allowed: true };
+  }
+
+  async getUserSubscriptionFull(userId: string) {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { userId },
+      include: { plan: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { subscription: sub };
+  }
+
+  // ── Invoices ───────────────────────────────────────────────────────────────
+
+  async getUserInvoices(userId: string) {
+    const sub = await this.prisma.subscription.findFirst({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    if (!sub) return { invoices: [] };
+    const invoices = await this.prisma.invoice.findMany({
+      where: { subscriptionId: sub.id },
+      include: { lines: true },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+    return { invoices };
+  }
+
+  // ── Billing Contact ────────────────────────────────────────────────────────
+
+  async getBillingContact(subscriptionId: string) {
+    return (this.prisma as Record<string, unknown> & typeof this.prisma).billingContact
+      ? (this.prisma as unknown as { billingContact: { findUnique: (args: unknown) => Promise<unknown> } })
+          .billingContact.findUnique({ where: { subscriptionId } })
+      : null;
+  }
+
+  async upsertBillingContact(subscriptionId: string, data: {
+    name: string; email: string; phone?: string; company?: string;
+    addressLine1?: string; addressLine2?: string; city?: string;
+    state?: string; postalCode?: string; country?: string;
+    vatId?: string; taxId?: string; legalName?: string;
+  }) {
+    const pc = this.prisma as unknown as { billingContact: { upsert: (args: unknown) => Promise<unknown> } };
+    return pc.billingContact.upsert({
+      where: { subscriptionId },
+      create: { subscriptionId, ...data },
+      update: data,
+    });
+  }
+
+  // ── Seat Management ────────────────────────────────────────────────────────
+
+  async allocateSeat(subscriptionId: string, targetUserId: string, allocatedBy: string) {
+    const sub = await this.prisma.subscription.findUnique({ where: { id: subscriptionId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    if (sub.seatLimit !== null && sub.activeSeatCount >= sub.seatLimit) {
+      throw new BadRequestException('Seat limit reached');
+    }
+    const alloc = await this.prisma.seatAllocation.upsert({
+      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+      create: { subscriptionId, userId: targetUserId, allocatedBy, isActive: true },
+      update: { isActive: true, allocatedAt: new Date(), allocatedBy },
+    });
+    await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { activeSeatCount: { increment: 1 } },
+    });
+    return alloc;
+  }
+
+  async revokeSeat(subscriptionId: string, targetUserId: string) {
+    const alloc = await this.prisma.seatAllocation.findUnique({
+      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+    });
+    if (!alloc) throw new NotFoundException('Seat allocation not found');
+    await this.prisma.seatAllocation.update({
+      where: { subscriptionId_userId: { subscriptionId, userId: targetUserId } },
+      data: { isActive: false, deactivatedAt: new Date() },
+    });
+    await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { activeSeatCount: { decrement: 1 } },
+    });
+  }
+
+  async listSeatAllocations(subscriptionId: string) {
+    return this.prisma.seatAllocation.findMany({
+      where: { subscriptionId, isActive: true },
+      include: { user: { select: { id: true, email: true } } },
+      orderBy: { allocatedAt: 'desc' },
+    });
+  }
+
+  // ── Tenant Billing ─────────────────────────────────────────────────────────
+
+  async getTenantSubscription(tenantId: string) {
+    const sub = await this.prisma.subscription.findFirst({
+      where: { tenantId },
+      include: { plan: true, seatAllocations: { where: { isActive: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return { subscription: sub };
+  }
+
+  // ── Admin: Stats ───────────────────────────────────────────────────────────
+
+  async getAdminStats() {
+    const [totalSubs, activeSubs, trialingSubs, pastDueSubs, plans] = await Promise.all([
+      this.prisma.subscription.count(),
+      this.prisma.subscription.count({ where: { status: 'active' } }),
+      this.prisma.subscription.count({ where: { status: 'trialing' } }),
+      this.prisma.subscription.count({ where: { status: 'past_due' } }),
+      this.prisma.billingPlan.findMany({ orderBy: { sortOrder: 'asc' } }),
+    ]);
+
+    const paidInvoices = await this.prisma.invoice.aggregate({
+      where: { status: 'paid' },
+      _sum: { total: true },
+    });
+
+    const thisMonthStart = new Date();
+    thisMonthStart.setDate(1);
+    thisMonthStart.setHours(0, 0, 0, 0);
+
+    const mrrInvoices = await this.prisma.invoice.aggregate({
+      where: { status: 'paid', paidAt: { gte: thisMonthStart } },
+      _sum: { total: true },
+    });
+
+    return {
+      totalSubs,
+      activeSubs,
+      trialingSubs,
+      pastDueSubs,
+      totalRevenueCents: paidInvoices._sum.total ?? 0,
+      mrrCents: mrrInvoices._sum.total ?? 0,
+      plans,
+    };
+  }
+
+  async listAdminSubscriptions(opts: { status?: string; planId?: string; search?: string; take?: number; skip?: number }) {
+    const where: Record<string, unknown> = {};
+    if (opts.status) where.status = opts.status;
+    if (opts.planId) where.planId = opts.planId;
+
+    const subs = await this.prisma.subscription.findMany({
+      where,
+      include: {
+        plan: true,
+        user: { select: { id: true, email: true } },
+        tenant: { select: { id: true, name: true, slug: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: opts.take ?? 50,
+      skip: opts.skip ?? 0,
+    });
+
+    if (opts.search) {
+      const q = opts.search.toLowerCase();
+      return subs.filter(s =>
+        s.user?.email?.toLowerCase().includes(q) ||
+        s.tenant?.name?.toLowerCase().includes(q)
+      );
+    }
+    return subs;
+  }
+
+  async listAdminInvoices(opts: { status?: string; search?: string; take?: number; skip?: number }) {
+    const where: Record<string, unknown> = {};
+    if (opts.status) where.status = opts.status;
+
+    return this.prisma.invoice.findMany({
+      where,
+      include: {
+        subscription: {
+          include: {
+            user: { select: { id: true, email: true } },
+            tenant: { select: { id: true, name: true } },
+          },
+        },
+        lines: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: opts.take ?? 50,
+      skip: opts.skip ?? 0,
+    });
+  }
+
+  // ── Admin: Plan CRUD ───────────────────────────────────────────────────────
+
+  async createPlan(data: {
+    name: string; displayName: string; description?: string;
+    planType: string; priceMonthly: number; priceAnnual: number;
+    currency?: string; seatLimit?: number; storageGb?: number;
+    features: Record<string, unknown>; isPublic?: boolean;
+    isActive?: boolean; sortOrder?: number;
+    stripeProductId?: string; stripePriceIdMonthly?: string; stripePriceIdAnnual?: string;
+  }) {
+    return this.prisma.billingPlan.create({ data: data as unknown as Parameters<typeof this.prisma.billingPlan.create>[0]['data'] });
+  }
+
+  async updatePlan(id: string, data: Partial<{
+    displayName: string; description: string; priceMonthly: number;
+    priceAnnual: number; features: Record<string, unknown>;
+    isPublic: boolean; isActive: boolean; sortOrder: number;
+    seatLimit: number; stripePriceIdMonthly: string; stripePriceIdAnnual: string;
+  }>) {
+    return this.prisma.billingPlan.update({ where: { id }, data: data as unknown as Parameters<typeof this.prisma.billingPlan.update>[0]['data'] });
+  }
+
+  async deletePlan(id: string) {
+    const subs = await this.prisma.subscription.count({ where: { planId: id } });
+    if (subs > 0) throw new BadRequestException('Cannot delete a plan with active subscriptions');
+    return this.prisma.billingPlan.delete({ where: { id } });
+  }
+
+  // ── Admin: Subscription actions ────────────────────────────────────────────
+
+  async manualOverride(subscriptionId: string, data: { planId?: string; featureOverrides?: Record<string, unknown>; reason?: string }) {
+    const update: Record<string, unknown> = {};
+    if (data.planId) update.planId = data.planId;
+    if (data.featureOverrides) update.featureOverrides = data.featureOverrides;
+    return this.prisma.subscription.update({ where: { id: subscriptionId }, data: update });
+  }
+
+  async extendTrial(subscriptionId: string, days: number) {
+    const sub = await this.prisma.subscription.findUnique({ where: { id: subscriptionId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    const newEnd = new Date(sub.trialEnd ?? sub.currentPeriodEnd);
+    newEnd.setDate(newEnd.getDate() + days);
+    return this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { trialEnd: newEnd, status: 'trialing' },
+    });
+  }
+
+  async cancelSubscription(subscriptionId: string, immediate: boolean) {
+    if (immediate) {
+      return this.prisma.subscription.update({
+        where: { id: subscriptionId },
+        data: { status: 'canceled', canceledAt: new Date() },
+      });
+    }
+    return this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { cancelAtPeriodEnd: true },
+    });
+  }
+
+  // ── Admin: Coupons ─────────────────────────────────────────────────────────
+
+  async listCoupons() {
+    return this.prisma.promotionCode.findMany({ orderBy: { createdAt: 'desc' } });
+  }
+
+  async createCoupon(data: {
+    code: string; discountType: string; discountValue: number;
+    currency?: string; maxRedemptions?: number; validUntil?: Date;
+    applicablePlans?: string[]; firstTimeOnly?: boolean;
+  }) {
+    return this.prisma.promotionCode.create({ data });
+  }
+
+  async deleteCoupon(id: string) {
+    return this.prisma.promotionCode.update({ where: { id }, data: { isActive: false } });
   }
 
   private async syncFromStripeSubscription(sub: Stripe.Subscription) {

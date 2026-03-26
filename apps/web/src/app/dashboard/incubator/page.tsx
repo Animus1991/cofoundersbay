@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -31,6 +30,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
 
@@ -91,7 +91,7 @@ function ProgramCard({ program }: { program: any }) {
 
   return (
     <Link
-      href={`/org/programs/${program.id}`}
+      href={`/org/programs`}
       className="group flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <div className="rounded-lg bg-primary/10 p-2">
@@ -194,6 +194,7 @@ function MilestoneItem({ milestone }: { milestone: any }) {
 
 export default function IncubatorDashboard() {
   const { hasSession, mounted } = useSession();
+  const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
     queryKey: ['me-profile'],
@@ -203,38 +204,44 @@ export default function IncubatorDashboard() {
 
   const displayName = profile?.profile?.displayName || 'Admin';
 
-  // Mock data - replace with actual API calls
-  const incubatorStats = {
+  const incubatorStats = showDemoData ? {
     activePrograms: 3,
     totalStartups: 42,
     activeMentors: 28,
     pendingApplications: 12,
     avgProgress: 67,
     graduationRate: 85,
+  } : {
+    activePrograms: 0,
+    totalStartups: 0,
+    activeMentors: 0,
+    pendingApplications: 0,
+    avgProgress: 0,
+    graduationRate: 0,
   };
 
-  const programs = [
+  const programs = showDemoData ? [
     { id: '1', name: 'AI Accelerator 2025', cohort: 'Cohort 3', status: 'active', startups: 12, mentors: 8 },
     { id: '2', name: 'FinTech Bootcamp', cohort: 'Spring 2025', status: 'upcoming', startups: 0, mentors: 6 },
     { id: '3', name: 'Climate Innovation', cohort: 'Cohort 2', status: 'active', startups: 8, mentors: 5 },
-  ];
+  ] : [];
 
-  const topStartups = [
+  const topStartups = showDemoData ? [
     { id: '1', name: 'NeuralFlow', program: 'AI Accelerator', progress: 85, logoUrl: null },
     { id: '2', name: 'GreenGrid', program: 'Climate Innovation', progress: 72, logoUrl: null },
     { id: '3', name: 'PayFlow', program: 'FinTech Bootcamp', progress: 68, logoUrl: null },
-  ];
+  ] : [];
 
-  const pendingApplications = [
+  const pendingApplications = showDemoData ? [
     { id: '1', name: 'DataVault', industry: 'Enterprise SaaS', stage: 'Seed', program: 'AI Accelerator', logoUrl: null },
     { id: '2', name: 'EcoTrack', industry: 'CleanTech', stage: 'Pre-seed', program: 'Climate Innovation', logoUrl: null },
-  ];
+  ] : [];
 
-  const upcomingMilestones = [
+  const upcomingMilestones = showDemoData ? [
     { id: '1', title: 'Demo Day Presentation', startup: 'NeuralFlow', date: 'Feb 15', completed: false },
     { id: '2', title: 'MVP Launch', startup: 'GreenGrid', date: 'Feb 18', completed: false },
     { id: '3', title: 'Investor Pitch', startup: 'PayFlow', date: 'Feb 20', completed: false },
-  ];
+  ] : [];
 
   if (!mounted) {
     return (
@@ -386,21 +393,27 @@ export default function IncubatorDashboard() {
               </CardHeader>
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/org/programs/new">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Program
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
+                  <Link href="/org/applications">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Review Applications
+                  </Link>
+                </Button>
+                <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/mentors">
                     <GraduationCap className="mr-2 h-4 w-4" />
                     Manage Mentors
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
-                  <Link href="/org/events">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Schedule Event
-                  </Link>
-                </Button>
-                <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/analytics">
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    View Reports
+                    Cohort Reports
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>

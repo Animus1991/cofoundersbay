@@ -297,6 +297,35 @@ enum GroupMemberRole {
   member
 }
 
+enum TenantMemberRole {
+  owner
+  admin
+  manager
+  member
+}
+
+enum MentorshipRelationshipStatus {
+  pending
+  active
+  paused
+  completed
+  terminated
+}
+
+enum MentorRequestStatus {
+  pending
+  accepted
+  declined
+  expired
+  cancelled
+}
+
+enum WatchlistItemStatus {
+  watching
+  in_pipeline
+  passed
+}
+
 model User {
   id                       String               @id @default(uuid())
   email                    String               @unique
@@ -524,6 +553,14 @@ model User {
   // Readiness history
   readinessReports            StartupReadinessReport[]    @relation("ReadinessReports")
 
+  // Mentor Reviews
+  mentorReviewsGiven          MentorReview[]              @relation("MentorReviewsGiven")
+  mentorReviewsReceived       MentorReview[]              @relation("MentorReviewsReceived")
+
+  // Investor Watchlist
+  investorWatchlistItems      InvestorWatchlistItem[]     @relation("InvestorWatchlist")
+  watchlistedByInvestors      InvestorWatchlistItem[]     @relation("WatchlistedByInvestors")
+
   // Data room access logs
   dataRoomAccesses            DataRoomAccessLog[]         @relation("DataRoomAccesses")
 
@@ -552,7 +589,7 @@ model User {
 
   // Platform announcements
   platformAnnouncements       PlatformAnnouncement[]      @relation("PlatformAnnouncements")
-  announcementDismissals      AnnouncementDismissal[]     @relation("AnnouncementDismissals")
+  platformAnnouncementDismissals PlatformAnnouncementDismissal[] @relation("PlatformAnnouncementDismissals")
 
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
@@ -1274,6 +1311,7 @@ model Tenant {
   webhooks          Webhook[]
   apiKeys           ApiKey[]
   announcements     Announcement[]
+  subscriptions     Subscription[]      @relation("TenantSubscriptions")
 
   @@index([slug])
   @@index([status])
@@ -1460,7 +1498,7 @@ model TenantMembership {
   user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Role within tenant
-  role String @default("member") // "member", "admin", "owner"
+  role TenantMemberRole @default(member)
 
   // Status
   isActive  Boolean  @default(true)
@@ -1557,6 +1595,7 @@ enum BillingCycle {
 enum PlanType {
   free
   individual_premium
+  team
   organization
   enterprise
 }
@@ -1609,7 +1648,7 @@ model Subscription {
   userId   String?
   user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   tenantId String?
-  // Note: Tenant relation added via tenantSubscriptions on Tenant model
+  tenant   Tenant? @relation("TenantSubscriptions", fields: [tenantId], references: [id], onDelete: Cascade)
 
   // Plan
   planId       String
@@ -1636,6 +1675,9 @@ model Subscription {
   stripeCustomerId     String?
   stripeSubscriptionId String?
 
+  // Feature overrides (admin-applied, takes priority over plan features)
+  featureOverrides Json?
+
   // Metadata
   metadata  Json?
   createdAt DateTime @default(now())
@@ -1645,6 +1687,7 @@ model Subscription {
   invoices        Invoice[]
   seatAllocations SeatAllocation[]
   payments        PaymentRecord[]
+  billingContact  BillingContact?
 
   @@index([userId])
   @@index([tenantId])
@@ -1741,6 +1784,36 @@ model InvoiceLine {
   metadata Json?
 
   @@index([invoiceId])
+}
+
+model BillingContact {
+  id             String       @id @default(uuid())
+  subscriptionId String       @unique
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  // Contact info
+  name         String
+  email        String
+  phone        String?
+  company      String?
+
+  // Billing address
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String  @default("US")
+
+  // Tax
+  vatId        String?
+  taxId        String?
+  legalName    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subscriptionId])
 }
 
 model PromotionCode {
@@ -3499,10 +3572,10 @@ model MentorshipRelationship {
   organizationId  String?   // If through an organization
   
   // Status
-  status          String    @default("active") // "pending", "active", "paused", "completed", "terminated"
+  status          MentorshipRelationshipStatus @default(active)
   
   // Goals
-  goals           Json?     // Mentorship goals
+  goalsJson       Json?     // Mentorship goals snapshot (legacy, see MentorshipGoal relation)
   focusAreas      String[]  @default([])
   
   // Progress
@@ -3604,7 +3677,7 @@ model MentorRequest {
   preferredTimes  Json?    // Preferred meeting times
   
   // Status
-  status          String   @default("pending") // "pending", "accepted", "declined", "expired"
+  status          MentorRequestStatus @default(pending)
   
   // Response
   responseMessage String?  @db.Text
@@ -5863,52 +5936,95 @@ model PlatformAnnouncement {
   updatedAt     DateTime           @updatedAt
 
   // Track dismissals
-  dismissals    AnnouncementDismissal[]
+  dismissals    PlatformAnnouncementDismissal[]
 
   @@index([isActive, startsAt])
   @@index([target, isActive])
   @@index([isPinned, isActive])
 }
 
-model AnnouncementDismissal {
-  id              String              @id @default(uuid())
+model PlatformAnnouncementDismissal {
+  id              String               @id @default(uuid())
   announcementId  String
   announcement    PlatformAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
   userId          String
-  user            User                @relation("AnnouncementDismissals", fields: [userId], references: [id], onDelete: Cascade)
+  user            User                 @relation("PlatformAnnouncementDismissals", fields: [userId], references: [id], onDelete: Cascade)
 
-  dismissedAt     DateTime            @default(now())
+  dismissedAt     DateTime             @default(now())
 
   @@unique([announcementId, userId])
   @@index([userId])
 }
 
+// (FeatureFlag model defined above — the comprehensive version with tenant overrides, scope, rollout %)
+
 // ─────────────────────────────────────────────────────────────────────────────
-// Feature Flag — Runtime feature toggles for gradual rollouts
+// Mentor Review — Public review of a mentor, written by a mentee after sessions
+// Backs MentorProfile.avgRating and MentorProfile.totalReviews
 // ─────────────────────────────────────────────────────────────────────────────
 
-model FeatureFlag {
-  id            String   @id @default(uuid())
-  key           String   @unique // e.g. "ai_workspace_generation"
-  name          String
-  description   String?
+model MentorReview {
+  id         String @id @default(uuid())
+  mentorId   String
+  mentor     User   @relation("MentorReviewsReceived", fields: [mentorId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User   @relation("MentorReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
 
-  isEnabled     Boolean  @default(false)
-  
-  // Rollout percentage (0-100)
-  rolloutPercentage Int  @default(0)
+  // Optional link to the session that generated this review
+  sessionId  String?
 
-  // Targeting rules
-  enabledForRoles   String[]  @default([])
-  enabledForTenants String[]  @default([])
-  enabledForUsers   String[]  @default([])
+  // Ratings (1–5)
+  rating              Int
+  communicationRating Int?
+  expertiseRating     Int?
+  engagementRating    Int?
 
-  // Plan-based access
-  requiredPlan      String?   // "free", "pro", "enterprise"
+  content    String  @db.Text
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isPublic   Boolean @default(true)
+  isVerified Boolean @default(false) // confirmed real session took place
 
-  @@index([key])
-  @@index([isEnabled])
+  // Mentor can respond publicly
+  mentorResponse    String?   @db.Text
+  mentorRespondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([reviewerId, mentorId])
+  @@index([mentorId, isPublic])
+  @@index([reviewerId])
+  @@index([rating])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Investor Watchlist Item — Startups/founders an investor is actively tracking
+// Backs /investor/watchlist (distinct from SavedProfile which is generic)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model InvestorWatchlistItem {
+  id         String @id @default(uuid())
+  investorId String
+  investor   User   @relation("InvestorWatchlist", fields: [investorId], references: [id], onDelete: Cascade)
+
+  // Target — a founder user and/or their startup workspace
+  targetUserId String?
+  targetUser   User?   @relation("WatchlistedByInvestors", fields: [targetUserId], references: [id], onDelete: Cascade)
+  workspaceId  String? // Optional direct link to BuilderWorkspace snapshot
+
+  notes    String? @db.Text
+  tags     String[] @default([])
+  priority String?  // "high", "medium", "low"
+
+  status WatchlistItemStatus @default(watching)
+
+  addedAt   DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([investorId, targetUserId])
+  @@index([investorId])
+  @@index([targetUserId])
+  @@index([investorId, status])
+  @@index([addedAt])
 }

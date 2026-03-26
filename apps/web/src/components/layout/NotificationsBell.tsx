@@ -64,11 +64,15 @@ export function NotificationsBell({ className }: { className?: string }) {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [hasNew, setHasNew] = useState(false);
   const loadingRef = useRef(false);
+  const lastLoadedAt = useRef(0);
+  const MIN_RELOAD_MS = 30_000; // minimum 30 s between background reloads
 
   const unread = items.filter((notification) => !notification.readAt).length;
 
-  const load = async () => {
+  const load = async (force = false) => {
     if (loadingRef.current) return;
+    const now = Date.now();
+    if (!force && now - lastLoadedAt.current < MIN_RELOAD_MS) return;
 
     if (!hasSession) {
       setItems([]);
@@ -80,6 +84,7 @@ export function NotificationsBell({ className }: { className?: string }) {
     setLoading(true);
     try {
       const result = await listNotifications({ limit: 15 });
+      lastLoadedAt.current = Date.now();
       setItems(result.notifications);
     } catch {
       // Silent background failure; the menu itself remains usable.
@@ -96,25 +101,21 @@ export function NotificationsBell({ className }: { className?: string }) {
       return;
     }
 
-    void load();
+    void load(true); // force on initial mount / session change
 
     const refreshIfVisible = () => {
       if (document.visibilityState === 'visible') {
-        void load();
+        void load(); // rate-limited
       }
     };
 
-    const handleApiOnline = () => {
-      refreshIfVisible();
-    };
-
     window.addEventListener('focus', refreshIfVisible);
-    window.addEventListener('cfb:api-online', handleApiOnline);
+    window.addEventListener('cfb:api-online', refreshIfVisible);
     document.addEventListener('visibilitychange', refreshIfVisible);
 
     return () => {
       window.removeEventListener('focus', refreshIfVisible);
-      window.removeEventListener('cfb:api-online', handleApiOnline);
+      window.removeEventListener('cfb:api-online', refreshIfVisible);
       document.removeEventListener('visibilitychange', refreshIfVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -126,7 +127,7 @@ export function NotificationsBell({ className }: { className?: string }) {
     <DropdownMenu
       onOpenChange={(open) => {
         if (open) {
-          void load();
+          void load(true); // always fetch fresh when user opens the panel
           setHasNew(false);
         }
       }}

@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { AutomationService } from '../automation/automation.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MentorshipService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly automation?: AutomationService,
+  ) {}
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Mentor Request Management
@@ -66,7 +70,7 @@ export class MentorshipService {
       });
     }
 
-    return this.prisma.mentorRequest.create({
+    const created = await this.prisma.mentorRequest.create({
       data: {
         requesterId,
         mentorId: data.mentorId,
@@ -80,6 +84,16 @@ export class MentorshipService {
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       },
     });
+
+    this.automation?.fire({
+      triggerType: 'mentor_request_submitted',
+      targetUserId: data.mentorId,
+      targetEntityType: 'mentor_request',
+      targetEntityId: created.id,
+      payload: { requesterId },
+    }).catch(() => {});
+
+    return created;
   }
 
   async respondToMentorRequest(mentorId: string, requestId: string, data: {
@@ -116,7 +130,7 @@ export class MentorshipService {
           workspaceId: request.workspaceId,
           programId: request.programId,
           focusAreas: request.focusAreas,
-          goals: { initialGoals: request.goals },
+          goalsJson: { initialGoals: request.goals },
         },
       });
 
@@ -125,6 +139,16 @@ export class MentorshipService {
         where: { userId: mentorId },
         data: { totalMentees: { increment: 1 } },
       });
+    }
+
+    if (data.accept) {
+      this.automation?.fire({
+        triggerType: 'mentor_request_accepted',
+        targetUserId: request.requesterId,
+        targetEntityType: 'mentor_request',
+        targetEntityId: requestId,
+        payload: { mentorId },
+      }).catch(() => {});
     }
 
     return updatedRequest;

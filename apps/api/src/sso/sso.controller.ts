@@ -16,6 +16,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { SSOService } from './sso.service';
+import { AuthService } from '../auth/auth.service';
+import { setAuthCookies } from '../auth/cookie.utils';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -23,7 +25,10 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('sso')
 export class SSOController {
-  constructor(private readonly ssoService: SSOService) {}
+  constructor(
+    private readonly ssoService: SSOService,
+    private readonly authService: AuthService,
+  ) {}
 
   /**
    * Discover SSO configuration by email domain
@@ -193,13 +198,13 @@ export class SSOController {
         throw new Error('Failed to exchange authorization code');
       }
 
-      const tokens = await tokenResponse.json();
+      const oauthTokens = await tokenResponse.json();
 
       // Get user info
       const userInfoResponse = await fetch(
         provider.oidcUserInfoUrl || `${provider.oidcIssuerUrl}/userinfo`,
         {
-          headers: { Authorization: `Bearer ${tokens.access_token}` },
+          headers: { Authorization: `Bearer ${oauthTokens.access_token}` },
         },
       );
 
@@ -221,11 +226,13 @@ export class SSOController {
       // Clear SSO cookie
       res.clearCookie('sso_return_url');
 
-      // Set auth cookies (this should integrate with your existing auth system)
-      // For now, redirect with a token parameter that frontend can use
+      // Issue JWT session for the SSO-authenticated user
+      const { tokens } = await this.authService.createSessionForUser(result.userId);
+      setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
+
       const redirectUrl = result.redirectUrl || returnUrl;
       return res.redirect(
-        `/auth/sso-complete?userId=${result.userId}&redirect=${encodeURIComponent(redirectUrl)}`,
+        `/auth/sso-complete?redirect=${encodeURIComponent(redirectUrl)}&newUser=${result.isNewUser ? '1' : '0'}`,
       );
     } catch (err: any) {
       console.error('SSO callback error:', err);
@@ -338,6 +345,40 @@ export class SSOController {
   @Roles('admin', 'super_admin')
   async deleteProvider(@Param('providerId') providerId: string) {
     return this.ssoService.deleteProvider(providerId);
+  }
+
+  // ── Admin: Domain Mappings ──────────────────────────────────────────────────
+
+  @Get('tenants/:tenantId/domains')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async listDomainMappings(@Param('tenantId') tenantId: string) {
+    return this.ssoService.listDomainMappings(tenantId);
+  }
+
+  @Post('tenants/:tenantId/domains')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async createDomainMapping(
+    @Param('tenantId') tenantId: string,
+    @Body() body: { domain: string; autoRedirectToSSO?: boolean },
+  ) {
+    return this.ssoService.createDomainMapping(tenantId, body.domain, body.autoRedirectToSSO);
+  }
+
+  @Delete('domains/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteDomainMapping(@Param('id') id: string) {
+    await this.ssoService.deleteDomainMapping(id);
+  }
+
+  @Post('domains/:id/verify')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async verifyDomainMapping(@Param('id') id: string) {
+    return this.ssoService.verifyDomainMapping(id);
   }
 
   // ── Admin: SSO Config ───────────────────────────────────────────────────────

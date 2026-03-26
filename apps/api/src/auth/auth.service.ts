@@ -188,6 +188,17 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({ where: { userId: user.id } });
   }
 
+  async createSessionForUser(userId: string): Promise<{ user: { id: string; email: string; role: string }; tokens: TokenPair }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true, moderationStatus: true },
+    });
+    if (!user) throw new UnauthorizedException('User not found');
+    if (user.moderationStatus !== 'active') throw new UnauthorizedException('Account is not active');
+    const tokens = await this.issueTokenPair(user.id, user.email, user.role);
+    return { user: { id: user.id, email: user.email, role: user.role }, tokens };
+  }
+
   async validateUser(userId: string): Promise<{ id: string; email: string; role: string } | null> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },

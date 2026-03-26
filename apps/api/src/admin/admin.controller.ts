@@ -333,6 +333,48 @@ export class AdminController {
   }
 
   // ─────────────────────────────────────────────────────────────────
+  // Taxonomy / Skill Management
+  // ─────────────────────────────────────────────────────────────────
+
+  @Get('skills')
+  async listSkills(
+    @Query('q') q?: string,
+    @Query('category') category?: string,
+    @Query('limit') limitRaw?: string,
+    @Query('offset') offsetRaw?: string,
+  ) {
+    const limit = limitRaw ? parseInt(limitRaw, 10) : 100;
+    const offset = offsetRaw ? parseInt(offsetRaw, 10) : 0;
+    return this.adminService.listSkillsAdmin({ q, category, limit, offset });
+  }
+
+  @Post('skills')
+  async createSkill(
+    @CurrentUser() admin: { id: string },
+    @Body() body: { name: string; slug: string; category?: string },
+  ) {
+    return this.adminService.createSkill(admin.id, body);
+  }
+
+  @Patch('skills/:skillId')
+  async updateSkill(
+    @CurrentUser() admin: { id: string },
+    @Param('skillId') skillId: string,
+    @Body() body: { name?: string; slug?: string; category?: string | null },
+  ) {
+    return this.adminService.updateSkill(admin.id, skillId, body);
+  }
+
+  @Delete('skills/:skillId')
+  async deleteSkill(
+    @CurrentUser() admin: { id: string },
+    @Param('skillId') skillId: string,
+  ) {
+    await this.adminService.deleteSkill(admin.id, skillId);
+    return { success: true };
+  }
+
+  // ─────────────────────────────────────────────────────────────────
   // Audit Log
   // ─────────────────────────────────────────────────────────────────
 

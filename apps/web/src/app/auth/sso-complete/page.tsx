@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
+import { getMe } from '@/lib/api';
 
 export default function SSOCompletePage() {
   const router = useRouter();
@@ -12,8 +13,8 @@ export default function SSOCompletePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const userId = searchParams?.get('userId');
-    const redirect = searchParams?.get('redirect') || '/';
+    const redirect = searchParams?.get('redirect') || '/dashboard';
+    const isNewUser = searchParams?.get('newUser') === '1';
     const errorParam = searchParams?.get('error');
     const message = searchParams?.get('message');
 
@@ -23,32 +24,23 @@ export default function SSOCompletePage() {
       return;
     }
 
-    if (!userId) {
-      setStatus('error');
-      setError('Invalid SSO response - no user ID received');
-      return;
-    }
-
-    // SSO was successful - complete the login process
-    // In a real implementation, this would exchange the userId for proper auth tokens
-    // For now, we'll simulate success and redirect
     const completeLogin = async () => {
       try {
-        // Store minimal user info (actual auth is via httpOnly cookies set by API)
+        // Auth cookies were set by the API callback — fetch user profile to populate localStorage
+        const { user } = await getMe();
         if (typeof window !== 'undefined') {
-          // The API should have already set the auth cookies
-          // We just need to redirect to the appropriate page
+          localStorage.setItem('user', JSON.stringify(user));
         }
 
         setStatus('success');
-        
-        // Short delay to show success state, then redirect
+
+        // New SSO users go through onboarding; existing users go to their redirect target
         setTimeout(() => {
-          router.push(redirect);
-        }, 1000);
+          router.push(isNewUser ? '/onboarding' : redirect);
+        }, 800);
       } catch (err) {
         setStatus('error');
-        setError(err instanceof Error ? err.message : 'Failed to complete login');
+        setError(err instanceof Error ? err.message : 'Failed to complete SSO login');
       }
     };
 

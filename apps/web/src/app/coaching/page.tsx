@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   BrainCircuit, Calendar, Clock, CheckCircle2, XCircle, AlertTriangle,
   Video, MapPin, MessageCircle, Star, Plus, ChevronRight, Target,
@@ -374,7 +375,8 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
 export default function CoachingPage() {
   const [activeTab, setActiveTab] = useState('sessions');
-  const sessions = DEMO_SESSIONS;
+  const { showDemoData } = useDemoData();
+  const sessions = showDemoData ? DEMO_SESSIONS : [];
   const upcoming = sessions.filter((s) => s.status === 'scheduled' || s.status === 'in_progress');
   const completed = sessions.filter((s) => s.status === 'completed');
   const totalActionItems = sessions.flatMap((s) => s.actionItems ?? []);

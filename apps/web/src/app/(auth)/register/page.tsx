@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { OAuthButtons, OAuthDivider } from '@/components/auth/OAuthButtons';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
+import { useTenant } from '@/components/providers/TenantContext';
 
 const ROLES = [
   {
@@ -44,6 +45,7 @@ const HERO_STATS = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { activeTenant, branding } = useTenant();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -98,13 +100,15 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-hero-radial pointer-events-none" />
         <div className="relative z-10 max-w-md text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
-            <LogoIcon size={72} />
+            {activeTenant?.logoUrl
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" />
+              : <LogoIcon size={72} />}
           </div>
           <h2 className="font-display text-3xl font-bold text-white">
-            Start your journey
+            {branding?.heroTitle || (activeTenant ? `Join ${activeTenant.displayName ?? activeTenant.name}` : 'Start your journey')}
           </h2>
           <p className="mt-4 text-white/65 text-base leading-relaxed">
-            Create your signal-rich profile and get matched with the right founders, mentors, and investors.
+            {branding?.heroSubtitle || (activeTenant?.shortDescription ?? 'Create your signal-rich profile and get matched with the right founders, mentors, and investors.')}
           </p>
           <div className="mt-10 grid grid-cols-3 gap-3">
             {HERO_STATS.map(({ value, label, accent }) => (
@@ -122,11 +126,17 @@ export default function RegisterPage() {
       <div className="flex w-full flex-col justify-center overflow-y-auto px-8 py-12 lg:w-1/2 lg:px-24">
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
-            <Logo size="sm" />
+            {activeTenant?.logoUrl
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" />
+              : <Logo size="sm" />}
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground">Create your account</h1>
-          <p className="mt-2 text-muted-foreground">Join the startup ecosystem in under 2 minutes.</p>
+          <p className="mt-2 text-muted-foreground">
+            {activeTenant
+              ? `Join ${activeTenant.displayName ?? activeTenant.name} in under 2 minutes.`
+              : 'Join the startup ecosystem in under 2 minutes.'}
+          </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (

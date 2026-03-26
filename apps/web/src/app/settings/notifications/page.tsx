@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   ArrowLeft, Bell, Mail, MessageSquare, Users, Calendar,
   Briefcase, TrendingUp, Shield, Volume2, VolumeX, Smartphone,
-  Monitor, Save, Loader2,
+  Monitor, Save, Loader2, Zap, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
 
 type NotificationChannel = 'push' | 'email' | 'inApp';
 
@@ -43,6 +45,35 @@ type NotificationCategory = {
   icon: React.ElementType;
   settings: NotificationSetting[];
 };
+
+const AUTOMATION_CATEGORIES = [
+  { key: 'automation_onboarding', label: 'Onboarding', description: 'Welcome, profile nudges, setup reminders', icon: Users },
+  { key: 'automation_matching', label: 'Matching', description: 'New matches, connection follow-ups, unread match nudges', icon: GitMerge },
+  { key: 'automation_mentorship', label: 'Mentorship', description: 'Mentor request updates, session reminders', icon: TrendingUp },
+  { key: 'automation_community', label: 'Community', description: 'Welcome messages, activity nudges in groups', icon: Users },
+  { key: 'automation_billing', label: 'Billing & Subscriptions', description: 'Trial reminders, payment alerts, renewal notices', icon: CreditCard },
+  { key: 'automation_reengagement', label: 'Re-engagement', description: 'Personalized prompts when inactive', icon: RefreshCw },
+] as const;
+
+type AutomationKey = typeof AUTOMATION_CATEGORIES[number]['key'];
+
+const AUTOMATION_PREFS_KEY = 'cfb_automation_notif_prefs';
+
+function loadAutomationPrefs(): Record<AutomationKey, boolean> {
+  const defaults: Record<AutomationKey, boolean> = {
+    automation_onboarding: true,
+    automation_matching: true,
+    automation_mentorship: true,
+    automation_community: true,
+    automation_billing: true,
+    automation_reengagement: false,
+  };
+  if (typeof window === 'undefined') return defaults;
+  try {
+    const stored = localStorage.getItem(AUTOMATION_PREFS_KEY);
+    return stored ? { ...defaults, ...JSON.parse(stored) } : defaults;
+  } catch { return defaults; }
+}
 
 const DEFAULT_CATEGORIES: NotificationCategory[] = [
   {
@@ -208,13 +239,28 @@ const DEFAULT_CATEGORIES: NotificationCategory[] = [
 ];
 
 export default function NotificationPreferencesPage() {
-  const { success } = useToast();
+  const { success, error: toastError } = useToast();
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-  const [emailDigestFrequency, setEmailDigestFrequency] = useState('weekly');
+  const [emailDigestFrequency, setEmailDigestFrequency] = useState<'daily' | 'weekly' | 'never'>('weekly');
   const [quietHoursEnabled, setQuietHoursEnabled] = useState(false);
   const [quietHoursStart, setQuietHoursStart] = useState('22:00');
   const [quietHoursEnd, setQuietHoursEnd] = useState('08:00');
-  const [isSaving, setIsSaving] = useState(false);
+  const [automationPrefs, setAutomationPrefs] = useState<Record<AutomationKey, boolean>>(() => loadAutomationPrefs());
+
+  const { data: prefs } = useQuery({
+    queryKey: ['notification-preferences'],
+    queryFn: getNotificationPreferences,
+  });
+
+  useEffect(() => {
+    if (prefs?.digestFrequency) setEmailDigestFrequency(prefs.digestFrequency);
+  }, [prefs]);
+
+  const savePrefs = useMutation({
+    mutationFn: () => updateNotificationPreferences({ digestFrequency: emailDigestFrequency }),
+    onSuccess: () => success('Preferences saved', 'Your notification preferences have been updated.'),
+    onError: () => toastError('Failed to save preferences'),
+  });
 
   const toggleChannel = (categoryId: string, settingId: string, channel: NotificationChannel) => {
     setCategories((prev) =>
@@ -255,14 +301,15 @@ export default function NotificationPreferencesPage() {
     );
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      success('Preferences saved', 'Your notification preferences have been updated.');
-    } finally {
-      setIsSaving(false);
-    }
+  const toggleAutomationPref = (key: AutomationKey, value: boolean) => {
+    const next = { ...automationPrefs, [key]: value };
+    setAutomationPrefs(next);
+    try { localStorage.setItem(AUTOMATION_PREFS_KEY, JSON.stringify(next)); } catch {}
+  };
+
+  const handleSave = () => {
+    savePrefs.mutate();
+    try { localStorage.setItem(AUTOMATION_PREFS_KEY, JSON.stringify(automationPrefs)); } catch {}
   };
 
   return (
@@ -281,8 +328,8 @@ export default function NotificationPreferencesPage() {
               Control how and when you receive notifications
             </p>
           </div>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
+          <Button onClick={handleSave} disabled={savePrefs.isPending}>
+            {savePrefs.isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-2" />
@@ -308,7 +355,7 @@ export default function NotificationPreferencesPage() {
                   How often to receive summary emails
                 </p>
               </div>
-              <Select value={emailDigestFrequency} onValueChange={setEmailDigestFrequency}>
+              <Select value={emailDigestFrequency} onValueChange={(v) => setEmailDigestFrequency(v as 'daily' | 'weekly' | 'never')}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -368,6 +415,36 @@ export default function NotificationPreferencesPage() {
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Automation Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Automation Notifications
+            </CardTitle>
+            <CardDescription>
+              Control which automated workflow notifications you receive. These preferences are saved locally.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="divide-y divide-border/40">
+            {AUTOMATION_CATEGORIES.map(({ key, label, description, icon: Icon }) => (
+              <div key={key} className="flex items-center justify-between py-3 gap-4">
+                <div className="flex items-start gap-3 min-w-0">
+                  <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{label}</p>
+                    <p className="text-xs text-muted-foreground">{description}</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={automationPrefs[key]}
+                  onCheckedChange={(val) => toggleAutomationPref(key, val)}
+                />
+              </div>
+            ))}
           </CardContent>
         </Card>
 
@@ -452,8 +529,8 @@ export default function NotificationPreferencesPage() {
 
         {/* Save Button (Mobile) */}
         <div className="sm:hidden">
-          <Button className="w-full" onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
+          <Button className="w-full" onClick={handleSave} disabled={savePrefs.isPending}>
+            {savePrefs.isPending ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Save className="h-4 w-4 mr-2" />

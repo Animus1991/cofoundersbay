@@ -3,6 +3,19 @@ import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
+// Reconnection config — identical to messagingSocket.ts for consistency.
+// Prevents the WebSocket flood visible in the browser console when the API is down.
+const SOCKET_OPTS = {
+  withCredentials: true,
+  transports: ['websocket'] as string[],
+  reconnection: true,
+  reconnectionAttempts: 8,
+  reconnectionDelay: 3_000,
+  reconnectionDelayMax: 60_000,
+  randomizationFactor: 0.4,
+  timeout: 10_000,
+};
+
 export interface CollaboratorPresence {
   odId: string;
   odName: string;
@@ -91,135 +104,111 @@ export interface BuilderSocketEvents {
 
 export function useBuilderSocket(events?: BuilderSocketEvents) {
   const socketRef = useRef<Socket | null>(null);
+  const apiOnlineRef = useRef(true);
   const [isConnected, setIsConnected] = useState(false);
   const [collaborators, setCollaborators] = useState<CollaboratorPresence[]>([]);
   const [workspaceMembers, setWorkspaceMembers] = useState<{ odId: string; odName: string }[]>([]);
 
   // Initialize socket connection
   useEffect(() => {
-    // Get auth token from cookie
-    const getAuthToken = () => {
-      if (typeof document === 'undefined') return null;
-      // The token should be available via the session cookie
-      // For WebSocket, we'll pass it via handshake
-      return null; // Using cookie-based auth
+    function createSocket() {
+      if (socketRef.current) return;
+
+      const socket = io(`${SOCKET_URL}/builder`, SOCKET_OPTS);
+      socketRef.current = socket;
+
+      socket.on('connect', () => setIsConnected(true));
+      socket.on('disconnect', () => setIsConnected(false));
+      socket.on('connected', (data) => { events?.onConnected?.(data); });
+      socket.on('error', (error) => { events?.onError?.(error); });
+
+      // Workspace events
+      socket.on('workspace:joined', (data: { workspaceId: string; members: { odId: string; odName: string }[] }) => {
+        setWorkspaceMembers(data.members);
+      });
+      socket.on('member:joined', (data) => {
+        setWorkspaceMembers((prev) => [...prev, data]);
+        events?.onMemberJoined?.(data);
+      });
+      socket.on('member:left', (data) => {
+        setWorkspaceMembers((prev) => prev.filter((m) => m.odId !== data.odId));
+        events?.onMemberLeft?.(data);
+      });
+
+      // Document events
+      socket.on('document:joined', (data: { documentId: string; collaborators: CollaboratorPresence[] }) => {
+        setCollaborators(data.collaborators);
+      });
+      socket.on('collaborator:joined', (data) => {
+        setCollaborators((prev) => [...prev, data]);
+        events?.onCollaboratorJoined?.(data);
+      });
+      socket.on('collaborator:left', (data) => {
+        setCollaborators((prev) => prev.filter((c) => c.odId !== data.odId));
+        events?.onCollaboratorLeft?.(data);
+      });
+
+      // Cursor & selection
+      socket.on('cursor:moved', (data) => {
+        setCollaborators((prev) =>
+          prev.map((c) => (c.odId === data.odId ? { ...c, cursor: { x: data.x, y: data.y } } : c)),
+        );
+        events?.onCursorMoved?.(data);
+      });
+      socket.on('selection:changed', (data) => {
+        setCollaborators((prev) =>
+          prev.map((c) =>
+            c.odId === data.odId
+              ? { ...c, selection: { start: data.start, end: data.end, sectionKey: data.sectionKey } }
+              : c,
+          ),
+        );
+        events?.onSelectionChanged?.(data);
+      });
+
+      // Content updates
+      socket.on('content:updated', (data) => { events?.onContentUpdated?.(data); });
+      socket.on('section:updated', (data) => { events?.onSectionUpdated?.(data); });
+
+      // Comments & reviews
+      socket.on('comment:added', (data) => { events?.onCommentAdded?.(data); });
+      socket.on('comment:resolved', (data) => { events?.onCommentResolved?.(data); });
+      socket.on('review:submitted', (data) => { events?.onReviewSubmitted?.(data); });
+
+      // Typing indicators
+      socket.on('typing:started', (data) => { events?.onTypingStarted?.(data); });
+      socket.on('typing:stopped', (data) => { events?.onTypingStopped?.(data); });
+
+      // Activity
+      socket.on('activity:new', (data) => { events?.onActivityNew?.(data); });
+    }
+
+    // Don't open socket if API is already known to be down
+    if (apiOnlineRef.current) createSocket();
+
+    const handleApiOffline = () => {
+      apiOnlineRef.current = false;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setIsConnected(false);
+      }
+    };
+    const handleApiOnline = () => {
+      apiOnlineRef.current = true;
+      createSocket();
     };
 
-    const socket = io(`${SOCKET_URL}/builder`, {
-      withCredentials: true,
-      auth: {
-        token: getAuthToken(),
-      },
-      transports: ['websocket', 'polling'],
-    });
-
-    socketRef.current = socket;
-
-    // Connection events
-    socket.on('connect', () => {
-      setIsConnected(true);
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
-
-    socket.on('connected', (data) => {
-      events?.onConnected?.(data);
-    });
-
-    socket.on('error', (error) => {
-      events?.onError?.(error);
-    });
-
-    // Workspace events
-    socket.on('workspace:joined', (data: { workspaceId: string; members: { odId: string; odName: string }[] }) => {
-      setWorkspaceMembers(data.members);
-    });
-
-    socket.on('member:joined', (data) => {
-      setWorkspaceMembers((prev) => [...prev, data]);
-      events?.onMemberJoined?.(data);
-    });
-
-    socket.on('member:left', (data) => {
-      setWorkspaceMembers((prev) => prev.filter((m) => m.odId !== data.odId));
-      events?.onMemberLeft?.(data);
-    });
-
-    // Document events
-    socket.on('document:joined', (data: { documentId: string; collaborators: CollaboratorPresence[] }) => {
-      setCollaborators(data.collaborators);
-    });
-
-    socket.on('collaborator:joined', (data) => {
-      setCollaborators((prev) => [...prev, data]);
-      events?.onCollaboratorJoined?.(data);
-    });
-
-    socket.on('collaborator:left', (data) => {
-      setCollaborators((prev) => prev.filter((c) => c.odId !== data.odId));
-      events?.onCollaboratorLeft?.(data);
-    });
-
-    // Cursor & selection
-    socket.on('cursor:moved', (data) => {
-      setCollaborators((prev) =>
-        prev.map((c) => (c.odId === data.odId ? { ...c, cursor: { x: data.x, y: data.y } } : c)),
-      );
-      events?.onCursorMoved?.(data);
-    });
-
-    socket.on('selection:changed', (data) => {
-      setCollaborators((prev) =>
-        prev.map((c) =>
-          c.odId === data.odId
-            ? { ...c, selection: { start: data.start, end: data.end, sectionKey: data.sectionKey } }
-            : c,
-        ),
-      );
-      events?.onSelectionChanged?.(data);
-    });
-
-    // Content updates
-    socket.on('content:updated', (data) => {
-      events?.onContentUpdated?.(data);
-    });
-
-    socket.on('section:updated', (data) => {
-      events?.onSectionUpdated?.(data);
-    });
-
-    // Comments & reviews
-    socket.on('comment:added', (data) => {
-      events?.onCommentAdded?.(data);
-    });
-
-    socket.on('comment:resolved', (data) => {
-      events?.onCommentResolved?.(data);
-    });
-
-    socket.on('review:submitted', (data) => {
-      events?.onReviewSubmitted?.(data);
-    });
-
-    // Typing indicators
-    socket.on('typing:started', (data) => {
-      events?.onTypingStarted?.(data);
-    });
-
-    socket.on('typing:stopped', (data) => {
-      events?.onTypingStopped?.(data);
-    });
-
-    // Activity
-    socket.on('activity:new', (data) => {
-      events?.onActivityNew?.(data);
-    });
+    window.addEventListener('cfb:api-offline', handleApiOffline);
+    window.addEventListener('cfb:api-online', handleApiOnline);
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      window.removeEventListener('cfb:api-offline', handleApiOffline);
+      window.removeEventListener('cfb:api-online', handleApiOnline);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
   }, []);
 

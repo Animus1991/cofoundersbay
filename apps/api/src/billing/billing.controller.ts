@@ -1,7 +1,12 @@
-import { BadRequestException, Body, Controller, Get, Headers, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException, Body, Controller, Delete, Get, Headers,
+  HttpCode, HttpStatus, Param, Patch, Post, Query, Req, UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { BillingService } from './billing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 type RawBodyRequest = Request & { rawBody?: Buffer };
@@ -10,30 +15,31 @@ type RawBodyRequest = Request & { rawBody?: Buffer };
 export class BillingController {
   constructor(private readonly billing: BillingService) {}
 
-  @Get('subscription')
-  @UseGuards(JwtAuthGuard)
-  async getSubscription(@CurrentUser() user: { id: string }) {
-    const { subscription } = await this.billing.getSubscription(user.id);
-    if (!subscription) return { subscription: null };
-    return {
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        planId: subscription.planId,
-        planName: subscription.plan?.name ?? null,
-        planDisplayName: subscription.plan?.displayName ?? null,
-        billingCycle: subscription.billingCycle,
-        currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
-        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
-        seatLimit: subscription.seatLimit,
-        activeSeatCount: subscription.activeSeatCount,
-      },
-    };
-  }
+  // ── Public ─────────────────────────────────────────────────────────────────
 
   @Get('plans')
   async listPlans() {
     return this.billing.listPlans();
+  }
+
+  // ── Current user ───────────────────────────────────────────────────────────
+
+  @Get('subscription')
+  @UseGuards(JwtAuthGuard)
+  async getSubscription(@CurrentUser() user: { id: string }) {
+    return this.billing.getUserSubscriptionFull(user.id);
+  }
+
+  @Get('invoices')
+  @UseGuards(JwtAuthGuard)
+  async getUserInvoices(@CurrentUser() user: { id: string }) {
+    return this.billing.getUserInvoices(user.id);
+  }
+
+  @Get('feature/:feature')
+  @UseGuards(JwtAuthGuard)
+  async checkFeature(@CurrentUser() user: { id: string }, @Param('feature') feature: string) {
+    return this.billing.getFeatureAccess(user.id, feature);
   }
 
   @Post('checkout')
@@ -48,12 +54,183 @@ export class BillingController {
     return this.billing.createPortalSession(user.id);
   }
 
+  // ── Billing contact (user-level subscription) ──────────────────────────────
+
+  @Get('subscription/billing-contact')
+  @UseGuards(JwtAuthGuard)
+  async getBillingContact(@CurrentUser() user: { id: string }) {
+    const { subscription } = await this.billing.getUserSubscriptionFull(user.id);
+    if (!subscription) return { billingContact: null };
+    return { billingContact: await this.billing.getBillingContact(subscription.id) };
+  }
+
+  @Post('subscription/billing-contact')
+  @UseGuards(JwtAuthGuard)
+  async upsertBillingContact(@CurrentUser() user: { id: string }, @Body() body: Record<string, unknown>) {
+    const { subscription } = await this.billing.getUserSubscriptionFull(user.id);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    return this.billing.upsertBillingContact(subscription.id, body as Parameters<typeof this.billing.upsertBillingContact>[1]);
+  }
+
+  // ── Tenant billing ─────────────────────────────────────────────────────────
+
+  @Get('tenant/:tenantId')
+  @UseGuards(JwtAuthGuard)
+  async getTenantSubscription(@Param('tenantId') tenantId: string) {
+    return this.billing.getTenantSubscription(tenantId);
+  }
+
+  @Get('tenant/:tenantId/seats')
+  @UseGuards(JwtAuthGuard)
+  async listTenantSeats(@Param('tenantId') tenantId: string) {
+    const { subscription } = await this.billing.getTenantSubscription(tenantId);
+    if (!subscription) return { seats: [] };
+    return { seats: await this.billing.listSeatAllocations(subscription.id) };
+  }
+
+  @Post('tenant/:tenantId/seats')
+  @UseGuards(JwtAuthGuard)
+  async allocateTenantSeat(
+    @Param('tenantId') tenantId: string,
+    @Body() body: { userId: string },
+    @CurrentUser() user: { id: string },
+  ) {
+    const { subscription } = await this.billing.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    return this.billing.allocateSeat(subscription.id, body.userId, user.id);
+  }
+
+  @Delete('tenant/:tenantId/seats/:userId')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async revokeTenantSeat(@Param('tenantId') tenantId: string, @Param('userId') userId: string) {
+    const { subscription } = await this.billing.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    await this.billing.revokeSeat(subscription.id, userId);
+  }
+
+  @Post('tenant/:tenantId/billing-contact')
+  @UseGuards(JwtAuthGuard)
+  async upsertTenantBillingContact(@Param('tenantId') tenantId: string, @Body() body: Record<string, unknown>) {
+    const { subscription } = await this.billing.getTenantSubscription(tenantId);
+    if (!subscription) throw new BadRequestException('No subscription found');
+    return this.billing.upsertBillingContact(subscription.id, body as Parameters<typeof this.billing.upsertBillingContact>[1]);
+  }
+
+  // ── Admin ──────────────────────────────────────────────────────────────────
+
+  @Get('admin/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminStats() {
+    return this.billing.getAdminStats();
+  }
+
+  @Get('admin/subscriptions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminSubscriptions(
+    @Query('status') status?: string,
+    @Query('planId') planId?: string,
+    @Query('search') search?: string,
+    @Query('take') take?: string,
+    @Query('skip') skip?: string,
+  ) {
+    return this.billing.listAdminSubscriptions({
+      status, planId, search,
+      take: take ? parseInt(take) : undefined,
+      skip: skip ? parseInt(skip) : undefined,
+    });
+  }
+
+  @Get('admin/invoices')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminInvoices(
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('take') take?: string,
+    @Query('skip') skip?: string,
+  ) {
+    return this.billing.listAdminInvoices({
+      status, search,
+      take: take ? parseInt(take) : undefined,
+      skip: skip ? parseInt(skip) : undefined,
+    });
+  }
+
+  @Post('admin/plans')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminCreatePlan(@Body() body: Parameters<typeof this.billing.createPlan>[0]) {
+    return this.billing.createPlan(body);
+  }
+
+  @Patch('admin/plans/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminUpdatePlan(@Param('id') id: string, @Body() body: Parameters<typeof this.billing.updatePlan>[1]) {
+    return this.billing.updatePlan(id, body);
+  }
+
+  @Delete('admin/plans/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async adminDeletePlan(@Param('id') id: string) {
+    await this.billing.deletePlan(id);
+  }
+
+  @Post('admin/subscriptions/:id/override')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminOverride(@Param('id') id: string, @Body() body: Parameters<typeof this.billing.manualOverride>[1]) {
+    return this.billing.manualOverride(id, body);
+  }
+
+  @Post('admin/subscriptions/:id/extend-trial')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminExtendTrial(@Param('id') id: string, @Body() body: { days: number }) {
+    return this.billing.extendTrial(id, body.days);
+  }
+
+  @Post('admin/subscriptions/:id/cancel')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async adminCancel(@Param('id') id: string, @Body() body: { immediate?: boolean }) {
+    return this.billing.cancelSubscription(id, body.immediate ?? false);
+  }
+
+  @Get('admin/coupons')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async listCoupons() {
+    return this.billing.listCoupons();
+  }
+
+  @Post('admin/coupons')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  async createCoupon(@Body() body: Parameters<typeof this.billing.createCoupon>[0]) {
+    return this.billing.createCoupon(body);
+  }
+
+  @Delete('admin/coupons/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteCoupon(@Param('id') id: string) {
+    await this.billing.deleteCoupon(id);
+  }
+
+  // ── Stripe webhook ─────────────────────────────────────────────────────────
+
   @Post('webhook')
   async webhook(@Req() req: RawBodyRequest, @Headers('stripe-signature') sig?: string) {
     if (!sig) throw new BadRequestException('Missing stripe-signature');
     const raw = req.rawBody;
     if (!raw || !(raw instanceof Buffer)) throw new BadRequestException('Missing raw body');
-
     const event = this.billing.constructEvent(raw, sig);
     await this.billing.handleEvent(event);
     return { received: true };

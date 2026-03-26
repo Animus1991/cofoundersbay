@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import {
   Star, Clock, CheckCircle2, XCircle, AlertTriangle, FileText,
   Plus, ChevronRight, TrendingUp, Award, MessageCircle, Eye,
@@ -417,8 +418,9 @@ export default function ExpertReviewsPage() {
   const [activeTab, setActiveTab] = useState('my-reviews');
   const [searchExperts, setSearchExperts] = useState('');
   const [selectedDomain, setSelectedDomain] = useState<ReviewType | 'all'>('all');
+  const { showDemoData } = useDemoData();
 
-  const myReviews = DEMO_REVIEWS;
+  const myReviews = showDemoData ? DEMO_REVIEWS : [];
   const submitted = myReviews.filter((r) => r.status === 'submitted');
   const pending = myReviews.filter((r) => r.status !== 'submitted' && r.status !== 'declined');
 

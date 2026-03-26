@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
+import * as dns from 'dns';
 
 @Injectable()
 export class TenantDomainService {
@@ -214,17 +215,18 @@ export class TenantDomainService {
   }
 
   private async checkDnsRecord(domain: string, expectedToken: string): Promise<boolean> {
-    // In production, use dns.resolveTxt() to check actual DNS records
-    // For development, we'll auto-verify after a delay or based on a flag
+    const verificationHost = `_cofounderbay-verification.${domain}`;
     try {
-      // Simulated check - in production replace with actual DNS lookup
-      // const records = await dns.promises.resolveTxt(`_cofounderbay-verification.${domain}`);
-      // return records.flat().includes(expectedToken);
-      
-      // For now, return false to require manual verification in production
-      // or true for testing
-      return process.env.NODE_ENV === 'development';
-    } catch {
+      const records = await dns.promises.resolveTxt(verificationHost);
+      const flat = records.flat();
+      return flat.includes(expectedToken);
+    } catch (err: unknown) {
+      // ENODATA / ENOTFOUND = record not present (expected before setup)
+      const code = (err as NodeJS.ErrnoException).code;
+      if (code === 'ENODATA' || code === 'ENOTFOUND' || code === 'ESERVFAIL') {
+        return false;
+      }
+      // Network / resolver errors — don't fail hard, just return false
       return false;
     }
   }
