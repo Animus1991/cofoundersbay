@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Link from 'next/link';
 import {
   MessageCircle,
@@ -100,7 +100,7 @@ function formatLastActive(date: Date): string {
   return `Active ${Math.floor(days / 7)}w ago`;
 }
 
-export function ProfileCard({
+function ProfileCardInner({
   profile,
   variant = 'default',
   isBookmarked = false,
@@ -402,6 +402,8 @@ export function ProfileCard({
     </Card>
   );
 }
+
+export const ProfileCard = memo(ProfileCardInner);
 
 // Skeleton for loading
 export function ProfileCardSkeleton({ variant = 'default' }: { variant?: 'default' | 'compact' | 'featured' }) {

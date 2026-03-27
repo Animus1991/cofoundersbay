@@ -4,7 +4,6 @@ import { ReactNode, memo } from 'react';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
-import { PageTransition } from '@/components/common/PageTransition';
 import { useSidebar } from './SidebarContext';
 import { cn } from '@/lib/utils';
 
@@ -31,7 +30,7 @@ export function AppShell({
   fullHeight = false,
   contentClassName,
 }: AppShellProps) {
-  const { expanded } = useSidebar();
+  const { expanded, mounted } = useSidebar();
 
   return (
     <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
@@ -44,7 +43,7 @@ export function AppShell({
           'flex flex-col overflow-x-clip',
           fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
           'transition-[margin-left] duration-200 ease-out',
-          expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
         )}
       >
         {/* Sticky top bar — always rendered once */}
@@ -59,36 +58,34 @@ export function AppShell({
             {children}
           </main>
         ) : (
-          <PageTransition>
-            <main
-              id="main-content"
-              className={cn(
-                'flex-1 mx-auto w-full max-w-screen-2xl',
-                'px-4 sm:px-6 lg:px-8',
-                'pt-4 pb-24 lg:pb-10',
-                contentClassName,
+          <main
+            id="main-content"
+            className={cn(
+              'flex-1 mx-auto w-full max-w-screen-2xl',
+              'px-4 sm:px-6 lg:px-8',
+              'pt-4 pb-24 lg:pb-10',
+              contentClassName,
+            )}
+          >
+            <div className="space-y-5">
+              {(title || description || actions) && (
+                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
+                  <div>
+                    {title && (
+                      <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                        {title}
+                      </h1>
+                    )}
+                    {description && (
+                      <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+                    )}
+                  </div>
+                  {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+                </section>
               )}
-            >
-              <div className="space-y-5">
-                {(title || description || actions) && (
-                  <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
-                    <div>
-                      {title && (
-                        <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                          {title}
-                        </h1>
-                      )}
-                      {description && (
-                        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
-                      )}
-                    </div>
-                    {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-                  </section>
-                )}
-                {children}
-              </div>
-            </main>
-          </PageTransition>
+              {children}
+            </div>
+          </main>
         )}
 
         {/* Mobile bottom nav — hides itself on lg+ via lg:hidden */}

@@ -82,7 +82,7 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
-export function MatchCard({
+function MatchCardInner({
   id,
   userId,
   displayName,
@@ -304,6 +304,8 @@ export function MatchCard({
     </Card>
   );
 }
+
+export const MatchCard = React.memo(MatchCardInner);
 
 // Swipeable Match Card for mobile
 export function SwipeableMatchCard(props: MatchCardProps & { onSwipeLeft?: () => void; onSwipeRight?: () => void }) {

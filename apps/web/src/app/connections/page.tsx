@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -34,8 +35,16 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CollaborationStarter, PostAcceptCollaborationModal } from '@/components/collaboration/CollaborationStarter';
 import { cn } from '@/lib/utils';
+
+const CollaborationStarter = dynamic(
+  () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
+  { ssr: false },
+);
+const PostAcceptCollaborationModal = dynamic(
+  () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.PostAcceptCollaborationModal })),
+  { ssr: false },
+);
 
 function ConnectionCard({
   connection,

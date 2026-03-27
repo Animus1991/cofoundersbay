@@ -56,7 +56,11 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-accordion',
       'date-fns',
       'socket.io-client',
+      '@tanstack/react-query',
+      '@tanstack/react-query-persist-client',
+      '@tanstack/query-sync-storage-persister',
     ],
+    scrollRestoration: true,
     // Next.js 15 router cache: cache dynamic segments for 30s to speed up back/forward navigation
     staleTimes: {
       dynamic: 120,

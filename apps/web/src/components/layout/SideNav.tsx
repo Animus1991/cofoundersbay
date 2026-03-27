@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type NavSection, type SidebarMode } from './nav-modes';
@@ -58,8 +58,10 @@ export function SideNav() {
     }
   }, []);
 
-  // Get sections for current mode and role
-  const sections: NavSection[] = getSectionsForMode(mode, user?.role);
+  const sections = useMemo(
+    () => getSectionsForMode(mode, user?.role),
+    [mode, user?.role],
+  );
 
   // Hide sidebar on auth pages
   const isAuthPage =

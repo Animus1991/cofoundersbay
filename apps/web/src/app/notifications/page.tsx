@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell, BellOff, Check, CheckCheck, Trash2, Filter,
@@ -106,7 +106,7 @@ function NotificationSkeleton() {
   );
 }
 
-function NotificationRow({
+const NotificationRow = memo(function NotificationRow({
   item,
   onRead,
   onDelete,
@@ -195,7 +195,7 @@ function NotificationRow({
       </div>
     </div>
   );
-}
+});
 
 export default function NotificationsPage() {
   const qc = useQueryClient();

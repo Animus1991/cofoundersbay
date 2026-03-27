@@ -35,7 +35,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   const { data: convData, isError: convError } = useQuery({
     queryKey: ['conversations', 'list'],
     queryFn: listMessageConversations,
-    staleTime: 30_000,
+    staleTime: 60_000,
     // Stop polling on error (server down / 401) — resume only after window focus or manual refetch
     refetchInterval: (query) => {
       if (!isVisible || query.state.status === 'error') return false;
@@ -50,7 +50,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   const { data: introData, isError: introError } = useQuery({
     queryKey: ['connections', 'pending-received'],
     queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
-    staleTime: 30_000,
+    staleTime: 60_000,
     refetchInterval: (query) => {
       if (!isVisible || query.state.status === 'error') return false;
       return pollIntervalMs;

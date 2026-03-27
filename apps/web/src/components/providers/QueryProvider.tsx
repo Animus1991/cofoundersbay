@@ -6,7 +6,7 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { useEffect, useState } from 'react';
 import { ApiError, ApiNetworkError } from '@/lib/api';
 
-const CACHE_BUSTER = '2026-03';
+const CACHE_BUSTER = '2026-03-b';
 
 function makeQueryClient() {
   return new QueryClient({
@@ -60,7 +60,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         client={queryClient}
         persistOptions={{
           persister,
-          maxAge: 5 * 60_000,
+          maxAge: 15 * 60_000,
           buster: CACHE_BUSTER,
           dehydrateOptions: {
             shouldDehydrateQuery: (query) => query.state.status === 'success',
