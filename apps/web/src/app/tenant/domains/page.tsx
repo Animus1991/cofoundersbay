@@ -342,7 +342,7 @@ export default function TenantDomainsPage() {
 
   return (
     <AppShell>
-      <div className="max-w-3xl mx-auto py-6 space-y-6">
+      <div className="py-6 space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Domain Management</h1>

@@ -321,7 +321,7 @@ export default function ProfilePage() {
         </div>
       }
     >
-      <div className="space-y-6 max-w-6xl mx-auto pb-10">
+      <div className="space-y-6 pb-10">
         {/* Cover Photo & Basic Identity Header */}
         <div className="relative rounded-2xl overflow-hidden border bg-card shadow-sm animate-fade-in">
           {/* Cover Photo */}

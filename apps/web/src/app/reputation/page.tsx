@@ -461,7 +461,7 @@ export default function ReputationPage() {
         </div>
       }
     >
-      <div className="max-w-5xl mx-auto space-y-6 pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Main Score Card */}
         <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm border-border/50 animate-fade-in">

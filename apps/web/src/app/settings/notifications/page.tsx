@@ -335,7 +335,7 @@ export default function NotificationPreferencesPage() {
         </div>
       }
     >
-      <div className="max-w-3xl mx-auto space-y-6 pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Global Settings */}
         <Card className="shadow-sm border-border/50">

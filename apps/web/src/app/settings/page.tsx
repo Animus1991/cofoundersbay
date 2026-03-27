@@ -239,7 +239,7 @@ export default function SettingsPage() {
       )}
 
       {hasToken && (
-        <div className="space-y-6 max-w-5xl mx-auto pb-10">
+        <div className="space-y-6 pb-10">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Billing */}
             <Card className="shadow-sm border-border/50">

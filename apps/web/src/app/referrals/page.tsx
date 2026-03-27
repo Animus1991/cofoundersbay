@@ -368,7 +368,7 @@ export default function ReferralsPage() {
       title="Referral Program"
       description="Invite friends and earn rewards when they join CoFounderBay"
     >
-      <div className="max-w-5xl mx-auto space-y-6 pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Stats */}
         <StatsCards referrals={referrals} />

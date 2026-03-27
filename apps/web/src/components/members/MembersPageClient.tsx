@@ -388,7 +388,7 @@ export function MembersPageClient() {
       title="Member Directory"
       description={`Discover and connect with ${total.toLocaleString()} members`}
     >
-      <div className="space-y-4 max-w-7xl mx-auto pb-10">
+      <div className="space-y-4 pb-10">
 
         {/* Stats bar */}
         {!isLoading && (

@@ -175,7 +175,7 @@ export default function UserBillingPage() {
         </div>
       }
     >
-      <div className="space-y-6 max-w-3xl mx-auto pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Current Plan */}
         <Card className="shadow-sm border-border/50">
