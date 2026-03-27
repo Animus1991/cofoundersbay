@@ -277,7 +277,7 @@ export default function JobsPage() {
         </Button>
       }
     >
-      <div className="max-w-6xl mx-auto space-y-5 pb-10">
+      <div className="space-y-5 pb-10">
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-3">
         {[

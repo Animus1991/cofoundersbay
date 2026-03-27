@@ -319,7 +319,7 @@ export default function HelpPage() {
         </a>
       }
     >
-      <div className="max-w-4xl mx-auto space-y-6 pb-10">
+      <div className="space-y-6 pb-10">
 
         {/* Search Hero */}
         <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">

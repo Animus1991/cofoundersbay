@@ -367,7 +367,7 @@ export default function SavedSearchesPage() {
       title="Saved Searches"
       description="Manage your saved search filters and get notified of new matches"
     >
-      <div className="max-w-4xl mx-auto space-y-6 pb-10">
+      <div className="space-y-6 pb-10">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

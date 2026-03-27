@@ -18,7 +18,7 @@ export function OptimizedLink({
   children,
   onFocus,
   onMouseEnter,
-  prefetch: linkPrefetch = false,
+  prefetch: linkPrefetch,
   ...props
 }: OptimizedLinkProps) {
   const router = useRouter();

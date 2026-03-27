@@ -270,7 +270,7 @@ export default function InvestorsPage() {
 
   return (
     <AppShell title="Investor Directory" description="Connect with investors actively seeking startups">
-      <div className="space-y-6 max-w-6xl mx-auto pb-10">
+      <div className="space-y-6 pb-10">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[

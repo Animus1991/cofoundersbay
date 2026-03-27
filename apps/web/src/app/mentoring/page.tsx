@@ -707,7 +707,7 @@ export default function MentoringPage() {
       title="Mentoring"
       description="Find expert mentors and manage your sessions"
     >
-      <div className="max-w-6xl mx-auto pb-10">
+      <div className="pb-10">
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="find" className="gap-2">

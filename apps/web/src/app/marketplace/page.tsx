@@ -307,7 +307,7 @@ export default function MarketplacePage() {
 
   return (
     <AppShell title="Services Marketplace" description="Find verified experts for every startup need">
-      <div className="space-y-6 max-w-6xl mx-auto pb-10">
+      <div className="space-y-6 pb-10">
         {/* Banner CTA for providers */}
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
           <CardContent className="p-4 flex items-center justify-between gap-4">

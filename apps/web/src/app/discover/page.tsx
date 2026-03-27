@@ -215,7 +215,7 @@ export default function DiscoverPage() {
         </Link>
       }
     >
-      <div className="space-y-5 max-w-6xl mx-auto pb-10">
+      <div className="space-y-5 pb-10">
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
