@@ -34,6 +34,7 @@ type MatchCardProps = {
   onPass?: () => void;
   onMessage?: () => void;
   onBookmark?: () => void;
+  onBreakdown?: () => void;
   className?: string;
 };
 
@@ -96,6 +97,7 @@ export function MatchCard({
   onPass,
   onMessage,
   onBookmark,
+  onBreakdown,
   className,
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
@@ -240,14 +242,27 @@ export function MatchCard({
 
           <div className="flex-1" />
 
-          {/* Compatibility Analysis link */}
-          <Link href={`/matches/${userId}`}>
-            <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
-              style={{ borderColor: `${color}40`, color }}>
+          {/* Compatibility breakdown / analysis */}
+          {onBreakdown ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 h-8 text-xs font-medium px-2.5"
+              style={{ borderColor: `${color}40`, color }}
+              onClick={onBreakdown}
+            >
               <TrendingUp className="h-3.5 w-3.5" />
-              Compatibility
+              Breakdown
             </Button>
-          </Link>
+          ) : (
+            <Link href={`/matches/${userId}`}>
+              <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
+                style={{ borderColor: `${color}40`, color }}>
+                <TrendingUp className="h-3.5 w-3.5" />
+                Compatibility
+              </Button>
+            </Link>
+          )}
 
           {onMessage && (
             <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">

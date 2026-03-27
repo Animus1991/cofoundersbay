@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function MatchesLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
-      <div className="mx-auto w-full max-w-7xl px-4 pt-6">
+      <div className="w-full px-4 pt-6">
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-32" />
           <Skeleton className="h-9 w-24 rounded-lg" />

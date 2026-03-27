@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,12 +11,12 @@ import {
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
   TrendingUp, Star, CheckCircle2,
 } from 'lucide-react';
-import { getRecommendations, sendConnectionRequest, type SearchHit } from '@/lib/api';
+import { getRecommendations, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -27,9 +27,12 @@ import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
 import { cn } from '@/lib/utils';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
-import { RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
+const MatchCompatibilityChart = dynamic(
+  () => import('@/components/charts/MatchCompatibilityChart').then((m) => ({ default: m.MatchCompatibilityChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-lg" /> }
+);
 
 type MatchReason = { type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values'; text: string; score: number };
 
@@ -69,25 +72,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
           </div>
         </div>
 
-        <ResponsiveContainer width="100%" height={200}>
-          <RadarChart data={dims}>
-            <PolarGrid stroke="hsl(var(--border))" />
-            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-            <Radar dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={2} />
-          </RadarChart>
-        </ResponsiveContainer>
-
-        <div className="space-y-2.5">
-          {dims.map((d) => (
-            <div key={d.subject} className="space-y-1">
-              <div className="flex justify-between text-xs">
-                <span className="font-medium text-foreground">{d.subject}</span>
-                <span className="text-muted-foreground tabular-nums">{d.value}%</span>
-              </div>
-              <Progress value={d.value} className="h-1.5" />
-            </div>
-          ))}
-        </div>
+        <MatchCompatibilityChart dims={dims} />
 
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
@@ -135,6 +120,7 @@ function hitToProfile(hit: SearchHit): ProfileCardData {
 type FilterKey = 'all' | 'excellent' | 'strong' | 'good' | 'potential';
 type RoleFilter = 'all' | 'founder' | 'mentor' | 'investor' | 'org';
 type SortKey = 'score' | 'name' | 'recent';
+type AvailFilter = 'full_time' | 'part_time' | 'advisory' | 'contract';
 type ViewMode = 'grid2' | 'grid3' | 'list';
 
 const TIER_COLORS = {
@@ -316,8 +302,25 @@ export default function MatchesPage() {
   const [lastPassed, setLastPassed] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [showSearch, setShowSearch] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [locationFilter, setLocationFilter] = useState('');
+  const [availFilter, setAvailFilter] = useState<Set<AvailFilter>>(new Set());
 
   const hasToken = useIsAuthenticated();
+
+  const { data: shortlistIdsData } = useQuery({
+    queryKey: ['shortlist', 'ids'],
+    queryFn: getShortlistIds,
+    staleTime: 5 * 60_000,
+    enabled: hasToken,
+  });
+
+  useEffect(() => {
+    if (shortlistIdsData?.ids) {
+      setSavedIds(new Set(shortlistIdsData.ids));
+    }
+  }, [shortlistIdsData]);
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['recommendations', 'matches', { limit: 50 }],
     queryFn: () => getRecommendations({ limit: 50 }),
@@ -360,10 +363,21 @@ export default function MatchesPage() {
         (s.skillNames ?? []).some(sk => sk.toLowerCase().includes(q))
       );
     }
+    if (locationFilter.trim()) {
+      const loc = locationFilter.toLowerCase();
+      list = list.filter(s => (s.location ?? '').toLowerCase().includes(loc));
+    }
+    if (availFilter.size > 0) {
+      list = list.filter(s => {
+        const av = (s.availability ?? '').toLowerCase();
+        return [...availFilter].some(f => av.includes(f.replace('_', ' ').replace('_', '-')));
+      });
+    }
     if (sortBy === 'score') list.sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0));
     else if (sortBy === 'name') list.sort((a, b) => a.displayName.localeCompare(b.displayName));
+    // 'recent': preserve original API order — no-op
     return list;
-  }, [visible, activeFilter, roleFilter, nameSearch, sortBy]);
+  }, [visible, activeFilter, roleFilter, nameSearch, sortBy, locationFilter, availFilter]);
 
   const handleConnect = useCallback((profile: ProfileCardData) => {
     setConnectionTarget(profile);
@@ -388,10 +402,11 @@ export default function MatchesPage() {
     router.push(`/messages?to=${profile.userId}`);
   }, [router]);
 
-  const handlePass = useCallback((id: string, name: string) => {
+  const handlePass = useCallback((id: string, name: string, userId: string) => {
     setPassedIds(prev => new Set(prev).add(id));
     setLastPassed(id);
-    success('Passed', `${name} removed · Undo?`, );
+    void recordMatchFeedback({ targetUserId: userId, feedback: 'declined' }).catch(() => {});
+    success('Passed', `${name} removed · Undo?`);
   }, [success]);
 
   const handleUndoPass = useCallback(() => {
@@ -400,12 +415,22 @@ export default function MatchesPage() {
     setLastPassed(null);
   }, [lastPassed]);
 
-  const handleSave = useCallback((id: string, name: string) => {
+  const handleSave = useCallback((userId: string, name: string) => {
     setSavedIds(prev => {
+      const isSaved = prev.has(userId);
       const next = new Set(prev);
-      if (next.has(id)) { next.delete(id); return next; }
-      next.add(id);
-      success('Saved to shortlist', `${name} added to your saved profiles`);
+      if (isSaved) {
+        next.delete(userId);
+        void removeFromShortlist(userId).catch(() =>
+          setSavedIds(p => { const r = new Set(p); r.add(userId); return r; })
+        );
+      } else {
+        next.add(userId);
+        success('Saved to shortlist', `${name} added to your saved profiles`);
+        void saveToShortlist(userId).catch(() =>
+          setSavedIds(p => { const r = new Set(p); r.delete(userId); return r; })
+        );
+      }
       return next;
     });
   }, [success]);
@@ -423,7 +448,17 @@ export default function MatchesPage() {
     { key: 'founder',  label: 'Founders',   icon: Briefcase },
     { key: 'mentor',   label: 'Mentors',    icon: GraduationCap },
     { key: 'investor', label: 'Investors',  icon: DollarSign },
+    { key: 'org',      label: 'Orgs',       icon: Users },
   ];
+
+  const AVAIL_OPTIONS: { key: AvailFilter; label: string }[] = [
+    { key: 'full_time', label: 'Full-time' },
+    { key: 'part_time', label: 'Part-time' },
+    { key: 'advisory',  label: 'Advisory' },
+    { key: 'contract',  label: 'Contract' },
+  ];
+
+  const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
 
   return (
     <AppShell
@@ -586,12 +621,29 @@ export default function MatchesPage() {
                     ))}
                   </div>
 
+                  <button
+                    onClick={() => setShowAdvancedFilters(s => !s)}
+                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
+                      showAdvancedFilters || locationFilter || availFilter.size > 0
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
+                    title="More filters">
+                    <SlidersHorizontal className="h-3.5 w-3.5" />
+                    Filters
+                    {(locationFilter || availFilter.size > 0) && (
+                      <span className="ml-0.5 rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">
+                        {(locationFilter ? 1 : 0) + availFilter.size}
+                      </span>
+                    )}
+                  </button>
+
                   <div className="flex items-center gap-1.5 border border-border/60 rounded-lg px-2.5 py-1.5">
                     <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
                     <select value={sortBy} onChange={e => setSortBy(e.target.value as SortKey)}
                       className="bg-transparent text-xs text-muted-foreground border-none outline-none cursor-pointer hover:text-foreground transition-colors">
                       <option value="score">Best Match</option>
                       <option value="name">Name A–Z</option>
+                      <option value="recent">Newest</option>
                     </select>
                   </div>
                 </div>
@@ -614,9 +666,12 @@ export default function MatchesPage() {
                     </button>
                   );
                 })}
-                {(activeFilter !== 'all' || roleFilter !== 'all' || nameSearch) && (
+                {hasActiveFilters && (
                   <button
-                    onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setShowSearch(false); }}
+                    onClick={() => {
+                      setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setShowSearch(false);
+                      setLocationFilter(''); setAvailFilter(new Set());
+                    }}
                     className="flex items-center gap-1 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-1">
                     <X className="h-3 w-3" /> Clear filters
                   </button>
@@ -643,13 +698,60 @@ export default function MatchesPage() {
                 </div>
               )}
 
+              {/* Advanced filter panel */}
+              {showAdvancedFilters && (
+                <div className="rounded-lg border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
+                      <div className="relative">
+                        <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <input
+                          type="text"
+                          value={locationFilter}
+                          onChange={e => setLocationFilter(e.target.value)}
+                          placeholder="City or country..."
+                          className="w-full h-8 rounded-lg border border-border/60 bg-background pl-8 pr-3 text-xs outline-none focus:border-primary/60 transition-colors"
+                        />
+                        {locationFilter && (
+                          <button onClick={() => setLocationFilter('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Availability</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {AVAIL_OPTIONS.map(({ key, label }) => {
+                          const isOn = availFilter.has(key);
+                          return (
+                            <button key={key} onClick={() => setAvailFilter(prev => {
+                              const next = new Set(prev);
+                              if (next.has(key)) next.delete(key); else next.add(key);
+                              return next;
+                            })}
+                            className={cn('rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
+                              isOn ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground hover:border-primary/40')}>
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Active filter summary */}
-              {(nameSearch || activeFilter !== 'all' || roleFilter !== 'all') && (
+              {hasActiveFilters && (
                 <p className="text-xs text-muted-foreground">
                   Showing <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
                   {activeFilter !== 'all' && ` · ${activeFilter}`}
                   {roleFilter !== 'all' && ` · ${ROLE_TABS.find(r => r.key === roleFilter)?.label}`}
                   {nameSearch && ` · "${nameSearch}"`}
+                  {locationFilter && ` · ${locationFilter}`}
+                  {availFilter.size > 0 && ` · ${[...availFilter].join(', ')}`}
                 </p>
               )}
             </CardContent>
@@ -695,39 +797,29 @@ export default function MatchesPage() {
             {filtered.map((hit) => {
               const profile = hitToProfile(hit);
               const score = hit.matchScore ?? 50;
-              const tier = getTier(score);
               const matchReasons: MatchReason[] = hit.matchReasons?.length
                 ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
                 : buildMatchReasonsFromScore(score);
               return (
-                <div key={hit.id} className="space-y-0">
-                  <MatchCard
-                    id={hit.id}
-                    userId={hit.userId}
-                    displayName={hit.displayName}
-                    headline={hit.headline}
-                    avatarUrl={hit.avatarUrl}
-                    role={hit.role}
-                    location={hit.location}
-                    skills={hit.skillNames ?? []}
-                    compatibilityScore={score}
-                    matchReasons={matchReasons}
-                    isBookmarked={savedIds.has(hit.id)}
-                    onLike={() => handleConnect(profile)}
-                    onPass={() => handlePass(hit.id, hit.displayName)}
-                    onMessage={() => handleMessage(profile)}
-                    onBookmark={() => handleSave(hit.id, hit.displayName)}
-                  />
-                  <div className="flex items-center justify-between px-4 py-2 rounded-b-xl border border-t-0 border-border/40 bg-secondary/20">
-                    <Badge variant="outline" className={cn('text-[10px] h-5', TIER_CLASSES[tier])}>
-                      {tier.charAt(0).toUpperCase() + tier.slice(1)}
-                    </Badge>
-                    <button onClick={() => setBreakdownTarget(hit)}
-                      className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors">
-                      <BarChart3 className="h-3 w-3" /> View breakdown
-                    </button>
-                  </div>
-                </div>
+                <MatchCard
+                  key={hit.id}
+                  id={hit.id}
+                  userId={hit.userId}
+                  displayName={hit.displayName}
+                  headline={hit.headline}
+                  avatarUrl={hit.avatarUrl}
+                  role={hit.role}
+                  location={hit.location}
+                  skills={hit.skillNames ?? []}
+                  compatibilityScore={score}
+                  matchReasons={matchReasons}
+                  isBookmarked={savedIds.has(hit.userId)}
+                  onLike={() => handleConnect(profile)}
+                  onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
+                  onMessage={() => handleMessage(profile)}
+                  onBookmark={() => handleSave(hit.userId, hit.displayName)}
+                  onBreakdown={() => setBreakdownTarget(hit)}
+                />
               );
             })}
           </div>
@@ -746,11 +838,11 @@ export default function MatchesPage() {
                   key={hit.id}
                   hit={hit}
                   matchReasons={matchReasons}
-                  isSaved={savedIds.has(hit.id)}
+                  isSaved={savedIds.has(hit.userId)}
                   onConnect={() => handleConnect(profile)}
                   onMessage={() => handleMessage(profile)}
-                  onPass={() => handlePass(hit.id, hit.displayName)}
-                  onSave={() => handleSave(hit.id, hit.displayName)}
+                  onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
+                  onSave={() => handleSave(hit.userId, hit.displayName)}
                   onBreakdown={() => setBreakdownTarget(hit)}
                 />
               );

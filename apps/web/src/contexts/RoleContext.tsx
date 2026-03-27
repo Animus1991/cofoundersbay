@@ -132,6 +132,10 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isLoading: false,
         error: null,
       });
+      // Persist role to cookie so middleware can redirect /dashboard at the edge
+      if (typeof document !== 'undefined' && context.primaryRole) {
+        document.cookie = `cfb_primary_role=${context.primaryRole}; path=/; SameSite=Lax; max-age=86400`;
+      }
     } catch (error) {
       setState((prev) => ({
         ...prev,

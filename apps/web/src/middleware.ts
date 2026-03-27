@@ -98,6 +98,40 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // ── Dashboard role redirect (edge-level, eliminates client-side double-redirect) ──
+  if (pathname === '/dashboard') {
+    const primaryRole = request.cookies.get('cfb_primary_role')?.value;
+    const ROLE_ROUTES: Record<string, string> = {
+      aspiring_founder:    '/dashboard/founder',
+      existing_founder:    '/dashboard/founder',
+      cofounder_candidate: '/dashboard/founder',
+      technical_talent:    '/dashboard/founder',
+      business_operator:   '/dashboard/founder',
+      mentor:              '/dashboard/mentor',
+      advisor:             '/dashboard/mentor',
+      coach:               '/dashboard/mentor',
+      course_creator:      '/dashboard/mentor',
+      angel_investor:      '/dashboard/investor',
+      vc_scout:            '/dashboard/investor',
+      vc_analyst:          '/dashboard/investor',
+      syndicate_manager:   '/dashboard/investor',
+      incubator_admin:     '/dashboard/incubator',
+      accelerator_admin:   '/dashboard/incubator',
+      university_admin:    '/dashboard/incubator',
+      venture_studio_admin:'/dashboard/incubator',
+      service_provider:    '/dashboard/provider',
+      legal_partner:       '/dashboard/provider',
+      finance_advisor:     '/dashboard/provider',
+      recruiter:           '/dashboard/provider',
+      platform_admin:      '/admin/dashboard',
+    };
+    const target = (primaryRole && ROLE_ROUTES[primaryRole]) || null;
+    if (target) {
+      return NextResponse.redirect(new URL(target, request.url));
+    }
+    // No role cookie yet → let the client DashboardRouter handle it
+  }
+
   return response;
 }
 

@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
   Search, X, Filter, Users, Briefcase, Calendar, MessageCircle,
   GraduationCap, Building2, FileText, Sparkles, ChevronDown,
-  MapPin, Clock, ArrowRight, Loader2,
+  MapPin, Clock, ArrowRight, Loader2, History, Command,
 } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,9 @@ type SearchResponse = {
   };
 };
 
+const RECENT_SEARCHES_KEY = 'cfb:recent-searches';
+const MAX_RECENT_SEARCHES = 6;
+
 async function performSearch(
   query: string,
   category: SearchCategory,
@@ -59,18 +63,7 @@ async function performSearch(
     page: String(page),
     limit: '20',
   });
-
-  const response = await fetch(`/api/v1/search?${params}`, {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Search failed');
-  }
-
-  return response.json();
+  return apiRequest<SearchResponse>(`/api/v1/search?${params}`);
 }
 
 const CATEGORY_CONFIG: Record<SearchCategory, { label: string; icon: React.ElementType }> = {
@@ -239,6 +232,29 @@ export default function SearchPage() {
   const [query, setQuery] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [category, setCategory] = useState<SearchCategory>(initialCategory);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load recent searches from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
+      if (stored) setRecentSearches(JSON.parse(stored) as string[]);
+    } catch {}
+  }, []);
+
+  // Cmd/Ctrl+K shortcut to focus search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -265,6 +281,17 @@ export default function SearchPage() {
     staleTime: 30_000,
   });
 
+  // Save successful searches to localStorage
+  useEffect(() => {
+    if (debouncedQuery.length >= 2 && data?.total) {
+      setRecentSearches(prev => {
+        const updated = [debouncedQuery, ...prev.filter((s) => s !== debouncedQuery)].slice(0, MAX_RECENT_SEARCHES);
+        try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated)); } catch {}
+        return updated;
+      });
+    }
+  }, [debouncedQuery, data?.total]);
+
   const results = data?.results || [];
   const total = data?.total || 0;
   const categories = data?.categories || {
@@ -284,22 +311,74 @@ export default function SearchPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              ref={inputRef}
               type="text"
               placeholder="Search for people, jobs, events, groups..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="pl-10 pr-10 h-11"
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setTimeout(() => setInputFocused(false), 150)}
+              className="pl-10 pr-20 h-11"
               autoFocus
             />
-            {query && (
-              <button
-                onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {!query && (
+                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">
+                  <Command className="h-2.5 w-2.5" />K
+                </kbd>
+              )}
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Recent searches dropdown */}
+          {inputFocused && !query && recentSearches.length > 0 && (
+            <div className="absolute left-4 right-4 top-full mt-1 z-50 rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
+              <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <History className="h-3.5 w-3.5" />
+                  Recent searches
+                </span>
+                <button
+                  onClick={() => {
+                    setRecentSearches([]);
+                    try { localStorage.removeItem(RECENT_SEARCHES_KEY); } catch {}
+                  }}
+                  className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+              {recentSearches.map((term) => (
+                <button
+                  key={term}
+                  onClick={() => { setQuery(term); inputRef.current?.blur(); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-secondary/60 transition-colors text-left"
+                >
+                  <History className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="flex-1 truncate">{term}</span>
+                  <X
+                    className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRecentSearches(prev => {
+                        const updated = prev.filter((s) => s !== term);
+                        try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated)); } catch {}
+                        return updated;
+                      });
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Category Tabs */}
           <div className="mt-3 overflow-x-auto scrollbar-hide">

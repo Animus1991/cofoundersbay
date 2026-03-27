@@ -59,8 +59,8 @@ const nextConfig: NextConfig = {
     ],
     // Next.js 15 router cache: cache dynamic segments for 30s to speed up back/forward navigation
     staleTimes: {
-      dynamic: 30,
-      static: 300,
+      dynamic: 120,
+      static: 600,
     },
   },
 
