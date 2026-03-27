@@ -617,7 +617,7 @@ export default function MatchesPage() {
         </div>
       }
     >
-      <div className="space-y-5 pb-10">
+      <div className="space-y-4 pb-10">
 
         {/* ── Not authenticated ── */}
         {!hasToken && (
@@ -646,14 +646,26 @@ export default function MatchesPage() {
           </Card>
         )}
 
+        {/* ── Loading skeletons ── */}
+        {hasToken && isLoading && (
+          <div className="flex gap-4 items-start">
+            <div className="hidden md:block w-[220px] shrink-0 space-y-3">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
+            </div>
+            <div className="flex-1 min-w-0 grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+              {[...Array(6)].map((_, i) => <ProfileCardSkeleton key={i} variant="featured" />)}
+            </div>
+          </div>
+        )}
+
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: 'Total Matches',   value: counts.all,     color: 'text-foreground',     bg: 'bg-muted/40',        icon: Users },
-              { label: 'Excellent ≥80%',  value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',    icon: Star },
-              { label: 'Avg Score',       value: `${avgScore}%`, color: 'text-cyan-600',       bg: 'bg-cyan-500/10',     icon: TrendingUp },
-              { label: 'Top Score',       value: `${topScore}%`, color: 'text-violet-600',     bg: 'bg-violet-500/10',   icon: Award },
+              { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
+              { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',   icon: Star },
+              { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
+              { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600',  bg: 'bg-violet-500/10',  icon: Award },
             ].map(({ label, value, color, bg, icon: Icon }) => (
               <Card key={label} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-3 p-3.5">
@@ -670,15 +682,6 @@ export default function MatchesPage() {
           </div>
         )}
 
-        {/* ── Loading skeletons ── */}
-        {hasToken && isLoading && (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <ProfileCardSkeleton key={i} variant="featured" />
-            ))}
-          </div>
-        )}
-
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
           <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
@@ -691,7 +694,7 @@ export default function MatchesPage() {
                   🎯 {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Top score: {topScore}% · These profiles are highly compatible with yours — reach out now
+                  Top score: {topScore}% · These profiles are highly compatible — reach out now
                 </p>
               </div>
             </div>
@@ -708,207 +711,7 @@ export default function MatchesPage() {
           </div>
         )}
 
-        {/* ── Filter + View toolbar ── */}
-        {hasToken && !isLoading && visible.length > 0 && (
-          <Card className="shadow-sm border-border/50">
-            <CardContent className="p-3 space-y-3">
-              {/* Row 1: Tier tabs + view mode + sort */}
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                {/* Tier filter tabs */}
-                <div className="flex items-center gap-1 overflow-x-auto">
-                  {TIER_TABS.map(tab => {
-                    const isActive = activeFilter === tab.key;
-                    return (
-                      <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
-                        className={cn(
-                          'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all',
-                          isActive ? 'bg-primary text-primary-foreground shadow-sm'
-                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                        )}>
-                        {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
-                        {tab.label}
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold',
-                          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                          {counts[tab.key]}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Right controls: search, sort, view */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
-                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
-                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
-                    title="Select mode">
-                    <CheckSquare className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Select</span>
-                    {selectedIds.size > 0 && (
-                      <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>
-                    )}
-                  </button>
-
-                  <button onClick={() => setShowSearch(s => !s)}
-                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
-                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
-                    <Search className="h-3.5 w-3.5" />
-                  </button>
-
-                  <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
-                    {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-column grid', small: false },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-column grid', small: true },
-                      { mode: 'list'  as ViewMode, icon: List,       title: 'List view',     small: false },
-                    ]).map(({ mode, icon: Icon, title, small }) => (
-                      <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
-                          viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-                        <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
-                      </button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={() => setShowAdvancedFilters(s => !s)}
-                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
-                      showAdvancedFilters || locationFilter || availFilter.size > 0
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
-                    title="More filters">
-                    <SlidersHorizontal className="h-3.5 w-3.5" />
-                    Filters
-                    {(locationFilter || availFilter.size > 0) && (
-                      <span className="ml-0.5 rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">
-                        {(locationFilter ? 1 : 0) + availFilter.size}
-                      </span>
-                    )}
-                  </button>
-
-                  <div className="flex items-center gap-1.5 border border-border/60 rounded-lg px-2.5 py-1.5">
-                    <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                    <select value={sortBy} onChange={e => setSortBy(e.target.value as SortKey)}
-                      className="bg-transparent text-xs text-muted-foreground border-none outline-none cursor-pointer hover:text-foreground transition-colors">
-                      <option value="score">Best Match</option>
-                      <option value="name">Name A–Z</option>
-                      <option value="recent">Newest</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Role filter pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto">
-                {ROLE_TABS.map(({ key, label, icon: Icon }) => {
-                  const isActive = roleFilter === key;
-                  return (
-                    <button key={key} onClick={() => setRoleFilter(key)}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-all whitespace-nowrap',
-                        isActive
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
-                      )}>
-                      <Icon className="h-3 w-3" />
-                      {label}
-                    </button>
-                  );
-                })}
-                {hasActiveFilters && (
-                  <button
-                    onClick={() => {
-                      setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setShowSearch(false);
-                      setLocationFilter(''); setAvailFilter(new Set());
-                    }}
-                    className="flex items-center gap-1 rounded-full border border-border/60 px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-1">
-                    <X className="h-3 w-3" /> Clear filters
-                  </button>
-                )}
-              </div>
-
-              {/* Row 3: Search input (conditional) */}
-              {showSearch && (
-                <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    value={nameSearch}
-                    onChange={e => setNameSearch(e.target.value)}
-                    placeholder="Search by name, headline, or skill..."
-                    className="pl-9 h-9 text-sm"
-                    autoFocus
-                  />
-                  {nameSearch && (
-                    <button onClick={() => setNameSearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
-                      Clear
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Advanced filter panel */}
-              {showAdvancedFilters && (
-                <div className="rounded-lg border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        <input
-                          type="text"
-                          value={locationFilter}
-                          onChange={e => setLocationFilter(e.target.value)}
-                          placeholder="City or country..."
-                          className="w-full h-8 rounded-lg border border-border/60 bg-background pl-8 pr-3 text-xs outline-none focus:border-primary/60 transition-colors"
-                        />
-                        {locationFilter && (
-                          <button onClick={() => setLocationFilter('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                            <X className="h-3 w-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Availability</label>
-                      <div className="flex flex-wrap gap-1.5">
-                        {AVAIL_OPTIONS.map(({ key, label }) => {
-                          const isOn = availFilter.has(key);
-                          return (
-                            <button key={key} onClick={() => setAvailFilter(prev => {
-                              const next = new Set(prev);
-                              if (next.has(key)) next.delete(key); else next.add(key);
-                              return next;
-                            })}
-                            className={cn('rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
-                              isOn ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground hover:border-primary/40')}>
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Active filter summary */}
-              {hasActiveFilters && (
-                <p className="text-xs text-muted-foreground">
-                  Showing <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
-                  {activeFilter !== 'all' && ` · ${activeFilter}`}
-                  {roleFilter !== 'all' && ` · ${ROLE_TABS.find(r => r.key === roleFilter)?.label}`}
-                  {nameSearch && ` · "${nameSearch}"`}
-                  {locationFilter && ` · ${locationFilter}`}
-                  {availFilter.size > 0 && ` · ${[...availFilter].join(', ')}`}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* ── Empty states ── */}
+        {/* ── No data at all ── */}
         {hasToken && !isLoading && visible.length === 0 && (
           <EmptyState
             title="No matches yet"
@@ -925,101 +728,350 @@ export default function MatchesPage() {
           />
         )}
 
-        {hasToken && !isLoading && filtered.length === 0 && visible.length > 0 && (
-          <Card className="shadow-sm border-border/50">
-            <CardContent className="py-12 text-center">
-              <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
-              <p className="font-medium text-foreground mb-1">No matches for these filters</p>
-              <p className="text-sm text-muted-foreground mb-4">Try adjusting the tier or role filter</p>
-              <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); }}>
-                Clear all filters
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* ── Two-column: filter sidebar + results ── */}
+        {hasToken && !isLoading && visible.length > 0 && (
+          <div className="flex gap-4 items-start">
 
-        {/* ── Matches grid / list ── */}
-        {hasToken && !isLoading && filtered.length > 0 && viewMode !== 'list' && (
-          <div className={cn(
-            'grid gap-5',
-            viewMode === 'grid3' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 md:grid-cols-2',
-          )}>
-            {filtered.map((hit) => {
-              const profile = hitToProfile(hit);
-              const score = hit.matchScore ?? 50;
-              const matchReasons: MatchReason[] = hit.matchReasons?.length
-                ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                : buildMatchReasonsFromScore(score);
-              return (
-                <MatchCard
-                  key={hit.id}
-                  id={hit.id}
-                  userId={hit.userId}
-                  displayName={hit.displayName}
-                  headline={hit.headline}
-                  avatarUrl={hit.avatarUrl}
-                  role={hit.role}
-                  location={hit.location}
-                  skills={hit.skillNames ?? []}
-                  compatibilityScore={score}
-                  matchReasons={matchReasons}
-                  isBookmarked={savedIds.has(hit.userId)}
-                  onLike={() => handleConnect(profile)}
-                  onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
-                  onMessage={() => handleMessage(profile)}
-                  onBookmark={() => handleSave(hit.userId, hit.displayName)}
-                  onBreakdown={() => setBreakdownTarget(hit)}
-                  onClick={!selectMode ? () => setPreviewTarget(hit) : undefined}
-                  isSelected={selectMode ? selectedIds.has(hit.id) : undefined}
-                  onSelect={selectMode ? () => setSelectedIds(prev => {
-                    const next = new Set(prev);
-                    if (next.has(hit.id)) next.delete(hit.id); else next.add(hit.id);
-                    return next;
-                  }) : undefined}
-                />
-              );
-            })}
-          </div>
-        )}
+            {/* ── Sticky filter sidebar (desktop md+) ── */}
+            <aside className="hidden md:flex flex-col w-[220px] shrink-0 sticky top-[calc(3.5rem+1.25rem)] space-y-2.5 max-h-[calc(100vh-6.5rem)] overflow-y-auto scrollbar-hide pb-4">
 
-        {hasToken && !isLoading && filtered.length > 0 && viewMode === 'list' && (
-          <div className="space-y-3">
-            {filtered.map((hit) => {
-              const profile = hitToProfile(hit);
-              const score = hit.matchScore ?? 50;
-              const matchReasons: MatchReason[] = hit.matchReasons?.length
-                ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
-                : buildMatchReasonsFromScore(score);
-              return (
-                <MatchListRow
-                  key={hit.id}
-                  hit={hit}
-                  matchReasons={matchReasons}
-                  isSaved={savedIds.has(hit.userId)}
-                  onConnect={() => handleConnect(profile)}
-                  onMessage={() => handleMessage(profile)}
-                  onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
-                  onSave={() => handleSave(hit.userId, hit.displayName)}
-                  onBreakdown={() => setBreakdownTarget(hit)}
-                />
-              );
-            })}
-          </div>
-        )}
+              {/* Tier filter */}
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Match Tier</p>
+                  {TIER_TABS.map(tab => {
+                    const isActive = activeFilter === tab.key;
+                    return (
+                      <button key={tab.key} onClick={() => setActiveFilter(tab.key)}
+                        className={cn(
+                          'flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                          isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                        )}>
+                        <span className="flex items-center gap-1.5">
+                          {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
+                          {tab.label}
+                        </span>
+                        <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                          isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                          {counts[tab.key]}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </CardContent>
+              </Card>
 
-        {/* ── Results footer ── */}
-        {hasToken && !isLoading && filtered.length > 0 && (
-          <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
-            <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown · {passedIds.size > 0 && `${passedIds.size} passed`}</span>
-            <div className="flex items-center gap-3">
-              {lastPassed && (
-                <button onClick={handleUndoPass} className="flex items-center gap-1 text-primary hover:underline">
-                  <RotateCcw className="h-3 w-3" /> Undo last pass
+              {/* Role filter */}
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Role</p>
+                  {ROLE_TABS.map(({ key, label, icon: Icon }) => {
+                    const isActive = roleFilter === key;
+                    return (
+                      <button key={key} onClick={() => setRoleFilter(key)}
+                        className={cn(
+                          'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                          isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                        )}>
+                        <Icon className="h-3 w-3 shrink-0" />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+
+              {/* Location */}
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 space-y-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">Location</p>
+                  <div className="relative">
+                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                    <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+                      placeholder="City or country..."
+                      className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
+                    {locationFilter && (
+                      <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Availability */}
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Availability</p>
+                  {AVAIL_OPTIONS.map(({ key, label }) => {
+                    const isOn = availFilter.has(key);
+                    return (
+                      <button key={key} onClick={() => setAvailFilter(prev => {
+                        const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
+                      })}
+                        className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                          isOn ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                        <span className={cn('h-3.5 w-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
+                          isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
+                          {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
+                        </span>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+
+              {/* Sort */}
+              <Card className="shadow-sm border-border/50">
+                <CardContent className="p-3 space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Sort by</p>
+                  {([
+                    { key: 'score'  as SortKey, label: 'Best Match',   icon: Zap },
+                    { key: 'name'   as SortKey, label: 'Name A–Z',     icon: ArrowUpDown },
+                    { key: 'recent' as SortKey, label: 'Newest First',  icon: Clock },
+                  ]).map(({ key, label, icon: Icon }) => (
+                    <button key={key} onClick={() => setSortBy(key)}
+                      className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                        sortBy === key ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                      <Icon className="h-3 w-3 shrink-0" />
+                      {label}
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Clear all */}
+              {hasActiveFilters && (
+                <button
+                  onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
+                  className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
+                  <X className="h-3 w-3" /> Clear all filters
                 </button>
               )}
-              <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                Explore more <ArrowRight className="h-3 w-3" />
-              </Link>
+            </aside>
+
+            {/* ── Results column ── */}
+            <div className="flex-1 min-w-0 space-y-4">
+
+              {/* Mobile: scrollable tier chips + filters toggle */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
+                <button onClick={() => setShowAdvancedFilters(s => !s)}
+                  className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
+                  <SlidersHorizontal className="h-3 w-3" /> Filters
+                  {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
+                </button>
+                {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
+                  const isActive = activeFilter === tab.key;
+                  return (
+                    <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
+                      className={cn('flex items-center gap-1 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                        isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
+                      {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Mobile: expanded filter panel */}
+              {showAdvancedFilters && (
+                <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
+                  <div className="grid gap-3 grid-cols-2">
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
+                      <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
+                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        {TIER_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
+                      <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
+                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        {ROLE_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
+                      <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
+                        placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
+                    </div>
+                  </div>
+                  {hasActiveFilters && (
+                    <button onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setLocationFilter(''); setAvailFilter(new Set()); }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                      Clear all
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Results toolbar */}
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground min-w-0">
+                  {filtered.length > 0 && (
+                    <span>
+                      <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
+                      {passedIds.size > 0 && <span className="text-muted-foreground/60"> · {passedIds.size} passed</span>}
+                    </span>
+                  )}
+                </p>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
+                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
+                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
+                    title="Select mode">
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Select</span>
+                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>}
+                  </button>
+
+                  <button onClick={() => setShowSearch(s => !s)}
+                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
+                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
+                    <Search className="h-3.5 w-3.5" />
+                  </button>
+
+                  <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
+                    {([
+                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false },
+                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true },
+                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false },
+                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean }[]).map(({ mode, icon: Icon, title, small }) => (
+                      <button key={mode} onClick={() => setViewMode(mode)} title={title}
+                        className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
+                          viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
+                        <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
+                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
+                      </button>
+                    ))}
+                  </div>
+
+                  {lastPassed && (
+                    <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground hidden sm:flex">
+                      <RotateCcw className="h-3.5 w-3.5" /> Undo
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Search input (conditional) */}
+              {showSearch && (
+                <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
+                    placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
+                  {nameSearch && (
+                    <button onClick={() => setNameSearch('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
+                      Clear
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Active filter summary */}
+              {hasActiveFilters && filtered.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{filtered.length}</span> of {visible.length} matches
+                  {nameSearch && ` · "${nameSearch}"`}
+                </p>
+              )}
+
+              {/* No results for filters */}
+              {filtered.length === 0 && (
+                <Card className="shadow-sm border-border/50">
+                  <CardContent className="py-12 text-center">
+                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                    <p className="font-medium text-foreground mb-1">No matches for these filters</p>
+                    <p className="text-sm text-muted-foreground mb-4">Try adjusting your tier, role, or location filter</p>
+                    <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
+                      Clear all filters
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Matches grid */}
+              {filtered.length > 0 && viewMode !== 'list' && (
+                <div className={cn('grid gap-4',
+                  viewMode === 'grid3' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2')}>
+                  {filtered.map((hit) => {
+                    const profile = hitToProfile(hit);
+                    const score = hit.matchScore ?? 50;
+                    const matchReasons: MatchReason[] = hit.matchReasons?.length
+                      ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
+                      : buildMatchReasonsFromScore(score);
+                    return (
+                      <MatchCard
+                        key={hit.id}
+                        id={hit.id}
+                        userId={hit.userId}
+                        displayName={hit.displayName}
+                        headline={hit.headline}
+                        avatarUrl={hit.avatarUrl}
+                        role={hit.role}
+                        location={hit.location}
+                        skills={hit.skillNames ?? []}
+                        compatibilityScore={score}
+                        matchReasons={matchReasons}
+                        isBookmarked={savedIds.has(hit.userId)}
+                        onLike={() => handleConnect(profile)}
+                        onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
+                        onMessage={() => handleMessage(profile)}
+                        onBookmark={() => handleSave(hit.userId, hit.displayName)}
+                        onBreakdown={() => setBreakdownTarget(hit)}
+                        onClick={!selectMode ? () => setPreviewTarget(hit) : undefined}
+                        isSelected={selectMode ? selectedIds.has(hit.id) : undefined}
+                        onSelect={selectMode ? () => setSelectedIds(prev => {
+                          const next = new Set(prev);
+                          if (next.has(hit.id)) next.delete(hit.id); else next.add(hit.id);
+                          return next;
+                        }) : undefined}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Matches list */}
+              {filtered.length > 0 && viewMode === 'list' && (
+                <div className="space-y-3">
+                  {filtered.map((hit) => {
+                    const profile = hitToProfile(hit);
+                    const score = hit.matchScore ?? 50;
+                    const matchReasons: MatchReason[] = hit.matchReasons?.length
+                      ? hit.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
+                      : buildMatchReasonsFromScore(score);
+                    return (
+                      <MatchListRow
+                        key={hit.id}
+                        hit={hit}
+                        matchReasons={matchReasons}
+                        isSaved={savedIds.has(hit.userId)}
+                        onConnect={() => handleConnect(profile)}
+                        onMessage={() => handleMessage(profile)}
+                        onPass={() => handlePass(hit.id, hit.displayName, hit.userId)}
+                        onSave={() => handleSave(hit.userId, hit.displayName)}
+                        onBreakdown={() => setBreakdownTarget(hit)}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Results footer */}
+              {filtered.length > 0 && (
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
+                  <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
+                  <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
+                    Explore more <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

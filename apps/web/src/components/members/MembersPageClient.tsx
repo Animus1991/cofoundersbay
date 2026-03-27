@@ -630,7 +630,7 @@ export function MembersPageClient() {
         ) : isLoading ? (
           <div className={cn(
             'grid gap-4',
-            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {Array.from({ length: 8 }).map((_, i) => (
               <MemberSkeleton key={i} viewMode={viewMode} />
@@ -654,7 +654,7 @@ export function MembersPageClient() {
         ) : (
           <div className={cn(
             'grid gap-4',
-            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
+            viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4' : 'grid-cols-1'
           )}>
             {members.map((member) => (
               <MemberCard

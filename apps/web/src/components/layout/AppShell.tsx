@@ -41,7 +41,7 @@ export function AppShell({
       {/* Main column — offset by sidebar width on lg+ */}
       <div
         className={cn(
-          'flex flex-col',
+          'flex flex-col overflow-x-clip',
           fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
           'transition-[margin-left] duration-200 ease-out',
           expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
@@ -63,7 +63,7 @@ export function AppShell({
             <main
               id="main-content"
               className={cn(
-                'flex-1 mx-auto w-full max-w-[1638px]',
+                'flex-1 mx-auto w-full max-w-screen-2xl',
                 'px-4 sm:px-6 lg:px-8',
                 'pt-4 pb-24 lg:pb-10',
                 contentClassName,
