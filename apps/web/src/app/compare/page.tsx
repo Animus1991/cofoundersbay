@@ -9,6 +9,7 @@ import {
   CheckCircle, XCircle, Minus, ChevronDown, ChevronUp,
   BarChart3, Zap, Heart, Share2, Download,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,10 +21,11 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { getPublicProfile, sendConnectionRequest } from '@/lib/api';
-import {
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer,
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
-} from 'recharts';
+
+const ComparisonChart = dynamic(
+  () => import('./ComparisonChart').then((m) => ({ default: m.ComparisonChart })),
+  { ssr: false, loading: () => <Skeleton className="h-[330px] w-full rounded-xl" /> }
+);
 
 type CompareProfile = {
   id: string;
@@ -42,14 +44,6 @@ type CompareProfile = {
 };
 
 const MAX_PROFILES = 4;
-
-const COMPARISON_DIMENSIONS = [
-  { key: 'skills', label: 'Skills Match', icon: Zap },
-  { key: 'stage', label: 'Stage Fit', icon: Target },
-  { key: 'industry', label: 'Industry Overlap', icon: Briefcase },
-  { key: 'location', label: 'Location', icon: MapPin },
-  { key: 'availability', label: 'Availability', icon: Clock },
-];
 
 function ProfileColumn({
   profile,
@@ -194,51 +188,6 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
       <p className="font-medium text-foreground">Add Profile</p>
       <p className="text-sm text-muted-foreground mt-1">Select from matches or search</p>
     </button>
-  );
-}
-
-function ComparisonChart({ profiles }: { profiles: CompareProfile[] }) {
-  const data = COMPARISON_DIMENSIONS.map((dim) => {
-    const entry: Record<string, string | number> = { dimension: dim.label };
-    profiles.forEach((p, i) => {
-      // Generate mock scores based on match score
-      const base = p.matchScore || 50;
-      const variance = Math.random() * 20 - 10;
-      entry[`profile${i}`] = Math.max(0, Math.min(100, base + variance));
-    });
-    return entry;
-  });
-
-  const colors = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          Comparison Overview
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={data} layout="vertical">
-            <XAxis type="number" domain={[0, 100]} />
-            <YAxis type="category" dataKey="dimension" width={100} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Legend />
-            {profiles.map((p, i) => (
-              <Bar
-                key={p.id}
-                dataKey={`profile${i}`}
-                name={p.displayName}
-                fill={colors[i]}
-                radius={[0, 4, 4, 0]}
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
   );
 }
 
