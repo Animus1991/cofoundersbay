@@ -387,25 +387,27 @@ export default function CoachingPage() {
       title="Coaching"
       description="Accountability, clarity, and execution coaching for founders and teams"
     >
-      <div className="space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 pb-10">
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary' },
-            { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'text-blue-500' },
-            { label: 'Action items done', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500' },
-            { label: 'Avg rating', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-xl border border-border/60 bg-card p-3 flex items-center gap-3">
-              <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60', color)}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-base font-bold text-foreground">{value}</p>
-                <p className="text-[11px] text-muted-foreground">{label}</p>
-              </div>
-            </div>
+            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { label: 'Action items done', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: 'Avg rating', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
+            <Card key={label} className="shadow-sm border-border/50">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 

@@ -540,6 +540,7 @@ export default function OpportunitiesPage() {
           </Button>
         }
       >
+        <div className="max-w-6xl mx-auto space-y-5 pb-10">
         {/* Stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
@@ -550,15 +551,17 @@ export default function OpportunitiesPage() {
           ].map((s) => {
             const SIcon = s.icon;
             return (
-              <div key={s.label} className="flex items-center gap-2.5 rounded-xl border border-border/40 bg-card p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
-                </div>
-              </div>
+              <Card key={s.label} className="shadow-sm border-border/50">
+                <CardContent className="flex items-center gap-2.5 p-3">
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                    <SIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
@@ -755,6 +758,7 @@ export default function OpportunitiesPage() {
             )}
           </div>
         )}
+        </div>
       </AppShell>
     </>
   );

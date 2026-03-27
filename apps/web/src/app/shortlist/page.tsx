@@ -20,6 +20,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
   listShortlist,
@@ -347,25 +348,27 @@ export default function ShortlistPage() {
 
   return (
     <AppShell title="Saved Profiles" description="Profiles you've bookmarked to revisit, compare, and reach out to">
-      <div className="space-y-5">
+      <div className="max-w-6xl mx-auto space-y-5 pb-10">
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary' },
-            { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-amber-500' },
-            { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-emerald-500' },
-            { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-blue-500' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-xl border border-border/60 bg-card p-3 flex items-center gap-3">
-              <div className={cn('flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60', color)}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="text-base font-bold text-foreground">{value}</p>
-                <p className="text-[11px] text-muted-foreground">{label}</p>
-              </div>
-            </div>
+            { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
+            <Card key={label} className="shadow-sm border-border/50">
+              <CardContent className="flex items-center gap-3 p-3">
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-foreground leading-none">{value}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 

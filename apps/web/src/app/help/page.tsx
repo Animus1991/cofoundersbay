@@ -3,11 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  HelpCircle, ArrowLeft, Search, ChevronDown, ChevronRight,
+  HelpCircle, Search, ChevronDown,
   User, Users, MessageCircle, Shield, CreditCard, Settings,
-  Compass, GraduationCap, Briefcase, Mail, ExternalLink,
-  BookOpen, Zap, Heart, Flag, Bell, Calendar,
+  GraduationCap, Mail,
+  BookOpen, Zap, Heart, Flag,
 } from 'lucide-react';
+import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -248,20 +249,24 @@ const faqCategories: FAQCategory[] = [
 
 function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean; onToggle: () => void }) {
   return (
-    <div className="border-b border-border/60 last:border-0">
+    <div className="border-b border-border/50 last:border-0">
       <button
         onClick={onToggle}
-        className="flex w-full items-center justify-between py-4 text-left hover:text-primary transition-colors"
-      >
-        <span className="text-sm font-medium text-foreground pr-4">{faq.question}</span>
-        {isOpen ? (
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        className={cn(
+          'flex w-full items-center justify-between py-4 text-left transition-colors',
+          isOpen ? 'text-primary' : 'hover:text-primary text-foreground',
         )}
+      >
+        <span className="text-sm font-medium pr-4">{faq.question}</span>
+        <ChevronDown
+          className={cn(
+            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+            isOpen && 'rotate-180 text-primary',
+          )}
+        />
       </button>
       {isOpen && (
-        <div className="pb-4 pr-8">
+        <div className="pb-4 pr-8 animate-in fade-in slide-in-from-top-1 duration-150">
           <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
         </div>
       )}
@@ -302,113 +307,140 @@ export default function HelpPage() {
     : filteredCategories;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span className="text-sm font-medium">Back to CoFounderBay</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/terms">
-              <Button variant="ghost" size="sm" className="text-xs">Terms</Button>
-            </Link>
-            <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-xs">Privacy</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+    <AppShell
+      title="Help & Support"
+      description="Find answers, guides, and get in touch with the CoFounderBay team"
+      actions={
+        <a href="mailto:support@cofounderbay.com">
+          <Button size="sm" className="gap-2">
+            <Mail className="h-4 w-4" />
+            Contact Support
+          </Button>
+        </a>
+      }
+    >
+      <div className="max-w-4xl mx-auto space-y-6 pb-10">
 
-      {/* Hero */}
-      <section className="border-b border-border/60 bg-muted/30">
-        <div className="mx-auto max-w-5xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <HelpCircle className="h-7 w-7 text-primary" />
+        {/* Search Hero */}
+        <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <HelpCircle className="h-6 w-6 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Help Center</h1>
-          <p className="text-muted-foreground mb-6">Find answers to common questions and learn how to use CoFounderBay</p>
-          
-          {/* Search */}
-          <div className="mx-auto max-w-xl relative">
+          <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
+          <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
+          <div className="mx-auto max-w-lg relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search for help..."
+              placeholder="Search for help (e.g. matching, billing, profile...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11"
+              className="pl-10 h-11 bg-background border-border/60"
             />
-          </div>
-        </div>
-      </section>
-
-      {/* Category Pills */}
-      <section className="border-b border-border/60">
-        <div className="mx-auto max-w-5xl px-4 py-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedCategory === null ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-              className="text-xs"
-            >
-              All Topics
-            </Button>
-            {faqCategories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="text-xs gap-1.5"
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                <category.icon className="h-3 w-3" />
-                {category.title}
-              </Button>
-            ))}
+                Clear
+              </button>
+            )}
           </div>
+          {searchQuery && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {displayCategories.reduce((sum, c) => sum + c.faqs.length, 0)} result{displayCategories.reduce((sum, c) => sum + c.faqs.length, 0) !== 1 ? 's' : ''} for &ldquo;{searchQuery}&rdquo;
+            </p>
+          )}
         </div>
-      </section>
 
-      {/* FAQ Content */}
-      <main className="mx-auto max-w-5xl px-4 py-12">
-        {displayCategories.length === 0 ? (
-          <div className="text-center py-12">
-            <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
-            <h2 className="text-lg font-semibold text-foreground mb-2">No results found</h2>
-            <p className="text-sm text-muted-foreground mb-4">Try a different search term or browse all topics</p>
-            <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
-              Clear search
-            </Button>
+        {/* Category Filter Pills */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+              selectedCategory === null
+                ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+            )}
+          >
+            All Topics
+            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-[10px]', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
+              {faqCategories.reduce((sum, c) => sum + c.faqs.length, 0)}
+            </Badge>
+          </button>
+          {faqCategories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                selectedCategory === category.id
+                  ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                  : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
+              )}
+            >
+              <category.icon className="h-3 w-3" />
+              {category.title}
+            </button>
+          ))}
+        </div>
+
+        {/* Results count when filtering */}
+        {(selectedCategory || searchQuery) && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {displayCategories.length} topic{displayCategories.length !== 1 ? 's' : ''}
+              {selectedCategory && ` in "${faqCategories.find(c => c.id === selectedCategory)?.title}"`}
+            </p>
+            <button
+              onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
+              className="text-xs text-primary hover:underline"
+            >
+              Clear all filters
+            </button>
           </div>
+        )}
+
+        {/* FAQ Content */}
+        {displayCategories.length === 0 ? (
+          <Card className="shadow-sm border-border/50">
+            <CardContent className="py-16 text-center">
+              <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+              <h2 className="text-lg font-semibold text-foreground mb-2">No results found</h2>
+              <p className="text-sm text-muted-foreground mb-4">Try a different search term or browse all topics</p>
+              <Button variant="outline" size="sm" onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}>
+                Clear search
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-4">
             {displayCategories.map((category) => (
-              <Card key={category.id} className="border-border/60">
-                <CardHeader className="pb-4">
+              <Card key={category.id} className="shadow-sm border-border/50">
+                <CardHeader className="border-b border-border/50 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <category.icon className="h-5 w-5 text-primary" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <category.icon className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <CardTitle className="text-base">{category.title}</CardTitle>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
                       <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
+                    <Badge variant="outline" className="text-[10px] shrink-0">
+                      {category.faqs.length} FAQ{category.faqs.length !== 1 ? 's' : ''}
+                    </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="divide-y divide-border/60">
-                    {category.faqs.map((faq, index) => (
-                      <FAQAccordion
-                        key={index}
-                        faq={faq}
-                        isOpen={openFAQs.has(`${category.id}-${index}`)}
-                        onToggle={() => toggleFAQ(category.id, index)}
-                      />
-                    ))}
-                  </div>
+                <CardContent className="pt-0 px-6">
+                  {category.faqs.map((faq, index) => (
+                    <FAQAccordion
+                      key={index}
+                      faq={faq}
+                      isOpen={openFAQs.has(`${category.id}-${index}`)}
+                      onToggle={() => toggleFAQ(category.id, index)}
+                    />
+                  ))}
                 </CardContent>
               </Card>
             ))}
@@ -416,66 +448,64 @@ export default function HelpPage() {
         )}
 
         {/* Contact Support */}
-        <div className="mt-12 rounded-xl border border-border/60 bg-muted/30 p-8 text-center">
-          <Mail className="mx-auto h-10 w-10 text-primary mb-4" />
-          <h2 className="text-xl font-semibold text-foreground mb-2">Still need help?</h2>
-          <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-            Can't find what you're looking for? Our support team is here to help.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <a href="mailto:support@cofounderbay.com">
-              <Button className="gap-2">
-                <Mail className="h-4 w-4" />
-                Contact Support
-              </Button>
-            </a>
-            <Link href="/messages">
-              <Button variant="outline" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Live Chat
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
+          <CardContent className="p-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+              <Mail className="h-6 w-6 text-primary" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
+            <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+              Can&apos;t find what you&apos;re looking for? Our support team typically responds within 24 hours.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <a href="mailto:support@cofounderbay.com">
+                <Button className="gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email Support
+                </Button>
+              </a>
+              <Link href="/messages">
+                <Button variant="outline" className="gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Live Chat
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Quick Links */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
-            <Card className="h-full border-border/60 hover:border-primary/50 transition-colors">
-              <CardContent className="pt-6 text-center">
-                <BookOpen className="mx-auto h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors mb-3" />
-                <h3 className="font-medium text-foreground mb-1">Terms of Service</h3>
+            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+              <CardContent className="pt-5 pb-5 text-center">
+                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5">Terms of Service</h3>
                 <p className="text-xs text-muted-foreground">Read our terms and conditions</p>
               </CardContent>
             </Card>
           </Link>
           <Link href="/privacy" className="group">
-            <Card className="h-full border-border/60 hover:border-primary/50 transition-colors">
-              <CardContent className="pt-6 text-center">
-                <Shield className="mx-auto h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors mb-3" />
-                <h3 className="font-medium text-foreground mb-1">Privacy Policy</h3>
+            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+              <CardContent className="pt-5 pb-5 text-center">
+                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5">Privacy Policy</h3>
                 <p className="text-xs text-muted-foreground">Learn how we protect your data</p>
               </CardContent>
             </Card>
           </Link>
           <Link href="/settings" className="group">
-            <Card className="h-full border-border/60 hover:border-primary/50 transition-colors">
-              <CardContent className="pt-6 text-center">
-                <Settings className="mx-auto h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors mb-3" />
-                <h3 className="font-medium text-foreground mb-1">Account Settings</h3>
+            <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
+              <CardContent className="pt-5 pb-5 text-center">
+                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <h3 className="text-sm font-medium text-foreground mb-0.5">Account Settings</h3>
                 <p className="text-xs text-muted-foreground">Manage your preferences</p>
               </CardContent>
             </Card>
           </Link>
         </div>
-      </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/60 bg-card">
-        <div className="mx-auto max-w-5xl px-4 py-6 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} CoFounderBay. All rights reserved.
-        </div>
-      </footer>
-    </div>
+      </div>
+    </AppShell>
   );
 }

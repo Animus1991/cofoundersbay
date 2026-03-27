@@ -212,32 +212,25 @@ export default function MatchesPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="space-y-6">
-        {/* Context Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-              <Sparkles className="h-6 w-6 text-primary" />
-              Matches
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              AI-ranked co-founder and team matches based on your profile compatibility
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
-              <RefreshCw className="h-4 w-4" />
-              Refresh
+    <AppShell
+      title="Matches"
+      description="AI-ranked co-founder and team matches based on your profile compatibility"
+      actions={
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Link href="/discover">
+            <Button variant="outline" size="sm" className="gap-2">
+              Explore
+              <ArrowRight className="h-3.5 w-3.5" />
             </Button>
-            <Link href="/discover">
-              <Button variant="outline" size="sm" className="gap-2">
-                Explore
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </Link>
-          </div>
+          </Link>
         </div>
+      }
+    >
+      <div className="space-y-6 max-w-6xl mx-auto pb-10">
 
         {!hasToken && (
           <EmptyState
@@ -266,25 +259,25 @@ export default function MatchesPage() {
           <>
             {/* Stats Overview */}
             <div className="grid gap-4 sm:grid-cols-4">
-              <Card>
+              <Card className="shadow-sm border-border/50">
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold tabular-nums text-foreground">{counts.all}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Total Matches</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="shadow-sm border-border/50">
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold tabular-nums" style={{ color: '#4ADE80' }}>{counts.excellent}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Excellent (≥80%)</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="shadow-sm border-border/50">
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold tabular-nums" style={{ color: '#22D3EE' }}>{avgScore}%</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Average Score</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="shadow-sm border-border/50">
                 <CardContent className="p-4 text-center">
                   <p className="text-2xl font-bold tabular-nums" style={{ color: '#FB923C' }}>{counts.strong}</p>
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">Strong (65-79%)</p>
@@ -293,7 +286,7 @@ export default function MatchesPage() {
             </div>
 
             {/* Filter Bar */}
-            <Card>
+            <Card className="shadow-sm border-border/50">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2 overflow-x-auto">

@@ -375,8 +375,11 @@ export default function ComparePage() {
   };
 
   return (
-    <AppShell>
-      <div className="container max-w-7xl py-6 space-y-6">
+    <AppShell
+      title="Compare Profiles"
+      description="Side-by-side comparison to find your best match"
+    >
+      <div className="max-w-7xl mx-auto space-y-6 pb-10">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

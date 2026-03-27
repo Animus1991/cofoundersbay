@@ -363,8 +363,11 @@ export default function SavedSearchesPage() {
   const totalNewResults = searches.reduce((sum, s) => sum + (s.newResults || 0), 0);
 
   return (
-    <AppShell>
-      <div className="container max-w-4xl py-6 space-y-6">
+    <AppShell
+      title="Saved Searches"
+      description="Manage your saved search filters and get notified of new matches"
+    >
+      <div className="max-w-4xl mx-auto space-y-6 pb-10">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

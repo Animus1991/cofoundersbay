@@ -203,32 +203,26 @@ export default function DiscoverPage() {
   );
 
   return (
-    <AppShell>
-      <div className="space-y-5">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Explore</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Discover founders, mentors, investors, and team members
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/matches">
-              <Button variant="outline" size="sm" className="gap-2">
-                <TrendingUp className="h-4 w-4" />
-                View Matches
-              </Button>
-            </Link>
-          </div>
-        </div>
+    <AppShell
+      title="Explore"
+      description="Discover founders, mentors, investors, and team members"
+      actions={
+        <Link href="/matches">
+          <Button variant="outline" size="sm" className="gap-2">
+            <TrendingUp className="h-4 w-4" />
+            View Matches
+          </Button>
+        </Link>
+      }
+    >
+      <div className="space-y-5 max-w-6xl mx-auto pb-10">
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {PLATFORM_STATS.map((s) => {
             const SIcon = s.icon;
             return (
-              <Card key={s.label} className="border-border/40 bg-gradient-to-br from-card to-muted/20">
+              <Card key={s.label} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
                 <CardContent className="flex items-center gap-3 p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <SIcon className="h-4 w-4 text-primary" />

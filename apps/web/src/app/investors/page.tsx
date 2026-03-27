@@ -270,7 +270,7 @@ export default function InvestorsPage() {
 
   return (
     <AppShell title="Investor Directory" description="Connect with investors actively seeking startups">
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-6xl mx-auto pb-10">
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
@@ -279,7 +279,7 @@ export default function InvestorsPage() {
             { icon: Briefcase, label: 'Total Investments', value: `${totalPortfolio}+` },
             { icon: Telescope, label: 'Industries Covered', value: uniqueIndustries.toString() },
           ].map(s => (
-            <Card key={s.label}>
+            <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-2">
                 <s.icon className="h-4 w-4 text-primary shrink-0" />
                 <div><p className="text-xs font-bold">{s.value}</p><p className="text-[10px] text-muted-foreground">{s.label}</p></div>

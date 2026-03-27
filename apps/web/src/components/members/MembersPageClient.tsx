@@ -388,7 +388,7 @@ export function MembersPageClient() {
       title="Member Directory"
       description={`Discover and connect with ${total.toLocaleString()} members`}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-7xl mx-auto pb-10">
 
         {/* Stats bar */}
         {!isLoading && (
@@ -401,7 +401,7 @@ export function MembersPageClient() {
             ].map((s) => {
               const SIcon = s.icon;
               return (
-                <Card key={s.label} className="border-border/40">
+                <Card key={s.label} className="shadow-sm border-border/50">
                   <CardContent className="flex items-center gap-3 p-3">
                     <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                       <SIcon className="h-4 w-4" />
@@ -511,7 +511,7 @@ export function MembersPageClient() {
 
         {/* Filters Panel */}
         {showFilters && (
-          <Card className="border-primary/20">
+          <Card className="shadow-sm border-primary/20">
             <CardContent className="p-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-2">

@@ -370,6 +370,7 @@ export default function LearningPage() {
       title="Learning Hub"
       description="Courses, guides, and resources to grow your startup"
     >
+      <div className="max-w-6xl mx-auto space-y-6 pb-10">
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
@@ -380,7 +381,7 @@ export default function LearningPage() {
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="border-border/40">
+            <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />
@@ -549,6 +550,7 @@ export default function LearningPage() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </AppShell>
   );
 }

@@ -295,7 +295,7 @@ export default function GroupsPage() {
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="border-border/40">
+            <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />

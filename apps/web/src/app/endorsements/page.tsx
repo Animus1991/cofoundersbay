@@ -381,7 +381,7 @@ export default function EndorsementsPage() {
 
   return (
     <AppShell title="Endorsements" description="Build credibility through peer endorsements and skill validation">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto pb-10">
         {/* Left: Tabs */}
         <div className="lg:col-span-2 space-y-4">
           {/* Stats */}
