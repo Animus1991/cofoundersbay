@@ -20,7 +20,7 @@ export default function MembersLoading() {
       </div>
 
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {Array.from({ length: 12 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5 space-y-4">

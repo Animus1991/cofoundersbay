@@ -561,7 +561,7 @@ export default function FeedPage() {
         </Tabs>
       }
     >
-      <div className="max-w-6xl mx-auto pb-10">
+      <div className="pb-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main Feed */}
           <div className="space-y-6">

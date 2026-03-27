@@ -491,7 +491,7 @@ export default function AchievementsPage() {
       title="Achievements & Badges"
       description="Track your progress, unlock badges, and climb the leaderboard"
     >
-      <div className="space-y-4 max-w-5xl mx-auto pb-10">
+      <div className="space-y-4 pb-10">
         {isLoading ? (
           <AchievementsSkeleton />
         ) : (
