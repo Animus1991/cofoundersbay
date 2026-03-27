@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, X, MessageCircle, Bookmark, MapPin, Clock, Sparkles, TrendingUp, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -35,6 +35,9 @@ type MatchCardProps = {
   onMessage?: () => void;
   onBookmark?: () => void;
   onBreakdown?: () => void;
+  onClick?: () => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
   className?: string;
 };
 
@@ -98,6 +101,9 @@ export function MatchCard({
   onMessage,
   onBookmark,
   onBreakdown,
+  onClick,
+  isSelected,
+  onSelect,
   className,
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
@@ -114,15 +120,38 @@ export function MatchCard({
       className={cn(
         'group relative overflow-hidden transition-all duration-200',
         'hover:shadow-lg',
+        isSelected && 'ring-2 ring-primary ring-offset-1',
+        onClick && 'cursor-pointer',
         className
       )}
       style={{ '--hover-glow': glow } as React.CSSProperties}
+      onClick={(e) => {
+        if (onClick && !(e.target as HTMLElement).closest('button, a')) {
+          onClick();
+        }
+      }}
     >
       {/* Left score-color border strip */}
       <div
         className="absolute left-0 inset-y-0 w-0.5 transition-all duration-200 group-hover:w-1"
         style={{ background: color }}
       />
+
+      {/* Selection checkbox */}
+      {onSelect && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
+          className="absolute left-3 top-3 z-20"
+          aria-label={isSelected ? 'Deselect' : 'Select'}
+        >
+          <div className={cn(
+            'h-5 w-5 rounded border-2 flex items-center justify-center transition-colors',
+            isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
+          )}>
+            {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+          </div>
+        </button>
+      )}
 
       {/* Score badge top-right */}
       <div className="absolute right-3 top-3 z-10">

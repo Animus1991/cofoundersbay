@@ -9,7 +9,7 @@ import {
   Sparkles, ArrowRight, UserPlus, ArrowUpDown, RefreshCw, BarChart3, Award, Zap, ChevronRight,
   X, LayoutGrid, List, Search, MapPin, Briefcase, GraduationCap, DollarSign, Users,
   Bookmark, BookmarkCheck, MessageCircle, Heart, RotateCcw, SlidersHorizontal, Clock,
-  TrendingUp, Star, CheckCircle2,
+  TrendingUp, Star, CheckCircle2, CheckSquare,
 } from 'lucide-react';
 import { getRecommendations, sendConnectionRequest, saveToShortlist, removeFromShortlist, recordMatchFeedback, getShortlistIds, type SearchHit } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
@@ -21,6 +21,8 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/common/EmptyState';
 import { MatchCard } from '@/components/common/MatchCard';
+import { SkillChip } from '@/components/common/SkillChip';
+import { RoleBadge } from '@/components/common/RoleBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
@@ -284,6 +286,139 @@ function MatchListRow({
   );
 }
 
+/* ── Match Preview Panel ─────────────────────────────────────────────────── */
+function MatchPreviewPanel({
+  hit, matchReasons, savedIds, onClose, onConnect, onMessage, onSave, onPass, onBreakdown,
+}: {
+  hit: SearchHit;
+  matchReasons: MatchReason[];
+  savedIds: Set<string>;
+  onClose: () => void;
+  onConnect: () => void;
+  onMessage: () => void;
+  onSave: () => void;
+  onPass: () => void;
+  onBreakdown: () => void;
+}) {
+  const score = hit.matchScore ?? 50;
+  const tier = getTier(score);
+  const color = TIER_COLORS[tier];
+  const isSaved = savedIds.has(hit.userId);
+
+  return (
+    <>
+      {/* Backdrop (mobile) */}
+      <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
+
+      {/* Slide panel */}
+      <div className="fixed right-0 top-0 h-full w-full max-w-[360px] z-50 border-l border-border/60 bg-card shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+        {/* Header */}
+        <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
+          <p className="text-sm font-semibold">Profile Preview</p>
+          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Avatar + name */}
+          <div className="flex flex-col items-center text-center pt-1">
+            <Avatar className="h-20 w-20 rounded-2xl border-2 border-border/60">
+              <AvatarImage src={hit.avatarUrl ?? undefined} />
+              <AvatarFallback className="rounded-2xl text-xl font-bold bg-muted">
+                {hit.displayName.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <h3 className="mt-3 text-lg font-bold text-foreground">{hit.displayName}</h3>
+            <RoleBadge role={hit.role} size="sm" showIcon className="mt-1" />
+            {hit.headline && (
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">{hit.headline}</p>
+            )}
+          </div>
+
+          {/* Score */}
+          <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
+            <div className="text-center">
+              <p className="text-3xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
+              <p className="text-[10px] font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
+                {TIER_CLASSES[tier] ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Match'}
+              </p>
+            </div>
+          </div>
+
+          {/* Meta */}
+          <div className="flex flex-wrap gap-2">
+            {hit.location && (
+              <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3" /> {hit.location}
+              </span>
+            )}
+            {hit.availability && (
+              <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" /> {hit.availability}
+              </span>
+            )}
+          </div>
+
+          {/* Skills */}
+          {(hit.skillNames ?? []).length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
+              <div className="flex flex-wrap gap-1.5">
+                {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
+              </div>
+            </div>
+          )}
+
+          {/* Match reasons */}
+          {matchReasons.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
+              <div className="space-y-1.5">
+                {matchReasons.map((r, i) => (
+                  <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
+                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
+                    <span className="text-foreground">{r.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="space-y-2 pt-2 border-t border-border/40">
+            <div className="flex gap-2">
+              <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
+                <UserPlus className="h-3.5 w-3.5" /> Connect
+              </Button>
+              <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
+                <MessageCircle className="h-3.5 w-3.5" /> Message
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
+                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" /> : <Bookmark className="h-3.5 w-3.5" />}
+                {isSaved ? 'Saved' : 'Save'}
+              </Button>
+              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
+                <X className="h-3.5 w-3.5" /> Pass
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
+              <BarChart3 className="h-3.5 w-3.5" /> View breakdown
+            </Button>
+            <Link href={`/profiles/${hit.userId}`}>
+              <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
+                <ArrowRight className="h-3.5 w-3.5" /> Full profile
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function MatchesPage() {
   const router = useRouter();
   const { success, error: showError } = useToast();
@@ -305,6 +440,9 @@ export default function MatchesPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [locationFilter, setLocationFilter] = useState('');
   const [availFilter, setAvailFilter] = useState<Set<AvailFilter>>(new Set());
+  const [previewTarget, setPreviewTarget] = useState<SearchHit | null>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const hasToken = useIsAuthenticated();
 
@@ -600,6 +738,18 @@ export default function MatchesPage() {
 
                 {/* Right controls: search, sort, view */}
                 <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
+                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
+                      selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
+                    title="Select mode">
+                    <CheckSquare className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Select</span>
+                    {selectedIds.size > 0 && (
+                      <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>
+                    )}
+                  </button>
+
                   <button onClick={() => setShowSearch(s => !s)}
                     className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
                       showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
@@ -819,6 +969,13 @@ export default function MatchesPage() {
                   onMessage={() => handleMessage(profile)}
                   onBookmark={() => handleSave(hit.userId, hit.displayName)}
                   onBreakdown={() => setBreakdownTarget(hit)}
+                  onClick={!selectMode ? () => setPreviewTarget(hit) : undefined}
+                  isSelected={selectMode ? selectedIds.has(hit.id) : undefined}
+                  onSelect={selectMode ? () => setSelectedIds(prev => {
+                    const next = new Set(prev);
+                    if (next.has(hit.id)) next.delete(hit.id); else next.add(hit.id);
+                    return next;
+                  }) : undefined}
                 />
               );
             })}
@@ -867,6 +1024,57 @@ export default function MatchesPage() {
           </div>
         )}
       </div>
+
+      {/* ── Quick-preview slide panel (b3) ── */}
+      {previewTarget && (() => {
+        const score = previewTarget.matchScore ?? 50;
+        const previewReasons: MatchReason[] = previewTarget.matchReasons?.length
+          ? previewTarget.matchReasons.map((text) => ({ type: 'skills' as const, text, score: 0 }))
+          : buildMatchReasonsFromScore(score);
+        const previewProfile = hitToProfile(previewTarget);
+        return (
+          <MatchPreviewPanel
+            hit={previewTarget}
+            matchReasons={previewReasons}
+            savedIds={savedIds}
+            onClose={() => setPreviewTarget(null)}
+            onConnect={() => { handleConnect(previewProfile); setPreviewTarget(null); }}
+            onMessage={() => { handleMessage(previewProfile); setPreviewTarget(null); }}
+            onSave={() => handleSave(previewTarget.userId, previewTarget.displayName)}
+            onPass={() => { handlePass(previewTarget.id, previewTarget.displayName, previewTarget.userId); setPreviewTarget(null); }}
+            onBreakdown={() => { setBreakdownTarget(previewTarget); setPreviewTarget(null); }}
+          />
+        );
+      })()}
+
+      {/* ── Bulk action bar (b4) ── */}
+      {selectMode && selectedIds.size > 0 && (
+        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
+          <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
+          <div className="w-px h-5 bg-border/60" />
+          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"
+            onClick={() => {
+              const ids = [...selectedIds].slice(0, 4).join(',');
+              router.push(`/compare?ids=${ids}`);
+            }}>
+            <BarChart3 className="h-3.5 w-3.5" /> Compare
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive"
+            onClick={() => {
+              filtered.forEach(h => {
+                if (selectedIds.has(h.id)) handlePass(h.id, h.displayName, h.userId);
+              });
+              setSelectedIds(new Set());
+              setSelectMode(false);
+            }}>
+            <X className="h-3.5 w-3.5" /> Pass All
+          </Button>
+          <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
+            className="text-muted-foreground hover:text-foreground transition-colors ml-1">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       <CompatibilityModal
         hit={breakdownTarget}
