@@ -302,7 +302,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <Users className="h-5 w-5 text-blue-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{totalInvited}</p>
+            <p className="text-xl font-bold">{totalInvited}</p>
             <p className="text-xs text-muted-foreground">Invited</p>
           </div>
         </div>
@@ -313,7 +313,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <CheckCircle className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{signedUp}</p>
+            <p className="text-xl font-bold">{signedUp}</p>
             <p className="text-xs text-muted-foreground">Signed Up</p>
           </div>
         </div>
@@ -324,7 +324,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <Gift className="h-5 w-5 text-purple-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold">{rewarded}</p>
+            <p className="text-xl font-bold">{rewarded}</p>
             <p className="text-xs text-muted-foreground">Rewarded</p>
           </div>
         </div>
@@ -335,7 +335,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
             <TrendingUp className="h-5 w-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold">€{totalEarned}</p>
+            <p className="text-xl font-bold">€{totalEarned}</p>
             <p className="text-xs text-muted-foreground">Earned</p>
           </div>
         </div>

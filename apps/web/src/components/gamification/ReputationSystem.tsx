@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   TrendingUp, 
   Award, 
@@ -19,8 +20,10 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { getMyXP, type GamificationRecentEvent } from '@/lib/api';
 
 interface ReputationActivity {
   id: string;
@@ -77,63 +80,45 @@ const reputationLevels: ReputationLevel[] = [
   },
 ];
 
-// Demo data
-const currentPoints = 1247;
-const currentLevel = reputationLevels.find(
-  (level) => currentPoints >= level.minPoints && currentPoints <= level.maxPoints
-) || reputationLevels[0];
-const nextLevel = reputationLevels[currentLevel.level] || null;
+export { reputationLevels };
 
-const recentActivities: ReputationActivity[] = [
-  {
-    id: '1',
+export function computeLevelFromPoints(points: number) {
+  const level = reputationLevels.find(
+    (l) => points >= l.minPoints && points <= l.maxPoints,
+  ) ?? reputationLevels[0];
+  const next = reputationLevels[level.level] ?? null;
+  return { level, next };
+}
+
+function xpEventToActivity(e: GamificationRecentEvent): ReputationActivity {
+  const labelMap: Record<string, { action: string; icon: React.ElementType }> = {
+    CREATE_ARTIFACT:           { action: 'Created an artifact',        icon: Lightbulb },
+    COMPLETE_ARTIFACT:         { action: 'Completed an artifact',      icon: Award },
+    IMPROVE_ARTIFACT:          { action: 'Improved an artifact',       icon: TrendingUp },
+    CREATE_BOARD:              { action: 'Created a research board',   icon: Activity },
+    SYNTHESIZE_BOARD:          { action: 'Synthesized a board',        icon: Target },
+    LINK_ARTIFACTS:            { action: 'Linked artifacts',           icon: Handshake },
+    INVITE_COLLABORATOR:       { action: 'Invited a collaborator',     icon: Users },
+    TEAM_CONTRIBUTION:         { action: 'Team contribution',          icon: Users },
+    HIGH_QUALITY_CONTRIBUTION: { action: 'High-quality contribution',  icon: Star },
+    RECEIVE_MENTOR_FEEDBACK:   { action: 'Received mentor feedback',   icon: MessageCircle },
+    APPLY_FEEDBACK:            { action: 'Applied feedback',           icon: Zap },
+    COMPLETE_REVIEW:           { action: 'Completed a review',         icon: Award },
+    PROVIDE_FEEDBACK:          { action: 'Provided feedback',          icon: MessageCircle },
+    COMPLETE_MILESTONE:        { action: 'Completed a milestone',      icon: Target },
+    VALIDATED_PROGRESS:        { action: 'Validated progress',         icon: Star },
+    STREAK_BONUS:              { action: 'Streak milestone bonus',     icon: Zap },
+  };
+  const mapped = labelMap[e.eventType] ?? { action: e.eventType.replace(/_/g, ' ').toLowerCase(), icon: Activity };
+  return {
+    id: e.id,
     type: 'earned',
-    action: 'Completed profile',
-    points: 50,
-    timestamp: '2024-03-15T10:30:00Z',
-    icon: Star,
-  },
-  {
-    id: '2',
-    type: 'earned',
-    action: 'Made a connection',
-    points: 10,
-    timestamp: '2024-03-15T09:15:00Z',
-    icon: Users,
-  },
-  {
-    id: '3',
-    type: 'earned',
-    action: 'Posted an opportunity',
-    points: 25,
-    timestamp: '2024-03-14T16:45:00Z',
-    icon: Lightbulb,
-  },
-  {
-    id: '4',
-    type: 'earned',
-    action: 'Sent 10 messages',
-    points: 15,
-    timestamp: '2024-03-14T14:20:00Z',
-    icon: MessageCircle,
-  },
-  {
-    id: '5',
-    type: 'spent',
-    action: 'Boosted profile visibility',
-    points: -100,
-    timestamp: '2024-03-13T11:00:00Z',
-    icon: TrendingUp,
-  },
-  {
-    id: '6',
-    type: 'earned',
-    action: 'Accepted partnership',
-    points: 50,
-    timestamp: '2024-03-12T15:30:00Z',
-    icon: Handshake,
-  },
-];
+    action: mapped.action,
+    points: e.xpAmount,
+    timestamp: e.createdAt,
+    icon: mapped.icon,
+  };
+}
 
 const pointsEarningGuide = [
   { action: 'Complete your profile', points: 50, icon: Star },
@@ -146,13 +131,44 @@ const pointsEarningGuide = [
   { action: 'Refer a new member', points: 100, icon: TrendingUp },
 ];
 
-export function ReputationSystem() {
+interface ReputationSystemProps {
+  /** Optional: override total XP (e.g. when parent already has it). If omitted, fetches from API. */
+  points?: number;
+}
+
+export function ReputationSystem({ points: externalPoints }: ReputationSystemProps = {}) {
   const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: xpData, isLoading } = useQuery({
+    queryKey: ['my-xp'],
+    queryFn: getMyXP,
+    staleTime: 3 * 60_000,
+    enabled: externalPoints === undefined,
+  });
+
+  const currentPoints = externalPoints ?? xpData?.totalXp ?? 0;
+  const { level: currentLevel, next: nextLevel } = computeLevelFromPoints(currentPoints);
 
   const pointsToNextLevel = nextLevel ? nextLevel.minPoints - currentPoints : 0;
   const levelProgress = nextLevel
     ? ((currentPoints - currentLevel.minPoints) / (nextLevel.minPoints - currentLevel.minPoints)) * 100
     : 100;
+
+  const recentActivities: ReputationActivity[] = xpData?.recentEvents
+    ? xpData.recentEvents.slice(0, 8).map(xpEventToActivity)
+    : [];
+
+  const currentStreak = xpData?.streak.currentStreak ?? 0;
+
+  if (isLoading && externalPoints === undefined) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-48 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -171,10 +187,17 @@ export function ReputationSystem() {
                 </CardDescription>
               </div>
             </div>
-            <Badge variant="default" className="text-lg px-4 py-2">
-              <Zap className="h-4 w-4 mr-1" />
-              {currentPoints}
-            </Badge>
+            <div className="flex flex-col items-end gap-1">
+              <Badge variant="default" className="text-base px-3 py-1">
+                <Zap className="h-4 w-4 mr-1" />
+                {currentPoints.toLocaleString()} XP
+              </Badge>
+              {currentStreak > 0 && (
+                <Badge variant="secondary" className="text-xs gap-1">
+                  🔥 {currentStreak}-day streak
+                </Badge>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -272,6 +295,11 @@ export function ReputationSystem() {
               <CardDescription>Your latest reputation changes</CardDescription>
             </CardHeader>
             <CardContent>
+              {recentActivities.length === 0 && (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  No XP activity yet. Start building to earn your first points.
+                </div>
+              )}
               <div className="space-y-3">
                 {recentActivities.map((activity) => {
                   const Icon = activity.icon;

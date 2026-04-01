@@ -181,7 +181,7 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-muted-foreground">{metric.icon}</div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
+              <div className="text-xl font-bold">{metric.value}</div>
               <p className={cn(
                 "text-xs flex items-center gap-1 mt-1",
                 metric.trend === 'up' ? 'text-green-600' : 

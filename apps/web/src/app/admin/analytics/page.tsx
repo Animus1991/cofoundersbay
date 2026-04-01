@@ -66,7 +66,7 @@ export default function AdminAnalyticsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Platform Analytics</h1>
+            <h1 className="text-xl font-bold tracking-tight">Platform Analytics</h1>
             <p className="text-muted-foreground">
               Monitor platform-wide metrics and performance
             </p>
@@ -89,55 +89,55 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="icon-sm text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.totalUsers.toLocaleString()}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.totalUsers.toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="icon-sm text-green-600" />
                 <p className="text-sm text-muted-foreground">Active Users</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.activeUsers.toLocaleString()}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.activeUsers.toLocaleString()}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Rocket className="h-4 w-4 text-blue-600" />
+                <Rocket className="icon-sm text-blue-600" />
                 <p className="text-sm text-muted-foreground">Startups</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.totalStartups}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.totalStartups}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-purple-600" />
+                <Award className="icon-sm text-purple-600" />
                 <p className="text-sm text-muted-foreground">Mentors</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.totalMentors}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.totalMentors}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-amber-600" />
+                <TrendingUp className="icon-sm text-amber-600" />
                 <p className="text-sm text-muted-foreground">Investors</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.totalInvestors}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.totalInvestors}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-cyan-600" />
+                <Building2 className="icon-sm text-cyan-600" />
                 <p className="text-sm text-muted-foreground">Tenants</p>
               </div>
-              <p className="text-2xl font-bold mt-1">{platformMetrics.totalTenants}</p>
+              <p className="text-xl font-bold mt-1">{platformMetrics.totalTenants}</p>
             </CardContent>
           </Card>
         </div>
@@ -174,7 +174,7 @@ export default function AdminAnalyticsPage() {
                   <div key={metric.name} className="p-3 rounded-lg bg-muted/50">
                     <p className="text-sm text-muted-foreground">{metric.name}</p>
                     <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-2xl font-bold">{metric.value}</span>
+                      <span className="text-xl font-bold">{metric.value}</span>
                       <span className="text-xs text-green-600">{metric.change}</span>
                     </div>
                   </div>

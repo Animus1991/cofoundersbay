@@ -149,9 +149,9 @@ function InvestorCard({ investor }: { investor: Investor }) {
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <Avatar className="h-14 w-14 rounded-xl shrink-0">
+          <Avatar className="h-11 w-11 rounded-xl shrink-0">
             <AvatarImage src={investor.avatarUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-lg">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
               {initials}
             </AvatarFallback>
           </Avatar>

@@ -1,10 +1,13 @@
 'use client';
 
 import { ReactNode, memo } from 'react';
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 
 const MemoSideNav = memo(SideNav);
@@ -31,11 +34,37 @@ export function AppShell({
   contentClassName,
 }: AppShellProps) {
   const { expanded, mounted } = useSidebar();
+  const user = useCurrentUser();
+  const isDemo = user?.email === 'demo@cofounderbay.com';
 
   return (
     <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
       {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
       <MemoSideNav />
+
+      {/* Demo mode banner — full width, above content column */}
+      {isDemo && (
+        <div
+          className={cn(
+            'fixed top-0 right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
+            'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
+            'transition-[margin-left] duration-200 ease-out',
+            (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+            'left-0 lg:left-auto',
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span>Demo mode — changes are not saved and data resets periodically.</span>
+          </div>
+          <Link
+            href="/register"
+            className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-[12px] font-semibold hover:bg-amber-900/25 transition-colors"
+          >
+            Create free account
+          </Link>
+        </div>
+      )}
 
       {/* Main column — offset by sidebar width on lg+ */}
       <div
@@ -44,6 +73,7 @@ export function AppShell({
           fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
           'transition-[margin-left] duration-200 ease-out',
           (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          isDemo && 'pt-9',
         )}
       >
         {/* Sticky top bar — always rendered once */}

@@ -215,13 +215,13 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Services</p>
-              <p className="text-2xl font-bold">{services.length}</p>
+              <p className="text-xl font-bold">{services.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {services.filter((s) => s.isActive).length}
               </p>
             </CardContent>
@@ -229,7 +229,7 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Bookings</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {services.reduce((acc, s) => acc + s.bookings, 0)}
               </p>
             </CardContent>

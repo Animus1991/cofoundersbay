@@ -51,6 +51,7 @@ import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
@@ -92,8 +93,8 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
               }`}
             >
               {item.done
-                ? <CheckCircle className="h-3 w-3 shrink-0" />
-                : <AlertCircle className="h-3 w-3 shrink-0" />}
+                ? <CheckCircle className="icon-sm shrink-0" />
+                : <AlertCircle className="icon-sm shrink-0" />}
               {item.label}
             </div>
           ))}
@@ -127,12 +128,12 @@ function VerificationCard({ email }: { email?: string | null }) {
         {items.map(({ label, verified, icon: Icon }) => (
           <div key={label} className="flex items-center gap-2.5 text-xs">
             <div className={`flex h-6 w-6 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
-              <Icon className={`h-3.5 w-3.5 ${verified ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Icon className={`icon-sm ${verified ? 'text-primary' : 'text-muted-foreground'}`} />
             </div>
             <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
             {verified
-              ? <CheckCircle className="ml-auto h-3.5 w-3.5 text-primary" />
-              : <span className="ml-auto text-[10px] text-muted-foreground/60">Not connected</span>}
+              ? <CheckCircle className="ml-auto icon-sm text-primary" />
+              : <span className="ml-auto text-xs text-muted-foreground/60">Not connected</span>}
           </div>
         ))}
       </CardContent>
@@ -206,7 +207,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="h-5 w-5 text-primary" />
+          <Icon className="icon-md text-primary" />
           {role.charAt(0).toUpperCase() + role.slice(1)} Details
         </CardTitle>
       </CardHeader>
@@ -306,15 +307,15 @@ export default function ProfilePage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="icon-sm" />
             Share Profile
           </Button>
           <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="icon-sm" />
           </Button>
           <Link href="/profile/edit">
             <Button size="sm" className="gap-2">
-              <Edit className="h-4 w-4" />
+              <Edit className="icon-sm" />
               Edit Profile
             </Button>
           </Link>
@@ -339,14 +340,14 @@ export default function ProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title="Verified Member">
-                  <BadgeCheck className="h-6 w-6 text-blue-500" />
+                  <BadgeCheck className="icon-lg text-blue-500" />
                 </div>
               </div>
 
               <div className="flex-1 space-y-3 pt-2 md:pt-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2">
+                    <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
                       {profile.displayName}
                     </h1>
                     {profile.headline ? (
@@ -372,24 +373,24 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium pt-1">
                   {profile.location && (
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" />
+                      <MapPin className="icon-sm" />
                       {profile.location}
                     </div>
                   )}
                   {profile.timezone && (
                     <div className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="icon-sm" />
                       {profile.timezone}
                     </div>
                   )}
                   {profile.languages?.length ? (
                     <div className="flex items-center gap-1.5">
-                      <Languages className="h-4 w-4" />
+                      <Languages className="icon-sm" />
                       {profile.languages.join(', ')}
                     </div>
                   ) : null}
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="icon-sm" />
                     Joined {new Date().getFullYear()}
                   </div>
                 </div>
@@ -404,10 +405,19 @@ export default function ProfilePage() {
             {/* Bio */}
             <Card className="animate-fade-in stagger-1 shadow-sm border-border/50">
               <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <UserIcon className="h-5 w-5 text-primary" />
-                  About
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <UserIcon className="icon-md text-primary" />
+                    About
+                  </CardTitle>
+                  <AIInsightButton
+                    prompt={`Review my profile as a ${profile.role} and give me 3 specific tips to improve my positioning and appeal to the right collaborators:\nHeadline: ${profile.headline || 'Not set'}\nBio: ${profile.bio || 'Not set'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}`}
+                    agentId="pitch-coach"
+                    cacheKey={`own-profile-coach-${profile.userId}`}
+                    variant="icon"
+                    label="Get AI coaching tips for your profile"
+                  />
+                </div>
               </CardHeader>
               <CardContent className="pt-5">
                 {profile.bio ? (
@@ -439,7 +449,7 @@ export default function ProfilePage() {
               <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="icon-md text-primary" />
                     What I&apos;m Looking For
                   </CardTitle>
                 </CardHeader>
@@ -448,7 +458,7 @@ export default function ProfilePage() {
                     <div key={label} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="flex items-center gap-2.5 mb-2">
                         <div className="p-1.5 rounded-md bg-primary/10 text-primary">
-                          <Icon className="h-4 w-4" />
+                          <Icon className="icon-sm" />
                         </div>
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
                       </div>
@@ -473,7 +483,7 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
+                    <BarChart3 className="icon-md text-primary" />
                     Top Skills & Proficiency
                   </CardTitle>
                   <Link href="/profile/edit">
@@ -492,7 +502,7 @@ export default function ProfilePage() {
                       <div key={s.skillId} className="space-y-1.5 bg-secondary/20 p-3 rounded-lg border border-border/50">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-semibold text-foreground">{s.skillName}</span>
-                          <Badge variant="secondary" className="text-[10px] capitalize bg-background">{lvl}</Badge>
+                          <Badge variant="secondary" size="sm" className="capitalize bg-background">{lvl}</Badge>
                         </div>
                         <div className="h-2 rounded-full bg-secondary overflow-hidden">
                           <div
@@ -520,7 +530,7 @@ export default function ProfilePage() {
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FolderOpen className="h-5 w-5 text-primary" />
+                  <FolderOpen className="icon-md text-primary" />
                   Portfolio &amp; Showcase
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
@@ -531,7 +541,7 @@ export default function ProfilePage() {
             <CardContent className="pt-5">
               <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <FolderOpen className="h-6 w-6" />
+                  <FolderOpen className="icon-lg" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Showcase your best work</p>
@@ -549,7 +559,7 @@ export default function ProfilePage() {
           {/* No content placeholder */}
           {!profile.bio && Object.keys(rolePayload).length === 0 && (
             <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
-              <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
+              <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
                   <Activity className="h-8 w-8 text-primary" />
                 </div>
@@ -576,7 +586,7 @@ export default function ProfilePage() {
           <Card className="shadow-sm border-border/50 sticky top-6">
             <CardContent className="p-5 space-y-4">
               <Link href="/profile/edit" className="block w-full">
-                <Button className="w-full gap-2 font-medium" size="lg">
+                <Button className="w-full gap-2 font-medium">
                   <Edit className="h-4 w-4" />
                   Edit Profile
                 </Button>

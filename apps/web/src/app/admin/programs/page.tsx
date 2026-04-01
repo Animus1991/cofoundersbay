@@ -69,17 +69,17 @@ function ProgramCard({ program }: { program: Program }) {
               </Badge>
             </div>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Building2 className="h-4 w-4" />
+              <Building2 className="icon-sm" />
               {program.organization}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <Badge variant="secondary" className="text-xs">{program.type}</Badge>
               <span className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" />
                 {program.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="icon-sm" />
                 {program.startDate} - {program.endDate}
               </span>
             </div>
@@ -96,20 +96,20 @@ function ProgramCard({ program }: { program: Program }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-2 icon-sm" />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-2 icon-sm" />
                 Edit Program
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -148,7 +148,7 @@ export default function AdminProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
+            <h1 className="text-xl font-bold tracking-tight">Programs</h1>
             <p className="text-muted-foreground">
               Manage all programs across the platform
             </p>
@@ -158,7 +158,7 @@ export default function AdminProgramsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search programs..."
               value={search}
@@ -185,13 +185,13 @@ export default function AdminProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Programs</p>
-              <p className="text-2xl font-bold">{programs.length}</p>
+              <p className="text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -199,7 +199,7 @@ export default function AdminProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Startups</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.startups, 0)}
               </p>
             </CardContent>
@@ -207,7 +207,7 @@ export default function AdminProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Organizations</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {new Set(programs.map((p) => p.organization)).size}
               </p>
             </CardContent>

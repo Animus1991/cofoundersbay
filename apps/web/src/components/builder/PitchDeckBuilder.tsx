@@ -208,19 +208,8 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-500/10 rounded-lg">
-            <Presentation className="h-5 w-5 text-indigo-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Pitch Deck Builder</h2>
-            <p className="text-sm text-muted-foreground">
-              Create compelling pitch decks for investors, accelerators, and more
-            </p>
-          </div>
-        </div>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-indigo-500" />

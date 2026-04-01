@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Palette, Type, FileText, Link2, Mail, Tag,
   Eye, Save, Globe, AlertCircle, CheckCircle2,
-  Loader2, ExternalLink, Settings, Building2, Image,
+  Loader2, ExternalLink, Settings, Building2, Image, Camera,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Input } from '@/components/ui/input';
@@ -22,8 +22,11 @@ import {
   updateTenantBranding,
   publishTenantBranding,
   unpublishTenantBranding,
+  uploadAvatar,
   type TenantBranding,
 } from '@/lib/api';
+import { ImageCropperTrigger } from '@/components/ui/image-cropper';
+import { analytics } from '@/lib/analytics';
 
 // ── Color swatch + input ───────────────────────────────────────────────────────
 
@@ -91,6 +94,8 @@ const DEFAULT_FORM: FormState = {
   backgroundStyle: 'gradient',
   headingFont: 'Inter',
   bodyFont: 'Inter',
+  logoUrl: '',
+  faviconUrl: '',
   heroImageUrl: '',
   websiteUrl: '',
   heroTitle: '',
@@ -141,6 +146,8 @@ export default function TenantBrandingPage() {
       backgroundStyle: branding.backgroundStyle ?? DEFAULT_FORM.backgroundStyle,
       headingFont: branding.headingFont ?? DEFAULT_FORM.headingFont,
       bodyFont: branding.bodyFont ?? DEFAULT_FORM.bodyFont,
+      logoUrl: branding.logoUrl ?? '',
+      faviconUrl: branding.faviconUrl ?? '',
       heroImageUrl: branding.heroImageUrl ?? '',
       websiteUrl: branding.websiteUrl ?? '',
       heroTitle: branding.heroTitle ?? '',
@@ -178,6 +185,12 @@ export default function TenantBrandingPage() {
       qc.invalidateQueries({ queryKey: ['tenant-branding', tenantId] });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      void analytics.track('tenant_branding_updated', {
+        tenant_id: tenantId,
+        has_logo: !!form.logoUrl,
+        has_favicon: !!form.faviconUrl,
+        has_custom_colors: !!(form.primaryColor !== DEFAULT_FORM.primaryColor || form.secondaryColor !== DEFAULT_FORM.secondaryColor),
+      });
     },
   });
 
@@ -421,6 +434,102 @@ export default function TenantBrandingPage() {
                   <CardDescription>Provide URLs for your logo, favicon, and hero image. Use a CDN or image hosting service.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
+                  {/* Logo Upload */}
+                  <div className="space-y-3">
+                    <Label>Organization Logo</Label>
+                    <div className="flex items-start gap-4">
+                      <ImageCropperTrigger
+                        cropShape="rect"
+                        aspectRatio={2}
+                        outputSize={400}
+                        title="Crop Organization Logo"
+                        onCrop={async (blob, dataUrl) => {
+                          try {
+                            const file = new File([blob], 'logo.png', { type: 'image/png' });
+                            const { upload } = await uploadAvatar(file);
+                            setField('logoUrl', upload.url);
+                          } catch {
+                            // Handle error silently or show toast
+                          }
+                        }}
+                      >
+                        <div className="relative group cursor-pointer">
+                          {form.logoUrl ? (
+                            <img
+                              src={form.logoUrl}
+                              alt="Logo preview"
+                              className="h-16 w-32 rounded-lg border border-border/60 object-contain bg-background/50"
+                            />
+                          ) : (
+                            <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
+                              <Image className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-6 w-6 text-white" />
+                          </div>
+                        </div>
+                      </ImageCropperTrigger>
+                      <div className="flex-1">
+                        <Input
+                          value={form.logoUrl ?? ''}
+                          onChange={(e) => setField('logoUrl', e.target.value)}
+                          placeholder="https://..."
+                          className="mb-1"
+                        />
+                        <p className="text-xs text-muted-foreground">Click to crop & upload, or paste URL. Recommended: 400×200px, transparent PNG.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Favicon Upload */}
+                  <div className="space-y-3">
+                    <Label>Favicon</Label>
+                    <div className="flex items-start gap-4">
+                      <ImageCropperTrigger
+                        cropShape="circle"
+                        aspectRatio={1}
+                        outputSize={64}
+                        title="Crop Favicon"
+                        onCrop={async (blob, dataUrl) => {
+                          try {
+                            const file = new File([blob], 'favicon.ico', { type: 'image/png' });
+                            const { upload } = await uploadAvatar(file);
+                            setField('faviconUrl', upload.url);
+                          } catch {
+                            // Handle error silently or show toast
+                          }
+                        }}
+                      >
+                        <div className="relative group cursor-pointer">
+                          {form.faviconUrl ? (
+                            <img
+                              src={form.faviconUrl}
+                              alt="Favicon preview"
+                              className="h-8 w-8 rounded border border-border/60 object-contain bg-background/50"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
+                              <Image className="h-3 w-3 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Camera className="h-3 w-3 text-white" />
+                          </div>
+                        </div>
+                      </ImageCropperTrigger>
+                      <div className="flex-1">
+                        <Input
+                          value={form.faviconUrl ?? ''}
+                          onChange={(e) => setField('faviconUrl', e.target.value)}
+                          placeholder="https://..."
+                          className="mb-1"
+                        />
+                        <p className="text-xs text-muted-foreground">Click to crop & upload, or paste URL. 64×64px, square format.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   {[
                     { key: 'heroImageUrl' as const, label: 'Hero / Banner Image URL', hint: 'Displayed on the public landing page. Recommended: 1920×1080px.' },
                     { key: 'emailLogoUrl' as const, label: 'Email Logo URL', hint: 'Shown in email headers. Transparent PNG recommended.' },

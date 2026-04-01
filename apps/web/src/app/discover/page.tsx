@@ -209,7 +209,7 @@ export default function DiscoverPage() {
       actions={
         <Link href="/matches">
           <Button variant="outline" size="sm" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="icon-sm" />
             View Matches
           </Button>
         </Link>
@@ -225,11 +225,11 @@ export default function DiscoverPage() {
               <Card key={s.label} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
                 <CardContent className="flex items-center gap-3 p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <SIcon className="h-4 w-4 text-primary" />
+                    <SIcon className="icon-sm text-primary" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -242,15 +242,15 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <TabsList>
               <TabsTrigger value="search" className="gap-2">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" />
                 Search
               </TabsTrigger>
               <TabsTrigger value="suggestions" className="gap-2">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="icon-sm" />
                 For You
               </TabsTrigger>
               <TabsTrigger value="matches" className="gap-2">
-                <TrendingUp className="h-4 w-4" />
+                <TrendingUp className="icon-sm" />
                 Top Matches
               </TabsTrigger>
             </TabsList>
@@ -263,7 +263,7 @@ export default function DiscoverPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('grid')}
             >
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="icon-sm" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -271,7 +271,7 @@ export default function DiscoverPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('list')}
             >
-              <List className="h-4 w-4" />
+              <List className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -294,7 +294,7 @@ export default function DiscoverPage() {
                       : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
                   )}
                 >
-                  <RIcon className={cn('h-3 w-3', isActive ? 'text-primary-foreground' : rf.color)} />
+                  <RIcon className={cn('icon-sm', isActive ? 'text-primary-foreground' : rf.color)} />
                   {rf.label}
                 </button>
               );
@@ -304,7 +304,7 @@ export default function DiscoverPage() {
                 onClick={() => setRoleFilter('all')}
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
-                <XIcon className="h-3 w-3" /> Clear
+                <XIcon className="icon-sm" /> Clear
               </button>
             )}
           </div>
@@ -337,7 +337,7 @@ export default function DiscoverPage() {
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <BadgeCheck className="h-4 w-4 text-primary" />
+                <BadgeCheck className="icon-sm text-primary" />
                 <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
                 <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
               </div>
@@ -350,11 +350,11 @@ export default function DiscoverPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-foreground truncate max-w-[100px]">{h.displayName}</p>
-                      <p className="text-[10px] text-muted-foreground truncate max-w-[100px]">{h.role}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-[100px]">{h.role}</p>
                     </div>
                     {h.matchScore !== undefined && (
                       <span className={cn(
-                        'ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                        'ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold',
                         h.matchScore >= 80 ? 'bg-emerald-500/15 text-emerald-600' : h.matchScore >= 60 ? 'bg-blue-500/15 text-blue-600' : 'bg-muted text-muted-foreground',
                       )}>{h.matchScore}%</span>
                     )}
@@ -416,7 +416,7 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Sparkles className="icon-md text-primary" />
                 Suggested for you
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -445,7 +445,7 @@ export default function DiscoverPage() {
                 <Link href="/profile/edit">
                   <Button className="gap-2">
                     Complete profile
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="icon-sm" />
                   </Button>
                 </Link>
               }
@@ -483,7 +483,7 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
+                <TrendingUp className="icon-md text-primary" />
                 Your Top Matches
               </h2>
               <p className="text-sm text-muted-foreground">

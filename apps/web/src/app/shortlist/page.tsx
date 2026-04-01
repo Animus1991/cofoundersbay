@@ -134,9 +134,9 @@ function ShortlistCard({
         {/* Avatar */}
         <Link href={`/profiles/${item.userId}`} className="shrink-0">
           {profile?.avatarUrl ? (
-            <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-12 w-12 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" />
+            <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" />
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
               <User className="h-5 w-5 text-muted-foreground" />
             </div>
           )}

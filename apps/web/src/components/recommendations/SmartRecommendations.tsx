@@ -237,12 +237,12 @@ export function SmartRecommendations() {
             <CardHeader className="pb-3">
               <div className="flex items-start gap-4">
                 {rec.type === 'person' ? (
-                  <Avatar className="h-16 w-16">
+                  <Avatar className="h-12 w-12">
                     <AvatarImage src={rec.image} />
                     <AvatarFallback>{rec.title[0]}</AvatarFallback>
                   </Avatar>
                 ) : (
-                  <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                     {getTypeIcon(rec.type)}
                   </div>
                 )}
@@ -369,17 +369,17 @@ export function SmartRecommendations() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-1">
-              <p className="text-2xl font-bold">{recommendations.length}</p>
+              <p className="text-xl font-bold">{recommendations.length}</p>
               <p className="text-sm text-muted-foreground">Active Recommendations</p>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {Math.round(recommendations.reduce((acc, r) => acc + r.matchScore, 0) / recommendations.length)}%
               </p>
               <p className="text-sm text-muted-foreground">Average Match Score</p>
             </div>
             <div className="space-y-1">
-              <p className="text-2xl font-bold">{dismissedIds.size}</p>
+              <p className="text-xl font-bold">{dismissedIds.size}</p>
               <p className="text-sm text-muted-foreground">Dismissed Today</p>
             </div>
           </div>

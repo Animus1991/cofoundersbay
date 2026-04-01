@@ -170,6 +170,175 @@ export class DashboardService {
     };
   }
 
+  async computeVentureReadiness(userId: string) {
+    const now = new Date();
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    const [
+      profile,
+      connections,
+      recentConnections,
+      researchBoards,
+      builderWorkspaces,
+      eventRsvps,
+      groupMemberships,
+      mentoringSessions,
+    ] = await Promise.all([
+      (this.prisma.profile.findUnique({
+        where: { userId },
+        select: {
+          displayName: true,
+          headline: true,
+          bio: true,
+          avatarUrl: true,
+          location: true,
+          website: true,
+          industry: true,
+          rolePayload: true,
+        },
+      }) as Promise<any>),
+      this.prisma.connectionRequest.count({
+        where: { status: 'accepted', OR: [{ requesterId: userId }, { receiverId: userId }] },
+      }),
+      this.prisma.connectionRequest.count({
+        where: {
+          status: 'accepted',
+          respondedAt: { gte: fourteenDaysAgo },
+          OR: [{ requesterId: userId }, { receiverId: userId }],
+        },
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.prisma as any).researchBoard
+        ? (this.prisma as any).researchBoard.findMany({
+            where: { ownerId: userId },
+            select: { id: true, _count: { select: { nodes: true } } },
+          }).catch(() => [])
+        : Promise.resolve([]),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.prisma as any).builderWorkspace
+        ? (this.prisma as any).builderWorkspace.findMany({
+            where: { ownerId: userId },
+            select: { _count: { select: { documents: true } } },
+          }).catch(() => [])
+        : Promise.resolve([]),
+      this.prisma.event.count({
+        where: { rsvps: { some: { userId } } },
+      }).catch(() => 0),
+      this.prisma.groupMember.count({
+        where: { userId },
+      }).catch(() => 0),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.prisma as any).mentoringSession
+        ? (this.prisma as any).mentoringSession.findMany({
+            where: { OR: [{ mentorId: userId }, { menteeId: userId }] },
+            select: { id: true },
+          }).catch(() => [])
+        : Promise.resolve([]),
+    ]);
+
+    // ── Profile Depth (15%) ───────────────────────────────────────────────────
+    let profileScore = 0;
+    if (profile) {
+      const checks = [
+        !!profile.displayName,
+        !!profile.headline,
+        !!profile.bio && profile.bio.length > 20,
+        !!profile.avatarUrl,
+        Array.isArray(profile.skills) && (profile.skills as unknown[]).length >= 3,
+        Array.isArray(profile.skills) && (profile.skills as unknown[]).length >= 7,
+        !!profile.startupStage,
+        Array.isArray(profile.lookingFor) && (profile.lookingFor as unknown[]).length > 0,
+        !!profile.industry,
+        !!(profile.linkedinUrl || profile.website),
+      ];
+      profileScore = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+    }
+
+    // ── Research Depth (20%) ─────────────────────────────────────────────────
+    const boards = researchBoards as any[];
+    const totalNodes = boards.reduce((sum: number, b: any) => sum + (b._count?.nodes ?? 0), 0);
+    const researchScore = Math.min(
+      100,
+      (boards.length > 0 ? 20 : 0) +
+      (boards.length >= 3 ? 15 : 0) +
+      (totalNodes >= 5 ? 20 : 0) +
+      (totalNodes >= 15 ? 20 : 0) +
+      (totalNodes >= 30 ? 25 : 0),
+    );
+
+    // ── Artifact Quality (25%) ───────────────────────────────────────────────
+    const workspaces = builderWorkspaces as any[];
+    const totalDocs = workspaces.reduce((sum: number, w: any) => sum + (w._count?.documents ?? 0), 0);
+    const artifactScore = Math.min(
+      100,
+      (workspaces.length > 0 ? 20 : 0) +
+      (totalDocs >= 1 ? 20 : 0) +
+      (totalDocs >= 3 ? 20 : 0) +
+      (totalDocs >= 6 ? 20 : 0) +
+      (totalDocs >= 10 ? 20 : 0),
+    );
+
+    // ── Collaboration Score (20%) ─────────────────────────────────────────────
+    const sessions = (mentoringSessions as any[]).length;
+    const collaborationScore = Math.min(
+      100,
+      (connections >= 1 ? 15 : 0) +
+      (connections >= 5 ? 15 : 0) +
+      (connections >= 10 ? 15 : 0) +
+      (connections >= 20 ? 15 : 0) +
+      (sessions >= 1 ? 20 : 0) +
+      (sessions >= 5 ? 20 : 0),
+    );
+
+    // ── Momentum Consistency (10%) ────────────────────────────────────────────
+    const momentumScore = Math.min(100,
+      (recentConnections >= 1 ? 50 : 0) +
+      (recentConnections >= 3 ? 50 : 0),
+    );
+
+    // ── Ecosystem Engagement (10%) ────────────────────────────────────────────
+    const ecosystemScore = Math.min(
+      100,
+      (eventRsvps >= 1 ? 25 : 0) +
+      (eventRsvps >= 3 ? 25 : 0) +
+      (groupMemberships >= 1 ? 25 : 0) +
+      (groupMemberships >= 3 ? 25 : 0),
+    );
+
+    const overall = Math.round(
+      profileScore       * 0.15 +
+      researchScore      * 0.20 +
+      artifactScore      * 0.25 +
+      collaborationScore * 0.20 +
+      momentumScore      * 0.10 +
+      ecosystemScore     * 0.10,
+    );
+
+    const dimensions = [
+      { key: 'profile',       label: 'Profile Depth',           score: profileScore,       weight: 15, href: '/profile' },
+      { key: 'research',      label: 'Research Depth',          score: researchScore,      weight: 20, href: '/research' },
+      { key: 'artifacts',     label: 'Artifact Quality',        score: artifactScore,      weight: 25, href: '/builder' },
+      { key: 'collaboration', label: 'Collaboration',           score: collaborationScore, weight: 20, href: '/connections' },
+      { key: 'momentum',      label: 'Momentum (14d)',          score: momentumScore,      weight: 10, href: '/activity' },
+      { key: 'ecosystem',     label: 'Ecosystem Engagement',    score: ecosystemScore,     weight: 10, href: '/events' },
+    ];
+
+    const lowestDimension = [...dimensions].sort((a, b) => a.score - b.score)[0];
+
+    return {
+      overall,
+      dimensions,
+      lowestDimension,
+      signals: {
+        boardCount: boards.length,
+        totalNodes,
+        docCount: totalDocs,
+        connectionCount: connections,
+        sessionCount: sessions,
+      },
+    };
+  }
+
   async getActivity(limit = 10, offset = 0): Promise<{ items: ActivityItem[]; total: number; hasMore: boolean }> {
     const cacheKey = `dashboard:activity:${limit}:${offset}`;
     return this.cache.getOrSet(cacheKey, async () => {

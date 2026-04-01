@@ -330,7 +330,7 @@ export function EnhancedMemberDirectory() {
                 viewMode === 'list' ? "items-center" : "flex-col items-center text-center"
               )}>
                 <div className="relative">
-                  <Avatar className={cn(viewMode === 'list' ? "h-16 w-16" : "h-24 w-24")}>
+                  <Avatar className={cn(viewMode === 'list' ? "h-12 w-12" : "h-16 w-16")}>
                     <AvatarImage src={member.avatar} />
                     <AvatarFallback>{member.name[0]}</AvatarFallback>
                   </Avatar>

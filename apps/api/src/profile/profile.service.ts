@@ -41,18 +41,25 @@ export class ProfileService {
   async getOwnProfile(userId: string) {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
-      select: this.profileSelect,
+      select: {
+        ...this.profileSelect,
+        user: { select: { role: true, email: true } },
+      },
     });
-    if (!profile) return null;
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true, email: true },
-    });
-    if (!user) return null;
+    if (!profile || !profile.user) return null;
     return {
-      ...profile,
-      role: user.role,
-      email: user.email,
+      id: profile.id,
+      userId: profile.userId,
+      displayName: profile.displayName,
+      headline: profile.headline,
+      bio: profile.bio,
+      location: profile.location,
+      timezone: profile.timezone,
+      avatarUrl: profile.avatarUrl,
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+      role: profile.user.role,
+      email: profile.user.email,
       languages: (profile.languages as string[] | null) ?? null,
       rolePayload: profile.rolePayload as Record<string, unknown> | null,
       visibilityRules: profile.visibilityRules as Record<string, string> | null,

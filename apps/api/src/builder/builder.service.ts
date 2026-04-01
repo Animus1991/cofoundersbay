@@ -31,10 +31,42 @@ import {
   ReadinessDimension,
 } from './dto/builder.dto';
 import { createHash } from 'crypto';
+import { CacheService } from '../common/cache/cache.service';
+
+// Short-lived in-memory cache for workspace access checks (avoids redundant DB hits)
+const ACCESS_CACHE_TTL_MS = 5_000;
+type AccessCacheEntry = { expiresAt: number };
+
+// Redis cache TTLs (seconds)
+const WORKSPACE_CACHE_TTL = 60;
+const DOCUMENT_CACHE_TTL = 60;
 
 @Injectable()
 export class BuilderService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly accessCache = new Map<string, AccessCacheEntry>();
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+  ) {}
+
+  /** Invalidate Redis cache for a workspace */
+  private invalidateWorkspaceCache(workspaceId: string) {
+    void this.cache.del(`cofounderbay:builder:workspace:${workspaceId}`).catch(() => {});
+  }
+
+  /** Invalidate Redis cache for a document */
+  private invalidateDocumentCache(documentId: string) {
+    void this.cache.del(`cofounderbay:builder:document:${documentId}`).catch(() => {});
+  }
+
+  /** Purge expired access cache entries (runs lazily on each check) */
+  private pruneAccessCache() {
+    const now = Date.now();
+    for (const [key, entry] of this.accessCache) {
+      if (entry.expiresAt <= now) this.accessCache.delete(key);
+    }
+  }
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Workspace Operations
@@ -91,7 +123,7 @@ export class BuilderService {
     });
 
     // Log activity
-    await this.logActivity(workspace.id, userId, 'workspace.created', 'workspace', workspace.id);
+    this.logActivity(workspace.id, userId, 'workspace.created', 'workspace', workspace.id);
 
     return this.formatWorkspaceResponse(workspace);
   }
@@ -169,31 +201,16 @@ export class BuilderService {
   }
 
   async getWorkspace(userId: string, workspaceId: string) {
-    const workspace = await this.prisma.builderWorkspace.findUnique({
-      where: { id: workspaceId },
-      include: {
-        owner: {
-          select: {
-            id: true,
-            profile: {
-              select: {
-                displayName: true,
-                avatarUrl: true,
-              },
-            },
-          },
-        },
-        documents: {
-          where: { isLatest: true },
-          orderBy: { createdAt: 'desc' },
-        },
-        collaborators: {
-          where: { isActive: true },
+    const cacheKey = `builder:workspace:${workspaceId}`;
+    const workspace = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        const ws = await this.prisma.builderWorkspace.findUnique({
+          where: { id: workspaceId },
           include: {
-            user: {
+            owner: {
               select: {
                 id: true,
-                email: true,
                 profile: {
                   select: {
                     displayName: true,
@@ -202,33 +219,63 @@ export class BuilderService {
                 },
               },
             },
+            documents: {
+              where: { isLatest: true },
+              orderBy: { createdAt: 'desc' },
+            },
+            collaborators: {
+              where: { isActive: true },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    profile: {
+                      select: {
+                        displayName: true,
+                        avatarUrl: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            readinessScores: {
+              orderBy: { assessedAt: 'desc' },
+              take: 6,
+            },
+            _count: {
+              select: {
+                documents: true,
+                collaborators: true,
+              },
+            },
           },
-        },
-        readinessScores: {
-          orderBy: { assessedAt: 'desc' },
-          take: 6,
-        },
-        _count: {
-          select: {
-            documents: true,
-            collaborators: true,
-          },
-        },
+        });
+        return ws;
       },
-    });
+      { ttl: WORKSPACE_CACHE_TTL },
+    );
 
     if (!workspace) {
       throw new NotFoundException('Workspace not found');
     }
 
-    // Check access
-    await this.checkWorkspaceAccess(userId, workspaceId, 'viewer');
+    // Inline access check — avoid redundant DB query from checkWorkspaceAccess()
+    if (workspace.ownerId !== userId) {
+      const collaborator = (workspace.collaborators as any[]).find((c: any) => c.userId === userId);
+      if (!collaborator) {
+        if (workspace.visibility !== 'public') {
+          throw new ForbiddenException('Access denied');
+        }
+      }
+    }
 
-    // Update last access
-    await this.prisma.builderCollaborator.updateMany({
+    // Update last access (fire-and-forget)
+    void this.prisma.builderCollaborator.updateMany({
       where: { workspaceId, userId },
       data: { lastAccessAt: new Date() },
-    });
+    }).catch(() => {});
 
     return this.formatWorkspaceResponse(workspace);
   }
@@ -257,7 +304,8 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { changes: dto });
+    this.invalidateWorkspaceCache(workspaceId);
+    this.logActivity(workspaceId, userId, 'workspace.updated', 'workspace', workspaceId, { changes: dto });
 
     return this.formatWorkspaceResponse(workspace);
   }
@@ -269,6 +317,7 @@ export class BuilderService {
       where: { id: workspaceId },
     });
 
+    this.invalidateWorkspaceCache(workspaceId);
     return { success: true };
   }
 
@@ -283,7 +332,8 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(workspaceId, userId, 'workspace.archived', 'workspace', workspaceId);
+    this.invalidateWorkspaceCache(workspaceId);
+    this.logActivity(workspaceId, userId, 'workspace.archived', 'workspace', workspaceId);
 
     return this.formatWorkspaceResponse(workspace);
   }
@@ -329,77 +379,29 @@ export class BuilderService {
     // Create default sections based on document type
     await this.createDefaultSections(document.id, dto.type);
 
-    await this.logActivity(dto.workspaceId, userId, 'document.created', 'document', document.id);
+    this.invalidateWorkspaceCache(dto.workspaceId);
+    this.logActivity(dto.workspaceId, userId, 'document.created', 'document', document.id);
 
     return document;
   }
 
   async getDocument(userId: string, documentId: string) {
+    // Slim query: core document + sections + counts only.
+    // Comments and reviews are lazy-loaded via dedicated endpoints.
     const document = await this.prisma.builderDocument.findUnique({
       where: { id: documentId },
       include: {
-        workspace: true,
+        workspace: {
+          select: {
+            id: true,
+            ownerId: true,
+            name: true,
+            slug: true,
+            visibility: true,
+          },
+        },
         sections: {
           orderBy: { sortOrder: 'asc' },
-        },
-        comments: {
-          where: { status: 'open' },
-          include: {
-            author: {
-              select: {
-                id: true,
-                profile: {
-                  select: {
-                    displayName: true,
-                    avatarUrl: true,
-                  },
-                },
-              },
-            },
-            replies: {
-              include: {
-                author: {
-                  select: {
-                    id: true,
-                    profile: {
-                      select: {
-                        displayName: true,
-                        avatarUrl: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        reviews: {
-          include: {
-            requestedBy: {
-              select: {
-                id: true,
-                profile: {
-                  select: {
-                    displayName: true,
-                    avatarUrl: true,
-                  },
-                },
-              },
-            },
-            reviewer: {
-              select: {
-                id: true,
-                profile: {
-                  select: {
-                    displayName: true,
-                    avatarUrl: true,
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { requestedAt: 'desc' },
         },
         _count: {
           select: {
@@ -456,7 +458,9 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(document.workspaceId, userId, 'document.updated', 'document', documentId, { changes: dto });
+    this.invalidateDocumentCache(documentId);
+    this.invalidateWorkspaceCache(document.workspaceId);
+    this.logActivity(document.workspaceId, userId, 'document.updated', 'document', documentId, { changes: dto });
 
     return updated;
   }
@@ -493,7 +497,8 @@ export class BuilderService {
     // Update document completion percentage
     await this.updateDocumentCompletion(documentId);
 
-    await this.logActivity(document.workspaceId, userId, 'section.updated', 'section', section.id);
+    this.invalidateDocumentCache(documentId);
+    this.logActivity(document.workspaceId, userId, 'section.updated', 'section', section.id);
 
     return section;
   }
@@ -513,7 +518,9 @@ export class BuilderService {
       where: { id: documentId },
     });
 
-    await this.logActivity(document.workspaceId, userId, 'document.deleted', 'document', documentId);
+    this.invalidateDocumentCache(documentId);
+    this.invalidateWorkspaceCache(document.workspaceId);
+    this.logActivity(document.workspaceId, userId, 'document.deleted', 'document', documentId);
 
     return { success: true };
   }
@@ -582,7 +589,8 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(workspaceId, userId, 'collaborator.added', 'collaborator', collaborator.id);
+    this.invalidateWorkspaceCache(workspaceId);
+    this.logActivity(workspaceId, userId, 'collaborator.added', 'collaborator', collaborator.id);
 
     return collaborator;
   }
@@ -631,7 +639,8 @@ export class BuilderService {
       where: { id: collaboratorId },
     });
 
-    await this.logActivity(workspaceId, userId, 'collaborator.removed', 'collaborator', collaboratorId);
+    this.invalidateWorkspaceCache(workspaceId);
+    this.logActivity(workspaceId, userId, 'collaborator.removed', 'collaborator', collaboratorId);
 
     return { success: true };
   }
@@ -700,7 +709,7 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(document.workspaceId, userId, 'comment.created', 'comment', comment.id);
+    this.logActivity(document.workspaceId, userId, 'comment.created', 'comment', comment.id);
 
     return comment;
   }
@@ -864,7 +873,7 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(document.workspaceId, userId, 'review.requested', 'review', review.id);
+    this.logActivity(document.workspaceId, userId, 'review.requested', 'review', review.id);
 
     // TODO: Send notification to reviewer
 
@@ -919,7 +928,7 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(review.document.workspaceId, userId, 'review.submitted', 'review', reviewId);
+    this.logActivity(review.document.workspaceId, userId, 'review.submitted', 'review', reviewId);
 
     return updated;
   }
@@ -1062,7 +1071,7 @@ export class BuilderService {
       });
     }
 
-    await this.logActivity(workspaceId, userId, 'readiness.updated', 'readiness', score.id);
+    this.logActivity(workspaceId, userId, 'readiness.updated', 'readiness', score.id);
 
     return score;
   }
@@ -1084,7 +1093,7 @@ export class BuilderService {
       },
     });
 
-    await this.logActivity(dto.workspaceId, userId, 'application.created', 'application', application.id);
+    this.logActivity(dto.workspaceId, userId, 'application.created', 'application', application.id);
 
     return application;
   }
@@ -1183,6 +1192,11 @@ export class BuilderService {
   // ─────────────────────────────────────────────────────────────────────────────
 
   private async checkWorkspaceAccess(userId: string, workspaceId: string, requiredRole: string) {
+    // Check short-lived in-memory cache to avoid redundant DB queries
+    this.pruneAccessCache();
+    const cacheKey = `${userId}:${workspaceId}:${requiredRole}`;
+    if (this.accessCache.has(cacheKey)) return;
+
     const workspace = await this.prisma.builderWorkspace.findUnique({
       where: { id: workspaceId },
       include: {
@@ -1197,12 +1211,18 @@ export class BuilderService {
     }
 
     // Owner always has access
-    if (workspace.ownerId === userId) return;
+    if (workspace.ownerId === userId) {
+      this.accessCache.set(cacheKey, { expiresAt: Date.now() + ACCESS_CACHE_TTL_MS });
+      return;
+    }
 
     const collaborator = workspace.collaborators[0];
     if (!collaborator) {
       // Check if workspace is public
-      if (workspace.visibility === 'public' && requiredRole === 'viewer') return;
+      if (workspace.visibility === 'public' && requiredRole === 'viewer') {
+        this.accessCache.set(cacheKey, { expiresAt: Date.now() + ACCESS_CACHE_TTL_MS });
+        return;
+      }
       throw new ForbiddenException('Access denied');
     }
 
@@ -1213,6 +1233,8 @@ export class BuilderService {
     if (userRoleIndex < requiredRoleIndex) {
       throw new ForbiddenException('Insufficient permissions');
     }
+
+    this.accessCache.set(cacheKey, { expiresAt: Date.now() + ACCESS_CACHE_TTL_MS });
   }
 
   private generateSlug(name: string): string {
@@ -1256,7 +1278,7 @@ export class BuilderService {
     };
   }
 
-  private async logActivity(
+  private logActivity(
     workspaceId: string,
     userId: string | null,
     action: string,
@@ -1264,7 +1286,8 @@ export class BuilderService {
     entityId: string,
     metadata?: any,
   ) {
-    await this.prisma.builderActivityLog.create({
+    // Fire-and-forget: never block the response waiting for activity log writes
+    void this.prisma.builderActivityLog.create({
       data: {
         workspaceId,
         userId,
@@ -1273,7 +1296,7 @@ export class BuilderService {
         entityId,
         metadata,
       },
-    });
+    }).catch(() => {});
   }
 
   private getDefaultDocumentContent(type: BuilderDocumentType): Record<string, any> {

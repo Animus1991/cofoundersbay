@@ -188,7 +188,7 @@ export default function ProviderDashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Provider Dashboard</h1>
+            <h1 className="text-xl font-bold tracking-tight">Provider Dashboard</h1>
             <p className="text-muted-foreground">
               Manage your services and client projects
             </p>
@@ -213,7 +213,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Projects</p>
-                  <p className="text-2xl font-bold">{stats.activeProjects}</p>
+                  <p className="text-xl font-bold">{stats.activeProjects}</p>
                 </div>
               </div>
             </CardContent>
@@ -226,7 +226,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
-                  <p className="text-2xl font-bold">{stats.pendingInquiries}</p>
+                  <p className="text-xl font-bold">{stats.pendingInquiries}</p>
                 </div>
               </div>
             </CardContent>
@@ -239,7 +239,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-2xl font-bold">{stats.monthlyRevenue}</p>
+                  <p className="text-xl font-bold">{stats.monthlyRevenue}</p>
                 </div>
               </div>
             </CardContent>
@@ -252,7 +252,7 @@ export default function ProviderDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
-                  <p className="text-2xl font-bold">{stats.avgRating}</p>
+                  <p className="text-xl font-bold">{stats.avgRating}</p>
                 </div>
               </div>
             </CardContent>

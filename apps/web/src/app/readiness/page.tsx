@@ -432,7 +432,7 @@ export default function ReadinessPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Startup Readiness Score</h1>
+            <h1 className="text-xl font-bold tracking-tight">Startup Readiness Score</h1>
             <p className="text-muted-foreground text-sm">
               Assess your startup&apos;s readiness across 6 key dimensions
               {apiData?.lastAssessedAt && (
@@ -450,11 +450,11 @@ export default function ReadinessPage() {
         <div className="grid gap-4 lg:grid-cols-3">
           {/* Main score ring */}
           <Card className="lg:col-span-1 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+            <CardContent className="p-4 flex flex-col items-center text-center gap-3">
               <div className="relative">
                 <ScoreRing score={overallScore} size={140} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold tabular-nums">{overallScore}</span>
+                  <span className="text-3xl font-bold tabular-nums">{overallScore}</span>
                   <span className={cn('text-xs font-semibold uppercase tracking-wide', overallColors.text)}>
                     {overallStatus.replace('-', ' ')}
                   </span>
@@ -488,7 +488,7 @@ export default function ReadinessPage() {
                 </div>
               </div>
               <div className="flex items-end gap-3">
-                <span className="text-3xl font-bold tabular-nums">{accelScore}%</span>
+                <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
                   ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Ready to apply</span>
                   : accelScore >= 50
@@ -519,7 +519,7 @@ export default function ReadinessPage() {
                 </div>
               </div>
               <div className="flex items-end gap-3">
-                <span className="text-3xl font-bold tabular-nums">{investScore}%</span>
+                <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
                   ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Fundable signal</span>
                   : investScore >= 50
@@ -575,7 +575,7 @@ export default function ReadinessPage() {
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground mb-2">Score change (7 weeks)</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-2xl font-bold tabular-nums">{overallScore}</span>
+                  <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className="text-xs text-green-600 flex items-center gap-0.5 mb-1">
                     <TrendingUp className="h-3 w-3" />+{overallScore - DEMO_HISTORY[0].score} pts
                   </span>

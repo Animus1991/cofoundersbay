@@ -140,17 +140,17 @@ function EventCard({ event }: { event: OrgEvent }) {
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />{event.date}
+                <Calendar className="icon-sm" />{event.date}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />{event.time}
+                <Clock className="icon-sm" />{event.time}
               </span>
               <span className="flex items-center gap-1">
-                {event.format === 'online' ? <Video className="h-3 w-3" /> : <Building className="h-3 w-3" />}
+                {event.format === 'online' ? <Video className="icon-sm" /> : <Building className="icon-sm" />}
                 {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />{event.attendees}/{event.capacity} attending
+                <Users className="icon-sm" />{event.attendees}/{event.capacity} attending
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
@@ -170,15 +170,15 @@ function EventCard({ event }: { event: OrgEvent }) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="shrink-0">
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 h-4 w-4" />Duplicate</DropdownMenuItem>
-              <DropdownMenuItem><ExternalLink className="mr-2 h-4 w-4" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
+              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Duplicate</DropdownMenuItem>
+              <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" />View Public Page</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -207,7 +207,7 @@ export default function OrgEventsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Calendar className="h-6 w-6 text-primary" />
               Organization Events
             </h1>
@@ -232,7 +232,7 @@ export default function OrgEventsPage() {
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
                   <stat.icon className="h-4 w-4 text-primary" />

@@ -44,6 +44,7 @@ export type ResearchNodeDto = {
   locked: boolean;
   refEntityType: string | null;
   refEntityId: string | null;
+  builderDocumentId: string | null;
   metadata: unknown;
   tags: string[];
   createdAt: string;
@@ -161,6 +162,7 @@ export class ResearchService {
         locked: n.locked,
         refEntityType: n.refEntityType,
         refEntityId: n.refEntityId,
+        builderDocumentId: (n as any).builderDocumentId ?? null,
         metadata: n.metadata,
         tags: n.tags,
         createdAt: n.createdAt.toISOString(),
@@ -354,6 +356,7 @@ export class ResearchService {
       locked: node.locked,
       refEntityType: node.refEntityType,
       refEntityId: node.refEntityId,
+      builderDocumentId: (node as any).builderDocumentId ?? null,
       metadata: node.metadata,
       tags: node.tags,
       createdAt: node.createdAt.toISOString(),
@@ -378,6 +381,7 @@ export class ResearchService {
       locked?: boolean;
       metadata?: unknown;
       tags?: string[];
+      builderDocumentId?: string | null;
     },
   ): Promise<ResearchNodeDto> {
     const node = await this.prisma.researchNode.findUnique({ where: { id: nodeId } });
@@ -405,6 +409,7 @@ export class ResearchService {
         locked: data.locked,
         metadata: data.metadata as object,
         tags: data.tags,
+        ...(data.builderDocumentId !== undefined && { builderDocumentId: data.builderDocumentId }),
       },
       include: {
         upload: { select: { id: true, url: true, mimeType: true, originalName: true, sizeBytes: true } },
@@ -430,6 +435,7 @@ export class ResearchService {
       locked: updated.locked,
       refEntityType: updated.refEntityType,
       refEntityId: updated.refEntityId,
+      builderDocumentId: (updated as any).builderDocumentId ?? null,
       metadata: updated.metadata,
       tags: updated.tags,
       createdAt: updated.createdAt.toISOString(),
@@ -615,12 +621,12 @@ export class ResearchService {
     if (existing) {
       return this.prisma.researchBoardCollaborator.update({
         where: { id: existing.id },
-        data: { role: data.role },
+        data: { role: data.role as any },
       });
     }
 
     return this.prisma.researchBoardCollaborator.create({
-      data: { boardId, userId: data.userId, role: data.role },
+      data: { boardId, userId: data.userId, role: data.role as any },
     });
   }
 
@@ -631,7 +637,7 @@ export class ResearchService {
 
     await this.prisma.researchBoardCollaborator.update({
       where: { boardId_userId: { boardId, userId: targetUserId } },
-      data: { role },
+      data: { role: role as any },
     });
   }
 
@@ -664,20 +670,51 @@ export class ResearchService {
             profile: { select: { displayName: true, avatarUrl: true } },
           },
         },
+        replies: {
+          include: {
+            author: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } } } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
 
-    return comments.map((c) => ({
+    return (comments as any[]).map((c) => ({
       id: c.id,
       nodeId: c.nodeId,
       authorId: c.authorId,
       authorName: c.author.profile?.displayName ?? 'Unknown',
       authorAvatar: c.author.profile?.avatarUrl ?? null,
       body: c.body,
+      commentType: c.commentType ?? 'general',
       resolved: c.resolved,
       posX: c.posX,
       posY: c.posY,
+      parentId: c.parentId ?? null,
+      author: {
+        id: c.author.id,
+        displayName: c.author.profile?.displayName ?? 'Unknown',
+        avatarUrl: c.author.profile?.avatarUrl,
+      },
+      replies: (c.replies ?? []).map((r: any) => ({
+        id: r.id,
+        nodeId: r.nodeId,
+        authorId: r.authorId,
+        body: r.body,
+        commentType: r.commentType ?? 'general',
+        resolved: r.resolved,
+        posX: r.posX,
+        posY: r.posY,
+        parentId: r.parentId,
+        author: {
+          id: r.author.id,
+          displayName: r.author.profile?.displayName ?? 'Unknown',
+          avatarUrl: r.author.profile?.avatarUrl,
+        },
+        createdAt: r.createdAt.toISOString(),
+        updatedAt: r.updatedAt.toISOString(),
+      })),
       createdAt: c.createdAt.toISOString(),
       updatedAt: c.updatedAt.toISOString(),
     }));
@@ -686,7 +723,7 @@ export class ResearchService {
   async createComment(
     userId: string,
     nodeId: string,
-    data: { body: string; posX?: number; posY?: number },
+    data: { body: string; commentType?: string; posX?: number; posY?: number; parentId?: string },
   ) {
     const node = await this.prisma.researchNode.findUnique({ where: { id: nodeId }, select: { boardId: true } });
     if (!node) throw new NotFoundException('Node not found');
@@ -697,8 +734,10 @@ export class ResearchService {
         nodeId,
         authorId: userId,
         body: data.body,
+        commentType: (data.commentType ?? 'general') as any,
         posX: data.posX,
         posY: data.posY,
+        parentId: data.parentId ?? null,
       },
       include: {
         author: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } } } },
@@ -709,12 +748,19 @@ export class ResearchService {
       id: comment.id,
       nodeId: comment.nodeId,
       authorId: comment.authorId,
-      authorName: comment.author.profile?.displayName ?? 'Unknown',
-      authorAvatar: comment.author.profile?.avatarUrl ?? null,
+      authorName: (comment as any).author.profile?.displayName ?? 'Unknown',
+      authorAvatar: (comment as any).author.profile?.avatarUrl ?? null,
       body: comment.body,
+      commentType: (comment as any).commentType ?? 'general',
       resolved: comment.resolved,
       posX: comment.posX,
       posY: comment.posY,
+      parentId: (comment as any).parentId ?? null,
+      author: {
+        id: (comment as any).author.id,
+        displayName: (comment as any).author.profile?.displayName ?? 'Unknown',
+        avatarUrl: (comment as any).author.profile?.avatarUrl,
+      },
       createdAt: comment.createdAt.toISOString(),
       updatedAt: comment.updatedAt.toISOString(),
     };
@@ -888,6 +934,221 @@ Respond with JSON (no markdown):
       suggestedTags: ['research', 'analysis', boardTitle.toLowerCase().replace(/\s+/g, '-')],
       connections: [],
       gaps: nodes.length < 3 ? ['Add more content to get meaningful insights'] : [],
+    };
+  }
+
+  // ─── Snapshots (Phase 4a) ─────────────────────────────────────────────────
+
+  async createSnapshot(
+    userId: string,
+    boardId: string,
+    dto: { label?: string; triggerType?: string },
+  ) {
+    await this.assertBoardAccess(userId, boardId, 'edit');
+
+    // Capture current nodes and connectors
+    const [nodes, connectors, board] = await Promise.all([
+      this.prisma.researchNode.findMany({
+        where: { boardId },
+        select: {
+          id: true, type: true, title: true, content: true,
+          posX: true, posY: true, width: true, height: true,
+          zIndex: true, color: true, locked: true, metadata: true, tags: true,
+        },
+      }),
+      this.prisma.researchConnector.findMany({
+        where: { boardId },
+        select: { id: true, fromNodeId: true, toNodeId: true, label: true, color: true, style: true },
+      }),
+      this.prisma.researchBoard.findUnique({
+        where: { id: boardId },
+        select: { canvasState: true },
+      }),
+    ]);
+
+    const snapshot = await this.prisma.researchBoardSnapshot.create({
+      data: {
+        boardId,
+        createdById: userId,
+        label: dto.label,
+        triggerType: dto.triggerType ?? 'manual',
+        nodeCount: nodes.length,
+        nodeData: nodes as any,
+        connectors: connectors as any,
+        canvasState: board?.canvasState as any,
+      },
+      include: {
+        createdBy: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } } } },
+      },
+    });
+
+    return this.formatSnapshot(snapshot);
+  }
+
+  async listSnapshots(userId: string, boardId: string) {
+    await this.assertBoardAccess(userId, boardId, 'view');
+
+    const snapshots = await this.prisma.researchBoardSnapshot.findMany({
+      where: { boardId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      select: {
+        id: true,
+        boardId: true,
+        label: true,
+        triggerType: true,
+        nodeCount: true,
+        createdAt: true,
+        createdBy: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } } } },
+      },
+    });
+
+    return (snapshots as any[]).map((s) => ({
+      id: s.id,
+      boardId: s.boardId,
+      label: s.label,
+      triggerType: s.triggerType,
+      nodeCount: s.nodeCount,
+      createdAt: (s.createdAt as Date).toISOString(),
+      createdBy: s.createdBy
+        ? { id: s.createdBy.id, displayName: s.createdBy.profile?.displayName ?? 'Unknown', avatarUrl: s.createdBy.profile?.avatarUrl }
+        : null,
+    }));
+  }
+
+  async getSnapshot(userId: string, boardId: string, snapshotId: string) {
+    await this.assertBoardAccess(userId, boardId, 'view');
+
+    const snapshot = await this.prisma.researchBoardSnapshot.findFirst({
+      where: { id: snapshotId, boardId },
+      include: {
+        createdBy: { select: { id: true, profile: { select: { displayName: true, avatarUrl: true } } } },
+      },
+    });
+
+    if (!snapshot) throw new NotFoundException('Snapshot not found');
+    return this.formatSnapshot(snapshot);
+  }
+
+  async restoreSnapshot(userId: string, boardId: string, snapshotId: string): Promise<{ ok: boolean }> {
+    await this.assertBoardAccess(userId, boardId, 'edit');
+
+    const snapshot = await this.prisma.researchBoardSnapshot.findFirst({
+      where: { id: snapshotId, boardId },
+    });
+    if (!snapshot) throw new NotFoundException('Snapshot not found');
+
+    const nodes = (snapshot.nodeData as Array<{
+      id: string; type: string; title?: string; content?: string; url?: string;
+      posX: number; posY: number; width: number; height: number;
+      zIndex: number; color?: string; collapsed?: boolean; locked?: boolean;
+      metadata?: unknown; tags?: string[];
+    }>) ?? [];
+
+    const edges = (snapshot.connectors as Array<{
+      id: string; fromNodeId: string; toNodeId: string;
+      label?: string; color?: string; style?: string;
+    }>) ?? [];
+
+    // Auto-save a pre-restore snapshot
+    const [currentNodes, currentConnectors, board] = await Promise.all([
+      this.prisma.researchNode.findMany({
+        where: { boardId },
+        select: {
+          id: true, type: true, title: true, content: true,
+          posX: true, posY: true, width: true, height: true,
+          zIndex: true, color: true, locked: true, metadata: true, tags: true,
+        },
+      }),
+      this.prisma.researchConnector.findMany({
+        where: { boardId },
+        select: { id: true, fromNodeId: true, toNodeId: true, label: true, color: true, style: true },
+      }),
+      this.prisma.researchBoard.findUnique({ where: { id: boardId }, select: { canvasState: true } }),
+    ]);
+
+    await this.prisma.researchBoardSnapshot.create({
+      data: {
+        boardId,
+        createdById: userId,
+        label: 'Pre-restore checkpoint',
+        triggerType: 'checkpoint',
+        nodeCount: currentNodes.length,
+        nodeData: currentNodes as any,
+        connectors: currentConnectors as any,
+        canvasState: board?.canvasState as any,
+      },
+    });
+
+    // Wipe live canvas
+    await this.prisma.$transaction([
+      this.prisma.researchConnector.deleteMany({ where: { boardId } }),
+      this.prisma.researchNode.deleteMany({ where: { boardId } }),
+    ]);
+
+    // Re-create nodes from snapshot
+    for (const n of nodes) {
+      await this.prisma.researchNode.create({
+        data: {
+          id: n.id, boardId,
+          type: n.type as any,
+          title: n.title ?? null,
+          content: n.content ?? null,
+          url: (n as any).url ?? null,
+          posX: n.posX ?? 0,
+          posY: n.posY ?? 0,
+          width: n.width ?? 280,
+          height: n.height ?? 200,
+          zIndex: n.zIndex ?? 0,
+          color: n.color ?? null,
+          collapsed: n.collapsed ?? false,
+          locked: n.locked ?? false,
+          metadata: n.metadata as any ?? null,
+          tags: n.tags ?? [],
+        },
+      });
+    }
+
+    // Re-create connectors (only those whose nodes exist)
+    const nodeIds = new Set(nodes.map((n) => n.id));
+    const validEdges = edges.filter((e) => nodeIds.has(e.fromNodeId) && nodeIds.has(e.toNodeId));
+    if (validEdges.length > 0) {
+      await this.prisma.researchConnector.createMany({
+        data: validEdges.map((e) => ({
+          id: e.id, boardId,
+          fromNodeId: e.fromNodeId,
+          toNodeId: e.toNodeId,
+          label: e.label ?? null,
+          color: e.color ?? null,
+          style: e.style ?? 'solid',
+        })),
+        skipDuplicates: true,
+      });
+    }
+
+    return { ok: true };
+  }
+
+  private formatSnapshot(snapshot: any) {
+    return {
+      id: snapshot.id,
+      boardId: snapshot.boardId,
+      label: snapshot.label,
+      triggerType: snapshot.triggerType,
+      nodeCount: snapshot.nodeCount,
+      nodeData: snapshot.nodeData,
+      connectors: snapshot.connectors,
+      canvasState: snapshot.canvasState,
+      createdAt: snapshot.createdAt instanceof Date
+        ? snapshot.createdAt.toISOString()
+        : snapshot.createdAt,
+      createdBy: snapshot.createdBy
+        ? {
+            id: snapshot.createdBy.id,
+            displayName: snapshot.createdBy.profile?.displayName ?? 'Unknown',
+            avatarUrl: snapshot.createdBy.profile?.avatarUrl,
+          }
+        : null,
     };
   }
 

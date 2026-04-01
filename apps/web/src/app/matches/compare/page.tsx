@@ -126,9 +126,9 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <X className="h-4 w-4" />
         </Button>
         <CardContent className="pt-6 text-center">
-          <Avatar className="h-20 w-20 mx-auto mb-3">
+          <Avatar className="h-16 w-16 mx-auto mb-3">
             <AvatarImage src={user.avatar} />
-            <AvatarFallback className="text-xl bg-primary/10 text-primary">
+            <AvatarFallback className="text-base bg-primary/10 text-primary">
               {user.name[0]}
             </AvatarFallback>
           </Avatar>
@@ -143,7 +143,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           
           {/* Match Score */}
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <div className="text-3xl font-bold text-primary">{user.matchScore}%</div>
+            <div className="text-2xl font-bold text-primary">{user.matchScore}%</div>
             <div className="text-xs text-muted-foreground">Match Score</div>
           </div>
 

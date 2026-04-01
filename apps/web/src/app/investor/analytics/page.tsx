@@ -160,7 +160,7 @@ export default function InvestorAnalyticsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <BarChart3 className="h-6 w-6 text-primary" />
               Investment Analytics
             </h1>
@@ -183,7 +183,7 @@ export default function InvestorAnalyticsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs text-muted-foreground">{kpi.label}</p>
-                    <p className={cn('text-2xl font-bold mt-0.5', kpi.color)}>{kpi.value}</p>
+                    <p className={cn('text-xl font-bold mt-0.5', kpi.color)}>{kpi.value}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="p-2 rounded-lg bg-primary/10">

@@ -49,7 +49,7 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold mt-1">{value}</p>
+            <p className="text-xl font-bold mt-1">{value}</p>
             {change && (
               <div className={cn(
                 'flex items-center gap-1 text-xs mt-1',
@@ -57,14 +57,14 @@ function StatCard({
                 changeType === 'negative' && 'text-red-600',
                 changeType === 'neutral' && 'text-muted-foreground'
               )}>
-                {changeType === 'positive' && <ArrowUpRight className="h-3 w-3" />}
-                {changeType === 'negative' && <ArrowDownRight className="h-3 w-3" />}
+                {changeType === 'positive' && <ArrowUpRight className="icon-sm" />}
+                {changeType === 'negative' && <ArrowDownRight className="icon-sm" />}
                 {change}
               </div>
             )}
           </div>
           <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="icon-md text-primary" />
           </div>
         </div>
       </CardContent>
@@ -155,8 +155,8 @@ export default function OrgAnalyticsPage() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" /> Org Analytics
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <BarChart3 className="icon-lg text-primary" /> Org Analytics
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               Track performance, cohort health, and program impact
@@ -176,10 +176,10 @@ export default function OrgAnalyticsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="icon" title="Refresh">
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="icon-sm" />
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5">
-              <Download className="h-4 w-4" /> Export
+              <Download className="icon-sm" /> Export
             </Button>
           </div>
         </div>
@@ -223,7 +223,7 @@ export default function OrgAnalyticsPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Applications Trend</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
+                <Badge variant="secondary" size="sm">6 months</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -255,7 +255,7 @@ export default function OrgAnalyticsPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Mentor Sessions / Month</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
+                <Badge variant="secondary" size="sm">6 months</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -351,19 +351,19 @@ export default function OrgAnalyticsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Active Mentors</p>
-                  <p className="text-2xl font-bold">{stats.totalMentors}</p>
+                  <p className="text-xl font-bold">{stats.totalMentors}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Sessions/Month</p>
-                  <p className="text-2xl font-bold">24</p>
+                  <p className="text-xl font-bold">24</p>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Avg. Rating</p>
-                  <p className="text-2xl font-bold">4.8</p>
+                  <p className="text-xl font-bold">4.8</p>
                 </div>
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="text-sm text-muted-foreground">Utilization</p>
-                  <p className="text-2xl font-bold">78%</p>
+                  <p className="text-xl font-bold">78%</p>
                 </div>
               </div>
             </CardContent>
@@ -386,7 +386,7 @@ export default function OrgAnalyticsPage() {
               ].map((step, index) => (
                 <div key={step.label} className="flex-1 text-center">
                   <div className={cn('h-24 rounded-lg flex items-center justify-center', step.color)}>
-                    <span className="text-2xl font-bold text-white">{step.value}</span>
+                    <span className="text-xl font-bold text-white">{step.value}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">{step.label}</p>
                   {index < 4 && (

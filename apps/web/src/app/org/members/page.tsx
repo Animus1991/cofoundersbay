@@ -69,7 +69,7 @@ function MemberRow({ member }: { member: OrgMember }) {
 
   return (
     <div className="flex items-center gap-4 py-3 px-1 border-b border-border last:border-0 hover:bg-muted/30 rounded-lg transition-colors">
-      <Avatar className="h-9 w-9 shrink-0">
+      <Avatar className="icon-md shrink-0">
         <AvatarImage src={member.avatarUrl} />
         <AvatarFallback className="text-sm font-medium">{member.name.split(' ').map(n => n[0]).join('').toUpperCase()}</AvatarFallback>
       </Avatar>
@@ -83,28 +83,28 @@ function MemberRow({ member }: { member: OrgMember }) {
         <p className="text-xs text-muted-foreground">{member.email}</p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
-        <RoleIcon className={cn('h-3.5 w-3.5', roleCfg.color)} />
+        <RoleIcon className={cn('icon-sm', roleCfg.color)} />
         <span className="text-xs font-medium">{roleCfg.label}</span>
       </div>
       <div className="hidden lg:block w-32 shrink-0">
         <p className="text-xs text-muted-foreground">{member.department ?? '—'}</p>
       </div>
       <div className="hidden sm:flex items-center gap-1 w-24 shrink-0">
-        <Clock className="h-3 w-3 text-muted-foreground" />
+        <Clock className="icon-sm text-muted-foreground" />
         <span className="text-xs text-muted-foreground">{member.lastActive}</span>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-            <MoreVertical className="h-3.5 w-3.5" />
+          <Button variant="ghost" size="icon" className="shrink-0">
+            <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Role</DropdownMenuItem>
-          <DropdownMenuItem><Mail className="mr-2 h-4 w-4" />Send Message</DropdownMenuItem>
+          <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Role</DropdownMenuItem>
+          <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive">
-            <UserMinus className="mr-2 h-4 w-4" />Remove Member
+            <UserMinus className="mr-2 icon-sm" />Remove Member
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -134,7 +134,7 @@ export default function OrgMembersPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Users className="h-6 w-6 text-primary" />
               Team Members
             </h1>
@@ -157,7 +157,7 @@ export default function OrgMembersPage() {
             <Card key={stat.label}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}

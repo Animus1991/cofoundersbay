@@ -37,6 +37,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateProfileCompletion } from '@/components/common/ProfileCompletion';
 import { useToast } from '@/components/ui/toast';
+import { ImageCropperTrigger } from '@/components/ui/image-cropper';
+import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 type Role = 'founder' | 'mentor' | 'investor' | 'org';
@@ -336,7 +338,6 @@ export default function ProfileEditPage() {
     }
   };
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const avatarFileRef = useRef<HTMLInputElement | null>(null);
 
   const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
     queryKey: ['me', 'profile'],
@@ -480,6 +481,11 @@ export default function ProfileEditPage() {
         } catch { /* silent */ }
       }
       success('Profile saved', 'Your changes have been saved successfully');
+      
+      // Analytics
+      void analytics.track('profile_updated', {
+        fields_changed: Object.keys(rolePayload).concat(['displayName', 'headline', 'bio', 'location', 'languages']),
+      });
     } catch {
       showError('Save failed', 'Please try again');
     } finally {
@@ -585,64 +591,58 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <div className="relative group">
-                      <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
-                        <AvatarImage src={form.avatarUrl || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
-                          {form.displayName[0]?.toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <button 
-                        onClick={() => avatarFileRef.current?.click()}
-                        className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        type="button"
-                      >
-                        <Camera className="h-8 w-8 text-white" />
-                      </button>
-                    </div>
+                    <ImageCropperTrigger
+                      cropShape="circle"
+                      aspectRatio={1}
+                      outputSize={400}
+                      title="Crop Profile Photo"
+                      onCrop={async (blob, dataUrl) => {
+                        setUploadingAvatar(true);
+                        try {
+                          const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+                          const { upload } = await uploadAvatar(file);
+                          updateField('avatarUrl', upload.url);
+                          success('Avatar updated', 'Your photo has been cropped and uploaded');
+                          void analytics.track('avatar_uploaded');
+                        } catch (err) {
+                          showError('Upload failed', err instanceof Error ? err.message : 'Please try again');
+                        } finally {
+                          setUploadingAvatar(false);
+                        }
+                      }}
+                    >
+                      <div className="relative group cursor-pointer">
+                        <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
+                          <AvatarImage src={form.avatarUrl || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                            {form.displayName[0]?.toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Camera className="h-8 w-8 text-white" />
+                        </div>
+                      </div>
+                    </ImageCropperTrigger>
                     <div className="space-y-4 flex-1 w-full">
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Input
-                          placeholder="Paste image URL or click Upload..."
+                          placeholder="Paste image URL..."
                           value={form.avatarUrl}
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
-                        />
-                        <input
-                          ref={avatarFileRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (e) => {
-                            const file = e.target.files?.[0];
-                            e.target.value = '';
-                            if (!file) return;
-
-                            setUploadingAvatar(true);
-                            try {
-                              const { upload } = await uploadAvatar(file);
-                              updateField('avatarUrl', upload.url);
-                              success('Avatar uploaded', 'Your photo has been updated');
-                            } catch (err) {
-                              showError('Upload failed', err instanceof Error ? err.message : 'Please try again');
-                            } finally {
-                              setUploadingAvatar(false);
-                            }
-                          }}
                         />
                         <Button
                           type="button"
                           variant="secondary"
                           className="gap-2 sm:w-auto w-full"
                           disabled={uploadingAvatar}
-                          onClick={() => avatarFileRef.current?.click()}
                         >
                           {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-                          Upload New
+                          Crop & Upload
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
+                        Click the photo to crop & upload. Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
                       </p>
                     </div>
                   </div>
@@ -1143,7 +1143,7 @@ export default function ProfileEditPage() {
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-3xl font-bold text-primary">{completionPercentage}%</span>
+                  <span className="text-2xl font-bold text-primary">{completionPercentage}%</span>
                   <span className="text-sm text-muted-foreground pb-1">Complete</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">

@@ -491,6 +491,97 @@ export async function getRecommendations(params?: { role?: string; limit?: numbe
   return apiRequest<{ suggestions: SearchHit[] }>(url);
 }
 
+// --- Feed Personalization ---
+
+export type FeedPost = {
+  id: string;
+  author: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+    headline?: string;
+    role?: string;
+  };
+  type: 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
+  content: string;
+  images?: string[];
+  link?: { url: string; title: string; thumbnail?: string };
+  likes: number;
+  comments: number;
+  shares: number;
+  isLiked: boolean;
+  isBookmarked: boolean;
+  createdAt: string;
+  tags?: string[];
+  personalizationScore?: number;
+  relevanceReasons?: string[];
+};
+
+export type FeedPreferences = {
+  topics: string[];
+  roles: string[];
+  contentTypes: string[];
+  interactionWeights: {
+    likes: number;
+    comments: number;
+    shares: number;
+    bookmarks: number;
+  };
+  timeDecayHours: number;
+  diversityBoost: number;
+};
+
+export async function getPersonalizedFeed(params?: {
+  limit?: number;
+  offset?: number;
+  contentTypes?: string[];
+  topics?: string[];
+  refresh?: boolean;
+}): Promise<{ posts: FeedPost[]; hasMore: boolean; nextCursor?: string }> {
+  const sp = new URLSearchParams();
+  if (params?.limit) sp.set('limit', String(params.limit));
+  if (params?.offset) sp.set('offset', String(params.offset));
+  if (params?.contentTypes?.length) sp.set('contentTypes', params.contentTypes.join(','));
+  if (params?.topics?.length) sp.set('topics', params.topics.join(','));
+  if (params?.refresh) sp.set('refresh', 'true');
+  
+  return apiRequest(`/api/feed/personalized?${sp}`);
+}
+
+export async function getFeedPreferences(): Promise<FeedPreferences> {
+  return apiRequest('/api/feed/preferences');
+}
+
+export async function updateFeedPreferences(preferences: Partial<FeedPreferences>): Promise<FeedPreferences> {
+  return apiRequest('/api/feed/preferences', {
+    method: 'PATCH',
+    body: JSON.stringify(preferences),
+  });
+}
+
+export async function recordFeedInteraction(params: {
+  postId: string;
+  interaction: 'view' | 'like' | 'comment' | 'share' | 'bookmark' | 'hide';
+  duration?: number; // seconds viewed
+}): Promise<{ ok: boolean }> {
+  return apiRequest('/api/feed/interaction', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+export async function getTrendingTopics(limit?: number): Promise<{
+  topics: Array<{
+    tag: string;
+    posts: number;
+    engagement: number;
+    growth: number;
+  }>;
+}> {
+  const q = limit ? `?limit=${limit}` : '';
+  return apiRequest(`/api/feed/trending${q}`);
+}
+
 // --- Messaging ---
 
 export type ConversationSummary = {
@@ -1000,6 +1091,33 @@ export async function getDashboardActivity(params?: { limit?: number; offset?: n
   if (params?.offset != null) sp.set('offset', String(params.offset));
   const url = `/api/dashboard/activity${sp.toString() ? `?${sp}` : ''}`;
   return apiRequest(url);
+}
+
+// --- Venture Readiness Score ---
+
+export interface VRSDimension {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  href: string;
+}
+
+export interface VentureReadiness {
+  overall: number;
+  dimensions: VRSDimension[];
+  lowestDimension: VRSDimension;
+  signals: {
+    boardCount: number;
+    totalNodes: number;
+    docCount: number;
+    connectionCount: number;
+    sessionCount: number;
+  };
+}
+
+export async function getVentureReadiness(): Promise<VentureReadiness> {
+  return apiRequest('/api/dashboard/venture-readiness');
 }
 
 // --- Analytics ---
@@ -2607,6 +2725,22 @@ export async function testSendAdminEmail(templateId: string, to: string): Promis
 }
 
 // Organization Profile API
+export interface OrgMembershipItem {
+  id: string;
+  organizationId: string;
+  role: string;
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+    avatarUrl: string | null;
+  };
+}
+
+export async function getUserOrganizations(): Promise<{ memberships: OrgMembershipItem[] }> {
+  return apiRequest('/api/org/my-memberships');
+}
+
 export async function getOrgProfile(slug: string): Promise<{ org: OrgProfile }> {
   return apiRequest(`/api/org/${slug}`);
 }
@@ -2744,6 +2878,8 @@ export type TenantBranding = {
   headingFont?: string | null;
   bodyFont?: string | null;
   // Media
+  logoUrl?: string | null;
+  faviconUrl?: string | null;
   heroImageUrl?: string | null;
   websiteUrl?: string | null;
   // Content
@@ -3619,7 +3755,41 @@ export async function updateShortlistNote(userId: string, note: string): Promise
 // Research Workspace — FigJam-like research canvas
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type ResearchNodeType = 'note' | 'document' | 'image' | 'pdf' | 'link' | 'reference';
+export type ResearchNodeType =
+  // Core
+  | 'note' | 'document' | 'image' | 'pdf' | 'link' | 'reference'
+  // Research & Analysis
+  | 'insight' | 'hypothesis' | 'question' | 'evidence' | 'citation'
+  // Strategy & Planning
+  | 'pitch_deck' | 'business_plan' | 'business_model' | 'lean_canvas' | 'swot'
+  | 'roadmap' | 'okr' | 'vision'
+  // Financial
+  | 'financial_model' | 'budget' | 'cap_table' | 'invoice' | 'term_sheet' | 'revenue_model'
+  // Legal
+  | 'contract' | 'nda' | 'legal' | 'incorporation' | 'ip_filing' | 'compliance'
+  // Product & Tech
+  | 'wireframe' | 'spec' | 'user_story' | 'api_doc' | 'architecture' | 'bug_report' | 'feature_request'
+  // Marketing & Sales
+  | 'competitor' | 'market_research' | 'persona' | 'branding' | 'go_to_market' | 'funnel'
+  // Team & Operations
+  | 'org_chart' | 'meeting_notes' | 'checklist' | 'timeline' | 'kpi' | 'hiring_plan' | 'onboarding'
+  // Communication & Content
+  | 'email_draft' | 'press_release' | 'presentation' | 'proposal' | 'newsletter'
+  // Data & Metrics
+  | 'whitepaper' | 'case_study' | 'survey' | 'data' | 'report'
+  // Investor Relations
+  | 'due_diligence' | 'investor_update' | 'data_room' | 'valuation'
+  // Task Management
+  | 'task' | 'milestone' | 'sprint' | 'retrospective'
+  // Draw / Diagram shapes (Phase 1)
+  | 'shape_rect' | 'shape_circle' | 'shape_diamond' | 'shape_triangle'
+  | 'shape_line' | 'shape_arrow' | 'shape_text'
+  // Mermaid diagram (Phase 1)
+  | 'mermaid_diagram'
+  // Visual structured templates (Phase 2)
+  | 'visual_bmc' | 'visual_lean' | 'visual_swot'
+  // Embedded interactive nodes (Phase 2)
+  | 'flow_diagram' | 'whiteboard';
 export type ResearchBoardVisibility = 'private' | 'team' | 'organization' | 'public';
 
 export interface ResearchBoardUpload {
@@ -3649,6 +3819,7 @@ export interface ResearchNode {
   locked: boolean;
   refEntityType: string | null;
   refEntityId: string | null;
+  builderDocumentId: string | null;
   metadata: unknown;
   tags: string[];
   createdAt: string;
@@ -3768,6 +3939,7 @@ export async function updateResearchNode(
     locked?: boolean;
     metadata?: unknown;
     tags?: string[];
+    builderDocumentId?: string | null;
   },
 ): Promise<{ node: ResearchNode }> {
   return apiRequest(`/api/research/nodes/${nodeId}`, { method: 'PATCH', body: JSON.stringify(data) });
@@ -3865,9 +4037,13 @@ export interface ResearchComment {
   authorName: string;
   authorAvatar: string | null;
   body: string;
+  commentType: 'general' | 'suggestion' | 'question' | 'resolved' | 'pin';
   resolved: boolean;
   posX: number | null;
   posY: number | null;
+  parentId: string | null;
+  replies?: ResearchComment[];
+  author?: { id: string; displayName: string; avatarUrl?: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -3913,6 +4089,155 @@ export interface ResearchBoardAnalysis {
 
 export async function analyzeResearchBoard(boardId: string): Promise<{ analysis: ResearchBoardAnalysis }> {
   return apiRequest(`/api/research/boards/${boardId}/analyze`, { method: 'POST' });
+}
+
+// AI: Extract nodes from text
+export interface AINodeSuggestion {
+  id: string;
+  type: string;
+  title: string;
+  content: string;
+  colorKey: string;
+  rationale: string;
+  confidence: number;
+  sourceText?: string;
+  accepted?: boolean;
+}
+
+export async function extractResearchNodes(
+  boardId: string,
+  text: string,
+): Promise<{ nodes: AINodeSuggestion[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/ai/extract`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  });
+}
+
+// AI: Suggest connections between nodes
+export interface AIConnectionSuggestion {
+  id: string;
+  fromId: string;
+  toId: string;
+  connType: string;
+  label: string;
+  rationale: string;
+  confidence: number;
+  accepted?: boolean;
+}
+
+export async function suggestResearchConnections(
+  boardId: string,
+  nodeIds: string[],
+): Promise<{ connections: AIConnectionSuggestion[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/ai/connections`, {
+    method: 'POST',
+    body: JSON.stringify({ nodeIds }),
+  });
+}
+
+// AI: Synthesize cluster of nodes into insight
+export interface AISynthesisResult {
+  title: string;
+  content: string;
+  rationale: string;
+}
+
+export async function synthesizeResearchCluster(
+  boardId: string,
+  nodeIds: string[],
+): Promise<{ synthesis: AISynthesisResult }> {
+  return apiRequest(`/api/research/boards/${boardId}/ai/synthesize`, {
+    method: 'POST',
+    body: JSON.stringify({ nodeIds }),
+  });
+}
+
+// AI: Generate research questions
+export interface AIResearchQuestion {
+  id: string;
+  title: string;
+  rationale: string;
+  confidence: number;
+}
+
+export async function generateResearchQuestions(
+  boardId: string,
+  focus?: string,
+): Promise<{ questions: AIResearchQuestion[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/ai/questions`, {
+    method: 'POST',
+    body: JSON.stringify({ focus }),
+  });
+}
+
+// AI: Chat with board context
+export interface AIChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export async function chatWithResearchBoard(
+  boardId: string,
+  message: string,
+  history: AIChatMessage[],
+): Promise<{ reply: string }> {
+  return apiRequest(`/api/research/boards/${boardId}/ai/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ message, history }),
+  });
+}
+
+// ─── Builder Document Versions (Phase 3) ─────────────────────────────────────
+
+export interface BuilderDocumentVersion {
+  id: string;
+  version: number;
+  versionLabel: string | null;
+  changesSummary: string | null;
+  createdAt: string;
+  changedById: string | null;
+  changedBy: { id: string; displayName: string; avatarUrl?: string | null } | null;
+}
+
+export async function listDocumentVersions(documentId: string): Promise<BuilderDocumentVersion[]> {
+  return apiRequest(`/api/collab/documents/${documentId}/versions`);
+}
+
+// ─── Research Board Snapshots (Phase 4a) ─────────────────────────────────────
+
+export interface ResearchBoardSnapshot {
+  id: string;
+  boardId: string;
+  label: string | null;
+  triggerType: string;
+  nodeCount: number;
+  nodeData?: unknown[];
+  connectors?: unknown[];
+  canvasState?: unknown;
+  createdAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string } | null;
+}
+
+export async function createResearchSnapshot(
+  boardId: string,
+  data: { label?: string; triggerType?: string },
+): Promise<{ snapshot: ResearchBoardSnapshot }> {
+  return apiRequest(`/api/research/boards/${boardId}/snapshots`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function listResearchSnapshots(boardId: string): Promise<{ snapshots: ResearchBoardSnapshot[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/snapshots`);
+}
+
+export async function getResearchSnapshot(
+  boardId: string,
+  snapshotId: string,
+): Promise<{ snapshot: ResearchBoardSnapshot }> {
+  return apiRequest(`/api/research/boards/${boardId}/snapshots/${snapshotId}`);
 }
 
 // ─── Programs ────────────────────────────────────────────────────────────────
@@ -4083,4 +4408,1441 @@ export async function updateBuilderApplication(
     method: 'PATCH',
     body: JSON.stringify(data),
   });
+}
+
+// ─── Saved Searches ───────────────────────────────────────────────────────────
+
+export interface SavedSearchFilters {
+  roles?: string[];
+  skills?: string[];
+  industries?: string[];
+  locations?: string[];
+  stage?: string[];
+}
+
+export interface SavedSearch {
+  id: string;
+  name: string;
+  query: string;
+  filters: SavedSearchFilters;
+  alertsEnabled: boolean;
+  alertFrequency: 'instant' | 'daily' | 'weekly';
+  lastRun?: string;
+  resultCount?: number;
+  newResults?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listSavedSearches(): Promise<{ searches: SavedSearch[] }> {
+  return apiRequest('/api/saved-searches');
+}
+
+export async function createSavedSearch(
+  data: Omit<SavedSearch, 'id' | 'createdAt' | 'updatedAt' | 'lastRun' | 'resultCount' | 'newResults'>,
+): Promise<{ search: SavedSearch }> {
+  return apiRequest('/api/saved-searches', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateSavedSearch(
+  id: string,
+  data: Partial<Pick<SavedSearch, 'name' | 'alertsEnabled' | 'alertFrequency'>>,
+): Promise<{ search: SavedSearch }> {
+  return apiRequest(`/api/saved-searches/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+}
+
+export async function deleteSavedSearch(id: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/saved-searches/${id}`, { method: 'DELETE' });
+}
+
+export async function runSavedSearch(id: string): Promise<{ results: unknown[]; count: number }> {
+  return apiRequest(`/api/saved-searches/${id}/run`, { method: 'POST' });
+}
+
+// ─── Public Pitch Deck ────────────────────────────────────────────────────────
+
+export interface PitchSlide {
+  id: string;
+  type: string;
+  title: string;
+  content: Record<string, unknown>;
+  order: number;
+}
+
+export interface PublicPitchDeck {
+  id: string;
+  title: string;
+  companyName: string;
+  tagline?: string;
+  logoUrl?: string;
+  coverImageUrl?: string;
+  slides: PitchSlide[];
+  author: {
+    id: string;
+    name: string;
+    avatarUrl?: string;
+    headline?: string;
+  };
+  stats: {
+    views: number;
+    shares: number;
+    contactRequests: number;
+  };
+  isPublic: boolean;
+  allowContact: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function getPublicPitchDeck(id: string): Promise<{ deck: PublicPitchDeck }> {
+  return apiRequest(`/api/pitch/${id}/public`);
+}
+
+export async function recordPitchView(id: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/pitch/${id}/view`, { method: 'POST' });
+}
+
+export async function submitPitchContactRequest(
+  id: string,
+  data: { name: string; email: string; message?: string },
+): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/pitch/${id}/contact`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Collaboration Architecture — Phase 1+2
+// Branches, Change Proposals, Review Requests, Share Links, Version Restore
+// Architecture report: COLLABORATION_ARCHITECTURE.md
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export type ArtifactBranchStatus = 'open' | 'review' | 'merged' | 'closed' | 'abandoned';
+export type ChangeProposalStatus = 'open' | 'approved' | 'changes_requested' | 'merged' | 'closed';
+export type ShareLinkPermission = 'view' | 'comment' | 'suggest';
+
+export interface ArtifactBranch {
+  id: string;
+  documentId: string;
+  name: string;
+  description?: string;
+  status: ArtifactBranchStatus;
+  baseVersionNum: number;
+  baseVersionId: string;
+  mergedAt?: string;
+  mergedById?: string;
+  mergeVersionId?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string };
+  proposalCount: number;
+}
+
+export interface ChangeProposal {
+  id: string;
+  branchId: string;
+  documentId: string;
+  title: string;
+  description?: string;
+  status: ChangeProposalStatus;
+  changedSections: string[];
+  diffSummary?: Record<string, unknown>;
+  reviewerIds: string[];
+  createdAt: string;
+  updatedAt: string;
+  mergedAt?: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string };
+  branch?: { id: string; name: string; status: string };
+}
+
+export interface ArtifactShareLink {
+  id: string;
+  documentId?: string;
+  workspaceId?: string;
+  versionId?: string;
+  token: string;
+  permissions: ShareLinkPermission;
+  label?: string;
+  recipientEmail?: string;
+  expiresAt?: string;
+  maxViews?: number;
+  viewCount: number;
+  isActive: boolean;
+  createdAt: string;
+  lastAccessedAt?: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string };
+}
+
+export interface VersionRestoreResult {
+  documentId: string;
+  previousVersion: number;
+  restoredFromVersion: number;
+  newVersion: number;
+}
+
+// ─── Branch API ──────────────────────────────────────────────────────────────
+
+export async function createBranch(data: {
+  documentId: string;
+  name: string;
+  description?: string;
+}): Promise<ArtifactBranch> {
+  return apiRequest('/api/collab/branches', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getBranch(branchId: string): Promise<ArtifactBranch> {
+  return apiRequest(`/api/collab/branches/${branchId}`);
+}
+
+export async function listBranches(
+  documentId: string,
+  params?: { status?: ArtifactBranchStatus },
+): Promise<ArtifactBranch[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  return apiRequest(`/api/collab/documents/${documentId}/branches?${q}`);
+}
+
+export async function updateBranch(
+  branchId: string,
+  data: { name?: string; description?: string; status?: ArtifactBranchStatus },
+): Promise<ArtifactBranch> {
+  return apiRequest(`/api/collab/branches/${branchId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function closeBranch(branchId: string): Promise<ArtifactBranch> {
+  return apiRequest(`/api/collab/branches/${branchId}/close`, { method: 'POST' });
+}
+
+// ─── Change Proposal API ─────────────────────────────────────────────────────
+
+export async function createProposal(data: {
+  branchId: string;
+  title: string;
+  description?: string;
+  reviewerIds?: string[];
+}): Promise<ChangeProposal> {
+  return apiRequest('/api/collab/proposals', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getProposal(proposalId: string): Promise<ChangeProposal> {
+  return apiRequest(`/api/collab/proposals/${proposalId}`);
+}
+
+export async function listProposals(
+  documentId: string,
+  params?: { status?: ChangeProposalStatus },
+): Promise<ChangeProposal[]> {
+  const q = new URLSearchParams();
+  if (params?.status) q.set('status', params.status);
+  return apiRequest(`/api/collab/documents/${documentId}/proposals?${q}`);
+}
+
+export async function updateProposal(
+  proposalId: string,
+  data: { title?: string; description?: string; status?: ChangeProposalStatus; reviewerIds?: string[] },
+): Promise<ChangeProposal> {
+  return apiRequest(`/api/collab/proposals/${proposalId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+// ─── Review Request / Decision API ───────────────────────────────────────────
+
+export async function requestProposalReview(data: {
+  proposalId: string;
+  reviewerIds: string[];
+  message?: string;
+}): Promise<ChangeProposal> {
+  return apiRequest('/api/collab/reviews/request', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function submitProposalReview(
+  proposalId: string,
+  data: { decision: ChangeProposalStatus; feedback?: string; rating?: number },
+): Promise<ChangeProposal> {
+  return apiRequest(`/api/collab/proposals/${proposalId}/review`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+// ─── Share Link API ──────────────────────────────────────────────────────────
+
+export async function createShareLink(data: {
+  documentId?: string;
+  workspaceId?: string;
+  versionId?: string;
+  permissions?: ShareLinkPermission;
+  label?: string;
+  recipientEmail?: string;
+  password?: string;
+  expiresAt?: string;
+  maxViews?: number;
+}): Promise<ArtifactShareLink> {
+  return apiRequest('/api/collab/share-links', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getShareLink(shareLinkId: string): Promise<ArtifactShareLink> {
+  return apiRequest(`/api/collab/share-links/${shareLinkId}`);
+}
+
+export async function listDocumentShareLinks(documentId: string): Promise<ArtifactShareLink[]> {
+  return apiRequest(`/api/collab/documents/${documentId}/share-links`);
+}
+
+export async function listWorkspaceShareLinks(workspaceId: string): Promise<ArtifactShareLink[]> {
+  return apiRequest(`/api/collab/workspaces/${workspaceId}/share-links`);
+}
+
+export async function updateShareLink(
+  shareLinkId: string,
+  data: { isActive?: boolean; expiresAt?: string; maxViews?: number; label?: string },
+): Promise<ArtifactShareLink> {
+  return apiRequest(`/api/collab/share-links/${shareLinkId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function revokeShareLink(shareLinkId: string): Promise<ArtifactShareLink> {
+  return apiRequest(`/api/collab/share-links/${shareLinkId}/revoke`, { method: 'POST' });
+}
+
+// ─── Version Restore API ─────────────────────────────────────────────────────
+
+export async function restoreDocumentVersion(data: {
+  documentId: string;
+  targetVersion: number;
+}): Promise<VersionRestoreResult> {
+  return apiRequest('/api/collab/versions/restore', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+// ─── Canvas Versioning API ────────────────────────────────────────────────────
+
+export interface CanvasNodeDiff {
+  id: string;
+  title: string | null;
+  type: string;
+}
+
+export interface CanvasModifiedNodeDiff {
+  id: string;
+  title: string | null;
+  type: string;
+  changes: Array<{ field: string; before: unknown; after: unknown }>;
+}
+
+export interface CanvasMovedNodeDiff {
+  id: string;
+  title: string | null;
+  before: { posX: number; posY: number };
+  after: { posX: number; posY: number };
+}
+
+export interface CanvasConnectorSnapshot {
+  id: string;
+  fromNodeId: string;
+  toNodeId: string;
+  label: string | null;
+  color: string | null;
+  style: string | null;
+}
+
+export interface CanvasDiff {
+  added: CanvasNodeDiff[];
+  removed: CanvasNodeDiff[];
+  modified: CanvasModifiedNodeDiff[];
+  moved: CanvasMovedNodeDiff[];
+  edgeDiff: { added: CanvasConnectorSnapshot[]; removed: CanvasConnectorSnapshot[] };
+  isEmpty: boolean;
+}
+
+export interface CanvasVersion {
+  id: string;
+  boardId: string;
+  branchId: string | null;
+  branchName: string | null;
+  parentVersionId: string | null;
+  label: string | null;
+  changeSummary: string | null;
+  triggerType: string;
+  nodeCount: number;
+  createdAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string } | null;
+  diffData: CanvasDiff | null;
+}
+
+export interface CanvasVersionFull extends CanvasVersion {
+  nodeData: unknown[];
+  connectors: CanvasConnectorSnapshot[];
+  canvasState: unknown;
+}
+
+export interface CanvasBranch {
+  id: string;
+  boardId: string;
+  name: string;
+  description: string | null;
+  status: 'active' | 'merged' | 'archived';
+  isDefault: boolean;
+  headVersionId: string | null;
+  baseVersionId: string | null;
+  nodeCount: number | null;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { id: string; displayName: string; avatarUrl?: string } | null;
+}
+
+export interface MergeConflict {
+  kind: string;
+  nodeId?: string;
+  edgeId?: string;
+  description: string;
+  sourceValue?: unknown;
+  targetValue?: unknown;
+}
+
+export interface ConflictResolution {
+  nodeId?: string;
+  edgeId?: string;
+  resolution: 'keep_source' | 'keep_target' | 'keep_both';
+}
+
+// — Versions
+
+export async function createCanvasVersion(
+  boardId: string,
+  dto: { label?: string; changeSummary?: string; triggerType?: string; branchId?: string },
+): Promise<CanvasVersion> {
+  const res = await apiRequest<{ version: CanvasVersion }>(
+    `/api/research/boards/${boardId}/versions`,
+    { method: 'POST', body: JSON.stringify(dto) },
+  );
+  return res.version;
+}
+
+export async function listCanvasVersions(boardId: string, branchId?: string): Promise<CanvasVersion[]> {
+  const qs = branchId ? `?branchId=${branchId}` : '';
+  const res = await apiRequest<{ versions: CanvasVersion[] }>(
+    `/api/research/boards/${boardId}/versions${qs}`,
+  );
+  return res.versions;
+}
+
+export async function getCanvasVersion(boardId: string, versionId: string): Promise<CanvasVersionFull> {
+  const res = await apiRequest<{ version: CanvasVersionFull }>(
+    `/api/research/boards/${boardId}/versions/${versionId}`,
+  );
+  return res.version;
+}
+
+export async function restoreCanvasVersion(
+  boardId: string,
+  versionId: string,
+): Promise<{ ok: boolean; newVersionId: string }> {
+  return apiRequest(`/api/research/boards/${boardId}/versions/${versionId}/restore`, {
+    method: 'POST',
+  });
+}
+
+export async function diffCanvasVersions(
+  boardId: string,
+  from: string,
+  to: string,
+): Promise<CanvasDiff> {
+  const res = await apiRequest<{ diff: CanvasDiff }>(
+    `/api/research/boards/${boardId}/diff?from=${from}&to=${to}`,
+  );
+  return res.diff;
+}
+
+// Snapshot restore (backward compat with BoardHistoryDrawer)
+export async function restoreBoardSnapshot(boardId: string, snapshotId: string): Promise<{ ok: boolean }> {
+  return apiRequest(`/api/research/boards/${boardId}/snapshots/${snapshotId}/restore`, {
+    method: 'POST',
+  });
+}
+
+// — Branches
+
+export async function createCanvasBranch(
+  boardId: string,
+  dto: { name: string; description?: string; baseVersionId?: string },
+): Promise<CanvasBranch> {
+  const res = await apiRequest<{ branch: CanvasBranch }>(
+    `/api/research/boards/${boardId}/branches`,
+    { method: 'POST', body: JSON.stringify(dto) },
+  );
+  return res.branch;
+}
+
+export async function listCanvasBranches(boardId: string): Promise<CanvasBranch[]> {
+  const res = await apiRequest<{ branches: CanvasBranch[] }>(
+    `/api/research/boards/${boardId}/branches`,
+  );
+  return res.branches;
+}
+
+export async function archiveCanvasBranch(boardId: string, branchId: string): Promise<CanvasBranch> {
+  const res = await apiRequest<{ branch: CanvasBranch }>(
+    `/api/research/boards/${boardId}/branches/${branchId}/archive`,
+    { method: 'PATCH' },
+  );
+  return res.branch;
+}
+
+export async function deleteCanvasBranch(boardId: string, branchId: string): Promise<void> {
+  await apiRequest(`/api/research/boards/${boardId}/branches/${branchId}`, { method: 'DELETE' });
+}
+
+// — Merge
+
+export async function previewCanvasMerge(
+  boardId: string,
+  sourceBranchId: string,
+  targetBranchId: string,
+): Promise<{ conflicts: MergeConflict[]; diff: CanvasDiff }> {
+  return apiRequest(`/api/research/boards/${boardId}/merge/preview`, {
+    method: 'POST',
+    body: JSON.stringify({ sourceBranchId, targetBranchId }),
+  });
+}
+
+export async function mergeCanvasBranch(
+  boardId: string,
+  dto: {
+    sourceBranchId: string;
+    targetBranchId: string;
+    strategy: 'fast_forward' | 'manual' | 'conflict_resolved';
+    resolutions?: ConflictResolution[];
+  },
+): Promise<{ mergeId: string; resultVersionId: string; conflicts: MergeConflict[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/merge`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Canvas Copilot (multi-agent AI)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CanvasCopilotAgentConfig {
+  id: string;
+  name: string;
+  description: string;
+  suggestedQuestions: string[];
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface CanvasCopilotMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface CanvasCopilotResult {
+  message: string;
+  agentId: string;
+  model: string;
+  fallback?: boolean;
+  boardContext: { nodeCount: number; usedNodeIds: string[] };
+}
+
+export async function listCanvasCopilotAgents(
+  boardId: string,
+): Promise<{ agents: CanvasCopilotAgentConfig[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/copilot/agents`);
+}
+
+export async function chatWithCanvasCopilot(
+  boardId: string,
+  dto: {
+    agentId: string;
+    message: string;
+    selectedNodeIds?: string[];
+    includeAllNodes?: boolean;
+    history?: CanvasCopilotMessage[];
+  },
+): Promise<CanvasCopilotResult> {
+  return apiRequest(`/api/research/boards/${boardId}/copilot/chat`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Canvas ↔ Builder Synthesis
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ExportToBuilderResult {
+  documentId: string;
+  documentTitle: string;
+  documentType: string;
+  workspaceId: string;
+  sourceNodeIds: string[];
+  linkedNodeIds: string[];
+}
+
+export interface ImportToCanvasResult {
+  nodeId: string;
+  nodeType: string;
+  title: string;
+  builderDocumentId: string;
+}
+
+export interface ImportableDocument {
+  id: string;
+  type: string;
+  title: string;
+  workspaceName: string;
+  alreadyLinked: boolean;
+}
+
+export async function exportCanvasToBuilder(
+  boardId: string,
+  dto: {
+    workspaceId: string;
+    selectedNodeIds?: string[];
+    documentType?: string;
+    documentTitle?: string;
+    linkNodes?: boolean;
+  },
+): Promise<ExportToBuilderResult> {
+  return apiRequest(`/api/research/boards/${boardId}/export-to-builder`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function importBuilderToCanvas(
+  boardId: string,
+  dto: {
+    documentId: string;
+    posX?: number;
+    posY?: number;
+  },
+): Promise<ImportToCanvasResult> {
+  return apiRequest(`/api/research/boards/${boardId}/import-from-builder`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function generateDocumentFromCanvas(
+  boardId: string,
+  dto: {
+    workspaceId: string;
+    documentType: string;
+    documentTitle?: string;
+    selectedNodeIds?: string[];
+    agentId?: string;
+  },
+): Promise<ExportToBuilderResult & { aiGenerated: boolean; generationPrompt: string }> {
+  return apiRequest(`/api/research/boards/${boardId}/generate-document`, {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+export async function listImportableDocuments(
+  boardId: string,
+): Promise<{ documents: ImportableDocument[] }> {
+  return apiRequest(`/api/research/boards/${boardId}/importable-documents`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GAMIFICATION ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Enums (mirrored from Prisma) ─────────────────────────────────────────────
+
+export type XPEventType =
+  | 'CREATE_ARTIFACT'
+  | 'COMPLETE_ARTIFACT'
+  | 'IMPROVE_ARTIFACT'
+  | 'CREATE_BOARD'
+  | 'SYNTHESIZE_BOARD'
+  | 'LINK_ARTIFACTS'
+  | 'INVITE_COLLABORATOR'
+  | 'TEAM_CONTRIBUTION'
+  | 'HIGH_QUALITY_CONTRIBUTION'
+  | 'RECEIVE_MENTOR_FEEDBACK'
+  | 'APPLY_FEEDBACK'
+  | 'COMPLETE_REVIEW'
+  | 'PROVIDE_FEEDBACK'
+  | 'COMPLETE_MILESTONE'
+  | 'VALIDATED_PROGRESS';
+
+export type GamificationBadgeCategory =
+  | 'progress'
+  | 'consistency'
+  | 'collaboration'
+  | 'quality'
+  | 'learning'
+  | 'execution';
+
+export type GamificationBadgeRarity =
+  | 'common'
+  | 'uncommon'
+  | 'rare'
+  | 'epic'
+  | 'legendary';
+
+// ── XP ───────────────────────────────────────────────────────────────────────
+
+export interface GamificationRecentXPEvent {
+  id: string;
+  eventType: XPEventType;
+  xpAmount: number;
+  entityType: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+export type GamificationRecentEvent = GamificationRecentXPEvent;
+
+export interface GamificationStreak {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+}
+
+export type GamificationStreakSummary = GamificationStreak;
+
+export interface GamificationXPSummary {
+  userId: string;
+  totalXp: number;
+  level: number;
+  levelLabel: string;
+  xpToNextLevel: number;
+  levelProgress: number;
+  recentEvents: GamificationRecentXPEvent[];
+  streak: GamificationStreak;
+}
+
+export async function getMyXP(): Promise<GamificationXPSummary> {
+  return apiRequest('/api/gamification/users/me/xp');
+}
+
+export async function getUserXP(userId: string): Promise<GamificationXPSummary> {
+  return apiRequest(`/api/gamification/users/${userId}/xp`);
+}
+
+// ── Badges ───────────────────────────────────────────────────────────────────
+
+export interface GamificationBadge {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  category: GamificationBadgeCategory;
+  rarity: GamificationBadgeRarity;
+  iconName: string | null;
+  xpReward: number;
+  awardedAt: string;
+}
+
+export type GamificationBadgeSummary = GamificationBadge;
+
+export async function getMyBadges(): Promise<GamificationBadge[]> {
+  return apiRequest('/api/gamification/users/me/badges');
+}
+
+export async function getUserBadges(userId: string): Promise<GamificationBadge[]> {
+  return apiRequest(`/api/gamification/users/${userId}/badges`);
+}
+
+export async function markBadgesSeen(): Promise<void> {
+  return apiRequest('/api/gamification/users/me/badges/seen', { method: 'POST' });
+}
+
+// ── Streak ───────────────────────────────────────────────────────────────────
+
+export async function getMyStreak(): Promise<GamificationStreak> {
+  return apiRequest('/api/gamification/users/me/streak');
+}
+
+// ── Record XP Event ──────────────────────────────────────────────────────────
+
+export interface RecordXPEventDto {
+  eventType: XPEventType;
+  workspaceId?: string;
+  entityType?: string;
+  entityId?: string;
+  weightMultiplier?: number;
+  metadata?: Record<string, unknown>;
+}
+
+export interface RecordXPEventResult {
+  xpAwarded: number;
+  isDiminished: boolean;
+  blocked: boolean;
+}
+
+export async function recordXPEvent(
+  dto: RecordXPEventDto,
+): Promise<RecordXPEventResult> {
+  return apiRequest('/api/gamification/events', {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
+}
+
+// ── Readiness ────────────────────────────────────────────────────────────────
+
+export interface GamificationReadinessDimensions {
+  problemClarity: number;
+  solutionClarity: number;
+  marketUnderstanding: number;
+  productDefinition: number;
+  teamCompleteness: number;
+  executionReadiness: number;
+  validationScore: number;
+  artifactCompleteness: number;
+}
+
+export interface GamificationDimensionDetail {
+  score: number;
+  weight: number;
+  weightedContribution: number;
+  detail: string;
+  signals: Record<string, string | number | boolean>;
+}
+
+export interface GamificationReadinessSummary {
+  workspaceId: string;
+  score: number;
+  bottleneckFactor: number;
+  dimensions: GamificationReadinessDimensions;
+  dimensionBreakdown: Record<string, GamificationDimensionDetail>;
+  updatedAt: string;
+}
+
+export async function getWorkspaceReadiness(
+  workspaceId: string,
+): Promise<GamificationReadinessSummary> {
+  return apiRequest(`/api/gamification/workspaces/${workspaceId}/readiness`);
+}
+
+export async function refreshWorkspaceReadiness(
+  workspaceId: string,
+): Promise<GamificationReadinessSummary> {
+  return apiRequest(
+    `/api/gamification/workspaces/${workspaceId}/readiness/refresh`,
+    { method: 'POST' },
+  );
+}
+
+// ── Team Momentum ────────────────────────────────────────────────────────────
+
+export interface GamificationMomentumBreakdown {
+  activeContributors: number;
+  recentMeaningfulActions: number;
+  meaningful7d: number;
+  meaningful14d: number;
+  velocityScore: number;
+  recentActivityScore: number;
+  collaborationDensityScore: number;
+  feedbackLoopScore: number;
+  milestoneRateScore: number;
+  artifactProgressEvents: number;
+  feedbackLoopsCompleted: number;
+  milestoneCompletionRate: number;
+  momentumLevel: string;
+}
+
+export interface GamificationMomentumSummary {
+  workspaceId: string;
+  score: number;
+  velocity: number;
+  recentActivityScore: number;
+  collaborationDensity: number;
+  breakdown: GamificationMomentumBreakdown;
+  updatedAt: string;
+}
+
+export async function getWorkspaceMomentum(
+  workspaceId: string,
+): Promise<GamificationMomentumSummary> {
+  return apiRequest(`/api/gamification/workspaces/${workspaceId}/momentum`);
+}
+
+// ── Contribution ─────────────────────────────────────────────────────────────
+
+export interface GamificationContributionBreakdown {
+  artifactsCreated: number;
+  artifactsImproved: number;
+  feedbackGiven: number;
+  feedbackApplied: number;
+  collaborationActions: number;
+  usageByTeam: number;
+  recentArtifactsCreated: number;
+  recentArtifactsImproved: number;
+  recentFeedbackApplied: number;
+}
+
+export interface GamificationContributionSummary {
+  userId: string;
+  workspaceId: string;
+  score: number;
+  rawScore: number;
+  breakdown: GamificationContributionBreakdown;
+  explain: string;
+  updatedAt: string;
+}
+
+export async function getWorkspaceContributions(
+  workspaceId: string,
+): Promise<GamificationContributionSummary[]> {
+  return apiRequest(`/api/gamification/workspaces/${workspaceId}/contributions`);
+}
+
+export async function getMyWorkspaceContribution(
+  workspaceId: string,
+): Promise<GamificationContributionSummary> {
+  return apiRequest(
+    `/api/gamification/workspaces/${workspaceId}/contributions/me`,
+  );
+}
+
+// ── Mentor Metrics ───────────────────────────────────────────────────────────
+
+export interface GamificationMentorMetrics {
+  workspaceId: string;
+  feedbackCount: number;
+  appliedFeedbackCount: number;
+  unresolvedFeedback: number;
+  appliedFeedbackRate: number;
+  avgResponseTimeHrs: number;
+  speedScore: number;
+  depthScore: number;
+  burdenScore: number;
+  improvementScore: number;
+  lastFeedbackAt: string | null;
+  updatedAt: string;
+}
+
+export async function getWorkspaceMentorMetrics(
+  workspaceId: string,
+): Promise<GamificationMentorMetrics> {
+  return apiRequest(
+    `/api/gamification/workspaces/${workspaceId}/mentor-metrics`,
+  );
+}
+
+// ── Full refresh ─────────────────────────────────────────────────────────────
+
+export interface WorkspaceMetricsRefreshResult {
+  readiness: GamificationReadinessSummary;
+  momentum: GamificationMomentumSummary;
+  mentorMetrics: GamificationMentorMetrics;
+}
+
+export async function refreshAllWorkspaceMetrics(
+  workspaceId: string,
+): Promise<WorkspaceMetricsRefreshResult> {
+  return apiRequest(
+    `/api/gamification/workspaces/${workspaceId}/refresh`,
+    { method: 'POST' },
+  );
+}
+
+// ── PART 10: Explainability DTOs ──────────────────────────────────────────────
+
+export interface GamificationXPEventExplain {
+  id: string;
+  eventType: string;
+  baseXp: number;
+  effectiveXp: number;
+  qualityMultiplier: number;
+  collaborationMultiplier: number;
+  diminished: boolean;
+  blocked: boolean;
+  cooldownKey: string | null;
+  explain: string;
+  createdAt: string;
+}
+
+export interface GamificationStreakExplain {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+  graceUsedAt: string | null;
+  inRecovery: boolean;
+  nextMilestone: number | null;
+  xpToNextMilestone: number | null;
+}
+
+export interface GamificationScoreExplain {
+  userId: string;
+  workspaceId?: string;
+  generatedAt: string;
+  xp: {
+    total: number;
+    level: number;
+    levelLabel: string;
+    xpToNextLevel: number;
+    levelProgress: number;
+    recentEvents: GamificationXPEventExplain[];
+  };
+  streak: GamificationStreakExplain;
+  readiness: GamificationReadinessSummary | null;
+  contribution: GamificationContributionSummary | null;
+  momentum: GamificationMomentumSummary | null;
+  mentorMetrics: GamificationMentorMetrics | null;
+  humanSummary: string;
+}
+
+export interface GamificationContributionPercentile {
+  percentile: number;
+  cohortSize: number;
+  roleGroup: string;
+}
+
+export async function getMyScoreExplain(): Promise<GamificationScoreExplain> {
+  return apiRequest(`/api/gamification/users/me/explain`);
+}
+
+export async function getWorkspaceScoreExplain(
+  workspaceId: string,
+): Promise<GamificationScoreExplain> {
+  return apiRequest(`/api/gamification/workspaces/${workspaceId}/explain/me`);
+}
+
+export async function getMyContributionPercentile(
+  workspaceId: string,
+): Promise<GamificationContributionPercentile> {
+  return apiRequest(
+    `/api/gamification/workspaces/${workspaceId}/contributions/me/percentile`,
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PHASE G4 — ADMIN INTELLIGENCE LAYER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Score Inspection ──────────────────────────────────────────────────────────
+
+export interface AdminXPBreakdownItem {
+  id: string;
+  eventType: string;
+  baseXp: number;
+  finalXp: number;
+  weightMultiplier: number;
+  isDiminished: boolean;
+  cooldownKey: string | null;
+  explain: string;
+  createdAt: string;
+}
+
+export interface AdminBadgeInspectItem {
+  badgeId: string;
+  name: string;
+  category: string;
+  rarity: string;
+  awardedAt: string;
+  seen: boolean;
+}
+
+export interface AdminStreakInspect {
+  currentStreak: number;
+  longestStreak: number;
+  lastActiveDate: string | null;
+  graceUsedAt: string | null;
+}
+
+export interface AdminContributionInspect {
+  workspaceId: string;
+  score: number;
+  breakdown: Record<string, unknown>;
+  updatedAt: string;
+}
+
+export interface AdminAnomalySignal {
+  flagId: string;
+  type: string;
+  severity: number;
+  description: string | null;
+  status: string;
+  createdAt: string;
+}
+
+export interface AdminScoreInspectReport {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  role: string;
+  totalXp: number;
+  level: number;
+  levelLabel: string;
+  xpByEventType: Record<string, { count: number; totalXp: number; avgXp: number }>;
+  recentEvents: AdminXPBreakdownItem[];
+  badges: AdminBadgeInspectItem[];
+  streak: AdminStreakInspect | null;
+  contributions: AdminContributionInspect[];
+  anomalies: AdminAnomalySignal[];
+  suppressedUntil: string | null;
+  humanSummary: string;
+}
+
+export interface XPDistributionBucket {
+  bucket: string;
+  count: number;
+}
+
+export interface BadgeUnlockRate {
+  badgeId: string;
+  name: string;
+  category: string;
+  rarity: string;
+  unlockCount: number;
+  unlockRate: number;
+}
+
+export async function adminInspectUserScore(userId: string): Promise<AdminScoreInspectReport> {
+  return apiRequest(`/api/admin/score/${userId}`);
+}
+
+export async function adminGetXPDistribution(): Promise<XPDistributionBucket[]> {
+  return apiRequest(`/api/admin/score/platform/xp-distribution`);
+}
+
+export async function adminGetBadgeUnlockRates(): Promise<BadgeUnlockRate[]> {
+  return apiRequest(`/api/admin/score/platform/badge-rates`);
+}
+
+// ── Abuse Monitoring ──────────────────────────────────────────────────────────
+
+export interface AbuseFlagRecord {
+  id: string;
+  userId: string;
+  email: string;
+  displayName: string | null;
+  type: string;
+  severity: number;
+  description: string | null;
+  metadata: Record<string, unknown>;
+  status: string;
+  resolvedAt: string | null;
+  resolvedById: string | null;
+  actionTaken: string | null;
+  createdAt: string;
+}
+
+export interface AbuseStats {
+  totalFlags: number;
+  pendingFlags: number;
+  actionedFlags: number;
+  dismissedFlags: number;
+  byType: Record<string, number>;
+  topOffenders: Array<{
+    userId: string;
+    email: string;
+    displayName: string | null;
+    flagCount: number;
+    maxSeverity: number;
+  }>;
+}
+
+export interface AbuseFlagListResult {
+  flags: AbuseFlagRecord[];
+  total: number;
+}
+
+export async function adminListAbuseFlags(params?: {
+  status?: string;
+  type?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<AbuseFlagListResult> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set('status', params.status);
+  if (params?.type) qs.set('type', params.type);
+  if (params?.limit != null) qs.set('limit', String(params.limit));
+  if (params?.offset != null) qs.set('offset', String(params.offset));
+  return apiRequest(`/api/admin/abuse?${qs}`);
+}
+
+export async function adminGetAbuseStats(): Promise<AbuseStats> {
+  return apiRequest(`/api/admin/abuse/stats`);
+}
+
+export async function adminResolveAbuseFlag(
+  flagId: string,
+  action: string,
+  status: 'actioned' | 'dismissed',
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/abuse/${flagId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ action, status }),
+  });
+}
+
+export async function adminRunAbuseDetection(userId: string): Promise<unknown> {
+  return apiRequest(`/api/admin/abuse/run-detection/${userId}`, { method: 'POST' });
+}
+
+// ── Experiments ───────────────────────────────────────────────────────────────
+
+export interface ExperimentRecord {
+  id: string;
+  name: string;
+  description: string | null;
+  key: string;
+  variantA: Record<string, unknown>;
+  variantB: Record<string, unknown>;
+  splitRatio: number;
+  active: boolean;
+  startedAt: string | null;
+  endedAt: string | null;
+  createdById: string | null;
+  createdAt: string;
+  assignmentCount: number;
+  variantACounts: number;
+  variantBCounts: number;
+}
+
+export interface ExperimentMetrics {
+  experimentId: string;
+  name: string;
+  variantACounts: number;
+  variantBCounts: number;
+  variantAXpAvg: number;
+  variantBXpAvg: number;
+  variantABadgeRate: number;
+  variantBBadgeRate: number;
+  variantARetention7d: number;
+  variantBRetention7d: number;
+}
+
+export async function adminListExperiments(): Promise<ExperimentRecord[]> {
+  return apiRequest(`/api/admin/experiments`);
+}
+
+export async function adminCreateExperiment(body: {
+  name: string;
+  description?: string;
+  key: string;
+  variantA: Record<string, unknown>;
+  variantB: Record<string, unknown>;
+  splitRatio?: number;
+}): Promise<ExperimentRecord> {
+  return apiRequest(`/api/admin/experiments`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function adminUpdateExperiment(
+  id: string,
+  body: Partial<{
+    name: string;
+    description: string;
+    variantA: Record<string, unknown>;
+    variantB: Record<string, unknown>;
+    splitRatio: number;
+  }>,
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/experiments/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function adminActivateExperiment(id: string): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/experiments/${id}/activate`, { method: 'POST' });
+}
+
+export async function adminDeactivateExperiment(id: string): Promise<{ success: boolean }> {
+  return apiRequest(`/api/admin/experiments/${id}/deactivate`, { method: 'POST' });
+}
+
+export async function adminGetExperimentMetrics(id: string): Promise<ExperimentMetrics> {
+  return apiRequest(`/api/admin/experiments/${id}/metrics`);
+}
+
+export async function adminDeleteExperiment(id: string): Promise<void> {
+  return apiRequest(`/api/admin/experiments/${id}`, { method: 'DELETE' });
+}
+
+// ── System Config ─────────────────────────────────────────────────────────────
+
+export interface SystemConfigRecord {
+  id: string;
+  key: string;
+  value: unknown;
+  description: string | null;
+  category: string | null;
+  updatedById: string | null;
+  updatedAt: string;
+}
+
+export async function adminListConfigs(category?: string): Promise<SystemConfigRecord[]> {
+  const qs = category ? `?category=${encodeURIComponent(category)}` : '';
+  return apiRequest(`/api/admin/config${qs}`);
+}
+
+export async function adminUpsertConfig(
+  key: string,
+  body: { value: unknown; description?: string; category?: string },
+): Promise<SystemConfigRecord> {
+  return apiRequest(`/api/admin/config/${encodeURIComponent(key)}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function adminDeleteConfig(key: string): Promise<void> {
+  return apiRequest(`/api/admin/config/${encodeURIComponent(key)}`, { method: 'DELETE' });
+}
+
+export async function adminSeedDefaultConfigs(): Promise<{ seeded: number }> {
+  return apiRequest(`/api/admin/config/seed`, { method: 'POST' });
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BEHAVIORAL AI OPTIMIZER — Types & Fetch Functions
+// ════════════════════════════════════════════════════════════════════════════
+
+export type BehavioralStateKey =
+  | 'newly_onboarded'
+  | 'profile_incomplete'
+  | 'exploring'
+  | 'matching_focused'
+  | 'artifact_building'
+  | 'stuck'
+  | 'feedback_processing'
+  | 'high_momentum'
+  | 'review_ready'
+  | 'readiness_plateaued';
+
+export interface NextAction {
+  key: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  surface: string;
+  score: number;
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  icon: string;
+}
+
+export interface NextActionResponse {
+  action: NextAction | null;
+  state: BehavioralStateKey;
+  confidence?: number;
+  reason?: string;
+  cooldownEndsAt?: string;
+}
+
+export interface BehavioralStateResponse {
+  state: BehavioralStateKey;
+  confidence: number;
+  signals: {
+    userId: string;
+    profileCompletionPct: number;
+    connectionCount: number;
+    boardCount: number;
+    docCount: number;
+    totalXp: number;
+    currentStreak: number;
+    daysSinceLastActivity: number;
+    readinessScore: number;
+    pendingReviewCount: number;
+    workspaceCount: number;
+  };
+  reason: string;
+}
+
+export interface BehaviorNudgeStatsKey {
+  key: string;
+  shown: number;
+  converted: number;
+  dismissed: number;
+}
+
+export interface BehaviorPlatformStats {
+  totalShown: number;
+  totalDismissed: number;
+  totalConverted: number;
+  conversionRate: number;
+  dismissalRate: number;
+  byKey: BehaviorNudgeStatsKey[];
+}
+
+export interface BehaviorNudgeLog {
+  id: string;
+  nudgeKey: string;
+  surface: string;
+  shown: boolean;
+  dismissed: boolean;
+  converted: boolean;
+  convertedAt: string | null;
+  dismissedAt: string | null;
+  policyVersion: string | null;
+  createdAt: string;
+}
+
+// ── Fetch functions ───────────────────────────────────────────────────────────
+
+export async function getNextAction(surface = 'dashboard'): Promise<NextActionResponse> {
+  return apiRequest(`/api/behavior/next-action?surface=${surface}`);
+}
+
+export async function getBehaviorActions(n = 3): Promise<{ actions: NextAction[]; state: BehavioralStateKey }> {
+  return apiRequest(`/api/behavior/actions?n=${n}`);
+}
+
+export async function getBehavioralState(): Promise<BehavioralStateResponse> {
+  return apiRequest('/api/behavior/state');
+}
+
+export async function recordNudgeSeen(nudgeKey: string, surface: string): Promise<void> {
+  return apiRequest('/api/behavior/nudge/seen', {
+    method: 'POST',
+    body: JSON.stringify({ nudgeKey, surface }),
+  });
+}
+
+export async function recordNudgeDismissed(logId: string): Promise<void> {
+  return apiRequest(`/api/behavior/nudge/${logId}/dismiss`, { method: 'POST' });
+}
+
+export async function recordNudgeConverted(logId: string): Promise<void> {
+  return apiRequest(`/api/behavior/nudge/${logId}/convert`, { method: 'POST' });
+}
+
+export async function adminGetBehaviorStats(): Promise<BehaviorPlatformStats> {
+  return apiRequest('/api/behavior/admin/stats');
+}
+
+export async function adminGetBehaviorNudgeLogs(userId: string, limit = 20): Promise<BehaviorNudgeLog[]> {
+  return apiRequest(`/api/behavior/admin/nudge-logs?userId=${userId}&limit=${limit}`);
+}
+
+export async function adminClassifyUser(userId: string): Promise<BehavioralStateResponse> {
+  return apiRequest(`/api/behavior/admin/classify/${userId}`);
 }

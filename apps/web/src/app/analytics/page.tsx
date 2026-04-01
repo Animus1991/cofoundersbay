@@ -121,7 +121,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
             {Math.abs(metric.change)}%
           </Badge>
         </div>
-        <h3 className="text-2xl font-bold mb-1">
+        <h3 className="text-xl font-bold mb-1">
           {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
             ? `${metric.value}%`
             : metric.value.toLocaleString()}
@@ -453,7 +453,7 @@ export default function AnalyticsPage() {
                             {Math.abs(metric.change)}%
                           </Badge>
                         </div>
-                        <h3 className="text-2xl font-bold mb-0.5">
+                        <h3 className="text-xl font-bold mb-0.5">
                           {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
                             ? `${metric.value}%`
                             : metric.value.toLocaleString()}

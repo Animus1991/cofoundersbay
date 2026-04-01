@@ -123,17 +123,17 @@ function EventChip({ event }: { event: CalendarEvent }) {
       <div className="flex-1 min-w-0 space-y-0.5">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium truncate">{event.title}</span>
-          {event.priority === 'high' && <Badge variant="destructive" className="text-[9px] h-4 px-1">High</Badge>}
+          {event.priority === 'high' && <Badge variant="destructive" size="sm" className="px-1">High</Badge>}
         </div>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           {event.time && (
-            <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span>
+            <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span>
           )}
           {event.location && (
-            <span className="flex items-center gap-0.5"><MapPin className="h-3 w-3" />{event.location}</span>
+            <span className="flex items-center gap-0.5"><MapPin className="icon-sm" />{event.location}</span>
           )}
           {event.participants && event.participants.length > 0 && (
-            <span className="flex items-center gap-0.5"><Users className="h-3 w-3" />{event.participants.join(', ')}</span>
+            <span className="flex items-center gap-0.5"><Users className="icon-sm" />{event.participants.join(', ')}</span>
           )}
         </div>
       </div>
@@ -176,7 +176,7 @@ function MiniCalendar({
     <div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
         {DAYS.map((d) => (
-          <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
+          <div key={d} className="text-center text-xs font-medium text-muted-foreground py-1">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-0.5">
@@ -264,7 +264,7 @@ export default function CalendarPage() {
               <List className="h-3.5 w-3.5" />
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Add Event</Button>
+          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" /> Add Event</Button>
         </div>
       }
     >
@@ -280,10 +280,10 @@ export default function CalendarPage() {
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -294,8 +294,8 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <Button variant={typeFilter === 'all' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setTypeFilter('all')}>All</Button>
           {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
-            <Button key={key} variant={typeFilter === key ? 'default' : 'outline'} size="sm" className="h-7 text-xs gap-1" onClick={() => setTypeFilter(key)}>
-              <cfg.icon className="h-3 w-3" /> {cfg.label}
+            <Button key={key} variant={typeFilter === key ? 'default' : 'outline'} size="sm" className="gap-1" onClick={() => setTypeFilter(key)}>
+              <cfg.icon className="icon-sm" /> {cfg.label}
             </Button>
           ))}
         </div>
@@ -307,9 +307,9 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={prevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="icon-sm" /></Button>
                     <span className="text-sm font-semibold">{MONTHS[currentMonth]} {currentYear}</span>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={nextMonth}><ChevronRight className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="icon-sm" /></Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -329,7 +329,7 @@ export default function CalendarPage() {
                   <p className="text-xs font-medium text-muted-foreground mb-2">Event Types</p>
                   {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
                     <div key={key} className="flex items-center gap-2 text-xs">
-                      <cfg.icon className={cn('h-3 w-3', cfg.color)} />
+                      <cfg.icon className={cn('icon-sm', cfg.color)} />
                       <span className="text-muted-foreground">{cfg.label}</span>
                     </div>
                   ))}
@@ -342,7 +342,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="h-4 w-4 text-primary" />
+                    <CalendarDays className="icon-sm text-primary" />
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </CardTitle>
                 </CardHeader>
@@ -364,14 +364,14 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" /> Upcoming
+                    <Sparkles className="icon-sm text-primary" /> Upcoming
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {upcomingEvents.map((e) => (
                       <div key={e.id} className="flex items-center gap-3 text-sm">
-                        <span className="text-[10px] text-muted-foreground w-14 shrink-0 tabular-nums">
+                        <span className="text-xs text-muted-foreground w-14 shrink-0 tabular-nums">
                           {new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                         <div className={cn('h-2 w-2 rounded-full shrink-0', TYPE_CONFIG[e.type].color.replace('text-', 'bg-'))} />

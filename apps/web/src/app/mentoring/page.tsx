@@ -135,9 +135,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         {/* Header row */}
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
-            <Avatar className="h-14 w-14 ring-2 ring-primary/20">
+            <Avatar className="h-11 w-11 ring-2 ring-primary/20">
               <AvatarImage src={mentor.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
                 {mentor.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -409,7 +409,7 @@ function BookingCard({
       <CardContent className="p-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
           <Link href={`/profiles/${otherUserId}`}>
-            <Avatar className="h-12 w-12 shrink-0 ring-2 ring-primary/20">
+            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
               <AvatarImage src={other.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-semibold">
                 {other.displayName[0]?.toUpperCase()}

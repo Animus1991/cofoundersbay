@@ -440,6 +440,10 @@ model User {
   researchBoardsOwned         ResearchBoard[]             @relation("ResearchBoardsOwned")
   researchBoardCollaborations ResearchBoardCollaborator[] @relation("ResearchBoardCollaborations")
   researchComments            ResearchComment[]           @relation("ResearchComments")
+  researchSnapshots           ResearchBoardSnapshot[]     @relation("ResearchSnapshots")
+  canvasVersionsAuthored      CanvasVersion[]             @relation("CanvasVersionsAuthored")
+  canvasBranchesCreated       CanvasBranch[]              @relation("CanvasBranchesCreated")
+  canvasMergesAuthored        CanvasMerge[]               @relation("CanvasMergesAuthored")
 
   // Startup Builder
   builderWorkspacesOwned      BuilderWorkspace[]          @relation("BuilderWorkspacesOwned")
@@ -547,6 +551,11 @@ model User {
   // AI Assistant
   aiAssistantSessions         AIAssistantSession[]        @relation("AIAssistantSessions")
 
+  // AI Conversation System
+  aiConversations             AIConversation[]            @relation("AIConversations")
+  aiPreferences               AIUserPreference?           @relation("AIPreferences")
+  aiPromptTemplates           AIPromptTemplate[]          @relation("AIPromptTemplates")
+
   // Reputation
   reputationScore             UserReputationScore?        @relation("ReputationScore")
 
@@ -590,6 +599,25 @@ model User {
   // Platform announcements
   platformAnnouncements       PlatformAnnouncement[]      @relation("PlatformAnnouncements")
   platformAnnouncementDismissals PlatformAnnouncementDismissal[] @relation("PlatformAnnouncementDismissals")
+
+  // Phase 1 — Collaboration Architecture relations
+  artifactBranches            ArtifactBranch[]            @relation("ArtifactBranchesCreated")
+  changeProposals             ChangeProposal[]            @relation("ChangeProposalsCreated")
+  artifactShareLinks          ArtifactShareLink[]         @relation("ArtifactShareLinksCreated")
+
+  // Gamification Engine
+  xpEvents                    XPEvent[]                   @relation("XPEvents")
+  userGamificationBadges      UserGamificationBadge[]     @relation("UserGamificationBadges")
+  streakRecord                StreakRecord?                @relation("StreakRecord")
+  contributionScores          ContributionScore[]          @relation("ContributionScores")
+
+  // Phase G4 — Admin Intelligence
+  abuseFlags                  AbuseFlag[]                 @relation("UserAbuseFlags")
+  experimentAssignments       ExperimentAssignment[]      @relation("UserExperimentAssignments")
+
+  // Behavioral AI Optimizer
+  behavioralState             UserBehavioralState?        @relation("UserBehavioralState")
+  nudgeLogs                   NudgeLog[]                  @relation("UserNudgeLogs")
 
   @@index([role, moderationStatus])
   @@index([lastSeenAt])
@@ -2333,6 +2361,21 @@ model AdminAuditLog {
 // Research Workspace — FigJam-like research canvas for ecosystem intelligence
 // ─────────────────────────────────────────────────────────────────────────────
 
+enum ResearchBoardCollaboratorRole {
+  viewer
+  editor
+  admin
+  owner
+}
+
+enum ResearchCommentType {
+  general      // standard comment on a node
+  suggestion   // proposed change
+  question     // open question
+  resolved     // resolved thread marker
+  pin          // inline canvas pin
+}
+
 model ResearchBoard {
   id           String                   @id @default(uuid())
   ownerId      String
@@ -2353,6 +2396,10 @@ model ResearchBoard {
   nodes        ResearchNode[]
   connectors   ResearchConnector[]
   collaborators ResearchBoardCollaborator[]
+  snapshots    ResearchBoardSnapshot[]
+  canvasVersions CanvasVersion[]  @relation("CanvasVersions")
+  canvasBranches CanvasBranch[]   @relation("CanvasBranches")
+  canvasMerges   CanvasMerge[]    @relation("CanvasMerges")
 
   @@index([ownerId])
   @@index([orgId])
@@ -2386,6 +2433,10 @@ model ResearchNode {
   // Internal entity reference (for linking to CoFounderBay entities)
   refEntityType String?         // "user", "project", "opportunity", "group", etc.
   refEntityId   String?
+
+  // Phase 10: Cross-surface link — canvas node linked to a Builder document
+  builderDocumentId String?     // optional FK to BuilderDocument
+  builderDocument   BuilderDocument? @relation("NodeLinkedDocument", fields: [builderDocumentId], references: [id], onDelete: SetNull)
   
   // Metadata
   metadata     Json?            // flexible metadata (page count, dimensions, etc.)
@@ -2403,6 +2454,7 @@ model ResearchNode {
   @@index([boardId])
   @@index([type])
   @@index([uploadId])
+  @@index([builderDocumentId])
 }
 
 model ResearchConnector {
@@ -2429,28 +2481,190 @@ model ResearchBoardCollaborator {
   board     ResearchBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
   userId    String
   user      User          @relation("ResearchBoardCollaborations", fields: [userId], references: [id], onDelete: Cascade)
-  role      String        @default("viewer") // viewer, editor, admin
-  addedAt   DateTime      @default(now())
+  role      ResearchBoardCollaboratorRole @default(viewer)
+  addedAt   DateTime                     @default(now())
 
   @@unique([boardId, userId])
   @@index([userId])
 }
 
 model ResearchComment {
-  id        String       @id @default(uuid())
-  nodeId    String
-  node      ResearchNode @relation("NodeComments", fields: [nodeId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User         @relation("ResearchComments", fields: [authorId], references: [id], onDelete: Cascade)
-  body      String       @db.Text
-  resolved  Boolean      @default(false)
-  posX      Float?       // optional anchor position on the canvas
-  posY      Float?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id          String              @id @default(uuid())
+  nodeId      String
+  node        ResearchNode        @relation("NodeComments", fields: [nodeId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User                @relation("ResearchComments", fields: [authorId], references: [id], onDelete: Cascade)
+  body        String              @db.Text
+  commentType ResearchCommentType @default(general)
+  resolved    Boolean             @default(false)
+  posX        Float?              // optional anchor position on the canvas
+  posY        Float?
+
+  // Threading support
+  parentId    String?             // null = top-level comment
+  parent      ResearchComment?    @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies     ResearchComment[]   @relation("CommentReplies")
+
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@index([nodeId])
   @@index([authorId])
+  @@index([parentId])
+}
+
+model ResearchBoardSnapshot {
+  id          String        @id @default(uuid())
+  boardId     String
+  board       ResearchBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  createdById String
+  createdBy   User          @relation("ResearchSnapshots", fields: [createdById], references: [id], onDelete: Cascade)
+
+  label       String?       // e.g. "Before investor meeting"
+  triggerType String        @default("manual") // manual | autosave | checkpoint
+  nodeCount   Int           @default(0)
+  nodeData    Json          // full snapshot of all nodes at time of save
+  connectors  Json?         // snapshot of all connectors
+  canvasState Json?         // viewport state
+
+  createdAt   DateTime      @default(now())
+
+  @@index([boardId])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Canvas Versioning System (GitHub-like for Research Canvas)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CanvasBranchStatus {
+  active
+  merged
+  archived
+}
+
+enum CanvasMergeStrategy {
+  fast_forward
+  manual
+  conflict_resolved
+}
+
+enum CanvasVersionTrigger {
+  manual
+  autosave
+  checkpoint
+  pre_merge
+  post_merge
+  branch_create
+  restore
+}
+
+/// Git-like version commit for a Research Board.
+/// Linked list via parentVersionId — forms a version tree per board.
+model CanvasVersion {
+  id             String               @id @default(uuid())
+  boardId        String
+  board          ResearchBoard        @relation("CanvasVersions", fields: [boardId], references: [id], onDelete: Cascade)
+  branchId       String?              // null = mainline (main branch)
+  branch         CanvasBranch?        @relation("BranchVersions", fields: [branchId], references: [id], onDelete: SetNull)
+
+  parentVersionId String?
+  parent          CanvasVersion?      @relation("VersionTree", fields: [parentVersionId], references: [id], onDelete: SetNull)
+  children        CanvasVersion[]     @relation("VersionTree")
+
+  createdById    String
+  createdBy      User                 @relation("CanvasVersionsAuthored", fields: [createdById], references: [id], onDelete: Cascade)
+
+  label          String?              // human label e.g. "Before investor meeting"
+  changeSummary  String?              @db.Text  // auto or manually entered summary
+  triggerType    CanvasVersionTrigger @default(manual)
+
+  // Full canvas snapshot
+  nodeData       Json                 // Array<CanvasNodeSnapshot>
+  connectors     Json?                // Array<CanvasConnectorSnapshot>
+  canvasState    Json?                // { zoom, panX, panY }
+  nodeCount      Int                  @default(0)
+
+  // Incremental diff vs parent (null = first version or full snapshot)
+  diffData       Json?                // { added[], removed[], modified[], movedNodes[], edgeDiff[] }
+
+  // Reverse: branches that consider this version their base or head
+  branchesAsBase CanvasBranch[]       @relation("BranchBase")
+  branchesAsHead CanvasBranch[]       @relation("BranchHead")
+
+  createdAt      DateTime             @default(now())
+
+  @@index([boardId])
+  @@index([branchId])
+  @@index([parentVersionId])
+  @@index([createdById])
+  @@index([createdAt])
+}
+
+/// Named branch within a Research Board.
+/// Branches are isolated canvas editing contexts derived from a base version.
+model CanvasBranch {
+  id              String             @id @default(uuid())
+  boardId         String
+  board           ResearchBoard      @relation("CanvasBranches", fields: [boardId], references: [id], onDelete: Cascade)
+  name            String             // e.g. "investor-deck-experiment"
+  description     String?
+
+  baseVersionId   String?            // version this branch was forked from
+  baseVersion     CanvasVersion?     @relation("BranchBase", fields: [baseVersionId], references: [id], onDelete: SetNull)
+
+  headVersionId   String?            // latest commit on this branch
+  headVersion     CanvasVersion?     @relation("BranchHead", fields: [headVersionId], references: [id], onDelete: SetNull)
+
+  createdById     String
+  createdBy       User               @relation("CanvasBranchesCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  status          CanvasBranchStatus @default(active)
+  isDefault       Boolean            @default(false) // true for the main branch
+
+  versions        CanvasVersion[]    @relation("BranchVersions")
+
+  mergesAsSource  CanvasMerge[]      @relation("MergeSource")
+  mergesAsTarget  CanvasMerge[]      @relation("MergeTarget")
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([boardId, name])
+  @@index([boardId])
+  @@index([createdById])
+  @@index([status])
+}
+
+/// Merge record — tracks when a branch was merged into another.
+model CanvasMerge {
+  id               String              @id @default(uuid())
+  boardId          String
+  board            ResearchBoard       @relation("CanvasMerges", fields: [boardId], references: [id], onDelete: Cascade)
+
+  sourceBranchId   String
+  sourceBranch     CanvasBranch        @relation("MergeSource", fields: [sourceBranchId], references: [id], onDelete: Cascade)
+
+  targetBranchId   String
+  targetBranch     CanvasBranch        @relation("MergeTarget", fields: [targetBranchId], references: [id], onDelete: Cascade)
+
+  mergedById       String
+  mergedBy         User                @relation("CanvasMergesAuthored", fields: [mergedById], references: [id], onDelete: Cascade)
+
+  strategy         CanvasMergeStrategy @default(manual)
+  conflictsJson    Json?               // Array<MergeConflict> that were detected
+  resolvedJson     Json?               // Array<ConflictResolution> applied
+
+  sourceVersionId  String?             // snapshot of source at merge time
+  resultVersionId  String?             // new version created on target after merge
+
+  createdAt        DateTime            @default(now())
+
+  @@index([boardId])
+  @@index([sourceBranchId])
+  @@index([targetBranchId])
+  @@index([mergedById])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2472,6 +2686,7 @@ enum BuilderWorkspaceVisibility {
 }
 
 enum BuilderDocumentType {
+  // Existing types (preserved)
   idea_core
   business_model_canvas
   market_analysis
@@ -2483,6 +2698,43 @@ enum BuilderDocumentType {
   branding_kit
   application
   custom
+
+  // Phase 1 additions — Strategy & Analysis
+  swot_analysis
+  lean_canvas
+  competitive_analysis
+  customer_personas
+  go_to_market
+
+  // Phase 1 additions — Fundraising & Investor
+  fundraising_memo
+  venture_memo
+  investor_update
+
+  // Phase 1 additions — Feedback & Evaluation
+  mentor_feedback
+  evaluator_scorecard
+
+  // Phase 1 additions — Operations & Legal
+  strategy_doc
+  meeting_notes
+  board_minutes
+  term_sheet
+  cap_table
+  team_charter
+  partnership_agreement
+  founder_agreement
+  vesting_schedule
+
+  // Phase 1 additions — Product & Growth
+  product_roadmap
+  sprint_plan
+  retrospective
+  user_research
+  ab_test_plan
+  growth_model
+  unit_economics
+  cohort_analysis
 }
 
 enum BuilderDocumentStatus {
@@ -2582,7 +2834,16 @@ model BuilderWorkspace {
   venturePortfolio     VenturePortfolio?       @relation("VenturePortfolioWorkspace")
   startupApplications  StartupApplication[]    @relation("WorkspaceApplications")
   workspaceComments    WorkspaceComment[]      @relation("WorkspaceComments")
-  
+
+  // Phase 1 — Collaboration Architecture relations
+  workspaceShareLinks  ArtifactShareLink[]     @relation("WorkspaceShareLinks")
+
+  // Gamification Engine
+  contributionScores      ContributionScore[]         @relation("WorkspaceContributionScores")
+  teamMomentumScore       TeamMomentumScore?          @relation("WorkspaceTeamMomentum")
+  mentorFeedbackMetric    MentorFeedbackMetric?       @relation("WorkspaceMentorMetrics")
+  gamificationReadiness   GamificationReadinessScore? @relation("WorkspaceGamificationReadiness")
+
   @@index([ownerId])
   @@index([tenantId])
   @@index([status])
@@ -2633,6 +2894,14 @@ model BuilderDocument {
   reviews       BuilderReview[]
   versions      BuilderDocumentVersion[]
   sections      BuilderDocumentSection[]
+
+  // Phase 1 — Collaboration Architecture relations
+  branches      ArtifactBranch[]     @relation("DocumentBranches")
+  shareLinks    ArtifactShareLink[]  @relation("DocumentShareLinks")
+  crdtStates    CRDTSyncState[]      @relation("DocumentCRDTState")
+
+  // Phase 10 — Cross-surface canvas links
+  linkedResearchNodes ResearchNode[] @relation("NodeLinkedDocument")
   
   @@index([workspaceId])
   @@index([type])
@@ -6027,4 +6296,909 @@ model InvestorWatchlistItem {
   @@index([targetUserId])
   @@index([investorId, status])
   @@index([addedAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Conversation System — Persistent AI chat history and preferences
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum AIAgentType {
+  general
+  matching
+  research
+  pitch_coach
+  mentor_finder
+  market_analyst
+  fundraising
+  legal_advisor
+  technical_advisor
+  growth_strategist
+}
+
+model AIConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("AIConversations", fields: [userId], references: [id], onDelete: Cascade)
+
+  agentType AIAgentType @default(general)
+  title     String?     @db.VarChar(255)
+  summary   String?     @db.Text
+
+  // Context metadata for the conversation
+  contextType  String?  // "profile", "startup", "pitch", "match", etc.
+  contextId    String?  // ID of the related entity
+  contextData  Json?    // Additional context passed to the AI
+
+  // Conversation state
+  messageCount Int      @default(0)
+  tokenCount   Int      @default(0)
+  isArchived   Boolean  @default(false)
+  isPinned     Boolean  @default(false)
+
+  // Feedback & quality
+  rating       Int?     // 1-5 star rating
+  feedback     String?  @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastMessageAt DateTime?
+
+  messages AIMessage[]
+
+  @@index([userId])
+  @@index([userId, agentType])
+  @@index([userId, isArchived])
+  @@index([userId, lastMessageAt])
+  @@index([contextType, contextId])
+}
+
+model AIMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    AIMessageRole
+  content String        @db.Text
+
+  // Token usage tracking
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+
+  // Model info
+  model     String?  @db.VarChar(100)
+  provider  String?  @db.VarChar(50) // "ollama", "openai", "anthropic"
+
+  // Response metadata
+  responseTimeMs Int?
+  isStreamed     Boolean @default(false)
+  isFallback     Boolean @default(false) // True if AI was unavailable
+
+  // Error tracking
+  errorCode    String?  @db.VarChar(50)
+  errorMessage String?  @db.Text
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@index([role])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI User Preferences — Per-user AI customization settings
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AIUserPreference {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation("AIPreferences", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Model preferences
+  preferredModel    String?  @db.VarChar(100) // "llama3.2", "mistral", etc.
+  preferredProvider String?  @db.VarChar(50)  // "ollama", "openai"
+  temperature       Float?   @default(0.7)
+  maxTokens         Int?     @default(2048)
+
+  // Response style preferences
+  responseStyle     String?  @db.VarChar(50) // "concise", "detailed", "casual", "formal"
+  responseLanguage  String?  @db.VarChar(10) @default("en")
+  useEmoji          Boolean  @default(false)
+
+  // Feature toggles
+  enableStreaming     Boolean @default(true)
+  enableSuggestions   Boolean @default(true)
+  enableContextMemory Boolean @default(true)
+  enableAutoSave      Boolean @default(true)
+
+  // Privacy settings
+  saveConversations  Boolean @default(true)
+  shareForTraining   Boolean @default(false)
+  anonymizeData      Boolean @default(true)
+
+  // Default agent for different contexts
+  defaultAgent       AIAgentType @default(general)
+  matchingAgent      AIAgentType @default(matching)
+  pitchAgent         AIAgentType @default(pitch_coach)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Prompt Templates — Reusable prompts for common scenarios
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AIPromptTemplate {
+  id          String @id @default(uuid())
+  
+  // Ownership
+  creatorId   String?
+  creator     User?  @relation("AIPromptTemplates", fields: [creatorId], references: [id], onDelete: SetNull)
+  tenantId    String?
+
+  // Template definition
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  category    String   @db.VarChar(50) // "pitch", "matching", "research", "outreach"
+  agentType   AIAgentType @default(general)
+
+  // Prompt content
+  systemPrompt String  @db.Text
+  userPrompt   String? @db.Text // Template with {{variable}} placeholders
+  variables    Json?   // Schema for required variables
+
+  // Usage stats
+  usageCount   Int     @default(0)
+  avgRating    Float?
+  
+  // Visibility
+  isPublic     Boolean @default(false)
+  isVerified   Boolean @default(false) // Platform-curated
+  isFeatured   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([agentType])
+  @@index([isPublic, isFeatured])
+  @@index([creatorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI Usage Analytics — Track AI feature usage for optimization
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AIUsageLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  tenantId  String?
+
+  // Request info
+  agentType    AIAgentType
+  endpoint     String   @db.VarChar(100) // "/ai/chat", "/ai/chat/stream"
+  method       String   @db.VarChar(10)
+
+  // Performance
+  responseTimeMs Int
+  promptTokens   Int?
+  completionTokens Int?
+  totalTokens    Int?
+
+  // Model info
+  model     String   @db.VarChar(100)
+  provider  String   @db.VarChar(50)
+  isStreamed Boolean @default(false)
+
+  // Outcome
+  success      Boolean
+  errorCode    String?  @db.VarChar(50)
+  isFallback   Boolean  @default(false)
+
+  // Context
+  contextType  String?  @db.VarChar(50)
+  featureUsed  String?  @db.VarChar(100) // "match_explainer", "pitch_feedback", etc.
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([agentType])
+  @@index([createdAt])
+  @@index([success])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 1 — Collaboration Architecture: Branching, Proposals, Sharing, CRDT
+// Architecture report: COLLABORATION_ARCHITECTURE.md §2B
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum ArtifactBranchStatus {
+  open
+  review
+  merged
+  closed
+  abandoned
+}
+
+enum ChangeProposalStatus {
+  open
+  approved
+  changes_requested
+  merged
+  closed
+}
+
+enum ShareLinkPermission {
+  view
+  comment
+  suggest
+}
+
+enum VersionTrigger {
+  explicit         // Manual save / "Create checkpoint" button
+  autosave         // Auto-save threshold (≥500 char diff OR 5-min idle)
+  pre_merge        // Snapshot before branch merge
+  merge            // Created by merging a branch
+  review_snapshot  // Snapshot when review is requested
+  published        // Export / publish event
+  restore          // Created by restoring a previous version
+}
+
+// ── Artifact Branch ─────────────────────────────────────────────────────────
+// Draft variants / parallel versions for review (GitHub-style branching)
+// Architecture report §2B, §4D
+
+model ArtifactBranch {
+  id              String              @id @default(uuid())
+  documentId      String
+  document        BuilderDocument     @relation("DocumentBranches", fields: [documentId], references: [id], onDelete: Cascade)
+
+  name            String              // "mentor-review-draft", "v2-rewrite", "pitch-overhaul"
+  description     String?             @db.Text
+  createdById     String
+  createdBy       User                @relation("ArtifactBranchesCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Branch state
+  baseVersionId   String              // BuilderDocumentVersion.id this branched from
+  baseVersionNum  Int                 // Denormalized: version number at branch point
+  content         Json                // Current branch content (working copy)
+
+  status          ArtifactBranchStatus @default(open)
+
+  // Merge metadata
+  mergedAt        DateTime?
+  mergedById      String?
+  mergeVersionId  String?             // The BuilderDocumentVersion.id created by merge
+
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  // Relations
+  proposals       ChangeProposal[]
+
+  @@index([documentId])
+  @@index([createdById])
+  @@index([status])
+  @@index([documentId, status])
+}
+
+// ── Change Proposal ─────────────────────────────────────────────────────────
+// Structured review request tied to a branch (GitHub PR equivalent)
+// Architecture report §2B, §4C
+
+model ChangeProposal {
+  id              String              @id @default(uuid())
+  branchId        String
+  branch          ArtifactBranch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  documentId      String              // Denormalized from branch for direct querying
+
+  title           String
+  description     String?             @db.Text
+  createdById     String
+  createdBy       User                @relation("ChangeProposalsCreated", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Review state
+  status          ChangeProposalStatus @default(open)
+
+  // Diff metadata (computed on creation / update)
+  diffSummary     Json?               // { sectionsChanged: [...], fieldsAdded: [...], fieldsRemoved: [...] }
+  changedSections String[]            @default([])
+
+  // Reviewer assignments (User IDs)
+  reviewerIds     String[]            @default([])
+
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  mergedAt        DateTime?
+
+  @@index([branchId])
+  @@index([documentId])
+  @@index([createdById])
+  @@index([status])
+  @@index([documentId, status])
+}
+
+// ── Artifact Share Link ─────────────────────────────────────────────────────
+// Time-limited external access tokens for stakeholders without platform accounts
+// Architecture report §2B, §3D
+
+model ArtifactShareLink {
+  id              String              @id @default(uuid())
+  documentId      String?
+  document        BuilderDocument?    @relation("DocumentShareLinks", fields: [documentId], references: [id], onDelete: Cascade)
+  workspaceId     String?
+  workspace       BuilderWorkspace?   @relation("WorkspaceShareLinks", fields: [workspaceId], references: [id], onDelete: Cascade)
+  versionId       String?             // Optional: pin to specific version
+
+  // Access config
+  token           String              @unique // URL-safe random token
+  permissions     ShareLinkPermission @default(view)
+  password        String?             // Optional password protection (hashed)
+  expiresAt       DateTime?
+  maxViews        Int?
+  viewCount       Int                 @default(0)
+
+  // Metadata
+  label           String?             // Human-readable label: "For Mentor X", "Investor review"
+  recipientEmail  String?             // Optional: who this was shared with
+
+  // Creator
+  createdById     String
+  createdBy       User                @relation("ArtifactShareLinksCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  isActive        Boolean             @default(true)
+
+  // Timestamps
+  createdAt       DateTime            @default(now())
+  lastAccessedAt  DateTime?
+
+  @@index([token])
+  @@index([documentId])
+  @@index([workspaceId])
+  @@index([createdById])
+  @@index([isActive])
+  @@index([isActive, expiresAt])
+}
+
+// ── CRDT Sync State ─────────────────────────────────────────────────────────
+// Server-side persistence for Yjs documents (Phase 3 will activate)
+// Created now so the schema is ready; not populated until CRDT integration
+// Architecture report §2B, §6C
+
+model CRDTSyncState {
+  id              String    @id @default(uuid())
+  documentId      String
+  document        BuilderDocument @relation("DocumentCRDTState", fields: [documentId], references: [id], onDelete: Cascade)
+  sectionKey      String?         // null = whole document, non-null = specific section
+
+  // Yjs document state (binary-encoded)
+  yjsState        Bytes           // Y.Doc encoded state vector
+  yjsUpdate       Bytes?          // Latest merged update delta
+
+  // Checkpoint metadata
+  lastClientId    String?
+  operationCount  Int       @default(0)
+  lastSyncAt      DateTime  @default(now())
+
+  // Snapshot for cold-start (clients that can't replay ops)
+  snapshotContent Json?
+  snapshotAt      DateTime?
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([documentId, sectionKey])
+  @@index([documentId])
+  @@index([lastSyncAt])
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// GAMIFICATION ENGINE — XP · BADGES · STREAKS · CONTRIBUTION · MOMENTUM
+// ═════════════════════════════════════════════════════════════════════════════
+
+// ── XP Event Type Enum ────────────────────────────────────────────────────────
+// Curated, anti-farm event taxonomy. Each type maps to base XP + cooldown
+// enforced in GamificationService. No click-spam events are defined.
+
+enum XPEventType {
+  // Artifact lifecycle (builder documents)
+  CREATE_ARTIFACT            // New BuilderDocument created
+  COMPLETE_ARTIFACT          // completionPercent reaches 100
+  IMPROVE_ARTIFACT           // completionPercent increases >= 10 percentage points
+
+  // Research canvas
+  CREATE_BOARD               // New ResearchBoard created
+  SYNTHESIZE_BOARD           // Canvas exported / linked to Builder (cross-tool)
+  LINK_ARTIFACTS             // ResearchNode linked to a BuilderDocument
+
+  // Collaboration (validated — person must accept)
+  INVITE_COLLABORATOR        // Collaborator added to workspace who accepts
+  TEAM_CONTRIBUTION          // Meaningful edit/addition to shared workspace
+  HIGH_QUALITY_CONTRIBUTION  // Your contribution referenced/used by a teammate
+
+  // Mentoring & expert review
+  RECEIVE_MENTOR_FEEDBACK    // ExpertReview or MentorBooking completed with feedback
+  APPLY_FEEDBACK             // Artifact improved after receiving a review (APPLY chain)
+  COMPLETE_REVIEW            // User completes an expert review for another
+  PROVIDE_FEEDBACK           // Structured feedback given in review flow
+
+  // Milestones
+  COMPLETE_MILESTONE         // Milestone.status transitions to completed
+
+  // External validation
+  VALIDATED_PROGRESS         // External signal: match accepted, program applied, etc.
+
+  // Streak milestone rewards (auto-awarded on crossing 7/14/30/60/90-day milestones)
+  STREAK_BONUS               // Internal: awarded by updateStreak on milestone crossing
+}
+
+// ── Gamification Badge Enums ──────────────────────────────────────────────────
+
+enum GamificationBadgeCategory {
+  progress       // Completion of key deliverables
+  consistency    // Meaningful-streak engagement
+  collaboration  // Co-building and team contribution
+  quality        // Validated, externally reviewed work
+  learning       // Mentor engagement and iteration
+  execution      // Real-world milestone completion
+}
+
+enum GamificationBadgeRarity {
+  common
+  uncommon
+  rare
+  epic
+  legendary
+}
+
+// ── Streak Type ───────────────────────────────────────────────────────────────
+
+enum StreakType {
+  meaningful_daily  // Qualifying: CREATE_ARTIFACT, IMPROVE_ARTIFACT, SYNTHESIZE_BOARD, COMPLETE_MILESTONE
+}
+
+// ── XP Event ──────────────────────────────────────────────────────────────────
+// Append-only event ledger. Source of truth for all XP totals and badge
+// evaluation. Never deleted or mutated after insertion.
+
+model XPEvent {
+  id               String      @id @default(uuid())
+  userId           String
+  user             User        @relation("XPEvents", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Workspace context (null = personal action outside a workspace)
+  workspaceId      String?
+
+  eventType        XPEventType
+
+  // Target entity that triggered the event
+  entityType       String?     // "builder_document", "research_board", "milestone", "review", "connection"
+  entityId         String?
+
+  // XP accounting (stored at insertion time — immutable thereafter)
+  xpAmount         Int         // Final XP credited (after multipliers + diminishing returns)
+  baseXp           Int         // Raw base value before any modification
+  weightMultiplier Float       @default(1.0)  // Complexity / collaboration multiplier
+
+  // Anti-farming controls
+  cooldownKey      String?     // Compound key enforcing per-event-per-entity cooldown
+  isDiminished     Boolean     @default(false)  // Diminishing returns flag
+
+  metadata         Json?       // { completionDelta, reviewRating, collaboratorCount, etc. }
+  createdAt        DateTime    @default(now())
+
+  @@index([userId])
+  @@index([userId, eventType])
+  @@index([userId, createdAt])
+  @@index([workspaceId])
+  @@index([eventType, createdAt])
+  @@index([cooldownKey])
+}
+
+// ── Gamification Badge Definition ─────────────────────────────────────────────
+// Rule-based badge catalogue. Criteria are JSON rule trees evaluated by the
+// GamificationService badge engine on every relevant XP event.
+
+model GamificationBadge {
+  id          String                    @id @default(uuid())
+  key         String                    @unique  // stable identifier, e.g. "first_artifact"
+  name        String
+  description String                    @db.Text
+
+  category    GamificationBadgeCategory
+  rarity      GamificationBadgeRarity   @default(common)
+
+  // JSON rule tree — evaluated by evaluateBadgeCriteria()
+  // Leaf types:
+  //   { "type": "xp_event_count", "eventType": "COMPLETE_ARTIFACT", "minCount": 3 }
+  //   { "type": "total_xp", "minXP": 500 }
+  //   { "type": "streak_days", "minDays": 5 }
+  //   { "type": "badge_earned", "badgeKey": "first_artifact" }
+  // Composite:
+  //   { "type": "and", "rules": [...] }
+  //   { "type": "or",  "rules": [...] }
+  criteria    Json
+
+  iconName    String?   // Lucide icon name or asset key
+  xpReward    Int       @default(0)    // Bonus XP credited on badge award
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(100)
+  createdAt   DateTime  @default(now())
+
+  userBadges  UserGamificationBadge[]
+
+  @@index([category])
+  @@index([rarity])
+  @@index([isActive])
+}
+
+// ── User Gamification Badge ────────────────────────────────────────────────────
+
+model UserGamificationBadge {
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation("UserGamificationBadges", fields: [userId], references: [id], onDelete: Cascade)
+  badgeId   String
+  badge     GamificationBadge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  awardedAt DateTime          @default(now())
+  seenAt    DateTime?          // Set when user views the badge notification
+  metadata  Json?             // Snapshot of criteria state at award time
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([badgeId])
+  @@index([awardedAt])
+}
+
+// ── Streak Record ──────────────────────────────────────────────────────────────
+// One row per user. Tracks rolling meaningful-action streak with a grace window.
+
+model StreakRecord {
+  id              String     @id @default(uuid())
+  userId          String     @unique
+  user            User       @relation("StreakRecord", fields: [userId], references: [id], onDelete: Cascade)
+  streakType      StreakType @default(meaningful_daily)
+
+  currentStreak   Int        @default(0)   // Active consecutive qualifying days
+  longestStreak   Int        @default(0)   // Historical maximum
+
+  lastActiveDate  DateTime?  // UTC midnight of last qualifying day
+  graceUsedAt     DateTime?  // Date grace period was consumed (max 1 per streak run)
+
+  updatedAt       DateTime   @updatedAt
+
+  @@index([currentStreak])
+}
+
+// ── Contribution Score ─────────────────────────────────────────────────────────
+// Per-user, per-workspace contribution score (0–100, normalised within workspace).
+
+model ContributionScore {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation("ContributionScores", fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   BuilderWorkspace @relation("WorkspaceContributionScores", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  score       Int              @default(0)
+
+  // Raw counts before normalisation (stored for auditability)
+  breakdown   Json?
+  // {
+  //   artifactsCreated: number,
+  //   artifactsImproved: number,
+  //   feedbackGiven: number,
+  //   feedbackApplied: number,
+  //   collaborationActions: number,
+  //   usageByTeam: number
+  // }
+
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([userId, workspaceId])
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([score])
+}
+
+// ── Team Momentum Score ────────────────────────────────────────────────────────
+// Workspace-level velocity and collaboration health (one row per workspace).
+
+model TeamMomentumScore {
+  id                   String           @id @default(uuid())
+  workspaceId          String           @unique
+  workspace            BuilderWorkspace @relation("WorkspaceTeamMomentum", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  score                Int              @default(0)   // 0–100 composite
+  velocity             Float            @default(0)   // Meaningful actions / day over 14-day window
+  recentActivityScore  Int              @default(0)   // 0–100 recency-weighted
+  collaborationDensity Float            @default(0)   // Multi-user actions / total actions
+
+  breakdown            Json?
+  // {
+  //   activeContributors: number,
+  //   recentMeaningfulActions: number,
+  //   artifactProgressEvents: number,
+  //   feedbackLoopsCompleted: number,
+  //   milestoneCompletionRate: number
+  // }
+
+  updatedAt            DateTime         @updatedAt
+
+  @@index([score])
+}
+
+// ── Mentor Feedback Metric ─────────────────────────────────────────────────────
+// Tracks quality of the mentor/expert-review feedback loop per workspace.
+
+model MentorFeedbackMetric {
+  id                   String           @id @default(uuid())
+  workspaceId          String           @unique
+  workspace            BuilderWorkspace @relation("WorkspaceMentorMetrics", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  feedbackCount        Int              @default(0)  // Total RECEIVE_MENTOR_FEEDBACK events
+  appliedFeedbackCount Int              @default(0)  // APPLY_FEEDBACK events correlated to reviews
+  appliedFeedbackRate  Float            @default(0)  // appliedFeedbackCount / max(feedbackCount, 1)
+
+  avgResponseTimeHrs   Float            @default(0)  // Avg hrs between RECEIVE_MENTOR_FEEDBACK → APPLY_FEEDBACK
+  improvementScore     Int              @default(0)  // 0–100; readiness delta after feedback rounds
+
+  lastFeedbackAt       DateTime?
+  updatedAt            DateTime         @updatedAt
+
+  @@index([workspaceId])
+}
+
+// ── Gamification Readiness Score ───────────────────────────────────────────────
+// Single-row cache of the 8-dimension gamification readiness model per workspace.
+// Updated by GamificationService after any workspace-affecting XP event.
+// Distinct from BuilderReadinessScore (per-dimension rows) — this model stores
+// the full 8-dimension breakdown + composite in one queryable row.
+
+model GamificationReadinessScore {
+  id          String           @id @default(uuid())
+  workspaceId String           @unique
+  workspace   BuilderWorkspace @relation("WorkspaceGamificationReadiness", fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // 0–100 overall composite (weighted across 8 dimensions)
+  score                Int     @default(0)
+
+  // Dimension scores (0–100 each)
+  problemClarity       Int     @default(0)  // Problem nodes on canvas / problem section fill
+  solutionClarity      Int     @default(0)  // Solution artifact section completeness
+  marketUnderstanding  Int     @default(0)  // Market analysis documents completeness
+  productDefinition    Int     @default(0)  // PRD / MVP spec completeness
+  teamCompleteness     Int     @default(0)  // Co-founders + mentors + workspace collaborators
+  executionReadiness   Int     @default(0)  // Milestones defined × completion rate
+  validationScore      Int     @default(0)  // Expert reviews + feedback applied rate
+  artifactCompleteness Int     @default(0)  // Avg completionPercent across all workspace docs
+
+  dimensionBreakdown   Json?   // Evidence map: { dimension → { evidence, score, maxScore } }
+  updatedAt            DateTime @updatedAt
+
+  @@index([score])
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PHASE G4 — ADMIN INTELLIGENCE LAYER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Abuse Flags ───────────────────────────────────────────────────────────────
+// Records detected anti-gaming / anti-abuse signals per user.
+// Created by AbuseDetectionService; reviewed and actioned by admins.
+
+model AbuseFlag {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation("UserAbuseFlags", fields: [userId], references: [id], onDelete: Cascade)
+
+  type        AbuseFlagType
+  severity    Float           // 0.0–1.0 risk score
+  description String?
+  metadata    Json?           // { pattern, count, window, sampleEventIds, evidence }
+
+  status      AbuseFlagStatus @default(pending)
+  resolvedAt  DateTime?
+  resolvedById String?
+  actionTaken String?         // 'reduced_xp' | 'streak_freeze' | 'warning' | 'safe' | 'banned'
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+enum AbuseFlagType {
+  burst_spam               // >10 events in 5 min
+  low_quality_repetition   // repeated empty-entity events
+  fake_collaboration       // mutual self-endorsement ring
+  streak_manipulation      // minimum-viable actions to preserve streak
+  empty_node_spam          // high-volume low-content canvas nodes
+  self_link_abuse          // excessive self-referential artifact linking
+  mutual_endorsement_ring  // graph-detected mutual endorsement cluster
+}
+
+enum AbuseFlagStatus {
+  pending
+  reviewed
+  actioned
+  dismissed
+}
+
+// ── System Config ─────────────────────────────────────────────────────────────
+// Key-value store for live-tunable parameters (XP weights, thresholds, etc.)
+// Avoids redeploy for formula constant changes. Consumed by services at runtime.
+
+model SystemConfig {
+  id          String    @id @default(uuid())
+  key         String    @unique           // e.g. 'xp.create_artifact.base'
+  value       Json                        // typed JSON value (number, object, array)
+  description String?
+  category    String?                     // 'xp_weights' | 'streak_config' | 'abuse_thresholds' | 'readiness_weights'
+  updatedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category])
+}
+
+// ── Experiments ───────────────────────────────────────────────────────────────
+// A/B experiment definitions.  Each experiment defines two variant configs
+// (variantA / variantB) and the assignment ratio.
+
+model Experiment {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  key         String    @unique           // slug, used in code: experiments.getVariant(userId, key)
+  variantA    Json                        // config payload for variant A (control)
+  variantB    Json                        // config payload for variant B (treatment)
+  splitRatio  Float     @default(0.5)     // fraction of users assigned to B (0.0–1.0)
+  active      Boolean   @default(false)
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  assignments ExperimentAssignment[]
+
+  @@index([active])
+  @@index([key])
+}
+
+// ── Experiment Assignments ────────────────────────────────────────────────────
+// Sticky variant assignment per user per experiment.
+// Created on first exposure; immutable thereafter (sticky bucketing).
+
+model ExperimentAssignment {
+  id           String     @id @default(uuid())
+  experimentId String
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation("UserExperimentAssignments", fields: [userId], references: [id], onDelete: Cascade)
+  variant      String                     // 'A' | 'B'
+  assignedAt   DateTime   @default(now())
+
+  @@unique([experimentId, userId])
+  @@index([userId])
+  @@index([experimentId])
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// BEHAVIORAL AI OPTIMIZER — STATE + NUDGE + POLICY
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── User Behavioral State ─────────────────────────────────────────────────────
+// Stores the current classified state of a user for the optimizer.
+// Recomputed on meaningful signal changes; not real-time.
+//
+// States: newly_onboarded | profile_incomplete | exploring | matching_focused |
+//         artifact_building | stuck | feedback_processing | high_momentum |
+//         review_ready | readiness_plateaued
+
+model UserBehavioralState {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  user            User      @relation("UserBehavioralState", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Current classified state
+  state           String                          // enum value as string
+  previousState   String?                         // last state before transition
+  stateChangedAt  DateTime  @default(now())
+
+  // Observable signals snapshot (JSON) — e.g. profilePct, connectionCount, boardCount
+  signals         Json      @default("{}")
+
+  // Nudge fatigue tracking
+  nudgesSentToday Int       @default(0)
+  nudgesSentTotal Int       @default(0)
+  lastNudgeAt     DateTime?
+  fatigueSince    DateTime?                       // set when nudge_fatigue detected
+
+  // Computed next action recommendation (cached result)
+  nextActionKey   String?                         // e.g. 'complete_profile', 'create_board'
+  nextActionScore Float?                          // confidence 0–1
+  nextActionAt    DateTime?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  nudgeLogs       NudgeLog[]
+
+  @@index([state])
+  @@index([lastNudgeAt])
+}
+
+// ── Nudge Log ─────────────────────────────────────────────────────────────────
+// Records every nudge shown to a user, its outcome, and which policy produced it.
+// Feeds the optimizer's learning loop.
+
+model NudgeLog {
+  id              String    @id @default(uuid())
+  userId          String
+  user            User      @relation("UserNudgeLogs", fields: [userId], references: [id], onDelete: Cascade)
+
+  stateId         String?
+  state           UserBehavioralState? @relation(fields: [stateId], references: [id], onDelete: SetNull)
+
+  // What was shown
+  nudgeKey        String                          // e.g. 'complete_profile', 'create_board'
+  surface         String                          // 'dashboard' | 'builder' | 'canvas' | 'connections'
+  variant         String    @default("control")   // 'control' | 'treatment_A' | 'treatment_B'
+
+  // Outcome
+  shown           Boolean   @default(true)
+  dismissed       Boolean   @default(false)
+  converted       Boolean   @default(false)       // user took the suggested action
+  convertedAt     DateTime?
+  dismissedAt     DateTime?
+
+  // Metadata
+  policyVersion   String?                         // which BehaviorPolicy.version was active
+  contextJson     Json?                           // snapshot of signals at time of show
+
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([nudgeKey])
+  @@index([surface])
+  @@index([createdAt])
+  @@index([converted])
+}
+
+// ── Behavior Policy ───────────────────────────────────────────────────────────
+// Stores tunable parameters for the recommendation engine.
+// Admin can edit values; the optimizer reads active policy by version.
+// Only ONE policy row should be active at a time.
+
+model BehaviorPolicy {
+  id              String    @id @default(uuid())
+  version         String    @unique           // e.g. 'v1.0', 'v1.1-test'
+  description     String?
+  active          Boolean   @default(false)
+
+  // Serialised JSON: all tunable weights, thresholds, timing windows
+  // Structure mirrors BehaviorPolicyConfig TypeScript type
+  config          Json
+
+  // Experiment linkage (optional: policy variation under A/B test)
+  experimentKey   String?
+
+  createdById     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([active])
 }

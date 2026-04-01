@@ -128,6 +128,13 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
   const refreshTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Tracks whether the API is reachable — updated by cfb:api-online/offline events
   const apiOnlineRef = useRef(true);
+  // Ref-tracked active conversation ID — avoids stale closure in socket callbacks
+  const activeConversationIdRef = useRef<string | null>(null);
+
+  // Keep ref in sync with reducer state (runs synchronously after every render)
+  useEffect(() => {
+    activeConversationIdRef.current = state.activeConversationId;
+  }, [state.activeConversationId]);
 
   // ── Bootstrap unread map from REST ──────────────────────────────────────────
   const refreshUnread = useCallback(async () => {
@@ -165,7 +172,9 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
         socket.on('message:new', ({ message }: { message: MessageItem }) => {
           const convId = message.conversationId;
           if (!convId) return;
-          dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
+          if (activeConversationIdRef.current !== convId) {
+            dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
+          }
         });
       }
     };
@@ -194,7 +203,8 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       const convId = message.conversationId;
       if (!convId) return;
       // Only increment if this conversation is NOT currently active (open)
-      if (state.activeConversationId !== convId) {
+      // Use ref instead of state to avoid stale closure
+      if (activeConversationIdRef.current !== convId) {
         dispatch({ type: 'INCREMENT', conversationId: convId, delta: 1 });
       }
     });

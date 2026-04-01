@@ -120,7 +120,7 @@ export default function ProviderProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Briefcase className="h-6 w-6 text-primary" />
               Service Provider Profile
             </h1>
@@ -136,9 +136,9 @@ export default function ProviderProfilePage() {
         <Card className="border-primary/20">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16 rounded-xl ring-2 ring-primary/20">
+              <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>

@@ -185,7 +185,7 @@ export default function ProviderReviewsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
                 <div className="text-center">
-                  <p className="text-4xl font-bold">{avgRating.toFixed(1)}</p>
+                  <p className="text-3xl font-bold">{avgRating.toFixed(1)}</p>
                   <div className="flex items-center gap-0.5 mt-1">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star
@@ -223,23 +223,23 @@ export default function ProviderReviewsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Reviews</p>
-                  <p className="text-2xl font-bold">{reviews.length}</p>
+                  <p className="text-xl font-bold">{reviews.length}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-                  <p className="text-2xl font-bold text-amber-600">
+                  <p className="text-xl font-bold text-amber-600">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Response Rate</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl font-bold">
                     {Math.round((reviews.filter((r) => r.response).length / reviews.length) * 100)}%
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Helpful Votes</p>
-                  <p className="text-2xl font-bold">
+                  <p className="text-xl font-bold">
                     {reviews.reduce((acc, r) => acc + r.helpful, 0)}
                   </p>
                 </div>

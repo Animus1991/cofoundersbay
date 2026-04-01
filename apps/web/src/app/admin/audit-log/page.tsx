@@ -91,7 +91,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
           </Badge>
           <Badge variant="secondary" className="text-xs">{log.entityType}</Badge>
           {log.entityId && (
-            <code className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
               #{log.entityId}
             </code>
           )}
@@ -145,11 +145,11 @@ export default function AdminAuditLogPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-            <RefreshCw className={cn('mr-2 h-4 w-4', isFetching && 'animate-spin')} />
+            <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} />
             Refresh
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="mr-2 icon-sm" />
             Export
           </Button>
         </div>
@@ -159,7 +159,7 @@ export default function AdminAuditLogPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search by actor, entity, action..."
               value={search}
@@ -193,7 +193,7 @@ export default function AdminAuditLogPage() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
+              <Shield className="icon-sm text-primary" />
               Activity Log
             </CardTitle>
             <span className="text-xs text-muted-foreground">{total} total entries</span>
@@ -241,7 +241,7 @@ export default function AdminAuditLogPage() {
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0 || isFetching}
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="icon-sm" />
                 Prev
               </Button>
               <Button
@@ -251,7 +251,7 @@ export default function AdminAuditLogPage() {
                 disabled={page >= totalPages - 1 || isFetching}
               >
                 Next
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="icon-sm" />
               </Button>
             </div>
           </div>

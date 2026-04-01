@@ -60,7 +60,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${mentor.userId}`}>
-            <Avatar className="h-12 w-12">
+            <Avatar className="icon-md">
               <AvatarImage src={mentor.avatar} />
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {initials}
@@ -75,7 +75,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     {mentor.name}
                   </Link>
                   {mentor.isVerified && (
-                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <CheckCircle2 className="icon-sm text-primary" />
                   )}
                 </div>
                 {mentor.headline && (
@@ -88,8 +88,8 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -120,16 +120,16 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+                <Users className="icon-sm" />
                 {mentor.activeMentees}/{mentor.maxMentees} mentees
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 {mentor.totalSessions} sessions
               </span>
               {mentor.rating && (
                 <span className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 text-amber-500" />
+                  <Star className="icon-sm text-amber-500" />
                   {mentor.rating.toFixed(1)}
                 </span>
               )}
@@ -215,14 +215,14 @@ export default function OrgMentorsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Mentor Pool</h1>
+            <h1 className="text-xl font-bold tracking-tight">Mentor Pool</h1>
             <p className="text-muted-foreground">
               Manage mentors in your organization
             </p>
           </div>
           <Button asChild>
             <Link href="/org/mentors/invite">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 icon-sm" />
               Invite Mentor
             </Link>
           </Button>
@@ -233,25 +233,25 @@ export default function OrgMentorsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Mentors</p>
-              <p className="text-2xl font-bold">{mentors.length}</p>
+              <p className="text-xl font-bold">{mentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">{activeMentors.length}</p>
+              <p className="text-xl font-bold text-green-600">{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Capacity</p>
-              <p className="text-2xl font-bold">{currentMentees}/{totalCapacity}</p>
+              <p className="text-xl font-bold">{currentMentees}/{totalCapacity}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Sessions</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {mentors.reduce((acc, m) => acc + m.totalSessions, 0)}
               </p>
             </CardContent>
@@ -260,7 +260,7 @@ export default function OrgMentorsPage() {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search mentors by name or expertise..."
             value={search}
@@ -277,14 +277,14 @@ export default function OrgMentorsPage() {
           {filteredMentors.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <GraduationCap className="icon-lg mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="font-medium">No mentors found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Invite mentors to join your organization
                 </p>
                 <Button className="mt-4" asChild>
                   <Link href="/org/mentors/invite">
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 icon-sm" />
                     Invite Mentor
                   </Link>
                 </Button>

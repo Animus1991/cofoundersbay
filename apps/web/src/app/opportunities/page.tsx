@@ -116,10 +116,10 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
 
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-5 sm:p-6 space-y-4">
+      <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 shrink-0 rounded-xl ring-2 ring-border/60">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
               <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
@@ -217,10 +217,10 @@ function JobCard({ job }: { job: JobPostingView }) {
   const { success } = useToast();
   return (
     <Card className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30">
-      <CardContent className="p-5 sm:p-6 space-y-4">
+      <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 shrink-0 rounded-xl ring-2 ring-border/60">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
               <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">
                 {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
               </AvatarFallback>

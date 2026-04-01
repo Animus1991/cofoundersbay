@@ -38,6 +38,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
 import { createProfile, uploadAvatar, listSkills } from '@/lib/api';
+import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
@@ -261,6 +262,11 @@ export default function EnhancedOnboardingPage() {
 
   const handleNext = useCallback(() => {
     if (currentStep < STEPS.length - 1) {
+      const stepId = STEPS[currentStep].id;
+      void analytics.track('onboarding_step_completed', {
+        step: stepId,
+        step_index: currentStep,
+      });
       setCurrentStep(prev => prev + 1);
     }
   }, [currentStep]);
@@ -273,6 +279,7 @@ export default function EnhancedOnboardingPage() {
 
   const handleRoleSelect = (role: string) => {
     setData(prev => ({ ...prev, role }));
+    void analytics.track('onboarding_started', { role });
     handleNext();
   };
 
@@ -327,6 +334,12 @@ export default function EnhancedOnboardingPage() {
           commitment: data.preferences.commitment,
         },
         skillIds: data.skills,
+      });
+      
+      // Analytics
+      void analytics.track('onboarding_completed', {
+        role: data.role,
+        skills_count: data.skills.length,
       });
     } finally {
       setLoading(false);
@@ -388,7 +401,7 @@ export default function EnhancedOnboardingPage() {
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">CoFounderBay Onboarding</h1>
+                <h1 className="text-xl font-bold">CoFounderBay Onboarding</h1>
                 <p className="text-muted-foreground">Let's build your profile together</p>
               </div>
             </div>

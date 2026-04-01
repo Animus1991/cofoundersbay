@@ -75,15 +75,15 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
             <p className="text-sm text-muted-foreground mt-1">{cohort.program}</p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" />
                 {cohort.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <GraduationCap className="h-4 w-4" />
+                <GraduationCap className="icon-sm" />
                 {cohort.mentors} mentors
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="icon-sm" />
                 {cohort.startDate} - {cohort.endDate}
               </span>
             </div>
@@ -108,7 +108,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 <div className="flex items-center gap-3 text-[11px]">
                   {cohort.mentorCoverage != null && (
                     <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600' : 'text-amber-600')}>
-                      <CheckCircle2 className="h-3 w-3" /> {cohort.mentorCoverage}% mentor coverage
+                      <CheckCircle2 className="icon-sm" /> {cohort.mentorCoverage}% mentor coverage
                     </span>
                   )}
                 </div>
@@ -117,23 +117,23 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link href={`/org/cohorts/${cohort.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 icon-sm" />
                   View Details
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-2 icon-sm" />
                 Edit Cohort
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -173,14 +173,14 @@ export default function OrgCohortsPage() {
     <AppShell
       title="Cohorts"
       description="Manage program cohorts and participants"
-      actions={<Button className="gap-1.5"><Plus className="h-4 w-4" /> Create Cohort</Button>}
+      actions={<Button className="gap-1.5"><Plus className="icon-sm" /> Create Cohort</Button>}
     >
       <div className="space-y-6">
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search cohorts..."
               value={search}

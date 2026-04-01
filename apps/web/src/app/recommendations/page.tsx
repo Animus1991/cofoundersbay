@@ -123,7 +123,7 @@ function BreakdownModal({
         <div className="space-y-4">
           <div className="flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
             <span className="text-sm text-muted-foreground">Overall Match Score</span>
-            <span className={cn('text-3xl font-bold', color)}>{score}%</span>
+            <span className={cn('text-2xl font-bold', color)}>{score}%</span>
           </div>
           {explanation.length > 0 ? (
             <div>
@@ -235,9 +235,9 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
-            <Avatar className="h-14 w-14 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
+            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
               <AvatarImage src={avatarUrl ?? undefined} />
-              <AvatarFallback className="text-base font-semibold bg-primary/10 text-primary">
+              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
                 {displayName?.[0]?.toUpperCase() ?? '?'}
               </AvatarFallback>
             </Avatar>

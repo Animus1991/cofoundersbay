@@ -75,9 +75,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Avatar className="h-14 w-14 rounded-xl shrink-0">
+          <Avatar className="h-11 w-11 rounded-xl shrink-0">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-lg">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
               {startup.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -218,7 +218,7 @@ export default function InvestorScoutingPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Compass className="h-6 w-6 text-primary" />
               Scout Startups
             </h1>

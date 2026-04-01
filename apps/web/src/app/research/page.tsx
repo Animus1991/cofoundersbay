@@ -39,6 +39,7 @@ import {
 } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { BoardTemplatesDialog, type BoardTemplate } from '@/components/research/BoardTemplates';
+import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 
 const BOARD_COLORS = [
   { name: 'Default', value: null },
@@ -185,46 +186,40 @@ export default function ResearchBoardsPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <AppShell title="Research Workspace" description="Visual research boards for startup ecosystem intelligence">
-        <div className="flex items-center justify-center min-h-[40vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </AppShell>
-    );
-  }
-
-  if (error) {
-    return (
-      <AppShell title="Research Workspace" description="Visual research boards for startup ecosystem intelligence">
-        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-          <p className="text-destructive mb-4">Failed to load research boards</p>
-          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
-            Retry
-          </Button>
-        </div>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell
       title="Research Workspace"
       description="Visual research boards for startup ecosystem intelligence"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2">
+          <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2" disabled={isLoading}>
             <Sparkles className="h-4 w-4" />
             Use Template
           </Button>
-          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2" disabled={isLoading}>
             <Plus className="h-4 w-4" />
             New Board
           </Button>
         </div>
       }
     >
+      {isLoading && (
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      )}
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
+          <p className="text-destructive mb-4">Failed to load research boards</p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
+            Retry
+          </Button>
+        </div>
+      )}
+      {!isLoading && !error && <>
+
+      {/* Behavioral Nudge */}
+      <BehavioralNudge surface="canvas" compact className="mb-4" />
 
       {/* Search and View Toggle */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -436,6 +431,7 @@ export default function ResearchBoardsPage() {
         onClose={() => setTemplatesDialogOpen(false)}
         onSelectTemplate={handleSelectTemplate}
       />
+      </>}
     </AppShell>
   );
 }

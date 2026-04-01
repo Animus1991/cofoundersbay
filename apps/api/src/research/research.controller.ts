@@ -2,8 +2,69 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@n
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { ResearchService } from './research.service';
+import { CanvasSynthesisService } from './canvas-synthesis.service';
 import { ConfigService } from '@nestjs/config';
 import { z } from 'zod';
+import type { ResearchNodeType } from '@prisma/client';
+
+// Maps all 60+ frontend node types to the 6 valid Prisma enum values.
+// The original type is preserved in metadata.displayType so the frontend
+// can still render the correct icon/colour.
+const VALID_PRISMA_TYPES = new Set(['note', 'document', 'image', 'pdf', 'link', 'reference']);
+
+const DOCUMENT_SUBTYPES = new Set([
+  // Core document types
+  'pitch_deck','business_plan','financial_model','market_analysis','competitor_analysis',
+  'swot','lean_canvas','strategy','roadmap','product_roadmap','report',
+  'checklist','contract','policy','wireframe','user_research','persona','journey_map',
+  'specification','technical_doc','whiteboard','mindmap','flowchart','process',
+  'investor_update','term_sheet','cap_table','equity','budget','forecast','proposal',
+  'presentation','slide_deck','template','form','survey','feedback','review',
+  'onboarding','playbook','runbook','guide','manual','wiki','faq','glossary',
+  // Research & Analysis
+  'insight','hypothesis','question','evidence','citation',
+  // Strategy & Planning
+  'okr','vision',
+  // Financial
+  'invoice','revenue_model',
+  // Legal
+  'nda','legal','incorporation','ip_filing','compliance',
+  // Product & Tech
+  'spec','user_story','api_doc','architecture','bug_report','feature_request',
+  // Marketing & Sales
+  'competitor','market_research','branding','go_to_market','funnel',
+  // Team & Operations
+  'meeting_notes','org_chart','timeline','kpi','hiring_plan',
+  // Communication
+  'email_draft','press_release','newsletter',
+  // Data & Reports
+  'whitepaper','case_study','data','due_diligence','data_room','valuation',
+  // Task Management
+  'task','milestone','sprint','retrospective',
+  // Draw / Diagram shapes (stored as 'document', rendered via metadata.displayType)
+  'shape_rect','shape_circle','shape_diamond','shape_triangle','shape_line','shape_arrow','shape_text',
+  // Mermaid diagram
+  'mermaid_diagram',
+  // Visual structured templates (Phase 2)
+  'visual_bmc','visual_lean','visual_swot',
+  // Embedded interactive nodes (Phase 2)
+  'flow_diagram','whiteboard',
+]);
+const IMAGE_SUBTYPES = new Set(['screenshot','diagram','chart','visualization','mockup','prototype','design']);
+const PDF_SUBTYPES   = new Set(['research_paper','article_pdf','ebook']);
+const LINK_SUBTYPES  = new Set(['url','website','article','blog_post','social_post','video','podcast','tweet','github']);
+const REF_SUBTYPES   = new Set(['entity','startup','person','org','company','investor','accelerator','university']);
+
+function toPrismaNodeType(raw: string): ResearchNodeType {
+  if (VALID_PRISMA_TYPES.has(raw)) return raw as ResearchNodeType;
+  if (DOCUMENT_SUBTYPES.has(raw)) return 'document';
+  if (IMAGE_SUBTYPES.has(raw))    return 'image';
+  if (PDF_SUBTYPES.has(raw))      return 'pdf';
+  if (LINK_SUBTYPES.has(raw))     return 'link';
+  if (REF_SUBTYPES.has(raw))      return 'reference';
+  // sticky_note, idea, task, checklist_item, bookmark, and everything else
+  return 'note';
+}
 
 const createBoardSchema = z.object({
   title: z.string().min(1).max(200),
@@ -27,7 +88,7 @@ const updateBoardSchema = z.object({
 });
 
 const createNodeSchema = z.object({
-  type: z.enum(['note', 'document', 'image', 'pdf', 'link', 'reference']),
+  type: z.string().min(1),  // accepts all 60+ frontend types; mapped to Prisma enum in handler
   title: z.string().max(500).optional(),
   content: z.string().optional(),
   url: z.string().url().optional(),
@@ -57,6 +118,7 @@ const updateNodeSchema = z.object({
   locked: z.boolean().optional(),
   metadata: z.unknown().optional(),
   tags: z.array(z.string()).optional(),
+  builderDocumentId: z.string().uuid().nullable().optional(),
 });
 
 const batchUpdateNodesSchema = z.object({
@@ -97,8 +159,10 @@ const updateCollaboratorSchema = z.object({
 
 const createCommentSchema = z.object({
   body: z.string().min(1).max(5000),
+  commentType: z.enum(['general', 'suggestion', 'question', 'pin']).optional(),
   posX: z.number().optional(),
   posY: z.number().optional(),
+  parentId: z.string().uuid().optional(),
 });
 
 const updateCommentSchema = z.object({
@@ -112,6 +176,7 @@ export class ResearchController {
   constructor(
     private readonly research: ResearchService,
     private readonly config: ConfigService,
+    private readonly synthesis: CanvasSynthesisService,
   ) {}
 
   // ─── Boards ────────────────────────────────────────────────────────────────
@@ -125,7 +190,14 @@ export class ResearchController {
   @Get('boards/:boardId')
   async getBoard(@CurrentUser() user: { id: string }, @Param('boardId') boardId: string) {
     const board = await this.research.getBoard(user.id, boardId);
-    return { board };
+    // Restore extended display types from metadata so the frontend renders the correct
+    // icon/colour for all 60+ node types (Prisma only stores 6 enum values).
+    const nodes = (board.nodes ?? []).map((n: any) => {
+      const meta = n.metadata as Record<string, unknown> | null;
+      const displayType = meta?.displayType as string | undefined;
+      return displayType ? { ...n, type: displayType } : n;
+    });
+    return { board: { ...board, nodes } };
   }
 
   @Post('boards')
@@ -160,9 +232,17 @@ export class ResearchController {
     @Param('boardId') boardId: string,
     @Body() body: unknown,
   ) {
-    const data = createNodeSchema.parse(body);
-    const node = await this.research.createNode(user.id, boardId, data);
-    return { node };
+    const raw = createNodeSchema.parse(body);
+    const prismaType = toPrismaNodeType(raw.type);
+    // Preserve the original display type in metadata so the frontend can show
+    // the correct icon/colour for extended node types.
+    const existingMeta = (raw.metadata && typeof raw.metadata === 'object') ? raw.metadata as Record<string, unknown> : {};
+    const metadata = raw.type !== prismaType
+      ? { ...existingMeta, displayType: raw.type }
+      : existingMeta;
+    const node = await this.research.createNode(user.id, boardId, { ...raw, type: prismaType, metadata });
+    // Return the original type to the frontend so the canvas renders correctly
+    return { node: { ...node, type: raw.type } };
   }
 
   @Patch('boards/:boardId/nodes/batch')
@@ -184,7 +264,10 @@ export class ResearchController {
   ) {
     const data = updateNodeSchema.parse(body);
     const node = await this.research.updateNode(user.id, nodeId, data);
-    return { node };
+    // Re-hydrate displayType → type so the frontend always sees the extended type.
+    const meta = node.metadata as Record<string, unknown> | null;
+    const displayType = meta?.displayType as string | undefined;
+    return { node: displayType ? { ...node, type: displayType } : node };
   }
 
   @Delete('nodes/:nodeId')
@@ -299,6 +382,51 @@ export class ResearchController {
     return { ok: true };
   }
 
+  // ─── Snapshots (Phase 4a) ─────────────────────────────────────────────────
+
+  @Post('boards/:boardId/snapshots')
+  async createSnapshot(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Body() body: unknown,
+  ) {
+    const data = z.object({
+      label: z.string().max(200).optional(),
+      triggerType: z.enum(['manual', 'autosave', 'checkpoint']).optional(),
+    }).parse(body);
+    const snapshot = await this.research.createSnapshot(user.id, boardId, data);
+    return { snapshot };
+  }
+
+  @Get('boards/:boardId/snapshots')
+  async listSnapshots(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+  ) {
+    const snapshots = await this.research.listSnapshots(user.id, boardId);
+    return { snapshots };
+  }
+
+  @Get('boards/:boardId/snapshots/:snapshotId')
+  async getSnapshot(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Param('snapshotId') snapshotId: string,
+  ) {
+    const snapshot = await this.research.getSnapshot(user.id, boardId, snapshotId);
+    return { snapshot };
+  }
+
+  @Post('boards/:boardId/snapshots/:snapshotId/restore')
+  async restoreSnapshot(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Param('snapshotId') snapshotId: string,
+  ) {
+    const result = await this.research.restoreSnapshot(user.id, boardId, snapshotId);
+    return result;
+  }
+
   // ─── AI Analysis ───────────────────────────────────────────────────────────
 
   @Post('boards/:boardId/analyze')
@@ -306,5 +434,90 @@ export class ResearchController {
     const openaiKey = this.config.get<string>('OPENAI_API_KEY') ?? null;
     const analysis = await this.research.analyzeBoard(user.id, boardId, openaiKey);
     return { analysis };
+  }
+
+  // ─── Canvas Copilot (multi-agent) ──────────────────────────────────────────
+
+  @Post('boards/:boardId/copilot/chat')
+  async copilotChat(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Body() body: unknown,
+  ) {
+    const dto = z.object({
+      agentId: z.string().default('canvas-strategy'),
+      message: z.string().min(1).max(4000),
+      selectedNodeIds: z.array(z.string().uuid()).optional(),
+      includeAllNodes: z.boolean().optional(),
+      history: z.array(z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string(),
+      })).optional(),
+    }).parse(body);
+    return this.synthesis.copilotChat(user.id, boardId, dto);
+  }
+
+  @Get('boards/:boardId/copilot/agents')
+  async listCopilotAgents() {
+    const { listAgents } = await import('../ai/agents/base-agent');
+    const canvasAgents = listAgents().filter((a) => a.id.startsWith('canvas-'));
+    return { agents: canvasAgents };
+  }
+
+  // ─── Canvas ↔ Builder Synthesis ────────────────────────────────────────────
+
+  @Post('boards/:boardId/export-to-builder')
+  async exportToBuilder(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Body() body: unknown,
+  ) {
+    const dto = z.object({
+      workspaceId: z.string().uuid(),
+      selectedNodeIds: z.array(z.string().uuid()).optional(),
+      documentType: z.string().optional(),
+      documentTitle: z.string().max(200).optional(),
+      linkNodes: z.boolean().optional(),
+    }).parse(body);
+    return this.synthesis.exportToBuilder(user.id, boardId, dto);
+  }
+
+  @Post('boards/:boardId/import-from-builder')
+  async importFromBuilder(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Body() body: unknown,
+  ) {
+    const dto = z.object({
+      documentId: z.string().uuid(),
+      posX: z.number().optional(),
+      posY: z.number().optional(),
+    }).parse(body);
+    return this.synthesis.importToCanvas(user.id, boardId, dto);
+  }
+
+  @Post('boards/:boardId/generate-document')
+  async generateDocument(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+    @Body() body: unknown,
+  ) {
+    const dto = z.object({
+      workspaceId: z.string().uuid(),
+      documentType: z.string().min(1),
+      documentTitle: z.string().max(200).optional(),
+      selectedNodeIds: z.array(z.string().uuid()).optional(),
+      agentId: z.string().optional(),
+    }).parse(body);
+    return this.synthesis.generateDocumentFromCanvas(user.id, boardId, dto);
+  }
+
+  @Get('boards/:boardId/importable-documents')
+  async listImportableDocuments(
+    @CurrentUser() user: { id: string },
+    @Param('boardId') boardId: string,
+  ) {
+    const docs = await this.synthesis.listImportableDocuments(user.id, boardId);
+    return { documents: docs };
   }
 }

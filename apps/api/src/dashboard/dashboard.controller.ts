@@ -19,6 +19,12 @@ export class DashboardController {
     return this.dashboard.getUserSummary(user.id);
   }
 
+  @Get('dashboard/venture-readiness')
+  @UseGuards(JwtAuthGuard)
+  async getVentureReadiness(@CurrentUser() user: { id: string }) {
+    return this.dashboard.computeVentureReadiness(user.id);
+  }
+
   @Get('dashboard/activity')
   @UseGuards(JwtAuthGuard)
   async getActivity(

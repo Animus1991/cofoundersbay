@@ -60,7 +60,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${relationship.menteeId}`}>
-            <Avatar className="h-14 w-14">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={mentee?.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {initials}
@@ -188,7 +188,7 @@ export default function MenteesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Active Mentees</h1>
+            <h1 className="text-xl font-bold tracking-tight">Active Mentees</h1>
             <p className="text-muted-foreground">
               Manage your ongoing mentorship relationships
             </p>
@@ -207,7 +207,7 @@ export default function MenteesPage() {
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{activeRelationships.length}</p>
+                <p className="text-xl font-bold">{activeRelationships.length}</p>
                 <p className="text-sm text-muted-foreground">Active Mentees</p>
               </div>
             </CardContent>
@@ -218,7 +218,7 @@ export default function MenteesPage() {
                 <Target className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{completedRelationships.length}</p>
+                <p className="text-xl font-bold">{completedRelationships.length}</p>
                 <p className="text-sm text-muted-foreground">Completed</p>
               </div>
             </CardContent>
@@ -229,7 +229,7 @@ export default function MenteesPage() {
                 <TrendingUp className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalSessions}</p>
+                <p className="text-xl font-bold">{totalSessions}</p>
                 <p className="text-sm text-muted-foreground">Total Sessions</p>
               </div>
             </CardContent>

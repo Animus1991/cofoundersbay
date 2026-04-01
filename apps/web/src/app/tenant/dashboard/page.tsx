@@ -66,7 +66,7 @@ function StatCard({
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-xl font-bold">{value}</p>
             {change && (
               <p className="text-xs text-muted-foreground">{change}</p>
             )}

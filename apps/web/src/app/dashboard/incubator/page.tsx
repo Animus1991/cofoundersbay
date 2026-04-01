@@ -62,7 +62,7 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums">{value}</p>
+            <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
               <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
@@ -71,7 +71,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="icon-md text-primary" />
           </div>
         </div>
       </CardContent>
@@ -95,28 +95,28 @@ function ProgramCard({ program }: { program: any }) {
       className="group flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <div className="rounded-lg bg-primary/10 p-2">
-        <Rocket className="h-5 w-5 text-primary" />
+        <Rocket className="icon-md text-primary" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{program.name}</p>
-          <Badge variant="outline" className={cn('text-[10px] h-5', statusColors[program.status] || '')}>
+          <Badge variant="outline" size="sm" className={cn(statusColors[program.status] || '')}>
             {program.status}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground mt-0.5">{program.cohort}</p>
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="h-3.5 w-3.5" />
+            <Users className="icon-sm" />
             {program.startups} startups
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <GraduationCap className="h-3.5 w-3.5" />
+            <GraduationCap className="icon-sm" />
             {program.mentors} mentors
           </div>
         </div>
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
     </Link>
   );
 }
@@ -158,10 +158,10 @@ function ApplicationCard({ application }: { application: any }) {
         <p className="text-xs text-muted-foreground">{application.industry} · {application.stage}</p>
         <p className="text-xs text-muted-foreground mt-1">Applied for: {application.program}</p>
         <div className="flex gap-2 mt-2">
-          <Button size="sm" variant="default" className="h-7 text-xs">
+          <Button size="sm" variant="default">
             Review
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs">
+          <Button size="sm" variant="outline">
             Schedule Call
           </Button>
         </div>
@@ -178,9 +178,9 @@ function MilestoneItem({ milestone }: { milestone: any }) {
         milestone.completed ? 'bg-green-500/10' : 'bg-muted'
       )}>
         {milestone.completed ? (
-          <Award className="h-3.5 w-3.5 text-green-500" />
+          <Award className="icon-sm text-green-500" />
         ) : (
-          <Target className="h-3.5 w-3.5 text-muted-foreground" />
+          <Target className="icon-sm text-muted-foreground" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -264,7 +264,7 @@ export default function IncubatorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">
@@ -273,12 +273,12 @@ export default function IncubatorDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="gap-1.5">
-              <Building className="h-3.5 w-3.5" />
+              <Building className="icon-sm" />
               Incubator Admin
             </Badge>
             <Button size="sm" asChild>
               <Link href="/org/programs/new">
-                <Plus className="mr-1.5 h-4 w-4" />
+                <Plus className="mr-1.5 icon-sm" />
                 New Program
               </Link>
             </Button>
@@ -321,12 +321,12 @@ export default function IncubatorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <UserPlus className="h-4 w-4 text-amber-500" />
+                      <UserPlus className="icon-sm text-amber-500" />
                       Pending Applications ({pendingApplications.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/org/applications">
-                        View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -344,12 +344,12 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <LayoutGrid className="h-4 w-4 text-primary" />
+                    <LayoutGrid className="icon-sm text-primary" />
                     Your Programs
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/org/programs">
-                      Manage <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      Manage <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -366,12 +366,12 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
+                    <TrendingUp className="icon-sm text-primary" />
                     Top Performing Startups
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/org/startups">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -394,31 +394,31 @@ export default function IncubatorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/programs/new">
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 icon-sm" />
                     Create Program
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/applications">
-                    <UserPlus className="mr-2 h-4 w-4" />
+                    <UserPlus className="mr-2 icon-sm" />
                     Review Applications
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/mentors">
-                    <GraduationCap className="mr-2 h-4 w-4" />
+                    <GraduationCap className="mr-2 icon-sm" />
                     Manage Mentors
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/analytics">
-                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <BarChart3 className="mr-2 icon-sm" />
                     Cohort Reports
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/settings">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="mr-2 icon-sm" />
                     Organization Settings
                   </Link>
                 </Button>
@@ -430,7 +430,7 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="h-4 w-4" />
+                    <Flag className="icon-sm" />
                     Upcoming Milestones
                   </CardTitle>
                 </div>
@@ -464,7 +464,7 @@ export default function IncubatorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 text-sm">
-                    <Award className="h-4 w-4 text-primary" />
+                    <Award className="icon-sm text-primary" />
                     <span>12 startups graduated this year</span>
                   </div>
                 </div>

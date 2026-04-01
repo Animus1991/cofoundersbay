@@ -55,7 +55,7 @@ function SkillRowSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 py-2 border-b last:border-b-0">
       <div className="w-6" />
-      <Skeleton className="h-4 w-4 rounded" />
+      <Skeleton className="icon-sm rounded" />
       <Skeleton className="h-4 flex-1 max-w-[160px]" />
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-5 w-10 rounded-full" />
@@ -76,7 +76,7 @@ function SkillRow({
   return (
     <div className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
       <div className="w-6" />
-      <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
+      <Hash className="icon-sm text-muted-foreground shrink-0" />
       <span className="flex-1 font-medium truncate">{skill.name}</span>
       <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
       {skill.category && (
@@ -86,16 +86,16 @@ function SkillRow({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(skill)}>
-            <Edit className="mr-2 h-4 w-4" />
+            <Edit className="mr-2 icon-sm" />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem className="text-destructive" onClick={() => onDelete(skill)}>
-            <Trash2 className="mr-2 h-4 w-4" />
+            <Trash2 className="mr-2 icon-sm" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -175,7 +175,7 @@ function SkillDialog({
             onClick={() => onSave({ name: name.trim(), slug: slug.trim(), category })}
             disabled={isSaving || !name.trim() || !slug.trim()}
           >
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSaving && <Loader2 className="mr-2 icon-sm animate-spin" />}
             {skill ? 'Save Changes' : 'Add Skill'}
           </Button>
         </DialogFooter>
@@ -257,15 +257,15 @@ export default function AdminTaxonomyPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Taxonomy Management</h1>
+            <h1 className="text-xl font-bold tracking-tight">Taxonomy Management</h1>
             <p className="text-muted-foreground">Manage skills, categories, and classification systems</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="icon-sm" />
             </Button>
             <Button onClick={() => setEditTarget('new')}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 icon-sm" />
               Add Skill
             </Button>
           </div>
@@ -276,20 +276,20 @@ export default function AdminTaxonomyPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Skills</p>
-              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="text-2xl font-bold">{total}</p>}
+              {isLoading ? <Skeleton className="h-8 w-16 mt-1" /> : <p className="text-xl font-bold">{total}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Categories</p>
-              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="text-2xl font-bold">{categories.length}</p>}
+              {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : <p className="text-xl font-bold">{categories.length}</p>}
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Technical Skills</p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-2xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
+                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Technical').length}</p>
               )}
             </CardContent>
           </Card>
@@ -297,7 +297,7 @@ export default function AdminTaxonomyPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Business Skills</p>
               {isLoading ? <Skeleton className="h-8 w-12 mt-1" /> : (
-                <p className="text-2xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
+                <p className="text-xl font-bold">{skills.filter((s) => s.category === 'Business').length}</p>
               )}
             </CardContent>
           </Card>
@@ -308,12 +308,12 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="h-5 w-5 text-primary" />
+                <Folder className="icon-md text-primary" />
                 <CardTitle className="text-lg">Skills</CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
               <Button size="sm" onClick={() => setEditTarget('new')}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="mr-2 icon-sm" />
                 Add Skill
               </Button>
             </div>
@@ -323,7 +323,7 @@ export default function AdminTaxonomyPage() {
             {/* Filters */}
             <div className="px-4 pb-3 flex gap-3 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search skills..."
                   value={search}
@@ -332,7 +332,7 @@ export default function AdminTaxonomyPage() {
                 />
                 {search && (
                   <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <X className="h-4 w-4 text-muted-foreground" />
+                    <X className="icon-sm text-muted-foreground" />
                   </button>
                 )}
               </div>
@@ -349,7 +349,7 @@ export default function AdminTaxonomyPage() {
             <div className="border-t">
               {isError && (
                 <div className="flex items-center gap-2 p-6 text-destructive justify-center">
-                  <AlertCircle className="h-5 w-5" />
+                  <AlertCircle className="icon-md" />
                   <span className="text-sm">Failed to load skills.</span>
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
                 </div>
@@ -431,7 +431,7 @@ export default function AdminTaxonomyPage() {
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

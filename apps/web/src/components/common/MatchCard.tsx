@@ -162,9 +162,9 @@ function MatchCardInner({
         {/* Profile header */}
         <div className="flex items-start gap-3">
           <Link href={`/profiles/${userId}`}>
-            <Avatar className="h-14 w-14 rounded-lg border border-border/60 transition-transform group-hover:scale-105 shrink-0">
+            <Avatar className="h-11 w-11 rounded-lg border border-border/60 transition-transform group-hover:scale-105 shrink-0">
               <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-              <AvatarFallback className="rounded-lg bg-muted text-foreground text-base font-semibold">
+              <AvatarFallback className="rounded-lg bg-muted text-foreground text-sm font-semibold">
                 {displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>

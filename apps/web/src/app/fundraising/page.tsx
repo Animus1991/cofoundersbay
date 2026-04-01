@@ -132,7 +132,7 @@ function RoundCard({ round }: { round: Round }) {
 
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ function RoundCard({ round }: { round: Round }) {
             </p>
           </div>
           <Button size="sm" variant="outline" className="shrink-0">
-            <Plus className="h-4 w-4 mr-1.5" />Add Investor
+            <Plus className="icon-sm mr-1.5" />Add Investor
           </Button>
         </div>
 
@@ -205,7 +205,7 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
             <div key={stage} className="w-56 shrink-0">
               <div className={cn('rounded-lg px-2.5 py-1.5 mb-2 flex items-center justify-between', cfg.color)}>
                 <span className="text-xs font-semibold">{cfg.label}</span>
-                <Badge variant="secondary" className="h-4 text-[10px] px-1.5">{items.length}</Badge>
+                <Badge variant="secondary" size="sm" className="px-1.5">{items.length}</Badge>
               </div>
               <div className="space-y-2">
                 {items.map(lead => (
@@ -219,23 +219,23 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
                         </Avatar>
                         <div className="min-w-0">
                           <p className="text-xs font-semibold truncate">{lead.name}</p>
-                          {lead.firm && <p className="text-[10px] text-muted-foreground truncate">{lead.firm}</p>}
+                          {lead.firm && <p className="text-xs text-muted-foreground truncate">{lead.firm}</p>}
                         </div>
-                        {lead.isVerified && <BadgeCheck className="h-3 w-3 text-blue-500 shrink-0 ml-auto" />}
+                        {lead.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0 ml-auto" />}
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <DollarSign className="h-2.5 w-2.5" />{lead.checkSize}
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <DollarSign className="icon-sm" />{lead.checkSize}
                       </div>
                       {lead.lastContact && (
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          <Clock className="h-2.5 w-2.5" />Last contact: {lead.lastContact}
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="icon-sm" />Last contact: {lead.lastContact}
                         </p>
                       )}
                     </CardContent>
                   </Card>
                 ))}
                 <Button variant="ghost" size="sm" className="w-full h-7 text-xs text-muted-foreground border border-dashed border-border/60">
-                  <Plus className="h-3 w-3 mr-1" />Add
+                  <Plus className="icon-sm mr-1" />Add
                 </Button>
               </div>
             </div>
@@ -277,7 +277,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-2xl font-bold text-primary">{Math.round((ready / docs.length) * 100)}%</p>
+                <p className="text-xl font-bold text-primary">{Math.round((ready / docs.length) * 100)}%</p>
                 <p className="text-xs text-muted-foreground">complete</p>
               </div>
               <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
@@ -314,12 +314,12 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             <Card key={doc.id} className="hover:border-primary/20 transition-colors">
               <CardContent className="p-3.5 flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="icon-sm text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-sm truncate">{doc.name}</p>
-                    {doc.isRequired && <Badge variant="secondary" className="text-[10px] bg-red-500/10 text-red-600">Required</Badge>}
+                    {doc.isRequired && <Badge variant="secondary" size="sm" className="bg-red-500/10 text-red-600">Required</Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                     <span>{doc.category}</span>
@@ -368,7 +368,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
               <div className="flex items-center gap-3 shrink-0">
                 {lead.lastContact && (
                   <p className="text-xs text-muted-foreground hidden sm:block">
-                    <Clock className="h-3 w-3 inline mr-1" />{lead.lastContact}
+                    <Clock className="icon-sm inline mr-1" />{lead.lastContact}
                   </p>
                 )}
                 <Badge variant="outline" className={cn('text-xs border-0', cfg.color)}>
@@ -420,7 +420,7 @@ export default function FundraisingPage() {
             <Card key={s.label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary shrink-0">
-                  <s.icon className={cn('h-4 w-4', s.color)} />
+                  <s.icon className={cn('icon-sm', s.color)} />
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
@@ -437,12 +437,12 @@ export default function FundraisingPage() {
             <TabsList>
               <TabsTrigger value="pipeline">
                 Pipeline
-                <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">{totalLeads}</Badge>
+                <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{totalLeads}</Badge>
               </TabsTrigger>
               <TabsTrigger value="kanban">Kanban</TabsTrigger>
               <TabsTrigger value="dataroom">
                 Data Room
-                <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5">{DATA_ROOM_DOCS.length}</Badge>
+                <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{DATA_ROOM_DOCS.length}</Badge>
               </TabsTrigger>
             </TabsList>
             <div className="flex gap-2">
@@ -487,7 +487,7 @@ export default function FundraisingPage() {
                   <p className="text-sm font-medium group-hover:text-primary transition-colors">{r.title}</p>
                   <p className="text-xs text-muted-foreground">{r.desc}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
             ))}
           </CardContent>

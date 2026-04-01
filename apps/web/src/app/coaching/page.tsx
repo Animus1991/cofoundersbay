@@ -198,27 +198,27 @@ function SessionCard({ session }: { session: CoachingSession }) {
                 <p className="text-sm font-semibold text-foreground">{session.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">with {session.coachName} · {session.coachTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0', status.color)}>
-                <StatusIcon className="h-3 w-3" />
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium shrink-0', status.color)}>
+                <StatusIcon className="icon-sm" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', type.color)}>
-                <TypeIcon className="h-3 w-3" />{type.label}
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium', type.color)}>
+                <TypeIcon className="icon-sm" />{type.label}
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Clock className="h-3 w-3" />
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="icon-sm" />
                 {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
-              <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <Calendar className="h-3 w-3" />
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="icon-sm" />
                 {session.durationMinutes} min
               </span>
               {session.meetingUrl && (
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Video className="h-3 w-3" /> Video
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Video className="icon-sm" /> Video
                 </span>
               )}
             </div>
@@ -226,9 +226,9 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {/* Action items progress */}
             {totalActions > 0 && (
               <div className="mt-2 space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground flex items-center gap-1">
-                    <ListChecks className="h-3 w-3" /> Action items
+                    <ListChecks className="icon-sm" /> Action items
                   </span>
                   <span className="font-medium text-foreground">{completedActions}/{totalActions}</span>
                 </div>
@@ -240,9 +240,9 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {session.rating && (
               <div className="mt-2 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('h-3 w-3', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
                 ))}
-                <span className="text-[11px] text-muted-foreground ml-1">Your rating</span>
+                <span className="text-xs text-muted-foreground ml-1">Your rating</span>
               </div>
             )}
           </div>
@@ -252,25 +252,25 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
-              <Button size="sm" className="h-7 gap-1 text-xs">
-                <Video className="h-3 w-3" /> Join session
+              <Button size="sm" className="gap-1">
+                <Video className="icon-sm" /> Join session
               </Button>
             )}
             {session.status === 'completed' && !session.rating && (
-              <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-                <Star className="h-3 w-3" /> Rate session
+              <Button size="sm" variant="outline" className="gap-1">
+                <Star className="icon-sm" /> Rate session
               </Button>
             )}
-            <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-              <MessageCircle className="h-3 w-3" /> Message coach
+            <Button size="sm" variant="ghost" className="gap-1">
+              <MessageCircle className="icon-sm" /> Message coach
             </Button>
           </div>
           <button
             onClick={() => setExpanded((v) => !v)}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
           >
             {expanded ? 'Collapse' : 'Details'}
-            <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
+            <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
           </button>
         </div>
       </div>
@@ -280,7 +280,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="border-t border-border/60 bg-muted/30 p-4 space-y-3">
           {session.agenda && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Agenda</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Agenda</p>
               <p className="text-xs text-foreground/80">{session.agenda}</p>
             </div>
           )}
@@ -313,7 +313,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
   return (
     <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 shrink-0">
+        <Avatar className="h-10 w-10 shrink-0">
           {coach.avatar && <AvatarImage src={coach.avatar} />}
           <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
             {coach.name.split(' ').map((n) => n[0]).join('')}
@@ -325,7 +325,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold text-foreground">{coach.name}</p>
                 {coach.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary border-primary/20">Verified</Badge>
+                  <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary border-primary/20">Verified</Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{coach.title}</p>
@@ -341,16 +341,16 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
             {coach.specialties.slice(0, 3).map((s) => {
               const cfg = SESSION_TYPE_CONFIG[s];
               return (
-                <span key={s} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', cfg.color)}>
+                <span key={s} className={cn('rounded-full border px-2 py-0.5 text-xs font-medium', cfg.color)}>
                   {cfg.label}
                 </span>
               );
             })}
           </div>
 
-          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
+              <Star className="icon-sm fill-amber-400 text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> Responds {coach.responseTime}
@@ -358,11 +358,11 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
           </div>
 
           <div className="mt-3 flex gap-2">
-            <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Calendar className="h-3 w-3" /> Book session
+            <Button size="sm" className="gap-1 flex-1">
+              <Calendar className="icon-sm" /> Book session
             </Button>
-            <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="h-3 w-3" /> Message
+            <Button size="sm" variant="outline" className="gap-1">
+              <MessageCircle className="icon-sm" /> Message
             </Button>
           </div>
         </div>
@@ -400,11 +400,11 @@ export default function CoachingPage() {
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
-                  <Icon className="h-4 w-4" />
+                  <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -483,7 +483,7 @@ export default function CoachingPage() {
             <div className="flex flex-wrap gap-2">
               {(Object.entries(SESSION_TYPE_CONFIG) as [SessionType, typeof SESSION_TYPE_CONFIG[SessionType]][]).map(([key, cfg]) => (
                 <button key={key} className={cn('flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all hover:opacity-80', cfg.color)}>
-                  <cfg.icon className="h-3 w-3" />{cfg.label}
+                  <cfg.icon className="icon-sm" />{cfg.label}
                 </button>
               ))}
             </div>

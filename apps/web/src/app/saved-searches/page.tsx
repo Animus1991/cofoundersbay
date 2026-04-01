@@ -5,8 +5,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Search, Bell, BellOff, Trash2, Play, Clock, Filter,
   Plus, Edit2, MoreHorizontal, CheckCircle, AlertCircle,
-  Sparkles, Users, Briefcase, MapPin, Target,
+  Sparkles, Users, Briefcase, MapPin, Target, Loader2,
 } from 'lucide-react';
+import {
+  listSavedSearches,
+  updateSavedSearch,
+  deleteSavedSearch,
+  type SavedSearch,
+} from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,76 +40,6 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
-type SavedSearch = {
-  id: string;
-  name: string;
-  query: string;
-  filters: {
-    roles?: string[];
-    skills?: string[];
-    industries?: string[];
-    locations?: string[];
-    stage?: string[];
-  };
-  alertsEnabled: boolean;
-  alertFrequency: 'instant' | 'daily' | 'weekly';
-  lastRun?: string;
-  resultCount?: number;
-  newResults?: number;
-  createdAt: string;
-};
-
-const DEMO_SEARCHES: SavedSearch[] = [
-  {
-    id: '1',
-    name: 'Technical Co-founders in Athens',
-    query: 'CTO OR "technical co-founder"',
-    filters: {
-      roles: ['cofounder', 'technical_talent'],
-      locations: ['Athens', 'Greece'],
-      skills: ['React', 'Node.js', 'Python'],
-    },
-    alertsEnabled: true,
-    alertFrequency: 'daily',
-    lastRun: '2026-03-26T10:00:00Z',
-    resultCount: 23,
-    newResults: 3,
-    createdAt: '2026-03-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'SaaS Mentors with Fundraising Experience',
-    query: 'mentor fundraising',
-    filters: {
-      roles: ['mentor', 'advisor'],
-      industries: ['SaaS', 'B2B'],
-      skills: ['Fundraising', 'Pitch Deck', 'Investor Relations'],
-    },
-    alertsEnabled: true,
-    alertFrequency: 'weekly',
-    lastRun: '2026-03-25T08:00:00Z',
-    resultCount: 15,
-    newResults: 1,
-    createdAt: '2026-02-15T00:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'Pre-seed Investors in Europe',
-    query: 'angel OR "pre-seed"',
-    filters: {
-      roles: ['investor', 'angel'],
-      locations: ['Europe'],
-      stage: ['pre_seed', 'seed'],
-    },
-    alertsEnabled: false,
-    alertFrequency: 'instant',
-    lastRun: '2026-03-20T14:00:00Z',
-    resultCount: 42,
-    newResults: 0,
-    createdAt: '2026-01-10T00:00:00Z',
-  },
-];
-
 function SearchCard({
   search,
   onRun,
@@ -113,7 +49,7 @@ function SearchCard({
 }: {
   search: SavedSearch;
   onRun: () => void;
-  onToggleAlerts: () => void;
+  onToggleAlerts: (current: boolean) => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -138,7 +74,7 @@ function SearchCard({
             </div>
 
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-              <Search className="h-3 w-3" />
+              <Search className="icon-sm" />
               <span className="truncate">{search.query}</span>
             </p>
 
@@ -146,19 +82,19 @@ function SearchCard({
             <div className="flex flex-wrap gap-1.5 mt-3">
               {search.filters.roles?.map((role) => (
                 <Badge key={role} variant="secondary" className="text-xs">
-                  <Users className="h-3 w-3 mr-1" />
+                  <Users className="icon-sm mr-1" />
                   {role}
                 </Badge>
               ))}
               {search.filters.industries?.slice(0, 2).map((ind) => (
                 <Badge key={ind} variant="outline" className="text-xs">
-                  <Briefcase className="h-3 w-3 mr-1" />
+                  <Briefcase className="icon-sm mr-1" />
                   {ind}
                 </Badge>
               ))}
               {search.filters.locations?.slice(0, 1).map((loc) => (
                 <Badge key={loc} variant="outline" className="text-xs">
-                  <MapPin className="h-3 w-3 mr-1" />
+                  <MapPin className="icon-sm mr-1" />
                   {loc}
                 </Badge>
               ))}
@@ -172,11 +108,11 @@ function SearchCard({
             {/* Stats */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Target className="h-3 w-3" />
+                <Target className="icon-sm" />
                 {search.resultCount} results
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="icon-sm" />
                 Last run {timeAgo}
               </span>
             </div>
@@ -187,35 +123,35 @@ function SearchCard({
             <div className="flex items-center gap-2">
               <Switch
                 checked={search.alertsEnabled}
-                onCheckedChange={onToggleAlerts}
+                onCheckedChange={() => onToggleAlerts(search.alertsEnabled)}
                 aria-label="Toggle alerts"
               />
               {search.alertsEnabled ? (
-                <Bell className="h-4 w-4 text-primary" />
+                <Bell className="icon-sm text-primary" />
               ) : (
-                <BellOff className="h-4 w-4 text-muted-foreground" />
+                <BellOff className="icon-sm text-muted-foreground" />
               )}
             </div>
 
             <Button variant="outline" size="sm" onClick={onRun}>
-              <Play className="h-4 w-4 mr-1" />
+              <Play className="icon-sm mr-1" />
               Run
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onEdit}>
-                  <Edit2 className="h-4 w-4 mr-2" />
+                  <Edit2 className="icon-sm mr-2" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="icon-sm mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -311,49 +247,68 @@ export default function SavedSearchesPage() {
   const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
 
-  const [searches, setSearches] = useState<SavedSearch[]>(DEMO_SEARCHES);
   const [editingSearch, setEditingSearch] = useState<SavedSearch | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['saved-searches'],
+    queryFn: () => listSavedSearches(),
+  });
+
+  const searches = data?.searches ?? [];
+
+  const toggleAlertsMutation = useMutation({
+    mutationFn: ({ id, alertsEnabled }: { id: string; alertsEnabled: boolean }) =>
+      updateSavedSearch(id, { alertsEnabled }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      success('Alert settings updated');
+    },
+    onError: () => showError('Failed to update alerts'),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Pick<SavedSearch, 'name' | 'alertsEnabled' | 'alertFrequency'>> }) =>
+      updateSavedSearch(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      success('Search updated');
+    },
+    onError: () => showError('Failed to update search'),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteSavedSearch(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-searches'] });
+      setDeleteConfirm(null);
+      success('Search deleted');
+    },
+    onError: () => showError('Failed to delete search'),
+  });
+
   const handleRun = (search: SavedSearch) => {
-    // Build query params from search
     const params = new URLSearchParams();
     params.set('q', search.query);
     if (search.filters.roles?.length) params.set('roles', search.filters.roles.join(','));
     if (search.filters.skills?.length) params.set('skills', search.filters.skills.join(','));
     if (search.filters.industries?.length) params.set('industries', search.filters.industries.join(','));
     if (search.filters.locations?.length) params.set('locations', search.filters.locations.join(','));
-
     router.push(`/discover?${params.toString()}`);
   };
 
-  const handleToggleAlerts = (id: string) => {
-    setSearches((prev) =>
-      prev.map((s) =>
-        s.id === id ? { ...s, alertsEnabled: !s.alertsEnabled } : s
-      )
-    );
-    success('Alert settings updated');
-  };
-
-  const handleEdit = (search: SavedSearch) => {
-    setEditingSearch(search);
+  const handleToggleAlerts = (id: string, current: boolean) => {
+    toggleAlertsMutation.mutate({ id, alertsEnabled: !current });
   };
 
   const handleSaveEdit = (data: Partial<SavedSearch>) => {
     if (!editingSearch) return;
-    setSearches((prev) =>
-      prev.map((s) =>
-        s.id === editingSearch.id ? { ...s, ...data } : s
-      )
-    );
-    success('Search updated');
+    editMutation.mutate({ id: editingSearch.id, data });
+    setEditingSearch(null);
   };
 
   const handleDelete = (id: string) => {
-    setSearches((prev) => prev.filter((s) => s.id !== id));
-    setDeleteConfirm(null);
-    success('Search deleted');
+    deleteMutation.mutate(id);
   };
 
   const handleCreateNew = () => {
@@ -371,7 +326,7 @@ export default function SavedSearchesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Search className="h-6 w-6 text-primary" />
               Saved Searches
             </h1>
@@ -383,7 +338,7 @@ export default function SavedSearchesPage() {
             </p>
           </div>
           <Button onClick={handleCreateNew}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="icon-sm mr-2" />
             New Search
           </Button>
         </div>
@@ -393,10 +348,10 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Search className="h-5 w-5 text-primary" />
+                <Search className="icon-md text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{searches.length}</p>
+                <p className="text-xl font-bold">{searches.length}</p>
                 <p className="text-xs text-muted-foreground">Saved Searches</p>
               </div>
             </div>
@@ -404,10 +359,10 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-emerald-500/10 p-2">
-                <Bell className="h-5 w-5 text-emerald-500" />
+                <Bell className="icon-md text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
+                <p className="text-xl font-bold">
                   {searches.filter((s) => s.alertsEnabled).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Active Alerts</p>
@@ -417,10 +372,10 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-amber-500/10 p-2">
-                <Sparkles className="h-5 w-5 text-amber-500" />
+                <Sparkles className="icon-md text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalNewResults}</p>
+                <p className="text-xl font-bold">{totalNewResults}</p>
                 <p className="text-xs text-muted-foreground">New Results</p>
               </div>
             </div>
@@ -435,7 +390,7 @@ export default function SavedSearchesPage() {
             description="Save your search queries to quickly find matching profiles and get alerts for new results"
             action={
               <Button onClick={handleCreateNew}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="icon-sm mr-2" />
                 Create Your First Search
               </Button>
             }
@@ -447,8 +402,8 @@ export default function SavedSearchesPage() {
                 key={search.id}
                 search={search}
                 onRun={() => handleRun(search)}
-                onToggleAlerts={() => handleToggleAlerts(search.id)}
-                onEdit={() => handleEdit(search)}
+                onToggleAlerts={(current) => handleToggleAlerts(search.id, current)}
+                onEdit={() => setEditingSearch(search)}
                 onDelete={() => setDeleteConfirm(search.id)}
               />
             ))}

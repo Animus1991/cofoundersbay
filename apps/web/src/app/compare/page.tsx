@@ -72,13 +72,13 @@ function ProfileColumn({
           className="absolute -right-2 -top-2 z-10 rounded-full bg-destructive p-1 text-destructive-foreground shadow-md hover:bg-destructive/90 transition-colors"
           aria-label="Remove from comparison"
         >
-          <X className="h-3 w-3" />
+          <X className="icon-sm" />
         </button>
 
         <div className="flex flex-col items-center text-center">
-          <Avatar className="h-20 w-20 border-2 border-primary/20">
+          <Avatar className="h-16 w-16 border-2 border-primary/20">
             <AvatarImage src={profile.avatarUrl} />
-            <AvatarFallback className="text-lg font-bold bg-primary/10 text-primary">
+            <AvatarFallback className="text-base font-bold bg-primary/10 text-primary">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -90,7 +90,7 @@ function ProfileColumn({
           </p>
           {profile.location && (
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3" />
+              <MapPin className="icon-sm" />
               <span>{profile.location}</span>
             </div>
           )}
@@ -100,7 +100,7 @@ function ProfileColumn({
       {/* Match Score */}
       {profile.matchScore !== undefined && (
         <div className="mb-4 rounded-lg bg-primary/5 p-3 text-center">
-          <p className="text-3xl font-bold text-primary">{profile.matchScore}%</p>
+          <p className="text-2xl font-bold text-primary">{profile.matchScore}%</p>
           <p className="text-xs text-muted-foreground">Match Score</p>
         </div>
       )}
@@ -110,13 +110,13 @@ function ProfileColumn({
         {profile.connectionStatus === 'connected' ? (
           <Button variant="outline" size="sm" className="flex-1" asChild>
             <a href={`/messages?user=${profile.id}`}>
-              <MessageCircle className="h-4 w-4 mr-1" />
+              <MessageCircle className="icon-sm mr-1" />
               Message
             </a>
           </Button>
         ) : profile.connectionStatus === 'pending' ? (
           <Button variant="outline" size="sm" className="flex-1" disabled>
-            <Clock className="h-4 w-4 mr-1" />
+            <Clock className="icon-sm mr-1" />
             Pending
           </Button>
         ) : (
@@ -127,7 +127,7 @@ function ProfileColumn({
             onClick={onConnect}
             disabled={isConnecting}
           >
-            <UserPlus className="h-4 w-4 mr-1" />
+            <UserPlus className="icon-sm mr-1" />
             Connect
           </Button>
         )}
@@ -203,7 +203,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+          <Zap className="icon-md text-primary" />
           Skills Comparison
         </CardTitle>
       </CardHeader>
@@ -225,7 +225,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
                           : 'bg-secondary/50 text-muted-foreground'
                       )}
                     >
-                      {hasSkill ? <CheckCircle className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+                      {hasSkill ? <CheckCircle className="icon-sm" /> : <Minus className="icon-sm" />}
                     </div>
                   );
                 })}
@@ -332,8 +332,8 @@ export default function ComparePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <ArrowLeftRight className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <ArrowLeftRight className="icon-lg text-primary" />
               Compare Profiles
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -342,12 +342,12 @@ export default function ComparePage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="h-4 w-4 mr-1" />
+              <Share2 className="icon-sm mr-1" />
               Share
             </Button>
             {profileIds.length < MAX_PROFILES && (
               <Button size="sm" onClick={handleAdd}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="icon-sm mr-1" />
                 Add Profile
               </Button>
             )}
@@ -362,7 +362,7 @@ export default function ComparePage() {
             description="Add profiles from your matches or search to compare them side by side"
             action={
               <Button onClick={handleAdd}>
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="icon-sm mr-2" />
                 Add Profiles
               </Button>
             }
@@ -380,7 +380,7 @@ export default function ComparePage() {
           )}>
             {isLoading ? (
               Array.from({ length: profileIds.length }).map((_, i) => (
-                <Card key={i} className="p-6">
+                <Card key={i} className="p-4">
                   <div className="flex flex-col items-center">
                     <Skeleton className="h-20 w-20 rounded-full" />
                     <Skeleton className="h-5 w-32 mt-3" />
@@ -391,7 +391,7 @@ export default function ComparePage() {
             ) : (
               <>
                 {profiles?.map((profile) => (
-                  <Card key={profile.id} className="p-6">
+                  <Card key={profile.id} className="p-4">
                     <ProfileColumn
                       profile={profile}
                       onRemove={() => handleRemove(profile.id)}

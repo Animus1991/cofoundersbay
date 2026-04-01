@@ -113,7 +113,7 @@ export default function EventsPage() {
       actions={
         <Link href="/events/create">
           <Button className="gap-2">
-            <Plus className="h-4 w-4" />
+            <Plus className="icon-sm" />
             Create Event
           </Button>
         </Link>
@@ -133,11 +133,11 @@ export default function EventsPage() {
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
+                  <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -149,7 +149,7 @@ export default function EventsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>
             <TabsTrigger value="upcoming" className="gap-2">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="icon-sm" />
               Upcoming
             </TabsTrigger>
             <TabsTrigger value="my-events" className="gap-2">
@@ -167,7 +167,7 @@ export default function EventsPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('grid')}
             >
-              <Grid className="h-4 w-4" />
+              <Grid className="icon-sm" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -175,14 +175,14 @@ export default function EventsPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('list')}
             >
-              <List className="h-4 w-4" />
+              <List className="icon-sm" />
             </Button>
           </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <div className="relative min-w-[220px] flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search events..."
               value={searchQuery}
@@ -200,8 +200,8 @@ export default function EventsPage() {
                 onClick={() => setFilter(f)}
                 className="capitalize gap-1"
               >
-                {f === 'online' && <Video className="h-3 w-3" />}
-                {f === 'in-person' && <MapPin className="h-3 w-3" />}
+                {f === 'online' && <Video className="icon-sm" />}
+                {f === 'in-person' && <MapPin className="icon-sm" />}
                 {f}
               </Button>
             ))}

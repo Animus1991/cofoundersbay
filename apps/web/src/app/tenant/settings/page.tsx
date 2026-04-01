@@ -38,7 +38,7 @@ export default function TenantSettingsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Tenant Settings</h1>
+            <h1 className="text-xl font-bold tracking-tight">Tenant Settings</h1>
             <p className="text-muted-foreground">
               Configure your organization settings
             </p>
@@ -275,7 +275,7 @@ export default function TenantSettingsPage() {
                       <p className="font-semibold text-lg">Enterprise Plan</p>
                       <p className="text-sm text-muted-foreground">Up to 500 members, unlimited programs</p>
                     </div>
-                    <p className="text-2xl font-bold">$499<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
+                    <p className="text-xl font-bold">$499<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
                   </div>
                 </div>
                 <div className="flex gap-2">

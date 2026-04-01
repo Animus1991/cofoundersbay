@@ -63,7 +63,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
             <span className="text-xs text-muted-foreground uppercase">
               {scheduledDate.toLocaleDateString('en-US', { month: 'short' })}
             </span>
-            <span className="text-2xl font-bold">{scheduledDate.getDate()}</span>
+            <span className="text-xl font-bold">{scheduledDate.getDate()}</span>
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -186,7 +186,7 @@ export default function MentorSessionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Sessions</h1>
+            <h1 className="text-xl font-bold tracking-tight">Sessions</h1>
             <p className="text-muted-foreground">
               Manage your mentorship sessions
             </p>
@@ -213,7 +213,7 @@ export default function MentorSessionsPage() {
                 <Calendar className="h-5 w-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{upcomingSessions.length}</p>
+                <p className="text-xl font-bold">{upcomingSessions.length}</p>
                 <p className="text-sm text-muted-foreground">Upcoming</p>
               </div>
             </CardContent>
@@ -224,7 +224,7 @@ export default function MentorSessionsPage() {
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
+                <p className="text-xl font-bold">
                   {sessions.filter((s) => s.status === 'completed').length}
                 </p>
                 <p className="text-sm text-muted-foreground">Completed</p>
@@ -237,7 +237,7 @@ export default function MentorSessionsPage() {
                 <Clock className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalDuration} min</p>
+                <p className="text-xl font-bold">{totalDuration} min</p>
                 <p className="text-sm text-muted-foreground">Total Time</p>
               </div>
             </CardContent>

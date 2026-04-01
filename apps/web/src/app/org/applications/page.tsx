@@ -53,11 +53,11 @@ type Application = {
 
 function ApplicationCard({ application }: { application: Application }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="h-3 w-3" /> },
-    under_review: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Eye className="h-3 w-3" /> },
-    shortlisted: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Star className="h-3 w-3" /> },
-    accepted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="h-3 w-3" /> },
-    rejected: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="h-3 w-3" /> },
+    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" /> },
+    under_review: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Eye className="icon-sm" /> },
+    shortlisted: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Star className="icon-sm" /> },
+    accepted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
+    rejected: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="icon-sm" /> },
   };
 
   const config = statusConfig[application.status];
@@ -67,7 +67,7 @@ function ApplicationCard({ application }: { application: Application }) {
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Avatar className="h-12 w-12 rounded-lg">
+          <Avatar className="icon-md rounded-lg">
             <AvatarImage src={application.logoUrl} />
             <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
               {initials}
@@ -90,8 +90,8 @@ function ApplicationCard({ application }: { application: Application }) {
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -111,12 +111,12 @@ function ApplicationCard({ application }: { application: Application }) {
               <span>{application.program}</span>
               <span>{application.stage}</span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 {application.submittedAt}
               </span>
               {application.score !== undefined && (
                 <span className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 text-amber-500" />
+                  <Star className="icon-sm text-amber-500" />
                   Score: {application.score}/100
                 </span>
               )}
@@ -218,7 +218,7 @@ export default function OrgApplicationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Applications</h1>
+            <h1 className="text-xl font-bold tracking-tight">Applications</h1>
             <p className="text-muted-foreground">
               Review and manage startup applications
             </p>
@@ -230,31 +230,31 @@ export default function OrgApplicationsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold">{statusCounts.all}</p>
+              <p className="text-xl font-bold">{statusCounts.all}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-gray-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-gray-600">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-2xl font-bold text-amber-600">{statusCounts.under_review}</p>
+              <p className="text-xl font-bold text-amber-600">{statusCounts.under_review}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Shortlisted</p>
-              <p className="text-2xl font-bold text-blue-600">{statusCounts.shortlisted}</p>
+              <p className="text-xl font-bold text-blue-600">{statusCounts.shortlisted}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Accepted</p>
-              <p className="text-2xl font-bold text-green-600">{statusCounts.accepted}</p>
+              <p className="text-xl font-bold text-green-600">{statusCounts.accepted}</p>
             </CardContent>
           </Card>
         </div>
@@ -272,7 +272,7 @@ export default function OrgApplicationsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search applications..."
               value={search}

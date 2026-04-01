@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
@@ -12,6 +13,7 @@ import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
+import { PostHogProvider } from '@/components/providers/PostHogProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -80,6 +82,9 @@ export default function RootLayout({
                             <OfflineBanner />
                             {children}
                             <GlobalFloatingUi />
+                            <Suspense fallback={null}>
+                              <PostHogProvider />
+                            </Suspense>
                           </RoleTheme>
                         </DemoDataProvider>
                       </MessagingProvider>

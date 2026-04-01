@@ -7,12 +7,8 @@ const ChatBubble = dynamic(
   () => import('@/components/common/ChatBubble').then((mod) => mod.ChatBubble),
   { ssr: false },
 );
-const ChatPopup = dynamic(
-  () => import('@/components/common/ChatPopup').then((mod) => mod.ChatPopup),
-  { ssr: false },
-);
-const AIAssistant = dynamic(
-  () => import('@/components/common/AIAssistant').then((mod) => mod.AIAssistant),
+const UnifiedChatPopup = dynamic(
+  () => import('@/components/chat/UnifiedChatPopup').then((mod) => mod.UnifiedChatPopup),
   { ssr: false },
 );
 const CookieConsent = dynamic(
@@ -45,8 +41,7 @@ export function GlobalFloatingUi() {
   return (
     <>
       <ChatBubble />
-      <ChatPopup />
-      <AIAssistant />
+      <UnifiedChatPopup />
       <CookieConsent />
     </>
   );

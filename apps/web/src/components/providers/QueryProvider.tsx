@@ -47,7 +47,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleApiOnline = () => {
       queryClient.invalidateQueries({
-        predicate: (query) => query.state.status === 'error',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        predicate: (query: any) => query.state.status === 'error',
       });
     };
     window.addEventListener('cfb:api-online', handleApiOnline);
@@ -63,7 +64,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
           maxAge: 15 * 60_000,
           buster: CACHE_BUSTER,
           dehydrateOptions: {
-            shouldDehydrateQuery: (query) => query.state.status === 'success',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            shouldDehydrateQuery: (query: any) => query.state.status === 'success',
           },
         }}
       >

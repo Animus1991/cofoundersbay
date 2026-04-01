@@ -34,6 +34,7 @@ export enum BuilderWorkspaceVisibility {
 }
 
 export enum BuilderDocumentType {
+  // Existing types (preserved)
   IDEA_CORE = 'idea_core',
   BUSINESS_MODEL_CANVAS = 'business_model_canvas',
   MARKET_ANALYSIS = 'market_analysis',
@@ -45,6 +46,43 @@ export enum BuilderDocumentType {
   BRANDING_KIT = 'branding_kit',
   APPLICATION = 'application',
   CUSTOM = 'custom',
+
+  // Phase 1 additions — Strategy & Analysis
+  SWOT_ANALYSIS = 'swot_analysis',
+  LEAN_CANVAS = 'lean_canvas',
+  COMPETITIVE_ANALYSIS = 'competitive_analysis',
+  CUSTOMER_PERSONAS = 'customer_personas',
+  GO_TO_MARKET = 'go_to_market',
+
+  // Phase 1 additions — Fundraising & Investor
+  FUNDRAISING_MEMO = 'fundraising_memo',
+  VENTURE_MEMO = 'venture_memo',
+  INVESTOR_UPDATE = 'investor_update',
+
+  // Phase 1 additions — Feedback & Evaluation
+  MENTOR_FEEDBACK = 'mentor_feedback',
+  EVALUATOR_SCORECARD = 'evaluator_scorecard',
+
+  // Phase 1 additions — Operations & Legal
+  STRATEGY_DOC = 'strategy_doc',
+  MEETING_NOTES = 'meeting_notes',
+  BOARD_MINUTES = 'board_minutes',
+  TERM_SHEET = 'term_sheet',
+  CAP_TABLE = 'cap_table',
+  TEAM_CHARTER = 'team_charter',
+  PARTNERSHIP_AGREEMENT = 'partnership_agreement',
+  FOUNDER_AGREEMENT = 'founder_agreement',
+  VESTING_SCHEDULE = 'vesting_schedule',
+
+  // Phase 1 additions — Product & Growth
+  PRODUCT_ROADMAP = 'product_roadmap',
+  SPRINT_PLAN = 'sprint_plan',
+  RETROSPECTIVE = 'retrospective',
+  USER_RESEARCH = 'user_research',
+  AB_TEST_PLAN = 'ab_test_plan',
+  GROWTH_MODEL = 'growth_model',
+  UNIT_ECONOMICS = 'unit_economics',
+  COHORT_ANALYSIS = 'cohort_analysis',
 }
 
 export enum BuilderDocumentStatus {

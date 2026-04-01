@@ -184,29 +184,36 @@ export class MatchingService {
   // ── Stats ──────────────────────────────────────────────────────────────────
 
   async getMatchingStats(userId: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: { connectionsSent: true, connectionsReceived: true },
-    });
-    if (!user) throw new Error('User not found');
-
-    const sent = user.connectionsSent;
-    const received = user.connectionsReceived;
-    const accepted = [...sent, ...received].filter(c => c.status === 'accepted');
-
-    const [outcomes, signals] = await Promise.all([
+    // Use targeted count queries instead of loading ALL connection rows
+    const [
+      sentPending,
+      sentTotal,
+      sentAccepted,
+      receivedPending,
+      receivedTotal,
+      receivedAccepted,
+      outcomes,
+      signals,
+    ] = await Promise.all([
+      this.prisma.connectionRequest.count({ where: { requesterId: userId, status: 'pending' } }),
+      this.prisma.connectionRequest.count({ where: { requesterId: userId } }),
+      this.prisma.connectionRequest.count({ where: { requesterId: userId, status: 'accepted' } }),
+      this.prisma.connectionRequest.count({ where: { receiverId: userId, status: 'pending' } }),
+      this.prisma.connectionRequest.count({ where: { receiverId: userId } }),
+      this.prisma.connectionRequest.count({ where: { receiverId: userId, status: 'accepted' } }),
       this.prisma.matchOutcome.findMany({ where: { sourceUserId: userId }, select: { feedback: true } }),
       this.prisma.userBehaviorSignal.count({ where: { userId } }),
     ]);
 
+    const totalConnections = sentAccepted + receivedAccepted;
     const positiveOutcomes = outcomes.filter(o => ['accepted', 'connection_started'].includes(o.feedback)).length;
 
     return {
-      sentRequests: sent.filter(c => c.status === 'pending').length,
-      receivedRequests: received.filter(c => c.status === 'pending').length,
-      totalConnections: accepted.length,
-      acceptanceRate: sent.length > 0 ? (accepted.filter(c => c.requesterId === userId).length / sent.length) * 100 : 0,
-      responseRate: received.length > 0 ? (accepted.filter(c => c.receiverId === userId).length / received.length) * 100 : 0,
+      sentRequests: sentPending,
+      receivedRequests: receivedPending,
+      totalConnections,
+      acceptanceRate: sentTotal > 0 ? (sentAccepted / sentTotal) * 100 : 0,
+      responseRate: receivedTotal > 0 ? (receivedAccepted / receivedTotal) * 100 : 0,
       matchOutcomes: outcomes.length,
       positiveOutcomeRate: outcomes.length > 0 ? (positiveOutcomes / outcomes.length) * 100 : 0,
       behavioralSignals: signals,

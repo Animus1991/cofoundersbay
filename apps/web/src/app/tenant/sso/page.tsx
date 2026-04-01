@@ -70,16 +70,16 @@ function ProviderCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Key className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Key className="icon-sm text-muted-foreground shrink-0" />
               <h3 className="font-semibold">{provider.providerName}</h3>
-              <Badge variant="secondary" className="text-xs uppercase">{provider.providerType}</Badge>
+              <Badge variant="secondary" size="sm" className="uppercase">{provider.providerType}</Badge>
               {isConfigured ? (
-                <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-                  <CheckCircle className="mr-1 h-3 w-3" />Configured
+                <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20">
+                  <CheckCircle className="mr-1 icon-sm" />Configured
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
-                  <AlertCircle className="mr-1 h-3 w-3" />Needs configuration
+                <Badge variant="outline" size="sm" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                  <AlertCircle className="mr-1 icon-sm" />Needs configuration
                 </Badge>
               )}
             </div>
@@ -87,7 +87,7 @@ function ProviderCard({
               <span className="text-xs text-muted-foreground">Callback URL:</span>
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono truncate max-w-xs">{callbackUrl}</code>
               <button onClick={copy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-                {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <Check className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
               </button>
             </div>
             {provider.oidcIssuerUrl && (
@@ -167,7 +167,7 @@ function RoleMappingEditor({
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium">Role Mapping Rules</label>
         <button type="button" onClick={add} className="text-xs text-primary hover:underline flex items-center gap-1">
-          <Plus className="h-3 w-3" />Add rule
+          <Plus className="icon-sm" />Add rule
         </button>
       </div>
       {rules.length === 0 ? (
@@ -185,7 +185,7 @@ function RoleMappingEditor({
                 )}
               </select>
               <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive">
-                <X className="h-3.5 w-3.5" />
+                <X className="icon-sm" />
               </button>
             </div>
           ))}
@@ -592,7 +592,7 @@ export default function TenantSSOPage() {
                 </Card>
 
                 <button type="button" onClick={() => setShowAdvanced(v => !v)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  {showAdvanced ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  {showAdvanced ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
                   Advanced settings
                 </button>
 
@@ -622,9 +622,9 @@ export default function TenantSSOPage() {
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="h-3.5 w-3.5" />Saved</span>}
+              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="icon-sm" />Saved</span>}
               <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="gap-2">
-                <Check className="h-4 w-4" />
+                <Check className="icon-sm" />
                 {saveMut.isPending ? 'Saving…' : 'Save Policy'}
               </Button>
             </div>

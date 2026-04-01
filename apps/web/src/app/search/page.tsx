@@ -107,7 +107,7 @@ function ResultCard({ result }: { result: SearchResult }) {
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             {result.imageUrl ? (
-              <Avatar className="h-12 w-12 shrink-0">
+              <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={result.imageUrl} />
                 <AvatarFallback className="bg-primary/10 text-primary">
                   {result.title[0]?.toUpperCase()}
@@ -115,7 +115,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               </Avatar>
             ) : (
               <div className={cn(
-                'flex h-12 w-12 shrink-0 items-center justify-center rounded-full',
+                'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
                 'bg-muted'
               )}>
                 <Icon className={cn('h-5 w-5', config.color)} />

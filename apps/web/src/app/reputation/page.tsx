@@ -241,7 +241,7 @@ function ScoreRing({ score, maxScore, size = 'lg' }: { score: number; maxScore: 
   };
 
   const dimensions = size === 'lg' ? 'w-32 h-32' : 'w-20 h-20';
-  const textSize = size === 'lg' ? 'text-3xl' : 'text-xl';
+  const textSize = size === 'lg' ? 'text-2xl' : 'text-lg';
 
   return (
     <div className={cn('relative', dimensions)}>
@@ -298,7 +298,7 @@ function CategoryCard({ category }: { category: ReputationCategory }) {
             </div>
           </div>
           <div className="text-right">
-            <span className={cn('text-2xl font-bold', category.color)}>{category.score}</span>
+            <span className={cn('text-xl font-bold', category.color)}>{category.score}</span>
             <span className="text-sm text-muted-foreground">/{category.maxScore}</span>
           </div>
         </div>
@@ -465,11 +465,11 @@ export default function ReputationPage() {
 
         {/* Main Score Card */}
         <Card className="bg-gradient-to-br from-primary/5 via-primary/10 to-secondary shadow-sm border-border/50 animate-fade-in">
-          <CardContent className="p-6 md:p-8">
+          <CardContent className="p-4 md:p-6">
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
               <ScoreRing score={totalScore} maxScore={100} size="lg" />
               <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+                <h2 className="text-xl md:text-2xl font-bold tracking-tight">
                   {totalScore >= 80 ? 'Excellent' : totalScore >= 60 ? 'Good' : totalScore >= 40 ? 'Fair' : 'Building'}
                 </h2>
                 <p className="text-muted-foreground mt-1">

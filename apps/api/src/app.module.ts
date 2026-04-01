@@ -1,5 +1,6 @@
 import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import { LoggerModule } from 'nestjs-pino';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -47,6 +48,9 @@ import { BuilderModule } from './builder/builder.module';
 import { RolesModule } from './roles/roles.module';
 import { OrganizationModule } from './organization/organization.module';
 import { MentorshipModule } from './mentorship/mentorship.module';
+import { DigestsModule } from './digests/digests.module';
+import { GamificationModule } from './gamification/gamification.module';
+import { BehavioralOptimizerModule } from './behavioral-optimizer/behavioral-optimizer.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -117,6 +121,9 @@ function findEnvFiles(): string[] {
     RolesModule,
     OrganizationModule,
     MentorshipModule,
+    DigestsModule,
+    GamificationModule,
+    BehavioralOptimizerModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:
@@ -143,6 +150,11 @@ function findEnvFiles(): string[] {
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // Endpoint timing interceptor — dev only, logs request duration + DB metrics
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PerformanceInterceptor,
     },
   ],
 })

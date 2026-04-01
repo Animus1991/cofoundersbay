@@ -65,20 +65,20 @@ function ProgramCard({ program }: { program: Program }) {
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               {program.startDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="icon-sm" />
                   {program.startDate} - {program.endDate || 'Ongoing'}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+                <Users className="icon-sm" />
                 {program.enrolled}/{program.capacity} enrolled
               </span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -164,14 +164,14 @@ export default function OrgProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
+            <h1 className="text-xl font-bold tracking-tight">Programs</h1>
             <p className="text-muted-foreground">
               Manage your accelerator programs and cohorts
             </p>
           </div>
           <Button asChild>
             <Link href="/org/programs/new">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 icon-sm" />
               New Program
             </Link>
           </Button>
@@ -182,13 +182,13 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Programs</p>
-              <p className="text-2xl font-bold">{programs.length}</p>
+              <p className="text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -196,7 +196,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Enrolled</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.enrolled, 0)}
               </p>
             </CardContent>
@@ -204,7 +204,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600">
                 {programs.filter((p) => p.status === 'completed').length}
               </p>
             </CardContent>
@@ -214,7 +214,7 @@ export default function OrgProgramsPage() {
         {/* Filters */}
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search programs..."
               value={search}
@@ -232,14 +232,14 @@ export default function OrgProgramsPage() {
           {filteredPrograms.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Layers className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Layers className="icon-lg mx-auto text-muted-foreground/50 mb-4" />
                 <h3 className="font-medium">No programs found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Create your first program to get started
                 </p>
                 <Button className="mt-4" asChild>
                   <Link href="/org/programs/new">
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 icon-sm" />
                     Create Program
                   </Link>
                 </Button>

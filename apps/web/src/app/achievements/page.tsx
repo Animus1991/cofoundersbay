@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAnalyticsAchievements, getDashboardStats, type AnalyticsAchievement } from '@/lib/api';
+import { getAnalyticsAchievements, getMyXP, getMyBadges, type AnalyticsAchievement, type GamificationXPSummary, type GamificationBadge } from '@/lib/api';
+import { ReputationSystem } from '@/components/gamification/ReputationSystem';
+import { UserBadges } from '@/components/gamification/UserBadges';
 import {
   Award,
   Trophy,
@@ -264,12 +266,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <Icon className={cn('h-8 w-8', TIER_COLORS[achievement.tier])} />
             {achievement.unlocked && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle2 className="h-3 w-3 text-white" />
+                <CheckCircle2 className="icon-sm text-white" />
               </div>
             )}
             {!achievement.unlocked && achievement.progress === 0 && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <Lock className="h-3 w-3 text-muted-foreground" />
+                <Lock className="icon-sm text-muted-foreground" />
               </div>
             )}
           </div>
@@ -301,14 +303,14 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
 
             <div className="flex items-center gap-3 text-xs">
               <Badge variant="outline" className="gap-1">
-                <CategoryIcon className="h-3 w-3" />
+                <CategoryIcon className="icon-sm" />
                 {achievement.category}
               </Badge>
               <Badge
                 variant="outline"
                 className={cn('gap-1', TIER_COLORS[achievement.tier])}
               >
-                <Medal className="h-3 w-3" />
+                <Medal className="icon-sm" />
                 {achievement.tier}
               </Badge>
               <span className="text-muted-foreground">
@@ -335,16 +337,16 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
   return (
     <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border/50 animate-fade-in">
-      <CardContent className="p-6 md:p-8">
+      <CardContent className="p-4 md:p-6">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="h-8 w-8 text-primary" />
+                <Trophy className="icon-lg text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Current Level</p>
-                <h2 className="text-3xl font-bold">Level {stats.level}</h2>
+                <h2 className="text-xl font-bold">Level {stats.level}</h2>
               </div>
             </div>
 
@@ -355,12 +357,12 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
                   {stats.totalPoints} / {stats.nextLevelPoints} pts
                 </span>
               </div>
-              <Progress value={levelProgress} className="h-3" />
+              <Progress value={levelProgress} className="h-2" />
             </div>
 
             <div className="flex items-center gap-2">
               <Badge variant="default" className="gap-1">
-                <Crown className="h-3 w-3" />
+                <Crown className="icon-sm" />
                 {stats.rank}
               </Badge>
               <span className="text-sm text-muted-foreground">
@@ -372,23 +374,23 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Total Points</p>
-              <p className="text-2xl font-bold">{stats.totalPoints.toLocaleString()}</p>
+              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString()}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Achievements</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {stats.achievementsUnlocked}/{stats.totalAchievements}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Completion</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {Math.round((stats.achievementsUnlocked / stats.totalAchievements) * 100)}%
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Rank</p>
-              <p className="text-2xl font-bold">#{stats.percentile}</p>
+              <p className="text-xl font-bold">#{stats.percentile}</p>
             </div>
           </div>
         </div>
@@ -421,8 +423,28 @@ function AchievementsSkeleton() {
   );
 }
 
+function computePointsFromSignals(signals?: { connectionCount: number; boardCount: number; docCount: number; totalNodes: number }) {
+  if (!signals) return 0;
+  return Math.min(4999,
+    signals.connectionCount * 10 +
+    signals.boardCount * 25 +
+    signals.docCount * 30 +
+    signals.totalNodes * 2,
+  );
+}
+
+function computeEarnedBadgeIds(signals?: { connectionCount: number; boardCount: number; docCount: number; totalNodes: number }): string[] {
+  if (!signals) return [];
+  const earned: string[] = [];
+  if (signals.connectionCount >= 1) earned.push('2');   // Conversation Starter (proxy)
+  if (signals.connectionCount >= 10) earned.push('3');  // Networker
+  if (signals.boardCount >= 1) earned.push('1');        // Early Adopter (profile started)
+  if (signals.docCount >= 1) earned.push('8');          // Mentor (proxy — has built artifacts)
+  return earned;
+}
+
 export default function AchievementsPage() {
-  const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked' | 'leaderboard'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'unlocked' | 'locked' | 'leaderboard' | 'reputation' | 'badges'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { data: rawAchievements, isLoading, isError, refetch } = useQuery({
@@ -431,6 +453,22 @@ export default function AchievementsPage() {
     staleTime: 120_000,
     retry: 1,
   });
+
+  const { data: xpData } = useQuery<GamificationXPSummary>({
+    queryKey: ['gamification-xp-me'],
+    queryFn: getMyXP,
+    staleTime: 60_000,
+  });
+
+  const { data: badgesData } = useQuery<GamificationBadge[]>({
+    queryKey: ['gamification-badges-me'],
+    queryFn: getMyBadges,
+    staleTime: 60_000,
+  });
+
+  const reputationPoints = xpData?.totalXp ?? 0;
+  const earnedBadgeIds = badgesData?.map((b) => b.id) ?? [];
+  const badgeProgressMap: Record<string, number> = {};
 
   const achievements = useMemo(() => {
     const list = isError || !rawAchievements ? DEMO_ACHIEVEMENTS : rawAchievements;
@@ -444,19 +482,22 @@ export default function AchievementsPage() {
   const stats: UserStats = useMemo(() => {
     const unlocked = achievements.filter((a) => a.unlocked).length;
     const total = achievements.length || 1;
-    const totalPoints = achievements.filter((a) => a.unlocked).reduce((s, a) => s + a.points, 0);
-    const level = Math.max(1, Math.floor(totalPoints / 200));
+    // Prefer real XP data from gamification API; fall back to local achievement point sum
+    const totalPoints = xpData?.totalXp
+      ?? achievements.filter((a) => a.unlocked).reduce((s, a) => s + a.points, 0);
+    const level = xpData?.level ?? Math.max(1, Math.floor(totalPoints / 200));
+    const levelLabel = xpData?.levelLabel ?? (level >= 10 ? 'Legend' : level >= 7 ? 'Expert' : level >= 4 ? 'Rising Star' : 'Newcomer');
     return {
       totalPoints,
       level,
-      nextLevelPoints: (level + 1) * 200,
-      currentLevelPoints: level * 200,
+      nextLevelPoints: xpData ? totalPoints + xpData.xpToNextLevel : (level + 1) * 200,
+      currentLevelPoints: xpData ? totalPoints - (xpData.levelProgress / 100) * xpData.xpToNextLevel : level * 200,
       achievementsUnlocked: unlocked,
       totalAchievements: total,
-      rank: level >= 10 ? 'Legend' : level >= 7 ? 'Expert' : level >= 4 ? 'Rising Star' : 'Newcomer',
+      rank: levelLabel,
       percentile: Math.min(99, Math.round((unlocked / total) * 100)),
     };
-  }, [achievements]);
+  }, [achievements, xpData]);
 
   const filteredAchievements = achievements?.filter((achievement) => {
     if (activeTab === 'unlocked' && !achievement.unlocked) return false;
@@ -513,9 +554,15 @@ export default function AchievementsPage() {
                   <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <Trophy className="h-3.5 w-3.5" /> Leaderboard
                   </TabsTrigger>
+                  <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+                    <TrendingUp className="h-3.5 w-3.5" /> Reputation
+                  </TabsTrigger>
+                  <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
+                    <Award className="h-3.5 w-3.5" /> Badges
+                  </TabsTrigger>
                 </TabsList>
 
-                {activeTab !== 'leaderboard' && (
+                {activeTab !== 'leaderboard' && activeTab !== 'reputation' && activeTab !== 'badges' && (
                   <div className="flex flex-wrap gap-1.5">
                     {categories.map((category) => {
                       const Icon = category.icon;
@@ -526,7 +573,7 @@ export default function AchievementsPage() {
                           className="cursor-pointer gap-1 text-xs"
                           onClick={() => setCategoryFilter(category.value)}
                         >
-                          {Icon && <Icon className="h-3 w-3" />}
+                          {Icon && <Icon className="icon-sm" />}
                           {category.label}
                         </Badge>
                       );
@@ -589,7 +636,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Trophy className="h-4 w-4 text-yellow-500" /> Community Leaderboard
+                          <Trophy className="icon-sm text-yellow-500" /> Community Leaderboard
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-1 px-2">
@@ -611,11 +658,11 @@ export default function AchievementsPage() {
                               <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary')}>
                                 {user.name}{(user as any).isMe && ' (You)'}
                               </p>
-                              <p className="text-[11px] text-muted-foreground">Level {user.level} · {user.badge}</p>
+                              <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString()}</p>
-                              <p className="text-[10px] text-muted-foreground">pts</p>
+                              <p className="text-xs text-muted-foreground">pts</p>
                             </div>
                           </div>
                         ))}
@@ -628,7 +675,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Zap className="h-4 w-4 text-amber-500" /> Recently Unlocked
+                          <Zap className="icon-sm text-amber-500" /> Recently Unlocked
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
@@ -637,15 +684,15 @@ export default function AchievementsPage() {
                           return (
                             <div key={a.id} className="flex items-center gap-2.5">
                               <div className={cn('rounded-lg p-1.5 shrink-0', TIER_BG[a.tier])}>
-                                <Icon className={cn('h-4 w-4', TIER_COLORS[a.tier])} />
+                                <Icon className={cn('icon-sm', TIER_COLORS[a.tier])} />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{a.title}</p>
-                                <p className="text-[11px] text-muted-foreground">
+                                <p className="text-xs text-muted-foreground">
                                   {a.unlockedAt?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                                 </p>
                               </div>
-                              <Badge variant="secondary" className="text-[10px] h-4 px-1.5 shrink-0">{a.points}pts</Badge>
+                              <Badge variant="secondary" size="sm" className="px-1.5 shrink-0">{a.points}pts</Badge>
                             </div>
                           );
                         }) : (
@@ -665,10 +712,10 @@ export default function AchievementsPage() {
                           const total = achievements.filter((a) => a.tier === tier).length;
                           return (
                             <div key={tier} className="flex items-center gap-2">
-                              <Medal className={cn('h-4 w-4 shrink-0', TIER_COLORS[tier])} />
+                              <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} />
                               <span className="text-xs capitalize text-muted-foreground w-16">{tier}</span>
                               <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
-                              <span className="text-[11px] text-muted-foreground w-8 text-right">{count}/{total}</span>
+                              <span className="text-xs text-muted-foreground w-8 text-right">{count}/{total}</span>
                             </div>
                           );
                         })}
@@ -676,6 +723,14 @@ export default function AchievementsPage() {
                     </Card>
                   </div>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="reputation" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
+                <ReputationSystem points={reputationPoints > 0 ? reputationPoints : undefined} />
+              </TabsContent>
+
+              <TabsContent value="badges" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
+                <UserBadges />
               </TabsContent>
             </Tabs>
           </>

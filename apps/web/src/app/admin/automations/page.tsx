@@ -83,7 +83,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold">Create Automation Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -183,7 +183,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold">Edit Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -305,9 +305,9 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="h-3 w-3 text-destructive mt-0.5 shrink-0" />}
-          {log.level === 'warn' && <AlertTriangle className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />}
-          {log.level === 'info' && <CheckCircle2 className="h-3 w-3 text-emerald-500 mt-0.5 shrink-0" />}
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" />}
+          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" />}
+          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" />}
           <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
             [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
@@ -376,7 +376,7 @@ export default function AutomationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Automation Rules</h1>
+            <h1 className="text-xl font-bold tracking-tight">Automation Rules</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
               Event-driven workflows — triggers, conditions, actions
             </p>
@@ -408,7 +408,7 @@ export default function AutomationsPage() {
             { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <stat.icon className={`icon-md ${stat.color}`} />
               <div>
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
                 <p className="text-xl font-bold">{stat.value}</p>

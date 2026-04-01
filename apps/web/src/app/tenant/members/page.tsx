@@ -110,29 +110,29 @@ function MemberCard({ member }: { member: Member }) {
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-                    <MoreVertical className="h-3.5 w-3.5" />
+                  <Button variant="ghost" size="icon" className="shrink-0">
+                    <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem><Mail className="mr-2 h-4 w-4" />Send Message</DropdownMenuItem>
-                  <DropdownMenuItem><Shield className="mr-2 h-4 w-4" />Change Role</DropdownMenuItem>
+                  <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
+                  <DropdownMenuItem><Shield className="mr-2 icon-sm" />Change Role</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 h-4 w-4" />Remove Member</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-[10px] h-5">{member.role}</Badge>
-              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                <Clock className="h-3 w-3" />Joined {member.joinedAt}
+              <Badge variant="secondary" size="sm">{member.role}</Badge>
+              <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                <Clock className="icon-sm" />Joined {member.joinedAt}
               </span>
-              <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                <Activity className="h-3 w-3" />Active {member.lastActive}
+              <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                <Activity className="icon-sm" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
                 <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
-                  <CheckCircle2 className="h-3 w-3" />{member.milestonesCompleted} milestones
+                  <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
                 </span>
               )}
             </div>
@@ -186,7 +186,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             <div className="flex items-center gap-2">
               <code className="flex-1 text-[11px] truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                {copied ? <CheckCircle2 className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
@@ -259,7 +259,7 @@ export default function TenantMembersPage() {
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
-                  <Icon className={cn('h-4 w-4', color)} />
+                  <Icon className={cn('icon-sm', color)} />
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>

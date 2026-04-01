@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -223,11 +224,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="icon-sm" />
           </Button>
           <Link href="/discover">
             <Button variant="secondary" size="sm" className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="icon-sm" />
               Back
             </Button>
           </Link>
@@ -238,10 +239,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         {/* Identity card */}
         <div className="space-y-4">
           <Card className="animate-fade-in">
-            <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
-              <Avatar className="h-24 w-24 ring-4 ring-primary/20">
+            <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
+              <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-3xl font-bold">
+                <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">
                   {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
@@ -287,11 +288,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant={isConnected || isBlocked ? 'secondary' : 'default'}
                   >
                     {connecting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" />
                     ) : isConnected || isBlocked ? (
-                      <UserCheck className="h-4 w-4" />
+                      <UserCheck className="icon-sm" />
                     ) : (
-                      <UserPlus className="h-4 w-4" />
+                      <UserPlus className="icon-sm" />
                     )}
                     {connButtonLabel}
                   </Button>
@@ -302,12 +303,21 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     disabled={messaging || isBlocked}
                   >
                     {messaging ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" />
                     ) : (
-                      <MessageCircle className="h-4 w-4" />
+                      <MessageCircle className="icon-sm" />
                     )}
                     Message
                   </Button>
+                  <AIInsightButton
+                    prompt={`Analyze this ${profile.role} profile for collaboration potential:\n${profile.displayName} — ${profile.headline ?? 'No headline'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}\nBio: ${profile.bio ?? 'No bio'}`}
+                    agentId="matching"
+                    cacheKey={`profile-match-${userId}`}
+                    variant="outline"
+                    size="sm"
+                    label="AI Match Analysis"
+                    className="w-full"
+                  />
                 </div>
               )}
 
@@ -355,7 +365,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="h-4 w-4 text-primary" />
+                  <RoleIcon className="icon-sm text-primary" />
                   {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} details
                 </CardTitle>
               </CardHeader>

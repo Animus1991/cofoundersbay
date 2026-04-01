@@ -195,7 +195,7 @@ function MatchListRow({
                 strokeLinecap="round" />
             </svg>
             <Link href={`/profiles/${hit.userId}`}>
-              <Avatar className="h-12 w-12 border-2 border-background m-0.5 rounded-lg">
+              <Avatar className="h-10 w-10 border-2 border-background m-0.5 rounded-lg">
                 <AvatarImage src={hit.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-sm font-semibold rounded-lg">{initials}</AvatarFallback>
               </Avatar>
@@ -323,9 +323,9 @@ function MatchPreviewPanel({
         <div className="p-4 space-y-4">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
-            <Avatar className="h-20 w-20 rounded-2xl border-2 border-border/60">
+            <Avatar className="h-16 w-16 rounded-2xl border-2 border-border/60">
               <AvatarImage src={hit.avatarUrl ?? undefined} />
-              <AvatarFallback className="rounded-2xl text-xl font-bold bg-muted">
+              <AvatarFallback className="rounded-2xl text-base font-bold bg-muted">
                 {hit.displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -339,7 +339,7 @@ function MatchPreviewPanel({
           {/* Score */}
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
-              <p className="text-3xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
+              <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
               <p className="text-[10px] font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
                 {TIER_CLASSES[tier] ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Match'}
               </p>

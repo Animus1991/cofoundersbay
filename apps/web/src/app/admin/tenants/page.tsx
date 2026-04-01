@@ -18,6 +18,8 @@ import {
   updateTenantBranding, publishTenantBranding, unpublishTenantBranding,
   type TenantItem, type TenantBranding,
 } from '@/lib/api';
+import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
+import { analytics } from '@/lib/analytics';
 
 export default function TenantsAdminPage() {
   const queryClient = useQueryClient();
@@ -28,6 +30,42 @@ export default function TenantsAdminPage() {
     queryKey: ['admin', 'tenants'],
     queryFn: () => listTenants({ limit: 100 }),
   });
+
+  const tenantIds = tenants?.map(t => t.id) ?? [];
+  const { selectedIds, toggle, clear, isAllSelected, isPartiallySelected } = useBulkSelection(tenantIds);
+
+  const bulkActions = [
+    {
+      id: 'activate',
+      label: 'Activate',
+      onClick: async (ids: string[]) => {
+        await Promise.all(ids.map(id => updateTenant(id, { status: 'active' })));
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        void analytics.track('tenant_bulk_activate', { count: ids.length });
+      },
+    },
+    {
+      id: 'suspend',
+      label: 'Suspend',
+      variant: 'destructive' as const,
+      onClick: async (ids: string[]) => {
+        await Promise.all(ids.map(id => updateTenant(id, { status: 'suspended' })));
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        void analytics.track('tenant_bulk_suspend', { count: ids.length });
+      },
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      variant: 'destructive' as const,
+      onClick: async (ids: string[]) => {
+        if (!confirm(`Delete ${ids.length} tenant(s)? This cannot be undone.`)) return;
+        await Promise.all(ids.map(id => deleteTenant(id)));
+        queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
+        void analytics.track('tenant_bulk_delete', { count: ids.length });
+      },
+    },
+  ];
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -48,7 +86,7 @@ export default function TenantsAdminPage() {
       description="Manage organizations and their white-label branding"
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" />
           Create Tenant
         </Button>
       }
@@ -62,7 +100,7 @@ export default function TenantsAdminPage() {
           <CardContent>
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" />
-              <span className="text-2xl font-bold">{tenants?.length || 0}</span>
+              <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
         </Card>
@@ -73,8 +111,8 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Check className="h-5 w-5 text-green-500" />
-              <span className="text-2xl font-bold">
+              <Check className="icon-md text-green-500" />
+              <span className="text-xl font-bold">
                 {tenants?.filter(t => t.status === 'active').length || 0}
               </span>
             </div>
@@ -87,8 +125,8 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Palette className="h-5 w-5 text-purple-500" />
-              <span className="text-2xl font-bold">
+              <Palette className="icon-md text-purple-500" />
+              <span className="text-xl font-bold">
                 {tenants?.filter(t => t.logoUrl).length || 0}
               </span>
             </div>
@@ -124,7 +162,7 @@ export default function TenantsAdminPage() {
               <Building2 className="h-8 w-8 mx-auto mb-2" />
               <p>No tenants configured yet</p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
-                <Plus className="h-4 w-4" />
+                <Plus className="icon-sm" />
                 Create First Tenant
               </Button>
             </div>
@@ -133,25 +171,32 @@ export default function TenantsAdminPage() {
               {tenants.map((tenant) => (
                 <div
                   key={tenant.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors cursor-pointer"
-                  onClick={() => setSelectedTenant(tenant)}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border/60 hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex items-center gap-4">
+                    <BulkCheckbox
+                      id={tenant.id}
+                      selectedIds={selectedIds}
+                      onToggle={toggle}
+                      className="shrink-0"
+                    />
                     {tenant.logoUrl ? (
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-primary" />
+                        <Building2 className="icon-md text-primary" />
                       </div>
                     )}
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-medium">{tenant.displayName || tenant.name}</h3>
                       <p className="text-sm text-muted-foreground">/{tenant.slug}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {getStatusBadge(tenant.status)}
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
+                      <Settings className="icon-sm" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -159,6 +204,14 @@ export default function TenantsAdminPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Bulk Actions Bar */}
+      <BulkActionBar
+        selectedIds={selectedIds}
+        onClearSelection={clear}
+        actions={bulkActions}
+        entityLabel="tenant"
+      />
 
       {/* Tenant Editor Modal */}
       {(selectedTenant || isCreating) && (
@@ -306,12 +359,12 @@ function TenantEditor({
           <div className="flex items-center gap-2">
             {!isNew && (
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-2">
-                <Eye className="h-4 w-4" />
+                <Eye className="icon-sm" />
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
             <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
+              <X className="icon-sm" />
             </Button>
           </div>
         </CardHeader>
@@ -320,7 +373,7 @@ function TenantEditor({
           {previewMode && !isNew ? (
             <TenantPreview general={general} branding={branding} />
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="p-6">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
                 <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" />General</TabsTrigger>
                 <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" />Colors & Fonts</TabsTrigger>
@@ -332,7 +385,7 @@ function TenantEditor({
 
               {saveError && (
                 <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <AlertTriangle className="icon-sm shrink-0" />
                   {saveError}
                 </div>
               )}
@@ -397,7 +450,7 @@ function TenantEditor({
                 )}
                 <div className="flex justify-end pt-2">
                   <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                    <Save className="h-4 w-4" />
+                    <Save className="icon-sm" />
                     {isSaving ? 'Saving…' : isNew ? 'Create Tenant' : 'Save General'}
                   </Button>
                 </div>
@@ -438,7 +491,7 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="h-4 w-4" />Typography</h4>
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" />Typography</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Heading Font</label>
@@ -459,7 +512,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2 gap-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="h-4 w-4" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Colors & Fonts'}
                     </Button>
                   </div>
@@ -481,7 +534,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="h-4 w-4" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Media'}
                     </Button>
                   </div>
@@ -530,7 +583,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="h-4 w-4" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Content'}
                     </Button>
                   </div>
@@ -582,7 +635,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="h-4 w-4" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Links'}
                     </Button>
                   </div>
@@ -604,7 +657,7 @@ function TenantEditor({
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="h-4 w-4" />
+                      <Save className="icon-sm" />
                       {isBrandingSaving ? 'Saving…' : 'Save Email Settings'}
                     </Button>
                   </div>
@@ -647,7 +700,7 @@ function TenantEditor({
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             {isNew && (
               <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                <Plus className="h-4 w-4" />
+                <Plus className="icon-sm" />
                 {isSaving ? 'Creating…' : 'Create Tenant'}
               </Button>
             )}

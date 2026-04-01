@@ -31,10 +31,10 @@ import {
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1 text-xs"><CheckCircle2 className="h-3 w-3" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1 text-xs"><Clock className="h-3 w-3" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1 text-xs"><XCircle className="h-3 w-3" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1 text-xs"><XCircle className="h-3 w-3" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -47,7 +47,7 @@ function CopyButton({ value }: { value: string }) {
   };
   return (
     <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-      {copied ? <CheckCircle2 className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+      {copied ? <CheckCircle2 className="icon-sm text-green-600" /> : <Copy className="icon-sm" />}
     </button>
   );
 }
@@ -56,7 +56,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
   return (
     <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 space-y-4 text-sm">
       <div className="flex items-start gap-2">
-        <Info className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+        <Info className="icon-sm text-amber-600 mt-0.5 shrink-0" />
         <div>
           <p className="font-semibold text-foreground">DNS Configuration Required</p>
           <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
@@ -435,13 +435,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 {addSub.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addSub.isError && (
               <p className="text-xs text-destructive flex items-center gap-1">
-                <XCircle className="h-3 w-3" />{(addSub.error as Error).message}
+                <XCircle className="icon-sm" />{(addSub.error as Error).message}
               </p>
             )}
             <p className="text-xs text-muted-foreground">
@@ -454,7 +454,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4 text-primary" />
+              <Shield className="icon-sm text-primary" />
               Custom Domain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -475,13 +475,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 {addCustom.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addCustom.isError && (
               <p className="text-xs text-destructive flex items-center gap-1">
-                <XCircle className="h-3 w-3" />{(addCustom.error as Error).message}
+                <XCircle className="icon-sm" />{(addCustom.error as Error).message}
               </p>
             )}
             <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs text-muted-foreground">

@@ -142,10 +142,10 @@ export default function MentorReviewsPage() {
         {/* Stats */}
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center gap-6">
                 <div className="text-center">
-                  <p className="text-4xl font-bold">{avgRating}</p>
+                  <p className="text-3xl font-bold">{avgRating}</p>
                   <StarRating rating={Math.round(parseFloat(avgRating))} />
                   <p className="text-sm text-muted-foreground mt-1">{reviews.length} reviews</p>
                 </div>
@@ -164,23 +164,23 @@ export default function MentorReviewsPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Sessions</p>
-                  <p className="text-2xl font-bold">48</p>
+                  <p className="text-xl font-bold">48</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Response Rate</p>
-                  <p className="text-2xl font-bold">92%</p>
+                  <p className="text-xl font-bold">92%</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Repeat Mentees</p>
-                  <p className="text-2xl font-bold">15</p>
+                  <p className="text-xl font-bold">15</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Helpful Votes</p>
-                  <p className="text-2xl font-bold">43</p>
+                  <p className="text-xl font-bold">43</p>
                 </div>
               </div>
             </CardContent>

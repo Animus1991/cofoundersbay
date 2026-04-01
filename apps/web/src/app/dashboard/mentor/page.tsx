@@ -55,11 +55,11 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums">{value}</p>
+            <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="icon-md text-primary" />
           </div>
         </div>
       </CardContent>
@@ -86,8 +86,8 @@ function MenteeCard({ mentee }: { mentee: any }) {
         <Badge variant="outline" className="text-xs">
           {mentee.sessionsCompleted} sessions
         </Badge>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MessageCircle className="h-4 w-4" />
+        <Button variant="ghost" size="icon">
+          <MessageCircle className="icon-sm" />
         </Button>
       </div>
     </div>
@@ -106,7 +106,7 @@ function SessionCard({ session }: { session: any }) {
         'rounded-full p-2',
         isUpcoming ? 'bg-primary/10' : 'bg-muted'
       )}>
-        <Video className={cn('h-4 w-4', isUpcoming ? 'text-primary' : 'text-muted-foreground')} />
+        <Video className={cn('icon-sm', isUpcoming ? 'text-primary' : 'text-muted-foreground')} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
@@ -140,10 +140,10 @@ function RequestCard({ request }: { request: any }) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium">{request.name}</p>
-        <p className="text-xs text-muted-foreground line-clamp-2">{request.message}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2">{request.message}</p>
         <div className="flex gap-2 mt-2">
           <Link href="/mentor/requests">
-            <Button size="sm" variant="default" className="h-7 text-xs">Review Request</Button>
+            <Button size="sm" variant="outline">Review Request</Button>
           </Link>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function MentorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">
@@ -231,7 +231,7 @@ export default function MentorDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <GraduationCap className="h-3.5 w-3.5" />
+            <GraduationCap className="icon-sm" />
             Mentor
           </Badge>
         </div>
@@ -240,7 +240,7 @@ export default function MentorDashboard() {
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
           <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
             <div className="flex items-center gap-2">
-              <Video className="h-4 w-4 text-blue-500" />
+              <Video className="icon-sm text-blue-500" />
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
@@ -284,7 +284,7 @@ export default function MentorDashboard() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
               <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
-                <DollarSign className="h-5 w-5 text-emerald-500 shrink-0" />
+                <DollarSign className="icon-md text-emerald-500 shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
                   <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
@@ -293,7 +293,7 @@ export default function MentorDashboard() {
             </Link>
             <Link href="/mentor/reviews">
               <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
-                <Star className="h-5 w-5 text-amber-500 shrink-0" />
+                <Star className="icon-md text-amber-500 shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Average rating</p>
                   <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
@@ -302,7 +302,7 @@ export default function MentorDashboard() {
             </Link>
             <Link href="/mentor/sessions">
               <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
-                <Video className="h-5 w-5 text-primary shrink-0" />
+                <Video className="icon-md text-primary shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Hours this month</p>
                   <p className="text-lg font-bold text-primary">{mentorStats.hoursThisMonth}h</p>
@@ -321,12 +321,12 @@ export default function MentorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-amber-500" />
+                      <Zap className="icon-sm text-amber-500" />
                       Mentorship Requests ({pendingRequests.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/mentor/requests">
-                        View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -344,12 +344,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-primary" />
+                    <Calendar className="icon-sm text-primary" />
                     Upcoming Sessions
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/sessions">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -371,12 +371,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <UserCheck className="h-4 w-4 text-primary" />
+                    <UserCheck className="icon-sm text-primary" />
                     Your Mentees
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/mentees">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -399,31 +399,31 @@ export default function MentorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/availability">
-                    <Clock className="mr-2 h-4 w-4" />
+                    <Clock className="mr-2 icon-sm" />
                     Set Availability
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/requests">
-                    <UserCheck className="mr-2 h-4 w-4" />
+                    <UserCheck className="mr-2 icon-sm" />
                     Mentorship Requests
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/reviews">
-                    <Star className="mr-2 h-4 w-4" />
+                    <Star className="mr-2 icon-sm" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/earnings">
-                    <DollarSign className="mr-2 h-4 w-4" />
+                    <DollarSign className="mr-2 icon-sm" />
                     Earnings
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/profile">
-                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <TrendingUp className="mr-2 icon-sm" />
                     Mentor Profile
                   </Link>
                 </Button>
@@ -452,7 +452,7 @@ export default function MentorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
                     <span className="text-sm font-medium">Top 10% Mentor</span>
                   </div>
                 </div>

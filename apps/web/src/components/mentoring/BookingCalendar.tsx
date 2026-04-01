@@ -161,9 +161,9 @@ export function BookingCalendar({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-12 w-12">
                 <AvatarImage src={mentor.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xl">
+                <AvatarFallback className="bg-primary/20 text-primary text-sm">
                   {mentor.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>

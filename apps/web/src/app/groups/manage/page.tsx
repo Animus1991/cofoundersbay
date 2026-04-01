@@ -142,7 +142,7 @@ export default function ManageGroupsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Settings className="h-6 w-6 text-primary" />
               Manage Communities
             </h1>
@@ -166,7 +166,7 @@ export default function ManageGroupsPage() {
             <Card key={stat.label}>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-xl font-bold">{stat.value}</p>
               </CardContent>
             </Card>
           ))}

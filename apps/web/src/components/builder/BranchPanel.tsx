@@ -1,0 +1,444 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  GitBranch, Plus, X, Clock, CheckCircle2, XCircle,
+  AlertCircle, Loader2, ChevronRight, GitPullRequest,
+  MoreHorizontal, Merge,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
+import {
+  listBranches,
+  createBranch,
+  closeBranch,
+  createProposal,
+  type ArtifactBranch,
+} from '@/lib/api';
+
+// ── Branch Status helpers ──────────────────────────────────────────────────
+
+function branchStatusMeta(status: string) {
+  switch (status) {
+    case 'open':        return { label: 'Open',      color: 'bg-blue-100 text-blue-700 border-blue-200',    icon: GitBranch };
+    case 'review':      return { label: 'In Review', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock };
+    case 'merged':      return { label: 'Merged',    color: 'bg-green-100 text-green-700 border-green-200',  icon: CheckCircle2 };
+    case 'closed':      return { label: 'Closed',    color: 'bg-gray-100 text-gray-600 border-gray-200',     icon: XCircle };
+    default:            return { label: status,      color: 'bg-muted text-muted-foreground border-border',   icon: GitBranch };
+  }
+}
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+// ── Create Branch Dialog ───────────────────────────────────────────────────
+
+interface CreateBranchDialogProps {
+  open: boolean;
+  onClose: () => void;
+  documentId: string;
+  currentVersion: number;
+  onCreated: () => void;
+}
+
+function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreated }: CreateBranchDialogProps) {
+  const { success, error: toastError } = useToast();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    try {
+      await createBranch({
+        documentId,
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
+      success(`Draft variant "${name}" created`);
+      setName('');
+      setDescription('');
+      onCreated();
+      onClose();
+    } catch {
+      toastError('Failed to create draft variant');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New Draft Variant</DialogTitle>
+          <DialogDescription>
+            Create an isolated copy of this document to experiment with changes before proposing them.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Name</Label>
+            <Input
+              placeholder="e.g. revised-financials, investor-v2..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Description (optional)</Label>
+            <Textarea
+              placeholder="What changes are you exploring in this variant?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Branching from <strong>v{currentVersion}</strong> of the main document.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleCreate} disabled={loading || !name.trim()}>
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            Create Variant
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Submit Proposal Dialog ─────────────────────────────────────────────────
+
+interface SubmitProposalDialogProps {
+  open: boolean;
+  onClose: () => void;
+  branch: ArtifactBranch;
+  onSubmitted: () => void;
+}
+
+function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProposalDialogProps) {
+  const { success, error: toastError } = useToast();
+  const [title, setTitle] = useState(`Changes from "${branch.name}"`);
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!title.trim()) return;
+    setLoading(true);
+    try {
+      await createProposal({
+        branchId: branch.id,
+        title: title.trim(),
+        description: description.trim() || undefined,
+      });
+      success('Change proposal submitted for review');
+      onSubmitted();
+      onClose();
+    } catch {
+      toastError('Failed to submit proposal');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Submit Change Proposal</DialogTitle>
+          <DialogDescription>
+            Propose the changes from &ldquo;{branch.name}&rdquo; to be merged into the main document.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label>Proposal title</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Description</Label>
+            <Textarea
+              placeholder="Summarise the changes you've made and why..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            Submit Proposal
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main BranchPanel ───────────────────────────────────────────────────────
+
+interface BranchPanelProps {
+  open: boolean;
+  onClose: () => void;
+  documentId: string;
+  workspaceId: string;
+  documentTitle?: string;
+  readonly?: boolean;
+}
+
+export function BranchPanel({
+  open,
+  onClose,
+  documentId,
+  workspaceId,
+  documentTitle,
+  readonly = false,
+}: BranchPanelProps) {
+  const { error: toastError, success } = useToast();
+  const queryClient = useQueryClient();
+
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [proposalBranch, setProposalBranch] = useState<ArtifactBranch | null>(null);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['branches', documentId],
+    queryFn: () => listBranches(documentId),
+    enabled: open && !!documentId,
+  });
+
+  const branches: ArtifactBranch[] = Array.isArray(data) ? data : [];
+  const currentDocVersion: number = branches[0]?.baseVersionNum ?? 1;
+
+  const handleClose = async (branchId: string) => {
+    try {
+      await closeBranch(branchId);
+      success('Draft variant closed');
+      queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
+    } catch {
+      toastError('Failed to close variant');
+    }
+  };
+
+  const openBranches = branches.filter(b => b.status === 'open' || b.status === 'review');
+  const closedBranches = branches.filter(b => b.status === 'closed' || b.status === 'merged');
+
+  return (
+    <>
+      <Sheet open={open} onOpenChange={onClose}>
+        <SheetContent className="w-full sm:max-w-md flex flex-col">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <GitBranch className="h-4 w-4 text-primary" />
+              Draft Variants
+            </SheetTitle>
+            <SheetDescription>
+              Isolated copies of &ldquo;{documentTitle ?? 'this document'}&rdquo; for safe experimentation.
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="flex-1 overflow-y-auto mt-4 space-y-4">
+            {/* Main branch indicator */}
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
+              <GitBranch className="h-3.5 w-3.5 text-primary" />
+              <span className="text-sm font-medium">main</span>
+              <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>
+            </div>
+
+            {/* Active variants */}
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map(i => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
+              </div>
+            ) : openBranches.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+                  Active Variants ({openBranches.length})
+                </p>
+                {openBranches.map(branch => {
+                  const meta = branchStatusMeta(branch.status);
+                  const StatusIcon = meta.icon;
+                  return (
+                    <div
+                      key={branch.id}
+                      className="p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="text-sm font-medium truncate">{branch.name}</span>
+                          </div>
+                          {branch.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className={cn('text-xs', meta.color)}>
+                              <StatusIcon className="h-2.5 w-2.5 mr-1" />
+                              {meta.label}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              base v{branch.baseVersionNum}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {timeAgo(branch.createdAt)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {!readonly && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {branch.status === 'open' && (
+                                <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
+                                  <GitPullRequest className="h-3.5 w-3.5 mr-2" />
+                                  Submit Proposal
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleClose(branch.id)}
+                              >
+                                <XCircle className="h-3.5 w-3.5 mr-2" />
+                                Close Variant
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+                      </div>
+
+                      {!readonly && branch.status === 'open' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-3 w-full text-xs h-7"
+                          onClick={() => setProposalBranch(branch)}
+                        >
+                          <GitPullRequest className="h-3 w-3 mr-1.5" />
+                          Submit as Change Proposal
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No active variants</p>
+                <p className="text-xs mt-1">Create a variant to experiment without affecting the main document.</p>
+              </div>
+            )}
+
+            {/* Closed/merged */}
+            {closedBranches.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-1">
+                  Closed / Merged ({closedBranches.length})
+                </p>
+                {closedBranches.map(branch => {
+                  const meta = branchStatusMeta(branch.status);
+                  const StatusIcon = meta.icon;
+                  return (
+                    <div key={branch.id} className="px-3 py-2 rounded-lg border border-border/40 bg-muted/20">
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="h-3 w-3 text-muted-foreground/50" />
+                        <span className="text-xs text-muted-foreground truncate flex-1">{branch.name}</span>
+                        <Badge variant="outline" className={cn('text-xs', meta.color)}>
+                          <StatusIcon className="h-2.5 w-2.5 mr-1" />
+                          {meta.label}
+                        </Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Footer actions */}
+          {!readonly && (
+            <div className="pt-4 border-t mt-auto">
+              <Button
+                className="w-full"
+                onClick={() => setShowCreateDialog(true)}
+              >
+                <Plus className="h-3.5 w-3.5 mr-2" />
+                New Draft Variant
+              </Button>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      <CreateBranchDialog
+        open={showCreateDialog}
+        onClose={() => setShowCreateDialog(false)}
+        documentId={documentId}
+        currentVersion={currentDocVersion}
+        onCreated={() => queryClient.invalidateQueries({ queryKey: ['branches', documentId] })}
+      />
+
+      {proposalBranch && (
+        <SubmitProposalDialog
+          open={!!proposalBranch}
+          onClose={() => setProposalBranch(null)}
+          branch={proposalBranch}
+          onSubmitted={() => {
+            queryClient.invalidateQueries({ queryKey: ['branches', documentId] });
+            queryClient.invalidateQueries({ queryKey: ['proposals', documentId] });
+          }}
+        />
+      )}
+    </>
+  );
+}

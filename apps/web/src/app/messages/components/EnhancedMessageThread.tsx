@@ -166,47 +166,47 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => setShowSearch(!showSearch)}
           >
-            <Search className="h-5 w-5" />
+            <Search className="icon-md" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('audio')}
           >
-            <Phone className="h-5 w-5" />
+            <Phone className="icon-md" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('video')}
           >
-            <Video className="h-5 w-5" />
+            <Video className="icon-md" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setShowInfo(!showInfo)}
           >
-            <Info className="h-5 w-5" />
+            <Info className="icon-md" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
+                <MoreVertical className="icon-md" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onArchiveConversation}>
-                <Archive className="h-4 w-4 mr-2" />
+                <Archive className="icon-sm mr-2" />
                 Archive conversation
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Flag className="h-4 w-4 mr-2" />
+                <Flag className="icon-sm mr-2" />
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="icon-sm mr-2" />
                 Delete conversation
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -299,7 +299,7 @@ export function EnhancedMessageThread({
                             />
                           ) : (
                             <>
-                              <Paperclip className="h-4 w-4" />
+                              <Paperclip className="icon-sm" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
                                   {attachment.name}
@@ -309,7 +309,7 @@ export function EnhancedMessageThread({
                                 </p>
                               </div>
                               <Button size="icon" variant="ghost" className="h-8 w-8">
-                                <Download className="h-4 w-4" />
+                                <Download className="icon-sm" />
                               </Button>
                             </>
                           )}
@@ -329,21 +329,21 @@ export function EnhancedMessageThread({
                       className="h-7 w-7"
                       onClick={() => setReplyingTo(message)}
                     >
-                      <Reply className="h-3 w-3" />
+                      <Reply className="icon-sm" />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="icon" variant="secondary" className="h-7 w-7">
-                          <MoreVertical className="h-3 w-3" />
+                          <MoreVertical className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem>
-                          <Copy className="h-4 w-4 mr-2" />
+                          <Copy className="icon-sm mr-2" />
                           Copy
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Forward className="h-4 w-4 mr-2" />
+                          <Forward className="icon-sm mr-2" />
                           Forward
                         </DropdownMenuItem>
                         {isOwn && (
@@ -353,7 +353,7 @@ export function EnhancedMessageThread({
                               className="text-destructive"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <Trash2 className="icon-sm mr-2" />
                               Delete
                             </DropdownMenuItem>
                           </>
@@ -371,9 +371,9 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="h-3 w-3 text-primary" />
+                        <CheckCheck className="icon-sm text-primary" />
                       ) : (
-                        <Check className="h-3 w-3" />
+                        <Check className="icon-sm" />
                       )
                     )}
                   </div>

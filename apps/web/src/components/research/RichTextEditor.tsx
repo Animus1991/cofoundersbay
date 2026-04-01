@@ -2,11 +2,11 @@
 
 import { useRef, useCallback, useEffect, useState } from 'react';
 import {
-  Bold, Italic, Underline, List, ListOrdered,
+  Bold, Italic, Underline, Strikethrough, List, ListOrdered,
   AlignLeft, AlignCenter, AlignRight, Link as LinkIcon,
-  Heading1, Heading2, Undo, Redo,
+  Undo, Redo, Quote, Code, Minus, Highlighter, RemoveFormatting,
+  CheckSquare,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -83,30 +83,25 @@ export function RichTextEditor({
     }
   }, [execCommand]);
 
-  const ToolbarButton = ({
+  const ToolBtn = ({
     onClick,
     icon: Icon,
     title,
-    active = false,
+    children,
   }: {
     onClick: () => void;
-    icon: React.ElementType;
+    icon?: React.ElementType;
     title: string;
-    active?: boolean;
+    children?: React.ReactNode;
   }) => (
-    <Button
+    <button
       type="button"
-      variant="ghost"
-      size="sm"
-      onClick={onClick}
+      onMouseDown={(e) => { e.preventDefault(); onClick(); }}
       title={title}
-      className={cn(
-        'h-8 w-8 p-0',
-        active && 'bg-accent text-accent-foreground'
-      )}
+      className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
     >
-      <Icon className="h-4 w-4" />
-    </Button>
+      {Icon ? <Icon className="w-3.5 h-3.5" /> : children}
+    </button>
   );
 
   if (readOnly) {
@@ -122,99 +117,36 @@ export function RichTextEditor({
   }
 
   return (
-    <div className={cn('border rounded-lg overflow-hidden', className)}>
+    <div className={cn('border rounded-lg overflow-hidden bg-background', className)}>
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/30">
-        <div className="flex items-center gap-0.5">
-          <ToolbarButton
-            onClick={() => execCommand('undo')}
-            icon={Undo}
-            title="Undo (Ctrl+Z)"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('redo')}
-            icon={Redo}
-            title="Redo (Ctrl+Shift+Z)"
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        <div className="flex items-center gap-0.5">
-          <ToolbarButton
-            onClick={() => execCommand('formatBlock', 'h1')}
-            icon={Heading1}
-            title="Heading 1"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('formatBlock', 'h2')}
-            icon={Heading2}
-            title="Heading 2"
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        <div className="flex items-center gap-0.5">
-          <ToolbarButton
-            onClick={() => execCommand('bold')}
-            icon={Bold}
-            title="Bold (Ctrl+B)"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('italic')}
-            icon={Italic}
-            title="Italic (Ctrl+I)"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('underline')}
-            icon={Underline}
-            title="Underline (Ctrl+U)"
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        <div className="flex items-center gap-0.5">
-          <ToolbarButton
-            onClick={() => execCommand('insertUnorderedList')}
-            icon={List}
-            title="Bullet List"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('insertOrderedList')}
-            icon={ListOrdered}
-            title="Numbered List"
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        <div className="flex items-center gap-0.5">
-          <ToolbarButton
-            onClick={() => execCommand('justifyLeft')}
-            icon={AlignLeft}
-            title="Align Left"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('justifyCenter')}
-            icon={AlignCenter}
-            title="Align Center"
-          />
-          <ToolbarButton
-            onClick={() => execCommand('justifyRight')}
-            icon={AlignRight}
-            title="Align Right"
-          />
-        </div>
-
-        <div className="w-px h-6 bg-border mx-1" />
-
-        <ToolbarButton
-          onClick={insertLink}
-          icon={LinkIcon}
-          title="Insert Link"
-        />
+      <div className="flex flex-wrap gap-0.5 px-2.5 py-2 border-b border-border bg-card sticky top-0 z-10">
+        <ToolBtn onClick={() => execCommand('undo')} icon={Undo} title="Undo (Ctrl+Z)" />
+        <ToolBtn onClick={() => execCommand('redo')} icon={Redo} title="Redo (Ctrl+Shift+Z)" />
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={() => execCommand('bold')} icon={Bold} title="Bold (Ctrl+B)" />
+        <ToolBtn onClick={() => execCommand('italic')} icon={Italic} title="Italic (Ctrl+I)" />
+        <ToolBtn onClick={() => execCommand('underline')} icon={Underline} title="Underline (Ctrl+U)" />
+        <ToolBtn onClick={() => execCommand('strikeThrough')} icon={Strikethrough} title="Strikethrough" />
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h2')} title="Heading 1"><span className="text-[11px] font-bold">H1</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h3')} title="Heading 2"><span className="text-[11px] font-bold">H2</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h4')} title="Heading 3"><span className="text-[11px] font-bold">H3</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'p')} title="Paragraph"><span className="text-[11px]">P</span></ToolBtn>
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={() => execCommand('insertUnorderedList')} icon={List} title="Bullet List" />
+        <ToolBtn onClick={() => execCommand('insertOrderedList')} icon={ListOrdered} title="Numbered List" />
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={() => execCommand('justifyLeft')} icon={AlignLeft} title="Align Left" />
+        <ToolBtn onClick={() => execCommand('justifyCenter')} icon={AlignCenter} title="Align Center" />
+        <ToolBtn onClick={() => execCommand('justifyRight')} icon={AlignRight} title="Align Right" />
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={insertLink} icon={LinkIcon} title="Insert Link" />
+        <ToolBtn onClick={() => execCommand('formatBlock', 'blockquote')} icon={Quote} title="Blockquote" />
+        <ToolBtn onClick={() => execCommand('formatBlock', 'pre')} icon={Code} title="Code Block" />
+        <ToolBtn onClick={() => execCommand('insertHorizontalRule')} icon={Minus} title="Horizontal Rule" />
+        <div className="w-px h-5 bg-border mx-1 self-center" />
+        <ToolBtn onClick={() => execCommand('hiliteColor', '#fef08a')} icon={Highlighter} title="Highlight" />
+        <ToolBtn onClick={() => execCommand('removeFormat')} icon={RemoveFormatting} title="Clear Formatting" />
       </div>
 
       {/* Editor */}
@@ -225,19 +157,24 @@ export function RichTextEditor({
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           className={cn(
-            'min-h-[200px] p-4 outline-none',
+            'flex-1 min-h-[200px] px-5 py-4 outline-none overflow-y-auto text-sm text-foreground leading-relaxed cursor-text',
             'prose prose-sm dark:prose-invert max-w-none',
-            '[&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-4',
-            '[&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-3',
-            '[&_p]:mb-2',
-            '[&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-2',
-            '[&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-2',
-            '[&_a]:text-primary [&_a]:underline',
+            '[&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-3 [&_h2]:mt-4',
+            '[&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-2 [&_h3]:mt-3',
+            '[&_h4]:text-sm [&_h4]:font-semibold [&_h4]:mb-1.5 [&_h4]:mt-2.5',
+            '[&_p]:mb-2 [&_p]:leading-relaxed',
+            '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3',
+            '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3',
+            '[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2',
+            '[&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-3',
+            '[&_pre]:bg-secondary [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-3 [&_pre]:overflow-x-auto',
+            '[&_code]:bg-secondary [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',
+            '[&_hr]:border-border [&_hr]:my-4',
           )}
           suppressContentEditableWarning
         />
         {isEmpty && (
-          <div className="absolute top-4 left-4 text-muted-foreground pointer-events-none">
+          <div className="absolute top-4 left-5 text-sm text-muted-foreground/50 pointer-events-none">
             {placeholder}
           </div>
         )}

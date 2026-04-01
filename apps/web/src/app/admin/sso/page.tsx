@@ -79,8 +79,8 @@ export default function SSOAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <Icon className={`h-5 w-5 ${color}`} />
-                <span className="text-2xl font-bold">{value}</span>
+                <Icon className={`icon-md ${color}`} />
+                <span className="text-xl font-bold">{value}</span>
               </div>
             </CardContent>
           </Card>
@@ -136,7 +136,7 @@ export default function SSOAdminPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
+              <Activity className="icon-md" />
               Recent SSO Auth Events
             </CardTitle>
             <CardDescription>Authentication activity across all tenants (last 20)</CardDescription>
@@ -181,7 +181,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
           <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
         ) : (
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Building2 className="h-5 w-5 text-primary" />
+            <Building2 className="icon-md text-primary" />
           </div>
         )}
         <div>
@@ -194,7 +194,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
         {config?.identityProvider && (
           <span className="text-xs text-muted-foreground">{config.identityProvider.providerName}</span>
         )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <ChevronRight className="icon-sm text-muted-foreground" />
       </div>
     </div>
   );
@@ -205,8 +205,8 @@ function SSOEventRow({ event }: { event: SSOAuthEvent }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
       {isSuccess
-        ? <ShieldCheck className="h-4 w-4 text-green-500 shrink-0" />
-        : <ShieldOff className="h-4 w-4 text-destructive shrink-0" />}
+        ? <ShieldCheck className="icon-sm text-green-500 shrink-0" />
+        : <ShieldOff className="icon-sm text-destructive shrink-0" />}
       <div className="flex-1 min-w-0">
         <span className="font-medium">{event.eventType}</span>
         {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
@@ -365,13 +365,13 @@ function SSOConfigPanel({
             <CardTitle>SSO — {tenantName}</CardTitle>
             <CardDescription>Configure providers and authentication policy</CardDescription>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" /></Button>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
           {saveError && (
             <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 shrink-0" />{saveError}
+              <AlertTriangle className="icon-sm shrink-0" />{saveError}
             </div>
           )}
 
@@ -511,7 +511,7 @@ function SSOConfigPanel({
                 {([['disabled', 'Disabled', ShieldOff], ['optional', 'Optional', Shield], ['required', 'Required', Lock]] as const).map(([mode, label, Icon]) => (
                   <button key={mode} type="button" onClick={() => setSsoMode(mode)}
                     className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
-                    <Icon className="h-4 w-4" />{label}
+                    <Icon className="icon-sm" />{label}
                   </button>
                 ))}
               </div>
@@ -565,7 +565,7 @@ function SSOConfigPanel({
                     </div>
                     <button type="button" onClick={() => set(!value)}
                       className={`relative w-11 h-6 rounded-full transition-colors ${value ? 'bg-primary' : 'bg-muted'}`}>
-                      <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      <div className={`absolute top-0.5 icon-md rounded-full bg-white shadow transition-transform ${value ? 'translate-x-5' : 'translate-x-0.5'}`} />
                     </button>
                   </div>
                 ))}
@@ -600,7 +600,7 @@ function SSOConfigPanel({
                 <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-10 rounded-lg bg-muted/50 animate-pulse" />)}</div>
               ) : !domainMappings?.length ? (
                 <div className="p-4 rounded-lg border border-dashed text-center text-sm text-muted-foreground">
-                  <Globe className="h-6 w-6 mx-auto mb-1" />
+                  <Globe className="icon-lg mx-auto mb-1" />
                   No email domains mapped for this tenant
                 </div>
               ) : (
@@ -643,7 +643,7 @@ function SSOConfigPanel({
                 ))}
                 <button type="button" onClick={() => setRoleMappingRules(r => [...r, {claim:'',value:'',role:'member'}])}
                   className="text-xs text-primary hover:underline flex items-center gap-1">
-                  <Plus className="h-3 w-3" />Add rule
+                  <Plus className="icon-sm" />Add rule
                 </button>
               </div>
             </div>
@@ -652,7 +652,7 @@ function SSOConfigPanel({
           <div className="flex justify-end gap-3 pt-2 border-t">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             <Button onClick={() => configMut.mutate()} disabled={configMut.isPending} className="gap-2">
-              <Check className="h-4 w-4" />
+              <Check className="icon-sm" />
               {configMut.isPending ? 'Saving…' : 'Save SSO Config'}
             </Button>
           </div>

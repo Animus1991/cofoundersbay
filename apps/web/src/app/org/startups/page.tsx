@@ -61,7 +61,7 @@ function StartupCard({ startup }: { startup: Startup }) {
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Avatar className="h-12 w-12 rounded-lg">
+          <Avatar className="h-10 w-10 rounded-lg">
             <AvatarImage src={startup.logoUrl} />
             <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
               {startup.name?.[0]?.toUpperCase() ?? '?'}
@@ -103,15 +103,15 @@ function StartupCard({ startup }: { startup: Startup }) {
 
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Rocket className="h-3.5 w-3.5" />
+                <Rocket className="icon-sm" />
                 {startup.program}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+                <Users className="icon-sm" />
                 {startup.teamSize} members
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 {startup.cohort}
               </span>
             </div>
@@ -215,7 +215,7 @@ export default function OrgStartupsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Portfolio Startups</h1>
+            <h1 className="text-xl font-bold tracking-tight">Portfolio Startups</h1>
             <p className="text-muted-foreground">
               Manage and track your portfolio companies
             </p>
@@ -232,13 +232,13 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Startups</p>
-              <p className="text-2xl font-bold">{startups.length}</p>
+              <p className="text-xl font-bold">{startups.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {startups.filter((s) => s.status === 'active').length}
               </p>
             </CardContent>
@@ -246,7 +246,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Graduated</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600">
                 {startups.filter((s) => s.status === 'graduated').length}
               </p>
             </CardContent>
@@ -254,7 +254,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Avg. Readiness</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {Math.round(startups.reduce((acc, s) => acc + s.readinessScore, 0) / startups.length)}%
               </p>
             </CardContent>
@@ -264,7 +264,7 @@ export default function OrgStartupsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search startups..."
               value={search}

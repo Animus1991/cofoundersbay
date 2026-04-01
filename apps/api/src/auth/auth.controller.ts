@@ -173,6 +173,14 @@ export class AuthController {
     return { ok: true, message: 'Password has been reset successfully. You can now log in.' };
   }
 
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
+  @Post('demo')
+  async demoLogin(@Res({ passthrough: true }) res: Response) {
+    const result = await this.authService.demoLogin();
+    setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+    return { user: result.user, tokens: result.tokens };
+  }
+
   @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Post('resend-verification')
   async resendVerification(@Body() body: { email: string }) {

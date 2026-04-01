@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Settings, Globe, Lock, Users, ChevronDown, Shield, UserMinus, Crown,
-  Copy, Check, Loader2, X, Eye, Edit3, UserPlus,
+  Copy, Check, Loader2, X, Eye, Edit3, UserPlus, Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,9 +23,12 @@ import {
   updateResearchCollaborator,
   removeResearchCollaborator,
   searchProfiles,
+  getUserOrganizations,
   type SearchHit,
   type ResearchBoard,
   type ResearchCollaborator,
+  type OrgMembershipItem,
+  type ResearchBoardVisibility,
 } from '@/lib/api';
 
 interface BoardSettingsPanelProps {
@@ -157,6 +160,99 @@ function CollaboratorRow({
   );
 }
 
+/* ─── Organization Ownership Section ─── */
+function OrgOwnershipSection({
+  board,
+  onUpdate,
+}: {
+  board: ResearchBoard;
+  onUpdate: (data: { visibility?: ResearchBoardVisibility }) => void;
+}) {
+  const { data: orgData, isLoading } = useQuery({
+    queryKey: ['user-org-memberships'],
+    queryFn: () => getUserOrganizations(),
+  });
+
+  const memberships = orgData?.memberships ?? [];
+  const currentOrgId = (board as ResearchBoard & { orgId?: string | null }).orgId;
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-semibold flex items-center gap-1.5">
+        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+        Organization Ownership
+      </label>
+      <p className="text-xs text-muted-foreground">
+        Assign this board to an organization to share it with all members.
+      </p>
+
+      {isLoading ? (
+        <div className="flex items-center gap-2 py-3">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">Loading organizations…</span>
+        </div>
+      ) : memberships.length === 0 ? (
+        <div className="rounded-lg border border-border p-3 text-center">
+          <Building2 className="h-5 w-5 mx-auto mb-1.5 text-muted-foreground/40" />
+          <p className="text-xs text-muted-foreground">You don&apos;t belong to any organizations yet.</p>
+        </div>
+      ) : (
+        <div className="grid gap-1.5">
+          {/* Personal (no org) option */}
+          <button
+            onClick={() => !currentOrgId ? undefined : onUpdate({ visibility: 'private' })}
+            className={cn(
+              'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
+              !currentOrgId
+                ? 'border-primary bg-primary/5 text-primary'
+                : 'border-border hover:border-primary/40',
+            )}
+          >
+            <Lock className="h-4 w-4 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">Personal</p>
+              <p className="text-xs text-muted-foreground">Owned by you only</p>
+            </div>
+            {!currentOrgId && <Check className="h-4 w-4 text-primary shrink-0" />}
+          </button>
+
+          {/* Org options */}
+          {memberships.map((m) => {
+            const isActive = currentOrgId === m.organizationId;
+            return (
+              <button
+                key={m.organizationId}
+                onClick={() => {
+                  if (!isActive) onUpdate({ visibility: 'organization' });
+                }}
+                className={cn(
+                  'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
+                  isActive
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border hover:border-primary/40',
+                )}
+              >
+                {m.organization.avatarUrl ? (
+                  <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" />
+                ) : (
+                  <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
+                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{m.organization.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
+                </div>
+                {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BoardSettingsPanel({ board, open, onClose, currentUserId }: BoardSettingsPanelProps) {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
@@ -275,6 +371,11 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                   })}
                 </div>
               </div>
+
+              {/* Organization Ownership */}
+              {isOwner && (
+                <OrgOwnershipSection board={board} onUpdate={(data) => updateMutation.mutate(data as Parameters<typeof updateResearchBoard>[1])} />
+              )}
 
               {/* Share Link */}
               <div className="space-y-2">

@@ -52,10 +52,10 @@ type Report = {
 
 function ReportCard({ report }: { report: Report }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="h-3 w-3" /> },
-    reviewing: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="h-3 w-3" /> },
-    resolved: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="h-3 w-3" /> },
-    dismissed: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <XCircle className="h-3 w-3" /> },
+    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" /> },
+    reviewing: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" /> },
+    resolved: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
+    dismissed: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <XCircle className="icon-sm" /> },
   };
 
   const priorityColors: Record<string, string> = {
@@ -65,10 +65,10 @@ function ReportCard({ report }: { report: Report }) {
   };
 
   const typeIcons: Record<string, React.ReactNode> = {
-    user: <User className="h-4 w-4" />,
-    message: <MessageSquare className="h-4 w-4" />,
-    content: <FileText className="h-4 w-4" />,
-    spam: <AlertTriangle className="h-4 w-4" />,
+    user: <User className="icon-sm" />,
+    message: <MessageSquare className="icon-sm" />,
+    content: <FileText className="icon-sm" />,
+    spam: <AlertTriangle className="icon-sm" />,
   };
 
   const config = statusConfig[report.status];
@@ -106,7 +106,7 @@ function ReportCard({ report }: { report: Report }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -122,7 +122,7 @@ function ReportCard({ report }: { report: Report }) {
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Avatar className="h-4 w-4">
+                <Avatar className="icon-sm">
                   <AvatarImage src={report.reporterAvatar} />
                   <AvatarFallback className="text-[8px]">{report.reporterName[0]}</AvatarFallback>
                 </Avatar>
@@ -216,7 +216,7 @@ export default function AdminReportsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Reports & Moderation</h1>
+            <h1 className="text-xl font-bold tracking-tight">Reports & Moderation</h1>
             <p className="text-muted-foreground">
               Review and manage user reports
             </p>
@@ -228,25 +228,25 @@ export default function AdminReportsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Reports</p>
-              <p className="text-2xl font-bold">{reports.length}</p>
+              <p className="text-xl font-bold">{reports.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-amber-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-amber-600">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-2xl font-bold text-blue-600">{statusCounts.reviewing}</p>
+              <p className="text-xl font-bold text-blue-600">{statusCounts.reviewing}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Resolved</p>
-              <p className="text-2xl font-bold text-green-600">{statusCounts.resolved}</p>
+              <p className="text-xl font-bold text-green-600">{statusCounts.resolved}</p>
             </CardContent>
           </Card>
         </div>
@@ -264,7 +264,7 @@ export default function AdminReportsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search reports..."
               value={search}

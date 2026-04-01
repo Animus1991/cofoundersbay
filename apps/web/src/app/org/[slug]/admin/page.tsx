@@ -171,7 +171,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
             )}
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <Icon className="h-6 w-6 text-primary" />
+            <Icon className="icon-lg text-primary" />
           </div>
         </div>
       </CardContent>
@@ -220,7 +220,7 @@ export default function OrgAdminPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex items-center gap-4 flex-1">
             <Avatar className="h-12 w-12">
@@ -236,7 +236,7 @@ export default function OrgAdminPage() {
           </div>
           <Button variant="outline" asChild>
             <Link href={`/org/${slug}/settings`}>
-              <Settings className="h-4 w-4 mr-2" />
+              <Settings className="icon-sm mr-2" />
               Settings
             </Link>
           </Button>
@@ -276,19 +276,19 @@ export default function OrgAdminPage() {
         <Tabs defaultValue="members" className="space-y-4">
           <TabsList>
             <TabsTrigger value="members" className="gap-2">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" />
               Members
             </TabsTrigger>
             <TabsTrigger value="invites" className="gap-2">
-              <Mail className="h-4 w-4" />
+              <Mail className="icon-sm" />
               Invites
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
+              <BarChart3 className="icon-sm" />
               Analytics
             </TabsTrigger>
             <TabsTrigger value="permissions" className="gap-2">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" />
               Permissions
             </TabsTrigger>
           </TabsList>
@@ -297,7 +297,7 @@ export default function OrgAdminPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search members..."
                   value={searchQuery}
@@ -328,11 +328,11 @@ export default function OrgAdminPage() {
                 </SelectContent>
               </Select>
               <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
+                <UserPlus className="icon-sm mr-2" />
                 Invite Member
               </Button>
               <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="icon-sm mr-2" />
                 Export
               </Button>
             </div>
@@ -369,7 +369,7 @@ export default function OrgAdminPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[member.role])}>
-                          {member.role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                          {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
                           {member.role}
                         </Badge>
                       </TableCell>
@@ -389,28 +389,28 @@ export default function OrgAdminPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'admin')}>
-                              <Shield className="h-4 w-4 mr-2" />
+                              <Shield className="icon-sm mr-2" />
                               Make Admin
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'member')}>
-                              <Users className="h-4 w-4 mr-2" />
+                              <Users className="icon-sm mr-2" />
                               Make Member
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {member.status === 'active' ? (
                               <DropdownMenuItem onClick={() => handleSuspendMember(member.id)}>
-                                <XCircle className="h-4 w-4 mr-2" />
+                                <XCircle className="icon-sm mr-2" />
                                 Suspend
                               </DropdownMenuItem>
                             ) : member.status === 'suspended' ? (
                               <DropdownMenuItem>
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                <CheckCircle2 className="icon-sm mr-2" />
                                 Reactivate
                               </DropdownMenuItem>
                             ) : null}
@@ -418,7 +418,7 @@ export default function OrgAdminPage() {
                               onClick={() => handleRemoveMember(member.id)}
                               className="text-destructive"
                             >
-                              <UserMinus className="h-4 w-4 mr-2" />
+                              <UserMinus className="icon-sm mr-2" />
                               Remove
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -442,7 +442,7 @@ export default function OrgAdminPage() {
                   <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No pending invitations</p>
                   <Button className="mt-4">
-                    <UserPlus className="h-4 w-4 mr-2" />
+                    <UserPlus className="icon-sm mr-2" />
                     Invite Members
                   </Button>
                 </div>
@@ -501,9 +501,9 @@ export default function OrgAdminPage() {
                       ].map((perm, i) => (
                         <div key={perm} className="flex items-center gap-2">
                           {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                            <CheckCircle2 className="icon-sm text-emerald-500" />
                           ) : (
-                            <XCircle className="h-4 w-4 text-muted-foreground" />
+                            <XCircle className="icon-sm text-muted-foreground" />
                           )}
                           <span className="text-muted-foreground">{perm}</span>
                         </div>

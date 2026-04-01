@@ -191,7 +191,7 @@ export default function UserBillingPage() {
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                     <PlanIcon className="h-6 w-6 text-primary" />
                   </div>
                   <div className="flex-1">
@@ -213,7 +213,7 @@ export default function UserBillingPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold">
                       {formatCents(sub.billingCycle === 'annual' ? sub.plan?.priceAnnual : sub.plan?.priceMonthly ?? 0, sub.plan?.currency)}
                     </p>
                     <p className="text-xs text-muted-foreground">/{sub.billingCycle === 'annual' ? 'year' : 'month'}</p>

@@ -151,7 +151,7 @@ export default function MentorAvailabilityPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Calendar className="h-6 w-6 text-primary" />
               Availability Settings
             </h1>
@@ -184,7 +184,7 @@ export default function MentorAvailabilityPage() {
                 <Clock className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">Weekly Hours</span>
               </div>
-              <p className="text-2xl font-bold">{weeklyHours.toFixed(1)}h</p>
+              <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
               <p className="text-xs text-muted-foreground">across {slots.length} time blocks</p>
             </CardContent>
           </Card>

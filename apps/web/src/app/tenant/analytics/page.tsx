@@ -63,7 +63,7 @@ export default function TenantAnalyticsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+            <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
             <p className="text-muted-foreground">
               Track your organization's performance
             </p>
@@ -91,7 +91,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>
-                  <p className="text-2xl font-bold">{metrics.totalMembers}</p>
+                  <p className="text-xl font-bold">{metrics.totalMembers}</p>
                 </div>
               </div>
             </CardContent>
@@ -104,7 +104,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
-                  <p className="text-2xl font-bold">{metrics.activeStartups}</p>
+                  <p className="text-xl font-bold">{metrics.activeStartups}</p>
                 </div>
               </div>
             </CardContent>
@@ -117,7 +117,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
-                  <p className="text-2xl font-bold">{metrics.programsRun}</p>
+                  <p className="text-xl font-bold">{metrics.programsRun}</p>
                 </div>
               </div>
             </CardContent>
@@ -130,7 +130,7 @@ export default function TenantAnalyticsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>
-                  <p className="text-2xl font-bold">{metrics.mentorSessions}</p>
+                  <p className="text-xl font-bold">{metrics.mentorSessions}</p>
                 </div>
               </div>
             </CardContent>
@@ -193,7 +193,7 @@ export default function TenantAnalyticsPage() {
                   <div key={metric.name} className="p-3 rounded-lg bg-muted/50">
                     <p className="text-sm text-muted-foreground">{metric.name}</p>
                     <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-2xl font-bold">{metric.value}</span>
+                      <span className="text-xl font-bold">{metric.value}</span>
                       <span className="text-xs text-green-600">{metric.change}</span>
                     </div>
                   </div>

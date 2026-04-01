@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getMyBadges, type GamificationBadgeSummary } from '@/lib/api';
 import { 
   Award, 
   Star, 
@@ -20,6 +22,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
@@ -57,7 +60,42 @@ const tierBgColors = {
   platinum: 'bg-cyan-100 dark:bg-cyan-950',
 };
 
-// Demo badges data
+function rarityToTier(rarity: string): BadgeItem['tier'] {
+  if (rarity === 'legendary') return 'platinum';
+  if (rarity === 'epic') return 'gold';
+  if (rarity === 'rare') return 'silver';
+  return 'bronze';
+}
+
+function categoryToDisplay(cat: string): BadgeItem['category'] {
+  if (cat === 'progress' || cat === 'execution') return 'achievement';
+  if (cat === 'consistency' || cat === 'learning') return 'engagement';
+  if (cat === 'collaboration') return 'social';
+  if (cat === 'quality') return 'professional';
+  return 'achievement';
+}
+
+function iconNameToComponent(iconName: string | null): React.ElementType {
+  const map: Record<string, React.ElementType> = {
+    Trophy, Award, Star, Flame, Shield, Sparkles, Crown, Zap, Target, TrendingUp,
+    Users, Briefcase, MessageCircle, Heart,
+  };
+  return (iconName != null ? map[iconName] : undefined) ?? Trophy;
+}
+
+function apiBadgeToBadgeItem(b: GamificationBadgeSummary): BadgeItem {
+  return {
+    id: b.id,
+    name: b.name,
+    description: b.description,
+    icon: iconNameToComponent(b.iconName),
+    category: categoryToDisplay(b.category),
+    tier: rarityToTier(b.rarity),
+    earned: true,
+    earnedAt: b.awardedAt,
+  };
+}
+
 const demoUserBadges: BadgeItem[] = [
   {
     id: '1',
@@ -147,15 +185,42 @@ const demoUserBadges: BadgeItem[] = [
   },
 ];
 
-export function UserBadges() {
+interface UserBadgesProps {
+  /** If true, fetches from API; otherwise uses demo data */
+  live?: boolean;
+}
+
+export function UserBadges({ live = true }: UserBadgesProps = {}) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const filteredBadges = selectedCategory === 'all' 
-    ? demoUserBadges 
-    : demoUserBadges.filter(b => b.category === selectedCategory);
+  const { data: apiBadges, isLoading } = useQuery({
+    queryKey: ['my-badges'],
+    queryFn: getMyBadges,
+    staleTime: 5 * 60_000,
+    enabled: live,
+  });
 
-  const earnedCount = demoUserBadges.filter(b => b.earned).length;
-  const totalCount = demoUserBadges.length;
+  const resolvedBadges: BadgeItem[] = live
+    ? (apiBadges?.map(apiBadgeToBadgeItem) ?? [])
+    : demoUserBadges;
+
+  const filteredBadges = selectedCategory === 'all'
+    ? resolvedBadges
+    : resolvedBadges.filter(b => b.category === selectedCategory);
+
+  if (live && isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-24 w-full" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 w-full" />)}
+        </div>
+      </div>
+    );
+  }
+
+  const earnedCount = resolvedBadges.filter(b => b.earned).length;
+  const totalCount = resolvedBadges.length;
   const completionPercentage = (earnedCount / totalCount) * 100;
 
   return (
@@ -174,7 +239,7 @@ export function UserBadges() {
               </CardDescription>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold">{earnedCount}/{totalCount}</div>
+              <div className="text-xl font-bold">{earnedCount}/{totalCount}</div>
               <div className="text-sm text-muted-foreground">Badges Earned</div>
             </div>
           </div>

@@ -57,8 +57,6 @@ const nextConfig: NextConfig = {
       'date-fns',
       'socket.io-client',
       '@tanstack/react-query',
-      '@tanstack/react-query-persist-client',
-      '@tanstack/query-sync-storage-persister',
     ],
     scrollRestoration: true,
     // Next.js 15 router cache: cache dynamic segments for 30s to speed up back/forward navigation
@@ -69,9 +67,23 @@ const nextConfig: NextConfig = {
   },
 
   // Webpack: improve chunk splitting for production
-  webpack: (config, { dev, isServer }) => {
-    if (dev && process.platform === 'win32') {
-      config.cache = false;
+  webpack: (config, { dev, isServer, nextRuntime }) => {
+    if (dev) {
+      // Use persistent filesystem cache on all platforms (including Windows).
+      // Filesystem cache is incremental and safe; Next.js manages cache invalidation.
+      // Each compiler (client / nodejs-server / edge-server) needs a UNIQUE cache name.
+      const cacheName = !isServer
+        ? 'cfb-client'
+        : nextRuntime === 'edge'
+          ? 'cfb-edge'
+          : 'cfb-server';
+
+      config.cache = {
+        type: 'filesystem',
+        name: cacheName,
+        // Bump version to bust stale cache entries (increment when deps change broadly)
+        version: '3',
+      };
     }
 
     if (!dev && !isServer) {

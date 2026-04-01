@@ -52,10 +52,10 @@ type User = {
 
 function UserRow({ user }: { user: User }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="h-3 w-3" /> },
-    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="h-3 w-3" /> },
+    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
+    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" /> },
     pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: null },
-    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="h-3 w-3" /> },
+    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="icon-sm" /> },
   };
 
   const config = statusConfig[user.status];
@@ -72,7 +72,7 @@ function UserRow({ user }: { user: User }) {
           <Link href={`/p/${user.id}`} className="font-medium hover:text-primary transition-colors">
             {user.name}
           </Link>
-          {user.verified && <CheckCircle2 className="h-4 w-4 text-primary" />}
+          {user.verified && <CheckCircle2 className="icon-sm text-primary" />}
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
@@ -92,7 +92,7 @@ function UserRow({ user }: { user: User }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -100,28 +100,28 @@ function UserRow({ user }: { user: User }) {
             <Link href={`/p/${user.id}`}>View Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Mail className="mr-2 h-4 w-4" />
+            <Mail className="mr-2 icon-sm" />
             Send Email
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Shield className="mr-2 h-4 w-4" />
+            <Shield className="mr-2 icon-sm" />
             Change Role
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.status === 'active' && (
             <DropdownMenuItem className="text-amber-600">
-              <AlertTriangle className="mr-2 h-4 w-4" />
+              <AlertTriangle className="mr-2 icon-sm" />
               Suspend User
             </DropdownMenuItem>
           )}
           {user.status === 'suspended' && (
             <DropdownMenuItem className="text-green-600">
-              <CheckCircle2 className="mr-2 h-4 w-4" />
+              <CheckCircle2 className="mr-2 icon-sm" />
               Reactivate User
             </DropdownMenuItem>
           )}
           <DropdownMenuItem className="text-destructive">
-            <UserX className="mr-2 h-4 w-4" />
+            <UserX className="mr-2 icon-sm" />
             Ban User
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -213,7 +213,7 @@ export default function AdminUsersPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
+            <h1 className="text-xl font-bold tracking-tight">User Management</h1>
             <p className="text-muted-foreground">
               Manage platform users and permissions
             </p>
@@ -226,25 +226,25 @@ export default function AdminUsersPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Users</p>
-              <p className="text-2xl font-bold">{users.length}</p>
+              <p className="text-xl font-bold">{users.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">{statusCounts.active}</p>
+              <p className="text-xl font-bold text-green-600">{statusCounts.active}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-2xl font-bold text-gray-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-gray-600">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Suspended</p>
-              <p className="text-2xl font-bold text-amber-600">{statusCounts.suspended}</p>
+              <p className="text-xl font-bold text-amber-600">{statusCounts.suspended}</p>
             </CardContent>
           </Card>
         </div>
@@ -252,7 +252,7 @@ export default function AdminUsersPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search users..."
               value={search}

@@ -36,6 +36,7 @@ import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -69,7 +70,7 @@ function ConnectionCard({
     <Card className="card-interactive">
       <CardContent className="flex items-center gap-4 p-4">
         <Link href={`/profiles/${other.id}`}>
-          <Avatar className="h-12 w-12 shrink-0 ring-2 ring-primary/20">
+          <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
             <AvatarFallback className="bg-primary/20 text-primary font-semibold">
               {other.displayName[0]?.toUpperCase()}
@@ -96,10 +97,19 @@ function ConnectionCard({
 
         <div className="flex shrink-0 items-center gap-2">
           {isAccepted ? (
-            <Button variant="secondary" size="sm" className="gap-2" onClick={onMessage}>
-              <MessageCircle className="h-4 w-4" />
-              Message
-            </Button>
+            <>
+              <AIInsightButton
+                prompt={`Analyze collaboration potential with ${other.displayName}, a ${other.role}${other.headline ? ` — ${other.headline}` : ''}. What working dynamic would we likely have?`}
+                agentId="matching"
+                cacheKey={`conn-match-${connection.id}`}
+                variant="icon"
+                label="AI collaboration insight"
+              />
+              <Button variant="secondary" size="sm" className="gap-2" onClick={onMessage}>
+                <MessageCircle className="icon-sm" />
+                Message
+              </Button>
+            </>
           ) : isReceiver && connection.status === 'pending' ? (
             <>
               <Button
@@ -108,7 +118,7 @@ function ConnectionCard({
                 onClick={onAccept}
                 disabled={isPending}
               >
-                <Check className="h-4 w-4" />
+                <Check className="icon-sm" />
                 Accept
               </Button>
               <Button
@@ -118,12 +128,12 @@ function ConnectionCard({
                 onClick={onDecline}
                 disabled={isPending}
               >
-                <X className="h-4 w-4" />
+                <X className="icon-sm" />
               </Button>
             </>
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
-              <Clock className="mr-1 h-3 w-3" />
+              <Clock className="mr-1 icon-sm" />
               Pending
             </Badge>
           )}
@@ -150,7 +160,7 @@ function IntroRequestCard({
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${sender.id}`}>
-            <Avatar className="h-12 w-12 shrink-0 ring-2 ring-primary/30">
+            <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
               <AvatarFallback className="bg-primary/20 text-primary font-semibold">
                 {sender.displayName[0]?.toUpperCase()}
@@ -164,8 +174,8 @@ function IntroRequestCard({
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
-              <Badge variant="outline" className="ml-auto border-primary/40 text-primary text-xs gap-1">
-                <Handshake className="h-3 w-3" />
+              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary gap-1">
+                <Handshake className="icon-sm" />
                 Intro request
               </Badge>
             </div>
@@ -300,7 +310,7 @@ export default function ConnectionsPage() {
       actions={
         <Link href="/discover">
           <Button className="gap-2">
-            <UserPlus className="h-4 w-4" />
+            <UserPlus className="icon-sm" />
             Find people
           </Button>
         </Link>
@@ -321,11 +331,11 @@ export default function ConnectionsPage() {
               <Card key={s.label} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-2.5 p-3">
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                    <SIcon className="h-4 w-4" />
+                    <SIcon className="icon-sm" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -337,24 +347,24 @@ export default function ConnectionsPage() {
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">
-            <Handshake className="h-4 w-4" />
+            <Handshake className="icon-sm" />
             Intro Requests
             {introCount > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
+              <Badge variant="destructive" size="sm" className="ml-1 px-1.5">
                 {introCount}
               </Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="received" className="gap-2">
-            <UserCheck className="h-4 w-4" />
+            <UserCheck className="icon-sm" />
             Received
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
-            <Send className="h-4 w-4" />
+            <Send className="icon-sm" />
             Sent
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="icon-sm" />
             Connected
           </TabsTrigger>
         </TabsList>
@@ -376,7 +386,7 @@ export default function ConnectionsPage() {
               action={
                 <Link href="/discover">
                   <Button variant="secondary" className="gap-2">
-                    <Compass className="h-4 w-4" />
+                    <Compass className="icon-sm" />
                     Discover people
                   </Button>
                 </Link>
@@ -426,7 +436,7 @@ export default function ConnectionsPage() {
                   t !== 'received' ? (
                     <Link href="/discover">
                       <Button variant="secondary" className="gap-2">
-                        <Compass className="h-4 w-4" />
+                        <Compass className="icon-sm" />
                         Discover people
                       </Button>
                     </Link>

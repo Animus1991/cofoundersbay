@@ -60,7 +60,7 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums">{value}</p>
+            <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
               <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
@@ -69,7 +69,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="icon-md text-primary" />
           </div>
         </div>
       </CardContent>
@@ -83,12 +83,12 @@ function ServiceCard({ service }: { service: any }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <div className="rounded-lg bg-primary/10 p-2">
-        <Package className="h-5 w-5 text-primary" />
+        <Package className="icon-md text-primary" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{service.name}</p>
-          <Badge variant={service.isActive ? 'default' : 'secondary'} className="text-[10px] h-5">
+          <Badge variant={service.isActive ? 'default' : 'secondary'} size="sm">
             {service.isActive ? 'Active' : 'Draft'}
           </Badge>
         </div>
@@ -98,8 +98,8 @@ function ServiceCard({ service }: { service: any }) {
           <span className="text-xs font-medium text-primary">{service.price}</span>
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8">
-        <Settings className="h-4 w-4" />
+      <Button variant="ghost" size="icon">
+        <Settings className="icon-sm" />
       </Button>
     </div>
   );
@@ -126,7 +126,7 @@ function ProjectCard({ project }: { project: any }) {
         <p className="text-xs text-muted-foreground">{project.clientName}</p>
       </div>
       <div className="flex items-center gap-2">
-        <Badge className={cn('text-xs', statusColors[project.status] || '')}>
+        <Badge size="sm" className={cn(statusColors[project.status] || '')}>
           {project.status}
         </Badge>
         <span className="text-sm font-medium">{project.value}</span>
@@ -149,10 +149,10 @@ function InquiryCard({ inquiry }: { inquiry: any }) {
         <p className="text-xs text-muted-foreground">Interested in: {inquiry.service}</p>
         <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{inquiry.message}</p>
         <div className="flex gap-2 mt-2">
-          <Button size="sm" variant="default" className="h-7 text-xs">
+          <Button size="sm" variant="default">
             Respond
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-xs">
+          <Button size="sm" variant="outline">
             View Profile
           </Button>
         </div>
@@ -178,7 +178,7 @@ function ReviewCard({ review }: { review: any }) {
               <Star
                 key={i}
                 className={cn(
-                  'h-3 w-3',
+                  'icon-sm',
                   i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
                 )}
               />
@@ -263,7 +263,7 @@ export default function ProviderDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">
@@ -271,7 +271,7 @@ export default function ProviderDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <Wrench className="h-3.5 w-3.5" />
+            <Wrench className="icon-sm" />
             Service Provider
           </Badge>
         </div>
@@ -313,12 +313,12 @@ export default function ProviderDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-amber-500" />
+                      <Zap className="icon-sm text-amber-500" />
                       New Inquiries ({pendingInquiries.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/provider/inquiries">
-                        View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -336,12 +336,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-primary" />
+                    <Briefcase className="icon-sm text-primary" />
                     Active Projects
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/projects">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -363,12 +363,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Package className="h-4 w-4 text-primary" />
+                    <Package className="icon-sm text-primary" />
                     Your Services
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/services">
-                      Manage <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      Manage <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -391,31 +391,31 @@ export default function ProviderDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/services">
-                    <Package className="mr-2 h-4 w-4" />
+                    <Package className="mr-2 icon-sm" />
                     Manage Services
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/inquiries">
-                    <MessageCircle className="mr-2 h-4 w-4" />
+                    <MessageCircle className="mr-2 icon-sm" />
                     View Inquiries
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/reviews">
-                    <Star className="mr-2 h-4 w-4" />
+                    <Star className="mr-2 icon-sm" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/analytics">
-                    <TrendingUp className="mr-2 h-4 w-4" />
+                    <TrendingUp className="mr-2 icon-sm" />
                     Earnings & Analytics
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/profile/edit">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="mr-2 icon-sm" />
                     Edit Provider Profile
                   </Link>
                 </Button>
@@ -427,7 +427,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="h-4 w-4" />
+                    <Star className="icon-sm" />
                     Recent Reviews
                   </CardTitle>
                 </div>
@@ -466,7 +466,7 @@ export default function ProviderDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 text-sm text-green-600">
-                    <CheckCircle className="h-4 w-4" />
+                    <CheckCircle className="icon-sm" />
                     <span>Top Rated Provider</span>
                   </div>
                 </div>

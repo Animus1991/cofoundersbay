@@ -14,6 +14,9 @@ import {
   Ban,
   BarChart3,
   Search,
+  FlaskConical,
+  Zap,
+  Brain,
   MoreHorizontal,
   Clock,
   RefreshCw,
@@ -73,6 +76,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatCard } from '@/components/common/StatCard';
+import { AdminAnalyticsDashboard } from '@/components/admin/AdminAnalyticsDashboard';
+import { ScoreInspector } from '@/components/admin/ScoreInspector';
+import { AbuseMonitorPanel } from '@/components/admin/AbuseMonitorPanel';
+import { ExperimentationPanel } from '@/components/admin/ExperimentationPanel';
+import { BehaviorAdminPanel } from '@/components/behavioral/BehaviorAdminPanel';
 import { useToast } from '@/components/ui/toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -147,7 +155,7 @@ function EmailTemplatesTab() {
             {listLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 border-b border-border/40 px-4 py-3">
-                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="icon-sm rounded" />
                   <Skeleton className="h-4 flex-1" />
                 </div>
               ))
@@ -164,7 +172,7 @@ function EmailTemplatesTab() {
                     <p className="text-sm font-medium text-foreground truncate">{tpl.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{tpl.description}</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground" />
                 </button>
               ))
             )}
@@ -193,7 +201,7 @@ function EmailTemplatesTab() {
                     onClick={handleTestSend}
                     disabled={!testEmail || sending}
                   >
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="icon-sm" />
                     {sending ? 'Sending…' : 'Test Send'}
                   </Button>
                 </div>
@@ -208,7 +216,7 @@ function EmailTemplatesTab() {
           <CardContent>
             {!selectedId && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Mail className="h-12 w-12 text-muted-foreground mb-3" />
+                <Mail className="icon-lg text-muted-foreground mb-3" />
                 <p className="text-sm text-muted-foreground">Select a template to preview it</p>
               </div>
             )}
@@ -259,7 +267,7 @@ function ReportCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${report.reported.id}`}>
-              <Avatar className="h-10 w-10">
+              <Avatar className="icon-md">
                 <AvatarFallback className="bg-destructive/20 text-destructive">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
@@ -282,34 +290,34 @@ function ReportCard({
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className={cn('flex items-center gap-1 text-xs', statusConf.color)}>
-              <StatusIcon className="h-3 w-3" />
+              <StatusIcon className="icon-sm" />
               {statusConf.label}
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${report.reported.id}`}>
-                    <Eye className="h-4 w-4 mr-2" />
+                    <Eye className="icon-sm mr-2" />
                     View profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
-                  <CheckCircle className="h-4 w-4 mr-2" />
+                  <CheckCircle className="icon-sm mr-2" />
                   Resolve
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDismiss}>
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="icon-sm mr-2" />
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onBanUser} className="text-destructive">
-                  <Ban className="h-4 w-4 mr-2" />
+                  <Ban className="icon-sm mr-2" />
                   Ban user
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -354,7 +362,7 @@ function UserRow({
   return (
     <div className="flex items-center gap-4 border-b border-border/40 p-4 transition-colors hover:bg-secondary/30">
       <Link href={`/profiles/${user.id}`}>
-        <Avatar className="h-10 w-10 shrink-0">
+        <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
           <AvatarFallback className="bg-primary/20 text-primary">
             {displayName[0]?.toUpperCase()}
@@ -395,38 +403,38 @@ function UserRow({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" disabled={isActing}>
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
             <Link href={`/profiles/${user.id}`}>
-              <Eye className="mr-2 h-4 w-4" />
+              <Eye className="mr-2 icon-sm" />
               View profile
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
             <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="mr-2 h-4 w-4" />
+              <AlertTriangle className="mr-2 icon-sm" />
               Suspend
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
             <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="mr-2 icon-sm" />
               Reactivate
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
             <DropdownMenuItem onClick={onBan} className="text-destructive">
-              <Ban className="mr-2 h-4 w-4" />
+              <Ban className="mr-2 icon-sm" />
               Ban permanently
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
             <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="mr-2 icon-sm" />
               Unban
             </DropdownMenuItem>
           )}
@@ -604,7 +612,7 @@ export default function AdminPage() {
           className="gap-2"
           onClick={() => { void refetchReports(); void refetchUsers(); }}
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="icon-sm" />
           Refresh
         </Button>
       }
@@ -614,34 +622,34 @@ export default function AdminPage() {
         <StatCard
           label="Total Users"
           value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="icon-md" />}
           trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
         />
         <StatCard
           label="Active Today"
           value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Pending Reports"
           value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-          icon={<Flag className="h-5 w-5" />}
+          icon={<Flag className="icon-md" />}
           trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
         />
         <StatCard
           label="Connections"
           value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Messages"
           value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Events"
           value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
-          icon={<Users className="h-5 w-5" />}
+          icon={<Users className="icon-md" />}
         />
       </div>
 
@@ -649,7 +657,7 @@ export default function AdminPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="reports" className="gap-2">
-            <Flag className="h-4 w-4" />
+            <Flag className="icon-sm" />
             Reports
             {pendingReports > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
@@ -658,28 +666,48 @@ export default function AdminPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="users" className="gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="icon-sm" />
             Users
           </TabsTrigger>
           <TabsTrigger value="content" className="gap-2">
-            <Layers className="h-4 w-4" />
+            <Layers className="icon-sm" />
             Content
           </TabsTrigger>
           <TabsTrigger value="cohorts" className="gap-2">
-            <GraduationCap className="h-4 w-4" />
+            <GraduationCap className="icon-sm" />
             Cohorts
           </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="icon-sm" />
             Analytics
           </TabsTrigger>
           <TabsTrigger value="audit" className="gap-2">
-            <Shield className="h-4 w-4" />
+            <Shield className="icon-sm" />
             Audit Log
           </TabsTrigger>
           <TabsTrigger value="email" className="gap-2">
-            <Mail className="h-4 w-4" />
+            <Mail className="icon-sm" />
             Email Templates
+          </TabsTrigger>
+          <TabsTrigger value="gamification" className="gap-2">
+            <Zap className="icon-sm" />
+            Gamification
+          </TabsTrigger>
+          <TabsTrigger value="score-inspector" className="gap-2">
+            <BarChart3 className="icon-sm" />
+            Score Inspector
+          </TabsTrigger>
+          <TabsTrigger value="abuse" className="gap-2">
+            <AlertTriangle className="icon-sm" />
+            Abuse Monitor
+          </TabsTrigger>
+          <TabsTrigger value="experiments" className="gap-2">
+            <FlaskConical className="icon-sm" />
+            Experiments
+          </TabsTrigger>
+          <TabsTrigger value="behavior" className="gap-2">
+            <Brain className="icon-sm" />
+            Behavior AI
           </TabsTrigger>
         </TabsList>
 
@@ -1150,6 +1178,31 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Gamification Analytics Tab */}
+        <TabsContent value="gamification" className="mt-6">
+          <AdminAnalyticsDashboard />
+        </TabsContent>
+
+        {/* Score Inspector Tab */}
+        <TabsContent value="score-inspector" className="mt-6">
+          <ScoreInspector />
+        </TabsContent>
+
+        {/* Abuse Monitor Tab */}
+        <TabsContent value="abuse" className="mt-6">
+          <AbuseMonitorPanel />
+        </TabsContent>
+
+        {/* Experimentation & Config Tab */}
+        <TabsContent value="experiments" className="mt-6">
+          <ExperimentationPanel />
+        </TabsContent>
+
+        {/* Behavioral AI Optimizer Tab */}
+        <TabsContent value="behavior" className="mt-6">
+          <BehaviorAdminPanel />
         </TabsContent>
       </Tabs>
     </AppShell>

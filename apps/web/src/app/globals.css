@@ -27,7 +27,7 @@
 
     /* Muted: for subtitles, disabled states */
     --muted:            220 12% 92%;
-    --muted-foreground: 220 8% 48%;
+    --muted-foreground: 220 10% 42%; /* Improved contrast for WCAG AA */
 
     /* Accent: vibrant for highlights, badges */
     --accent:           236 72% 55%;
@@ -62,6 +62,19 @@
     --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border) / 0.7);
     --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.06), 0 1px 4px hsl(0 0% 0% / 0.04);
     --shadow-modal:     0 16px 40px hsl(0 0% 0% / 0.10), 0 4px 12px hsl(0 0% 0% / 0.06);
+
+    /* ── Standardized spacing scale ── */
+    --spacing-card-compact: 1rem;      /* 16px - p-4 */
+    --spacing-card-comfortable: 1.5rem; /* 24px - p-6 */
+    --spacing-section: 2rem;            /* 32px - space-y-8 */
+    --spacing-section-sm: 1.5rem;       /* 24px - space-y-6 */
+    --spacing-section-xs: 1rem;         /* 16px - space-y-4 */
+
+    /* ── Standardized icon sizes ── */
+    --icon-sm: 16px;  /* h-4 w-4 */
+    --icon-md: 20px;  /* h-5 w-5 */
+    --icon-lg: 24px;  /* h-6 w-6 */
+    --icon-xl: 32px;  /* h-8 w-8 */
   }
 
   .dark {
@@ -80,7 +93,7 @@
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
-    --muted-foreground: 215 20% 70%;
+    --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
     --accent: 292 84% 66%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 46%;
@@ -622,6 +635,29 @@
   
   .text-pretty {
     text-wrap: pretty;
+  }
+
+  /* ── Standardized icon sizes ── */
+  .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
+  .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
+  .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
+  .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
+
+  /* ── Card padding standards ── */
+  .card-compact { @apply p-4; }      /* Compact cards - lists, dense info */
+  .card-comfortable { @apply p-6; }  /* Comfortable cards - default */
+
+  /* ── Spacing rhythm ── */
+  .section-spacing { @apply space-y-8; }    /* Major sections */
+  .section-spacing-sm { @apply space-y-6; } /* Sub-sections */
+  .section-spacing-xs { @apply space-y-4; } /* Tight groupings */
+
+  /* ── Consistent hover lift ── */
+  .hover-lift-sm {
+    @apply transition-transform duration-150;
+  }
+  .hover-lift-sm:hover {
+    @apply -translate-y-0.5; /* 2px lift - subtle, professional */
   }
 }
 

@@ -57,7 +57,7 @@ function PitchDeckPageContent() {
       <div className="space-y-6">
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive" />
+            <AlertCircle className="icon-md text-destructive" />
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
@@ -68,13 +68,13 @@ function PitchDeckPageContent() {
         <div className="flex items-center gap-4">
           <Link href="/builder">
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="icon-sm" />
             </Button>
           </Link>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Presentation className="h-6 w-6 text-primary" />
+                <Presentation className="icon-lg text-primary" />
               </div>
               Pitch Deck Builder
             </h1>

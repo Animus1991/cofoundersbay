@@ -352,7 +352,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
   return (
     <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
-        <Avatar className="h-12 w-12 shrink-0">
+        <Avatar className="h-10 w-10 shrink-0">
           <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
             {expert.name.split(' ').map((n) => n[0]).join('')}
           </AvatarFallback>

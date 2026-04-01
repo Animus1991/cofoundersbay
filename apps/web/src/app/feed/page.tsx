@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
   Send, Image as ImageIcon, Link2, Smile, TrendingUp,
   Users, Sparkles, Filter, Clock, Flame, ThumbsUp,
   Award, Rocket, Target, Briefcase, GraduationCap,
-  Plus, RefreshCw, ChevronDown, X, Flag,
+  Plus, RefreshCw, ChevronDown, X, Flag, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -27,30 +27,17 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import {
+  getPersonalizedFeed,
+  getFeedPreferences,
+  updateFeedPreferences,
+  recordFeedInteraction,
+  getTrendingTopics,
+  type FeedPost,
+  type FeedPreferences,
+} from '@/lib/api';
 
 type PostType = 'update' | 'milestone' | 'question' | 'announcement' | 'achievement';
-
-type FeedPost = {
-  id: string;
-  author: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-    headline?: string;
-    role?: string;
-  };
-  type: PostType;
-  content: string;
-  images?: string[];
-  link?: { url: string; title: string; thumbnail?: string };
-  likes: number;
-  comments: number;
-  shares: number;
-  isLiked: boolean;
-  isBookmarked: boolean;
-  createdAt: string;
-  tags?: string[];
-};
 
 type FeedComment = {
   id: string;
@@ -253,17 +240,24 @@ function PostCard({
   onBookmark,
   onComment,
   onShare,
+  onView,
 }: {
   post: FeedPost;
   onLike: () => void;
   onBookmark: () => void;
   onComment: () => void;
   onShare: () => void;
+  onView?: () => void;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const config = POST_TYPE_CONFIG[post.type];
   const TypeIcon = config.icon;
+
+  // Track view when component mounts
+  useEffect(() => {
+    if (onView) onView();
+  }, [onView]);
 
   const initials = post.author.displayName
     .split(' ')
@@ -279,13 +273,13 @@ function PostCard({
       <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-2">
                 <a
                   href={`/profiles/${post.author.id}`}
@@ -297,9 +291,20 @@ function PostCard({
                   <TypeIcon className="h-3 w-3 mr-1" />
                   {config.label}
                 </Badge>
+                {post.personalizationScore && (
+                  <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                    <Sparkles className="h-3 w-3 mr-1" />
+                    {Math.round(post.personalizationScore * 100)}% match
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">{post.author.headline}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{timeAgo}</p>
+              {post.relevanceReasons && post.relevanceReasons.length > 0 && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  <span className="font-medium">Why you're seeing this:</span> {post.relevanceReasons.join(', ')}
+                </div>
+              )}
             </div>
           </div>
 
@@ -414,14 +419,16 @@ function PostCard({
   );
 }
 
-function TrendingTopics() {
-  const topics = [
-    { tag: 'fundraising', posts: 234 },
-    { tag: 'mvp', posts: 189 },
-    { tag: 'hiring', posts: 156 },
-    { tag: 'productlaunch', posts: 142 },
-    { tag: 'mentorship', posts: 98 },
+function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: number; engagement: number; growth: number }> }) {
+  const defaultTopics = [
+    { tag: 'fundraising', posts: 234, engagement: 89, growth: 12 },
+    { tag: 'mvp', posts: 189, engagement: 76, growth: 8 },
+    { tag: 'hiring', posts: 156, engagement: 65, growth: -2 },
+    { tag: 'productlaunch', posts: 142, engagement: 82, growth: 15 },
+    { tag: 'mentorship', posts: 98, engagement: 71, growth: 5 },
   ];
+
+  const topicsToShow = topics || defaultTopics;
 
   return (
     <Card className="shadow-sm border-border/50">
@@ -433,7 +440,7 @@ function TrendingTopics() {
       </CardHeader>
       <CardContent className="pt-4">
         <div className="space-y-3">
-          {topics.map((topic, i) => (
+          {topicsToShow.map((topic, i) => (
             <a
               key={topic.tag}
               href={`/feed?tag=${topic.tag}`}
@@ -444,8 +451,16 @@ function TrendingTopics() {
                 <span className="font-medium text-foreground group-hover:text-primary transition-colors">
                   #{topic.tag}
                 </span>
+                {topic.growth > 0 && (
+                  <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                    +{topic.growth}%
+                  </Badge>
+                )}
               </div>
-              <span className="text-xs text-muted-foreground">{topic.posts} posts</span>
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">{topic.posts} posts</span>
+                <div className="text-xs text-muted-foreground">{topic.engagement} engagement</div>
+              </div>
             </a>
           ))}
         </div>
@@ -498,53 +513,135 @@ function SuggestedConnections() {
 
 export default function FeedPage() {
   const { success } = useToast();
-  const [posts, setPosts] = useState<FeedPost[]>(DEMO_POSTS);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'all' | 'following' | 'trending'>('all');
+  const [showPreferences, setShowPreferences] = useState(false);
+
+  // Fetch personalized feed
+  const {
+    data: feedData,
+    isLoading: feedLoading,
+    error: feedError,
+    refetch: refetchFeed,
+  } = useQuery({
+    queryKey: ['feed', 'personalized', activeTab],
+    queryFn: () => getPersonalizedFeed({
+      limit: 20,
+      contentTypes: activeTab === 'trending' ? undefined : ['update', 'milestone', 'question', 'announcement', 'achievement'],
+      refresh: activeTab === 'trending',
+    }),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Fetch feed preferences
+  const {
+    data: preferences,
+    isLoading: prefsLoading,
+  } = useQuery({
+    queryKey: ['feed', 'preferences'],
+    queryFn: getFeedPreferences,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Fetch trending topics
+  const {
+    data: trendingData,
+  } = useQuery({
+    queryKey: ['feed', 'trending-topics'],
+    queryFn: () => getTrendingTopics(10),
+    staleTime: 15 * 60 * 1000, // 15 minutes
+  });
+
+  // Update preferences mutation
+  const updatePrefsMutation = useMutation({
+    mutationFn: updateFeedPreferences,
+    onSuccess: () => {
+      success('Feed preferences updated');
+      queryClient.invalidateQueries({ queryKey: ['feed', 'preferences'] });
+      refetchFeed(); // Refresh feed with new preferences
+    },
+  });
+
+  // Record interaction mutation
+  const recordInteractionMutation = useMutation({
+    mutationFn: recordFeedInteraction,
+  });
+
+  const posts = feedData?.posts || [];
 
   const handlePost = (content: string, type: PostType) => {
-    const newPost: FeedPost = {
-      id: `new-${Date.now()}`,
-      author: {
-        id: 'me',
-        displayName: 'You',
-        headline: 'Founder',
-        role: 'founder',
-      },
-      type,
-      content,
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      isLiked: false,
-      isBookmarked: false,
-      createdAt: new Date().toISOString(),
-    };
-    setPosts([newPost, ...posts]);
+    // In a real implementation, this would create a new post via API
     success('Post published!');
+    refetchFeed();
   };
 
-  const handleLike = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId
-          ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
-          : p
-      )
-    );
+  const handleLike = (postId: string, isCurrentlyLiked: boolean) => {
+    // Record interaction
+    recordInteractionMutation.mutate({
+      postId,
+      interaction: isCurrentlyLiked ? 'like' : 'like', // Toggle like
+    });
+
+    // Update UI optimistically
+    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+      if (!old) return old;
+      return {
+        ...old,
+        posts: old.posts.map((p: FeedPost) =>
+          p.id === postId
+            ? { 
+                ...p, 
+                isLiked: !isCurrentlyLiked, 
+                likes: isCurrentlyLiked ? p.likes - 1 : p.likes + 1 
+              }
+            : p
+        ),
+      };
+    });
   };
 
-  const handleBookmark = (postId: string) => {
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, isBookmarked: !p.isBookmarked } : p
-      )
-    );
+  const handleBookmark = (postId: string, isCurrentlyBookmarked: boolean) => {
+    // Record interaction
+    recordInteractionMutation.mutate({
+      postId,
+      interaction: isCurrentlyBookmarked ? 'bookmark' : 'bookmark',
+    });
+
+    // Update UI optimistically
+    queryClient.setQueryData(['feed', 'personalized', activeTab], (old: any) => {
+      if (!old) return old;
+      return {
+        ...old,
+        posts: old.posts.map((p: FeedPost) =>
+          p.id === postId ? { ...p, isBookmarked: !isCurrentlyBookmarked } : p
+        ),
+      };
+    });
+
     success('Bookmark updated');
   };
 
   const handleShare = (postId: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/feed/post/${postId}`);
     success('Link copied to clipboard!');
+    
+    // Record interaction
+    recordInteractionMutation.mutate({
+      postId,
+      interaction: 'share',
+    });
+  };
+
+  const handlePostView = (postId: string) => {
+    // Record view interaction
+    recordInteractionMutation.mutate({
+      postId,
+      interaction: 'view',
+    });
+  };
+
+  const handlePreferencesUpdate = (newPrefs: Partial<FeedPreferences>) => {
+    updatePrefsMutation.mutate(newPrefs);
   };
 
   return (
@@ -552,13 +649,24 @@ export default function FeedPage() {
       title="Feed"
       description="Stay updated with your network"
       actions={
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="following">Following</TabsTrigger>
-            <TabsTrigger value="trending">Trending</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="following">Following</TabsTrigger>
+              <TabsTrigger value="trending">Trending</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowPreferences(!showPreferences)}
+            className="gap-1"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Preferences</span>
+          </Button>
+        </div>
       }
     >
       <div className="pb-10">
@@ -571,14 +679,40 @@ export default function FeedPage() {
 
             {/* Posts */}
             <div className="space-y-4">
-              {posts.map((post) => (
+              {feedLoading ? (
+                // Loading skeletons
+                Array.from({ length: 3 }).map((_, i) => (
+                  <Card key={i} className="overflow-hidden shadow-sm border-border/50">
+                    <CardHeader className="p-4 pb-2">
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-3">
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-48" />
+                          </div>
+                        </div>
+                        <Skeleton className="h-8 w-8" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 pt-2">
+                      <Skeleton className="h-20 w-full mb-3" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-6 w-16" />
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : posts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
-                  onLike={() => handleLike(post.id)}
-                  onBookmark={() => handleBookmark(post.id)}
+                  onLike={() => handleLike(post.id, post.isLiked)}
+                  onBookmark={() => handleBookmark(post.id, post.isBookmarked)}
                   onComment={() => {}}
                   onShare={() => handleShare(post.id)}
+                  onView={() => handlePostView(post.id)}
                 />
               ))}
             </div>
@@ -594,8 +728,65 @@ export default function FeedPage() {
 
           {/* Sidebar */}
           <div className="space-y-6 hidden lg:block sticky top-6 self-start">
-            <TrendingTopics />
+            <TrendingTopics topics={trendingData?.topics} />
             <SuggestedConnections />
+            
+            {/* Feed Preferences */}
+            {showPreferences && preferences && (
+              <Card className="shadow-sm border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Feed Preferences
+                  </h3>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Content Types</label>
+                      <div className="flex flex-wrap gap-1">
+                        {['update', 'milestone', 'question', 'announcement', 'achievement'].map((type) => (
+                          <Badge
+                            key={type}
+                            variant={preferences.contentTypes.includes(type) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              const newTypes = preferences.contentTypes.includes(type)
+                                ? preferences.contentTypes.filter(t => t !== type)
+                                : [...preferences.contentTypes, type];
+                              handlePreferencesUpdate({ contentTypes: newTypes });
+                            }}
+                          >
+                            {type}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Topics of Interest</label>
+                      <div className="flex flex-wrap gap-1">
+                        {(preferences.topics.length > 0 ? preferences.topics : ['fundraising', 'mvp', 'hiring', 'productlaunch', 'mentorship']).map((topic) => (
+                          <Badge
+                            key={topic}
+                            variant={preferences.topics.includes(topic) ? 'default' : 'outline'}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              const newTopics = preferences.topics.includes(topic)
+                                ? preferences.topics.filter(t => t !== topic)
+                                : [...preferences.topics, topic];
+                              handlePreferencesUpdate({ topics: newTopics });
+                            }}
+                          >
+                            #{topic}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

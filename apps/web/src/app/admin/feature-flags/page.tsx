@@ -115,9 +115,9 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-semibold">{flag.name}</span>
-              <code className="text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{flag.key}</code>
+              <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">{flag.key}</code>
               <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
-                <StatusIcon className="mr-1 h-3 w-3" />
+                <StatusIcon className="mr-1 icon-sm" />
                 {statusCfg.label}
               </Badge>
               <Badge className={cn('text-xs border-0', CATEGORY_COLORS[flag.category])}>
@@ -138,7 +138,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
+                <Users className="icon-sm" />
                 {flag.affectedUsers?.toLocaleString() ?? 0} affected
               </span>
               <span>Updated {flag.updatedAt}</span>
@@ -148,14 +148,14 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Flag</DropdownMenuItem>
-              <DropdownMenuItem><Percent className="mr-2 h-4 w-4" />Set Rollout %</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 h-4 w-4" />Copy Key</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Flag</DropdownMenuItem>
+              <DropdownMenuItem><Percent className="mr-2 icon-sm" />Set Rollout %</DropdownMenuItem>
+              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Copy Key</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -207,7 +207,7 @@ export default function AdminFeatureFlagsPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <Info className="h-4 w-4" />
+                  <Info className="icon-sm" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -216,7 +216,7 @@ export default function AdminFeatureFlagsPage() {
             </Tooltip>
           </TooltipProvider>
           <Button size="sm">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 icon-sm" />
             New Flag
           </Button>
         </div>
@@ -234,11 +234,11 @@ export default function AdminFeatureFlagsPage() {
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary">
-                  <Icon className={cn('h-4 w-4', color)} />
+                  <Icon className={cn('icon-sm', color)} />
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -247,7 +247,7 @@ export default function AdminFeatureFlagsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search flags by name or key..."
             value={search}

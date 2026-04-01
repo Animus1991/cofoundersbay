@@ -67,11 +67,11 @@ function ProgramCard({ program }: { program: Program }) {
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <Badge variant="secondary" className="text-xs">{program.type}</Badge>
               <span className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" />
                 {program.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="icon-sm" />
                 {program.startDate} - {program.endDate}
               </span>
             </div>
@@ -87,23 +87,23 @@ function ProgramCard({ program }: { program: Program }) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link href={`/tenant/programs/${program.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 icon-sm" />
                   View Details
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-2 icon-sm" />
                 Edit Program
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -194,7 +194,7 @@ export default function TenantProgramsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Programs</h1>
+            <h1 className="text-xl font-bold tracking-tight">Programs</h1>
             <p className="text-muted-foreground">
               Manage your accelerator and incubator programs
             </p>
@@ -221,13 +221,13 @@ export default function TenantProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Programs</p>
-              <p className="text-2xl font-bold">{programs.length}</p>
+              <p className="text-xl font-bold">{programs.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -235,7 +235,7 @@ export default function TenantProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Startups</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.startups, 0)}
               </p>
             </CardContent>
@@ -243,7 +243,7 @@ export default function TenantProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Mentors</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {programs.reduce((acc, p) => acc + p.mentors, 0)}
               </p>
             </CardContent>

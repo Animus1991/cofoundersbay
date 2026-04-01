@@ -523,7 +523,7 @@ export default function MessagesPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2">
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="icon-sm" />
               New Message
             </Button>
           </div>
@@ -544,7 +544,7 @@ export default function MessagesPage() {
                     <MessageSquare className="h-3.5 w-3.5" />
                     Chats
                     {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
-                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                         {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)}
                       </span>
                     )}
@@ -553,7 +553,7 @@ export default function MessagesPage() {
                     <UserPlus className="h-3.5 w-3.5" />
                     Intros
                     {pendingIntrosCount > 0 && (
-                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[9px] font-bold text-accent-foreground">
+                      <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
                         {pendingIntrosCount}
                       </span>
                     )}
@@ -597,7 +597,7 @@ export default function MessagesPage() {
             ) : introRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
                 <div className="rounded-full bg-secondary p-3">
-                  <UserPlus className="h-6 w-6 text-muted-foreground" />
+                  <UserPlus className="icon-lg text-muted-foreground" />
                 </div>
                 <p className="text-sm font-medium text-foreground">No pending intros</p>
                 <p className="text-xs text-muted-foreground">When someone sends you a connection request, it will appear here.</p>
@@ -621,7 +621,7 @@ export default function MessagesPage() {
                           <span className="text-sm font-medium text-foreground truncate">
                             {req.requester.displayName}
                           </span>
-                          <span className="text-[10px] text-muted-foreground shrink-0">
+                          <span className="text-xs text-muted-foreground shrink-0">
                             {new Date(req.createdAt).toLocaleDateString()}
                           </span>
                         </div>
@@ -638,7 +638,7 @@ export default function MessagesPage() {
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'accepted')}
                           >
-                            <Check className="h-3 w-3" />
+                            <Check className="icon-sm" />
                             Accept
                           </Button>
                           <Button
@@ -648,7 +648,7 @@ export default function MessagesPage() {
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'declined')}
                           >
-                            <X className="h-3 w-3" />
+                            <X className="icon-sm" />
                             Decline
                           </Button>
                         </div>

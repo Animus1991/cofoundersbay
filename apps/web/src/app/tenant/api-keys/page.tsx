@@ -55,39 +55,39 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex items-center gap-2">
             <p className="font-medium">{apiKey.name}</p>
             {apiKey.isActive ? (
-              <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="mr-1 h-3 w-3" />Active</Badge>
+              <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="mr-1 icon-sm" />Active</Badge>
             ) : (
-              <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>
+              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-gray-500">Inactive</Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
             <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{revealed ? revealedKey : maskedKey}</code>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setRevealed(!revealed)}>
-              {revealed ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+            <Button variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
+              {revealed ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
             </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6"><Copy className="h-3 w-3" /></Button>
+            <Button variant="ghost" size="icon"><Copy className="icon-sm" /></Button>
           </div>
           <div className="flex flex-wrap gap-1 mt-2">
             {apiKey.scopes.map(s => (
-              <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+              <Badge key={s} variant="secondary" size="sm">{s}</Badge>
             ))}
           </div>
           <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Created {apiKey.createdAt}</span>
+            <span className="flex items-center gap-1"><Clock className="icon-sm" />Created {apiKey.createdAt}</span>
             {apiKey.lastUsed && <span>Last used {apiKey.lastUsed}</span>}
             {apiKey.expiresAt && <span className="text-amber-600">Expires {apiKey.expiresAt}</span>}
           </div>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-              <MoreVertical className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <MoreVertical className="icon-sm" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit Scopes</DropdownMenuItem>
             <DropdownMenuItem>Regenerate</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Revoke</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Revoke</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

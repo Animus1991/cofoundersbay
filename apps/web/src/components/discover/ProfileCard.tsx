@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { SkillChip } from '@/components/common/SkillChip';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { cn } from '@/lib/utils';
 
 export type ProfileCardData = {
@@ -170,9 +171,9 @@ function ProfileCardInner({
           {/* Header */}
           <div className="flex items-start gap-4">
             <Link href={`/profiles/${profile.userId}`}>
-              <Avatar className="h-16 w-16 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
+              <Avatar className="h-12 w-12 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xl font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary text-base font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -253,6 +254,29 @@ function ProfileCardInner({
             </div>
           )}
 
+          {/* AI Insight */}
+          {profile.matchScore && profile.matchScore > 0 && (
+            <div className="mt-4">
+              <AIInsightButton
+                prompt={`Analyze why ${profile.displayName} would be a good match. Their role is ${profile.role}, skills: ${profile.skills.slice(0, 5).join(', ')}. ${profile.headline || ''} ${profile.lookingFor ? `Looking for: ${profile.lookingFor}` : ''}`}
+                agentId="matching"
+                context={{
+                  matchScore: profile.matchScore,
+                  targetUser: {
+                    name: profile.displayName,
+                    role: profile.role,
+                    skills: profile.skills,
+                    headline: profile.headline,
+                    lookingFor: profile.lookingFor,
+                  }
+                }}
+                label="Why this match?"
+                variant="ghost"
+                size="sm"
+              />
+            </div>
+          )}
+
           {/* Actions */}
           <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
             <div className="flex items-center gap-2">
@@ -318,7 +342,7 @@ function ProfileCardInner({
         <div className="flex items-start gap-3">
           <Link href={`/profiles/${profile.userId}`}>
             <div className="relative">
-              <Avatar className={cn('h-12 w-12 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
+              <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
                 <AvatarFallback className="bg-primary/20 text-primary font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
@@ -385,6 +409,20 @@ function ProfileCardInner({
             {profile.skills.length > 4 && (
               <span className="text-xs text-muted-foreground self-center">+{profile.skills.length - 4}</span>
             )}
+          </div>
+        )}
+
+        {/* AI Insight for matches */}
+        {profile.matchScore && profile.matchScore >= 60 && (
+          <div className="mt-3">
+            <AIInsightButton
+              prompt={`Why is ${profile.displayName} (${profile.role}) a ${profile.matchScore}% match? Skills: ${profile.skills.slice(0, 4).join(', ')}`}
+              agentId="matching"
+              context={{ matchScore: profile.matchScore, targetName: profile.displayName, role: profile.role, skills: profile.skills }}
+              label="AI Match Analysis"
+              variant="ghost"
+              size="sm"
+            />
           </div>
         )}
 

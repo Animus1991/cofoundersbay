@@ -60,7 +60,7 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold tabular-nums">{value}</p>
+            <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
               <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
@@ -69,7 +69,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="h-5 w-5 text-primary" />
+            <Icon className="icon-md text-primary" />
           </div>
         </div>
       </CardContent>
@@ -92,7 +92,7 @@ function StartupCard({ startup }: { startup: any }) {
       href={`/investor/scouting`}
       className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
     >
-      <Avatar className="h-12 w-12 rounded-lg">
+      <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={startup.logoUrl} />
         <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
@@ -102,12 +102,12 @@ function StartupCard({ startup }: { startup: any }) {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{startup.name}</p>
           {startup.isHot && (
-            <Badge variant="destructive" className="h-5 text-[10px]">HOT</Badge>
+            <Badge variant="destructive" size="sm">HOT</Badge>
           )}
         </div>
         <p className="text-xs text-muted-foreground line-clamp-1">{startup.description}</p>
         <div className="flex items-center gap-2 mt-1.5">
-          <Badge variant="outline" className={cn('text-[10px] h-5', stageColors[startup.stage] || '')}>
+          <Badge variant="outline" size="sm" className={cn(stageColors[startup.stage] || '')}>
             {startup.stage}
           </Badge>
           <span className="text-xs text-muted-foreground">{startup.industry}</span>
@@ -142,7 +142,7 @@ function DealCard({ deal }: { deal: any }) {
         <p className="text-sm font-medium truncate">{deal.name}</p>
         <p className="text-xs text-muted-foreground">{deal.stage} · {deal.amount}</p>
       </div>
-      <Badge className={cn('text-xs', statusColors[deal.status] || '')}>
+      <Badge size="sm" className={cn(statusColors[deal.status] || '')}>
         {deal.status.replace('-', ' ')}
       </Badge>
     </div>
@@ -242,7 +242,7 @@ export default function InvestorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">
@@ -250,7 +250,7 @@ export default function InvestorDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <DollarSign className="h-3.5 w-3.5" />
+            <DollarSign className="icon-sm" />
             Investor
           </Badge>
         </div>
@@ -292,17 +292,17 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Rocket className="h-4 w-4 text-primary" />
+                    <Rocket className="icon-sm text-primary" />
                     Trending Startups
                   </CardTitle>
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-8">
-                      <Filter className="mr-1.5 h-3.5 w-3.5" />
+                    <Button variant="outline" size="sm">
+                      <Filter className="mr-1.5 icon-sm" />
                       Filter
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/discover">
-                        View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        View all <ArrowRight className="ml-1 icon-sm" />
                       </Link>
                     </Button>
                   </div>
@@ -320,12 +320,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4 text-primary" />
+                    <BarChart3 className="icon-sm text-primary" />
                     Active Deals
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/pipeline">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -347,12 +347,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <PieChart className="h-4 w-4 text-primary" />
+                    <PieChart className="icon-sm text-primary" />
                     Portfolio Companies
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/portfolio">
-                      View all <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      View all <ArrowRight className="ml-1 icon-sm" />
                     </Link>
                   </Button>
                 </div>
@@ -375,31 +375,31 @@ export default function InvestorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/scouting">
-                    <Search className="mr-2 h-4 w-4" />
+                    <Search className="mr-2 icon-sm" />
                     Scout Startups
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/watchlist">
-                    <Star className="mr-2 h-4 w-4" />
+                    <Star className="mr-2 icon-sm" />
                     My Watchlist
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/pipeline">
-                    <Target className="mr-2 h-4 w-4" />
+                    <Target className="mr-2 icon-sm" />
                     Deal Pipeline
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/portfolio">
-                    <LineChart className="mr-2 h-4 w-4" />
+                    <LineChart className="mr-2 icon-sm" />
                     Portfolio
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/analytics">
-                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <BarChart3 className="mr-2 icon-sm" />
                     Analytics
                   </Link>
                 </Button>
@@ -443,7 +443,7 @@ export default function InvestorDashboard() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
+                  <Eye className="icon-sm" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>

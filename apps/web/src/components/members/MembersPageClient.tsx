@@ -95,9 +95,9 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
         <CardContent className="p-5 space-y-4">
           <div className="flex flex-col items-center text-center">
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
-              <Avatar className="h-24 w-24 ring-2 ring-primary/20 mb-3">
+              <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold text-xl">
+                <AvatarFallback className="bg-primary/20 text-primary font-semibold text-base">
                   {member.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -192,9 +192,9 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
-            <Avatar className="h-16 w-16 ring-2 ring-primary/20">
+            <Avatar className="h-12 w-12 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
                 {member.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -302,7 +302,7 @@ function MemberSkeleton({ viewMode }: { viewMode: ViewMode }) {
     <Card>
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
-          <Skeleton className="h-16 w-16 rounded-full shrink-0" />
+          <Skeleton className="h-12 w-12 rounded-full shrink-0" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-4 w-full" />

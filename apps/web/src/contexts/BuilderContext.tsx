@@ -48,7 +48,7 @@ interface BuilderState {
 
 interface BuilderContextValue extends BuilderState {
   // Workspace actions
-  loadWorkspaces: () => Promise<void>;
+  loadWorkspaces: (autoSelectFirst?: boolean) => Promise<void>;
   createWorkspace: (data: { name: string; description?: string; startupName?: string; industry?: string; stage?: string }) => Promise<BuilderWorkspace>;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   updateWorkspace: (data: Partial<BuilderWorkspace>) => Promise<void>;
@@ -217,15 +217,31 @@ export function BuilderProvider({ children }: BuilderProviderProps) {
   // Workspace Actions
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const loadWorkspaces = useCallback(async () => {
+  const loadWorkspaces = useCallback(async (autoSelectFirst = false) => {
     setState((prev) => ({ ...prev, isLoadingWorkspaces: true, error: null }));
     try {
       const response = await builderApi.getWorkspaces();
-      setState((prev) => ({
-        ...prev,
-        workspaces: response.data,
-        isLoadingWorkspaces: false,
-      }));
+      const list = response.data;
+
+      // Auto-select first workspace in the SAME call → eliminates waterfall
+      if (autoSelectFirst && list.length > 0) {
+        const fullWorkspace = await builderApi.getWorkspace(list[0].id);
+        setState((prev) => ({
+          ...prev,
+          workspaces: list,
+          workspace: fullWorkspace,
+          documents: fullWorkspace.documents || [],
+          collaborators: fullWorkspace.collaborators || [],
+          isLoadingWorkspaces: false,
+          isLoadingDocuments: false,
+        }));
+      } else {
+        setState((prev) => ({
+          ...prev,
+          workspaces: list,
+          isLoadingWorkspaces: false,
+        }));
+      }
     } catch (err) {
       setState((prev) => ({
         ...prev,

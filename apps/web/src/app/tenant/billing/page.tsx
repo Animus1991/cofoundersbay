@@ -125,7 +125,7 @@ export default function TenantBillingPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Organization Billing</h1>
+            <h1 className="text-xl font-bold tracking-tight">Organization Billing</h1>
             <p className="text-sm text-muted-foreground">Manage your organization plan, seats, and billing details.</p>
           </div>
           <Link href="/pricing">
@@ -168,7 +168,7 @@ export default function TenantBillingPage() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold">
                       {formatCents(
                         sub.billingCycle === 'annual' ? (sub.plan?.priceAnnual ?? 0) : (sub.plan?.priceMonthly ?? 0),
                         sub.plan?.currency,

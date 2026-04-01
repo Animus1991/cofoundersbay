@@ -39,10 +39,10 @@ import {
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="h-3 w-3" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="h-3 w-3" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="h-3 w-3" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="h-3 w-3" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -59,10 +59,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.verification.name}</span>
-          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />
@@ -76,10 +76,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.cname.name}</span>
-          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.cname.value}</span>
-          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="h-3 w-3" /></button>
+          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
         </div>
       </div>
       <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
@@ -137,7 +137,7 @@ function DomainRow({
     <div className="rounded-lg border border-border/60 bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
@@ -161,19 +161,19 @@ function DomainRow({
           {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
             <>
               <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} className="gap-1 h-7 text-xs">
-                <Link2 className="h-3 w-3" />
+                <Link2 className="icon-sm" />
                 DNS Setup
-                {showDns ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
               </Button>
               <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
-                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
                 Verify
               </Button>
             </>
           )}
           {!domain.isPrimary && domain.isActive && (
             <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
-              <Star className="h-3 w-3" />
+              <Star className="icon-sm" />
               Set Primary
             </Button>
           )}
@@ -184,7 +184,7 @@ function DomainRow({
             disabled={toggle.isPending}
             className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="h-3 w-3" />
+            <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
@@ -194,7 +194,7 @@ function DomainRow({
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -262,7 +262,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addSub.isPending || !subdomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="icon-sm" />
             Add
           </Button>
         </div>
@@ -286,7 +286,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addCustom.isPending || !customDomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="icon-sm" />
             Add
           </Button>
         </div>
@@ -311,7 +311,7 @@ export default function DomainsAdminPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Domain Management</h1>
+        <h1 className="text-xl font-bold">Domain Management</h1>
         <p className="text-muted-foreground mt-1">
           Configure subdomains and custom domains for each tenant organization.
         </p>
@@ -339,8 +339,8 @@ export default function DomainsAdminPage() {
                     }`}
                   >
                     {t.logoUrl
-                      ? <img src={t.logoUrl} alt="" className="h-6 w-6 rounded" />
-                      : <div className="h-6 w-6 rounded bg-primary/10 flex items-center justify-center"><Globe className="h-3 w-3 text-primary" /></div>}
+                      ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>

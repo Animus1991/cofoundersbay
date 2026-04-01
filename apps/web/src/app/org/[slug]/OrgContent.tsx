@@ -46,16 +46,16 @@ export function OrgContent({ org, slug }: OrgContentProps) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-6 items-start">
-            <Avatar className="h-20 w-20 shrink-0 ring-2 ring-border">
+            <Avatar className="h-16 w-16 shrink-0 ring-2 ring-border">
               <AvatarImage src={org.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-2xl bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="text-base bg-primary/10 text-primary font-semibold">
                 {org.name?.[0]?.toUpperCase() ?? 'O'}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{org.name}</h1>
+                <h1 className="text-xl font-bold text-foreground">{org.name}</h1>
                 {org.tagline && (
                   <p className="text-base text-muted-foreground mt-1">{org.tagline}</p>
                 )}
@@ -64,7 +64,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 {org.location && (
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <MapPin className="icon-sm shrink-0" />
                     <span>{org.location}</span>
                   </div>
                 )}
@@ -75,9 +75,9 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 hover:text-foreground transition-colors"
                   >
-                    <Globe className="h-3.5 w-3.5 shrink-0" />
+                    <Globe className="icon-sm shrink-0" />
                     <span>{(() => { try { return new URL(org.website).hostname; } catch { return org.website; } })()}</span>
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="icon-sm" />
                   </a>
                 )}
                 {org.email && (
@@ -85,12 +85,12 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     href={`mailto:${org.email}`}
                     className="flex items-center gap-1.5 hover:text-foreground transition-colors"
                   >
-                    <Mail className="h-3.5 w-3.5 shrink-0" />
+                    <Mail className="icon-sm shrink-0" />
                     <span>{org.email}</span>
                   </a>
                 )}
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 shrink-0" />
+                  <Calendar className="icon-sm shrink-0" />
                   <span>Joined {formatRelativeTime(org.createdAt)}</span>
                 </div>
               </div>
@@ -103,11 +103,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
               <div className="flex gap-2 pt-1">
                 <Button size="sm" className="h-8 px-4 text-xs font-medium gap-1.5">
-                  <Users className="h-3.5 w-3.5" />
+                  <Users className="icon-sm" />
                   Follow
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5">
-                  <Mail className="h-3.5 w-3.5" />
+                  <Mail className="icon-sm" />
                   Contact
                 </Button>
               </div>
@@ -136,28 +136,28 @@ export function OrgContent({ org, slug }: OrgContentProps) {
         <Tabs defaultValue="opportunities" className="space-y-6">
           <TabsList className="h-9">
             <TabsTrigger value="opportunities" className="text-sm gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" />
+              <Briefcase className="icon-sm" />
               Opportunities
               {opportunities.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{opportunities.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="programs" className="text-sm gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" />
+              <GraduationCap className="icon-sm" />
               Programs
               {cohorts.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{cohorts.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="members" className="text-sm gap-1.5">
-              <Users className="h-3.5 w-3.5" />
+              <Users className="icon-sm" />
               Members
               {members.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{members.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="about" className="text-sm gap-1.5">
-              <Building2 className="h-3.5 w-3.5" />
+              <Building2 className="icon-sm" />
               About
             </TabsTrigger>
           </TabsList>

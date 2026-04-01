@@ -90,7 +90,7 @@ function CommunityCard({ community }: { community: Community }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -210,13 +210,13 @@ export default function AdminCommunitiesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Communities</h1>
+            <h1 className="text-xl font-bold tracking-tight">Communities</h1>
             <p className="text-muted-foreground">
               Manage platform communities
             </p>
           </div>
           <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 icon-sm" />
             Create Community
           </Button>
         </div>
@@ -226,13 +226,13 @@ export default function AdminCommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Communities</p>
-              <p className="text-2xl font-bold">{communities.length}</p>
+              <p className="text-xl font-bold">{communities.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Members</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString()}
               </p>
             </CardContent>
@@ -240,7 +240,7 @@ export default function AdminCommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Posts</p>
-              <p className="text-2xl font-bold">
+              <p className="text-xl font-bold">
                 {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString()}
               </p>
             </CardContent>
@@ -248,7 +248,7 @@ export default function AdminCommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Flagged</p>
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-xl font-bold text-red-600">
                 {communities.filter((c) => c.status === 'flagged').length}
               </p>
             </CardContent>
@@ -258,7 +258,7 @@ export default function AdminCommunitiesPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search communities..."
               value={search}

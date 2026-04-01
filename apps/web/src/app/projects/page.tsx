@@ -354,7 +354,7 @@ export default function ProjectsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Projects & Collaborations</h1>
+            <h1 className="text-xl font-bold text-foreground">Projects & Collaborations</h1>
             <p className="text-muted-foreground">
               Discover startup projects or create your own to find co-founders
             </p>

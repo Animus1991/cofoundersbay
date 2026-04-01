@@ -64,7 +64,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Link href={`/p/${request.requesterId}`}>
-            <Avatar className="h-12 w-12">
+            <Avatar className="h-10 w-10">
               <AvatarImage src={request.requester?.avatarUrl || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {initials}
@@ -231,7 +231,7 @@ export default function MentorRequestsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Mentee Requests</h1>
+            <h1 className="text-xl font-bold tracking-tight">Mentee Requests</h1>
             <p className="text-muted-foreground">
               Review and manage mentorship requests
             </p>
@@ -250,7 +250,7 @@ export default function MentorRequestsPage() {
                 <Clock className="h-5 w-5 text-amber-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{pendingRequests.length}</p>
+                <p className="text-xl font-bold">{pendingRequests.length}</p>
                 <p className="text-sm text-muted-foreground">Pending</p>
               </div>
             </CardContent>
@@ -261,7 +261,7 @@ export default function MentorRequestsPage() {
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{acceptedRequests.length}</p>
+                <p className="text-xl font-bold">{acceptedRequests.length}</p>
                 <p className="text-sm text-muted-foreground">Accepted</p>
               </div>
             </CardContent>
@@ -272,7 +272,7 @@ export default function MentorRequestsPage() {
                 <XCircle className="h-5 w-5 text-red-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{declinedRequests.length}</p>
+                <p className="text-xl font-bold">{declinedRequests.length}</p>
                 <p className="text-sm text-muted-foreground">Declined</p>
               </div>
             </CardContent>

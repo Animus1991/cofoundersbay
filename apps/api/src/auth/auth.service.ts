@@ -109,6 +109,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
+    // Handle orphaned refresh token (user deleted)
+    if (!record.user) {
+      await this.prisma.refreshToken.delete({ where: { id: record.id } }).catch(() => {});
+      throw new UnauthorizedException('User no longer exists');
+    }
+
     await this.prisma.refreshToken.delete({ where: { id: record.id } });
     return this.issueTokenPair(record.user.id, record.user.email, record.user.role);
   }
@@ -197,6 +203,39 @@ export class AuthService {
     if (user.moderationStatus !== 'active') throw new UnauthorizedException('Account is not active');
     const tokens = await this.issueTokenPair(user.id, user.email, user.role);
     return { user: { id: user.id, email: user.email, role: user.role }, tokens };
+  }
+
+  async demoLogin(): Promise<{ user: { id: string; email: string; role: string; emailVerified: boolean }; tokens: TokenPair }> {
+    const DEMO_EMAIL = 'demo@cofounderbay.com';
+    let user = await this.prisma.user.findUnique({
+      where: { email: DEMO_EMAIL },
+      select: { id: true, email: true, role: true, emailVerified: true, moderationStatus: true },
+    });
+
+    if (!user) {
+      const slug = `demo-user-${Date.now().toString(36)}`;
+      user = await this.prisma.user.create({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: {
+          email: DEMO_EMAIL,
+          slug,
+          passwordHash: await argon2.hash(randomBytes(32).toString('hex'), { type: argon2.argon2id }),
+          role: 'founder',
+          emailVerified: true,
+          moderationStatus: 'active',
+          firstName: 'Demo',
+          lastName: 'User',
+        } as any,
+        select: { id: true, email: true, role: true, emailVerified: true, moderationStatus: true },
+      });
+    }
+
+    if (user.moderationStatus === 'suspended' || user.moderationStatus === 'banned') {
+      throw new UnauthorizedException('Demo account is unavailable');
+    }
+
+    const tokens = await this.issueTokenPair(user.id, user.email, user.role);
+    return { user: { id: user.id, email: user.email, role: user.role, emailVerified: user.emailVerified }, tokens };
   }
 
   async validateUser(userId: string): Promise<{ id: string; email: string; role: string } | null> {

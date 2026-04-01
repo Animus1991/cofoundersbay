@@ -177,7 +177,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
     <Card className="transition-all hover:shadow-md hover:border-primary/20">
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Avatar className="h-12 w-12 rounded-lg shrink-0">
+          <Avatar className="h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl ?? undefined} />
             <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-bold">
               {startup.name[0]}
@@ -313,7 +313,7 @@ export default function InvestorWatchlistPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Eye className="h-6 w-6 text-primary" />
               Watchlist
             </h1>
@@ -347,7 +347,7 @@ export default function InvestorWatchlistPage() {
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
                   <stat.icon className="h-4 w-4 text-primary" />

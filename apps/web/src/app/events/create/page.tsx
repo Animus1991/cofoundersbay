@@ -91,7 +91,7 @@ export default function CreateEventPage() {
       actions={
         <Link href="/events">
           <Button variant="secondary" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="icon-sm" />
             Back to events
           </Button>
         </Link>
@@ -102,7 +102,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
+              <Calendar className="icon-sm text-primary" />
               Basic information
             </CardTitle>
           </CardHeader>
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
+              <Clock className="icon-sm text-primary" />
               Date & time
             </CardTitle>
           </CardHeader>
@@ -204,7 +204,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
+              <MapPin className="icon-sm text-primary" />
               Location
             </CardTitle>
           </CardHeader>
@@ -220,7 +220,7 @@ export default function CreateEventPage() {
                     : 'border-border/60 text-muted-foreground hover:border-primary/40',
                 )}
               >
-                <Video className="h-4 w-4" />
+                <Video className="icon-sm" />
                 Online event
               </button>
               {form.isOnline && (
@@ -260,7 +260,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" />
+              <Users className="icon-sm text-primary" />
               Capacity (optional)
             </CardTitle>
           </CardHeader>
@@ -288,12 +288,12 @@ export default function CreateEventPage() {
           <Button type="submit" className="gap-2 min-w-[140px]" disabled={submitting || !form.title.trim() || !form.startAt}>
             {submitting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
                 Creating…
               </>
             ) : (
               <>
-                <Calendar className="h-4 w-4" />
+                <Calendar className="icon-sm" />
                 Create event
               </>
             )}

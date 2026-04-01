@@ -22,6 +22,7 @@ import {
   Twitter,
   Linkedin,
   Github,
+  Play,
   type LucideIcon,
 } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
@@ -358,8 +359,14 @@ export function LandingHome() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <Link href="/demo">
+              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
+                <Play className="h-4 w-4 text-primary" />
+                Try Demo
+              </Button>
+            </Link>
             <Link href="/discover">
-              <Button variant="outline" size="lg" className="px-8 py-6 text-base">
+              <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground">
                 Explore profiles
               </Button>
             </Link>

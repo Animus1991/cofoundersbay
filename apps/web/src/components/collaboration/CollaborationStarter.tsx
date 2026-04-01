@@ -149,8 +149,8 @@ export function CollaborationStarter({
           <DialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="relative">
-                <Avatar className="h-14 w-14 ring-2 ring-emerald-400/40">
-                  <AvatarFallback className="bg-primary/20 text-primary font-semibold text-lg">
+                <Avatar className="h-11 w-11 ring-2 ring-emerald-400/40">
+                  <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
                     {otherUser.displayName[0]?.toUpperCase()}
                   </AvatarFallback>
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}

@@ -12,6 +12,10 @@ import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
 import { ReadinessScoring } from '@/components/builder/ReadinessScoring';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
+import { CollabToolbar } from '@/components/builder/CollabToolbar';
+import { WorkspaceMetricsPanels } from '@/components/gamification/WorkspaceMetricsPanels';
+import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
+import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -28,11 +32,24 @@ import {
   Users,
   Loader2,
   AlertCircle,
-  Plus
+  Plus,
+  Sparkles,
+  ArrowRight,
+  X,
 } from 'lucide-react';
+
+const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
 
 function BuilderPageContent() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [reviewBannerDismissed, setReviewBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem(BUILDER_REVIEW_DISMISS_KEY) === 'true') {
+      setReviewBannerDismissed(true);
+    }
+  }, []);
   const {
     workspace,
     workspaces,
@@ -51,17 +68,10 @@ function BuilderPageContent() {
     clearError,
   } = useBuilder();
 
-  // Load workspaces on mount
+  // Load workspaces on mount + auto-select first (single flow, no waterfall)
   useEffect(() => {
-    loadWorkspaces();
+    loadWorkspaces(true);
   }, [loadWorkspaces]);
-
-  // Auto-select first workspace if none selected
-  useEffect(() => {
-    if (!workspace && workspaces.length > 0) {
-      selectWorkspace(workspaces[0].id);
-    }
-  }, [workspace, workspaces, selectWorkspace]);
 
   const handleSave = async (section: string, data: any) => {
     if (!activeDocument) return;
@@ -112,11 +122,41 @@ function BuilderPageContent() {
         {/* Error Alert */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive" />
+            <AlertCircle className="icon-md text-destructive" />
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
             </Button>
+          </div>
+        )}
+
+        {/* Behavioral Nudge */}
+        <BehavioralNudge surface="builder" compact />
+
+        {/* Expert Review CTA — surfaces when artifacts exist */}
+        {!reviewBannerDismissed && documents.length >= 2 && (
+          <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Your artifacts are ready for expert review
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Get actionable feedback from a domain expert — investors, mentors, or industry specialists.
+              </p>
+            </div>
+            <a href="/expert-reviews" className="shrink-0">
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10">
+                Get review <ArrowRight className="h-3 w-3" />
+              </Button>
+            </a>
+            <button
+              onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
+              className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
+              title="Dismiss"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
 
@@ -125,7 +165,7 @@ function BuilderPageContent() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="h-6 w-6 text-primary" />
+                <Rocket className="icon-lg text-primary" />
               </div>
               {workspace?.name || 'Startup Builder'}
             </h1>
@@ -137,7 +177,7 @@ function BuilderPageContent() {
             {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Users className="icon-sm text-muted-foreground" />
                 <div className="flex -space-x-2">
                   {onlineCollaborators.slice(0, 3).map((c) => (
                     <Avatar key={c.odId} className="h-6 w-6 border-2 border-background">
@@ -157,12 +197,22 @@ function BuilderPageContent() {
             {/* AI Generating Indicator */}
             {isGenerating && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
                 <span>AI generating...</span>
               </div>
             )}
           </div>
         </div>
+
+        {/* Collab Toolbar — shown when a document is active */}
+        {activeDocument && workspace && (
+          <CollabToolbar
+            documentId={activeDocument.id}
+            workspaceId={workspace.id}
+            documentTitle={activeDocument.title}
+            onHistoryClick={() => setShowVersionHistory(true)}
+          />
+        )}
 
         {/* Main Builder Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -176,7 +226,7 @@ function BuilderPageContent() {
                   className="flex items-center gap-1 text-xs"
                   title={tab.label}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="icon-sm" />
                   <span className="hidden lg:inline">{tab.label}</span>
                 </TabsTrigger>
               );
@@ -231,6 +281,9 @@ function BuilderPageContent() {
 
           <TabsContent value="readiness" className="space-y-6">
             <ReadinessScoring workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})} />
+            {workspace?.id && (
+              <WorkspaceMetricsPanels workspaceId={workspace.id} />
+            )}
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">
@@ -241,6 +294,18 @@ function BuilderPageContent() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Version History Drawer */}
+      {activeDocument && (
+        <VersionHistoryDrawer
+          open={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          documentId={activeDocument.id}
+          documentTitle={activeDocument.title}
+          currentVersion={activeDocument.version}
+          onRestored={() => setShowVersionHistory(false)}
+        />
+      )}
     </AppShell>
   );
 }
