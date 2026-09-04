@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
+import { applyPreviewDemoSession, PREVIEW_DEMO_USER } from '@/lib/preview-demo';
 
 export default function DemoPage() {
   const router = useRouter();
@@ -14,17 +15,36 @@ export default function DemoPage() {
 
     async function startDemo() {
       try {
-        await apiRequest('/api/auth/demo', { method: 'POST' });
-        if (!cancelled) router.replace('/dashboard');
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Demo login failed. Please try again.');
-        }
+        const result = await apiRequest<{ user?: typeof PREVIEW_DEMO_USER }>(
+          '/api/auth/demo',
+          { method: 'POST', signal: AbortSignal.timeout(2500) },
+        );
+        if (cancelled) return;
+        applyPreviewDemoSession({
+          ...PREVIEW_DEMO_USER,
+          ...(result?.user ?? {}),
+          email: result?.user?.email ?? PREVIEW_DEMO_USER.email,
+          role: result?.user?.role ?? PREVIEW_DEMO_USER.role,
+        });
+      } catch {
+        if (cancelled) return;
+        applyPreviewDemoSession();
+      }
+
+      if (!cancelled) {
+        router.replace('/dashboard/founder');
       }
     }
 
-    startDemo();
-    return () => { cancelled = true; };
+    startDemo().catch(() => {
+      if (!cancelled) {
+        setError('Demo login failed. Please try again.');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   if (error) {
@@ -38,12 +58,17 @@ export default function DemoPage() {
           <p className="text-sm text-muted-foreground">{error}</p>
           <div className="flex gap-3 justify-center pt-2">
             <button
-              onClick={() => { setError(null); window.location.reload(); }}
+              type="button"
+              onClick={() => {
+                setError(null);
+                window.location.reload();
+              }}
               className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               Try again
             </button>
             <button
+              type="button"
               onClick={() => router.push('/')}
               className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-secondary/50 transition-colors"
             >

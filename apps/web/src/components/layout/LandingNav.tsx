@@ -37,6 +37,11 @@ export function LandingNav() {
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <Link href="/demo" className="hidden sm:block">
+            <Button variant="outline" size="sm">
+              Try demo
+            </Button>
+          </Link>
           <Link href="/login" className="hidden sm:block">
             <Button variant="ghost" size="sm">
               Log in
@@ -77,6 +82,11 @@ export function LandingNav() {
                 {link.label}
               </a>
             ))}
+            <Link href="/demo" onClick={() => setOpen(false)}>
+              <Button variant="outline" size="sm" className="w-full">
+                Try demo
+              </Button>
+            </Link>
             <Link href="/login" onClick={() => setOpen(false)}>
               <Button variant="outline" size="sm" className="w-full">
                 Log in

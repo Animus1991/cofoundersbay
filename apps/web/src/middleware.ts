@@ -10,6 +10,7 @@ const PUBLIC_PATHS = new Set([
   '/verify-email',
   '/auth/oauth-callback',
   '/auth/sso-complete',
+  '/demo',
   '/pricing',
   '/terms',
   '/privacy',

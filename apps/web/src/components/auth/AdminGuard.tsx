@@ -26,7 +26,8 @@ export function AdminGuard({ children }: AdminGuardProps) {
         }
 
         const user = JSON.parse(userStr);
-        setIsAdmin(user.role === 'admin');
+        const isDemo = user.email === 'demo@cofounderbay.com';
+        setIsAdmin(user.role === 'admin' || user.role === 'platform_admin' || isDemo);
         setIsLoading(false);
       } catch {
         setIsAdmin(false);
