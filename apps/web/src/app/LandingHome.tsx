@@ -29,6 +29,7 @@ import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { LandingNav } from '@/components/layout/LandingNav';
 
 const FEATURES: Array<{ icon: LucideIcon; title: string; desc: string }> = [
   {
@@ -288,28 +289,8 @@ const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
 export function LandingHome() {
   return (
     <div className="min-h-screen bg-background">
-      {/* ── Navigation ─────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-          <Link href="/">
-            <Logo size="sm" />
-          </Link>
-          <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <a href="#how-it-works" className="transition-colors hover:text-foreground">How it works</a>
-            <a href="#features" className="transition-colors hover:text-foreground">Features</a>
-            <a href="#roles" className="transition-colors hover:text-foreground">Who it&apos;s for</a>
-            <a href="#pricing" className="transition-colors hover:text-foreground">Pricing</a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Log in</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="gap-1.5">Join free <ArrowRight className="h-3.5 w-3.5" /></Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <LandingNav />
+      <main id="main-content">
 
       {/* ── Hero ───────────────────────────────────────────────────────────── */}
       <section className="relative flex min-h-screen items-center overflow-hidden pt-14">
@@ -695,6 +676,8 @@ export function LandingHome() {
           </p>
         </div>
       </section>
+
+      </main>
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12">

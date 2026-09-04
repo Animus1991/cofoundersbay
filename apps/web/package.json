@@ -10,7 +10,8 @@
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
-    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true});\""
+    "clean": "node -e \"require('fs').rmSync('.next',{recursive:true,force:true});\"",
+    "cf:headers": "echo 'Cloudflare Pages headers live in public/_headers'"
   },
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || ^25.0.0"

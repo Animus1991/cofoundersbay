@@ -48,8 +48,6 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -68,6 +66,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"
       >
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <ErrorBoundary>
           <QueryProvider>
             <TenantProvider>

@@ -119,7 +119,10 @@ function LoginPageContent() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+              <div
+                role="alert"
+                className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2"
+              >
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -206,7 +209,7 @@ function LoginPageContent() {
                   </div>
                 </div>
 
-                <Button type="submit" disabled={loading} className="w-full" size="lg">
+                <Button type="submit" loading={loading} className="w-full" size="lg">
                   {loading ? 'Signing in…' : 'Sign in'}
                 </Button>
               </>

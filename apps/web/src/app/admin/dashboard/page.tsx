@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { AppShell } from '@/components/layout/AppShell';
 
 import {
   Users,
@@ -224,42 +225,36 @@ export default function AdminDashboardPage() {
 
   if (metricsError) {
     return (
-      <div className="p-8">
-        <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-red-600 mb-2">Dashboard Error</h2>
+      <AppShell title="Admin Dashboard" description="Monitor and manage your CoFounderBay platform">
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <AlertTriangle className="icon-xl text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Error</h2>
           <p className="text-muted-foreground">Failed to load admin metrics</p>
           <Button onClick={() => refetchMetrics()} className="mt-4">
             Retry
           </Button>
         </div>
-      </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Monitor and manage your CoFounderBay platform
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-4">
+    <AppShell
+      title="Admin Dashboard"
+      description="Monitor and manage your CoFounderBay platform"
+      actions={
+        <div className="flex items-center gap-3">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
-            className="px-3 py-2 border rounded-md bg-background"
+            aria-label="Time range"
+            className="h-9 px-3 py-2 border border-border rounded-md bg-background text-sm"
           >
             <option value="1d">Last 24 hours</option>
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          
           <Button
             variant="outline"
             onClick={() => {
@@ -270,7 +265,9 @@ export default function AdminDashboardPage() {
             Refresh
           </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="space-y-6">
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -491,6 +488,7 @@ export default function AdminDashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AppShell>
   );
 }
