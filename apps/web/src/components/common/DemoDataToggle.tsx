@@ -26,14 +26,14 @@ export function DemoDataToggle({ className }: { className?: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={showDemoData ? 'default' : 'outline'}
+            variant={showDemoData ? 'ghost' : 'outline'}
             size="sm"
             onClick={toggleDemoData}
             className={cn(
-              'h-8 gap-1.5 px-2.5 text-xs font-medium transition-all',
-              showDemoData 
-                ? 'bg-primary/90 hover:bg-primary text-primary-foreground shadow-sm' 
-                : 'border-dashed text-muted-foreground hover:text-foreground hover:border-solid',
+              'h-7 gap-1 px-2 text-[11px] font-medium text-muted-foreground',
+              showDemoData
+                ? 'bg-transparent hover:bg-secondary/60'
+                : 'border-dashed hover:text-foreground hover:border-solid',
               className
             )}
             aria-label={showDemoData ? 'Hide sample data' : 'Show sample data'}
@@ -56,8 +56,8 @@ export function DemoDataToggle({ className }: { className?: string }) {
             {showDemoData ? 'Sample Data: ON' : 'Sample Data: OFF'}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {showDemoData 
-              ? 'Click to hide sample data and see empty component states' 
+            {showDemoData
+              ? 'Sample data is on. Changes are not saved. Click to hide sample data.'
               : 'Click to show sample data across all pages'}
           </p>
         </TooltipContent>
