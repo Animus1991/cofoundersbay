@@ -1,6 +1,6 @@
 'use client';
 
-import { Database, DatabaseZap, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
