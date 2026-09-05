@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User, Settings } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -15,29 +15,14 @@ import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
-
-type StoredUser = {
-  displayName?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
-} | null;
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 export function MobileNav() {
   const pathname = usePathname();
   const { mobileNavOpen, setMobileNavOpen } = useSidebar();
   const [mode, setMode] = useSidebarMode();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
-  const [user, setUser] = useState<StoredUser>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (stored) setUser(JSON.parse(stored) as StoredUser);
-    } catch {
-      /* ignore */
-    }
-  }, []);
+  const user = useStoredUser();
 
   useEffect(() => {
     setMobileNavOpen(false);

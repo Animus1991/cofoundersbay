@@ -68,7 +68,7 @@ export function OfflineBanner() {
   const { isOnline, isApiOnline, wasOffline } = useNetwork();
   const [showReconnected, setShowReconnected] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  const [previewDemo, setPreviewDemo] = useState(false);
+  const [previewDemo, setPreviewDemo] = useState(() => isPreviewDemo());
 
   useEffect(() => {
     const sync = () => setPreviewDemo(isPreviewDemo());

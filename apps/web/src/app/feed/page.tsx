@@ -27,6 +27,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -567,7 +568,11 @@ export default function FeedPage() {
     mutationFn: recordFeedInteraction,
   });
 
-  const posts = feedData?.posts || [];
+  const posts = feedData?.posts?.length
+    ? feedData.posts
+    : isPreviewDemo()
+      ? DEMO_POSTS
+      : [];
 
   const handlePost = (content: string, type: PostType) => {
     // In a real implementation, this would create a new post via API

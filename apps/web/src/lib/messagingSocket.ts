@@ -1,5 +1,6 @@
 import { io, type Socket } from 'socket.io-client';
 import type { MessageItem } from './api';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 function getApiBase(): string {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
@@ -26,6 +27,18 @@ export type ClientToServerEvents = {
 };
 
 export function createMessagingSocket(accessToken?: string | null): Socket<ServerToClientEvents, ClientToServerEvents> {
+  if (isPreviewDemo()) {
+    const noop = () => undefined;
+    return {
+      on: noop,
+      off: noop,
+      emit: noop,
+      disconnect: noop,
+      connect: noop,
+      connected: false,
+    } as unknown as Socket<ServerToClientEvents, ClientToServerEvents>;
+  }
+
   return io(getApiBase(), {
     auth: accessToken ? { token: accessToken } : undefined,
     withCredentials: true,

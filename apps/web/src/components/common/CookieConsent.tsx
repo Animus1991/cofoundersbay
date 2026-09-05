@@ -6,6 +6,7 @@ import { Cookie, X, Settings, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/layout/SidebarContext';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 type CookiePreferences = {
   essential: boolean;
@@ -31,6 +32,10 @@ export function CookieConsent() {
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
 
   useEffect(() => {
+    if (isPreviewDemo()) {
+      localStorage.setItem(COOKIE_CONSENT_KEY, 'true');
+      return;
+    }
     // Check if user has already consented
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!consent) {

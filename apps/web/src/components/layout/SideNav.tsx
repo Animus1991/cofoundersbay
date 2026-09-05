@@ -12,34 +12,26 @@ import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-
-type StoredUser = {
-  displayName?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
-} | null;
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { expanded, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
-  const [user, setUser] = useState<StoredUser>(null);
+  const user = useStoredUser();
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window === 'undefined') return;
-    const raw = localStorage.getItem('user');
-    if (!raw) return;
-    try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
   }, []);
 
   // Redirect to login when session expires
   useEffect(() => {
     const handleLogout = () => {
+      if (isPreviewDemo()) return;
       router.replace('/login');
     };
     window.addEventListener('cfb:logout', handleLogout);

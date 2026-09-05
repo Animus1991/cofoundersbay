@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -18,6 +19,12 @@ export function AdminGuard({ children }: AdminGuardProps) {
   useEffect(() => {
     const checkAdmin = () => {
       try {
+        if (isPreviewDemo()) {
+          setIsAdmin(true);
+          setIsLoading(false);
+          return;
+        }
+
         const userStr = localStorage.getItem('user');
         if (!userStr) {
           setIsAdmin(false);

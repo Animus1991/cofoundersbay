@@ -1,12 +1,16 @@
 'use client';
 
 import { useEffect } from 'react';
-import { restorePreviewDemoSessionIfNeeded } from '@/lib/preview-demo';
+import { applyPreviewDemoSession, isPreviewDemo, restorePreviewDemoSessionIfNeeded } from '@/lib/preview-demo';
 
 /** Keeps the Cloudflare preview demo signed in across client navigations. */
 export function PreviewSessionGuard() {
   useEffect(() => {
-    restorePreviewDemoSessionIfNeeded();
+    if (isPreviewDemo()) {
+      applyPreviewDemoSession();
+    } else {
+      restorePreviewDemoSessionIfNeeded();
+    }
 
     const onLogout = () => {
       // API failures used to wipe the demo cookie; put it back if demo mode is still on.

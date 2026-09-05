@@ -1,3 +1,5 @@
+import { resolvePreviewApi } from '@/lib/preview-api';
+
 // Returns the API base URL evaluated at call time — not module load time.
 // Always uses NEXT_PUBLIC_API_URL if set (set it to http://localhost:3001 in .env.local).
 // Never derives host from window.location to avoid LAN IP (192.168.x.x) mismatches.
@@ -234,6 +236,10 @@ export async function apiRequest<T>(
   init?: RequestInit,
   opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
 ): Promise<T> {
+  if (isPreviewDemoSession()) {
+    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
+  }
+
   const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
 
   const headers = new Headers(init?.headers ?? {});
