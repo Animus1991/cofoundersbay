@@ -50,36 +50,12 @@ const EngagementBreakdown = dynamic(
   { ssr: false, loading: () => <Skeleton className="h-[440px] w-full rounded-xl" /> }
 );
 
-interface AnalyticsMetric {
-  label: string;
-  value: number;
-  change: number;
-  changeType: 'increase' | 'decrease' | 'neutral';
-  icon: typeof TrendingUp;
-  tone: StatusTone;
-}
+import {
+  metricsToDisplay,
+  METRIC_TONE,
+  type AnalyticsMetric,
+} from './metrics';
 
-const METRIC_TONE: Record<string, StatusTone> = {
-  'Profile Views': 'info',
-  'New Connections': 'success',
-  'Messages Sent': 'accent',
-  'Engagement Rate': 'accent',
-  'Search Appearances': 'warning',
-  'Activity Score': 'info',
-};
-
-function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
-  const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
-    v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
-  return [
-    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, tone: METRIC_TONE['Profile Views'] },
-    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, tone: METRIC_TONE['New Connections'] },
-    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, tone: METRIC_TONE['Messages Sent'] },
-    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, tone: METRIC_TONE['Engagement Rate'] },
-    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, tone: METRIC_TONE['Search Appearances'] },
-    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, tone: METRIC_TONE['Activity Score'] },
-  ];
-}
 interface ProfileView {
   date: string;
   views: number;
@@ -365,7 +341,10 @@ export default function AnalyticsPage() {
     retry: 1,
   });
 
-  const metrics = overview ? metricsToDisplay(overview.metrics) : [];
+  // Note the guard is on the field, not just the container: an unhandled preview
+  // route answers with a truthy object that has no `metrics`, which is exactly
+  // how `overview ? …` used to pass and then crash one line later.
+  const metrics = overview?.metrics ? metricsToDisplay(overview.metrics) : [];
   const profileViews = overview?.profileViews;
   const engagement = overview?.engagement;
   const topContent = overview?.topContent;

@@ -307,6 +307,56 @@ function pathnameOf(path: string) {
   return path.split('?')[0] ?? path;
 }
 
+/* ── Analytics ──
+   Shapes here mirror UserMetrics / AnalyticsProfileView / AnalyticsEngagement /
+   AnalyticsTopContent / WeeklySummary in `lib/api.ts`. Before these existed the
+   analytics endpoints fell through to `kitchenSink()`, which answers with a
+   truthy grab-bag that has no `metrics` key — so `if (overview)` passed and the
+   page then crashed on the first nested read. */
+const PREVIEW_USER_METRICS = {
+  profileViews: 248,
+  profileViewsChange: 12,
+  newConnections: 17,
+  newConnectionsChange: 5,
+  messagesSent: 63,
+  messagesSentChange: -8,
+  engagementRate: 34,
+  engagementRateChange: 3,
+  searchAppearances: 91,
+  searchAppearancesChange: 0,
+  activityScore: 72,
+  activityScoreChange: 6,
+};
+
+function previewProfileViews() {
+  const seed = [31, 27, 44, 38, 52, 29, 27];
+  return seed.map((views, i) => {
+    const d = new Date(Date.now() - (seed.length - 1 - i) * 86_400_000);
+    return {
+      date: d.toISOString().slice(0, 10),
+      views,
+      uniqueVisitors: Math.max(1, Math.round(views * 0.62)),
+    };
+  });
+}
+
+const PREVIEW_ANALYTICS_OVERVIEW = {
+  metrics: PREVIEW_USER_METRICS,
+  profileViews: previewProfileViews(),
+  engagement: { connections: 17, messages: 63, likes: 128, comments: 41, shares: 12 },
+  topContent: [
+    { id: 'post-gtm', type: 'post' as const, title: 'How we picked our first 10 design partners', views: 412, engagement: 63, date: NOW },
+    { id: 'post-hiring', type: 'post' as const, title: 'What I look for in a technical co-founder', views: 287, engagement: 48, date: NOW },
+    { id: 'profile-me', type: 'profile' as const, title: 'Profile view spike after demo day', views: 154, engagement: 22, date: NOW },
+  ],
+  weeklySummary: {
+    mostActiveDay: 'Tuesday',
+    peakHour: '14:00–15:00',
+    avgResponseTime: '3h 20m',
+    totalInteractions: 261,
+  },
+};
+
 function kitchenSink() {
   return {
     ok: true,
@@ -658,10 +708,39 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/analytics/achievements') {
     return null;
   }
+  if (pathname === '/api/analytics/overview') {
+    return PREVIEW_ANALYTICS_OVERVIEW;
+  }
+  if (pathname === '/api/analytics/metrics') {
+    return PREVIEW_USER_METRICS;
+  }
+  if (pathname === '/api/analytics/profile-views') {
+    return PREVIEW_ANALYTICS_OVERVIEW.profileViews;
+  }
+  if (pathname === '/api/analytics/engagement') {
+    return PREVIEW_ANALYTICS_OVERVIEW.engagement;
+  }
+  if (pathname === '/api/analytics/top-content') {
+    return PREVIEW_ANALYTICS_OVERVIEW.topContent;
+  }
+  if (pathname === '/api/analytics/weekly-summary') {
+    return PREVIEW_ANALYTICS_OVERVIEW.weeklySummary;
+  }
 
   if (method !== 'GET') {
     return { ok: true, success: true, ...body, id: 'preview-mutation' };
   }
 
+  // No handler matched. `kitchenSink()` answers with a truthy grab-bag, which is
+  // useful for list screens but silently wrong for any endpoint that returns a
+  // specific object: `if (data)` passes and the page crashes on the first nested
+  // read instead. Surfacing it in dev turns that mystery crash into a one-line
+  // "this endpoint has no preview handler".
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(
+      `[preview-api] No demo handler for ${method} ${pathname} — returning the generic fallback. `
+      + 'If a page reads a specific field off this response, add a handler with the real shape.',
+    );
+  }
   return kitchenSink();
 }
