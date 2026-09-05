@@ -179,7 +179,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
       >
         <span>{getAgentIcon(currentAgent)}</span>
         <span>{current?.name || 'Assistant'}</span>
-        <ChevronDown className={cn('h-3 w-3 transition-transform', isOpen && 'rotate-180')} />
+        <ChevronDown className={cn('icon-sm transition-transform', isOpen && 'rotate-180')} />
       </button>
 
       {isOpen && (
@@ -201,7 +201,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
                   <div className="text-xs text-muted-foreground line-clamp-1">{agent.description}</div>
                 </div>
                 {agent.id === currentAgent && (
-                  <ChevronRight className="h-4 w-4 text-status-accent mt-0.5" />
+                  <ChevronRight className="icon-sm text-status-accent mt-0.5" />
                 )}
               </button>
             ))}
@@ -228,7 +228,7 @@ function AIMessageBubble({ message }: { message: AIMessage }) {
       )}>
         {message.isStreaming && !message.content ? (
           <div className="flex items-center gap-1.5">
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="icon-sm animate-spin" />
             <span className="text-xs text-muted-foreground">Thinking...</span>
           </div>
         ) : (
@@ -640,13 +640,13 @@ export function UnifiedChatPopup() {
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="h-3 w-3" />
+          <GripVertical className="icon-sm" />
         </div>
         <div
           className="flex items-center gap-2 cursor-pointer rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5 hover:shadow-xl transition-all"
           onClick={restore}
         >
-          <Bot className="h-4 w-4 text-white" />
+          <Bot className="icon-sm text-white" />
           <span className="text-sm font-medium text-white">Chat</span>
           {(totalMsgUnread > 0 || aiMessages.length > 0) && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
@@ -657,7 +657,7 @@ export function UnifiedChatPopup() {
             onClick={(e) => { e.stopPropagation(); close(); }}
             className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
           >
-            <X className="h-3.5 w-3.5 text-white/80" />
+            <X className="icon-sm text-white/80" />
           </button>
         </div>
       </div>
@@ -686,7 +686,7 @@ export function UnifiedChatPopup() {
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="icon-sm" />
         </div>
 
         <div className="flex-1 flex items-center gap-1 bg-white/10 rounded-full p-0.5">
@@ -697,7 +697,7 @@ export function UnifiedChatPopup() {
               activeTab === 'messages' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <MessageSquare className="h-3 w-3" />
+            <MessageSquare className="icon-sm" />
             Messages
             {totalMsgUnread > 0 && (
               <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
@@ -712,7 +712,7 @@ export function UnifiedChatPopup() {
               activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <Bot className="h-3 w-3" />
+            <Bot className="icon-sm" />
             AI Assistant
             {!isAIAvailable && (
               <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" title="Limited mode" />
@@ -721,10 +721,10 @@ export function UnifiedChatPopup() {
         </div>
 
         <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <ChevronDown className="h-4 w-4 text-white" />
+          <ChevronDown className="icon-sm text-white" />
         </button>
         <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <X className="h-4 w-4 text-white" />
+          <X className="icon-sm text-white" />
         </button>
       </div>
 
@@ -737,10 +737,10 @@ export function UnifiedChatPopup() {
               {aiMessages.length > 0 && (
                 <>
                   <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Retry last message">
-                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    <RefreshCw className="icon-sm text-muted-foreground" />
                   </button>
                   <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear conversation">
-                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Trash2 className="icon-sm text-muted-foreground" />
                   </button>
                 </>
               )}
@@ -789,7 +789,7 @@ export function UnifiedChatPopup() {
                 disabled={!aiInput.trim() || isStreaming}
                 className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
               >
-                {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {isStreaming ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
               </Button>
             </div>
             <p className="text-2xs text-muted-foreground text-center mt-2">
@@ -809,7 +809,7 @@ export function UnifiedChatPopup() {
                 onClick={() => { setSelected(null); setActiveConversationId(null); }}
                 className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="icon-sm" />
               </button>
               <div className="relative shrink-0">
                 <Avatar className="h-7 w-7">
@@ -831,14 +831,14 @@ export function UnifiedChatPopup() {
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 title="Open full chat"
               >
-                <Maximize2 className="h-3.5 w-3.5" />
+                <Maximize2 className="icon-sm" />
               </button>
             </div>
           )}
 
           {isInitializing ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+              <Loader2 className="icon-md text-muted-foreground animate-spin" />
             </div>
           ) : selected ? (
             /* Message thread */
@@ -846,12 +846,12 @@ export function UnifiedChatPopup() {
               <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scroll-smooth">
                 {loadingMessages ? (
                   <div className="flex justify-center pt-8">
-                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                    <Loader2 className="icon-sm text-muted-foreground animate-spin" />
                   </div>
                 ) : msgMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary-accessible" />
+                      <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">Say hello!</p>
                     <p className="text-xs text-muted-foreground">Start a conversation with {selected.recipientName}</p>
@@ -889,11 +889,11 @@ export function UnifiedChatPopup() {
                             {isMe && (
                               <span className="text-muted-foreground mb-0.5">
                                 {msg.status === 'sending' ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  <Loader2 className="icon-sm animate-spin" />
                                 ) : msg.status === 'read' ? (
-                                  <CheckCheck className="h-3 w-3 text-primary-accessible" />
+                                  <CheckCheck className="icon-sm text-primary-accessible" />
                                 ) : (
-                                  <Check className="h-3 w-3" />
+                                  <Check className="icon-sm" />
                                 )}
                               </span>
                             )}
@@ -923,7 +923,7 @@ export function UnifiedChatPopup() {
                     size="sm"
                     className="h-9 w-9 p-0 rounded-xl shrink-0"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="icon-sm" />
                   </Button>
                 </div>
               </div>
@@ -933,7 +933,7 @@ export function UnifiedChatPopup() {
             <div className="flex-1 flex flex-col min-h-0">
               <div className="px-3 pt-2.5 pb-2 shrink-0">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -947,7 +947,7 @@ export function UnifiedChatPopup() {
                 {filteredConvos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary-accessible" />
+                      <MessageCircle className="icon-md text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">
                       {searchQuery ? 'No results' : 'No messages yet'}
@@ -973,7 +973,7 @@ export function UnifiedChatPopup() {
                   onClick={handleExpandToFullPage}
                   className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 rounded-lg hover:bg-muted/40"
                 >
-                  <Maximize2 className="h-3.5 w-3.5" />
+                  <Maximize2 className="icon-sm" />
                   Open full messaging view
                 </button>
               </div>

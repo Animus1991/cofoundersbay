@@ -142,7 +142,7 @@ export function ShareModal({
                 onClick={handleCopy}
                 className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-green-600 hover:bg-green-600 border-green-600')}
               >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+                {copied ? <Check className="icon-sm" /> : <Link2 className="icon-sm" />}
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
@@ -172,7 +172,7 @@ export function ShareModal({
           {/* Native share (mobile) */}
           {typeof navigator !== 'undefined' && !!navigator.share && (
             <Button variant="outline" className="w-full gap-2" onClick={handleNativeShare}>
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="icon-sm" />
               More options…
             </Button>
           )}
@@ -200,7 +200,7 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
   return (
     <>
       <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
-        {children ?? <><Share2 className="h-4 w-4 mr-1.5" />Share</>}
+        {children ?? <><Share2 className="icon-sm mr-1.5" />Share</>}
       </Button>
       <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={title} description={description} imageUrl={imageUrl} hashtags={hashtags} />
     </>

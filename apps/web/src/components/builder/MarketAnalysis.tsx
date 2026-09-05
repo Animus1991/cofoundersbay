@@ -250,7 +250,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-status-success-bg rounded-lg">
-            <TrendingUp className="h-5 w-5 text-status-success" />
+            <TrendingUp className="icon-md text-status-success" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Market Analysis</h2>
@@ -271,14 +271,14 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" />
             )}
             AI Generate
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" />
             Save
           </Button>
         </div>
@@ -297,23 +297,23 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="market-size" className="gap-1">
-            <BarChart3 className="h-3 w-3" />
+            <BarChart3 className="icon-sm" />
             Market Size
           </TabsTrigger>
           <TabsTrigger value="competitors" className="gap-1">
-            <Target className="h-3 w-3" />
+            <Target className="icon-sm" />
             Competitors
           </TabsTrigger>
           <TabsTrigger value="customers" className="gap-1">
-            <Users className="h-3 w-3" />
+            <Users className="icon-sm" />
             Customers
           </TabsTrigger>
           <TabsTrigger value="trends" className="gap-1">
-            <TrendingUp className="h-3 w-3" />
+            <TrendingUp className="icon-sm" />
             Trends
           </TabsTrigger>
           <TabsTrigger value="positioning" className="gap-1">
-            <Zap className="h-3 w-3" />
+            <Zap className="icon-sm" />
             Positioning
           </TabsTrigger>
         </TabsList>
@@ -325,7 +325,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-status-info" />
+                  <Globe className="icon-md text-status-info" />
                   TAM (Total Addressable Market)
                 </CardTitle>
               </CardHeader>
@@ -371,7 +371,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-status-success" />
+                  <Target className="icon-md text-status-success" />
                   SAM (Serviceable Addressable Market)
                 </CardTitle>
               </CardHeader>
@@ -417,7 +417,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-status-warning" />
+                  <Zap className="icon-md text-status-warning" />
                   SOM (Serviceable Obtainable Market)
                 </CardTitle>
               </CardHeader>
@@ -504,7 +504,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <CardContent className="space-y-4">
               {data.directCompetitors.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <Target className="icon-xl mx-auto mb-2 opacity-50" />
                   <p>No competitors added yet. Click "Add Competitor" to start.</p>
                 </div>
               ) : (
@@ -556,7 +556,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <Users className="icon-md" />
                 Ideal Customer Profile (ICP)
               </CardTitle>
             </CardHeader>
@@ -620,7 +620,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <CardContent>
               {data.personas.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <Users className="icon-xl mx-auto mb-2 opacity-50" />
                   <p>No personas created yet. Click "Add Persona" to start.</p>
                 </div>
               ) : (
@@ -676,7 +676,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <CardContent className="space-y-4">
               {data.trends.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <TrendingUp className="icon-xl mx-auto mb-2 opacity-50" />
                   <p>No trends added yet. Click "Add Trend" to start.</p>
                 </div>
               ) : (
@@ -764,7 +764,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardContent className="space-y-3">
                 {data.differentiators.map((diff, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-status-success shrink-0" />
+                    <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                     <Input
                       value={diff}
                       onChange={(e) => {

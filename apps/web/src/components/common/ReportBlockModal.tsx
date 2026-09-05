@@ -206,7 +206,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary-accessible" />
+                <Shield className="icon-md text-primary-accessible" />
                 What would you like to do?
               </DialogTitle>
               <DialogDescription>
@@ -220,7 +220,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
-                  <Flag className="h-5 w-5 text-status-warning" />
+                  <Flag className="icon-md text-status-warning" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Report user</p>
@@ -235,7 +235,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                  <Ban className="h-5 w-5 text-destructive-accessible" />
+                  <Ban className="icon-md text-destructive-accessible" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Block user</p>
@@ -252,7 +252,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Flag className="h-5 w-5 text-status-warning" />
+                <Flag className="icon-md text-status-warning" />
                 Report {userName}
               </DialogTitle>
               <DialogDescription>
@@ -341,9 +341,9 @@ export function ReportBlockModal({
                 className="gap-2"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Flag className="h-4 w-4" />
+                  <Flag className="icon-sm" />
                 )}
                 Submit Report
               </Button>
@@ -355,7 +355,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5 text-destructive-accessible" />
+                <Ban className="icon-md text-destructive-accessible" />
                 Block {userName}?
               </DialogTitle>
               <DialogDescription>
@@ -368,19 +368,19 @@ export function ReportBlockModal({
                 <p className="text-sm text-foreground">When you block someone:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't be able to message you
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't see your profile
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't appear in your matches
                   </li>
                   <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
+                    <Check className="icon-sm shrink-0 mt-0.5 text-muted-foreground" />
                     They won't be notified that you blocked them
                   </li>
                 </ul>
@@ -403,9 +403,9 @@ export function ReportBlockModal({
                 className="gap-2"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : (
-                  <Ban className="h-4 w-4" />
+                  <Ban className="icon-sm" />
                 )}
                 Block User
               </Button>

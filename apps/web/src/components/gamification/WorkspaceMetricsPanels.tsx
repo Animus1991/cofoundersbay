@@ -108,7 +108,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Target className="h-4 w-4 text-primary-accessible" />
+            <Target className="icon-sm text-primary-accessible" />
             Startup Readiness
           </CardTitle>
           <div className="flex items-center gap-1.5">
@@ -133,7 +133,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <Icon className="icon-sm text-muted-foreground shrink-0" />
                   <span className="text-xs font-medium truncate">{label}</span>
                   {detail?.weight && (
                     <span className="text-2xs text-muted-foreground hidden md:block">
@@ -220,7 +220,7 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Zap className="h-4 w-4 text-status-warning" />
+            <Zap className="icon-sm text-status-warning" />
             Team Momentum
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Users className="h-4 w-4 text-status-info" />
+          <Users className="icon-sm text-status-info" />
           Contributions
         </CardTitle>
       </CardHeader>
@@ -379,7 +379,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-status-accent" />
+            <MessageSquare className="icon-sm text-status-accent" />
             Mentor Feedback Loop
           </CardTitle>
           <Badge variant={scoreBadgeVariant(data.improvementScore)} className="tabular-nums">

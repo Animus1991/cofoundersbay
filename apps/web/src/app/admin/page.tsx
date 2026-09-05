@@ -777,7 +777,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-base">User Management</CardTitle>
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input
                     placeholder="Search users…"
                     value={userSearch}
@@ -822,11 +822,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="icon-sm text-muted-foreground" />
                 Events
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> Refresh
               </Button>
             </div>
             {eventsLoading ? (
@@ -856,7 +856,7 @@ export default function AdminPage() {
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {ev.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {ev.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
@@ -864,7 +864,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -878,11 +878,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <Briefcase className="icon-sm text-muted-foreground" />
                 Job Postings
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="icon-sm mr-1.5" /> Refresh
               </Button>
             </div>
             {jobsLoading ? (
@@ -912,7 +912,7 @@ export default function AdminPage() {
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {job.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {job.isFeatured ? <StarOff className="icon-sm mr-1" /> : <Star className="icon-sm mr-1" />}
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
@@ -920,7 +920,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -935,7 +935,7 @@ export default function AdminPage() {
         <TabsContent value="cohorts" className="mt-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
                 placeholder="Search cohorts…"
                 value={cohortSearch}
@@ -944,7 +944,7 @@ export default function AdminPage() {
               />
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
-              <Plus className="h-4 w-4" />
+              <Plus className="icon-sm" />
               New Cohort
             </Button>
           </div>
@@ -1026,12 +1026,12 @@ export default function AdminPage() {
                         )}
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Badge variant="secondary" className="gap-1 text-xs">
-                            <UserCheck className="h-3 w-3" />
+                            <UserCheck className="icon-sm" />
                             {cohort._count.members} members
                           </Badge>
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
-                              <Calendar className="h-3 w-3" />
+                              <Calendar className="icon-sm" />
                               {new Date(cohort.startDate).toLocaleDateString()}
                             </Badge>
                           )}
@@ -1047,7 +1047,7 @@ export default function AdminPage() {
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="icon-sm" />
                       </Button>
                     </div>
                   </CardContent>
@@ -1130,7 +1130,7 @@ export default function AdminPage() {
                   disabled={!auditData?.logs?.length}
                   className="gap-1.5"
                 >
-                  <Download className="h-3.5 w-3.5" />
+                  <Download className="icon-sm" />
                   Export CSV
                 </Button>
               </div>
@@ -1155,7 +1155,7 @@ export default function AdminPage() {
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="h-4 w-4 text-primary-accessible" />
+                      <Shield className="icon-sm text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

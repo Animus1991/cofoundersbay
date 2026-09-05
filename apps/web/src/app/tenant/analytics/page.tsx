@@ -83,7 +83,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="h-5 w-5 text-primary-accessible" />
+                  <Users className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>
@@ -96,7 +96,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-info-bg">
-                  <Rocket className="h-5 w-5 text-status-info" />
+                  <Rocket className="icon-md text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
@@ -109,7 +109,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-accent-bg">
-                  <Award className="h-5 w-5 text-status-accent" />
+                  <Award className="icon-md text-status-accent" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
@@ -122,7 +122,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-success-bg">
-                  <Calendar className="h-5 w-5 text-status-success" />
+                  <Calendar className="icon-md text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>

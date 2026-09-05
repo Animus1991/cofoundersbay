@@ -210,16 +210,16 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                          <MoreVertical className="h-3 w-3" />
+                          <MoreVertical className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setReplyingTo(message)}>
-                          <Reply className="h-4 w-4 mr-2" />
+                          <Reply className="icon-sm mr-2" />
                           Reply
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleCopyMessage(message.content)}>
-                          <Copy className="h-4 w-4 mr-2" />
+                          <Copy className="icon-sm mr-2" />
                           Copy
                         </DropdownMenuItem>
                         {isOwn && (
@@ -227,7 +227,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                             onClick={() => deleteMessageMutation.mutate(message.id)}
                             className="text-destructive-accessible"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
+                            <Trash2 className="icon-sm mr-2" />
                             Delete
                           </DropdownMenuItem>
                         )}
@@ -241,9 +241,9 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                   {isOwn && (
                     <>
                       {message.readAt ? (
-                        <CheckCheck className="h-3 w-3 text-status-info" />
+                        <CheckCheck className="icon-sm text-status-info" />
                       ) : (
-                        <Check className="h-3 w-3" />
+                        <Check className="icon-sm" />
                       )}
                     </>
                   )}
@@ -260,7 +260,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
       {replyingTo && (
         <div className="px-4 py-2 bg-secondary/40 border-t flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Reply className="h-4 w-4 text-muted-foreground" />
+            <Reply className="icon-sm text-muted-foreground" />
             <div className="text-sm">
               <span className="text-muted-foreground">Replying to </span>
               <span className="font-medium">{replyingTo.senderName}</span>
@@ -272,7 +272,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
             onClick={() => setReplyingTo(null)}
             className="h-6 w-6 p-0"
           >
-            <X className="h-3 w-3" />
+            <X className="icon-sm" />
           </Button>
         </div>
       )}

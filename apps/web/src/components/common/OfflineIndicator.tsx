@@ -99,11 +99,11 @@ export function OfflineBanner() {
       <div className="bg-amber-500 px-3 py-1.5 text-amber-950 sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <WifiOff className="h-4 w-4 shrink-0" />
+            <WifiOff className="icon-sm shrink-0" />
             <span className="truncate text-xs font-medium sm:text-sm">You&apos;re offline. Some features may be unavailable.</span>
           </div>
           <Button size="sm" variant="ghost" className="h-7 shrink-0 text-amber-950 hover:bg-amber-600" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 sm:mr-1" />
+            <RefreshCw className="icon-sm sm:mr-1" />
             <span className="hidden sm:inline">Retry</span>
           </Button>
         </div>
@@ -116,7 +116,7 @@ export function OfflineBanner() {
       <div className="bg-orange-600 px-3 py-1.5 text-white sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <ServerCrash className="h-4 w-4 shrink-0" />
+            <ServerCrash className="icon-sm shrink-0" />
             <span className="truncate text-xs font-medium sm:text-sm">
               API server is unavailable — pages will reload automatically when it recovers.
               {process.env.NODE_ENV === 'development' && (
@@ -126,7 +126,7 @@ export function OfflineBanner() {
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
-              <RefreshCw className="h-3 w-3 sm:mr-1" />
+              <RefreshCw className="icon-sm sm:mr-1" />
               <span className="hidden sm:inline">Reload</span>
             </Button>
             <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => setDismissed(true)} aria-label="Dismiss">
@@ -142,7 +142,7 @@ export function OfflineBanner() {
     return (
       <div className="bg-emerald-500 px-3 py-1.5 text-emerald-950 sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-center gap-2">
-          <Wifi className="h-4 w-4" />
+          <Wifi className="icon-sm" />
           <span className="text-xs font-medium sm:text-sm">Back online!</span>
         </div>
       </div>
@@ -166,12 +166,12 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
     >
       {isOnline ? (
         <>
-          <Cloud className="h-3 w-3" />
+          <Cloud className="icon-sm" />
           <span>Connected</span>
         </>
       ) : (
         <>
-          <CloudOff className="h-3 w-3" />
+          <CloudOff className="icon-sm" />
           <span>Offline</span>
         </>
       )}
@@ -194,7 +194,7 @@ export function OnlineOnly({ children, fallback, requireOnline = true }: WithOnl
       fallback || (
         <div className="flex items-center justify-center p-8 text-center">
           <div>
-            <WifiOff className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+            <WifiOff className="mx-auto icon-xl text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">
               This feature requires an internet connection
             </p>

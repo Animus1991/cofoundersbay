@@ -82,7 +82,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-4 text-sm text-status-warning ">
-          <AlertTriangle className="h-5 w-5 shrink-0" />
+          <AlertTriangle className="icon-md shrink-0" />
           <div>
             <p className="font-medium">Secure your account</p>
             <p className="mt-1">
@@ -130,7 +130,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
               {setupData?.secret}
             </code>
             <Button variant="outline" size="icon" onClick={copySecret}>
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              {copied ? <Check className="icon-sm" /> : <Copy className="icon-sm" />}
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -170,7 +170,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
     return (
       <div className="space-y-6">
         <div className="flex items-start gap-3 rounded-lg bg-status-success-bg p-4 text-sm text-status-success ">
-          <Shield className="h-5 w-5 shrink-0" />
+          <Shield className="icon-md shrink-0" />
           <div>
             <p className="font-medium">2FA Enabled Successfully</p>
             <p className="mt-1">
@@ -189,7 +189,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
               disabled={isLoading}
               className="gap-1"
             >
-              <RefreshCw className="h-3 w-3" />
+              <RefreshCw className="icon-sm" />
               Regenerate
             </Button>
           </div>
@@ -208,7 +208,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
           </div>
 
           <div className="flex items-start gap-2 rounded-lg bg-status-warning-bg p-3 text-xs text-status-warning ">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <AlertTriangle className="icon-sm shrink-0" />
             <p>
               Save these backup codes in a secure location. They can be used to access your account
               if you lose access to your authenticator app. Each code can only be used once.

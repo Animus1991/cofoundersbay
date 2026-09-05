@@ -70,7 +70,7 @@ function MatchScoreBadge({ score }: { score: number }) {
     score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
   return (
     <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
-      <Star className="h-3 w-3 fill-current" />
+      <Star className="icon-sm fill-current" />
       {score}%
     </div>
   );
@@ -117,7 +117,7 @@ function BreakdownModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-primary-accessible" />
+            <Star className="icon-sm text-primary-accessible" />
             Match Score Breakdown
           </DialogTitle>
         </DialogHeader>
@@ -173,7 +173,7 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
         onClick={() => setOpen(p => !p)}
         title="Feedback"
       >
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDown className="icon-sm" />
       </Button>
       {open && (
         <>
@@ -255,7 +255,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 )}
                 {location && (
                   <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="icon-sm" />
                     {location}
                   </p>
                 )}
@@ -264,13 +264,13 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 {score > 0 && <MatchScoreBadge score={score} />}
                 {confidence !== null && (
                   <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <ShieldCheck className="h-3 w-3" />
+                    <ShieldCheck className="icon-sm" />
                     {confidence}%
                   </span>
                 )}
                 {role && (
                   <Badge variant="outline" className={cn('text-xs capitalize hidden sm:flex', ROLE_COLOR[role ?? 'founder'])}>
-                    <RoleIcon className="h-3 w-3 mr-1" />
+                    <RoleIcon className="icon-sm mr-1" />
                     {role}
                   </Badge>
                 )}
@@ -289,7 +289,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   onClick={() => setShowExplanation(p => !p)}
                   className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
                 >
-                  <Info className="h-3 w-3" />
+                  <Info className="icon-sm" />
                   {showExplanation ? 'Hide' : 'Why this match?'}
                 </button>
               </div>
@@ -314,11 +314,11 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
 
             <div className="flex items-center gap-2">
               <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-                <UserPlus className="h-3.5 w-3.5" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="icon-sm" />
                 Score Breakdown
               </Button>
               <div className="ml-auto flex items-center gap-1">
@@ -330,7 +330,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
-                    <BookmarkPlus className="h-3.5 w-3.5" />
+                    <BookmarkPlus className="icon-sm" />
                   </Button>
                 )}
                 <Button
@@ -340,7 +340,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >
-                  <ThumbsUp className="h-3.5 w-3.5" />
+                  <ThumbsUp className="icon-sm" />
                 </Button>
                 <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
               </div>
@@ -450,7 +450,7 @@ export default function RecommendationsPage() {
       description="AI-powered picks based on your profile, skills, and recent activity. Refreshes daily."
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className="icon-sm mr-2" />
           <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       }
@@ -467,7 +467,7 @@ export default function RecommendationsPage() {
             <Card key={labelEn}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Icon className="h-4 w-4 text-primary-accessible" />
+                  <Icon className="icon-sm text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-xl font-bold leading-none">{value}</p>
@@ -483,7 +483,7 @@ export default function RecommendationsPage() {
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-primary-accessible" />
+                <Sparkles className="icon-sm text-primary-accessible" />
                 <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
                   {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
@@ -523,7 +523,7 @@ export default function RecommendationsPage() {
             className="gap-1.5"
             onClick={() => setShowFilter(p => !p)}
           >
-            <Filter className="h-3.5 w-3.5" />
+            <Filter className="icon-sm" />
             Filter
             {minScore > 0 && <span className="ml-1 text-xs text-primary-accessible font-semibold">≥{minScore}%</span>}
           </Button>
@@ -542,7 +542,7 @@ export default function RecommendationsPage() {
               <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
               {minScore > 0 && (
                 <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
+                  <X className="icon-sm" />
                 </button>
               )}
             </div>
@@ -557,23 +557,23 @@ export default function RecommendationsPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
             <TabsTrigger value="all" className="gap-1.5">
-              <Target className="h-3.5 w-3.5" />
+              <Target className="icon-sm" />
               <BilingualText en="All" el="Όλοι" compact />
             </TabsTrigger>
             <TabsTrigger value="founders" className="gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" />
+              <Briefcase className="icon-sm" />
               <BilingualText en="Founders" el="Ιδρυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="mentors" className="gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" />
+              <GraduationCap className="icon-sm" />
               <BilingualText en="Mentors" el="Μέντορες" compact />
             </TabsTrigger>
             <TabsTrigger value="investors" className="gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" />
+              <DollarSign className="icon-sm" />
               <BilingualText en="Investors" el="Επενδυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-1.5">
-              <BookmarkPlus className="h-3.5 w-3.5" />
+              <BookmarkPlus className="icon-sm" />
               <BilingualText en="Saved" el="Αποθηκευμένα" compact />
               {savedIds.size > 0 && (
                 <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">

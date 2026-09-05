@@ -46,42 +46,42 @@ export function AdvancedAnalyticsDashboard() {
       value: '2,847',
       change: 12.5,
       trend: 'up',
-      icon: <Eye className="h-4 w-4" />,
+      icon: <Eye className="icon-sm" />,
     },
     {
       label: 'Connections',
       value: 156,
       change: 8.2,
       trend: 'up',
-      icon: <Users className="h-4 w-4" />,
+      icon: <Users className="icon-sm" />,
     },
     {
       label: 'Messages Sent',
       value: 423,
       change: -3.1,
       trend: 'down',
-      icon: <MessageSquare className="h-4 w-4" />,
+      icon: <MessageSquare className="icon-sm" />,
     },
     {
       label: 'Events Attended',
       value: 12,
       change: 20.0,
       trend: 'up',
-      icon: <Calendar className="h-4 w-4" />,
+      icon: <Calendar className="icon-sm" />,
     },
     {
       label: 'Post Engagement',
       value: '1,234',
       change: 15.3,
       trend: 'up',
-      icon: <Heart className="h-4 w-4" />,
+      icon: <Heart className="icon-sm" />,
     },
     {
       label: 'Profile Shares',
       value: 89,
       change: 5.7,
       trend: 'up',
-      icon: <Share2 className="h-4 w-4" />,
+      icon: <Share2 className="icon-sm" />,
     },
   ];
 
@@ -131,21 +131,21 @@ export function AdvancedAnalyticsDashboard() {
       title: 'Networking Pro',
       description: 'Connected with 100+ founders',
       date: '2 days ago',
-      icon: <Users className="h-5 w-5" />,
+      icon: <Users className="icon-md" />,
       color: 'text-primary-accessible',
     },
     {
       title: 'Active Contributor',
       description: 'Posted 50+ valuable insights',
       date: '1 week ago',
-      icon: <Activity className="h-5 w-5" />,
+      icon: <Activity className="icon-md" />,
       color: 'text-accent',
     },
     {
       title: 'Event Enthusiast',
       description: 'Attended 10+ events',
       date: '2 weeks ago',
-      icon: <Calendar className="h-5 w-5" />,
+      icon: <Calendar className="icon-md" />,
       color: 'text-secondary',
     },
   ];
@@ -189,7 +189,7 @@ export function AdvancedAnalyticsDashboard() {
                 'text-muted-foreground'
               )}>
                 <TrendingUp className={cn(
-                  "h-3 w-3",
+                  "icon-sm",
                   metric.trend === 'down' && 'rotate-180'
                 )} />
                 {Math.abs(metric.change)}% from last period
@@ -205,7 +205,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LineChart className="h-5 w-5" />
+              <LineChart className="icon-md" />
               Weekly Engagement
             </CardTitle>
             <CardDescription>
@@ -250,7 +250,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <BarChart3 className="icon-md" />
               Connection Growth
             </CardTitle>
             <CardDescription>
@@ -284,7 +284,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
+              <Target className="icon-md" />
               Top Skills
             </CardTitle>
             <CardDescription>
@@ -315,7 +315,7 @@ export function AdvancedAnalyticsDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
+              <PieChart className="icon-md" />
               Activity Breakdown
             </CardTitle>
             <CardDescription>
@@ -349,7 +349,7 @@ export function AdvancedAnalyticsDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
+            <Award className="icon-md" />
             Recent Achievements
           </CardTitle>
           <CardDescription>

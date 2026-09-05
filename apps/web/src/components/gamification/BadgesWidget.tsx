@@ -13,7 +13,7 @@ export function BadgesWidget() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
+            <Award className="icon-md" />
             Badges
           </CardTitle>
         </CardHeader>
@@ -33,7 +33,7 @@ export function BadgesWidget() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5" />
+            <Award className="icon-md" />
             Badges
           </CardTitle>
         </CardHeader>
@@ -55,7 +55,7 @@ export function BadgesWidget() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-status-accent" />
+            <Award className="icon-md text-status-accent" />
             Badges
           </div>
           <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export function BadgesWidget() {
             </span>
             {unseenCount > 0 && (
               <BadgeUI variant="secondary" className="gap-1">
-                <Sparkles className="h-3 w-3" />
+                <Sparkles className="icon-sm" />
                 {unseenCount} new
               </BadgeUI>
             )}

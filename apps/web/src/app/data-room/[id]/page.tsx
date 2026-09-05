@@ -351,11 +351,11 @@ export default function DataRoomPage() {
             size="sm"
             onClick={() => setIsShareDialogOpen(true)}
           >
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share2 className="icon-sm mr-2" />
             Share Access
           </Button>
           <Button size="sm" onClick={() => setIsUploadDialogOpen(true)}>
-            <Upload className="h-4 w-4 mr-2" />
+            <Upload className="icon-sm mr-2" />
             Upload
           </Button>
         </div>
@@ -375,7 +375,7 @@ export default function DataRoomPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="icon-sm text-muted-foreground" />
                   <span className="text-sm font-medium">Storage Usage</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
@@ -405,7 +405,7 @@ export default function DataRoomPage() {
                       : 'hover:bg-muted'
                   )}
                 >
-                  <Folder className="h-4 w-4" />
+                  <Folder className="icon-sm" />
                   All Documents
                   <Badge variant="secondary" className="ml-auto">
                     {documents.length}
@@ -422,9 +422,9 @@ export default function DataRoomPage() {
                         : 'hover:bg-muted'
                     )}
                   >
-                    <Folder className="h-4 w-4" />
+                    <Folder className="icon-sm" />
                     {folder.name}
-                    {!folder.isPublic && <Lock className="h-3 w-3 ml-1" />}
+                    {!folder.isPublic && <Lock className="icon-sm ml-1" />}
                     <Badge variant="secondary" className="ml-auto">
                       {folder.documentCount}
                     </Badge>
@@ -438,7 +438,7 @@ export default function DataRoomPage() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div className="flex items-center gap-4">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
                       placeholder="Search documents..."
                       value={searchQuery}
@@ -453,14 +453,14 @@ export default function DataRoomPage() {
                     size="sm"
                     onClick={() => setViewMode('list')}
                   >
-                    <List className="h-4 w-4" />
+                    <List className="icon-sm" />
                   </Button>
                   <Button
                     variant={viewMode === 'grid' ? 'default' : 'ghost'}
                     size="sm"
                     onClick={() => setViewMode('grid')}
                   >
-                    <Grid className="h-4 w-4" />
+                    <Grid className="icon-sm" />
                   </Button>
                 </div>
               </CardHeader>
@@ -485,7 +485,7 @@ export default function DataRoomPage() {
                           <TableRow key={document.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
-                                <FileIcon className="h-5 w-5 text-muted-foreground" />
+                                <FileIcon className="icon-md text-muted-foreground" />
                                 <div>
                                   <p className="font-medium">{document.name}</p>
                                   {document.description && (
@@ -515,12 +515,12 @@ export default function DataRoomPage() {
                             <TableCell>
                               {document.isPublic ? (
                                 <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
-                                  <Unlock className="h-3 w-3 mr-1" />
+                                  <Unlock className="icon-sm mr-1" />
                                   Public
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="bg-status-warning-bg text-status-warning border-status-warning-border">
-                                  <Lock className="h-3 w-3 mr-1" />
+                                  <Lock className="icon-sm mr-1" />
                                   Private
                                 </Badge>
                               )}
@@ -528,11 +528,11 @@ export default function DataRoomPage() {
                             <TableCell>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
-                                  <Eye className="h-3 w-3" />
+                                  <Eye className="icon-sm" />
                                   {document.viewCount}
                                 </span>
                                 <span className="flex items-center gap-1">
-                                  <Download className="h-3 w-3" />
+                                  <Download className="icon-sm" />
                                   {document.downloadCount}
                                 </span>
                               </div>
@@ -541,29 +541,29 @@ export default function DataRoomPage() {
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <MoreVertical className="h-4 w-4" />
+                                    <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem>
-                                    <Eye className="h-4 w-4 mr-2" />
+                                    <Eye className="icon-sm mr-2" />
                                     View
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
-                                    <Download className="h-4 w-4 mr-2" />
+                                    <Download className="icon-sm mr-2" />
                                     Download
                                   </DropdownMenuItem>
                                   <DropdownMenuItem>
-                                    <Share2 className="h-4 w-4 mr-2" />
+                                    <Share2 className="icon-sm mr-2" />
                                     Share
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem>
-                                    <Edit className="h-4 w-4 mr-2" />
+                                    <Edit className="icon-sm mr-2" />
                                     Edit
                                   </DropdownMenuItem>
                                   <DropdownMenuItem className="text-destructive-accessible">
-                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    <Trash2 className="icon-sm mr-2" />
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -590,7 +590,7 @@ export default function DataRoomPage() {
                                     size="icon"
                                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
-                                    <MoreVertical className="h-4 w-4" />
+                                    <MoreVertical className="icon-sm" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
@@ -620,7 +620,7 @@ export default function DataRoomPage() {
                                   </Badge>
                                 )}
                                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                  <Eye className="h-3 w-3" />
+                                  <Eye className="icon-sm" />
                                   {document.viewCount}
                                 </span>
                               </div>
@@ -641,7 +641,7 @@ export default function DataRoomPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Investor Access</CardTitle>
               <Button size="sm">
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="icon-sm mr-2" />
                 Add Investor
               </Button>
             </CardHeader>
@@ -700,11 +700,11 @@ export default function DataRoomPage() {
                       <TableCell>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
+                            <Eye className="icon-sm" />
                             {investor.documentsViewed} viewed
                           </span>
                           <span className="flex items-center gap-1">
-                            <Download className="h-3 w-3" />
+                            <Download className="icon-sm" />
                             {investor.documentsDownloaded} downloaded
                           </span>
                         </div>
@@ -713,7 +713,7 @@ export default function DataRoomPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
+                              <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -842,7 +842,7 @@ export default function DataRoomPage() {
                 </div>
                 <div className="pt-4 border-t">
                   <Button variant="destructive" size="sm">
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="icon-sm mr-2" />
                     Delete Room
                   </Button>
                 </div>
@@ -863,7 +863,7 @@ export default function DataRoomPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+              <Upload className="icon-xl mx-auto mb-2 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
                 Drop files here or click to browse
               </p>

@@ -82,12 +82,12 @@ function ReviewCard({ review }: { review: Review }) {
 
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-8 text-xs">
-                <ThumbsUp className="mr-1 h-3 w-3" />
+                <ThumbsUp className="mr-1 icon-sm" />
                 Helpful ({review.helpful})
               </Button>
               {!review.response && (
                 <Button variant="ghost" size="sm" className="h-8 text-xs">
-                  <MessageSquare className="mr-1 h-3 w-3" />
+                  <MessageSquare className="mr-1 icon-sm" />
                   Respond
                 </Button>
               )}
@@ -207,7 +207,7 @@ export default function ProviderReviewsPage() {
                   {ratingDistribution.map((dist) => (
                     <div key={dist.rating} className="flex items-center gap-2">
                       <span className="text-xs w-3">{dist.rating}</span>
-                      <Star className="h-3 w-3 fill-status-warning text-status-warning" />
+                      <Star className="icon-sm fill-status-warning text-status-warning" />
                       <Progress value={dist.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">
                         {dist.count}
@@ -250,7 +250,7 @@ export default function ProviderReviewsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search reviews..."
             value={search}

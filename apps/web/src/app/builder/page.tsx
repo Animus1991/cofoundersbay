@@ -113,7 +113,7 @@ function BuilderPageContent() {
     return (
       <AppShell title="Startup Builder" description="Structure idea, team, market, traction, and pitch — all in one workspace.">
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
       </AppShell>
     );
@@ -143,7 +143,7 @@ function BuilderPageContent() {
         {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
           <div className={cn('flex items-center gap-3 rounded-xl border px-4 py-3', STATUS.warning.border, STATUS.warning.bg)}>
-            <Sparkles className={cn('h-4 w-4 shrink-0', STATUS.warning.icon)} />
+            <Sparkles className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
                 <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
@@ -154,7 +154,7 @@ function BuilderPageContent() {
             </div>
             <a href="/expert-reviews" className="shrink-0">
               <Button variant="ghost" size="sm" className={cn('h-7 gap-1 text-xs font-semibold hover:bg-status-warning-bg', STATUS.warning.text)}>
-                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="h-3 w-3" />
+                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" />
               </Button>
             </a>
             <button
@@ -162,7 +162,7 @@ function BuilderPageContent() {
               className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
               title="Dismiss"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="icon-sm" />
             </button>
           </div>
         )}

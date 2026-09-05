@@ -95,7 +95,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             )}
             title="Preview diagram"
           >
-            <Eye className="w-3 h-3" />
+            <Eye className="icon-sm" />
             Preview
           </button>
           <button
@@ -106,7 +106,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             )}
             title="Edit Mermaid code"
           >
-            <Code className="w-3 h-3" />
+            <Code className="icon-sm" />
             Code
           </button>
           <div className="flex-1" />
@@ -115,7 +115,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             className="flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-muted-foreground hover:text-foreground transition-colors"
             title="Copy Mermaid code"
           >
-            {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+            {copied ? <Check className="icon-sm text-emerald-500" /> : <Copy className="icon-sm" />}
           </button>
         </div>
       )}
@@ -144,13 +144,13 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
         <div className="flex-1 min-h-0 overflow-auto flex items-center justify-center p-2">
           {loading && (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="icon-md animate-spin" />
               <span className="text-2xs">Rendering…</span>
             </div>
           )}
           {!loading && error && (
             <div className="flex flex-col items-center gap-2 text-destructive-accessible p-3 text-center">
-              <AlertTriangle className="w-5 h-5" />
+              <AlertTriangle className="icon-md" />
               <p className="text-2xs font-medium">Syntax error</p>
               <p className="text-2xs text-muted-foreground max-w-[200px] leading-relaxed">{error}</p>
               {!readOnly && (
@@ -173,7 +173,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           )}
           {!loading && !error && !svg && (
             <div className="flex flex-col items-center gap-2 text-muted-foreground/50 p-4 text-center">
-              <Code className="w-8 h-8 opacity-30" />
+              <Code className="icon-xl opacity-30" />
               <p className="text-2xs">No diagram yet</p>
               {!readOnly && (
                 <button

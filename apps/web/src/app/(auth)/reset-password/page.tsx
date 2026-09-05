@@ -86,7 +86,7 @@ export default function ResetPasswordPage() {
         {done ? (
           <div className="rounded-xl border border-status-success-border bg-status-success-bg px-6 py-8 text-center space-y-3">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg">
-              <CheckCircle2 className="h-6 w-6 text-status-success " />
+              <CheckCircle2 className="icon-lg text-status-success " />
             </div>
             <h2 className="font-semibold text-foreground">Password updated!</h2>
             <p className="text-sm text-muted-foreground">
@@ -180,7 +180,7 @@ export default function ResetPasswordPage() {
                   size="lg"
                 >
                   {loading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Updating…</>
+                    <><Loader2 className="mr-2 icon-sm animate-spin" />Updating…</>
                   ) : 'Reset password'}
                 </Button>
               </>

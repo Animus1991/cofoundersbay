@@ -113,7 +113,7 @@ function ApplyModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TypeIcon className="h-5 w-5 text-primary-accessible" />
+            <TypeIcon className="icon-md text-primary-accessible" />
             Apply to {program.title}
           </DialogTitle>
           <DialogDescription>
@@ -153,7 +153,7 @@ function ApplyModal({
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isApplying}>Cancel</Button>
           <Button onClick={() => onApply(note)} disabled={isApplying}>
-            {isApplying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+            {isApplying ? <Loader2 className="icon-sm animate-spin mr-2" /> : <Zap className="icon-sm mr-2" />}
             Submit Application
           </Button>
         </DialogFooter>
@@ -184,7 +184,7 @@ function ProgramCard({
           <Avatar className="h-11 w-11 rounded-xl flex-shrink-0 border border-border/60">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
             <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible">
-              <TypeIcon className="h-6 w-6" />
+              <TypeIcon className="icon-lg" />
             </AvatarFallback>
           </Avatar>
 
@@ -195,12 +195,12 @@ function ProgramCard({
                   <h3 className="font-semibold truncate">{program.title}</h3>
                   {isEnrolled && (
                     <Badge variant="outline" className="text-xs bg-primary/10 text-primary-accessible border-primary/30 gap-1">
-                      <CheckCircle2 className="h-3 w-3" />Applied
+                      <CheckCircle2 className="icon-sm" />Applied
                     </Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+                  <Building2 className="icon-sm flex-shrink-0" />
                   <span className="truncate">{program.organization?.name}</span>
                 </p>
               </div>
@@ -221,18 +221,18 @@ function ProgramCard({
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
               {program.applicationDeadline && program.status === 'open' && deadline !== null && (
                 <span className={cn('flex items-center gap-1', deadline !== null && deadline <= 7 && deadlineUrgencyClass(deadline))}>
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="icon-sm" />
                   {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
                 </span>
               )}
               {program.startDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="icon-sm" />
                   Starts {formatDate(program.startDate)}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                {program.isRemote ? <Globe className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+                {program.isRemote ? <Globe className="icon-sm" /> : <MapPin className="icon-sm" />}
                 {program.isRemote ? 'Remote' : (program.location ?? 'On-site')}
               </span>
               {spotsLeft !== null && (
@@ -240,7 +240,7 @@ function ProgramCard({
                   'flex items-center gap-1',
                   isFull ? cn('font-medium', STATUS.danger.icon) : spotsLeft <= 3 ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
                 )}>
-                  <Users className="h-3.5 w-3.5" />
+                  <Users className="icon-sm" />
                   {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
               )}
@@ -258,7 +258,7 @@ function ProgramCard({
               <div className="flex flex-wrap gap-1 mt-2">
                 {(program.benefits as string[]).slice(0, 3).map((b, i) => (
                   <span key={i} className={cn('text-xs flex items-center gap-1', STATUS.success.text)}>
-                    <Star className="h-3 w-3" />{b}
+                    <Star className="icon-sm" />{b}
                   </span>
                 ))}
               </div>
@@ -267,17 +267,17 @@ function ProgramCard({
             <div className="flex items-center gap-2 mt-4">
               {program.status === 'open' && !isEnrolled && !isFull && (
                 <Button size="sm" onClick={(e) => { e.preventDefault(); onApply(program); }}>
-                  <Zap className="h-3.5 w-3.5 mr-1.5" />Apply Now
+                  <Zap className="icon-sm mr-1.5" />Apply Now
                 </Button>
               )}
               {isEnrolled && (
                 <Button size="sm" variant="outline" className="text-primary-accessible border-primary/40">
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Applied
+                  <CheckCircle2 className="icon-sm mr-1.5" />Applied
                 </Button>
               )}
               <Button size="sm" variant="ghost" asChild>
                 <Link href={`/programs/${program.id}`}>
-                  View Details <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  View Details <ArrowRight className="icon-sm ml-1" />
                 </Link>
               </Button>
             </div>
@@ -377,7 +377,7 @@ export default function ProgramsPage() {
       description="Accelerators, incubators, bootcamps, and competitions to grow your startup"
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-          {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+          {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
           Refresh
         </Button>
       }
@@ -396,7 +396,7 @@ export default function ProgramsPage() {
               <Card key={label}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="rounded-lg p-2 bg-secondary">
-                    <Icon className={cn('h-4 w-4', STATUS[tone].icon)} />
+                    <Icon className={cn('icon-sm', STATUS[tone].icon)} />
                   </div>
                   <div>
                     <p className="text-lg font-bold tabular-nums">{value}</p>
@@ -411,7 +411,7 @@ export default function ProgramsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search programs, organizations, industries..."
               value={search}
@@ -420,7 +420,7 @@ export default function ProgramsPage() {
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
+                <X className="icon-sm" />
               </button>
             )}
           </div>
@@ -451,7 +451,7 @@ export default function ProgramsPage() {
           </Select>
           {hasFilters && (
             <Button variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title="Clear filters">
-              <X className="h-4 w-4" />
+              <X className="icon-sm" />
             </Button>
           )}
         </div>
@@ -460,7 +460,7 @@ export default function ProgramsPage() {
         {featuredPrograms.length > 0 && !hasFilters && (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-primary-accessible" />Featured &amp; Closing Soon
+              <Zap className="icon-sm text-primary-accessible" />Featured &amp; Closing Soon
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {featuredPrograms.slice(0, 4).map((p) => {

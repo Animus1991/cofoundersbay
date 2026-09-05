@@ -145,7 +145,7 @@ function ProfileCardInner({
               )}
             </div>
             <Button size="sm" variant="ghost" onClick={onConnect}>
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="icon-sm" />
             </Button>
           </div>
         </CardContent>
@@ -210,13 +210,13 @@ function ProfileCardInner({
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {profile.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="icon-sm" />
                 {profile.location}
               </span>
             )}
             {profile.lastActive && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="icon-sm" />
                 {formatLastActive(profile.lastActive)}
               </span>
             )}
@@ -281,11 +281,11 @@ function ProfileCardInner({
           <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
             <div className="flex items-center gap-2">
               <Button onClick={onConnect} size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="icon-sm" />
                 Message
               </Button>
             </div>
@@ -299,30 +299,30 @@ function ProfileCardInner({
                   bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                 )}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <Share2 className="h-4 w-4 mr-2" />
+                    <Share2 className="icon-sm mr-2" />
                     Share profile
                   </DropdownMenuItem>
                   {profile.linkedinUrl && (
                     <DropdownMenuItem asChild>
                       <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
+                        <ExternalLink className="icon-sm mr-2" />
                         LinkedIn
                       </a>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive-accessible">
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="icon-sm mr-2" />
                     Report
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -371,7 +371,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
                   <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
-                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="icon-sm fill-current" />
                     {profile.matchScore}%
                   </div>
                 )}
@@ -384,7 +384,7 @@ function ProfileCardInner({
                     bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                   )}
                 >
-                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                  <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
                 </Button>
               </div>
             </div>
@@ -393,7 +393,7 @@ function ProfileCardInner({
             )}
             {profile.location && (
               <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="icon-sm" />
                 {profile.location}
               </div>
             )}
@@ -429,11 +429,11 @@ function ProfileCardInner({
         {/* Actions */}
         <div className="mt-4 flex items-center gap-2">
           <Button onClick={onConnect} size="sm" variant="secondary" className="flex-1 gap-1.5">
-            <UserPlus className="h-3.5 w-3.5" />
+            <UserPlus className="icon-sm" />
             Connect
           </Button>
           <Button onClick={onMessage} size="sm" variant="ghost" className="gap-1.5">
-            <MessageCircle className="h-3.5 w-3.5" />
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       </CardContent>

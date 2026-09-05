@@ -198,7 +198,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
             onClick={() => setSaved(!saved)}
             className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground')}
           >
-            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', saved && 'fill-current')} />
           </button>
         </div>
 
@@ -219,18 +219,18 @@ function ResourceCard({ resource }: { resource: Resource }) {
             <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
             <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
               {resource.duration && (
-                <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{resource.duration}</span>
+                <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{resource.duration}</span>
               )}
               {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="h-3 w-3 text-status-success" />{resource.completedBy.toLocaleString()}</span>
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-sm text-status-success" />{resource.completedBy.toLocaleString()}</span>
               )}
             </div>
           </div>
           <Button variant="default" size="sm" className="gap-1 h-7 text-xs shrink-0" onClick={() => window.open(resource.url, '_blank')}>
             {resource.type === 'video' || resource.type === 'course' ? (
-              <><Play className="h-3 w-3" />Start</>
+              <><Play className="icon-sm" />Start</>
             ) : (
-              <><ExternalLink className="h-3 w-3" />Open</>
+              <><ExternalLink className="icon-sm" />Open</>
             )}
           </Button>
         </div>
@@ -254,13 +254,13 @@ function LearningPathCard({ path }: { path: LearningPath }) {
       <h3 className="font-semibold text-sm text-foreground mb-1">{path.title}</h3>
       <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
       <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
-        <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{path.steps} modules</span>
-        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{path.duration}</span>
+        <span className="flex items-center gap-0.5"><BookOpen className="icon-sm" />{path.steps} modules</span>
+        <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
       <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-accessible">
         {path.progress > 0 ? 'Continue path' : 'Start path'}
-        <ChevronRight className="h-3 w-3" />
+        <ChevronRight className="icon-sm" />
       </div>
     </div>
   );
@@ -385,7 +385,7 @@ export default function LearningPage() {
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
+                  <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
@@ -402,11 +402,11 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary-accessible" />
+              <Target className="icon-sm text-primary-accessible" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
             </div>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-              View all <ChevronRight className="h-3 w-3" />
+              View all <ChevronRight className="icon-sm" />
             </Button>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -419,7 +419,7 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary-accessible" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recommended for you
             </h2>
@@ -445,7 +445,7 @@ export default function LearningPage() {
           {/* Search & Filters */}
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search courses, guides, topics..."
                 value={searchQuery}
@@ -512,7 +512,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary-accessible" />
+                <TrendingUp className="icon-sm text-primary-accessible" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Featured Resources
                 </h2>

@@ -245,7 +245,7 @@ export const ProfileCard = React.forwardRef<
             Connect
           </Button>
           <Button variant="ghost" size="icon">
-            <MessageCircle className="h-4 w-4" />
+            <MessageCircle className="icon-sm" />
           </Button>
         </div>
       )}

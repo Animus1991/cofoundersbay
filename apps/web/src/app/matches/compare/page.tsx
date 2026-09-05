@@ -123,7 +123,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           className="absolute top-2 right-2 h-7 w-7"
           onClick={onRemove}
         >
-          <X className="h-4 w-4" />
+          <X className="icon-sm" />
         </Button>
         <CardContent className="pt-6 text-center">
           <Avatar className="h-16 w-16 mx-auto mb-3">
@@ -149,11 +149,11 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
 
           <div className="flex gap-2 mt-4">
             <Button size="sm" className="flex-1 gap-1">
-              <MessageSquare className="h-3.5 w-3.5" />
+              <MessageSquare className="icon-sm" />
               Message
             </Button>
             <Button size="sm" variant="outline" className="flex-1 gap-1">
-              <UserPlus className="h-3.5 w-3.5" />
+              <UserPlus className="icon-sm" />
               Connect
             </Button>
           </div>
@@ -216,7 +216,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Check className="h-4 w-4 text-status-success" />
+            <Check className="icon-sm text-status-success" />
             Strengths
           </CardTitle>
         </CardHeader>
@@ -224,7 +224,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-status-success shrink-0 mt-0.5" />
+                <Check className="icon-sm text-status-success shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{s}</span>
               </li>
             ))}
@@ -236,7 +236,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Minus className="h-4 w-4 text-status-warning" />
+            <Minus className="icon-sm text-status-warning" />
             Considerations
           </CardTitle>
         </CardHeader>
@@ -244,7 +244,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.potentialFrictions.map((f, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Minus className="h-4 w-4 text-status-warning shrink-0 mt-0.5" />
+                <Minus className="icon-sm text-status-warning shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{f}</span>
               </li>
             ))}
@@ -259,12 +259,12 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <Clock className="icon-sm text-muted-foreground" />
             <span className="text-muted-foreground">Availability:</span>
             <span className="font-medium">{user.availability}</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
+            <Briefcase className="icon-sm text-muted-foreground" />
             <span className="text-muted-foreground">Experience:</span>
             <span className="font-medium">{user.experience}</span>
           </div>
@@ -280,14 +280,14 @@ function AddUserSlot({ onAdd }: { onAdd: () => void }) {
       <Card className="h-full border-dashed">
         <CardContent className="flex flex-col items-center justify-center h-full min-h-[400px] py-12">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-            <Plus className="h-8 w-8 text-muted-foreground" />
+            <Plus className="icon-xl text-muted-foreground" />
           </div>
           <h3 className="font-semibold text-foreground mb-1">Add to Compare</h3>
           <p className="text-sm text-muted-foreground text-center mb-4">
             Select another match to compare
           </p>
           <Button variant="outline" onClick={onAdd}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="icon-sm mr-2" />
             Add Match
           </Button>
         </CardContent>
@@ -330,7 +330,7 @@ export default function MatchComparePage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">Compare Matches</h1>
@@ -364,7 +364,7 @@ export default function MatchComparePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary-accessible" />
+                <Brain className="icon-md text-primary-accessible" />
                 AI Recommendation
               </CardTitle>
             </CardHeader>
@@ -377,11 +377,11 @@ export default function MatchComparePage() {
               </p>
               <div className="flex gap-3 mt-4">
                 <Button>
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <MessageSquare className="icon-sm mr-2" />
                   Message {selectedUsers[0]?.name.split(' ')[0]}
                 </Button>
                 <Button variant="outline">
-                  <Target className="h-4 w-4 mr-2" />
+                  <Target className="icon-sm mr-2" />
                   View Full Analysis
                 </Button>
               </div>

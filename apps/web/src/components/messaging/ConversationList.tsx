@@ -93,7 +93,7 @@ function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            {conversation.isPinned && <Pin className="h-3 w-3 text-primary-accessible flex-shrink-0" />}
+            {conversation.isPinned && <Pin className="icon-sm text-primary-accessible flex-shrink-0" />}
             <span className={cn(
               'text-sm font-semibold truncate',
               conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
@@ -130,20 +130,20 @@ function ConversationItem({
             className="h-8 w-8 opacity-0 group-hover:opacity-100 absolute right-2 top-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onPin}>
-            <Pin className="h-4 w-4 mr-2" />
+            <Pin className="icon-sm mr-2" />
             {conversation.isPinned ? 'Unpin' : 'Pin'}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onArchive}>
-            <Archive className="h-4 w-4 mr-2" />
+            <Archive className="icon-sm mr-2" />
             Archive
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="icon-sm mr-2" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -179,12 +179,12 @@ export function ConversationList({
         <div className="mb-3 hidden items-center justify-between md:flex">
           <h2 className="text-lg font-semibold text-foreground">Messages</h2>
           <Button size="icon" variant="ghost" onClick={onNewMessage} aria-label="New message">
-            <Edit className="h-5 w-5" />
+            <Edit className="icon-md" />
           </Button>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search conversations..."
               value={searchQuery}
@@ -193,7 +193,7 @@ export function ConversationList({
             />
           </div>
           <Button size="icon" variant="ghost" className="shrink-0 md:hidden" onClick={onNewMessage} aria-label="New message">
-            <Edit className="h-5 w-5" />
+            <Edit className="icon-md" />
           </Button>
         </div>
       </div>
@@ -239,7 +239,7 @@ export function ConversationList({
         {filteredConversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="h-6 w-6 text-primary-accessible" />
+              <MessageSquarePlus className="icon-lg text-primary-accessible" />
             </div>
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'No conversations found' : 'No messages yet'}

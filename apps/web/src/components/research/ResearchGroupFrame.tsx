@@ -121,7 +121,7 @@ export function ResearchGroupFrame({
       >
         {/* Drag grip */}
         <GripVertical
-          className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
+          className="icon-sm opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
           style={{ color: group.color }}
         />
 
@@ -166,7 +166,7 @@ export function ResearchGroupFrame({
               className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
               title="Change color"
             >
-              <Palette className="w-3 h-3" style={{ color: group.color }} />
+              <Palette className="icon-sm" style={{ color: group.color }} />
             </button>
             {showColorPicker && (
               <div
@@ -196,8 +196,8 @@ export function ResearchGroupFrame({
             title={group.collapsed ? 'Expand' : 'Collapse'}
           >
             {group.collapsed
-              ? <Maximize2 className="w-3 h-3 text-muted-foreground" />
-              : <Minimize2 className="w-3 h-3 text-muted-foreground" />
+              ? <Maximize2 className="icon-sm text-muted-foreground" />
+              : <Minimize2 className="icon-sm text-muted-foreground" />
             }
           </button>
 
@@ -208,8 +208,8 @@ export function ResearchGroupFrame({
             title={group.locked ? 'Unlock' : 'Lock'}
           >
             {group.locked
-              ? <Lock className="w-3 h-3 text-muted-foreground" />
-              : <Unlock className="w-3 h-3 text-muted-foreground" />
+              ? <Lock className="icon-sm text-muted-foreground" />
+              : <Unlock className="icon-sm text-muted-foreground" />
             }
           </button>
 
@@ -219,7 +219,7 @@ export function ResearchGroupFrame({
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
-            <X className="w-3 h-3 text-destructive-accessible" />
+            <X className="icon-sm text-destructive-accessible" />
           </button>
         </div>
       </div>

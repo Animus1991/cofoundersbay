@@ -40,12 +40,12 @@ export function DemoDataToggle({ className }: { className?: string }) {
           >
             {showDemoData ? (
               <>
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="icon-sm" />
                 <span className="hidden sm:inline">Demo</span>
               </>
             ) : (
               <>
-                <EyeOff className="h-3.5 w-3.5" />
+                <EyeOff className="icon-sm" />
                 <span className="hidden sm:inline">Demo</span>
               </>
             )}

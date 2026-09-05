@@ -190,14 +190,14 @@ function IntroRequestCard({
 
             {connection.message && (
               <div className="flex gap-2 rounded-xl bg-secondary/50 px-3 py-2.5">
-                <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary/60" />
+                <Quote className="icon-sm shrink-0 mt-0.5 text-primary/60" />
                 <p className="text-sm text-foreground/80 italic">{connection.message}</p>
               </div>
             )}
 
             <div className="flex items-center gap-2 pt-1">
               <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
-                <Check className="h-3.5 w-3.5" />
+                <Check className="icon-sm" />
                 <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
               </Button>
               <Button
@@ -207,7 +207,7 @@ function IntroRequestCard({
                 onClick={onDecline}
                 disabled={isPending}
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="icon-sm" />
                 <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
               <p className="ml-auto text-xs text-muted-foreground">

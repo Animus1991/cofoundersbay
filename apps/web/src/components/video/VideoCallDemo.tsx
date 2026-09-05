@@ -30,12 +30,12 @@ export function VideoCallDemo() {
             <div className="flex gap-2 justify-center">
               {!isCallActive ? (
                 <Button onClick={handleStartCall} className="gap-2">
-                  <Video className="h-4 w-4" />
+                  <Video className="icon-sm" />
                   Start Demo Call
                 </Button>
               ) : (
                 <Button onClick={endCall} variant="destructive" className="gap-2">
-                  <Phone className="h-4 w-4" />
+                  <Phone className="icon-sm" />
                   End Call
                 </Button>
               )}

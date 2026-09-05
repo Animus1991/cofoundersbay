@@ -54,7 +54,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               aria-pressed={isActive}
               aria-label={aria}
             >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <Icon className="icon-sm shrink-0" aria-hidden="true" />
               {expanded && (
                 <BilingualText
                   en={mode.shortLabel}

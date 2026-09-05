@@ -161,23 +161,23 @@ export function PostCard({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.origin + `/post/${id}`)}>
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="icon-sm mr-2" />
                   Copy link
                 </DropdownMenuItem>
                 {isMine ? (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onEdit}>
-                      <Edit className="h-4 w-4 mr-2" />
+                      <Edit className="icon-sm mr-2" />
                       Edit post
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="icon-sm mr-2" />
                       Delete post
                     </DropdownMenuItem>
                   </>
@@ -185,11 +185,11 @@ export function PostCard({
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={onReport}>
-                      <Flag className="h-4 w-4 mr-2" />
+                      <Flag className="icon-sm mr-2" />
                       Report post
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <UserMinus className="h-4 w-4 mr-2" />
+                      <UserMinus className="icon-sm mr-2" />
                       Unfollow {author.displayName}
                     </DropdownMenuItem>
                   </>
@@ -260,7 +260,7 @@ export function PostCard({
                 liked ? 'text-status-accent' : 'text-muted-foreground hover:text-status-accent'
               )}
             >
-              <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
+              <Heart className={cn('icon-sm', liked && 'fill-current')} />
               <span className="text-xs">{localLikesCount > 0 ? localLikesCount : ''}</span>
             </Button>
             <Button
@@ -269,7 +269,7 @@ export function PostCard({
               onClick={onComment}
               className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="icon-sm" />
               <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
             </Button>
             <Button
@@ -278,7 +278,7 @@ export function PostCard({
               onClick={onShare}
               className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
-              <Share2 className="h-4 w-4" />
+              <Share2 className="icon-sm" />
             </Button>
           </div>
           <Button
@@ -290,7 +290,7 @@ export function PostCard({
               bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
             )}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </Button>
         </div>
       </CardContent>

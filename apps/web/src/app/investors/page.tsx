@@ -163,7 +163,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h3 className="font-semibold truncate">{investor.displayName}</h3>
-                  {investor.isVerified && <BadgeCheck className={cn('h-4 w-4 shrink-0', STATUS.info.icon)} />}
+                  {investor.isVerified && <BadgeCheck className={cn('icon-sm shrink-0', STATUS.info.icon)} />}
                   {investor.isActivelyScouting && (
                     <Badge className={cn('text-2xs border', STATUS.success.chip)}>
                       <Zap className="h-2.5 w-2.5 mr-1" />Actively Scouting
@@ -172,7 +172,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                 </div>
                 {investor.firmName && (
                   <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Building2 className="h-3 w-3" />
+                    <Building2 className="icon-sm" />
                     {investor.firmName}
                     {investor.firmRole && <span className="text-muted-foreground/60"> · {investor.firmRole}</span>}
                   </p>
@@ -183,7 +183,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   {TYPE_LABEL[investor.investorType] ?? investor.investorType}
                 </Badge>
                 <button onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
-                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
+                  <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
                 </button>
               </div>
             </div>
@@ -216,18 +216,18 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stats & Actions */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{investor.portfolioCount} investments</span>
-                <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{investor.viewCount.toLocaleString()} views</span>
-                <span className="flex items-center gap-1"><BarChart3 className="h-3 w-3" />{investor.dealsThisYear} deals / yr</span>
+                <span className="flex items-center gap-1"><Briefcase className="icon-sm" />{investor.portfolioCount} investments</span>
+                <span className="flex items-center gap-1"><Eye className="icon-sm" />{investor.viewCount.toLocaleString()} views</span>
+                <span className="flex items-center gap-1"><BarChart3 className="icon-sm" />{investor.dealsThisYear} deals / yr</span>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
                   <Link href={`/p/${investor.userId}`}>
-                    <Eye className="h-3.5 w-3.5" />Profile
+                    <Eye className="icon-sm" />Profile
                   </Link>
                 </Button>
                 <Button size="sm" className="h-7 text-xs gap-1">
-                  <UserPlus className="h-3.5 w-3.5" />Request Intro
+                  <UserPlus className="icon-sm" />Request Intro
                 </Button>
               </div>
             </div>
@@ -293,7 +293,7 @@ export default function InvestorsPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input placeholder="Search by name, firm, or focus area..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={investorType} onValueChange={setInvestorType}>
@@ -321,7 +321,7 @@ export default function InvestorsPage() {
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-[150px]">
-                <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+                <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -338,7 +338,7 @@ export default function InvestorsPage() {
               className="h-8"
               onClick={() => setScoutingOnly(!scoutingOnly)}
             >
-              <Zap className="mr-1.5 h-3.5 w-3.5" />Actively Scouting Only
+              <Zap className="mr-1.5 icon-sm" />Actively Scouting Only
             </Button>
             <p className="text-xs text-muted-foreground ml-auto">
               {filtered.length} of {MOCK_INVESTORS.length} investors

@@ -67,7 +67,7 @@ function ProjectCard({ project }: { project: Project }) {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{project.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 h-3 w-3" />
+                    <StatusIcon className="mr-1 icon-sm" />
                     {project.status.replace('_', ' ')}
                   </Badge>
                 </div>
@@ -78,7 +78,7 @@ function ProjectCard({ project }: { project: Project }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -104,11 +104,11 @@ function ProjectCard({ project }: { project: Project }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 Due: {project.dueDate}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="icon-sm" />
                 Updated: {project.lastUpdate}
               </span>
               <span className="font-medium text-foreground">{project.amount}</span>
@@ -116,7 +116,7 @@ function ProjectCard({ project }: { project: Project }) {
 
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline">
-                <MessageSquare className="mr-1 h-3 w-3" />
+                <MessageSquare className="mr-1 icon-sm" />
                 Message
               </Button>
               <Button size="sm">Update</Button>
@@ -224,7 +224,7 @@ export default function ProviderProjectsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search projects..."
             value={search}

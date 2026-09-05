@@ -233,18 +233,18 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" />
             )}
             AI Generate
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="icon-sm mr-2" />
             Export
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" />
             Save
           </Button>
         </div>
@@ -312,7 +312,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     )}
                     onClick={() => addSlide(template.type)}
                   >
-                    <Icon className="h-3 w-3" />
+                    <Icon className="icon-sm" />
                     <span className="text-xs">{template.title}</span>
                   </Button>
                 );
@@ -333,9 +333,9 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                 </p>
                 <Button onClick={generateWithAI} disabled={isGenerating}>
                   {isGenerating ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    <RefreshCw className="icon-sm mr-2 animate-spin" />
                   ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Sparkles className="icon-sm mr-2" />
                   )}
                   Generate Full Deck
                 </Button>
@@ -351,7 +351,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                     disabled={currentSlideIndex === 0}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="icon-sm" />
                   </Button>
                   <div>
                     <CardTitle className="flex items-center gap-2">
@@ -371,7 +371,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     onClick={() => setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))}
                     disabled={currentSlideIndex === data.slides.length - 1}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="icon-sm" />
                   </Button>
                 </div>
                 <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     size="sm"
                     onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
+                    <Eye className="icon-sm mr-1" />
                     {viewMode === 'edit' ? 'Preview' : 'Edit'}
                   </Button>
                   <Button

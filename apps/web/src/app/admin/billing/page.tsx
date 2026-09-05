@@ -112,7 +112,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       {inv.hostedInvoiceUrl && (
         <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
           <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-            <Download className="h-3.5 w-3.5" />
+            <Download className="icon-sm" />
           </Button>
         </a>
       )}
@@ -216,7 +216,7 @@ export default function AdminBillingPage() {
             <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
           </div>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}>
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="icon-sm" />
             Refresh
           </Button>
         </div>
@@ -254,7 +254,7 @@ export default function AdminBillingPage() {
             </TabsList>
             <div className="flex gap-2 sm:ml-auto">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search…"
                   value={search}
@@ -370,7 +370,7 @@ export default function AdminBillingPage() {
           <TabsContent value="coupons" className="mt-4 space-y-4">
             <div className="flex justify-end">
               <Button size="sm" className="gap-2" onClick={() => setShowCouponForm(!showCouponForm)}>
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 New coupon
               </Button>
             </div>
@@ -422,7 +422,7 @@ export default function AdminBillingPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => saveCoupon()} disabled={savingCoupon || !couponForm.code}>
-                      {savingCoupon && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                      {savingCoupon && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                       Create
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}>Cancel</Button>
@@ -462,7 +462,7 @@ export default function AdminBillingPage() {
                             className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="icon-sm" />
                           </Button>
                         )}
                       </div>
@@ -500,7 +500,7 @@ export default function AdminBillingPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOverrideTarget(null)}>Cancel</Button>
             <Button onClick={() => applyOverride()} disabled={overriding || !overridePlanId}>
-              {overriding && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              {overriding && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
               Apply override
             </Button>
           </DialogFooter>

@@ -290,7 +290,7 @@ function CategoryCard({ category }: { category: ReputationCategory }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className={cn('rounded-lg p-2', category.color.replace('text-', 'bg-').replace('500', '500/10'))}>
-              <Icon className={cn('h-5 w-5', category.color)} />
+              <Icon className={cn('icon-md', category.color)} />
             </div>
             <div>
               <CardTitle className="text-base">{category.name}</CardTitle>
@@ -345,7 +345,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
         >
           <Icon
             className={cn(
-              'h-6 w-6',
+              'icon-lg',
               isEarned ? badge.color : 'text-muted-foreground'
             )}
           />
@@ -354,7 +354,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
           <div className="flex items-center gap-2">
             <h4 className="font-semibold">{badge.name}</h4>
             {isEarned && (
-              <CheckCircle className="h-4 w-4 text-status-success" />
+              <CheckCircle className="icon-sm text-status-success" />
             )}
           </div>
           <p className="text-sm text-muted-foreground">{badge.description}</p>
@@ -379,7 +379,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
 
       {!isEarned && (
         <div className="absolute top-2 right-2">
-          <Lock className="h-4 w-4 text-muted-foreground" />
+          <Lock className="icon-sm text-muted-foreground" />
         </div>
       )}
     </div>
@@ -398,9 +398,9 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
         )}
       >
         {isPositive ? (
-          <TrendingUp className="h-4 w-4 text-status-success" />
+          <TrendingUp className="icon-sm text-status-success" />
         ) : (
-          <TrendingUp className="h-4 w-4 text-status-danger rotate-180" />
+          <TrendingUp className="icon-sm text-status-danger rotate-180" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -441,10 +441,10 @@ export default function ReputationPage() {
         <div className="flex items-center gap-2">
           <Link href="/profile">
             <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" />
             </Button>
             <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" />
               My Profile
             </Button>
           </Link>
@@ -452,7 +452,7 @@ export default function ReputationPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Eye className="h-4 w-4" />
+                  <Eye className="icon-sm" />
                   Public View
                 </Button>
               </TooltipTrigger>
@@ -480,17 +480,17 @@ export default function ReputationPage() {
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Trophy className="h-4 w-4 text-status-warning" />
+                    <Trophy className="icon-sm text-status-warning" />
                     <span className="text-sm font-medium">
                       {earnedBadges}/{totalBadges} badges
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <TrendingUp className="h-4 w-4 text-status-success" />
+                    <TrendingUp className="icon-sm text-status-success" />
                     <span className="text-sm font-medium">+15 this month</span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Users className="h-4 w-4 text-status-info" />
+                    <Users className="icon-sm text-status-info" />
                     <span className="text-sm font-medium">Top 20%</span>
                   </div>
                 </div>
@@ -503,15 +503,15 @@ export default function ReputationPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
             <TabsTrigger value="overview" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="badges" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Award className="h-4 w-4" />
+              <Award className="icon-sm" />
               Badges ({earnedBadges}/{totalBadges})
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="icon-sm" />
               History
             </TabsTrigger>
           </TabsList>
@@ -553,7 +553,7 @@ export default function ReputationPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary-accessible" />
+              <Sparkles className="icon-md text-primary-accessible" />
               Tips to Improve Your Score
             </CardTitle>
           </CardHeader>
@@ -569,7 +569,7 @@ export default function ReputationPage() {
                   <Link key={tip.title} href={tip.href}>
                     <div className="flex gap-3 rounded-xl border border-border/40 p-3 hover:bg-muted/40 hover:border-primary/30 transition-all cursor-pointer">
                       <div className={cn('rounded-lg p-2 h-fit', tip.bg)}>
-                        <TipIcon className={cn('h-4 w-4', tip.color)} />
+                        <TipIcon className={cn('icon-sm', tip.color)} />
                       </div>
                       <div>
                         <p className="font-medium text-sm">{tip.title}</p>

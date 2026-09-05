@@ -136,7 +136,7 @@ export function MilestoneFormModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Flag className="h-4 w-4 text-primary-accessible" />
+            <Flag className="icon-sm text-primary-accessible" />
             <h2 className="text-sm font-semibold text-foreground">
               {isEdit ? 'Edit milestone' : 'New milestone'}
             </h2>
@@ -145,7 +145,7 @@ export function MilestoneFormModal({
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -153,7 +153,7 @@ export function MilestoneFormModal({
         <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto p-5 space-y-4">
           {error && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive-accessible">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <AlertTriangle className="mt-0.5 icon-sm shrink-0" />
               {error}
             </div>
           )}
@@ -233,7 +233,7 @@ export function MilestoneFormModal({
             </div>
             <div className="space-y-1.5">
               <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                <Calendar className="h-3 w-3" /> Due date
+                <Calendar className="icon-sm" /> Due date
               </label>
               <Input
                 type="date"
@@ -271,7 +271,7 @@ export function MilestoneFormModal({
           {/* Collaborator */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              <Users className="h-3 w-3" /> Collaborator user ID
+              <Users className="icon-sm" /> Collaborator user ID
             </label>
             <Input
               value={form.collaboratorId}
@@ -286,7 +286,7 @@ export function MilestoneFormModal({
           {/* Notes */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              <FileText className="h-3 w-3" /> Private notes
+              <FileText className="icon-sm" /> Private notes
             </label>
             <textarea
               value={form.notes}

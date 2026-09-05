@@ -137,7 +137,7 @@ function MilestoneCard({
         <div className="flex items-start gap-3">
           {/* Status icon */}
           <div className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', statusColors.bg)}>
-            <StatusIcon className={cn('h-4 w-4', statusColors.icon)} />
+            <StatusIcon className={cn('icon-sm', statusColors.icon)} />
           </div>
 
           {/* Main content */}
@@ -157,7 +157,7 @@ function MilestoneCard({
                   onClick={() => setMenuOpen((v) => !v)}
                   className="rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" />
                 </button>
                 {menuOpen && (
                   <>
@@ -167,14 +167,14 @@ function MilestoneCard({
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                         onClick={() => { setMenuOpen(false); onEdit(item); }}
                       >
-                        <Edit2 className="h-3.5 w-3.5 text-muted-foreground" /> Edit
+                        <Edit2 className="icon-sm text-muted-foreground" /> Edit
                       </button>
                       {item.status !== 'completed' && (
                         <button
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'completed'); }}
                         >
-                          <CheckCircle2 className={cn('h-3.5 w-3.5', STATUS.success.icon)} /> Mark complete
+                          <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> Mark complete
                         </button>
                       )}
                       {item.status === 'completed' && (
@@ -182,7 +182,7 @@ function MilestoneCard({
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'in_progress'); }}
                         >
-                          <Clock className={cn('h-3.5 w-3.5', STATUS.info.icon)} /> Reopen
+                          <Clock className={cn('icon-sm', STATUS.info.icon)} /> Reopen
                         </button>
                       )}
                       <div className="my-1 border-t border-border/40" />
@@ -190,7 +190,7 @@ function MilestoneCard({
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-accessible hover:bg-destructive/10"
                         onClick={() => { setMenuOpen(false); onDelete(item.id); }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                        <Trash2 className="icon-sm" /> Delete
                       </button>
                     </div>
                   </>
@@ -247,14 +247,14 @@ function MilestoneCard({
                     overdue ? cn('font-medium', STATUS.danger.icon) : dueSoon ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
                   )}
                 >
-                  <Calendar className="h-3 w-3" />
+                  <Calendar className="icon-sm" />
                   {overdue ? 'Overdue · ' : dueSoon ? 'Due soon · ' : ''}{formatDate(item.dueDate)}
                 </div>
               )}
 
               {item.collaborator && (
                 <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                  <Users className="h-3 w-3" />
+                  <Users className="icon-sm" />
                   {item.collaborator.displayName}
                 </div>
               )}
@@ -392,7 +392,7 @@ export default function MilestonesPage() {
       showHelp
       actions={
         <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> <BilingualText en="New milestone" el="Νέο ορόσημο" compact />
+          <Plus className="icon-sm" /> <BilingualText en="New milestone" el="Νέο ορόσημο" compact />
         </Button>
       }
     >
@@ -411,7 +411,7 @@ export default function MilestonesPage() {
         {/* Search + Category filter */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search milestones..."
               value={searchQuery}
@@ -420,7 +420,7 @@ export default function MilestonesPage() {
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="h-3.5 w-3.5" />
+                <X className="icon-sm" />
               </button>
             )}
           </div>
@@ -473,7 +473,7 @@ export default function MilestonesPage() {
           {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-secondary/30 px-3 py-1.5">
-              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Filter className="icon-sm text-muted-foreground" />
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
@@ -495,14 +495,14 @@ export default function MilestonesPage() {
               <button
                 onClick={() => setViewMode('list')}
                 className={cn('rounded p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutList className="h-3.5 w-3.5" /></button>
+              ><LayoutList className="icon-sm" /></button>
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn('rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutGrid className="h-3.5 w-3.5" /></button>
+              ><LayoutGrid className="icon-sm" /></button>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
-              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
           </div>
         </div>
@@ -510,7 +510,7 @@ export default function MilestonesPage() {
         {/* List */}
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
+            <AlertTriangle className="icon-xl text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load milestones." el="Αποτυχία φόρτωσης ορόσημων." /></p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
           </div>
@@ -536,7 +536,7 @@ export default function MilestonesPage() {
               </p>
             </div>
             <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" /> <BilingualText en="Add your first milestone" el="Προσθέστε το πρώτο σας ορόσημο" compact />
+              <Plus className="icon-sm" /> <BilingualText en="Add your first milestone" el="Προσθέστε το πρώτο σας ορόσημο" compact />
             </Button>
           </div>
         ) : (

@@ -92,13 +92,13 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
   return (
     <div className="flex items-start gap-3 border-b border-border/40 px-4 py-3.5 last:border-0 hover:bg-muted/20 transition-colors group">
       <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-foreground leading-snug">{item.title}</p>
         {item.author && <p className="text-xs text-muted-foreground mt-0.5">by {item.author}</p>}
         <div className="mt-1 flex items-center gap-2">
-          <Clock className="h-3 w-3 text-muted-foreground/60" />
+          <Clock className="icon-sm text-muted-foreground/60" />
           <span className="text-2xs text-muted-foreground">{item.timeAgo}</span>
           <Badge variant="outline" className="h-4 px-1.5 text-2xs capitalize">{item.type}</Badge>
         </div>
@@ -106,7 +106,7 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
       {item.href && (
         <Link href={item.href} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="icon" className="h-7 w-7">
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowRight className="icon-sm" />
           </Button>
         </Link>
       )}
@@ -127,7 +127,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
     )}>
       <div className="relative shrink-0">
         <div className={cn('flex h-9 w-9 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-          <Icon className="h-4 w-4" />
+          <Icon className="icon-sm" />
         </div>
         {isUnread && (
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
@@ -139,7 +139,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         </p>
         {item.body && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>}
         <div className="mt-1 flex items-center gap-2">
-          <Clock className="h-3 w-3 text-muted-foreground/60" />
+          <Clock className="icon-sm text-muted-foreground/60" />
           <span className="text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
           {isUnread && <Badge className="h-4 px-1.5 text-2xs">New</Badge>}
         </div>
@@ -147,7 +147,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
       {item.link && (
         <Link href={item.link} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="icon" className="h-7 w-7">
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="icon-sm" />
           </Button>
         </Link>
       )}
@@ -265,7 +265,7 @@ export default function ActivityPage() {
               <Card key={stat.label} className="border-border/50">
                 <CardContent className="flex items-center gap-3 p-4">
                   <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', stat.bg, stat.color)}>
-                    <Icon className="h-4 w-4" />
+                    <Icon className="icon-sm" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
@@ -288,7 +288,7 @@ export default function ActivityPage() {
             return (
               <Link key={action.href} href={action.href}>
                 <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2">
-                  <ActionIcon className="h-4 w-4 shrink-0 text-primary-accessible" />
+                  <ActionIcon className="icon-sm shrink-0 text-primary-accessible" />
                   <span className="text-xs font-medium text-foreground">{action.label}</span>
                 </div>
               </Link>
@@ -303,19 +303,19 @@ export default function ActivityPage() {
               <div className="mb-3 flex items-center justify-between gap-3">
                 <TabsList className="h-9">
                   <TabsTrigger value="network" className="gap-1.5 text-xs">
-                    <Sparkles className="h-3.5 w-3.5" /> Network
+                    <Sparkles className="icon-sm" /> Network
                     {activityItems.length > 0 && (
                       <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{activityItems.length}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="notifications" className="gap-1.5 text-xs">
-                    <Bell className="h-3.5 w-3.5" /> Notifications
+                    <Bell className="icon-sm" /> Notifications
                     {unreadCount > 0 && (
                       <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{unreadCount}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="events" className="gap-1.5 text-xs">
-                    <Calendar className="h-3.5 w-3.5" /> Events
+                    <Calendar className="icon-sm" /> Events
                     {eventItems.length > 0 && (
                       <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{eventItems.length}</Badge>
                     )}
@@ -325,11 +325,11 @@ export default function ActivityPage() {
                   {activeTab === 'notifications' && unreadCount > 0 && (
                     <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs"
                       onClick={() => markAll.mutate()} disabled={markAll.isPending}>
-                      <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                      <CheckCheck className="icon-sm" /> Mark all read
                     </Button>
                   )}
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
-                    <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+                    <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
                   </Button>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export default function ActivityPage() {
               <TabsContent value="network" className="mt-0 space-y-3">
                 {/* Type filter chips */}
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <Filter className="icon-sm text-muted-foreground shrink-0" />
                   {FEED_TYPE_FILTERS.map((f) => {
                     const FIcon = f.icon;
                     const isActive = typeFilter === f.value;
@@ -353,7 +353,7 @@ export default function ActivityPage() {
                             : 'border-border/60 bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground',
                         )}
                       >
-                        <FIcon className="h-3 w-3" />
+                        <FIcon className="icon-sm" />
                         {f.label}
                         {f.value !== 'all' && (
                           <span className={cn('ml-0.5 rounded-full px-1 text-2xs', isActive ? 'bg-white/20' : 'bg-muted')}>
@@ -365,7 +365,7 @@ export default function ActivityPage() {
                   })}
                   {typeFilter !== 'all' && (
                     <button onClick={() => setTypeFilter('all')} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                      <X className="h-3 w-3" /> Clear
+                      <X className="icon-sm" /> Clear
                     </button>
                   )}
                 </div>
@@ -381,7 +381,7 @@ export default function ActivityPage() {
                   ) : filteredActivity.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Activity className="h-5 w-5 text-muted-foreground" />
+                        <Activity className="icon-md text-muted-foreground" />
                       </div>
                       <p className="text-sm font-medium text-foreground">
                         {typeFilter === 'all' ? 'No network activity yet' : `No ${typeFilter} activity`}
@@ -416,9 +416,9 @@ export default function ActivityPage() {
                       disabled={loadingMore}
                     >
                       {loadingMore ? (
-                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        <RefreshCw className="icon-sm animate-spin" />
                       ) : (
-                        <ArrowRight className="h-3.5 w-3.5" />
+                        <ArrowRight className="icon-sm" />
                       )}
                       {loadingMore ? 'Loading…' : 'Load more'}
                     </Button>
@@ -439,7 +439,7 @@ export default function ActivityPage() {
                   ) : notifications.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <CheckCircle2 className="h-5 w-5 text-status-success" />
+                        <CheckCircle2 className="icon-md text-status-success" />
                       </div>
                       <p className="text-sm font-medium text-foreground">All caught up!</p>
                       <p className="text-xs text-muted-foreground">No notifications right now.</p>
@@ -452,7 +452,7 @@ export default function ActivityPage() {
                   <div className="mt-3 flex items-center justify-between px-1">
                     <p className="text-xs text-muted-foreground">{unreadCount} unread of {notifications.length} total</p>
                     <Link href="/notifications" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
-                      View all <ArrowRight className="h-3 w-3" />
+                      View all <ArrowRight className="icon-sm" />
                     </Link>
                   </div>
                 )}
@@ -466,7 +466,7 @@ export default function ActivityPage() {
                   ) : eventItems.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <Calendar className="icon-md text-muted-foreground" />
                       </div>
                       <p className="text-sm font-medium text-foreground">No upcoming events</p>
                       <p className="text-xs text-muted-foreground">Browse and join events in your ecosystem.</p>
@@ -500,9 +500,9 @@ export default function ActivityPage() {
                   return (
                     <Link key={a.href} href={a.href}>
                       <div className="flex items-center gap-2.5 rounded-lg p-2 hover:bg-muted/50 transition-colors">
-                        <AIcon className={cn('h-4 w-4 shrink-0', a.color)} />
+                        <AIcon className={cn('icon-sm shrink-0', a.color)} />
                         <span className="text-sm text-foreground/80">{a.label}</span>
-                        <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/50" />
+                        <ArrowRight className="ml-auto icon-sm text-muted-foreground/50" />
                       </div>
                     </Link>
                   );
@@ -522,7 +522,7 @@ export default function ActivityPage() {
                   return (
                     <div key={type} className="flex items-center gap-2.5">
                       <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full', cfg.bg, cfg.color)}>
-                        <Icon className="h-3.5 w-3.5" />
+                        <Icon className="icon-sm" />
                       </div>
                       <span className="flex-1 text-xs text-muted-foreground capitalize">{type}</span>
                       <span className="text-xs font-semibold text-foreground">{count}</span>
@@ -542,13 +542,13 @@ export default function ActivityPage() {
             <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
               <CardContent className="p-4 text-center">
                 <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary/10">
-                  <BarChart3 className="h-5 w-5 text-primary-accessible" />
+                  <BarChart3 className="icon-md text-primary-accessible" />
                 </div>
                 <p className="mt-2 text-sm font-semibold text-foreground">Stay Active</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Connect, engage, and grow your network daily.</p>
                 <Link href="/analytics">
                   <Button variant="outline" size="sm" className="mt-3 w-full h-8 text-xs gap-1.5">
-                    <Target className="h-3.5 w-3.5" /> View Analytics
+                    <Target className="icon-sm" /> View Analytics
                   </Button>
                 </Link>
               </CardContent>

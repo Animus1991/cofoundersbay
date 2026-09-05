@@ -108,7 +108,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                 onClick={handleSSOLogin}
                 className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
               >
-                <Building2 className="h-4 w-4" />
+                <Building2 className="icon-sm" />
                 {sso.provider.loginButtonText || 'Sign in with Organization SSO'}
               </Button>
             )}
@@ -116,13 +116,13 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <Link href={b?.ctaUrl || '/register'}>
               <Button size="lg" className="bg-white text-primary-accessible hover:bg-white/90 gap-2 shadow">
                 {b?.ctaLabel || 'Get Started'}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="icon-sm" />
               </Button>
             </Link>
 
             <Link href="/login">
               <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2">
-                <LogIn className="h-4 w-4" />
+                <LogIn className="icon-sm" />
                 Sign In
               </Button>
             </Link>
@@ -140,7 +140,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
-                <Building2 className="h-5 w-5 text-primary-accessible" />
+                <Building2 className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
@@ -188,14 +188,14 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <div className="flex flex-wrap justify-center gap-3">
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
-                  <Building2 className="h-4 w-4" />
+                  <Building2 className="icon-sm" />
                   {sso.provider.loginButtonText || 'SSO Login'}
                 </Button>
               )}
               <Link href={b?.ctaUrl || '/register'}>
                 <Button size="lg" className="gap-2">
                   {b?.ctaLabel || 'Join Now'}
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="icon-sm" />
                 </Button>
               </Link>
             </div>
@@ -215,43 +215,43 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
               <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="h-4 w-4" />
+                <Mail className="icon-sm" />
               </a>
             )}
             {(b?.websiteUrl || tenant.website) && (
               <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Globe className="h-4 w-4" />
+                <Globe className="icon-sm" />
               </a>
             )}
             {b?.linkedinUrl && (
               <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Linkedin className="h-4 w-4" />
+                <Linkedin className="icon-sm" />
               </a>
             )}
             {b?.twitterUrl && (
               <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Twitter className="h-4 w-4" />
+                <Twitter className="icon-sm" />
               </a>
             )}
             {b?.instagramUrl && (
               <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Instagram className="h-4 w-4" />
+                <Instagram className="icon-sm" />
               </a>
             )}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {b?.privacyPolicyUrl && (
                 <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Privacy <ExternalLink className="h-3 w-3" />
+                  Privacy <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.termsUrl && (
                 <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Terms <ExternalLink className="h-3 w-3" />
+                  Terms <ExternalLink className="icon-sm" />
                 </a>
               )}
               {b?.cookiePolicyUrl && (
                 <a href={b.cookiePolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Cookies <ExternalLink className="h-3 w-3" />
+                  Cookies <ExternalLink className="icon-sm" />
                 </a>
               )}
             </div>

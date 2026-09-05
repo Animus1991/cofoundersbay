@@ -265,7 +265,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               achievement.unlocked ? 'ring-2 ring-primary/20' : ''
             )}
           >
-            <Icon className={cn('h-8 w-8', TIER_COLORS[achievement.tier])} />
+            <Icon className={cn('icon-xl', TIER_COLORS[achievement.tier])} />
             {achievement.unlocked && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
                 <CheckCircle2 className="icon-sm text-white" />
@@ -545,22 +545,22 @@ export default function AchievementsPage() {
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
                   <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> <BilingualText en={`All (${achievements?.length})`} el={`Όλα (${achievements?.length})`} compact />
+                    <Award className="icon-sm" /> <BilingualText en={`All (${achievements?.length})`} el={`Όλα (${achievements?.length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> <BilingualText en={`Unlocked (${achievements?.filter((a) => a.unlocked).length})`} el={`Ξεκλειδωμένα (${achievements?.filter((a) => a.unlocked).length})`} compact />
+                    <CheckCircle2 className="icon-sm" /> <BilingualText en={`Unlocked (${achievements?.filter((a) => a.unlocked).length})`} el={`Ξεκλειδωμένα (${achievements?.filter((a) => a.unlocked).length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Lock className="h-3.5 w-3.5" /> <BilingualText en={`In Progress (${achievements?.filter((a) => !a.unlocked).length})`} el={`Σε εξέλιξη (${achievements?.filter((a) => !a.unlocked).length})`} compact />
+                    <Lock className="icon-sm" /> <BilingualText en={`In Progress (${achievements?.filter((a) => !a.unlocked).length})`} el={`Σε εξέλιξη (${achievements?.filter((a) => !a.unlocked).length})`} compact />
                   </TabsTrigger>
                   <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Trophy className="h-3.5 w-3.5" /> <BilingualText en={achievementsEn('tab_leaderboard')} el={achievementsEl('tab_leaderboard')} compact />
+                    <Trophy className="icon-sm" /> <BilingualText en={achievementsEn('tab_leaderboard')} el={achievementsEl('tab_leaderboard')} compact />
                   </TabsTrigger>
                   <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <TrendingUp className="h-3.5 w-3.5" /> <BilingualText en={achievementsEn('tab_reputation')} el={achievementsEl('tab_reputation')} compact />
+                    <TrendingUp className="icon-sm" /> <BilingualText en={achievementsEn('tab_reputation')} el={achievementsEl('tab_reputation')} compact />
                   </TabsTrigger>
                   <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> <BilingualText en={achievementsEn('tab_badges')} el={achievementsEl('tab_badges')} compact />
+                    <Award className="icon-sm" /> <BilingualText en={achievementsEn('tab_badges')} el={achievementsEl('tab_badges')} compact />
                   </TabsTrigger>
                 </TabsList>
 

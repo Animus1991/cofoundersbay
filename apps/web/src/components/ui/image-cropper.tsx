@@ -261,18 +261,18 @@ export function ImageCropper({
 
             <div className="space-y-2">
               <div className="flex items-center gap-3">
-                <ZoomOut className="h-4 w-4 text-muted-foreground shrink-0" />
+                <ZoomOut className="icon-sm text-muted-foreground shrink-0" />
                 <input
                   type="range" min="0.5" max="3" step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
                   className="flex-1 accent-primary"
                 />
-                <ZoomIn className="h-4 w-4 text-muted-foreground shrink-0" />
+                <ZoomIn className="icon-sm text-muted-foreground shrink-0" />
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Button variant="outline" size="sm" onClick={() => setRotation(r => r - 90)}>
-                  <RotateCcw className="h-3.5 w-3.5 mr-1" /> Rotate
+                  <RotateCcw className="icon-sm mr-1" /> Rotate
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); setOffset({ x: 0, y: 0 }); }}>
                   Reset
@@ -285,10 +285,10 @@ export function ImageCropper({
 
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleClose}>
-                <X className="h-4 w-4 mr-1.5" /> Cancel
+                <X className="icon-sm mr-1.5" /> Cancel
               </Button>
               <Button className="flex-1" onClick={handleCrop}>
-                <Check className="h-4 w-4 mr-1.5" /> Apply Crop
+                <Check className="icon-sm mr-1.5" /> Apply Crop
               </Button>
             </div>
           </div>

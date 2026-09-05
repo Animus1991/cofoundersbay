@@ -104,12 +104,12 @@ export default function TenantApiKeysPage() {
     <AppShell
       title="API Keys"
       description="Manage API keys for programmatic access to your tenant data"
-      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Create API Key</Button>}
+      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Create API Key</Button>}
     >
       <div className="space-y-5">
         <Card className="border-status-warning-border bg-status-warning-bg">
           <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="h-5 w-5 text-status-warning shrink-0" />
+            <Shield className="icon-md text-status-warning shrink-0" />
             <p className="text-sm">API keys grant full access to your tenant's resources. Store them securely and never share them publicly.</p>
           </CardContent>
         </Card>

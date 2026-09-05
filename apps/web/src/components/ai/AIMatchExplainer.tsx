@@ -84,9 +84,9 @@ export function AIMatchExplainer({
         className="gap-1.5 text-status-accent hover:text-status-accent hover:bg-status-accent-bg "
       >
         {isLoading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="icon-sm animate-spin" />
         ) : (
-          <Sparkles className="h-3.5 w-3.5" />
+          <Sparkles className="icon-sm" />
         )}
         {explanation ? 'Hide Analysis' : 'Why this match?'}
       </Button>
@@ -103,12 +103,12 @@ export function AIMatchExplainer({
             onClick={() => setExplanation(null)}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="icon-sm" />
           </button>
           
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-              <Users className="h-4 w-4 text-white" />
+              <Users className="icon-sm text-white" />
             </div>
             <div className="flex-1 pr-4">
               <div className="text-xs font-medium text-status-accent mb-1">

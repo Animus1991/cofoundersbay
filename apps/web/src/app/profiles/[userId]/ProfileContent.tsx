@@ -60,7 +60,7 @@ function SocialLinkButton({
       rel="noopener noreferrer"
       className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
     >
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="icon-sm" />
       {label}
     </a>
   );
@@ -260,19 +260,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               <div className="w-full space-y-2 text-sm text-muted-foreground">
                 {profile.location && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <MapPin className="icon-sm shrink-0" />
                     {profile.location}
                   </p>
                 )}
                 {profile.timezone && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <Clock className="icon-sm shrink-0" />
                     {profile.timezone}
                   </p>
                 )}
                 {profile.languages?.length ? (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="h-3.5 w-3.5 shrink-0" />
+                    <Languages className="icon-sm shrink-0" />
                     {profile.languages.join(' · ')}
                   </p>
                 ) : null}

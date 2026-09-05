@@ -56,7 +56,7 @@ export function LanguagePreferenceToggle({ className }: { className?: string }) 
           }
           title={primary === 'el' ? 'Γλώσσα' : 'Language'}
         >
-          <Languages className="h-4 w-4" />
+          <Languages className="icon-sm" />
           <span className="sr-only">{primary === 'el' ? 'EL' : 'EN'}</span>
         </Button>
       </DropdownMenuTrigger>

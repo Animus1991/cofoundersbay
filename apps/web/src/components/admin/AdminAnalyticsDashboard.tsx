@@ -45,7 +45,7 @@ function StatCard({
   return (
     <div className="bg-white rounded-xl border border-border p-5 flex items-start gap-4">
       <div className={`rounded-lg p-2.5 ${colorMap[color]}`}>
-        <Icon className="w-5 h-5" />
+        <Icon className="icon-md" />
       </div>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
@@ -115,7 +115,7 @@ export function AdminAnalyticsDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <RefreshCw className="w-6 h-6 text-status-accent animate-spin" />
+        <RefreshCw className="icon-lg text-status-accent animate-spin" />
         <span className="ml-2 text-muted-foreground">Loading analytics…</span>
       </div>
     );
@@ -142,7 +142,7 @@ export function AdminAnalyticsDashboard() {
           onClick={load}
           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent transition-colors"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="icon-sm" />
           Refresh
         </button>
       </div>
@@ -282,7 +282,7 @@ export function AdminAnalyticsDashboard() {
 
       {/* Shield indicator */}
       <div className="flex items-start gap-3 bg-status-accent-bg border border-status-accent-border rounded-xl p-4 text-sm text-status-accent">
-        <Shield className="w-4 h-4 mt-0.5 shrink-0" />
+        <Shield className="icon-sm mt-0.5 shrink-0" />
         <div>
           <span className="font-semibold">Explainability note: </span>
           All scores are computed from real user actions — no synthetic inflation.

@@ -142,10 +142,10 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
         {generatedUrl ? (
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ExternalLink className="icon-sm text-muted-foreground shrink-0" />
               <span className="text-sm truncate flex-1 font-mono">{generatedUrl}</span>
               <Button size="sm" variant="ghost" onClick={handleCopy}>
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="icon-sm" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -204,7 +204,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
           </Button>
           {!generatedUrl && (
             <Button onClick={handleCreate} disabled={loading}>
-              {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+              {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
               Generate Link
             </Button>
           )}
@@ -219,13 +219,13 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 function ProposalStatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'approved':
-      return <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />;
+      return <CheckCircle2 className="icon-sm text-status-success" />;
     case 'changes_requested':
-      return <AlertCircle className="h-3.5 w-3.5 text-status-warning" />;
+      return <AlertCircle className="icon-sm text-status-warning" />;
     case 'closed':
-      return <XCircle className="h-3.5 w-3.5 text-muted-foreground" />;
+      return <XCircle className="icon-sm text-muted-foreground" />;
     default:
-      return <Clock className="h-3.5 w-3.5 text-status-info" />;
+      return <Clock className="icon-sm text-status-info" />;
   }
 }
 
@@ -287,7 +287,7 @@ export function CollabToolbar({
                 className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
                 onClick={onHistoryClick}
               >
-                <History className="h-3.5 w-3.5 mr-1.5" />
+                <History className="icon-sm mr-1.5" />
                 <span className="text-xs hidden sm:inline">History</span>
               </Button>
             </TooltipTrigger>
@@ -304,7 +304,7 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowBranchPanel(true)}
             >
-              <GitBranch className="h-3.5 w-3.5 mr-1.5" />
+              <GitBranch className="icon-sm mr-1.5" />
               <span className="text-xs hidden sm:inline">Variants</span>
               {openBranches.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-2xs text-primary-foreground flex items-center justify-center font-medium">
@@ -325,7 +325,7 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowReviewPanel(true)}
             >
-              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
+              <ClipboardCheck className="icon-sm mr-1.5" />
               <span className="text-xs hidden sm:inline">Proposals</span>
               {openProposals.length > 0 && (
                 <Badge
@@ -349,7 +349,7 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowShareDialog(true)}
             >
-              <Share2 className="h-3.5 w-3.5 mr-1.5" />
+              <Share2 className="icon-sm mr-1.5" />
               <span className="text-xs hidden sm:inline">Share</span>
             </Button>
           </TooltipTrigger>

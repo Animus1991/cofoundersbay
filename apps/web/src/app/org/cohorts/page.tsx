@@ -214,7 +214,7 @@ export default function OrgCohortsPage() {
           ].map(({ label, value, icon: Icon, tone }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', STATUS[tone].icon)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', STATUS[tone].icon)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground">{label}</p>

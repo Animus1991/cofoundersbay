@@ -66,7 +66,7 @@ export function BulkActionBar({
               className="p-0.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
               title="Clear selection"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="icon-sm" />
             </button>
           </div>
 

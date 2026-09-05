@@ -210,27 +210,27 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     <div className="flex flex-col flex-1 min-h-0">
       {!readOnly && (
         <div className="flex flex-wrap gap-0.5 p-2 border-b border-border bg-card sticky top-0 z-10">
-          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="redo" title="Redo"><RotateCw className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="undo" title="Undo"><RotateCcw className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="redo" title="Redo"><RotateCw className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="bold" title="Bold"><Bold className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="italic" title="Italic"><Italic className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="underline" title="Underline"><Underline className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="bold" title="Bold"><Bold className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="italic" title="Italic"><Italic className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="underline" title="Underline"><Underline className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
           <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
           <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
           <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
-          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
+          <ToolBtn cmd="justifyLeft" title="Align left"><AlignLeft className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="icon-sm" /></ToolBtn>
+          <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
           <ToolBtn cmd="createLink" val={prompt("Enter URL") || undefined} title="Insert link">
-            <Link2 className="w-3.5 h-3.5" />
+            <Link2 className="icon-sm" />
           </ToolBtn>
         </div>
       )}
@@ -328,7 +328,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
                 <span className="text-2xs text-amber-500 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> Unsaved
+                  <AlertCircle className="icon-sm" /> Unsaved
                 </span>
               )}
               {(isText || isDoc) && (
@@ -336,7 +336,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   onClick={handleSave}
                   className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
-                  <Save className="w-3.5 h-3.5" /> Save
+                  <Save className="icon-sm" /> Save
                 </button>
               )}
               {node.url && (
@@ -346,14 +346,14 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                   title="Download"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Download className="icon-sm" />
                 </a>
               )}
               <button
                 onClick={onClose}
                 className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="icon-sm" />
               </button>
             </div>
           </div>
@@ -365,7 +365,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 key={tag}
                 className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-accessible text-2xs font-medium"
               >
-                <Tag className="w-3 h-3" />
+                <Tag className="icon-sm" />
                 {tag}
                 <button
                   onClick={() => removeTag(tag)}
@@ -387,7 +387,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 onClick={addTag}
                 className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible transition-colors"
               >
-                <Plus className="w-3 h-3" />
+                <Plus className="icon-sm" />
               </button>
             </div>
           </div>
@@ -400,16 +400,16 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               <div className="flex items-center gap-2">
                 <button onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomOut className="w-3.5 h-3.5" />
+                  <ZoomOut className="icon-sm" />
                 </button>
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
                 <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <ZoomIn className="w-3.5 h-3.5" />
+                  <ZoomIn className="icon-sm" />
                 </button>
                 <button onClick={() => setImgZoom(1)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
-                  <Maximize2 className="w-3.5 h-3.5" />
+                  <Maximize2 className="icon-sm" />
                 </button>
               </div>
               <div className="overflow-auto flex-1 flex items-start justify-center w-full">
@@ -447,7 +447,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               {node.url && (
                 <a href={node.url} download={node.title}
                   className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
-                  <Download className="w-3.5 h-3.5" /> Download
+                  <Download className="icon-sm" /> Download
                 </a>
               )}
             </div>
@@ -1015,7 +1015,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary-accessible" />
+            <Layers className="icon-md text-primary-accessible" />
             Research Canvas
           </h1>
           <span className="text-xs text-muted-foreground">
@@ -1025,7 +1025,7 @@ export default function ResearchCanvas() {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1053,7 +1053,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Undo (Ctrl+Z)"
           >
-            <Undo2 className="w-3.5 h-3.5" />
+            <Undo2 className="icon-sm" />
           </button>
           <button
             onClick={redo}
@@ -1061,7 +1061,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Redo (Ctrl+Y)"
           >
-            <Redo2 className="w-3.5 h-3.5" />
+            <Redo2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1071,7 +1071,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
-            <ZoomOut className="w-3.5 h-3.5" />
+            <ZoomOut className="icon-sm" />
           </button>
           <span className="text-xs text-muted-foreground min-w-[42px] text-center">
             {Math.round(zoom * 100)}%
@@ -1081,14 +1081,14 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
-            <ZoomIn className="w-3.5 h-3.5" />
+            <ZoomIn className="icon-sm" />
           </button>
           <button
             onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset view"
           >
-            <Maximize2 className="w-3.5 h-3.5" />
+            <Maximize2 className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1101,7 +1101,7 @@ export default function ResearchCanvas() {
             )}
             title="Toggle grid"
           >
-            <Grid3x3 className="w-3.5 h-3.5" />
+            <Grid3x3 className="icon-sm" />
           </button>
           <button
             onClick={() => setShowMinimap(!showMinimap)}
@@ -1111,7 +1111,7 @@ export default function ResearchCanvas() {
             )}
             title="Toggle minimap"
           >
-            <Layout className="w-3.5 h-3.5" />
+            <Layout className="icon-sm" />
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1120,13 +1120,13 @@ export default function ResearchCanvas() {
             onClick={() => createNode("note", 100, 100)}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5" /> Note
+            <Plus className="icon-sm" /> Note
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
             className="h-8 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
           >
-            <Upload className="w-3.5 h-3.5" /> Upload
+            <Upload className="icon-sm" /> Upload
           </button>
 
           <div className="w-px h-5 bg-border" />
@@ -1136,14 +1136,14 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Export canvas"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="icon-sm" />
           </button>
           <button
             onClick={importCanvas}
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Import canvas"
           >
-            <FileOutput className="w-3.5 h-3.5" />
+            <FileOutput className="icon-sm" />
           </button>
 
           <button
@@ -1151,7 +1151,7 @@ export default function ResearchCanvas() {
             className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Keyboard shortcuts"
           >
-            <Keyboard className="w-3.5 h-3.5" />
+            <Keyboard className="icon-sm" />
           </button>
         </div>
       </div>
@@ -1217,9 +1217,9 @@ export default function ResearchCanvas() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 flex-none">
-                  {node.pinned && <Pin className="w-3 h-3 text-primary-accessible" />}
-                  {node.starred && <Star className="w-3 h-3 text-amber-500" fill="currentColor" />}
-                  {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
+                  {node.pinned && <Pin className="icon-sm text-primary-accessible" />}
+                  {node.starred && <Star className="icon-sm text-amber-500" fill="currentColor" />}
+                  {node.locked && <Lock className="icon-sm text-muted-foreground" />}
                 </div>
               </div>
 
@@ -1262,7 +1262,7 @@ export default function ResearchCanvas() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity shadow-md"
                   title="Create connection"
                 >
-                  <GitBranch className="w-3 h-3" />
+                  <GitBranch className="icon-sm" />
                 </button>
               )}
               {connectionStart && connectionStart !== node.id && (
@@ -1271,7 +1271,7 @@ export default function ResearchCanvas() {
                   className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md animate-pulse"
                   title="Complete connection"
                 >
-                  <Check className="w-4 h-4" />
+                  <Check className="icon-sm" />
                 </button>
               )}
             </motion.div>
@@ -1352,32 +1352,32 @@ export default function ResearchCanvas() {
                   onClick={() => { setViewerNode(nodes.find(n => n.id === contextMenu.nodeId) || null); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Eye className="w-4 h-4" /> Open
+                  <Eye className="icon-sm" /> Open
                 </button>
                 <button
                   onClick={() => { duplicateNodes([contextMenu.nodeId!]); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Copy className="w-4 h-4" /> Duplicate
+                  <Copy className="icon-sm" /> Duplicate
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { pinned: !nodes.find(n => n.id === contextMenu.nodeId)?.pinned }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Pin className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
+                  <Pin className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.pinned ? "Unpin" : "Pin"}
                 </button>
                 <button
                   onClick={() => { updateNode(contextMenu.nodeId!, { starred: !nodes.find(n => n.id === contextMenu.nodeId)?.starred }); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Star className="w-4 h-4" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
+                  <Star className="icon-sm" /> {nodes.find(n => n.id === contextMenu.nodeId)?.starred ? "Unstar" : "Star"}
                 </button>
                 <div className="h-px bg-border my-1" />
                 <button
                   onClick={() => { deleteNodes([contextMenu.nodeId!]); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
                 >
-                  <Trash className="w-4 h-4" /> Delete
+                  <Trash className="icon-sm" /> Delete
                 </button>
               </>
             ) : (
@@ -1386,13 +1386,13 @@ export default function ResearchCanvas() {
                   onClick={() => { createNode("note", (contextMenu.x - panX) / zoom, (contextMenu.y - panY) / zoom); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <StickyNote className="w-4 h-4" /> New Note
+                  <StickyNote className="icon-sm" /> New Note
                 </button>
                 <button
                   onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                   className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                 >
-                  <Upload className="w-4 h-4" /> Upload File
+                  <Upload className="icon-sm" /> Upload File
                 </button>
               </>
             )}
@@ -1424,14 +1424,14 @@ export default function ResearchCanvas() {
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                 <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="w-5 h-5 text-primary-accessible" />
+                  <Keyboard className="icon-md text-primary-accessible" />
                   Keyboard Shortcuts
                 </h2>
                 <button
                   onClick={() => setShowShortcuts(false)}
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="icon-sm" />
                 </button>
               </div>
               <div className="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">

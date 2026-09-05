@@ -70,7 +70,7 @@ export function AIQuickAsk({
         onClick={() => setIsOpen(true)}
         className={cn('gap-1.5', className)}
       >
-        <Sparkles className="h-3.5 w-3.5 text-status-accent" />
+        <Sparkles className="icon-sm text-status-accent" />
         Ask AI
       </Button>
     );
@@ -89,7 +89,7 @@ export function AIQuickAsk({
             onClick={handleClose}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -129,9 +129,9 @@ export function AIQuickAsk({
               className="h-8 w-8 bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
             >
               {isLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
               ) : (
-                <Send className="h-3.5 w-3.5" />
+                <Send className="icon-sm" />
               )}
             </Button>
           </div>

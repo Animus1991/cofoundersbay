@@ -178,7 +178,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Award className="h-8 w-8 text-primary-accessible" />
+                <Award className="icon-xl text-primary-accessible" />
               </div>
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
@@ -189,7 +189,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant="default" className="text-base px-3 py-1">
-                <Zap className="h-4 w-4 mr-1" />
+                <Zap className="icon-sm mr-1" />
                 {currentPoints.toLocaleString()} XP
               </Badge>
               {currentStreak > 0 && (
@@ -219,7 +219,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="h-3 w-3 text-primary-accessible" />
+                  <Star className="icon-sm text-primary-accessible" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -316,7 +316,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                           isEarned ? 'bg-status-success-bg ' : 'bg-status-danger-bg '
                         )}>
                           <Icon className={cn(
-                            'h-5 w-5',
+                            'icon-md',
                             isEarned ? 'text-status-success ' : 'text-status-danger '
                           )} />
                         </div>
@@ -332,7 +332,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         'flex items-center gap-1 font-bold',
                         isEarned ? 'text-status-success ' : 'text-status-danger '
                       )}>
-                        {isEarned ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                        {isEarned ? <ArrowUp className="icon-sm" /> : <ArrowDown className="icon-sm" />}
                         {Math.abs(activity.points)}
                       </div>
                     </div>
@@ -360,12 +360,12 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary-accessible" />
+                          <Icon className="icon-md text-primary-accessible" />
                         </div>
                         <span className="font-medium">{item.action}</span>
                       </div>
                       <Badge variant="secondary" className="gap-1">
-                        <Zap className="h-3 w-3" />
+                        <Zap className="icon-sm" />
                         +{item.points}
                       </Badge>
                     </div>

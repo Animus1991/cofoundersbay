@@ -80,7 +80,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                   <h3 className="font-semibold text-foreground group-hover:text-primary-accessible transition-colors">
                     {job.title}
                   </h3>
-                  {featured && <Star className="h-3.5 w-3.5 text-status-warning fill-status-warning" />}
+                  {featured && <Star className="icon-sm text-status-warning fill-status-warning" />}
                 </div>
                 <p className="text-sm text-muted-foreground">{job.creator.displayName}</p>
               </div>
@@ -90,7 +90,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 )}
                 {job.isRemote && (
                   <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
-                    <Wifi className="mr-1 h-3 w-3" />Remote
+                    <Wifi className="mr-1 icon-sm" />Remote
                   </Badge>
                 )}
               </div>
@@ -98,21 +98,21 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {job.location && (
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location}</span>
+                <span className="flex items-center gap-1"><MapPin className="icon-sm" />{job.location}</span>
               )}
               {!job.location && !job.isRemote && (
-                <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />Location not specified</span>
+                <span className="flex items-center gap-1"><Building2 className="icon-sm" />Location not specified</span>
               )}
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Full-time</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />Full-time</span>
               <span className="flex items-center gap-1 text-status-success">
-                <DollarSign className="h-3 w-3" />Equity available
+                <DollarSign className="icon-sm" />Equity available
               </span>
             </div>
           </div>
 
           <Link href={job.href ?? `/jobs`} className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8">
-              <ExternalLink className="h-3.5 w-3.5" />View
+              <ExternalLink className="icon-sm" />View
             </Button>
           </Link>
         </div>
@@ -219,7 +219,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
+              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" /> : <Briefcase className="icon-sm" />}
               Post job
             </Button>
         </DialogFooter>
@@ -272,7 +272,7 @@ export default function JobsPage() {
       description="Equity & early-stage opportunities from startups in the CoFounderBay ecosystem"
       actions={
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" />
           Post a Role
         </Button>
       }
@@ -290,7 +290,7 @@ export default function JobsPage() {
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
+                  <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
@@ -305,7 +305,7 @@ export default function JobsPage() {
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search jobs, roles, companies…"
             value={search}
@@ -315,7 +315,7 @@ export default function JobsPage() {
         </div>
         {/* Role filter chips */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Filter className="icon-sm text-muted-foreground shrink-0" />
           {ROLE_FILTERS.map((rf) => {
             const RIcon = rf.icon;
             const isActive = roleFilter === rf.value;
@@ -330,7 +330,7 @@ export default function JobsPage() {
                     : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
                 )}
               >
-                <RIcon className="h-3 w-3" />{rf.label}
+                <RIcon className="icon-sm" />{rf.label}
               </button>
             );
           })}
@@ -354,7 +354,7 @@ export default function JobsPage() {
 
       {isError ? (
         <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+          <AlertCircle className="icon-xl text-muted-foreground" />
           <p className="text-sm text-muted-foreground">Failed to load jobs. Please check your connection.</p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
         </CardContent></Card>
@@ -376,7 +376,7 @@ export default function JobsPage() {
           action={
             !search ? (
               <Button className="gap-2" onClick={() => {}}>
-                <Plus className="h-4 w-4" />
+                <Plus className="icon-sm" />
                 Post a job
               </Button>
             ) : (
@@ -397,7 +397,7 @@ export default function JobsPage() {
           {!search && roleFilter === 'all' && featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary-accessible" />
+                <Sparkles className="icon-sm text-primary-accessible" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Roles</h2>
               </div>
               {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}
@@ -408,7 +408,7 @@ export default function JobsPage() {
           {remoteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-status-success" />
+                <Wifi className="icon-sm text-status-success" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Remote Opportunities</h2>
               </div>
               {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
@@ -418,7 +418,7 @@ export default function JobsPage() {
           {onsiteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-status-info" />
+                <MapPin className="icon-sm text-status-info" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">On-site / Hybrid</h2>
               </div>
               {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}

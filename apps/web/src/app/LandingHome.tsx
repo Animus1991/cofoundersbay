@@ -302,7 +302,7 @@ export function LandingHome() {
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="icon-sm" />
               The startup ecosystem, connected
             </span>
           </div>
@@ -337,12 +337,12 @@ export function LandingHome() {
             <Link href="/register">
               <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25">
                 Get started free
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" />
               </Button>
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
-                <Play className="h-4 w-4 text-primary-accessible" />
+                <Play className="icon-sm text-primary-accessible" />
                 Try Demo
               </Button>
             </Link>
@@ -452,7 +452,7 @@ export function LandingHome() {
                 <Card className={`h-full border ${bg} card-interactive hover-lift`}>
                   <CardHeader className="pb-3">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
-                      <Icon className={`h-5 w-5 ${color}`} />
+                      <Icon className={`icon-md ${color}`} />
                     </div>
                     <Badge variant="outline" className={`mt-2 w-fit border-current text-xs ${color}`}>
                       {role}
@@ -462,7 +462,7 @@ export function LandingHome() {
                   <CardContent className="space-y-2 pt-0">
                     {bullets.map((bullet) => (
                       <div key={bullet} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${color}`} />
+                        <CheckCircle className={`mt-0.5 icon-sm shrink-0 ${color}`} />
                         {bullet}
                       </div>
                     ))}
@@ -494,7 +494,7 @@ export function LandingHome() {
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Icon className="h-5 w-5 text-primary-accessible" />
+                  <Icon className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">{title}</h3>
@@ -556,7 +556,7 @@ export function LandingHome() {
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-status-warning text-amber-400" />
+                      <Star key={i} className="icon-sm fill-status-warning text-amber-400" />
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs">{tag}</Badge>
@@ -618,7 +618,7 @@ export function LandingHome() {
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-status-success" />
+                      <CheckCircle className="mt-0.5 icon-sm shrink-0 text-status-success" />
                       {f}
                     </li>
                   ))}
@@ -629,7 +629,7 @@ export function LandingHome() {
                     className="w-full"
                   >
                     {cta}
-                    {highlight && <ArrowRight className="ml-1.5 h-4 w-4" />}
+                    {highlight && <ArrowRight className="ml-1.5 icon-sm" />}
                   </Button>
                 </Link>
               </div>
@@ -660,12 +660,12 @@ export function LandingHome() {
             <Link href="/register">
               <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25">
                 Create free account
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" />
               </Button>
             </Link>
             <Link href="/discover">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" />
                 Browse profiles
               </Button>
             </Link>
@@ -692,19 +692,19 @@ export function LandingHome() {
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Twitter className="h-3.5 w-3.5" />
+                  <Twitter className="icon-sm" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Linkedin className="h-3.5 w-3.5" />
+                  <Linkedin className="icon-sm" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Github className="h-3.5 w-3.5" />
+                  <Github className="icon-sm" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Globe className="h-3.5 w-3.5" />
+                  <Globe className="icon-sm" />
                 </a>
               </div>
             </div>
@@ -772,7 +772,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="h-3 w-3 text-primary-accessible" />
+              <Zap className="icon-sm text-primary-accessible" />
               Built for founders, by founders
             </div>
           </div>

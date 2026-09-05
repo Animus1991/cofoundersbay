@@ -260,7 +260,7 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         <span className="text-sm font-medium pr-4">{faq.question}</span>
         <ChevronDown
           className={cn(
-            'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
+            'icon-sm shrink-0 text-muted-foreground transition-transform duration-200',
             isOpen && 'rotate-180 text-primary-accessible',
           )}
         />
@@ -313,7 +313,7 @@ export default function HelpPage() {
       actions={
         <a href="mailto:support@cofounderbay.com">
           <Button size="sm" className="gap-2">
-            <Mail className="h-4 w-4" />
+            <Mail className="icon-sm" />
             Contact Support
           </Button>
         </a>
@@ -324,12 +324,12 @@ export default function HelpPage() {
         {/* Search Hero */}
         <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <HelpCircle className="h-6 w-6 text-primary-accessible" />
+            <HelpCircle className="icon-lg text-primary-accessible" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
           <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
           <div className="mx-auto max-w-lg relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search for help (e.g. matching, billing, profile...)"
@@ -451,7 +451,7 @@ export default function HelpPage() {
         <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
           <CardContent className="p-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="h-6 w-6 text-primary-accessible" />
+              <Mail className="icon-lg text-primary-accessible" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
@@ -460,13 +460,13 @@ export default function HelpPage() {
             <div className="flex flex-wrap justify-center gap-3">
               <a href="mailto:support@cofounderbay.com">
                 <Button className="gap-2">
-                  <Mail className="h-4 w-4" />
+                  <Mail className="icon-sm" />
                   Email Support
                 </Button>
               </a>
               <Link href="/messages">
                 <Button variant="outline" className="gap-2">
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="icon-sm" />
                   Live Chat
                 </Button>
               </Link>

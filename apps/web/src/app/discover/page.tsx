@@ -292,7 +292,7 @@ export default function DiscoverPage() {
         {/* Role filter chips - shown for search & suggestions tabs */}
         {activeTab !== 'matches' && (
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Filter className="icon-sm text-muted-foreground shrink-0" />
             {ROLE_FILTERS.map((rf) => {
               const RIcon = rf.icon;
               const isActive = roleFilter === rf.value;

@@ -34,7 +34,7 @@ export function DashboardMembers({ members = defaultMembers, className }: Dashbo
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary-accessible" />
+          <Users className="icon-sm text-primary-accessible" />
           Who&apos;s online
         </CardTitle>
         <Link href="/discover" className="text-xs text-muted-foreground hover:text-primary-accessible">View all</Link>

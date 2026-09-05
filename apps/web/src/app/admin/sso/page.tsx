@@ -100,12 +100,12 @@ export default function SSOAdminPage() {
             </div>
           ) : tenantsError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive-accessible" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
               <p>Failed to load tenants</p>
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="h-8 w-8 mx-auto mb-2" />
+              <Building2 className="icon-xl mx-auto mb-2" />
               <p className="text-sm">No tenants yet — create one in the Tenants admin page.</p>
             </div>
           ) : (
@@ -142,7 +142,7 @@ export default function SSOAdminPage() {
             <CardDescription>Authentication activity across all tenants (last 20)</CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={() => refetchEvents()} className="gap-2">
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="icon-sm" />
             Refresh
           </Button>
         </CardHeader>
@@ -151,7 +151,7 @@ export default function SSOAdminPage() {
             <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/50 animate-pulse" />)}</div>
           ) : !events?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Activity className="h-8 w-8 mx-auto mb-2" />
+              <Activity className="icon-xl mx-auto mb-2" />
               <p className="text-sm">No SSO events yet</p>
             </div>
           ) : (
@@ -392,7 +392,7 @@ function SSOConfigPanel({
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Identity Providers</label>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 {showNewProvider ? 'Cancel' : 'Add Provider'}
               </Button>
             </div>
@@ -419,7 +419,7 @@ function SSOConfigPanel({
                         {p.isActive ? 'Disable' : 'Enable'}
                       </button>
                       <button type="button" onClick={() => { if (confirm(`Delete "${p.providerName}"?`)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="icon-sm" />
                       </button>
                     </div>
                   </div>
@@ -493,7 +493,7 @@ function SSOConfigPanel({
                 </div>
                 <div className="flex justify-end">
                   <Button size="sm" onClick={() => createProviderMut.mutate()} disabled={createProviderMut.isPending || !newProvider.providerName} className="gap-2">
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="icon-sm" />
                     {createProviderMut.isPending ? 'Creating…' : 'Create Provider'}
                   </Button>
                 </div>
@@ -592,7 +592,7 @@ function SSOConfigPanel({
                   Auto-redirect
                 </label>
                 <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1 shrink-0">
-                  <Plus className="h-3.5 w-3.5" />Add
+                  <Plus className="icon-sm" />Add
                 </Button>
               </div>
 
@@ -608,7 +608,7 @@ function SSOConfigPanel({
                   {domainMappings.map((m: SSODomainMapping) => (
                     <div key={m.id} className="flex items-center justify-between p-3 rounded-lg border">
                       <div className="flex items-center gap-2">
-                        <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Globe className="icon-sm text-muted-foreground" />
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
                           ? <span className="text-xs text-status-success">✓ Verified</span>
@@ -616,7 +616,7 @@ function SSOConfigPanel({
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
                       <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-accessible">
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="icon-sm" />
                       </button>
                     </div>
                   ))}
@@ -637,7 +637,7 @@ function SSOConfigPanel({
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
                     </select>
                     <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-accessible">
-                      <X className="h-3.5 w-3.5" />
+                      <X className="icon-sm" />
                     </button>
                   </div>
                 ))}

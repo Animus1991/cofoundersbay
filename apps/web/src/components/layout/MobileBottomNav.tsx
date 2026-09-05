@@ -53,7 +53,7 @@ export function MobileBottomNav() {
             )}
           >
             <span className="relative">
-              <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
+              <Icon className={cn('icon-md', isActive && 'stroke-[2.5px]')} aria-hidden />
               {badge > 0 && (
                 <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {badge > 99 ? '99+' : badge}
@@ -75,7 +75,7 @@ export function MobileBottomNav() {
           mobileNavOpen ? 'text-primary-accessible' : 'text-muted-foreground',
         )}
       >
-        <Menu className={cn('h-5 w-5', mobileNavOpen && 'stroke-[2.5px]')} aria-hidden />
+        <Menu className={cn('icon-md', mobileNavOpen && 'stroke-[2.5px]')} aria-hidden />
         <span>More</span>
       </button>
 
@@ -92,7 +92,7 @@ export function MobileBottomNav() {
               isActive ? 'text-primary-accessible' : 'text-muted-foreground',
             )}
           >
-            <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
+            <Icon className={cn('icon-md', isActive && 'stroke-[2.5px]')} aria-hidden />
             <span>{tab.label}</span>
           </OptimizedLink>
         );

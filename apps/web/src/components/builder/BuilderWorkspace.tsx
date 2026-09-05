@@ -200,7 +200,7 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || !userId.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Send Invite
           </Button>
         </DialogFooter>
@@ -270,7 +270,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             Create
           </Button>
         </DialogFooter>
@@ -409,7 +409,7 @@ export function BuilderWorkspace() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className={cn('text-2xl font-bold', dimensionColor(overallReadiness))}>
-              {assessingReadiness ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : `${overallReadiness}%`}
+              {assessingReadiness ? <Loader2 className="icon-lg animate-spin mx-auto" /> : `${overallReadiness}%`}
             </div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Readiness</div>
             <Progress value={overallReadiness} className="h-1.5 mt-2" />
@@ -462,11 +462,11 @@ export function BuilderWorkspace() {
 
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+              <UserPlus className="icon-sm mr-1.5" />
               Invite
             </Button>
             <Button size="sm" onClick={() => setShowCreateDocDialog(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              <Plus className="icon-sm mr-1.5" />
               New Document
             </Button>
           </div>
@@ -479,7 +479,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Rocket className="h-4 w-4" />
+                  <Rocket className="icon-sm" />
                   Startup Progress
                 </CardTitle>
               </CardHeader>
@@ -504,7 +504,7 @@ export function BuilderWorkspace() {
 
                 {assessingReadiness && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="icon-sm animate-spin" />
                     Assessing readiness…
                   </div>
                 )}
@@ -535,7 +535,7 @@ export function BuilderWorkspace() {
                       }}
                     >
                       <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Icon className="icon-sm text-muted-foreground" />
                         {existing ? `Edit ${meta?.label}` : `Start ${meta?.label}`}
                       </span>
                       {existing ? (
@@ -546,7 +546,7 @@ export function BuilderWorkspace() {
                           {existing.completionPercent}%
                         </Badge>
                       ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        <ChevronRight className="icon-sm text-muted-foreground" />
                       )}
                     </Button>
                   );
@@ -557,7 +557,7 @@ export function BuilderWorkspace() {
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Gaps</p>
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
                       <div key={i} className={cn('flex items-start gap-1.5 text-xs', STATUS.danger.text)}>
-                        <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                        <AlertCircle className="icon-sm mt-0.5 shrink-0" />
                         {b}
                       </div>
                     ))}
@@ -572,7 +572,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className={cn('h-4 w-4', STATUS.warning.icon)} />
+                  <Zap className={cn('icon-sm', STATUS.warning.icon)} />
                   Recommended Next Steps
                 </CardTitle>
               </CardHeader>
@@ -580,7 +580,7 @@ export function BuilderWorkspace() {
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
                     <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-sm">
-                      <ChevronRight className="h-3.5 w-3.5 text-primary-accessible mt-0.5 shrink-0" />
+                      <ChevronRight className="icon-sm text-primary-accessible mt-0.5 shrink-0" />
                       <span className="text-muted-foreground">{milestone}</span>
                     </div>
                   ))}
@@ -612,7 +612,7 @@ export function BuilderWorkspace() {
                 <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="text-muted-foreground mb-4">No documents yet. Create your first startup artifact.</p>
                 <Button onClick={() => setShowCreateDocDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="icon-sm mr-2" />
                   Create First Document
                 </Button>
               </CardContent>
@@ -633,7 +633,7 @@ export function BuilderWorkspace() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="p-1.5 rounded-md bg-primary/8 shrink-0">
-                            <Icon className="h-4 w-4 text-primary-accessible" />
+                            <Icon className="icon-sm text-primary-accessible" />
                           </div>
                           <CardTitle className="text-sm truncate">{doc.title}</CardTitle>
                         </div>
@@ -656,7 +656,7 @@ export function BuilderWorkspace() {
                           v{doc.version}
                         </Badge>
                         <span className="text-xs text-muted-foreground group-hover:text-primary-accessible transition-colors flex items-center gap-1">
-                          Open <ArrowRight className="h-3 w-3" />
+                          Open <ArrowRight className="icon-sm" />
                         </span>
                       </div>
                     </CardContent>
@@ -670,7 +670,7 @@ export function BuilderWorkspace() {
                 onClick={() => setShowCreateDocDialog(true)}
               >
                 <CardContent className="py-8 flex flex-col items-center justify-center text-center gap-2">
-                  <Plus className="h-8 w-8 text-muted-foreground/40 group-hover:text-primary-accessible transition-colors" />
+                  <Plus className="icon-xl text-muted-foreground/40 group-hover:text-primary-accessible transition-colors" />
                   <p className="text-sm text-muted-foreground">Add Document</p>
                 </CardContent>
               </Card>
@@ -684,11 +684,11 @@ export function BuilderWorkspace() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                  <Users className="icon-sm" />
                   Team Members
                 </CardTitle>
                 <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                  <UserPlus className="icon-sm mr-1.5" />
                   Invite
                 </Button>
               </div>
@@ -699,7 +699,7 @@ export function BuilderWorkspace() {
                   <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
                   <p className="text-sm mb-3">No collaborators yet</p>
                   <Button size="sm" onClick={() => setShowInviteDialog(true)}>
-                    <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                    <UserPlus className="icon-sm mr-1.5" />
                     Invite First Collaborator
                   </Button>
                 </div>
@@ -736,7 +736,7 @@ export function BuilderWorkspace() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                  <MoreHorizontal className="icon-sm" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
@@ -744,7 +744,7 @@ export function BuilderWorkspace() {
                                   className="text-destructive-accessible"
                                   onClick={() => handleRemoveCollaborator(collab.id)}
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                  <Trash2 className="icon-sm mr-2" />
                                   Remove
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -764,7 +764,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="icon-sm" />
                   Workspace Settings
                 </CardTitle>
               </CardHeader>
@@ -813,9 +813,9 @@ export function BuilderWorkspace() {
               disabled={assessingReadiness}
             >
               {assessingReadiness ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="icon-sm mr-1.5 animate-spin" />
               ) : (
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                <RefreshCw className="icon-sm mr-1.5" />
               )}
               {assessingReadiness ? 'Assessing…' : 'Reassess'}
             </Button>
@@ -871,7 +871,7 @@ export function BuilderWorkspace() {
                       <div className="space-y-1 pt-1 border-t border-border/40">
                         {dim.recommendations.slice(0, 2).map((r, i) => (
                           <div key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                            <ChevronRight className="h-3 w-3 text-primary-accessible mt-0.5 shrink-0" />
+                            <ChevronRight className="icon-sm text-primary-accessible mt-0.5 shrink-0" />
                             {r}
                           </div>
                         ))}
@@ -889,7 +889,7 @@ export function BuilderWorkspace() {
                   No readiness data yet. Complete some documents first, then run an assessment.
                 </p>
                 <Button onClick={handleReassess} disabled={assessingReadiness}>
-                  {assessingReadiness ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Activity className="h-4 w-4 mr-2" />}
+                  {assessingReadiness ? <Loader2 className="icon-sm mr-2 animate-spin" /> : <Activity className="icon-sm mr-2" />}
                   Run Assessment
                 </Button>
               </CardContent>

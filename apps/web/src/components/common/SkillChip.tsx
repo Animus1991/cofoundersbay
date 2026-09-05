@@ -52,7 +52,7 @@ export function SkillChip({
           }}
           className="rounded-full p-0.5 hover:bg-primary/20 transition-colors"
         >
-          <X className="h-3 w-3" />
+          <X className="icon-sm" />
         </button>
       )}
     </span>

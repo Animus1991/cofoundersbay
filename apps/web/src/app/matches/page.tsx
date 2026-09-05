@@ -66,7 +66,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary-accessible" />
+            <BarChart3 className="icon-md text-primary-accessible" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
         </DialogHeader>
@@ -89,7 +89,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="h-3.5 w-3.5 text-primary-accessible mt-0.5 flex-shrink-0" />
+                <Zap className="icon-sm text-primary-accessible mt-0.5 flex-shrink-0" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -237,7 +237,7 @@ function MatchListRow({
                   </Badge>
                   {hit.location && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />{hit.location}
+                      <MapPin className="icon-sm" />{hit.location}
                     </span>
                   )}
                 </div>
@@ -282,24 +282,24 @@ function MatchListRow({
             <button onClick={onPass}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
               title="Pass">
-              <X className="h-3.5 w-3.5" />
+              <X className="icon-sm" />
             </button>
             <button onClick={onSave}
               className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
               title={isSaved ? 'Saved' : 'Save to shortlist'}>
-              {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
             </button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onBreakdown}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary-accessible transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
-              <BarChart3 className="h-3.5 w-3.5" /> Breakdown
+              <BarChart3 className="icon-sm" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
-              <MessageCircle className="h-3.5 w-3.5" /> Message
+              <MessageCircle className="icon-sm" /> Message
             </Button>
             <Button size="sm" onClick={onConnect} className="h-8 gap-1.5 text-xs px-3">
-              <Heart className="h-3.5 w-3.5" /> Connect
+              <Heart className="icon-sm" /> Connect
             </Button>
           </div>
         </div>
@@ -338,7 +338,7 @@ function MatchPreviewPanel({
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
           <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         </div>
 
@@ -372,12 +372,12 @@ function MatchPreviewPanel({
           <div className="flex flex-wrap gap-2">
             {hit.location && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" /> {hit.location}
+                <MapPin className="icon-sm" /> {hit.location}
               </span>
             )}
             {hit.availability && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" /> {hit.availability}
+                <Clock className="icon-sm" /> {hit.availability}
               </span>
             )}
           </div>
@@ -411,27 +411,27 @@ function MatchPreviewPanel({
           <div className="space-y-2 pt-2 border-t border-border/40">
             <div className="flex gap-2">
               <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
-                <UserPlus className="h-3.5 w-3.5" /> Connect
+                <UserPlus className="icon-sm" /> Connect
               </Button>
               <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
-                <MessageCircle className="h-3.5 w-3.5" /> Message
+                <MessageCircle className="icon-sm" /> Message
               </Button>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
-                {isSaved ? <BookmarkCheck className={cn('h-3.5 w-3.5', STATUS.warning.icon)} /> : <Bookmark className="h-3.5 w-3.5" />}
+                {isSaved ? <BookmarkCheck className={cn('icon-sm', STATUS.warning.icon)} /> : <Bookmark className="icon-sm" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
               <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive-accessible" onClick={onPass}>
-                <X className="h-3.5 w-3.5" /> Pass
+                <X className="icon-sm" /> Pass
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
-              <BarChart3 className="h-3.5 w-3.5" /> View breakdown
+              <BarChart3 className="icon-sm" /> View breakdown
             </Button>
             <Link href={`/profiles/${hit.userId}`}>
               <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
-                <ArrowRight className="h-3.5 w-3.5" /> Full profile
+                <ArrowRight className="icon-sm" /> Full profile
               </Button>
             </Link>
           </div>
@@ -626,13 +626,13 @@ export default function MatchesPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="icon-sm" />
             <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} />
           </Button>
           <Link href="/discover">
             <Button variant="outline" size="sm" className="gap-2">
               <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} />
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="icon-sm" />
             </Button>
           </Link>
         </div>
@@ -649,7 +649,7 @@ export default function MatchesPage() {
             action={
               <Link href="/login">
                 <Button className="gap-2">
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="icon-sm" />
                   <BilingualText en={matchesEn('sign_in')} el={matchesEl('sign_in')} />
                 </Button>
               </Link>
@@ -699,7 +699,7 @@ export default function MatchesPage() {
               <Card key={labelEn} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-3 p-3.5">
                   <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', statColors.bg)}>
-                    <Icon className={cn('h-4 w-4', statColors.icon)} />
+                    <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>
                   <div>
                     <p className={cn('text-xl font-black tabular-nums leading-none', statColors.icon)}>{value}</p>
@@ -718,7 +718,7 @@ export default function MatchesPage() {
           <div className={cn('rounded-xl border bg-gradient-to-r from-status-success-bg/50 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300', STATUS.success.border)}>
             <div className="flex items-center gap-3">
               <div className={cn('rounded-lg p-2 shrink-0', STATUS.success.bg)}>
-                <Award className={cn('h-5 w-5', STATUS.success.icon)} />
+                <Award className={cn('icon-md', STATUS.success.icon)} />
               </div>
               <div>
                 <p className="font-semibold text-sm text-foreground">
@@ -732,11 +732,11 @@ export default function MatchesPage() {
             <div className="flex items-center gap-2 shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
-                  <RotateCcw className="h-3.5 w-3.5" /> Undo
+                  <RotateCcw className="icon-sm" /> Undo
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="gap-1.5 h-8 text-xs">
-                View <ChevronRight className="h-3.5 w-3.5" />
+                View <ChevronRight className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -752,7 +752,7 @@ export default function MatchesPage() {
               <Link href="/profile/edit">
                 <Button className="gap-2">
                   <BilingualText en={matchesEn('complete_profile')} el={matchesEl('complete_profile')} />
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="icon-sm" />
                 </Button>
               </Link>
             }
@@ -813,7 +813,7 @@ export default function MatchesPage() {
                           'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
                           isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}>
-                        <Icon className="h-3 w-3 shrink-0" />
+                        <Icon className="icon-sm shrink-0" />
                         <BilingualText en={labelEn} el={labelEl} compact />
                       </button>
                     );
@@ -828,13 +828,13 @@ export default function MatchesPage() {
                     <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
                   </p>
                   <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground pointer-events-none" />
                     <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
                       placeholder="City or country..."
                       className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
                     {locationFilter && (
                       <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="h-3 w-3" />
+                        <X className="icon-sm" />
                       </button>
                     )}
                   </div>
@@ -880,7 +880,7 @@ export default function MatchesPage() {
                     <button key={key} onClick={() => setSortBy(key)}
                       className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
                         sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
-                      <Icon className="h-3 w-3 shrink-0" />
+                      <Icon className="icon-sm shrink-0" />
                       <BilingualText en={labelEn} el={labelEl} compact />
                     </button>
                   ))}
@@ -892,7 +892,7 @@ export default function MatchesPage() {
                 <button
                   onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
                   className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="h-3 w-3" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
+                  <X className="icon-sm" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
                 </button>
               )}
             </aside>
@@ -905,7 +905,7 @@ export default function MatchesPage() {
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
                   className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
                     showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border/60 text-muted-foreground')}>
-                  <SlidersHorizontal className="h-3 w-3" /> Filters
+                  <SlidersHorizontal className="icon-sm" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                 </button>
                 {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
@@ -974,7 +974,7 @@ export default function MatchesPage() {
                     className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
-                    <CheckSquare className="h-3.5 w-3.5" />
+                    <CheckSquare className="icon-sm" />
                     <span className="hidden sm:inline">Select</span>
                     {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
@@ -982,7 +982,7 @@ export default function MatchesPage() {
                   <button onClick={() => setShowSearch(s => !s)}
                     className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
                       showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
-                    <Search className="h-3.5 w-3.5" />
+                    <Search className="icon-sm" />
                   </button>
 
                   <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
@@ -994,7 +994,7 @@ export default function MatchesPage() {
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
                         className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
-                        <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
+                        <Icon className={cn('icon-sm', small && 'scale-90')} />
                         {mode === 'grid3' && <span className="text-2xs ml-0.5 font-bold">3</span>}
                       </button>
                     ))}
@@ -1002,7 +1002,7 @@ export default function MatchesPage() {
 
                   {lastPassed && (
                     <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
-                      <RotateCcw className="h-3.5 w-3.5" />
+                      <RotateCcw className="icon-sm" />
                       <span className="hidden sm:inline">Undo</span>
                     </Button>
                   )}
@@ -1012,7 +1012,7 @@ export default function MatchesPage() {
               {/* Search input (conditional) */}
               {showSearch && (
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
                     placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
                   {nameSearch && (
@@ -1119,7 +1119,7 @@ export default function MatchesPage() {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
                   <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Explore more <ArrowRight className="h-3 w-3" />
+                    Explore more <ArrowRight className="icon-sm" />
                   </Link>
                 </div>
               )}
@@ -1160,7 +1160,7 @@ export default function MatchesPage() {
               const ids = [...selectedIds].slice(0, 4).join(',');
               router.push(`/compare?ids=${ids}`);
             }}>
-            <BarChart3 className="h-3.5 w-3.5" /> Compare
+            <BarChart3 className="icon-sm" /> Compare
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive-accessible"
             onClick={() => {
@@ -1170,11 +1170,11 @@ export default function MatchesPage() {
               setSelectedIds(new Set());
               setSelectMode(false);
             }}>
-            <X className="h-3.5 w-3.5" /> Pass All
+            <X className="icon-sm" /> Pass All
           </Button>
           <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
             className="text-muted-foreground hover:text-foreground transition-colors ml-1">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         </div>
       )}

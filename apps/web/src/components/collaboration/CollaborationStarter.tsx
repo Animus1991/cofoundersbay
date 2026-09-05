@@ -156,7 +156,7 @@ export function CollaborationStarter({
                   {otherUser.avatarUrl && <AvatarFallback>{otherUser.displayName[0]}</AvatarFallback>}
                 </Avatar>
                 <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400 text-white">
-                  <Handshake className="h-3 w-3" />
+                  <Handshake className="icon-sm" />
                 </span>
               </div>
               <div>
@@ -195,7 +195,7 @@ export function CollaborationStarter({
                     <p className="text-sm font-medium text-foreground">{action.label}</p>
                     <p className="text-xs text-muted-foreground">{action.description}</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ChevronRight className="icon-sm text-muted-foreground shrink-0" />
                 </button>
               );
             })}
@@ -223,7 +223,7 @@ export function CollaborationStarter({
         'flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3',
         className,
       )}>
-        <Sparkles className="h-4 w-4 shrink-0 text-status-success" />
+        <Sparkles className="icon-sm shrink-0 text-status-success" />
         <p className="flex-1 text-sm text-foreground">
           <span className="font-medium">New connection:</span>{' '}
           {otherUser.displayName} accepted your request.
@@ -236,12 +236,12 @@ export function CollaborationStarter({
             onClick={handleMessage}
             disabled={loading === 'message'}
           >
-            <MessageCircle className="h-3 w-3" />
+            <MessageCircle className="icon-sm" />
             Message
           </Button>
           <Link href={`/projects/create?collaborator=${otherUser.id}`}>
             <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-              <FolderPlus className="h-3 w-3" />
+              <FolderPlus className="icon-sm" />
               Collaborate
             </Button>
           </Link>
@@ -252,7 +252,7 @@ export function CollaborationStarter({
             className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Dismiss"
           >
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </button>
         )}
       </div>
@@ -273,18 +273,18 @@ export function CollaborationStarter({
         onClick={handleMessage}
         disabled={loading === 'message'}
       >
-        <MessageCircle className="h-3 w-3" />
+        <MessageCircle className="icon-sm" />
         Message
       </Button>
       <Link href={`/projects/create?collaborator=${otherUser.id}`}>
         <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
-          <FolderPlus className="h-3 w-3" />
+          <FolderPlus className="icon-sm" />
           Start project
         </Button>
       </Link>
       <Link href={`/milestones/new?with=${otherUser.id}`}>
         <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground">
-          <Target className="h-3 w-3" />
+          <Target className="icon-sm" />
           Set milestone
         </Button>
       </Link>

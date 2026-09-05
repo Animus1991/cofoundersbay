@@ -84,7 +84,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
                 </Link>
                 <Badge variant="secondary" className="text-xs">{group.category}</Badge>
                 <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.iconClass)}>
-                  <PrivacyIcon className="h-3 w-3" />
+                  <PrivacyIcon className="icon-sm" />
                   {privacyCfg.label}
                 </Badge>
                 <Badge variant="secondary" className="text-xs capitalize">{group.role}</Badge>
@@ -92,9 +92,9 @@ function GroupCard({ group }: { group: ManagedGroup }) {
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group.memberCount.toLocaleString()} members</span>
-                <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{group.postCount} posts</span>
-                <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />Active {group.lastActivity}</span>
+                <span className="flex items-center gap-1"><Users className="icon-sm" />{group.memberCount.toLocaleString()} members</span>
+                <span className="flex items-center gap-1"><MessageSquare className="icon-sm" />{group.postCount} posts</span>
+                <span className="flex items-center gap-1"><TrendingUp className="icon-sm" />Active {group.lastActivity}</span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
                   <Badge variant="destructive" className="text-xs">{group.pendingRequests} pending</Badge>
                 )}
@@ -104,21 +104,21 @@ function GroupCard({ group }: { group: ManagedGroup }) {
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/groups/${group.id}`}>
-                <Eye className="mr-1.5 h-3.5 w-3.5" />View
+                <Eye className="mr-1.5 icon-sm" />View
               </Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${group.name}`}>
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Group</DropdownMenuItem>
-                <DropdownMenuItem><UserPlus className="mr-2 h-4 w-4" />Invite Members</DropdownMenuItem>
-                <DropdownMenuItem><Settings className="mr-2 h-4 w-4" />Group Settings</DropdownMenuItem>
+                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Group</DropdownMenuItem>
+                <DropdownMenuItem><UserPlus className="mr-2 icon-sm" />Invite Members</DropdownMenuItem>
+                <DropdownMenuItem><Settings className="mr-2 icon-sm" />Group Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 h-4 w-4" />Delete Group</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete Group</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -145,7 +145,7 @@ export default function ManageGroupsPage() {
       actions={(
         <Button asChild>
           <Link href="/groups">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 icon-sm" />
             Create community
           </Link>
         </Button>
@@ -170,7 +170,7 @@ export default function ManageGroupsPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -191,7 +191,7 @@ export default function ManageGroupsPage() {
                 action={(
                   <Button asChild className="gap-2">
                     <Link href="/groups">
-                      <Plus className="h-4 w-4" />
+                      <Plus className="icon-sm" />
                       Create community
                     </Link>
                   </Button>

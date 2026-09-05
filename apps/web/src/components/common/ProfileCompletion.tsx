@@ -134,7 +134,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary-accessible" />
+            <Sparkles className="icon-sm text-primary-accessible" />
             Profile Strength
           </CardTitle>
           <span className="text-xs text-muted-foreground">
@@ -176,9 +176,9 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
               )}
             >
               {field.completed ? (
-                <CheckCircle2 className={cn('h-5 w-5 flex-shrink-0', STATUS.success.icon)} />
+                <CheckCircle2 className={cn('icon-md flex-shrink-0', STATUS.success.icon)} />
               ) : (
-                <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <Circle className="icon-md text-muted-foreground flex-shrink-0" />
               )}
               <span
                 className={cn(
@@ -191,7 +191,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
               {!field.completed && field.href && (
                 <Link href={field.href}>
                   <Button size="sm" variant="ghost" className="h-7 px-2">
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="icon-sm" />
                   </Button>
                 </Link>
               )}
@@ -204,7 +204,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
           <Link href={nextStep.href} className="block">
             <Button className="w-full gap-2">
               Complete "{nextStep.label}"
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="icon-sm" />
             </Button>
           </Link>
         )}

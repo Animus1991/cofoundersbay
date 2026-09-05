@@ -49,9 +49,9 @@ type Community = {
 
 function CommunityCard({ community }: { community: Community }) {
   const visibilityIcons: Record<string, React.ReactNode> = {
-    public: <Globe className="h-3.5 w-3.5" />,
-    private: <Lock className="h-3.5 w-3.5" />,
-    tenant: <Shield className="h-3.5 w-3.5" />,
+    public: <Globe className="icon-sm" />,
+    private: <Lock className="icon-sm" />,
+    tenant: <Shield className="icon-sm" />,
   };
 
   const statusColors: Record<string, string> = {
@@ -115,20 +115,20 @@ function CommunityCard({ community }: { community: Community }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users2 className="h-3.5 w-3.5" />
+                <Users2 className="icon-sm" />
                 {community.memberCount} members
               </span>
               <span className="flex items-center gap-1">
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="icon-sm" />
                 {community.postCount} posts
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 {community.createdAt}
               </span>
               {community.tenant && (
                 <span className="flex items-center gap-1">
-                  <Shield className="h-3.5 w-3.5" />
+                  <Shield className="icon-sm" />
                   {community.tenant}
                 </span>
               )}

@@ -108,7 +108,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
         </div>
         <Link href="/profile/edit">
           <Button size="sm" variant="secondary" className="w-full gap-2 mt-1">
-            <Edit className="h-3.5 w-3.5" />
+            <Edit className="icon-sm" />
             <BilingualText en={profileEn('complete_profile')} el={profileEl('complete_profile')} />
           </Button>
         </Link>
@@ -207,7 +207,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-secondary/40 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
           >
-            <Icon2 className="h-3.5 w-3.5" />
+            <Icon2 className="icon-sm" />
             {label}
           </a>
         );
@@ -512,7 +512,7 @@ export default function ProfilePage() {
                   </CardTitle>
                   <Link href="/profile/edit">
                     <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
-                      <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
+                      <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                     </Button>
                   </Link>
                 </div>
@@ -558,7 +558,7 @@ export default function ProfilePage() {
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
-                  <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
+                  <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                 </Button>
               </div>
             </CardHeader>
@@ -577,7 +577,7 @@ export default function ProfilePage() {
                 </div>
                 <Link href="/profile/edit" className="mt-2">
                   <Button variant="outline" size="sm" className="gap-1.5">
-                    <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
+                    <Plus className="icon-sm" /> <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
                   </Button>
                 </Link>
               </div>
@@ -589,7 +589,7 @@ export default function ProfilePage() {
             <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
-                  <Activity className="h-8 w-8 text-primary-accessible" />
+                  <Activity className="icon-xl text-primary-accessible" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-lg">
@@ -601,7 +601,7 @@ export default function ProfilePage() {
                 </div>
                 <Link href="/profile/edit">
                   <Button className="gap-2 mt-2">
-                    <Edit className="h-4 w-4" />
+                    <Edit className="icon-sm" />
                     <BilingualText en={profileEn('complete_profile_now')} el={profileEl('complete_profile_now')} />
                   </Button>
                 </Link>
@@ -617,18 +617,18 @@ export default function ProfilePage() {
             <CardContent className="p-5 space-y-4">
               <Link href="/profile/edit" className="block w-full">
                 <Button className="w-full gap-2 font-medium">
-                  <Edit className="h-4 w-4" />
+                  <Edit className="icon-sm" />
                   <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
                 </Button>
               </Link>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
-                  <LinkIcon className="h-4 w-4" />
+                  <LinkIcon className="icon-sm" />
                   <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} />
                 </Button>
                 <Link href="/settings/general" className="block w-full">
                   <Button variant="outline" className="w-full gap-2">
-                    <Zap className="h-4 w-4" />
+                    <Zap className="icon-sm" />
                     <BilingualText en={profileEn('settings')} el={profileEl('settings')} />
                   </Button>
                 </Link>
@@ -658,7 +658,7 @@ export default function ProfilePage() {
               ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
                 <div key={labelEn} className="flex flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className={`p-2 rounded-full ${bg} mb-2`}>
-                    <Icon className={`h-4 w-4 ${color}`} />
+                    <Icon className={`icon-sm ${color}`} />
                   </div>
                   <span className="text-lg font-bold text-foreground leading-none">{value}</span>
                   <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mt-1">

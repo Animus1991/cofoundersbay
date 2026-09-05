@@ -250,7 +250,7 @@ function RequestPanel() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search connections..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
         <div className="space-y-2">
@@ -416,7 +416,7 @@ export default function EndorsementsPage() {
                 <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
               </TabsList>
               <Button size="sm" className="h-8 gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" />Give Endorsement
+                <Plus className="icon-sm" />Give Endorsement
               </Button>
             </div>
 
@@ -444,7 +444,7 @@ export default function EndorsementsPage() {
                 <Card><CardContent className="py-12 text-center">
                   <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="font-medium">No endorsements given yet</p>
-                  <Button size="sm" className="mt-4"><Plus className="h-3.5 w-3.5 mr-1.5" />Give First Endorsement</Button>
+                  <Button size="sm" className="mt-4"><Plus className="icon-sm mr-1.5" />Give First Endorsement</Button>
                 </CardContent></Card>
               )}
             </TabsContent>

@@ -146,7 +146,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
@@ -174,11 +174,11 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <div className="flex gap-2 w-full">
               <Button size="sm" onClick={onConnect} className="flex-1 gap-1.5">
-                <UserPlus className="h-3.5 w-3.5" />
+                <UserPlus className="icon-sm" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -222,11 +222,11 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               </div>
               <div className="flex gap-2 shrink-0">
                 <Button size="sm" onClick={onConnect} className="gap-1.5">
-                  <UserPlus className="h-3.5 w-3.5" />
+                  <UserPlus className="icon-sm" />
                   Connect
                 </Button>
                 <Button size="sm" variant="outline" onClick={onMessage} className="gap-1.5">
-                  <MessageCircle className="h-3.5 w-3.5" />
+                  <MessageCircle className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -256,18 +256,18 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               {member.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
+                  <MapPin className="icon-sm" />
                   {member.location}
                 </div>
               )}
               {member.industries && member.industries.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <Briefcase className="h-3.5 w-3.5" />
+                  <Briefcase className="icon-sm" />
                   {member.industries.slice(0, 2).join(', ')}
                 </div>
               )}
               <div className="flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5" />
+                <Activity className="icon-sm" />
                 <span className={scoreColor(contribScore)}>Score {contribScore}</span>
               </div>
             </div>
@@ -404,7 +404,7 @@ export function MembersPageClient() {
                 <Card key={s.label} className="shadow-sm border-border/50">
                   <CardContent className="flex items-center gap-3 p-3">
                     <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                      <SIcon className="h-4 w-4" />
+                      <SIcon className="icon-sm" />
                     </div>
                     <div>
                       <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
@@ -438,7 +438,7 @@ export function MembersPageClient() {
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary-accessible" />
+              <Sparkles className="icon-sm text-primary-accessible" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -454,7 +454,7 @@ export function MembersPageClient() {
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
                     <p className="text-2xs text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="h-4 w-4 text-primary-accessible shrink-0" />
+                  <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />
                 </div>
               ))}
             </div>
@@ -464,7 +464,7 @@ export function MembersPageClient() {
         {/* Search and View Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search members by name, skills, or bio..."
               value={searchQuery}
@@ -479,7 +479,7 @@ export function MembersPageClient() {
               onClick={() => setShowFilters(!showFilters)}
               className="gap-2"
             >
-              <Filter className="h-4 w-4" />
+              <Filter className="icon-sm" />
               Filters
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
@@ -495,7 +495,7 @@ export function MembersPageClient() {
                 onClick={() => setViewMode('grid')}
                 className="rounded-r-none"
               >
-                <Grid3x3 className="h-4 w-4" />
+                <Grid3x3 className="icon-sm" />
               </Button>
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -503,7 +503,7 @@ export function MembersPageClient() {
                 onClick={() => setViewMode('list')}
                 className="rounded-l-none"
               >
-                <List className="h-4 w-4" />
+                <List className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -591,7 +591,7 @@ export function MembersPageClient() {
                     {activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active
                   </span>
                   <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1.5">
-                    <X className="h-3.5 w-3.5" />
+                    <X className="icon-sm" />
                     Clear all
                   </Button>
                 </div>
@@ -622,7 +622,7 @@ export function MembersPageClient() {
         {isError ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <Users className="h-8 w-8 text-muted-foreground/40" />
+              <Users className="icon-xl text-muted-foreground/40" />
               <p className="text-sm text-muted-foreground">Failed to load members. Please check your connection.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent>

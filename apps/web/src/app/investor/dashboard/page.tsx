@@ -68,7 +68,7 @@ function StartupCard({ startup }: { startup: Startup }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -156,7 +156,7 @@ function _InvestorDashboardPage_legacy() {
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/investor/scouting">
-                <Eye className="mr-2 h-4 w-4" />
+                <Eye className="mr-2 icon-sm" />
                 Scout Startups
               </Link>
             </Button>
@@ -208,7 +208,7 @@ function _InvestorDashboardPage_legacy() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/investor/pipeline">
                   View All
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -230,7 +230,7 @@ function _InvestorDashboardPage_legacy() {
                 {upcomingMeetings.map((meeting) => (
                   <div key={meeting.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <Calendar className="h-4 w-4 text-primary-accessible" />
+                      <Calendar className="icon-sm text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{meeting.startup}</p>

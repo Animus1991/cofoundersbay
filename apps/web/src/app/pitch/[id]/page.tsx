@@ -196,7 +196,7 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-status-danger-bg ">
-          <Target className="h-6 w-6 text-status-danger" />
+          <Target className="icon-lg text-status-danger" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -227,7 +227,7 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-status-success-bg ">
-          <Lightbulb className="h-6 w-6 text-status-success" />
+          <Lightbulb className="icon-lg text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -235,7 +235,7 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       <div className="space-y-4">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-status-success mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="icon-md text-status-success mt-0.5 flex-shrink-0" />
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
@@ -250,7 +250,7 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-status-info-bg ">
-          <TrendingUp className="h-6 w-6 text-status-info" />
+          <TrendingUp className="icon-lg text-status-info" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -273,7 +273,7 @@ function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-status-accent-bg ">
-          <Globe className="h-6 w-6 text-status-accent" />
+          <Globe className="icon-lg text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -301,7 +301,7 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-status-warning-bg ">
-          <DollarSign className="h-6 w-6 text-status-warning" />
+          <DollarSign className="icon-lg text-status-warning" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -329,7 +329,7 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-status-success-bg ">
-          <Users className="h-6 w-6 text-status-success" />
+          <Users className="icon-lg text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -357,7 +357,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-status-accent-bg ">
-          <BarChart2 className="h-6 w-6 text-status-accent" />
+          <BarChart2 className="icon-lg text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -366,7 +366,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
           <p className="text-5xl font-bold text-primary-accessible">{c.amount}</p>
           <p className="text-muted-foreground mt-1">Raising</p>
         </div>
-        <ArrowRight className="h-8 w-8 text-muted-foreground" />
+        <ArrowRight className="icon-xl text-muted-foreground" />
         <div>
           <p className="text-2xl font-semibold">{c.valuation}</p>
           <p className="text-muted-foreground mt-1">Pre-money valuation</p>
@@ -482,15 +482,15 @@ export default function PitchDeckPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
-              <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{deck.stats.views}</span>
-              <span className="flex items-center gap-1"><Share2 className="h-3 w-3" />{deck.stats.shares}</span>
+              <span className="flex items-center gap-1"><Eye className="icon-sm" />{deck.stats.views}</span>
+              <span className="flex items-center gap-1"><Share2 className="icon-sm" />{deck.stats.shares}</span>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="h-4 w-4 mr-1.5" />Share
+              <Share2 className="icon-sm mr-1.5" />Share
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-1.5" />Contact
+                <Mail className="icon-sm mr-1.5" />Contact
               </Button>
             )}
           </div>
@@ -548,7 +548,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />Previous
+              <ChevronLeft className="icon-sm mr-1" />Previous
             </Button>
 
             <div className="flex items-center gap-1.5">
@@ -571,7 +571,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.min(s + 1, slides.length - 1))}
               disabled={currentSlide === slides.length - 1}
             >
-              Next<ChevronRight className="h-4 w-4 ml-1" />
+              Next<ChevronRight className="icon-sm ml-1" />
             </Button>
           </div>
 
@@ -598,7 +598,7 @@ export default function PitchDeckPage() {
             </div>
             {deck.allowContact && (
               <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-2" />Get in Touch
+                <Mail className="icon-sm mr-2" />Get in Touch
               </Button>
             )}
           </div>
@@ -617,16 +617,16 @@ export default function PitchDeckPage() {
             <div className="flex gap-2">
               <Button variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-3.5 w-3.5" />
+                  <Twitter className="icon-sm" />
                 </a>
               </Button>
               <Button variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-3.5 w-3.5" />
+                  <Linkedin className="icon-sm" />
                 </a>
               </Button>
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-status-success" /> : <Link2 className="h-3.5 w-3.5" />}
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
               </Button>
             </div>
           </div>
@@ -696,19 +696,19 @@ export default function PitchDeckPage() {
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="h-4 w-4 text-status-success" /> : <Link2 className="h-4 w-4" />}
+                  {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Link2 className="icon-sm" />}
                 </Button>
               </div>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-4 w-4 mr-2" />Twitter
+                  <Twitter className="icon-sm mr-2" />Twitter
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-4 w-4 mr-2" />LinkedIn
+                  <Linkedin className="icon-sm mr-2" />LinkedIn
                 </a>
               </Button>
             </div>

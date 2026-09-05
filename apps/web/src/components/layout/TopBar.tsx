@@ -54,7 +54,7 @@ function PreviewDemoBadge() {
               'hover:brightness-95',
             )}
           >
-            <Sparkles className="h-3 w-3" />
+            <Sparkles className="icon-sm" />
             Demo
           </Link>
         </TooltipTrigger>
@@ -88,17 +88,17 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
           className="h-9 w-9 shrink-0 md:hidden"
           aria-label="More tools"
         >
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="icon-sm" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={onCommand}>
-          <Keyboard className="mr-2 h-4 w-4" />
+          <Keyboard className="mr-2 icon-sm" />
           Command palette
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
-          {showDemoData ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
+          {showDemoData ? <Eye className="mr-2 icon-sm" /> : <EyeOff className="mr-2 icon-sm" />}
           {showDemoData ? 'Hide sample data' : 'Show sample data'}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -143,7 +143,7 @@ export function TopBar() {
             aria-label="Command palette"
             title="Command palette (Ctrl+K)"
           >
-            <Keyboard className="h-4 w-4" />
+            <Keyboard className="icon-sm" />
           </Button>
           <div className="hidden md:flex items-center gap-0.5">
             <DemoDataToggle />

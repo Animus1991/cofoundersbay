@@ -270,7 +270,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                         )}
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
+                            <Users className="icon-sm" />
                             {cohort._count.members} members
                           </span>
                           {cohort.capacity && <span>Cap: {cohort.capacity}</span>}

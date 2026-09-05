@@ -327,7 +327,7 @@ export default function SavedSearchesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Search className="h-6 w-6 text-primary-accessible" />
+              <Search className="icon-lg text-primary-accessible" />
               Saved Searches
             </h1>
             <p className="text-muted-foreground mt-1">

@@ -92,7 +92,7 @@ function PrivacyCard() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Globe className="h-5 w-5 text-primary-accessible" />
+          <Globe className="icon-md text-primary-accessible" />
           Privacy & Visibility
         </CardTitle>
         <CardDescription>Control who can see your profile and activity.</CardDescription>
@@ -102,7 +102,7 @@ function PrivacyCard() {
           <div key={id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="h-4 w-4 text-primary-accessible" />
+                <Icon className="icon-sm text-primary-accessible" />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{label}</p>
@@ -243,14 +243,14 @@ export default function SettingsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary-accessible" />
+                  <CreditCard className="icon-md text-primary-accessible" />
                   Billing
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={isPremium ? 'default' : 'secondary'} className="gap-1.5">
-                    {isPremium && <Crown className="h-3.5 w-3.5" />}
+                    {isPremium && <Crown className="icon-sm" />}
                     {statusLabel}
                   </Badge>
                   {subscription?.currentPeriodEnd && (
@@ -262,7 +262,7 @@ export default function SettingsPage() {
 
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="icon-sm animate-spin" />
                     Loading billing…
                   </div>
                 ) : (
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                       }
                     }}
                   >
-                    {working === 'checkout' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
+                    {working === 'checkout' ? <Loader2 className="icon-sm animate-spin" /> : <Crown className="icon-sm" />}
                     {isPremium ? 'Premium active' : 'Upgrade'}
                   </Button>
                   {isPremium && (
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                         }
                       }}
                     >
-                      {working === 'portal' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                      {working === 'portal' ? <Loader2 className="icon-sm animate-spin" /> : <ExternalLink className="icon-sm" />}
                       Manage subscription
                     </Button>
                   )}
@@ -325,7 +325,7 @@ export default function SettingsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-primary-accessible" />
+                  <Bell className="icon-md text-primary-accessible" />
                   Notification preferences
                 </CardTitle>
                 <CardDescription>
@@ -347,7 +347,7 @@ export default function SettingsPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-4 w-4 text-primary-accessible" />
+                        <Icon className="icon-sm text-primary-accessible" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{label}</p>
@@ -371,7 +371,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <KeyRound className="h-5 w-5 text-primary-accessible" />
+                <KeyRound className="icon-md text-primary-accessible" />
                 Change password
               </CardTitle>
               <CardDescription>Leave blank to keep your current password.</CardDescription>
@@ -389,7 +389,7 @@ export default function SettingsPage() {
                     className="pr-10"
                   />
                   <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPw ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
                   </button>
                 </div>
                 <Input
@@ -410,7 +410,7 @@ export default function SettingsPage() {
                   autoComplete="new-password"
                 />
                 <Button type="submit" disabled={pwWorking} className="gap-2">
-                  {pwWorking ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                  {pwWorking ? <Loader2 className="icon-sm animate-spin" /> : <KeyRound className="icon-sm" />}
                   Update password
                 </Button>
               </form>
@@ -421,7 +421,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary-accessible" />
+                <Shield className="icon-md text-primary-accessible" />
                 Security
               </CardTitle>
               <CardDescription>Two-factor authentication and account security.</CardDescription>
@@ -440,7 +440,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Link2 className="h-5 w-5 text-primary-accessible" />
+                <Link2 className="icon-md text-primary-accessible" />
                 Connected accounts
               </CardTitle>
               <CardDescription>
@@ -510,7 +510,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5 text-primary-accessible" />
+                <User className="icon-md text-primary-accessible" />
                 Account
               </CardTitle>
             </CardHeader>
@@ -518,13 +518,13 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-3 sm:flex-row">
                 <Link href="/profile/edit">
                   <Button variant="secondary" className="gap-2">
-                    <User className="h-4 w-4" />
+                    <User className="icon-sm" />
                     Edit profile
                   </Button>
                 </Link>
                 <Link href="/profile">
                   <Button variant="outline" className="gap-2">
-                    <Shield className="h-4 w-4" />
+                    <Shield className="icon-sm" />
                     View public profile
                   </Button>
                 </Link>
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                   className="gap-2 text-destructive-accessible hover:text-destructive-accessible hover:bg-destructive/10"
                   onClick={handleLogout}
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="icon-sm" />
                   Sign out
                 </Button>
               </div>
@@ -547,7 +547,7 @@ export default function SettingsPage() {
           <Card className="border-destructive/30">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2 text-destructive-accessible">
-                <AlertTriangle className="h-5 w-5" />
+                <AlertTriangle className="icon-md" />
                 Danger Zone
               </CardTitle>
               <CardDescription>Irreversible actions that affect your account permanently.</CardDescription>
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">Download all your profile, connections, and activity data as a ZIP archive.</p>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0 gap-2">
-                  <Download className="h-3.5 w-3.5" />Export
+                  <Download className="icon-sm" />Export
                 </Button>
               </div>
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
@@ -569,7 +569,7 @@ export default function SettingsPage() {
                 </div>
                 <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => success('Contact support', 'Email support@cofounderbay.com to request account deletion.')}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />Delete
+                  <Trash2 className="icon-sm" />Delete
                 </Button>
               </div>
             </CardContent>

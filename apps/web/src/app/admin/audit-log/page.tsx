@@ -81,7 +81,7 @@ function AuditLogRow({ log }: { log: AdminAuditLogItem }) {
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-0">
       <div className={cn('rounded-lg p-2 border shrink-0 mt-0.5', colorClass)}>
-        <ActionIcon className="h-3.5 w-3.5" />
+        <ActionIcon className="icon-sm" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">

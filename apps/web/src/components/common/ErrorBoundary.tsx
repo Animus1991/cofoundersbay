@@ -86,10 +86,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return (
           <div className="flex items-center justify-center p-4 rounded-lg bg-destructive/5 border border-destructive/20">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-destructive-accessible shrink-0" />
+              <AlertTriangle className="icon-md text-destructive-accessible shrink-0" />
               <p className="text-sm text-muted-foreground">Failed to load content</p>
               <Button onClick={this.handleRetry} size="sm" variant="ghost" className="gap-1.5">
-                <RefreshCw className="h-3.5 w-3.5" />
+                <RefreshCw className="icon-sm" />
                 Retry
               </Button>
             </div>
@@ -103,7 +103,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <CardContent className="pt-6 text-center">
               {/* Error illustration */}
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="h-8 w-8 text-destructive-accessible" />
+                <AlertTriangle className="icon-xl text-destructive-accessible" />
               </div>
               
               <h2 className="mb-2 text-xl font-semibold text-foreground">
@@ -124,7 +124,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="mb-6 text-left">
                   <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
-                    <Bug className="h-4 w-4" />
+                    <Bug className="icon-sm" />
                     Error details
                   </summary>
                   <pre className="mt-2 overflow-auto rounded-lg bg-secondary/40 p-3 text-xs text-muted-foreground max-h-48">
@@ -142,11 +142,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   onClick={() => (window.location.href = '/')}
                   className="gap-2"
                 >
-                  <Home className="h-4 w-4" />
+                  <Home className="icon-sm" />
                   Go Home
                 </Button>
                 <Button onClick={this.handleRetry} className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="icon-sm" />
                   Try Again
                 </Button>
               </div>
@@ -177,7 +177,7 @@ export function ErrorFallback({
           {error.message || 'An unexpected error occurred'}
         </p>
         <Button onClick={resetErrorBoundary} size="sm" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="icon-sm" />
           Retry
         </Button>
       </div>

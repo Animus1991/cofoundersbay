@@ -84,7 +84,7 @@ export function ShareButton({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant={variant} size={size} className={className}>
-          <Share2 className="h-4 w-4 mr-2" />
+          <Share2 className="icon-sm mr-2" />
           Share
         </Button>
       </DropdownMenuTrigger>
@@ -92,7 +92,7 @@ export function ShareButton({
         {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuItem onClick={handleNativeShare}>
-              <Share2 className="h-4 w-4 mr-2" />
+              <Share2 className="icon-sm mr-2" />
               Share via...
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -100,22 +100,22 @@ export function ShareButton({
         )}
 
         <DropdownMenuItem onClick={() => handleShare('facebook')}>
-          <Facebook className="h-4 w-4 mr-2" />
+          <Facebook className="icon-sm mr-2" />
           Share on Facebook
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('twitter')}>
-          <Twitter className="h-4 w-4 mr-2" />
+          <Twitter className="icon-sm mr-2" />
           Share on Twitter
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('linkedin')}>
-          <Linkedin className="h-4 w-4 mr-2" />
+          <Linkedin className="icon-sm mr-2" />
           Share on LinkedIn
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => handleShare('email')}>
-          <Mail className="h-4 w-4 mr-2" />
+          <Mail className="icon-sm mr-2" />
           Share via Email
         </DropdownMenuItem>
 
@@ -124,12 +124,12 @@ export function ShareButton({
         <DropdownMenuItem onClick={handleCopyLink}>
           {copied ? (
             <>
-              <Check className="h-4 w-4 mr-2 text-status-success" />
+              <Check className="icon-sm mr-2 text-status-success" />
               Link Copied!
             </>
           ) : (
             <>
-              <Copy className="h-4 w-4 mr-2" />
+              <Copy className="icon-sm mr-2" />
               Copy Link
             </>
           )}

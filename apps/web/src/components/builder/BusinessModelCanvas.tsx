@@ -218,7 +218,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Target className="h-5 w-5 text-primary-accessible" />
+            <Target className="icon-md text-primary-accessible" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Business Model Canvas</h2>
@@ -269,7 +269,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={cn('p-1.5 rounded', section.color + '/20')}>
-                        <Icon className="h-4 w-4" style={{ color: section.color.replace('bg-', '') }} />
+                        <Icon className="icon-sm" style={{ color: section.color.replace('bg-', '') }} />
                       </div>
                       <CardTitle className="text-base">{section.title}</CardTitle>
                     </div>
@@ -302,7 +302,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={cn('p-1.5 rounded', section.color + '/20')}>
-                        <Icon className="h-4 w-4" style={{ color: section.color.replace('bg-', '') }} />
+                        <Icon className="icon-sm" style={{ color: section.color.replace('bg-', '') }} />
                       </div>
                       <CardTitle className="text-base">{section.title}</CardTitle>
                     </div>
@@ -335,7 +335,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={cn('p-1.5 rounded', section.color + '/20')}>
-                        <Icon className="h-4 w-4" style={{ color: section.color.replace('bg-', '') }} />
+                        <Icon className="icon-sm" style={{ color: section.color.replace('bg-', '') }} />
                       </div>
                       <CardTitle className="text-base">{section.title}</CardTitle>
                     </div>

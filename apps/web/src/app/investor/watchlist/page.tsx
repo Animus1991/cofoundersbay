@@ -204,34 +204,34 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                   title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
                 >
                   {alertsEnabled ? (
-                    <Bell className="h-3.5 w-3.5 text-primary-accessible" />
+                    <Bell className="icon-sm text-primary-accessible" />
                   ) : (
-                    <BellOff className="h-3.5 w-3.5 text-muted-foreground" />
+                    <BellOff className="icon-sm text-muted-foreground" />
                   )}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreVertical className="h-3.5 w-3.5" />
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link href={`/startups/${startup.id}`}>
-                        <Eye className="mr-2 h-4 w-4" /> View Details
+                        <Eye className="mr-2 icon-sm" /> View Details
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <ArrowUpRight className="mr-2 h-4 w-4" /> Add to Pipeline
+                      <ArrowUpRight className="mr-2 icon-sm" /> Add to Pipeline
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <MessageCircle className="mr-2 h-4 w-4" /> Request Intro
+                      <MessageCircle className="mr-2 icon-sm" /> Request Intro
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <GitCompare className="mr-2 h-4 w-4" /> Compare
+                      <GitCompare className="mr-2 icon-sm" /> Compare
                     </DropdownMenuItem>
                     <DropdownMenuItem className="text-destructive-accessible">
-                      <Trash2 className="mr-2 h-4 w-4" /> Remove from Watchlist
+                      <Trash2 className="mr-2 icon-sm" /> Remove from Watchlist
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -241,8 +241,8 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
             {/* Meta row */}
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <Badge variant="outline" className="text-2xs">{startup.stage}</Badge>
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" />{startup.teamSize}</span>
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{startup.location}</span>
+              <span className="flex items-center gap-1"><Users className="icon-sm" />{startup.teamSize}</span>
+              <span className="flex items-center gap-1"><MapPin className="icon-sm" />{startup.location}</span>
               <span className="flex items-center gap-1 text-primary-accessible font-medium">{startup.raisingAmount}</span>
             </div>
 
@@ -282,7 +282,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
             {/* Footer */}
             <div className="flex items-center justify-between mt-3 pt-2 border-t border-border">
               <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="h-3 w-3" /> {startup.lastActivity}
+                <Clock className="icon-sm" /> {startup.lastActivity}
               </span>
               <span className="text-xs text-muted-foreground">Watching since {startup.watchedSince}</span>
             </div>
@@ -314,7 +314,7 @@ export default function InvestorWatchlistPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Eye className="h-6 w-6 text-primary-accessible" />
+              <Eye className="icon-lg text-primary-accessible" />
               Watchlist
             </h1>
             <p className="text-muted-foreground">
@@ -323,12 +323,12 @@ export default function InvestorWatchlistPage() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="gap-1.5">
-              <Bell className="h-3 w-3" />
+              <Bell className="icon-sm" />
               {alertCount} alerts active
             </Badge>
             <Button variant="outline" size="sm" asChild>
               <Link href="/investor/scouting">
-                <Search className="mr-1.5 h-4 w-4" />
+                <Search className="mr-1.5 icon-sm" />
                 Scout More
               </Link>
             </Button>
@@ -367,7 +367,7 @@ export default function InvestorWatchlistPage() {
           <TabsContent value="watchlist" className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search watchlist..."
                   value={search}
@@ -376,13 +376,13 @@ export default function InvestorWatchlistPage() {
                 />
               </div>
               <Button variant="outline" size="sm">
-                <Filter className="mr-1.5 h-4 w-4" />
+                <Filter className="mr-1.5 icon-sm" />
                 Filter
               </Button>
               {selectedIds.size > 0 && (
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/investor/scouting">
-                    <GitCompare className="mr-1.5 h-4 w-4" />
+                    <GitCompare className="mr-1.5 icon-sm" />
                     Compare ({selectedIds.size})
                   </Link>
                 </Button>
@@ -435,7 +435,7 @@ export default function InvestorWatchlistPage() {
                       </div>
                       <Button variant="ghost" size="sm" className="shrink-0" asChild>
                         <Link href={`/startups/${item.startupId}`}>
-                          <ArrowUpRight className="h-4 w-4" />
+                          <ArrowUpRight className="icon-sm" />
                         </Link>
                       </Button>
                     </div>

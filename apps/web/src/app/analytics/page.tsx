@@ -116,7 +116,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className={cn('p-2.5 rounded-lg', colors.bg, colors.icon)}>
-            <Icon className="h-5 w-5" />
+            <Icon className="icon-md" />
           </div>
           <Badge
             variant={
@@ -128,7 +128,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
             }
             className="gap-1"
           >
-            <ChangeIcon className="h-3 w-3" />
+            <ChangeIcon className="icon-sm" />
             {Math.abs(metric.change)}%
           </Badge>
         </div>
@@ -176,7 +176,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <Network className="h-4 w-4" />Profile Funnel
+          <Network className="icon-sm" />Profile Funnel
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -209,7 +209,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card className="border-primary/20 bg-primary/[0.02]">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-primary-accessible" />
+          <Zap className="icon-sm text-primary-accessible" />
           <span className="text-sm font-semibold">Network Velocity</span>
           <Badge variant="secondary" className="text-2xs ml-auto">vs prev period</Badge>
         </div>
@@ -220,7 +220,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
             return (
               <div key={item.label} className="text-center">
                 <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1', colors.bg, colors.icon)}>
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="icon-sm" />
                 </div>
                 <p className={cn('text-xs font-bold',
                   item.changeType === 'increase' ? TREND.up
@@ -244,7 +244,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+          <TrendingUp className="icon-md" />
           Top Performing Content
         </CardTitle>
       </CardHeader>
@@ -262,11 +262,11 @@ function TopContentList({ content }: { content: TopContent[] }) {
                 <h4 className="font-medium text-sm mb-1 line-clamp-1">{item.title}</h4>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
+                    <Eye className="icon-sm" />
                     {item.views.toLocaleString()} views
                   </span>
                   <span className="flex items-center gap-1">
-                    <Heart className="h-3 w-3" />
+                    <Heart className="icon-sm" />
                     {item.engagement} engagements
                   </span>
                   <span>{new Date(item.date).toLocaleDateString()}</span>
@@ -299,7 +299,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5" />
+          <Award className="icon-md" />
           Achievements
         </CardTitle>
       </CardHeader>
@@ -318,7 +318,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
                 )}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Icon className={cn('h-5 w-5', achievement.color)} />
+                  <Icon className={cn('icon-md', achievement.color)} />
                   {achievement.unlocked && (
                     <Badge variant="default" className="text-xs">
                       Unlocked
@@ -404,22 +404,22 @@ export default function AnalyticsPage() {
           ))}
         </div>
         <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
-          <Activity className="h-3.5 w-3.5" /><BilingualText en="Refresh" el="Ανανέωση" compact />
+          <Activity className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="overview" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="icon-sm" />
             <BilingualText en="Overview" el="Επισκόπηση" compact />
           </TabsTrigger>
           <TabsTrigger value="engagement" className="gap-2">
-            <Activity className="h-4 w-4" />
+            <Activity className="icon-sm" />
             <BilingualText en="Engagement" el="Αφοσίωση" compact />
           </TabsTrigger>
           <TabsTrigger value="growth" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="icon-sm" />
             <BilingualText en="Growth" el="Ανάπτυξη" compact />
           </TabsTrigger>
         </TabsList>
@@ -487,7 +487,7 @@ export default function AnalyticsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
+                      <Calendar className="icon-md" />
                       Weekly Summary
                     </CardTitle>
                   </CardHeader>

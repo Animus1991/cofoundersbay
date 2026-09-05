@@ -188,7 +188,7 @@ export default function CreateEventPage() {
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                <Globe className="h-3.5 w-3.5" />
+                <Globe className="icon-sm" />
                 Timezone
               </label>
               <Input

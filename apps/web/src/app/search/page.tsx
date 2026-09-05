@@ -141,7 +141,7 @@ function ResultCard({ result }: { result: SearchResult }) {
                 'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
                 'bg-muted'
               )}>
-                <Icon className={cn('h-5 w-5', config.color)} />
+                <Icon className={cn('icon-md', config.color)} />
               </div>
             )}
 
@@ -176,13 +176,13 @@ function ResultCard({ result }: { result: SearchResult }) {
                 <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
                   {result.meta.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                      <MapPin className="icon-sm" />
                       {result.meta.location}
                     </span>
                   )}
                   {result.meta.date && (
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                      <Clock className="icon-sm" />
                       {result.meta.date}
                     </span>
                   )}
@@ -205,7 +205,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               )}
             </div>
 
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
           </div>
         </CardContent>
       </Card>
@@ -235,19 +235,19 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
       <div className="flex flex-wrap justify-center gap-2">
         <Link href="/discover">
           <Button variant="outline" size="sm" className="gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="icon-sm" />
             <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} />
           </Button>
         </Link>
         <Link href="/jobs">
           <Button variant="outline" size="sm" className="gap-2">
-            <Briefcase className="h-4 w-4" />
+            <Briefcase className="icon-sm" />
             <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} />
           </Button>
         </Link>
         <Link href="/events">
           <Button variant="outline" size="sm" className="gap-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="icon-sm" />
             <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} />
           </Button>
         </Link>
@@ -342,7 +342,7 @@ export default function SearchPage() {
         {/* Search Input */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-4 -mx-4 px-4 pt-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               ref={inputRef}
               type="text"
@@ -366,7 +366,7 @@ export default function SearchPage() {
                   className="text-muted-foreground hover:text-foreground"
                   aria-label={bilingualAria(searchEn('clear_search'), searchEl('clear_search'))}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" />
                 </button>
               )}
             </div>
@@ -377,7 +377,7 @@ export default function SearchPage() {
             <div className="absolute left-4 right-4 top-full mt-1 z-50 rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
               <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <History className="h-3.5 w-3.5" />
+                  <History className="icon-sm" />
                   <BilingualText en={searchEn('recent_searches')} el={searchEl('recent_searches')} />
                 </span>
                 <button
@@ -396,7 +396,7 @@ export default function SearchPage() {
                   onClick={() => { setQuery(term); inputRef.current?.blur(); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-secondary/60 transition-colors text-left"
                 >
-                  <History className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <History className="icon-sm text-muted-foreground shrink-0" />
                   <span className="flex-1 truncate">{term}</span>
                   <X
                     className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0"
@@ -435,7 +435,7 @@ export default function SearchPage() {
                         !isActive && 'border-border/60'
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5" />
+                      <Icon className="icon-sm" />
                       <BilingualText en={config.labelEn} el={config.labelEl} />
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
@@ -510,7 +510,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-info-bg">
-                      <Users className="h-5 w-5 text-status-info" />
+                      <Users className="icon-md text-status-info" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -533,7 +533,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-accent-bg">
-                      <GraduationCap className="h-5 w-5 text-status-accent" />
+                      <GraduationCap className="icon-md text-status-accent" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -556,7 +556,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-success-bg">
-                      <Briefcase className="h-5 w-5 text-status-success" />
+                      <Briefcase className="icon-md text-status-success" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -579,7 +579,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-warning-bg">
-                      <Calendar className="h-5 w-5 text-status-warning" />
+                      <Calendar className="icon-md text-status-warning" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">

@@ -120,7 +120,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="h-4 w-4 text-primary-accessible" />
+          <Settings className="icon-sm text-primary-accessible" />
           Automation Settings
         </CardTitle>
         <CardDescription className="text-xs">
@@ -131,7 +131,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
         {CONFIG_TOGGLES.map(({ key, label, description, icon: Icon }) => (
           <div key={key} className="flex items-center justify-between py-3 gap-4">
             <div className="flex items-start gap-3 min-w-0">
-              <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+              <Icon className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-medium">{label}</p>
                 <p className="text-xs text-muted-foreground">{description}</p>
@@ -197,12 +197,12 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Zap className="h-3 w-3" />{rule.executionCount} runs</span>
+            <span className="flex items-center gap-1"><Zap className="icon-sm" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="h-3 w-3" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="icon-sm" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>
@@ -210,15 +210,15 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
 
         <div className="flex items-center gap-1 shrink-0">
           <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
-            <Play className="h-3.5 w-3.5" />
+            <Play className="icon-sm" />
           </Button>
           {rule.status === 'active' ? (
             <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
-              <Pause className="h-3.5 w-3.5" />
+              <Pause className="icon-sm" />
             </Button>
           ) : rule.status !== 'archived' ? (
             <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-status-success" />
+              <Zap className="icon-sm text-status-success" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
@@ -228,7 +228,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}
               disabled={remove.isPending}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="icon-sm" />
             </Button>
           )}
         </div>

@@ -80,7 +80,7 @@ function PostCard({
     <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
-          <Pin className="h-3 w-3" />
+          <Pin className="icon-sm" />
           Pinned post
         </div>
       )}
@@ -101,7 +101,7 @@ function PostCard({
                 onClick={() => onDelete(post.id)}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="icon-sm" />
               </button>
             )}
           </div>
@@ -130,7 +130,7 @@ function PostCard({
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
-            {post.myReaction ?? <Heart className="h-3.5 w-3.5" />}
+            {post.myReaction ?? <Heart className="icon-sm" />}
             {post.reactionCount > 0 && <span>{post.reactionCount}</span>}
           </button>
           {showReactions && (
@@ -155,7 +155,7 @@ function PostCard({
           onClick={() => setShowComments((p) => !p)}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
         >
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="icon-sm" />
           {post.commentCount > 0 && <span>{post.commentCount}</span>}
           {showComments ? 'Hide' : 'Comment'}
         </button>
@@ -165,7 +165,7 @@ function PostCard({
       {showComments && (
         <div className="space-y-3 pt-1">
           {commentsQuery.isLoading && (
-            <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary/50" /></div>
+            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary/50" /></div>
           )}
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
@@ -195,7 +195,7 @@ function PostCard({
                 disabled={submittingComment || !newComment.trim()}
                 onClick={handleAddComment}
               >
-                {submittingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                {submittingComment ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
               </Button>
             </div>
           )}
@@ -301,7 +301,7 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          <Loader2 className="icon-xl animate-spin text-primary/50" />
         </div>
       </AppShell>
     );
@@ -328,7 +328,7 @@ export default function GroupDetailPage() {
           onClick={() => router.push('/groups')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="icon-sm" />
           Back to Groups
         </button>
 
@@ -356,15 +356,15 @@ export default function GroupDetailPage() {
                   <h1 className="font-display text-xl font-bold">{group.name}</h1>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {group.privacy === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      {group.privacy === 'public' ? <Globe className="icon-sm" /> : <Lock className="icon-sm" />}
                       <span className="capitalize">{group.privacy}</span>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
+                      <Users className="icon-sm" />
                       {group.memberCount.toLocaleString()} members
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MessageCircle className="h-3 w-3" />
+                      <MessageCircle className="icon-sm" />
                       {group.postCount.toLocaleString()} posts
                     </span>
                   </div>
@@ -378,11 +378,11 @@ export default function GroupDetailPage() {
                 onClick={handleToggleMembership}
               >
                 {togglingMembership ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" />
                 ) : isMember ? (
-                  <><CheckCircle2 className={cn('h-4 w-4', STATUS.success.icon)} /> Joined</>
+                  <><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> Joined</>
                 ) : (
-                  <><UserPlus className="h-4 w-4" /> Join Group</>
+                  <><UserPlus className="icon-sm" /> Join Group</>
                 )}
               </Button>
             </div>
@@ -450,7 +450,7 @@ export default function GroupDetailPage() {
                       disabled={submittingPost || !newPost.trim()}
                       onClick={handleCreatePost}
                     >
-                      {submittingPost ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {submittingPost ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
                       Post
                     </Button>
                   </div>
@@ -460,7 +460,7 @@ export default function GroupDetailPage() {
               {/* Posts */}
               {postsQuery.isLoading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary/50" />
+                  <Loader2 className="icon-lg animate-spin text-primary/50" />
                 </div>
               )}
 
@@ -468,7 +468,7 @@ export default function GroupDetailPage() {
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <p className="text-sm text-muted-foreground">Failed to load posts</p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="h-3.5 w-3.5" /> Retry
+                    <RefreshCw className="icon-sm" /> Retry
                   </Button>
                 </div>
               )}

@@ -103,7 +103,7 @@ export function CookieConsent() {
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Cookie className="h-5 w-5 text-primary-accessible" />
+                  <Cookie className="icon-md text-primary-accessible" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-foreground mb-1">We value your privacy</h3>
@@ -124,7 +124,7 @@ export function CookieConsent() {
                     onClick={() => setShowSettings(true)}
                     className="text-xs gap-1.5"
                   >
-                    <Settings className="h-3.5 w-3.5" />
+                    <Settings className="icon-sm" />
                     Customize
                   </Button>
                   <Button
@@ -140,7 +140,7 @@ export function CookieConsent() {
                     onClick={acceptAll}
                     className="text-xs gap-1.5"
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="icon-sm" />
                     Accept All
                   </Button>
                 </div>
@@ -152,7 +152,7 @@ export function CookieConsent() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Settings className="h-4 w-4 text-primary-accessible" />
+                    <Settings className="icon-sm text-primary-accessible" />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-foreground">Cookie Preferences</h3>
@@ -165,7 +165,7 @@ export function CookieConsent() {
                   className="h-8 w-8"
                   onClick={() => setShowSettings(false)}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" />
                 </Button>
               </div>
 
@@ -263,7 +263,7 @@ export function CookieConsent() {
                     onClick={saveCustom}
                     className="text-xs gap-1.5"
                   >
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="icon-sm" />
                     Save Preferences
                   </Button>
                 </div>

@@ -139,14 +139,14 @@ const NotificationRow = memo(function NotificationRow({
     >
       {selectable && (
         <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground hover:text-primary-accessible transition-colors">
-          {selected ? <SquareCheck className="h-4 w-4 text-primary-accessible" /> : <Square className="h-4 w-4" />}
+          {selected ? <SquareCheck className="icon-sm text-primary-accessible" /> : <Square className="icon-sm" />}
         </button>
       )}
 
       {/* Icon */}
       <div className="relative mt-0.5 shrink-0">
         <div className={cn('flex h-9 w-9 items-center justify-center rounded-full', colorClass)}>
-          <Icon className="h-4 w-4" />
+          <Icon className="icon-sm" />
         </div>
         {isUnread && (
           <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" />
@@ -176,7 +176,7 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary-accessible hover:underline"
             >
-              <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="h-3 w-3" />
+              <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="icon-sm" />
             </Link>
           )}
           {isUnread && (
@@ -184,14 +184,14 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Check className="h-3 w-3" /> <BilingualText en="Mark read" el="Αναγνωσμένη" compact />
+              <Check className="icon-sm" /> <BilingualText en="Mark read" el="Αναγνωσμένη" compact />
             </button>
           )}
           <button
             onClick={() => onDelete(item.id)}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive-accessible transition-colors"
           >
-            <Trash2 className="h-3 w-3" /> <BilingualText en="Delete" el="Διαγραφή" compact />
+            <Trash2 className="icon-sm" /> <BilingualText en="Delete" el="Διαγραφή" compact />
           </button>
         </div>
       </div>
@@ -318,7 +318,7 @@ export default function NotificationsPage() {
                   onClick={() => { setActiveTab(type); setShowUnreadOnly(true); }}
                   className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors hover:opacity-80', color)}
                 >
-                  <Icon className="h-3 w-3" />{count}
+                  <Icon className="icon-sm" />{count}
                 </button>
               );
             })}
@@ -347,10 +347,10 @@ export default function NotificationsPage() {
             {bulkMode && selectedIds.size > 0 && (
               <>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
-                  <Check className="h-3 w-3" /><BilingualText en={`Mark read (${selectedIds.size})`} el={`Αναγνωσμένες (${selectedIds.size})`} compact />
+                  <Check className="icon-sm" /><BilingualText en={`Mark read (${selectedIds.size})`} el={`Αναγνωσμένες (${selectedIds.size})`} compact />
                 </Button>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={handleBulkDelete}>
-                  <Trash2 className="h-3 w-3" /><BilingualText en={`Delete (${selectedIds.size})`} el={`Διαγραφή (${selectedIds.size})`} compact />
+                  <Trash2 className="icon-sm" /><BilingualText en={`Delete (${selectedIds.size})`} el={`Διαγραφή (${selectedIds.size})`} compact />
                 </Button>
               </>
             )}
@@ -366,7 +366,7 @@ export default function NotificationsPage() {
                 bulkMode ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
-              <SquareCheck className="h-3.5 w-3.5" />
+              <SquareCheck className="icon-sm" />
               <BilingualText en={bulkMode ? notificationsEn('exit_select') : notificationsEn('select')} el={bulkMode ? notificationsEl('exit_select') : notificationsEl('select')} compact />
             </button>
             <button
@@ -376,7 +376,7 @@ export default function NotificationsPage() {
                 showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
-              <Filter className="h-3.5 w-3.5" />
+              <Filter className="icon-sm" />
               <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact />
               {unreadCount > 0 && (
                 <Badge className="h-4 min-w-[1rem] px-1 text-2xs" variant="default">{unreadCount}</Badge>
@@ -384,15 +384,15 @@ export default function NotificationsPage() {
             </button>
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
-                <CheckCheck className="h-3.5 w-3.5" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
+                <CheckCheck className="icon-sm" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
               </Button>
             )}
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
-              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
             <Link href="/settings" title="Notification settings">
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-3.5 w-3.5" />
+                <Settings className="icon-sm" />
               </Button>
             </Link>
           </div>
@@ -402,12 +402,12 @@ export default function NotificationsPage() {
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <BellOff className="h-8 w-8 text-muted-foreground/50" />
+              <BellOff className="icon-xl text-muted-foreground/50" />
               <p className="text-sm text-muted-foreground">
                 <BilingualText en={notificationsEn('error_load')} el={notificationsEl('error_load')} />
               </p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> <BilingualText en={notificationsEn('retry')} el={notificationsEl('retry')} compact />
+                <RefreshCw className="mr-1.5 icon-sm" /> <BilingualText en={notificationsEn('retry')} el={notificationsEl('retry')} compact />
               </Button>
             </div>
           ) : isLoading ? (
@@ -415,7 +415,7 @@ export default function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <Bell className="h-6 w-6 text-muted-foreground" />
+                <Bell className="icon-lg text-muted-foreground" />
               </div>
               <div>
                 <p className="font-medium text-foreground">

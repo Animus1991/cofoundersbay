@@ -142,8 +142,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
         title={comment.body}
       >
         {comment.resolved
-          ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-          : <MessageSquare className="h-3.5 w-3.5 text-white" />
+          ? <CheckCircle2 className="icon-sm text-white" />
+          : <MessageSquare className="icon-sm text-white" />
         }
       </button>
 
@@ -181,7 +181,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                     className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
                     onClick={() => setOpen(false)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="icon-sm" />
                   </Button>
                 </div>
               </div>
@@ -211,8 +211,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 onClick={() => setShowReplies((v) => !v)}
               >
                 {showReplies
-                  ? <ChevronDown className="h-3 w-3" />
-                  : <ChevronRight className="h-3 w-3" />
+                  ? <ChevronDown className="icon-sm" />
+                  : <ChevronRight className="icon-sm" />
                 }
                 {replies.length} repl{replies.length === 1 ? 'y' : 'ies'}
               </button>
@@ -220,7 +220,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 <div className="mt-1.5 space-y-2">
                   {replies.map((r) => (
                     <div key={r.id} className="flex gap-1.5">
-                      <CornerDownRight className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                      <CornerDownRight className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
                       <div>
                         <span className="text-2xs font-medium">{r.author?.displayName ?? 'User'}</span>
                         <p className="text-2xs text-muted-foreground">{r.body}</p>
@@ -256,8 +256,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 disabled={submittingReply || !replyBody.trim()}
               >
                 {submittingReply
-                  ? <Loader2 className="h-3 w-3 animate-spin" />
-                  : <Send className="h-3 w-3" />
+                  ? <Loader2 className="icon-sm animate-spin" />
+                  : <Send className="icon-sm" />
                 }
               </Button>
             </div>
@@ -270,7 +270,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 className="w-full h-7 text-2xs text-green-600 border-green-200 hover:bg-green-50"
                 onClick={() => { onResolve(comment.id); setOpen(false); }}
               >
-                <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                <CheckCircle2 className="icon-sm mr-1.5" />
                 Resolve
               </Button>
             )}
@@ -433,7 +433,7 @@ export function CanvasCommentPins({
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="h-3 w-3 text-primary-accessible" />
+                <Pin className="icon-sm text-primary-accessible" />
                 Add Pin Comment
               </div>
               <Button
@@ -442,7 +442,7 @@ export function CanvasCommentPins({
                 className="h-5 w-5 p-0"
                 onClick={() => setPendingPin(null)}
               >
-                <X className="h-3 w-3" />
+                <X className="icon-sm" />
               </Button>
             </div>
 
@@ -484,7 +484,7 @@ export function CanvasCommentPins({
                 onClick={handleSubmitPin}
                 disabled={submitting || !newPinBody.trim()}
               >
-                {submitting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                {submitting ? <Loader2 className="icon-sm animate-spin mr-1" /> : null}
                 Pin
               </Button>
               <Button

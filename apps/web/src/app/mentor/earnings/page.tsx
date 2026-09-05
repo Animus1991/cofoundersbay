@@ -86,13 +86,13 @@ function StatCard({
             {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
             {trend && (
               <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-status-success' : 'text-status-danger')}>
-                {trend.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                {trend.positive ? <TrendingUp className="icon-sm" /> : <TrendingDown className="icon-sm" />}
                 {trend.positive ? '+' : ''}{trend.value}% vs last month
               </p>
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className={cn('h-5 w-5', iconColor)} />
+            <Icon className={cn('icon-md', iconColor)} />
           </div>
         </div>
       </CardContent>
@@ -140,7 +140,7 @@ export default function MentorEarningsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-primary-accessible" />
+              <Wallet className="icon-lg text-primary-accessible" />
               Earnings
             </h1>
             <p className="text-muted-foreground">Track your mentoring income and session history</p>
@@ -159,7 +159,7 @@ export default function MentorEarningsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
+              <Download className="mr-2 icon-sm" />
               Export
             </Button>
           </div>
@@ -235,7 +235,7 @@ export default function MentorEarningsPage() {
                         )}
                       >
                         {tx.status === 'paid' ? (
-                          <><CheckCircle2 className="h-3 w-3 mr-1" />Paid</>
+                          <><CheckCircle2 className="icon-sm mr-1" />Paid</>
                         ) : 'Pending'}
                       </Badge>
                       <p className="text-xs text-muted-foreground w-20 text-right">{tx.date}</p>
@@ -293,13 +293,13 @@ export default function MentorEarningsPage() {
               <CardHeader><CardTitle className="text-base">Payout Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-4 rounded-lg border bg-muted/30">
-                  <CreditCard className="h-8 w-8 text-muted-foreground" />
+                  <CreditCard className="icon-xl text-muted-foreground" />
                   <div className="flex-1">
                     <p className="text-sm font-medium">No payout method connected</p>
                     <p className="text-xs text-muted-foreground">Connect Stripe or bank account to receive payouts</p>
                   </div>
                   <Button size="sm">
-                    <ArrowUpRight className="mr-2 h-4 w-4" />
+                    <ArrowUpRight className="mr-2 icon-sm" />
                     Connect
                   </Button>
                 </div>

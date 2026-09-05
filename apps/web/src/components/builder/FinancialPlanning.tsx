@@ -256,7 +256,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-status-success-bg rounded-lg">
-            <DollarSign className="h-5 w-5 text-status-success" />
+            <DollarSign className="icon-md text-status-success" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Financial Planning</h2>
@@ -277,14 +277,14 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" />
             )}
             AI Generate
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" />
             Save
           </Button>
         </div>
@@ -295,7 +295,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-status-danger" />
+              <TrendingDown className="icon-sm text-status-danger" />
               <span className="text-sm text-muted-foreground">Monthly Burn</span>
             </div>
             <div className="text-2xl font-bold text-status-danger">
@@ -306,7 +306,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <PiggyBank className="h-4 w-4 text-status-info" />
+              <PiggyBank className="icon-sm text-status-info" />
               <span className="text-sm text-muted-foreground">Runway</span>
             </div>
             <div className="text-2xl font-bold text-status-info">
@@ -317,7 +317,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-status-success" />
+              <TrendingUp className="icon-sm text-status-success" />
               <span className="text-sm text-muted-foreground">Monthly Revenue</span>
             </div>
             <div className="text-2xl font-bold text-status-success">
@@ -328,7 +328,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="h-4 w-4 text-status-accent" />
+              <Calculator className="icon-sm text-status-accent" />
               <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
             </div>
             <div className={cn(
@@ -346,23 +346,23 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="costs" className="gap-1">
-            <TrendingDown className="h-3 w-3" />
+            <TrendingDown className="icon-sm" />
             Costs
           </TabsTrigger>
           <TabsTrigger value="revenue" className="gap-1">
-            <TrendingUp className="h-3 w-3" />
+            <TrendingUp className="icon-sm" />
             Revenue
           </TabsTrigger>
           <TabsTrigger value="unit-economics" className="gap-1">
-            <Calculator className="h-3 w-3" />
+            <Calculator className="icon-sm" />
             Unit Economics
           </TabsTrigger>
           <TabsTrigger value="funding" className="gap-1">
-            <PiggyBank className="h-3 w-3" />
+            <PiggyBank className="icon-sm" />
             Funding
           </TabsTrigger>
           <TabsTrigger value="scenarios" className="gap-1">
-            <BarChart3 className="h-3 w-3" />
+            <BarChart3 className="icon-sm" />
             Scenarios
           </TabsTrigger>
         </TabsList>
@@ -793,7 +793,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-status-warning-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-status-warning" />
+                  <AlertTriangle className="icon-md text-status-warning" />
                   Conservative
                 </CardTitle>
               </CardHeader>
@@ -847,7 +847,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-status-info-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-status-info" />
+                  <Target className="icon-md text-status-info" />
                   Realistic
                 </CardTitle>
               </CardHeader>
@@ -901,7 +901,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-status-success-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-status-success" />
+                  <TrendingUp className="icon-md text-status-success" />
                   Aggressive
                 </CardTitle>
               </CardHeader>

@@ -11,7 +11,7 @@ export default function GroupsLoading() {
       description="Join communities, share knowledge, and connect with like-minded founders"
       actions={
         <Button className="gap-2">
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" />
           Create Group
         </Button>
       }

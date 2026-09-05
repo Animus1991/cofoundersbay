@@ -45,7 +45,7 @@ export function RoleBadge({
         className
       )}
     >
-      {showIcon && <Icon className={cn('h-3 w-3', animated && 'animate-bounce-subtle')} />}
+      {showIcon && <Icon className={cn('icon-sm', animated && 'animate-bounce-subtle')} />}
       {config.label}
     </Badge>
   );

@@ -115,7 +115,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
               >
-                <Camera className="h-4 w-4 mr-2" />
+                <Camera className="icon-sm mr-2" />
                 Change
               </Button>
               {onRemove && (
@@ -125,7 +125,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
                   onClick={handleRemove}
                   disabled={uploading}
                 >
-                  <X className="h-4 w-4 mr-2" />
+                  <X className="icon-sm mr-2" />
                   Remove
                 </Button>
               )}
@@ -143,7 +143,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
-              <Camera className="h-4 w-4 mr-2" />
+              <Camera className="icon-sm mr-2" />
               Choose File
             </Button>
             <p className="text-xs text-muted-foreground mt-4">

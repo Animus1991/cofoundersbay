@@ -94,13 +94,13 @@ export default function ProjectDetailPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
               <Badge variant="outline" className={cn('text-sm', statusConfig.color)}>
-                <StatusIcon className="h-3.5 w-3.5 mr-1" />
+                <StatusIcon className="icon-sm mr-1" />
                 {statusConfig.label}
               </Badge>
             </div>
@@ -112,29 +112,29 @@ export default function ProjectDetailPage() {
               size="icon"
               onClick={() => setIsStarred(!isStarred)}
             >
-              <Star className={cn('h-5 w-5', isStarred && 'fill-status-warning text-status-warning')} />
+              <Star className={cn('icon-md', isStarred && 'fill-status-warning text-status-warning')} />
             </Button>
             <Button variant="ghost" size="icon">
-              <Share2 className="h-5 w-5" />
+              <Share2 className="icon-md" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="icon-md" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="icon-sm mr-2" />
                   Edit Project
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink className="icon-sm mr-2" />
                   View Public Page
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive-accessible">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="icon-sm mr-2" />
                   Delete Project
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -191,11 +191,11 @@ export default function ProjectDetailPage() {
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Briefcase className="h-3.5 w-3.5" />
+                            <Briefcase className="icon-sm" />
                             {role.commitment}
                           </span>
                           <span className="flex items-center gap-1">
-                            <TrendingUp className="h-3.5 w-3.5" />
+                            <TrendingUp className="icon-sm" />
                             {role.equity} equity
                           </span>
                         </div>
@@ -230,10 +230,10 @@ export default function ProjectDetailPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MessageSquare className="h-4 w-4" />
+                            <MessageSquare className="icon-sm" />
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Video className="h-4 w-4" />
+                            <Video className="icon-sm" />
                           </Button>
                         </div>
                       </div>
@@ -262,9 +262,9 @@ export default function ProjectDetailPage() {
                             milestone.status === 'pending' && 'bg-muted text-muted-foreground'
                           )}>
                             {milestone.status === 'completed' ? (
-                              <CheckCircle2 className="h-4 w-4" />
+                              <CheckCircle2 className="icon-sm" />
                             ) : (
-                              <Circle className="h-4 w-4" />
+                              <Circle className="icon-sm" />
                             )}
                           </div>
                           <div className="flex-1">
@@ -315,15 +315,15 @@ export default function ProjectDetailPage() {
             <Card>
               <CardContent className="p-4 space-y-3">
                 <Button className="w-full gap-2">
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="icon-sm" />
                   Request to Join
                 </Button>
                 <Button variant="outline" className="w-full gap-2">
-                  <MessageSquare className="h-4 w-4" />
+                  <MessageSquare className="icon-sm" />
                   Message Team
                 </Button>
                 <Button variant="outline" className="w-full gap-2">
-                  <Video className="h-4 w-4" />
+                  <Video className="icon-sm" />
                   Schedule Call
                 </Button>
               </CardContent>
@@ -337,7 +337,7 @@ export default function ProjectDetailPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    <Briefcase className="icon-sm text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Stage</p>
@@ -346,7 +346,7 @@ export default function ProjectDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                    <Target className="h-4 w-4 text-muted-foreground" />
+                    <Target className="icon-sm text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Industry</p>
@@ -355,7 +355,7 @@ export default function ProjectDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin className="icon-sm text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Location</p>
@@ -365,7 +365,7 @@ export default function ProjectDetailPage() {
                 {project.website && (
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <Globe className="icon-sm text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Website</p>
@@ -377,7 +377,7 @@ export default function ProjectDetailPage() {
                 )}
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="icon-sm text-muted-foreground" />
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Founded</p>

@@ -18,7 +18,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
+            <Target className="icon-md" />
             Workspace Scoring
           </CardTitle>
         </CardHeader>
@@ -35,7 +35,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-status-info" />
+          <Target className="icon-md text-status-info" />
           Workspace Scoring
         </CardTitle>
       </CardHeader>
@@ -45,7 +45,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-status-info" />
+                <Target className="icon-sm text-status-info" />
                 <span className="font-medium">Readiness Score</span>
               </div>
               <Badge variant={getScoreBadgeVariant(readiness.score)}>
@@ -73,11 +73,11 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
           <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-status-success-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-status-success" />
+                <TrendingUp className="icon-sm text-status-success" />
                 <span className="font-medium text-sm">Team Momentum</span>
               </div>
               <Badge variant="outline" className="gap-1">
-                <Zap className="h-3 w-3" />
+                <Zap className="icon-sm" />
                 {momentum.classification}
               </Badge>
             </div>
@@ -103,7 +103,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
           <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-status-accent-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-status-accent" />
+                <Users className="icon-sm text-status-accent" />
                 <span className="font-medium text-sm">My Contribution</span>
               </div>
               <Badge variant="outline">
@@ -132,7 +132,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
           <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-status-warning-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-status-warning" />
+                <MessageSquare className="icon-sm text-status-warning" />
                 <span className="font-medium text-sm">Mentor Loop</span>
               </div>
               <Badge variant="outline">

@@ -71,7 +71,7 @@ export function ExportDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
+            <Download className="icon-sm" />
             {title}
           </DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -160,7 +160,7 @@ export function ExportDialog({
               onClick={handleExport}
               disabled={exporting || (columns ? selectedColumns.length === 0 : false)}
             >
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {exporting ? <Loader2 className="icon-sm animate-spin" /> : <Download className="icon-sm" />}
               {exporting ? 'Exporting...' : 'Export'}
             </Button>
           </div>

@@ -108,7 +108,7 @@ export function QuickActions({
                   action.color
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="icon-md" />
               </button>
             </div>
           );
@@ -144,7 +144,7 @@ export function QuickActions({
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+        {isOpen ? <X className="icon-lg" /> : <Plus className="icon-lg" />}
       </Button>
 
       {/* Backdrop */}
@@ -181,7 +181,7 @@ export function FloatingActionButton({
       )}
       onClick={onClick}
     >
-      <Icon className="h-6 w-6" />
+      <Icon className="icon-lg" />
       {label && <span className="sr-only">{label}</span>}
     </Button>
   );

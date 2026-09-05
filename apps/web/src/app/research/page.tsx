@@ -193,11 +193,11 @@ export default function ResearchBoardsPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2" disabled={isLoading}>
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="icon-sm" />
             Use Template
           </Button>
           <Button onClick={() => setCreateDialogOpen(true)} className="gap-2" disabled={isLoading}>
-            <Plus className="h-4 w-4" />
+            <Plus className="icon-sm" />
             New Board
           </Button>
         </div>
@@ -205,7 +205,7 @@ export default function ResearchBoardsPage() {
     >
       {isLoading && (
         <div className="flex items-center justify-center min-h-[40vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
+          <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         </div>
       )}
       {!isLoading && error && (
@@ -224,7 +224,7 @@ export default function ResearchBoardsPage() {
       {/* Search and View Toggle */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search boards..."
             value={searchQuery}
@@ -239,7 +239,7 @@ export default function ResearchBoardsPage() {
             onClick={() => setViewMode('grid')}
             className="gap-2"
           >
-            <Grid3X3 className="h-4 w-4" />
+            <Grid3X3 className="icon-sm" />
             Grid
           </Button>
           <Button
@@ -248,7 +248,7 @@ export default function ResearchBoardsPage() {
             onClick={() => setViewMode('list')}
             className="gap-2"
           >
-            <List className="h-4 w-4" />
+            <List className="icon-sm" />
             List
           </Button>
         </div>
@@ -266,7 +266,7 @@ export default function ResearchBoardsPage() {
             market analysis, and strategic insights.
           </p>
           <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
+            <Plus className="icon-sm" />
             Create Your First Board
           </Button>
         </div>
@@ -276,7 +276,7 @@ export default function ResearchBoardsPage() {
       {pinnedBoards.length > 0 && (
         <div className="mb-8">
           <h2 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
-            <Pin className="h-4 w-4" />
+            <Pin className="icon-sm" />
             Pinned
           </h2>
           <div className={cn(
@@ -400,7 +400,7 @@ export default function ResearchBoardsPage() {
                       )}
                       title={icon.name}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="icon-md" />
                     </button>
                   );
                 })}
@@ -417,7 +417,7 @@ export default function ResearchBoardsPage() {
               disabled={!newBoardTitle.trim() || createMutation.isPending}
             >
               {createMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <Loader2 className="icon-sm animate-spin mr-2" />
               ) : null}
               Create Board
             </Button>
@@ -465,14 +465,14 @@ function BoardCard({
             style={{ backgroundColor: board.color ? `${board.color}20` : 'var(--secondary)' }}
           >
             <Icon
-              className="h-6 w-6"
+              className="icon-lg"
               style={{ color: board.color ?? 'var(--muted-foreground)' }}
             />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold truncate">{board.title}</h3>
-              {board.isPinned && <Pin className="h-3 w-3 text-primary-accessible shrink-0" />}
+              {board.isPinned && <Pin className="icon-sm text-primary-accessible shrink-0" />}
             </div>
             {board.description && (
               <p className="text-sm text-muted-foreground truncate">{board.description}</p>
@@ -487,21 +487,21 @@ function BoardCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
               <DropdownMenuItem onClick={onTogglePin}>
-                <Pin className="h-4 w-4 mr-2" />
+                <Pin className="icon-sm mr-2" />
                 {board.isPinned ? 'Unpin' : 'Pin'}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onArchive}>
-                <Archive className="h-4 w-4 mr-2" />
+                <Archive className="icon-sm mr-2" />
                 Archive
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-                <Trash2 className="h-4 w-4 mr-2" />
+                <Trash2 className="icon-sm mr-2" />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -527,28 +527,28 @@ function BoardCard({
           />
           {board.isPinned && (
             <div className="absolute top-3 left-3">
-              <Pin className="h-4 w-4 text-primary-accessible" />
+              <Pin className="icon-sm text-primary-accessible" />
             </div>
           )}
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                 <DropdownMenuItem onClick={onTogglePin}>
-                  <Pin className="h-4 w-4 mr-2" />
+                  <Pin className="icon-sm mr-2" />
                   {board.isPinned ? 'Unpin' : 'Pin'}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onArchive}>
-                  <Archive className="h-4 w-4 mr-2" />
+                  <Archive className="icon-sm mr-2" />
                   Archive
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="icon-sm mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -231,7 +231,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary-accessible" />
+                <Trophy className="icon-md text-primary-accessible" />
                 Achievements & Badges
               </CardTitle>
               <CardDescription>
@@ -260,19 +260,19 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="engagement">
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="icon-sm mr-1" />
             Engage
           </TabsTrigger>
           <TabsTrigger value="achievement">
-            <Trophy className="h-4 w-4 mr-1" />
+            <Trophy className="icon-sm mr-1" />
             Achieve
           </TabsTrigger>
           <TabsTrigger value="social">
-            <Users className="h-4 w-4 mr-1" />
+            <Users className="icon-sm mr-1" />
             Social
           </TabsTrigger>
           <TabsTrigger value="professional">
-            <Briefcase className="h-4 w-4 mr-1" />
+            <Briefcase className="icon-sm mr-1" />
             Pro
           </TabsTrigger>
         </TabsList>
@@ -298,7 +298,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   {badge.earned && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="default" className="gap-1">
-                        <Award className="h-3 w-3" />
+                        <Award className="icon-sm" />
                         Earned
                       </Badge>
                     </div>
@@ -309,13 +309,13 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                       'w-16 h-16 rounded-full flex items-center justify-center mb-3',
                       tierBgColors[badge.tier]
                     )}>
-                      <Icon className={cn('h-8 w-8', tierColors[badge.tier])} />
+                      <Icon className={cn('icon-xl', tierColors[badge.tier])} />
                     </div>
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="h-4 w-4 text-cyan-400" />}
-                      {badge.tier === 'gold' && <Sparkles className="h-4 w-4 text-status-warning" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-cyan-400" />}
+                      {badge.tier === 'gold' && <Sparkles className="icon-sm text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>
                   </CardHeader>

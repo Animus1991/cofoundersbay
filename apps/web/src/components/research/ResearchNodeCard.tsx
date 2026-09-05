@@ -554,12 +554,12 @@ export function ResearchNodeCard({
       >
         <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-1.5">
-            <Spline className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
+            <Spline className="icon-sm" style={{ color: '#EC4899' }} />
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
-              <Trash2 className="w-3 h-3" />
+              <Trash2 className="icon-sm" />
             </button>
           </div>
         </div>
@@ -730,7 +730,7 @@ export function ResearchNodeCard({
       {/* Type strip + actions */}
       <div className="flex items-center justify-between px-2.5 pt-2.5 pb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Icon className="w-4 h-4 shrink-0" style={{ color: nodeColor }} />
+          <Icon className="icon-sm shrink-0" style={{ color: nodeColor }} />
           <span
             className="text-2xs font-semibold uppercase tracking-wide"
             style={{ color: nodeColor }}
@@ -739,12 +739,12 @@ export function ResearchNodeCard({
           </span>
         </div>
         <div ref={menuRef} className="relative flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
+          {node.locked && <Lock className="icon-sm text-muted-foreground" />}
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu((p) => !p); setShowColorPicker(false); }}
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
-            <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+            <MoreHorizontal className="icon-sm text-muted-foreground" />
           </button>
 
           {/* Context menu */}
@@ -757,14 +757,14 @@ export function ResearchNodeCard({
                 onClick={() => { onDoubleClick(); setShowMenu(false); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Open
+                <BookOpen className="icon-sm text-muted-foreground" /> Open
               </button>
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
                 >
-                  <Rocket className="w-3.5 h-3.5" /> Open in Builder
+                  <Rocket className="icon-sm" /> Open in Builder
                 </button>
               )}
               <button
@@ -772,8 +772,8 @@ export function ResearchNodeCard({
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.locked
-                  ? <><Unlock className="w-3.5 h-3.5 text-muted-foreground" /> Unlock</>
-                  : <><Lock className="w-3.5 h-3.5 text-muted-foreground" /> Lock</>
+                  ? <><Unlock className="icon-sm text-muted-foreground" /> Unlock</>
+                  : <><Lock className="icon-sm text-muted-foreground" /> Lock</>
                 }
               </button>
               <button
@@ -781,22 +781,22 @@ export function ResearchNodeCard({
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.collapsed
-                  ? <><Eye className="w-3.5 h-3.5 text-muted-foreground" /> Expand</>
-                  : <><EyeOff className="w-3.5 h-3.5 text-muted-foreground" /> Collapse</>
+                  ? <><Eye className="icon-sm text-muted-foreground" /> Expand</>
+                  : <><EyeOff className="icon-sm text-muted-foreground" /> Collapse</>
                 }
               </button>
               <button
                 onClick={() => { setShowColorPicker(true); setShowMenu(false); }}
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" /> Color
+                <Palette className="icon-sm text-muted-foreground" /> Color
               </button>
               {onCommentClick && (
                 <button
                   onClick={() => { onCommentClick(); setShowMenu(false); }}
                   className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" /> Comments
+                  <MessageCircle className="icon-sm text-muted-foreground" /> Comments
                 </button>
               )}
               <div className="my-1 border-t border-border/60" />
@@ -805,7 +805,7 @@ export function ResearchNodeCard({
                 className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete
+                <Trash2 className="icon-sm" /> Delete
               </button>
             </div>
           )}
@@ -903,7 +903,7 @@ export function ResearchNodeCard({
           {/* Document/PDF file info — always show icon box for doc types */}
           {isDoc && (
             <div className="flex items-center gap-2 py-2 px-2 rounded-lg bg-secondary mb-1.5">
-              <Icon className="w-6 h-6 opacity-70 shrink-0" style={{ color: nodeColor }} />
+              <Icon className="icon-lg opacity-70 shrink-0" style={{ color: nodeColor }} />
               <div className="min-w-0">
                 <p className="text-2xs text-muted-foreground truncate">
                   {node.upload?.mimeType ?? 'Document'}
@@ -923,7 +923,7 @@ export function ResearchNodeCard({
           {/* Reference preview */}
           {(effectiveType === 'reference' || node.type === 'reference') && (
             <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-secondary">
-              <Users className="w-5 h-5 text-muted-foreground shrink-0" />
+              <Users className="icon-md text-muted-foreground shrink-0" />
               <span className="text-2xs text-muted-foreground truncate">Entity reference</span>
             </div>
           )}
@@ -996,7 +996,7 @@ export function ResearchNodeCard({
       {/* Collapsed indicator */}
       {node.collapsed && (
         <div className="px-2.5 pb-2 flex items-center gap-1.5">
-          <Minimize2 className="w-3 h-3 text-muted-foreground" />
+          <Minimize2 className="icon-sm text-muted-foreground" />
           <span className="text-2xs text-muted-foreground truncate">
             {node.title || 'Untitled'}
           </span>

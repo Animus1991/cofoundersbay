@@ -285,11 +285,11 @@ function statusBadge(status: string) {
 }
 
 function execStatusIcon(status: string) {
-  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive-accessible" />;
-  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-status-info animate-spin" />;
-  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
-  return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+  if (status === 'completed') return <CheckCircle2 className="icon-sm text-status-success" />;
+  if (status === 'failed') return <XCircle className="icon-sm text-destructive-accessible" />;
+  if (status === 'running') return <RefreshCw className="icon-sm text-status-info animate-spin" />;
+  if (status === 'skipped') return <SkipForward className="icon-sm text-muted-foreground" />;
+  return <Clock className="icon-sm text-muted-foreground" />;
 }
 
 function LogPanel({ executionId }: { executionId: string }) {
@@ -386,7 +386,7 @@ export default function AutomationsPage() {
             </p>
           </div>
           <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
-            <Plus className="h-3.5 w-3.5" />New Rule
+            <Plus className="icon-sm" />New Rule
           </Button>
         </div>
 
@@ -444,7 +444,7 @@ export default function AutomationsPage() {
             {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
-                <Layers className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
               </Card>
             )}
@@ -487,7 +487,7 @@ export default function AutomationsPage() {
                       title="Edit rule"
                       onClick={() => setEditRule(rule)}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="icon-sm" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -497,7 +497,7 @@ export default function AutomationsPage() {
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
-                      <Play className="h-3.5 w-3.5" />
+                      <Play className="icon-sm" />
                     </Button>
                     {rule.status === 'active' ? (
                       <Button
@@ -507,7 +507,7 @@ export default function AutomationsPage() {
                         title="Pause"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
-                        <Pause className="h-3.5 w-3.5" />
+                        <Pause className="icon-sm" />
                       </Button>
                     ) : rule.status === 'paused' || rule.status === 'draft' ? (
                       <Button
@@ -517,7 +517,7 @@ export default function AutomationsPage() {
                         title="Activate"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-status-success" />
+                        <Zap className="icon-sm text-status-success" />
                       </Button>
                     ) : null}
                     <Button
@@ -529,7 +529,7 @@ export default function AutomationsPage() {
                         if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="icon-sm" />
                     </Button>
                   </div>
                 </div>
@@ -544,7 +544,7 @@ export default function AutomationsPage() {
             {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
             {!execLoading && executions.length === 0 && (
               <Card className="p-8 text-center">
-                <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" />
                 <p className="text-muted-foreground text-sm">No executions yet.</p>
               </Card>
             )}
@@ -567,7 +567,7 @@ export default function AutomationsPage() {
                       {new Date(exec.createdAt).toLocaleString()}
                     </span>
                     <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
-                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
                   </div>
                 </Card>
                 {selectedExecution === exec.id && (

@@ -158,7 +158,7 @@ export default function OrgSettingsPage() {
                   <Label>Logo</Label>
                   <div className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
-                      <Building2 className="h-8 w-8 text-muted-foreground" />
+                      <Building2 className="icon-xl text-muted-foreground" />
                     </div>
                     <Button variant="outline">Upload Logo</Button>
                   </div>

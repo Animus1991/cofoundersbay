@@ -401,7 +401,7 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => setReplyingTo(null)}
           >
-            <MoreVertical className="h-4 w-4 rotate-45" />
+            <MoreVertical className="icon-sm rotate-45" />
           </Button>
         </div>
       )}
@@ -416,9 +416,9 @@ export function EnhancedMessageThread({
                 className="flex items-center gap-2 px-3 py-2 bg-background rounded-lg"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="h-4 w-4" />
+                  <ImageIcon className="icon-sm" />
                 ) : (
-                  <Paperclip className="h-4 w-4" />
+                  <Paperclip className="icon-sm" />
                 )}
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
@@ -429,7 +429,7 @@ export function EnhancedMessageThread({
                   className="h-6 w-6"
                   onClick={() => removeAttachment(index)}
                 >
-                  <MoreVertical className="h-3 w-3 rotate-45" />
+                  <MoreVertical className="icon-sm rotate-45" />
                 </Button>
               </div>
             ))}
@@ -452,10 +452,10 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="icon-md" />
           </Button>
           <Button variant="ghost" size="icon">
-            <ImageIcon className="h-5 w-5" />
+            <ImageIcon className="icon-md" />
           </Button>
           
           <div className="flex-1 relative">
@@ -473,7 +473,7 @@ export function EnhancedMessageThread({
               size="icon"
               className="absolute right-2 bottom-2"
             >
-              <Smile className="h-5 w-5" />
+              <Smile className="icon-md" />
             </Button>
           </div>
 
@@ -482,7 +482,7 @@ export function EnhancedMessageThread({
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"
           >
-            <Send className="h-5 w-5" />
+            <Send className="icon-md" />
           </Button>
         </div>
       </div>

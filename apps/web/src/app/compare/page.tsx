@@ -183,7 +183,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
       className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/60 bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-[400px]"
     >
       <div className="rounded-full bg-primary/10 p-4 mb-3">
-        <Plus className="h-8 w-8 text-primary-accessible" />
+        <Plus className="icon-xl text-primary-accessible" />
       </div>
       <p className="font-medium text-foreground">Add Profile</p>
       <p className="text-sm text-muted-foreground mt-1">Select from matches or search</p>

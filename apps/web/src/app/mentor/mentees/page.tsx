@@ -99,12 +99,12 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="icon-sm" />
                 {relationship.totalSessions} sessions
               </span>
               {nextSessionFormatted && (
                 <span className="flex items-center gap-1 text-primary-accessible">
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="icon-sm" />
                   Next: {nextSessionFormatted}
                 </span>
               )}
@@ -116,13 +116,13 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
             <div className="flex gap-2 mt-3">
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/messages?to=${relationship.menteeId}`}>
-                  <MessageCircle className="h-3 w-3 mr-1" />
+                  <MessageCircle className="icon-sm mr-1" />
                   Message
                 </Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs" asChild>
                 <Link href={`/mentor/sessions/new?mentee=${relationship.menteeId}`}>
-                  <Calendar className="h-3 w-3 mr-1" />
+                  <Calendar className="icon-sm mr-1" />
                   Schedule
                 </Link>
               </Button>
@@ -152,7 +152,7 @@ export default function MenteesPage() {
     return (
       <AppShell>
         <div className="py-6 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" />
         </div>
       </AppShell>
     );
@@ -170,7 +170,7 @@ export default function MenteesPage() {
                 {error instanceof Error ? error.message : 'An error occurred'}
               </p>
               <Button className="mt-4" onClick={() => refetch()}>
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="icon-sm mr-2" />
                 Try Again
               </Button>
             </CardContent>
@@ -194,7 +194,7 @@ export default function MenteesPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={cn('h-4 w-4 mr-2', isLoading && 'animate-spin')} />
+            <RefreshCw className={cn('icon-sm mr-2', isLoading && 'animate-spin')} />
             Refresh
           </Button>
         </div>
@@ -204,7 +204,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="h-5 w-5 text-primary-accessible" />
+                <Users className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <p className="text-xl font-bold">{activeRelationships.length}</p>
@@ -215,7 +215,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-status-success-bg p-2">
-                <Target className="h-5 w-5 text-status-success" />
+                <Target className="icon-md text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">{completedRelationships.length}</p>
@@ -226,7 +226,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-status-info-bg p-2">
-                <TrendingUp className="h-5 w-5 text-status-info" />
+                <TrendingUp className="icon-md text-status-info" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalSessions}</p>
@@ -241,7 +241,7 @@ export default function MenteesPage() {
           <h2 className="text-lg font-semibold">Active ({activeRelationships.length})</h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="icon-xl animate-spin text-muted-foreground" />
             </div>
           ) : activeRelationships.length > 0 ? (
             activeRelationships.map((relationship) => (

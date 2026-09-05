@@ -76,11 +76,11 @@ function ReviewCard({ review }: { review: Review }) {
             <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <ThumbsUp className="mr-1 h-3 w-3" />
+                <ThumbsUp className="mr-1 icon-sm" />
                 Helpful ({review.helpful})
               </Button>
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <MessageSquare className="mr-1 h-3 w-3" />
+                <MessageSquare className="mr-1 icon-sm" />
                 Reply
               </Button>
             </div>
@@ -153,7 +153,7 @@ export default function MentorReviewsPage() {
                   {ratingDistribution.map((item) => (
                     <div key={item.rating} className="flex items-center gap-2">
                       <span className="text-sm w-3">{item.rating}</span>
-                      <Star className="h-3 w-3 fill-status-warning text-amber-400" />
+                      <Star className="icon-sm fill-status-warning text-amber-400" />
                       <Progress value={item.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">{item.count}</span>
                     </div>
@@ -190,7 +190,7 @@ export default function MentorReviewsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search reviews..."
               value={search}

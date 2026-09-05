@@ -69,7 +69,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{inquiry.clientName}</span>
                   <Badge variant="outline" className={cn('text-xs', config.color)}>
-                    <StatusIcon className="mr-1 h-3 w-3" />
+                    <StatusIcon className="mr-1 icon-sm" />
                     {inquiry.status}
                   </Badge>
                 </div>
@@ -82,7 +82,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -206,7 +206,7 @@ export default function ProviderInquiriesPage() {
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground">{label}</p>
@@ -218,7 +218,7 @@ export default function ProviderInquiriesPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search inquiries..."
             value={search}

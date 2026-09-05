@@ -124,7 +124,7 @@ export default function CreateProjectPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="icon-md" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Create Project</h1>
@@ -142,7 +142,7 @@ export default function CreateProjectPage() {
                 s === step && 'bg-primary text-primary-foreground',
                 s > step && 'bg-muted text-muted-foreground'
               )}>
-                {s < step ? <Check className="h-4 w-4" /> : s}
+                {s < step ? <Check className="icon-sm" /> : s}
               </div>
               {s < 4 && (
                 <div className={cn(
@@ -224,7 +224,7 @@ export default function CreateProjectPage() {
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
                           status === opt.value ? 'bg-primary/10 text-primary-accessible' : 'bg-muted text-muted-foreground'
                         )}>
-                          <Icon className="h-5 w-5" />
+                          <Icon className="icon-md" />
                         </div>
                         <div>
                           <p className="font-medium text-foreground">{opt.label}</p>
@@ -254,7 +254,7 @@ export default function CreateProjectPage() {
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
                       id="location"
                       placeholder="e.g., San Francisco, CA"
@@ -267,7 +267,7 @@ export default function CreateProjectPage() {
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                     <Input
                       id="website"
                       placeholder="https://"
@@ -331,7 +331,7 @@ export default function CreateProjectPage() {
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRole(customRole))}
                   />
                   <Button type="button" variant="outline" onClick={() => addRole(customRole)}>
-                    <Plus className="h-4 w-4" />
+                    <Plus className="icon-sm" />
                   </Button>
                 </div>
                 {rolesNeeded.length > 0 && (
@@ -340,7 +340,7 @@ export default function CreateProjectPage() {
                       <Badge key={role} variant="secondary" className="gap-1">
                         {role}
                         <button type="button" onClick={() => removeRole(role)}>
-                          <X className="h-3 w-3" />
+                          <X className="icon-sm" />
                         </button>
                       </Badge>
                     ))}
@@ -386,7 +386,7 @@ export default function CreateProjectPage() {
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
                   />
                   <Button type="button" variant="outline" onClick={addCustomTag}>
-                    <Plus className="h-4 w-4" />
+                    <Plus className="icon-sm" />
                   </Button>
                 </div>
               </div>
@@ -427,18 +427,18 @@ export default function CreateProjectPage() {
             onClick={() => setStep(step - 1)}
             disabled={step === 1}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="icon-sm mr-2" />
             Back
           </Button>
           {step < 4 ? (
             <Button onClick={() => setStep(step + 1)} disabled={!canProceed()}>
               Next
-              <ArrowRight className="h-4 w-4 ml-2" />
+              <ArrowRight className="icon-sm ml-2" />
             </Button>
           ) : (
             <Button onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create Project'}
-              <Rocket className="h-4 w-4 ml-2" />
+              <Rocket className="icon-sm ml-2" />
             </Button>
           )}
         </div>

@@ -76,7 +76,7 @@ export default function NewMilestonePage() {
       actions={
         <Link href="/milestones">
           <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="icon-sm" />
             Back to milestones
           </Button>
         </Link>
@@ -87,7 +87,7 @@ export default function NewMilestonePage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Target className="h-5 w-5 text-primary-accessible" />
+                <Target className="icon-md text-primary-accessible" />
               </div>
               <div>
                 <CardTitle>Create Milestone</CardTitle>

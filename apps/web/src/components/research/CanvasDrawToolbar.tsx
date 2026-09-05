@@ -113,7 +113,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
                 )}
                 style={isActive && def.color ? { color: def.color } : undefined}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="icon-sm" />
               </button>
             );
           })}
@@ -133,7 +133,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
               libraryOpen ? 'bg-violet-500/15 ring-1 ring-violet-400/50 text-violet-500' : 'text-muted-foreground',
             )}
           >
-            <Library className="w-4 h-4" />
+            <Library className="icon-sm" />
           </button>
         </>
       )}

@@ -14,7 +14,7 @@ export function XPProgressWidget() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
+            <Zap className="icon-md" />
             Progress & XP
           </CardTitle>
         </CardHeader>
@@ -32,7 +32,7 @@ export function XPProgressWidget() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-status-warning" />
+          <Zap className="icon-md text-status-warning" />
           Progress & XP
         </CardTitle>
       </CardHeader>
@@ -52,7 +52,7 @@ export function XPProgressWidget() {
               </div>
             </div>
             <Badge variant="outline" className="gap-1">
-              <TrendingUp className="h-3 w-3" />
+              <TrendingUp className="icon-sm" />
               {xp.xpToNextLevel} to next
             </Badge>
           </div>
@@ -72,7 +72,7 @@ export function XPProgressWidget() {
         {streak && (
           <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border border-status-warning-border ">
             <div className="flex items-center gap-3">
-              <Flame className="h-6 w-6 text-status-warning" />
+              <Flame className="icon-lg text-status-warning" />
               <div>
                 <div className="font-semibold text-sm">
                   {streak.currentStreak} Day Streak
@@ -84,7 +84,7 @@ export function XPProgressWidget() {
             </div>
             {streak.currentStreak >= 7 && (
               <Badge variant="secondary" className="gap-1">
-                <Award className="h-3 w-3" />
+                <Award className="icon-sm" />
                 On Fire!
               </Badge>
             )}

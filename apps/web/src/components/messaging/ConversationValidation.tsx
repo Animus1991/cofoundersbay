@@ -92,7 +92,7 @@ function ValidationModeIndicator({ state }: { state: ConversationValidationState
 
   return (
     <div className={cn('flex items-center gap-1.5 rounded-full px-2 py-0.5', config.bgColor)}>
-      <Icon className={cn('h-3 w-3', config.color)} />
+      <Icon className={cn('icon-sm', config.color)} />
       <span className={cn('text-xs font-medium', config.color)}>{config.label}</span>
     </div>
   );
@@ -114,7 +114,7 @@ export function ConversationValidationBadge({
         className={cn('flex h-6 w-6 items-center justify-center rounded-full', config.bgColor)}
         title={config.label}
       >
-        <Icon className={cn('h-3.5 w-3.5', config.color)} />
+        <Icon className={cn('icon-sm', config.color)} />
       </div>
     );
   }
@@ -211,9 +211,9 @@ export function ConversationValidationMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-            <Icon className={cn('h-3.5 w-3.5', config.color)} />
+            <Icon className={cn('icon-sm', config.color)} />
             <span className="hidden sm:inline">{config.label}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            <ChevronDown className="icon-sm text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
@@ -224,7 +224,7 @@ export function ConversationValidationMenu({
           <DropdownMenuSeparator />
           
           <DropdownMenuItem onClick={() => setShowModeDialog(true)}>
-            <Shield className="mr-2 h-4 w-4" />
+            <Shield className="mr-2 icon-sm" />
             Change validation mode
           </DropdownMenuItem>
           
@@ -232,11 +232,11 @@ export function ConversationValidationMenu({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleExport('txt')}>
-                <FileText className="mr-2 h-4 w-4" />
+                <FileText className="mr-2 icon-sm" />
                 Export as Text (.txt)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleExport('json')}>
-                <Download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 icon-sm" />
                 Export as JSON (.json)
               </DropdownMenuItem>
             </>
@@ -247,9 +247,9 @@ export function ConversationValidationMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={copyHash}>
                 {copied ? (
-                  <Check className="mr-2 h-4 w-4 text-status-success" />
+                  <Check className="mr-2 icon-sm text-status-success" />
                 ) : (
-                  <Hash className="mr-2 h-4 w-4" />
+                  <Hash className="mr-2 icon-sm" />
                 )}
                 {copied ? 'Hash copied!' : 'Copy validation hash'}
               </DropdownMenuItem>
@@ -262,7 +262,7 @@ export function ConversationValidationMenu({
       {isPendingAcceptance && (
         <div className="mx-4 mb-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 shrink-0 text-status-warning mt-0.5" />
+            <ShieldAlert className="icon-md shrink-0 text-status-warning mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
                 {otherUserName} requested two-party validation
@@ -278,9 +278,9 @@ export function ConversationValidationMenu({
                   disabled={acceptMutation.isPending}
                 >
                   {acceptMutation.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    <Loader2 className="icon-sm animate-spin mr-1" />
                   ) : (
-                    <Check className="h-3 w-3 mr-1" />
+                    <Check className="icon-sm mr-1" />
                   )}
                   Accept
                 </Button>
@@ -304,7 +304,7 @@ export function ConversationValidationMenu({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary-accessible" />
+              <Shield className="icon-md text-primary-accessible" />
               Conversation Validation Mode
             </DialogTitle>
             <DialogDescription>
@@ -331,7 +331,7 @@ export function ConversationValidationMenu({
                     )}
                   >
                     <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-lg', modeConfig.bgColor)}>
-                      <ModeIcon className={cn('h-5 w-5', modeConfig.color)} />
+                      <ModeIcon className={cn('icon-md', modeConfig.color)} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -345,7 +345,7 @@ export function ConversationValidationMenu({
                       </p>
                       {mode === 'two_party' && (
                         <p className="text-xs text-status-warning mt-1 flex items-center gap-1">
-                          <AlertTriangle className="h-3 w-3" />
+                          <AlertTriangle className="icon-sm" />
                           Requires acceptance from {otherUserName}
                         </p>
                       )}
@@ -358,7 +358,7 @@ export function ConversationValidationMenu({
 
           <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
             <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
+              <Info className="icon-sm shrink-0 text-muted-foreground mt-0.5" />
               <div className="text-xs text-muted-foreground">
                 <p className="font-medium text-foreground mb-1">About validation modes</p>
                 <ul className="space-y-1">
@@ -414,20 +414,20 @@ export function TranscriptExportButton({
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" disabled={isExporting}>
           {isExporting ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            <Loader2 className="icon-sm animate-spin" />
           ) : (
-            <Download className="h-3.5 w-3.5" />
+            <Download className="icon-sm" />
           )}
           Save Transcript
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleExport('txt')}>
-          <FileText className="mr-2 h-4 w-4" />
+          <FileText className="mr-2 icon-sm" />
           Plain Text (.txt)
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleExport('json')}>
-          <Download className="mr-2 h-4 w-4" />
+          <Download className="mr-2 icon-sm" />
           JSON (.json)
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -448,7 +448,7 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
 
   return (
     <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-      <Hash className="h-4 w-4 text-muted-foreground shrink-0" />
+      <Hash className="icon-sm text-muted-foreground shrink-0" />
       <code className="flex-1 text-xs font-mono text-muted-foreground truncate">
         {hash}
       </code>
@@ -459,9 +459,9 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
         onClick={copyHash}
       >
         {copied ? (
-          <Check className="h-3 w-3 text-status-success" />
+          <Check className="icon-sm text-status-success" />
         ) : (
-          <Copy className="h-3 w-3" />
+          <Copy className="icon-sm" />
         )}
       </Button>
     </div>

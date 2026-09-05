@@ -203,13 +203,13 @@ export default function TestOnboardingPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       {step.status === 'success' ? (
-                        <CheckCircle className="h-6 w-6 text-status-success" />
+                        <CheckCircle className="icon-lg text-status-success" />
                       ) : step.status === 'error' ? (
-                        <AlertCircle className="h-6 w-6 text-status-danger" />
+                        <AlertCircle className="icon-lg text-status-danger" />
                       ) : step.status === 'running' ? (
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
-                        <Circle className="h-6 w-6 text-muted-foreground" />
+                        <Circle className="icon-lg text-muted-foreground" />
                       )}
                       
                       <div>
@@ -261,7 +261,7 @@ export default function TestOnboardingPage() {
               </>
             ) : (
               <>
-                <Play className="h-4 w-4" />
+                <Play className="icon-sm" />
                 Run All Tests
               </>
             )}
@@ -306,7 +306,7 @@ export default function TestOnboardingPage() {
               {progress === 100 && !hasErrors && (
                 <div className="mt-6 text-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-success-bg rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-status-success" />
+                    <CheckCircle className="icon-md text-status-success" />
                     <span className="text-status-success font-medium">
                       All tests passed! Ready for production.
                     </span>
@@ -317,7 +317,7 @@ export default function TestOnboardingPage() {
               {hasErrors && (
                 <div className="mt-6 text-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-danger-bg rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-status-danger" />
+                    <AlertCircle className="icon-md text-status-danger" />
                     <span className="text-status-danger font-medium">
                       Some tests failed. Please check the errors above.
                     </span>
@@ -339,7 +339,7 @@ export default function TestOnboardingPage() {
           {progress === 100 && !hasErrors && (
             <Button asChild>
               <Link href="/onboarding/enhanced-onboarding">
-                <Rocket className="h-4 w-4 mr-2" />
+                <Rocket className="icon-sm mr-2" />
                 Try Enhanced Onboarding
               </Link>
             </Button>

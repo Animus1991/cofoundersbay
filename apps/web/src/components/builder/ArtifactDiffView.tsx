@@ -23,10 +23,10 @@ import {
 
 function statusIcon(status: DiffStatus) {
   switch (status) {
-    case 'added':   return <Plus className="h-3 w-3 text-status-success" />;
-    case 'removed': return <Minus className="h-3 w-3 text-status-danger" />;
-    case 'changed': return <Edit3 className="h-3 w-3 text-status-warning" />;
-    default:        return <CheckCircle2 className="h-3 w-3 text-muted-foreground/40" />;
+    case 'added':   return <Plus className="icon-sm text-status-success" />;
+    case 'removed': return <Minus className="icon-sm text-status-danger" />;
+    case 'changed': return <Edit3 className="icon-sm text-status-warning" />;
+    default:        return <CheckCircle2 className="icon-sm text-muted-foreground/40" />;
   }
 }
 
@@ -79,7 +79,7 @@ function RichTextDiffView({ diff }: { diff: RichTextDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-status-success" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         No differences found — content is identical.
       </div>
     );
@@ -168,7 +168,7 @@ function StructuredFieldRow({ field }: { field: StructuredFieldDiff }) {
           <div className="flex-1 text-status-danger line-through opacity-80">
             {renderValue(field.before)}
           </div>
-          <MoveRight className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+          <MoveRight className="icon-sm text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1 text-status-success ">
             {renderValue(field.after)}
           </div>
@@ -196,7 +196,7 @@ function StructuredDiffView({ diff }: { diff: StructuredDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-status-success" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         No field differences found.
       </div>
     );
@@ -220,7 +220,7 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
   if (summary.totalChanges === 0) {
     return (
       <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-status-success" />
+        <CheckCircle2 className="icon-sm text-status-success" />
         Canvas is identical — no node or connector changes.
       </div>
     );
@@ -230,7 +230,7 @@ function CanvasDiffView({ diff }: { diff: CanvasDiffResult }) {
     <div className="space-y-2">
       {(connectorsAdded > 0 || connectorsRemoved > 0) && (
         <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-md text-xs text-muted-foreground">
-          <GitBranch className="h-3.5 w-3.5" />
+          <GitBranch className="icon-sm" />
           Connectors: {connectorsAdded > 0 && <span className="text-status-success">+{connectorsAdded}</span>}
           {connectorsAdded > 0 && connectorsRemoved > 0 && ' / '}
           {connectorsRemoved > 0 && <span className="text-status-danger">-{connectorsRemoved}</span>}
@@ -320,9 +320,9 @@ export function ArtifactDiffView({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {detectedKind === 'rich-text' && <FileText className="h-4 w-4 text-muted-foreground" />}
-          {detectedKind === 'structured' && <Layers className="h-4 w-4 text-muted-foreground" />}
-          {detectedKind === 'canvas' && <GitBranch className="h-4 w-4 text-muted-foreground" />}
+          {detectedKind === 'rich-text' && <FileText className="icon-sm text-muted-foreground" />}
+          {detectedKind === 'structured' && <Layers className="icon-sm text-muted-foreground" />}
+          {detectedKind === 'canvas' && <GitBranch className="icon-sm text-muted-foreground" />}
           <span className="text-sm font-medium">{title ?? 'Changes'}</span>
         </div>
         <div className="flex items-center gap-1.5">

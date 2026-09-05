@@ -116,13 +116,13 @@ export default function MentorProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <User className="h-6 w-6 text-primary-accessible" />
+              <User className="icon-lg text-primary-accessible" />
               Mentor Profile
             </h1>
             <p className="text-muted-foreground">How mentees see you on the platform</p>
           </div>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" /> : <Save className="mr-2 icon-sm" />}
             Save Profile
           </Button>
         </div>
@@ -140,18 +140,18 @@ export default function MentorProfilePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="h-4 w-4 text-primary-accessible" />
+                  <BadgeCheck className="icon-sm text-primary-accessible" />
                   <Badge variant="secondary" className="text-xs">Mentor</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-400" /> 4.9 (12 reviews)</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {sessionDuration} min sessions</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {hoursPerWeek}h/week</span>
+                  <span className="flex items-center gap-1"><Star className="icon-sm text-amber-400" /> 4.9 (12 reviews)</span>
+                  <span className="flex items-center gap-1"><Clock className="icon-sm" /> {sessionDuration} min sessions</span>
+                  <span className="flex items-center gap-1"><Users className="icon-sm" /> {hoursPerWeek}h/week</span>
                   <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
-                    <DollarSign className="h-3 w-3" />
+                    <DollarSign className="icon-sm" />
                     {isFree ? 'Free' : `$${hourlyRate}/hr`}
                   </span>
                 </div>

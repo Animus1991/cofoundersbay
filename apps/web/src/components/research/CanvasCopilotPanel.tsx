@@ -140,7 +140,7 @@ function MermaidGenTab({
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-3">
       <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-        <Spline className="w-3 h-3 inline-block mr-1 text-pink-400" />
+        <Spline className="icon-sm inline-block mr-1 text-pink-400" />
         Describe a diagram and let AI generate Mermaid code for you, then add it directly to the canvas.
       </div>
 
@@ -184,8 +184,8 @@ function MermaidGenTab({
         className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-pink-500 hover:bg-pink-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
       >
         {genMutation.isPending
-          ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generating…</>
-          : <><Sparkles className="w-3.5 h-3.5" /> Generate Diagram</>}
+          ? <><Loader2 className="icon-sm animate-spin" /> Generating…</>
+          : <><Sparkles className="icon-sm" /> Generate Diagram</>}
       </button>
 
       {/* Generated code preview */}
@@ -205,7 +205,7 @@ function MermaidGenTab({
             onClick={() => onAddToCanvas(generatedCode)}
             className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium transition-colors"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="icon-sm" />
             Add to Canvas
           </button>
         </div>
@@ -213,7 +213,7 @@ function MermaidGenTab({
 
       {genMutation.isError && (
         <div className="flex items-center gap-2 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          <AlertCircle className="icon-sm shrink-0" />
           <span>{(genMutation.error as Error)?.message ?? 'Generation failed'}</span>
         </div>
       )}
@@ -364,12 +364,12 @@ export function CanvasCopilotPanel({
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2 min-w-0">
-          <Brain className="w-4 h-4 text-violet-400 shrink-0" />
+          <Brain className="icon-sm text-violet-400 shrink-0" />
           <span className="text-sm font-semibold truncate">Canvas Copilot</span>
           <span className="text-2xs px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 font-medium">BETA</span>
         </div>
         <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
-          <X className="w-3.5 h-3.5 text-muted-foreground" />
+          <X className="icon-sm text-muted-foreground" />
         </button>
       </div>
 
@@ -391,7 +391,7 @@ export function CanvasCopilotPanel({
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             )}
           >
-            <Icon className="w-3.5 h-3.5" />
+            <Icon className="icon-sm" />
             {label}
           </button>
         ))}
@@ -419,7 +419,7 @@ export function CanvasCopilotPanel({
                         : 'border-border/50 text-muted-foreground hover:border-border hover:text-foreground',
                     )}
                   >
-                    <Icon className={cn('w-3.5 h-3.5', activeAgentId === agent.id ? meta.color : '')} />
+                    <Icon className={cn('icon-sm', activeAgentId === agent.id ? meta.color : '')} />
                     <span className="leading-tight text-center">{agent.name.split(' ')[0]}</span>
                   </button>
                 );
@@ -450,7 +450,7 @@ export function CanvasCopilotPanel({
                     onClick={() => { setInput(q); inputRef.current?.focus(); }}
                     className="w-full text-left text-xs p-2 rounded-lg border border-border/50 hover:border-violet-400/40 hover:bg-violet-400/5 transition-all text-muted-foreground hover:text-foreground leading-relaxed"
                   >
-                    <ChevronRight className="w-3 h-3 inline-block mr-1 text-violet-400" />
+                    <ChevronRight className="icon-sm inline-block mr-1 text-violet-400" />
                     {q}
                   </button>
                 ))}
@@ -479,7 +479,7 @@ export function CanvasCopilotPanel({
             ))}
             {chatMutation.isPending && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="w-3 h-3 animate-spin text-violet-400" />
+                <Loader2 className="icon-sm animate-spin text-violet-400" />
                 <span>Analyzing canvas…</span>
               </div>
             )}
@@ -508,8 +508,8 @@ export function CanvasCopilotPanel({
                 className="p-2 rounded-lg bg-violet-500 hover:bg-violet-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
               >
                 {chatMutation.isPending
-                  ? <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
-                  : <Send className="w-3.5 h-3.5 text-white" />}
+                  ? <Loader2 className="icon-sm text-white animate-spin" />
+                  : <Send className="icon-sm text-white" />}
               </button>
             </div>
           </div>
@@ -545,7 +545,7 @@ export function CanvasCopilotPanel({
       {tab === 'export' && (
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
           <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-            <Sparkles className="w-3 h-3 inline-block mr-1 text-amber-400" />
+            <Sparkles className="icon-sm inline-block mr-1 text-amber-400" />
             Export {selectedCount > 0 ? `${selectedCount} selected` : `all ${nodes.length}`} canvas nodes to a new Builder document.
           </div>
 
@@ -594,7 +594,7 @@ export function CanvasCopilotPanel({
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={generateAI} onChange={(e) => setGenerateAI(e.target.checked)} className="rounded" />
               <span className="text-xs text-muted-foreground">
-                <Brain className="w-3 h-3 inline mr-1 text-violet-400" />
+                <Brain className="icon-sm inline mr-1 text-violet-400" />
                 AI-generate content from nodes
               </span>
             </label>
@@ -602,14 +602,14 @@ export function CanvasCopilotPanel({
 
           {exportMutation.isSuccess && (
             <div className="flex items-center gap-2 text-xs text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 rounded-lg px-3 py-2">
-              <Check className="w-3.5 h-3.5 shrink-0" />
+              <Check className="icon-sm shrink-0" />
               <span>Exported! Open Builder to view the document.</span>
             </div>
           )}
 
           {exportMutation.isError && (
             <div className="flex items-center gap-2 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">
-              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <AlertCircle className="icon-sm shrink-0" />
               <span>{(exportMutation.error as Error)?.message ?? 'Export failed'}</span>
             </div>
           )}
@@ -620,8 +620,8 @@ export function CanvasCopilotPanel({
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors"
           >
             {exportMutation.isPending
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Exporting…</>
-              : <><ArrowUpRight className="w-3.5 h-3.5" /> Export to Builder</>}
+              ? <><Loader2 className="icon-sm animate-spin" /> Exporting…</>
+              : <><ArrowUpRight className="icon-sm" /> Export to Builder</>}
           </button>
         </div>
       )}
@@ -630,7 +630,7 @@ export function CanvasCopilotPanel({
       {tab === 'import' && (
         <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
           <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-xs text-muted-foreground leading-relaxed">
-            <ArrowDownLeft className="w-3 h-3 inline-block mr-1 text-blue-400" />
+            <ArrowDownLeft className="icon-sm inline-block mr-1 text-blue-400" />
             Import Builder documents as linked canvas nodes.
           </div>
 
@@ -647,7 +647,7 @@ export function CanvasCopilotPanel({
                 </div>
                 {doc.alreadyLinked ? (
                   <span className="shrink-0 text-2xs text-emerald-400 flex items-center gap-1">
-                    <Check className="w-3 h-3" /> Linked
+                    <Check className="icon-sm" /> Linked
                   </span>
                 ) : (
                   <button

@@ -156,7 +156,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary-accessible" /> Invite Members
+            <Send className="icon-md text-primary-accessible" /> Invite Members
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
@@ -196,7 +196,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button className="gap-1.5" disabled={!emails.trim()}>
-            <Send className="h-4 w-4" /> Send Invites
+            <Send className="icon-sm" /> Send Invites
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -243,7 +243,7 @@ export default function TenantMembersPage() {
       description="Manage and track your organization's member engagement"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Invite Member
+          <Plus className="icon-sm" /> Invite Member
         </Button>
       }
     >
@@ -274,7 +274,7 @@ export default function TenantMembersPage() {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>

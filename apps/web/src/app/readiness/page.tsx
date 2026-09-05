@@ -239,7 +239,7 @@ function DimensionCard({
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <div className={cn('rounded-lg p-2.5 flex-shrink-0', colors.bg)}>
-            <Icon className={cn('h-5 w-5', colors.text)} />
+            <Icon className={cn('icon-md', colors.text)} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -248,7 +248,7 @@ function DimensionCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-muted-foreground/50 cursor-help" />
+                      <Info className="icon-sm text-muted-foreground/50 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[220px] text-xs">{dim.description}</TooltipContent>
                   </Tooltip>
@@ -277,8 +277,8 @@ function DimensionCard({
                   )}
                 >
                   {c.completed
-                    ? <CheckCircle2 className={cn('h-4 w-4 flex-shrink-0', STATUS.success.icon)} />
-                    : <AlertCircle className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />}
+                    ? <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
+                    : <AlertCircle className="icon-sm text-muted-foreground/50 flex-shrink-0" />}
                   <span className={cn('truncate', c.completed && 'text-muted-foreground line-through')}>{c.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{c.weight}%</span>
                 </button>
@@ -296,7 +296,7 @@ function DimensionCard({
             {dim.recommendations.length > 0 && status !== 'excellent' && (
               <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border/60">
                 <p className="text-xs font-medium flex items-center gap-1.5 mb-1">
-                  <Lightbulb className={cn('h-3.5 w-3.5', STATUS.warning.icon)} />
+                  <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} />
                   <BilingualText en="Recommendation" el="Σύσταση" compact />
                 </p>
                 <p className="text-xs text-muted-foreground">{dim.recommendations[0]}</p>
@@ -319,7 +319,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Target className="h-4 w-4 text-primary-accessible" />
+          <Target className="icon-sm text-primary-accessible" />
           <BilingualText en={readinessEn('readiness_radar')} el={readinessEl('readiness_radar')} compact />
         </CardTitle>
       </CardHeader>
@@ -340,11 +340,11 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <History className="h-4 w-4 text-primary-accessible" />
+            <History className="icon-sm text-primary-accessible" />
             <BilingualText en={readinessEn('score_progression')} el={readinessEl('score_progression')} compact />
           </CardTitle>
           <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
-            <Download className="h-3.5 w-3.5" /><BilingualText en={readinessEn('export')} el={readinessEl('export')} compact />
+            <Download className="icon-sm" /><BilingualText en={readinessEn('export')} el={readinessEl('export')} compact />
           </button>
         </div>
       </CardHeader>
@@ -423,7 +423,7 @@ export default function ReadinessPage() {
       onClick={() => refetch()}
       disabled={isLoading || isRefetching}
     >
-      {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+      {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
       <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
     </Button>
   );
@@ -475,7 +475,7 @@ export default function ReadinessPage() {
               <div className="flex gap-2 flex-wrap justify-center">
                 {weakDims.slice(0, 3).map((d) => (
                   <Badge key={d.key} variant="outline" className="text-xs gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                    <AlertCircle className="icon-sm" />
                     {d.label}
                   </Badge>
                 ))}
@@ -488,7 +488,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className={cn('rounded-lg p-2', STATUS.accent.bg)}>
-                  <Building2 className={cn('h-4 w-4', STATUS.accent.icon)} />
+                  <Building2 className={cn('icon-sm', STATUS.accent.icon)} />
                 </div>
                 <div>
                   <p className="font-semibold text-sm"><BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} /></p>
@@ -498,10 +498,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
-                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingUp className="h-3 w-3" /> <BilingualText en={readinessEn('ready_to_apply')} el={readinessEl('ready_to_apply')} compact /></span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('ready_to_apply')} el={readinessEl('ready_to_apply')} compact /></span>
                   : accelScore >= 50
-                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><Minus className="h-3 w-3" /> <BilingualText en={readinessEn('almost_ready')} el={readinessEl('almost_ready')} compact /></span>
-                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingDown className="h-3 w-3" /> <BilingualText en={readinessEn('not_ready_yet')} el={readinessEl('not_ready_yet')} compact /></span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('almost_ready')} el={readinessEl('almost_ready')} compact /></span>
+                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('not_ready_yet')} el={readinessEl('not_ready_yet')} compact /></span>
                 }
               </div>
               <Progress value={accelScore} className="h-2" />
@@ -509,7 +509,7 @@ export default function ReadinessPage() {
                 <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></Link>
+                <Link href="/programs"><Zap className="icon-sm mr-1.5" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -519,7 +519,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className={cn('rounded-lg p-2', STATUS.success.bg)}>
-                  <DollarSign className={cn('h-4 w-4', STATUS.success.icon)} />
+                  <DollarSign className={cn('icon-sm', STATUS.success.icon)} />
                 </div>
                 <div>
                   <p className="font-semibold text-sm"><BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} /></p>
@@ -529,10 +529,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
-                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingUp className="h-3 w-3" /> <BilingualText en={readinessEn('fundable_signal')} el={readinessEl('fundable_signal')} compact /></span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingUp className="icon-sm" /> <BilingualText en={readinessEn('fundable_signal')} el={readinessEl('fundable_signal')} compact /></span>
                   : investScore >= 50
-                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><Minus className="h-3 w-3" /> <BilingualText en={readinessEn('building_traction')} el={readinessEl('building_traction')} compact /></span>
-                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingDown className="h-3 w-3" /> <BilingualText en={readinessEn('pre_investment_stage')} el={readinessEl('pre_investment_stage')} compact /></span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><Minus className="icon-sm" /> <BilingualText en={readinessEn('building_traction')} el={readinessEl('building_traction')} compact /></span>
+                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingDown className="icon-sm" /> <BilingualText en={readinessEn('pre_investment_stage')} el={readinessEl('pre_investment_stage')} compact /></span>
                 }
               </div>
               <Progress value={investScore} className="h-2" />
@@ -540,7 +540,7 @@ export default function ReadinessPage() {
                 <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact /></Link>
+                <Link href="/investors"><Star className="icon-sm mr-1.5" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -556,14 +556,14 @@ export default function ReadinessPage() {
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <BrainCircuit className="h-4 w-4 text-primary-accessible" />
+                  <BrainCircuit className="icon-sm text-primary-accessible" />
                   <BilingualText en={readinessEn('ai_insight')} el={readinessEl('ai_insight')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {weakDims.slice(0, 3).map((d) => (
                   <div key={d.key} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-card border border-border/60">
-                    <Sparkles className={cn('h-3.5 w-3.5 mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
+                    <Sparkles className={cn('icon-sm mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground">{d.label} — {Math.round((d.score / d.maxScore) * 100)}%</p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{d.recommendations[0]}</p>
@@ -572,7 +572,7 @@ export default function ReadinessPage() {
                 ))}
                 {weakDims.length === 0 && (
                   <div className="flex items-center gap-2 p-2.5">
-                    <CheckCircle2 className={cn('h-4 w-4 flex-shrink-0', STATUS.success.icon)} />
+                    <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
                     <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
                   </div>
                 )}
@@ -585,7 +585,7 @@ export default function ReadinessPage() {
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className={cn('text-xs flex items-center gap-0.5 mb-1', TREND.up)}>
-                    <TrendingUp className="h-3 w-3" />+{overallScore - DEMO_HISTORY[0].score} pts
+                    <TrendingUp className="icon-sm" />+{overallScore - DEMO_HISTORY[0].score} pts
                   </span>
                 </div>
                 <div className="flex gap-0.5 mt-2 h-6 items-end">
@@ -614,7 +614,7 @@ export default function ReadinessPage() {
           <TabsContent value="dimensions" className="mt-4">
             {!workspaceId && (
               <div className={cn('mb-4 rounded-lg border p-4 flex items-start gap-3', STATUS.warning.border, STATUS.warning.bg)}>
-                <AlertCircle className={cn('h-4 w-4 mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
+                <AlertCircle className={cn('icon-sm mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
                 <div>
                   <p className={cn('text-sm font-medium', STATUS.warning.text)}><BilingualText en={readinessEn('no_workspace_title')} el={readinessEl('no_workspace_title')} /></p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -640,7 +640,7 @@ export default function ReadinessPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Lightbulb className={cn('h-4 w-4', STATUS.warning.icon)} />
+                  <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
                 </CardTitle>
               </CardHeader>
@@ -669,7 +669,7 @@ export default function ReadinessPage() {
                       return (
                       <div key={item.key} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/40">
                         <div className={cn('rounded-full p-1.5 mt-0.5', itemColors.bg)}>
-                          <ChevronRight className={cn('h-3 w-3', itemColors.icon)} />
+                          <ChevronRight className={cn('icon-sm', itemColors.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -693,7 +693,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Building2 className={cn('h-4 w-4', STATUS.accent.icon)} />
+                    <Building2 className={cn('icon-sm', STATUS.accent.icon)} />
                     <BilingualText en={readinessEn('accelerator_benchmark')} el={readinessEl('accelerator_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
@@ -724,7 +724,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Shield className={cn('h-4 w-4', STATUS.success.icon)} />
+                    <Shield className={cn('icon-sm', STATUS.success.icon)} />
                     <BilingualText en={readinessEn('investor_benchmark')} el={readinessEl('investor_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
@@ -788,7 +788,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <History className="h-4 w-4 text-muted-foreground" />
+                    <History className="icon-sm text-muted-foreground" />
                     <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
                   </CardTitle>
                 </CardHeader>
@@ -803,7 +803,7 @@ export default function ReadinessPage() {
                           <span className="text-sm font-medium">{h.score}% overall</span>
                           {i < DEMO_HISTORY.length - 1 && (
                             <span className={cn('text-xs flex items-center gap-0.5', TREND.up)}>
-                              <TrendingUp className="h-3 w-3" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
+                              <TrendingUp className="icon-sm" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
                             </span>
                           )}
                         </div>
@@ -824,21 +824,21 @@ export default function ReadinessPage() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Button asChild className="h-auto py-3 flex-col gap-1">
             <Link href="/builder">
-              <Rocket className="h-4 w-4" />
+              <Rocket className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
               <span className="text-xs opacity-70"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/mentoring">
-              <Lightbulb className="h-4 w-4" />
+              <Lightbulb className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
               <span className="text-xs opacity-70"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/programs">
-              <Building2 className="h-4 w-4" />
+              <Building2 className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>
               <span className="text-xs opacity-70"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
             </Link>

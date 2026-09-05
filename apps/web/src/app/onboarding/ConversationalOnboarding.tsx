@@ -53,7 +53,7 @@ function TypingIndicator() {
   return (
     <div className="flex items-end gap-2">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="h-4 w-4 text-primary-accessible" />
+        <Bot className="icon-sm text-primary-accessible" />
       </div>
       <div className="rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <div className="flex gap-1 items-center h-4">
@@ -70,7 +70,7 @@ function BotBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-end gap-2 animate-fade-in">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="h-4 w-4 text-primary-accessible" />
+        <Bot className="icon-sm text-primary-accessible" />
       </div>
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <p className="text-sm text-foreground leading-relaxed">{children}</p>
@@ -297,7 +297,7 @@ export function ConversationalOnboarding() {
                       : 'border-border hover:border-primary/50 hover:bg-secondary/50',
                   )}
                 >
-                  <Icon className="h-5 w-5 text-primary-accessible shrink-0" />
+                  <Icon className="icon-md text-primary-accessible shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-foreground">{label}</p>
                     <p className="text-xs text-muted-foreground">{desc}</p>
@@ -332,7 +332,7 @@ export function ConversationalOnboarding() {
                         : 'border-border text-muted-foreground hover:border-primary/50',
                     )}
                   >
-                    {selectedSkills.includes(skill.id) && <Check className="inline h-3 w-3 mr-1" />}
+                    {selectedSkills.includes(skill.id) && <Check className="inline icon-sm mr-1" />}
                     {skill.name}
                   </button>
                 ))}
@@ -342,7 +342,7 @@ export function ConversationalOnboarding() {
                 onClick={handleSubmitSkills}
                 disabled={submitting}
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                {submitting ? <Loader2 className="icon-sm animate-spin" /> : <ArrowRight className="icon-sm" />}
                 {submitting ? 'Creating profile...' : 'Complete Setup'}
               </Button>
             </div>
@@ -373,7 +373,7 @@ export function ConversationalOnboarding() {
                 disabled={step === 'name' && !inputValue.trim()}
                 size="icon"
               >
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" />
               </Button>
             </div>
           )}
@@ -398,7 +398,7 @@ export function ConversationalOnboarding() {
                   Skip
                 </button>
                 <Button onClick={() => void handleSubmitBio()} className="gap-2">
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="icon-sm" />
                   Continue
                 </Button>
               </div>
@@ -407,7 +407,7 @@ export function ConversationalOnboarding() {
 
           {step === 'done' && (
             <Button className="w-full gap-2" onClick={() => router.push('/')}>
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="icon-sm" />
               Explore CoFounderBay
             </Button>
           )}

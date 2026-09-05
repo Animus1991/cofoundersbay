@@ -95,7 +95,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
         className,
       )}
     >
-      <Sparkles className={cn('h-4 w-4 shrink-0', ac.icon)} />
+      <Sparkles className={cn('icon-sm shrink-0', ac.icon)} />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">{action.label}</p>
         <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{action.description}</p>
@@ -110,7 +110,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
             size="sm"
             className={cn('h-7 gap-1 text-xs font-semibold px-2.5', ac.cta)}
           >
-            {action.cta} <ArrowRight className="h-3 w-3" />
+            {action.cta} <ArrowRight className="icon-sm" />
           </Button>
         </Link>
         <button
@@ -118,7 +118,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
           className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           title="Dismiss"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="icon-sm" />
         </button>
       </div>
     </div>

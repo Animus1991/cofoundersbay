@@ -66,7 +66,7 @@ function VersionCard({
         'mt-0.5 p-1.5 rounded-md shrink-0',
         current ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
       )}>
-        <GitCommitHorizontal className="h-3.5 w-3.5" />
+        <GitCommitHorizontal className="icon-sm" />
       </div>
 
       {/* Content */}
@@ -88,7 +88,7 @@ function VersionCard({
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+            <Clock className="icon-sm" />
             {fmtDate(v.createdAt)}
           </span>
           {v.changedBy ? (
@@ -103,7 +103,7 @@ function VersionCard({
             </span>
           ) : (
             <span className="flex items-center gap-1">
-              <User className="h-3 w-3" />
+              <User className="icon-sm" />
               System
             </span>
           )}
@@ -119,7 +119,7 @@ function VersionCard({
           onClick={() => onRestore(v)}
           disabled={restoring}
         >
-          {restoring ? <Loader2 className="h-3 w-3 animate-spin" /> : <RotateCcw className="h-3 w-3 mr-1" />}
+          {restoring ? <Loader2 className="icon-sm animate-spin" /> : <RotateCcw className="icon-sm mr-1" />}
           Restore
         </Button>
       )}
@@ -184,7 +184,7 @@ export function VersionHistoryDrawer({
         <SheetContent side="right" className="w-full sm:max-w-md flex flex-col">
           <SheetHeader className="shrink-0">
             <SheetTitle className="flex items-center gap-2">
-              <History className="h-4 w-4" />
+              <History className="icon-sm" />
               Version History
             </SheetTitle>
             {documentTitle && (
@@ -207,7 +207,7 @@ export function VersionHistoryDrawer({
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                <AlertCircle className="h-8 w-8 text-destructive/50" />
+                <AlertCircle className="icon-xl text-destructive/50" />
                 <p className="text-sm text-muted-foreground">Failed to load version history</p>
               </div>
             ) : versions.length === 0 ? (
@@ -262,8 +262,8 @@ export function VersionHistoryDrawer({
               disabled={restoreMutation.isPending}
               className="gap-2"
             >
-              {restoreMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              <RotateCcw className="h-3.5 w-3.5" />
+              {restoreMutation.isPending && <Loader2 className="icon-sm animate-spin" />}
+              <RotateCcw className="icon-sm" />
               Restore Version
             </Button>
           </DialogFooter>

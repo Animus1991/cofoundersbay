@@ -151,10 +151,10 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
                   {project.name}
                 </Link>
                 <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
-                  <StatusIcon className="h-3 w-3 mr-1" />
+                  <StatusIcon className="icon-sm mr-1" />
                   {statusConfig.label}
                 </Badge>
-                {project.isStarred && <Star className="h-4 w-4 text-status-warning fill-status-warning" />}
+                {project.isStarred && <Star className="icon-sm text-status-warning fill-status-warning" />}
               </div>
               <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
             </div>
@@ -187,7 +187,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/projects/${project.id}`}>
                   View
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="icon-sm ml-1" />
                 </Link>
               </Button>
             </div>
@@ -206,31 +206,31 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
               <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                 {project.name}
               </Link>
-              {project.isStarred && <Star className="h-4 w-4 text-status-warning fill-status-warning" />}
+              {project.isStarred && <Star className="icon-sm text-status-warning fill-status-warning" />}
             </div>
             <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
-              <StatusIcon className="h-3 w-3 mr-1" />
+              <StatusIcon className="icon-sm mr-1" />
               {statusConfig.label}
             </Badge>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
-                <Star className="h-4 w-4 mr-2" />
+                <Star className="icon-sm mr-2" />
                 {project.isStarred ? 'Unstar' : 'Star'}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <MessageSquare className="h-4 w-4 mr-2" />
+                <MessageSquare className="icon-sm mr-2" />
                 Message Team
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <ExternalLink className="h-4 w-4 mr-2" />
+                <ExternalLink className="icon-sm mr-2" />
                 Share Project
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -266,14 +266,14 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
         <div className="pt-2 border-t border-border/60">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" />
               <span>
                 <span className="font-medium text-foreground">{project.teamSize}</span>/{project.maxTeamSize} members
               </span>
             </div>
             {project.messageCount && project.messageCount > 0 && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="icon-sm" />
                 {project.messageCount}
               </div>
             )}
@@ -307,7 +307,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
         <Button className="w-full" asChild>
           <Link href={`/projects/${project.id}`}>
             View Project
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <ChevronRight className="icon-sm ml-1" />
           </Link>
         </Button>
       </CardContent>
@@ -361,7 +361,7 @@ export default function ProjectsPage() {
           </div>
           <Button asChild>
             <Link href="/projects/create">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="icon-sm mr-2" />
               Create Project
             </Link>
           </Button>
@@ -380,7 +380,7 @@ export default function ProjectsPage() {
               <Card key={s.label} className="border-border/40">
                 <CardContent className="flex items-center gap-3 p-3">
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg)}>
-                    <SIcon className={cn('h-4 w-4', s.color)} />
+                    <SIcon className={cn('icon-sm', s.color)} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
@@ -405,7 +405,7 @@ export default function ProjectsPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input
                   placeholder="Search by name, description, industry..."
                   value={searchQuery}
@@ -431,7 +431,7 @@ export default function ProjectsPage() {
                   className="rounded-r-none"
                   onClick={() => setViewMode('grid')}
                 >
-                  <LayoutGrid className="h-4 w-4" />
+                  <LayoutGrid className="icon-sm" />
                 </Button>
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -439,7 +439,7 @@ export default function ProjectsPage() {
                   className="rounded-l-none"
                   onClick={() => setViewMode('list')}
                 >
-                  <List className="h-4 w-4" />
+                  <List className="icon-sm" />
                 </Button>
               </div>
             </div>
@@ -460,7 +460,7 @@ export default function ProjectsPage() {
                         : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground',
                     )}
                   >
-                    <PIcon className="h-3 w-3" />
+                    <PIcon className="icon-sm" />
                     {pill.label}
                   </button>
                 );
@@ -483,7 +483,7 @@ export default function ProjectsPage() {
                   </p>
                   <Button asChild>
                     <Link href="/projects/create">
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus className="icon-sm mr-2" />
                       Create Project
                     </Link>
                   </Button>
@@ -512,7 +512,7 @@ export default function ProjectsPage() {
                 </p>
                 <Button asChild>
                   <Link href="/projects/create">
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="icon-sm mr-2" />
                     Create Project
                   </Link>
                 </Button>

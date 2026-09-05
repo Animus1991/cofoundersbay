@@ -193,7 +193,7 @@ function DomainRow({
     <div className="rounded-xl border border-border/60 bg-card p-4 space-y-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <a
@@ -240,9 +240,9 @@ function DomainRow({
                 disabled={loadingDns}
                 className="gap-1 h-7 text-xs"
               >
-                <Link2 className="h-3 w-3" />
+                <Link2 className="icon-sm" />
                 DNS Setup
-                {showDns ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
               </Button>
               <Button
                 size="sm" variant="outline"
@@ -250,7 +250,7 @@ function DomainRow({
                 disabled={verify.isPending}
                 className="gap-1 h-7 text-xs"
               >
-                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
                 Verify
               </Button>
             </>
@@ -262,7 +262,7 @@ function DomainRow({
               disabled={setPrimary.isPending}
               className="gap-1 h-7 text-xs"
             >
-              <Star className="h-3 w-3" />Set Primary
+              <Star className="icon-sm" />Set Primary
             </Button>
           )}
           <Button
@@ -271,7 +271,7 @@ function DomainRow({
             disabled={toggle.isPending || (domain.verificationStatus !== 'verified' && !domain.isActive)}
             className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="h-3 w-3" />
+            <Power className="icon-sm" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
@@ -280,7 +280,7 @@ function DomainRow({
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="icon-sm" />
           </Button>
         </div>
       </div>
@@ -401,7 +401,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="h-4 w-4 text-primary-accessible" />
+              <Globe className="icon-sm text-primary-accessible" />
               Platform Subdomain
             </CardTitle>
             <CardDescription className="text-xs">

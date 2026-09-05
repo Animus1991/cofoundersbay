@@ -237,20 +237,20 @@ export default function TenantBrandingPage() {
         <>
           {branding?.isBrandingActive ? (
             <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+              <CheckCircle2 className="icon-sm" />
               Published
             </Badge>
           ) : (
             <Badge variant="secondary" className="gap-1.5">
-              <AlertCircle className="h-3.5 w-3.5" />
+              <AlertCircle className="icon-sm" />
               Draft
             </Badge>
           )}
           {tenantSlug && (
             <Button variant="outline" size="sm" onClick={handlePreview}>
-              <Eye className="mr-1.5 h-4 w-4" />
+              <Eye className="mr-1.5 icon-sm" />
               Preview
-              <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
+              <ExternalLink className="ml-1.5 icon-sm opacity-60" />
             </Button>
           )}
           <Button
@@ -259,11 +259,11 @@ export default function TenantBrandingPage() {
             disabled={saveMutation.isPending}
           >
             {saveMutation.isPending ? (
-              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-1.5 icon-sm animate-spin" />
             ) : saved ? (
-              <CheckCircle2 className="mr-1.5 h-4 w-4" />
+              <CheckCircle2 className="mr-1.5 icon-sm" />
             ) : (
-              <Save className="mr-1.5 h-4 w-4" />
+              <Save className="mr-1.5 icon-sm" />
             )}
             {saved ? 'Saved!' : 'Save Changes'}
           </Button>
@@ -274,26 +274,26 @@ export default function TenantBrandingPage() {
 
         {saveMutation.isError && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="icon-sm shrink-0" />
             Failed to save changes. Please try again.
           </div>
         )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="icon-xl animate-spin text-muted-foreground" />
           </div>
         ) : (
           <Tabs defaultValue="colors" className="space-y-6">
             <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="colors"><Palette className="mr-1.5 h-3.5 w-3.5" />Colors</TabsTrigger>
-              <TabsTrigger value="typography"><Type className="mr-1.5 h-3.5 w-3.5" />Typography</TabsTrigger>
+              <TabsTrigger value="colors"><Palette className="mr-1.5 icon-sm" />Colors</TabsTrigger>
+              <TabsTrigger value="typography"><Type className="mr-1.5 icon-sm" />Typography</TabsTrigger>
               <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" />Assets</TabsTrigger>
-              <TabsTrigger value="content"><FileText className="mr-1.5 h-3.5 w-3.5" />Content</TabsTrigger>
-              <TabsTrigger value="labels"><Tag className="mr-1.5 h-3.5 w-3.5" />Labels</TabsTrigger>
-              <TabsTrigger value="legal"><Globe className="mr-1.5 h-3.5 w-3.5" />Legal & Social</TabsTrigger>
-              <TabsTrigger value="email"><Mail className="mr-1.5 h-3.5 w-3.5" />Email</TabsTrigger>
-              <TabsTrigger value="publish"><Settings className="mr-1.5 h-3.5 w-3.5" />Publish</TabsTrigger>
+              <TabsTrigger value="content"><FileText className="mr-1.5 icon-sm" />Content</TabsTrigger>
+              <TabsTrigger value="labels"><Tag className="mr-1.5 icon-sm" />Labels</TabsTrigger>
+              <TabsTrigger value="legal"><Globe className="mr-1.5 icon-sm" />Legal & Social</TabsTrigger>
+              <TabsTrigger value="email"><Mail className="mr-1.5 icon-sm" />Email</TabsTrigger>
+              <TabsTrigger value="publish"><Settings className="mr-1.5 icon-sm" />Publish</TabsTrigger>
             </TabsList>
 
             {/* ── Colors ── */}
@@ -460,7 +460,7 @@ export default function TenantBrandingPage() {
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="h-6 w-6 text-white" />
+                            <Camera className="icon-lg text-white" />
                           </div>
                         </div>
                       </ImageCropperTrigger>
@@ -508,7 +508,7 @@ export default function TenantBrandingPage() {
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="h-3 w-3 text-white" />
+                            <Camera className="icon-sm text-white" />
                           </div>
                         </div>
                       </ImageCropperTrigger>
@@ -720,7 +720,7 @@ export default function TenantBrandingPage() {
                       <div key={key} className="space-y-2">
                         <Label>{label}</Label>
                         <div className="flex items-center gap-2">
-                          <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Link2 className="icon-sm text-muted-foreground shrink-0" />
                           <Input
                             value={form[key] ?? ''}
                             onChange={(e) => setField(key, e.target.value)}
@@ -816,19 +816,19 @@ export default function TenantBrandingPage() {
                     <p className="text-sm font-medium">Safeguards</p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
                         Primary color defined
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
                         Hero title set
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
                         Support email configured
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`icon-sm ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
                         Legal links provided
                       </li>
                     </ul>
@@ -836,18 +836,18 @@ export default function TenantBrandingPage() {
 
                   {tenantSlug && (
                     <Button variant="outline" className="w-full" onClick={handlePreview}>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 icon-sm" />
                       Preview Public Landing Page
-                      <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" />
+                      <ExternalLink className="ml-2 icon-sm opacity-60" />
                     </Button>
                   )}
 
                   <div className="flex gap-3">
                     <Button className="flex-1" onClick={handleSave} disabled={saveMutation.isPending}>
                       {saveMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 icon-sm animate-spin" />
                       ) : (
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 icon-sm" />
                       )}
                       Save Draft
                     </Button>
@@ -858,7 +858,7 @@ export default function TenantBrandingPage() {
                         onClick={() => { saveMutation.mutate(form); publishMutation.mutate(); }}
                         disabled={saveMutation.isPending || publishMutation.isPending}
                       >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        <CheckCircle2 className="mr-2 icon-sm" />
                         Save & Publish
                       </Button>
                     )}

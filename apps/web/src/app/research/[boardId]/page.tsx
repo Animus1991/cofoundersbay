@@ -1205,7 +1205,7 @@ export default function ResearchBoardPage() {
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
+            <Loader2 className="icon-xl animate-spin text-primary-accessible" />
           </div>
         )}
 
@@ -1225,7 +1225,7 @@ export default function ResearchBoardPage() {
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
             <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Layers className="h-5 w-5 text-primary-accessible shrink-0" />
+              <Layers className="icon-md text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
             </Link>
             <span className="text-2xs text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
@@ -1244,7 +1244,7 @@ export default function ResearchBoardPage() {
             className="gap-1.5 h-8 text-xs"
             title="Click canvas to place note (N)"
           >
-            <StickyNote className="h-3.5 w-3.5 text-amber-500" />
+            <StickyNote className="icon-sm text-amber-500" />
             <span className="hidden md:inline">Note</span>
           </Button>
 
@@ -1252,9 +1252,9 @@ export default function ResearchBoardPage() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 <span className="hidden md:inline">Add Node</span>
-                <ChevronDown className="h-3 w-3 opacity-60" />
+                <ChevronDown className="icon-sm opacity-60" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64 max-h-[70vh] overflow-y-auto">
@@ -1304,7 +1304,7 @@ export default function ResearchBoardPage() {
                         }}
                         className="gap-2"
                       >
-                        <Icon className="h-4 w-4 shrink-0" style={{ color: item.color }} />
+                        <Icon className="icon-sm shrink-0" style={{ color: item.color }} />
                         {item.label}
                       </DropdownMenuItem>
                     );
@@ -1321,7 +1321,7 @@ export default function ResearchBoardPage() {
             onClick={() => fileInputRef.current?.click()}
             className="gap-1.5 h-8 text-xs"
           >
-            <Upload className="h-3.5 w-3.5" />
+            <Upload className="icon-sm" />
             <span className="hidden md:inline">Upload</span>
           </Button>
 
@@ -1333,7 +1333,7 @@ export default function ResearchBoardPage() {
             className="gap-1.5 h-8 text-xs"
             title="Draw connection (C)"
           >
-            <GitBranch className="h-3.5 w-3.5 text-emerald-500" />
+            <GitBranch className="icon-sm text-emerald-500" />
             <span className="hidden md:inline">Connect</span>
           </Button>
 
@@ -1342,10 +1342,10 @@ export default function ResearchBoardPage() {
           {/* Undo / Redo */}
           <div className="flex items-center gap-0.5">
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={undo} disabled={historyIndex <= 0} title="Undo (Ctrl+Z)">
-              <Undo2 className="h-3.5 w-3.5" />
+              <Undo2 className="icon-sm" />
             </Button>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo (Ctrl+Y)">
-              <Redo2 className="h-3.5 w-3.5" />
+              <Redo2 className="icon-sm" />
             </Button>
           </div>
 
@@ -1355,13 +1355,13 @@ export default function ResearchBoardPage() {
           {/* Zoom controls */}
           <div className="flex items-center gap-0.5">
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title="Zoom out">
-              <ZoomOut className="h-3.5 w-3.5" />
+              <ZoomOut className="icon-sm" />
             </Button>
             <span className="text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
               {Math.round(zoom * 100)}%
             </span>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title="Zoom in">
-              <ZoomIn className="h-3.5 w-3.5" />
+              <ZoomIn className="icon-sm" />
             </Button>
             <Button
               variant="ghost"
@@ -1370,7 +1370,7 @@ export default function ResearchBoardPage() {
               onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
               title="Reset view (1:1)"
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              <Maximize2 className="icon-sm" />
             </Button>
             <Button
               variant="ghost"
@@ -1379,7 +1379,7 @@ export default function ResearchBoardPage() {
               onClick={fitToContent}
               title="Fit all nodes in view"
             >
-              <Layers className="h-3.5 w-3.5" />
+              <Layers className="icon-sm" />
             </Button>
           </div>
 
@@ -1393,7 +1393,7 @@ export default function ResearchBoardPage() {
             onClick={() => setSnapToGrid((v) => !v)}
             title={snapToGrid ? 'Snap to grid ON' : 'Snap to grid OFF'}
           >
-            <Magnet className="h-3.5 w-3.5" />
+            <Magnet className="icon-sm" />
           </Button>
 
           <div className="h-5 w-px bg-border/60" />
@@ -1406,7 +1406,7 @@ export default function ResearchBoardPage() {
             onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}
             title="AI Analysis"
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles className="icon-sm" />
           </Button>
 
           {/* Board Summary toggle */}
@@ -1417,7 +1417,7 @@ export default function ResearchBoardPage() {
             onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}
             title="Board Summary & Health"
           >
-            <BarChart3 className="h-3.5 w-3.5" />
+            <BarChart3 className="icon-sm" />
           </Button>
 
           {/* Branch Selector */}
@@ -1436,14 +1436,14 @@ export default function ResearchBoardPage() {
             onClick={() => setShowHistoryDrawer((v) => !v)}
             title="Canvas History, Versions & Branches"
           >
-            <History className="h-3.5 w-3.5" />
+            <History className="icon-sm" />
           </Button>
 
           {/* More menu — houses all secondary actions */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -1459,24 +1459,24 @@ export default function ResearchBoardPage() {
                   });
                 }
               }}>
-                <LinkIcon className="h-4 w-4 mr-2" />
+                <LinkIcon className="icon-sm mr-2" />
                 Add Link
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowEntitySelector(true)}>
-                <Users className="h-4 w-4 mr-2" />
+                <Users className="icon-sm mr-2" />
                 Reference Entity
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowGrid(!showGrid)}>
-                <Grid3X3 className="h-4 w-4 mr-2" />
+                <Grid3X3 className="icon-sm mr-2" />
                 {showGrid ? 'Hide' : 'Show'} Grid
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSnapToGrid((v) => !v)}>
-                <Magnet className="h-4 w-4 mr-2" />
+                <Magnet className="icon-sm mr-2" />
                 {snapToGrid ? 'Disable' : 'Enable'} Snap to Grid
               </DropdownMenuItem>
               <DropdownMenuItem onClick={fitToContent}>
-                <Layers className="h-4 w-4 mr-2" />
+                <Layers className="icon-sm mr-2" />
                 Fit All Nodes in View
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -1485,7 +1485,7 @@ export default function ResearchBoardPage() {
                 const cy = (window.innerHeight / 2 - pan.y) / zoom;
                 createGroup(cx - 200, cy - 150);
               }}>
-                <Grid3X3 className="h-4 w-4 mr-2 text-blue-500" />
+                <Grid3X3 className="icon-sm mr-2 text-blue-500" />
                 Create Group Frame
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
@@ -1493,21 +1493,21 @@ export default function ResearchBoardPage() {
                 const cy = (window.innerHeight / 2 - pan.y) / zoom;
                 createNodeMutation.mutate({ type: 'note' as any, title: '', content: '', posX: cx - 100, posY: cy - 100, width: 200, height: 200, color: '#F59E0B', metadata: { isSticky: true } });
               }}>
-                <StickyNote className="h-4 w-4 mr-2 text-amber-500" />
+                <StickyNote className="icon-sm mr-2 text-amber-500" />
                 Add Sticky Note
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowFilterBar((v) => !v)}>
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="icon-sm mr-2" />
                 {showFilterBar ? 'Hide' : 'Show'} Filters
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowMiniMap((v) => !v)}>
-                <Map className="h-4 w-4 mr-2" />
+                <Map className="icon-sm mr-2" />
                 {showMiniMap ? 'Hide' : 'Show'} Mini-Map
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowBoardSettings(true)}>
-                <Settings className="h-4 w-4 mr-2" />
+                <Settings className="icon-sm mr-2" />
                 Board Settings
               </DropdownMenuItem>
               {board && (
@@ -1518,7 +1518,7 @@ export default function ResearchBoardPage() {
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={handleExportPng}>
-                <Download className="h-4 w-4 mr-2 text-blue-500" />
+                <Download className="icon-sm mr-2 text-blue-500" />
                 Export as PNG
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -1535,13 +1535,13 @@ export default function ResearchBoardPage() {
                 { alg: 'radial'   as LayoutAlgorithm, label: '◎ Radial',        icon: '◎' },
               ]).map(({ alg, label }) => (
                 <DropdownMenuItem key={alg} onClick={() => handleAutoLayout(alg)} className="gap-2 text-xs">
-                  <Network className="h-3.5 w-3.5 text-violet-500" />
+                  <Network className="icon-sm text-violet-500" />
                   {label}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
-                <Keyboard className="h-4 w-4 mr-2" />
+                <Keyboard className="icon-sm mr-2" />
                 Keyboard Shortcuts
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -1564,7 +1564,7 @@ export default function ResearchBoardPage() {
       {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
         <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
-          <Sparkles className="h-4 w-4 shrink-0 text-violet-600" />
+          <Sparkles className="icon-sm shrink-0 text-violet-600" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
               {board.nodes.length} research nodes — ready to synthesise?
@@ -1575,7 +1575,7 @@ export default function ResearchBoardPage() {
           </div>
           <Link href="/builder">
             <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0">
-              Open Builder <ArrowRight className="h-3 w-3" />
+              Open Builder <ArrowRight className="icon-sm" />
             </Button>
           </Link>
           <button
@@ -1583,7 +1583,7 @@ export default function ResearchBoardPage() {
             className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
             title="Dismiss"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="icon-sm" />
           </button>
         </div>
       )}
@@ -1760,7 +1760,7 @@ export default function ResearchBoardPage() {
         {connectionStart && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/90 text-white text-xs font-medium shadow-lg backdrop-blur-sm">
-              <GitBranch className="h-3.5 w-3.5" />
+              <GitBranch className="icon-sm" />
               Click a node to connect · Press Esc to cancel
             </div>
           </div>
@@ -1928,32 +1928,32 @@ export default function ResearchBoardPage() {
                 onClick={() => { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Eye className="w-4 h-4" /> Open
+                <Eye className="icon-sm" /> Open
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setSelectedNodeIds(new Set([contextMenu.nodeId])); duplicateSelected(); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Copy className="w-4 h-4" /> Duplicate
+                <Copy className="icon-sm" /> Duplicate
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) { setConnectionStart(contextMenu.nodeId); setActiveTool('connect'); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <GitBranch className="w-4 h-4" /> Connect from here
+                <GitBranch className="icon-sm" /> Connect from here
               </button>
               <button
                 onClick={() => { if (contextMenu.nodeId) setCommentsNodeId(contextMenu.nodeId); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <MessageSquare className="w-4 h-4" /> Comments
+                <MessageSquare className="icon-sm" /> Comments
               </button>
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
               >
-                <Trash2 className="w-4 h-4" /> Delete
+                <Trash2 className="icon-sm" /> Delete
               </button>
             </>
           ) : (
@@ -1986,7 +1986,7 @@ export default function ResearchBoardPage() {
                     }}
                     className="w-full px-3 py-1.5 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                   >
-                    <Icon className="w-3.5 h-3.5" style={{ color: item.color }} /> {item.label}
+                    <Icon className="icon-sm" style={{ color: item.color }} /> {item.label}
                   </button>
                 );
               })}
@@ -1995,7 +1995,7 @@ export default function ResearchBoardPage() {
                 onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Upload className="w-4 h-4" /> Upload File
+                <Upload className="icon-sm" /> Upload File
               </button>
               <div className="h-px bg-border my-1" />
               <button
@@ -2010,7 +2010,7 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Grid3X3 className="w-4 h-4 text-blue-500" /> Create Group Frame
+                <Grid3X3 className="icon-sm text-blue-500" /> Create Group Frame
               </button>
               <button
                 onClick={() => {
@@ -2024,20 +2024,20 @@ export default function ResearchBoardPage() {
                 }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <StickyNote className="w-4 h-4 text-amber-500" /> Add Sticky Note
+                <StickyNote className="icon-sm text-amber-500" /> Add Sticky Note
               </button>
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (board) setSelectedNodeIds(new Set(board.nodes.map((n) => n.id))); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Layers className="w-4 h-4" /> Select All
+                <Layers className="icon-sm" /> Select All
               </button>
               <button
                 onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Maximize2 className="w-4 h-4" /> Reset View
+                <Maximize2 className="icon-sm" /> Reset View
               </button>
             </>
           )}
@@ -2050,11 +2050,11 @@ export default function ResearchBoardPage() {
           <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Keyboard className="w-5 h-5 text-primary-accessible" />
+                <Keyboard className="icon-md text-primary-accessible" />
                 Keyboard Shortcuts
               </h2>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
-                <X className="w-4 h-4" />
+                <X className="icon-sm" />
               </Button>
             </div>
             <div className="p-6 grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">

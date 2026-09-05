@@ -99,7 +99,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary-accessible" />
+              <Building2 className="icon-md text-primary-accessible" />
               <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
@@ -151,7 +151,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive-accessible" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-accessible" />
               <p>Failed to load tenants</p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 Retry
@@ -159,7 +159,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="h-8 w-8 mx-auto mb-2" />
+              <Building2 className="icon-xl mx-auto mb-2" />
               <p>No tenants configured yet</p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
                 <Plus className="icon-sm" />
@@ -375,12 +375,12 @@ function TenantEditor({
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
-                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" />General</TabsTrigger>
-                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" />Colors & Fonts</TabsTrigger>
-                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Media</TabsTrigger>
-                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Content</TabsTrigger>
-                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Links & Legal</TabsTrigger>
-                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" />Email</TabsTrigger>}
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="icon-sm" />General</TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="icon-sm" />Colors & Fonts</TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="icon-sm" />Media</TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="icon-sm" />Content</TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="icon-sm" />Links & Legal</TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="icon-sm" />Email</TabsTrigger>}
               </TabsList>
 
               {saveError && (
@@ -673,7 +673,7 @@ function TenantEditor({
               <>
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="icon-sm" />
                     View Public Page
                   </a>
                 </Button>
@@ -683,7 +683,7 @@ function TenantEditor({
                   </Button>
                 ) : (
                   <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-status-success border-status-success-border hover:bg-status-success-bg">
-                    <Check className="h-4 w-4" />
+                    <Check className="icon-sm" />
                     Publish Branding
                   </Button>
                 )}
@@ -693,7 +693,7 @@ function TenantEditor({
           <div className="flex gap-2">
             {tenant && (
               <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="icon-sm" />
                 Delete
               </Button>
             )}

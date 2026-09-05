@@ -61,14 +61,14 @@ function DealCard({ deal }: { deal: Deal }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm truncate">{deal.name}</span>
-            {deal.starred && <Star className="h-3 w-3 text-status-warning fill-status-warning" />}
+            {deal.starred && <Star className="icon-sm text-status-warning fill-status-warning" />}
           </div>
           <p className="text-xs text-muted-foreground">{deal.industry}</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="h-3 w-3" />
+              <MoreVertical className="icon-sm" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -139,7 +139,7 @@ export default function InvestorPipelinePage() {
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
-          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 h-4 w-4" />Scout Startups</Link></Button>}
+          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" />Scout Startups</Link></Button>}
         />
       </AppShell>
     );
@@ -155,7 +155,7 @@ export default function InvestorPipelinePage() {
             {showPassed ? 'Hide Passed' : 'Show Passed'}
           </Button>
           <Button asChild size="sm">
-            <Link href="/investor/scouting"><Plus className="mr-2 h-4 w-4" />Add Deal</Link>
+            <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" />Add Deal</Link>
           </Button>
         </div>
       }
@@ -172,7 +172,7 @@ export default function InvestorPipelinePage() {
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
+                <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
                   <p className="text-2xs text-muted-foreground">{label}</p>
@@ -185,7 +185,7 @@ export default function InvestorPipelinePage() {
         {/* Search */}
         <div className="flex gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input
               placeholder="Search deals..."
               value={search}
@@ -194,7 +194,7 @@ export default function InvestorPipelinePage() {
             />
           </div>
           <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className="mr-2 icon-sm" />
             Filters
           </Button>
         </div>
@@ -231,7 +231,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-primary-accessible" /> Pipeline Conversion</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-accessible" /> Pipeline Conversion</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -245,7 +245,7 @@ export default function InvestorPipelinePage() {
                       <p className="text-2xs text-muted-foreground">{stage.label}</p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>
-                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />}
+                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="icon-sm text-muted-foreground/40 shrink-0" />}
                   </div>
                 );
               })}

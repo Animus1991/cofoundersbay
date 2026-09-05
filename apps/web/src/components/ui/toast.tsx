@@ -80,7 +80,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         toastStyles[toast.type]
       )}
     >
-      <Icon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+      <Icon className="icon-md flex-shrink-0 mt-0.5" />
       <div className="flex-1 space-y-1">
         <p className="text-sm font-semibold text-foreground">{toast.title}</p>
         {toast.description && (
@@ -99,7 +99,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         onClick={onRemove}
         className="rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
       >
-        <X className="h-4 w-4" />
+        <X className="icon-sm" />
       </button>
     </div>
   );

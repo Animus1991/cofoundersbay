@@ -125,7 +125,7 @@ export function SideNav() {
             className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
             aria-label={bilingualAria(commonEn('collapse_sidebar'), commonEl('collapse_sidebar'))}
           >
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="icon-sm" />
           </button>
         )}
       </div>
@@ -192,7 +192,7 @@ export function SideNav() {
                       <span className="relative flex-shrink-0">
                         <Icon
                           className={cn(
-                            'h-4 w-4',
+                            'icon-sm',
                             active ? 'text-primary-accessible' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
                           aria-hidden="true"
@@ -289,7 +289,7 @@ export function SideNav() {
             className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
             aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
           >
-            <PanelLeftOpen className="h-4 w-4" />
+            <PanelLeftOpen className="icon-sm" />
           </button>
         )}
       </div>

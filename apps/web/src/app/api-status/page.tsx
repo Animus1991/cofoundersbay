@@ -89,11 +89,11 @@ export default function ApiStatusPage() {
   const getStatusIcon = (status: EndpointStatus['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-status-success" />;
+        return <CheckCircle className="icon-sm text-status-success" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-status-danger" />;
+        return <XCircle className="icon-sm text-status-danger" />;
       case 'loading':
-        return <RefreshCw className="h-4 w-4 text-status-info animate-spin" />;
+        return <RefreshCw className="icon-sm text-status-info animate-spin" />;
     }
   };
 
@@ -119,7 +119,7 @@ export default function ApiStatusPage() {
 
       <div className="mb-6">
         <Button onClick={checkAllEndpoints} disabled={isChecking} className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`icon-sm ${isChecking ? 'animate-spin' : ''}`} />
           {isChecking ? 'Checking...' : 'Check All Endpoints'}
         </Button>
       </div>
@@ -144,7 +144,7 @@ export default function ApiStatusPage() {
             {endpoint.error && (
               <CardContent>
                 <div className="flex items-center gap-2 p-3 bg-status-danger-bg rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-status-danger" />
+                  <AlertCircle className="icon-sm text-status-danger" />
                   <code className="text-sm text-status-danger ">
                     {endpoint.error}
                   </code>

@@ -82,12 +82,12 @@ function ReportCard({ report }: { report: ModerationReport }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className={cn('text-xs border', typeCfg.chip)}>
-                <AlertTriangle className="mr-1 h-3 w-3" />
+                <AlertTriangle className="mr-1 icon-sm" />
                 {typeCfg.label}
               </Badge>
               <Badge variant="secondary" className="text-xs capitalize">{report.contentType}</Badge>
               <Badge variant="outline" className={cn('text-xs border', statusCfg.chip)}>
-                <StatusIcon className="mr-1 h-3 w-3" />
+                <StatusIcon className="mr-1 icon-sm" />
                 {statusCfg.label}
               </Badge>
               {report.priority === 'high' && (
@@ -101,29 +101,29 @@ function ReportCard({ report }: { report: ModerationReport }) {
               <span>Reported by: <span className="font-medium text-foreground">{report.reportedBy}</span></span>
               <span>Against: <span className="font-medium text-foreground">{report.reportedUser}</span></span>
               <span>In: <span className="font-medium text-foreground">{report.groupName}</span></span>
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{report.reportedAt}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{report.reportedAt}</span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Report actions">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />View Content</DropdownMenuItem>
-              <DropdownMenuItem><CheckCircle className="mr-2 h-4 w-4" />Mark Resolved</DropdownMenuItem>
-              <DropdownMenuItem><XCircle className="mr-2 h-4 w-4" />Dismiss</DropdownMenuItem>
-              <DropdownMenuItem><UserX className="mr-2 h-4 w-4" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive-accessible"><Ban className="mr-2 h-4 w-4" />Ban User</DropdownMenuItem>
+              <DropdownMenuItem><Eye className="mr-2 icon-sm" />View Content</DropdownMenuItem>
+              <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" />Mark Resolved</DropdownMenuItem>
+              <DropdownMenuItem><XCircle className="mr-2 icon-sm" />Dismiss</DropdownMenuItem>
+              <DropdownMenuItem><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible"><Ban className="mr-2 icon-sm" />Ban User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         {report.status === 'pending' && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 h-3 w-3" />Resolve</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 h-3 w-3" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30"><Ban className="mr-1 h-3 w-3" />Ban User</Button>
+            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-sm" />Resolve</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-sm" />Dismiss</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30"><Ban className="mr-1 icon-sm" />Ban User</Button>
           </div>
         )}
       </CardContent>
@@ -155,7 +155,7 @@ export default function GroupsModerationPage() {
         {highPriority > 0 && (
           <Card className="border-status-danger-border/40 bg-status-danger-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertTriangle className={cn('h-5 w-5 shrink-0', STATUS.danger.icon)} />
+              <AlertTriangle className={cn('icon-md shrink-0', STATUS.danger.icon)} />
               <p className="text-sm">
                 <span className="font-semibold">{highPriority} high-priority report{highPriority > 1 ? 's' : ''}</span> require immediate attention
               </p>
@@ -182,7 +182,7 @@ export default function GroupsModerationPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search reports..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 

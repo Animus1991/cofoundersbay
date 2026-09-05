@@ -151,7 +151,7 @@ export function NoFilterResults({
       description={description ?? 'Try a different search term, broaden your filters, or clear them to start over.'}
       action={onClear ? (
         <Button variant="secondary" size="sm" onClick={onClear} className="gap-1.5">
-          <X className="h-4 w-4" />
+          <X className="icon-sm" />
           Clear filters
         </Button>
       ) : undefined}
@@ -165,7 +165,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.accent.bg)}>
-        <Users className={cn('h-8 w-8', STATUS.accent.icon)} />
+        <Users className={cn('icon-xl', STATUS.accent.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No connections yet</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -173,7 +173,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
       </p>
       <Link href="/discover">
         <Button className="gap-2">
-          <Compass className="h-4 w-4" />
+          <Compass className="icon-sm" />
           Discover people
         </Button>
       </Link>
@@ -185,7 +185,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
-        <MessageCircle className="h-8 w-8 text-cyan-400" />
+        <MessageCircle className="icon-xl text-cyan-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No conversations</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -193,7 +193,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
       </p>
       <Link href="/connections">
         <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="icon-sm" />
           View connections
         </Button>
       </Link>
@@ -205,7 +205,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
-        <Calendar className={cn('h-8 w-8', STATUS.info.icon)} />
+        <Calendar className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No upcoming events</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -213,7 +213,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
       </p>
       <Link href="/events/create">
         <Button className="gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="icon-sm" />
           Create event
         </Button>
       </Link>
@@ -225,14 +225,14 @@ export function EmptyJobs({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
-        <Briefcase className={cn('h-8 w-8', STATUS.warning.icon)} />
+        <Briefcase className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No jobs posted</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         There are no job listings at the moment. Post a job to find your next team member.
       </p>
       <Button className="gap-2">
-        <Briefcase className="h-4 w-4" />
+        <Briefcase className="icon-sm" />
         Post a job
       </Button>
     </div>
@@ -243,7 +243,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.success.bg)}>
-        <Users className={cn('h-8 w-8', STATUS.success.icon)} />
+        <Users className={cn('icon-xl', STATUS.success.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No groups joined</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -251,7 +251,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
       </p>
       <Link href="/groups">
         <Button className="gap-2">
-          <Search className="h-4 w-4" />
+          <Search className="icon-sm" />
           Browse groups
         </Button>
       </Link>
@@ -263,7 +263,7 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
-        <Bell className={cn('h-8 w-8', STATUS.warning.icon)} />
+        <Bell className={cn('icon-xl', STATUS.warning.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
       <p className="text-sm text-muted-foreground max-w-sm">
@@ -277,7 +277,7 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
-        <Search className="h-8 w-8 text-muted-foreground" />
+        <Search className="icon-xl text-muted-foreground" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -296,7 +296,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.info.bg)}>
-        <BookOpen className={cn('h-8 w-8', STATUS.info.icon)} />
+        <BookOpen className={cn('icon-xl', STATUS.info.icon)} />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No resources yet</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -310,14 +310,14 @@ export function EmptyMarketplace({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
-        <ShoppingBag className="h-8 w-8 text-pink-400" />
+        <ShoppingBag className="icon-xl text-pink-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No services listed</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         The marketplace is empty. Be the first to offer your services to the community.
       </p>
       <Button className="gap-2">
-        <ShoppingBag className="h-4 w-4" />
+        <ShoppingBag className="icon-sm" />
         List a service
       </Button>
     </div>
@@ -328,7 +328,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
-        <Users className="h-8 w-8 text-cyan-400" />
+        <Users className="icon-xl text-cyan-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No sessions booked</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -336,7 +336,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
       </p>
       <Link href="/mentoring">
         <Button className="gap-2">
-          <Search className="h-4 w-4" />
+          <Search className="icon-sm" />
           Find mentors
         </Button>
       </Link>
@@ -366,7 +366,7 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
       action={(
         <Button asChild>
           <Link href="/org/programs/new">
-            <Plus className="mr-1.5 h-4 w-4" /> Create program
+            <Plus className="mr-1.5 icon-sm" /> Create program
           </Link>
         </Button>
       )}
@@ -385,7 +385,7 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className }: Fi
       description="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days."
       action={(
         <Button>
-          <Plus className="mr-1.5 h-4 w-4" /> Create cohort
+          <Plus className="mr-1.5 icon-sm" /> Create cohort
         </Button>
       )}
       className={className}
@@ -421,7 +421,7 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className }: Fi
       description="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what."
       action={(
         <Button>
-          <UserPlus className="mr-1.5 h-4 w-4" /> Invite member
+          <UserPlus className="mr-1.5 icon-sm" /> Invite member
         </Button>
       )}
       className={className}
@@ -440,7 +440,7 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
       action={(
         <Button asChild>
           <Link href="/org/mentors/invite">
-            <Plus className="mr-1.5 h-4 w-4" /> Invite mentor
+            <Plus className="mr-1.5 icon-sm" /> Invite mentor
           </Link>
         </Button>
       )}
@@ -464,7 +464,7 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className }: F
       description="Startups accepted into a program appear here. You can also import existing portfolio companies."
       action={(
         <Button>
-          <Plus className="mr-1.5 h-4 w-4" /> Add startup
+          <Plus className="mr-1.5 icon-sm" /> Add startup
         </Button>
       )}
       className={className}
@@ -483,7 +483,7 @@ export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: Fil
       action={(
         <Button asChild>
           <Link href="/events/create">
-            <Plus className="mr-1.5 h-4 w-4" /> Create event
+            <Plus className="mr-1.5 icon-sm" /> Create event
           </Link>
         </Button>
       )}
@@ -502,7 +502,7 @@ export function EmptyTenantMembers({ filtersActive, onClearFilters, className }:
       description="Invite people via email or share your invitation link. Roles determine access to billing, branding, and admin tools."
       action={(
         <Button>
-          <UserPlus className="mr-1.5 h-4 w-4" /> Invite member
+          <UserPlus className="mr-1.5 icon-sm" /> Invite member
         </Button>
       )}
       className={className}
@@ -520,7 +520,7 @@ export function EmptyTenantPrograms({ filtersActive, onClearFilters, className }
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups."
       action={(
         <Button>
-          <Plus className="mr-1.5 h-4 w-4" /> New program
+          <Plus className="mr-1.5 icon-sm" /> New program
         </Button>
       )}
       className={className}
@@ -538,7 +538,7 @@ export function EmptyTenantWebhooks({ className }: { className?: string }) {
       description="Webhooks push real-time events (signups, payments, applications) to Zapier, Slack, or any HTTPS endpoint. Add one to start receiving events."
       action={(
         <Button size="sm">
-          <Plus className="mr-1.5 h-4 w-4" /> Add webhook
+          <Plus className="mr-1.5 icon-sm" /> Add webhook
         </Button>
       )}
       className={className}
@@ -556,7 +556,7 @@ export function EmptyTenantApiKeys({ className }: { className?: string }) {
       description="API keys grant programmatic access to your workspace. Scope each key to specific permissions and rotate regularly."
       action={(
         <Button size="sm">
-          <Plus className="mr-1.5 h-4 w-4" /> Create API key
+          <Plus className="mr-1.5 icon-sm" /> Create API key
         </Button>
       )}
       className={className}

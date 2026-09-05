@@ -33,7 +33,7 @@ export function PageLoader({ message }: { message?: string }) {
       className="flex min-h-[60vh] items-center justify-center"
     >
       <div className="flex flex-col items-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
+        <Loader2 className="icon-xl animate-spin text-primary-accessible" />
         {message && (
           <p className="text-sm text-muted-foreground">{message}</p>
         )}

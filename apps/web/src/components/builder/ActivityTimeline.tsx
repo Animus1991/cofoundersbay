@@ -126,7 +126,7 @@ export function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <div className={cn('text-center py-8 text-muted-foreground', className)}>
-        <History className="h-8 w-8 mx-auto mb-2 opacity-30" />
+        <History className="icon-xl mx-auto mb-2 opacity-30" />
         <p className="text-sm">No activity yet</p>
       </div>
     );
@@ -143,7 +143,7 @@ export function ActivityTimeline({
           onClick={() => refetch()}
           disabled={isFetching}
         >
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />
+          <RefreshCw className={cn('icon-sm mr-1.5', isFetching && 'animate-spin')} />
           Refresh
         </Button>
       </div>
@@ -174,7 +174,7 @@ export function ActivityTimeline({
                     meta.color,
                   )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
+                  <Icon className="icon-sm" />
                 </div>
 
                 {/* Content */}

@@ -83,10 +83,10 @@ function NoteEditor({
       />
       <div className="flex items-center gap-2">
         <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => onSave(value)} disabled={isSaving}>
-          <Check className="h-3 w-3" /> {isSaving ? 'Saving…' : 'Save'}
+          <Check className="icon-sm" /> {isSaving ? 'Saving…' : 'Save'}
         </Button>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onCancel}>
-          <X className="h-3 w-3 mr-1" /> Cancel
+          <X className="icon-sm mr-1" /> Cancel
         </Button>
       </div>
     </div>
@@ -126,8 +126,8 @@ function ShortlistCard({
         {compareMode && (
           <button onClick={() => onToggleSelect(item.userId)} className="mt-1 shrink-0">
             {isSelected
-              ? <CheckSquare className="h-4 w-4 text-primary-accessible" />
-              : <Square className="h-4 w-4 text-muted-foreground" />}
+              ? <CheckSquare className="icon-sm text-primary-accessible" />
+              : <Square className="icon-sm text-muted-foreground" />}
           </button>
         )}
 
@@ -137,7 +137,7 @@ function ShortlistCard({
             <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="icon-md text-muted-foreground" />
             </div>
           )}
         </Link>
@@ -170,13 +170,13 @@ function ShortlistCard({
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 {profile?.role && (
                   <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                    <Briefcase className="h-3 w-3" />
+                    <Briefcase className="icon-sm" />
                     <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
                   </div>
                 )}
                 {profile?.location && (
                   <div className="flex items-center gap-1 text-2xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="icon-sm" />
                     {profile.location}
                   </div>
                 )}
@@ -186,16 +186,16 @@ function ShortlistCard({
             {/* Actions */}
             <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => setEditingNote((v) => !v)} title="Edit note" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <Edit2 className="h-3.5 w-3.5" />
+                <Edit2 className="icon-sm" />
               </button>
               <Link href={`/messages?to=${item.userId}`} title="Message" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="icon-sm" />
               </Link>
               <Link href={`/profiles/${item.userId}`} title="View profile" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="icon-sm" />
               </Link>
               <button onClick={() => onRemove(item.userId)} title="Remove" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="icon-sm" />
               </button>
             </div>
           </div>
@@ -232,7 +232,7 @@ function ShortlistCard({
           {/* Note */}
           {!editingNote && item.note && (
             <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-muted/50 px-3 py-2">
-              <Tag className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+              <Tag className="mt-0.5 icon-sm shrink-0 text-muted-foreground" />
               <p className="text-xs text-foreground/80 flex-1">{item.note}</p>
             </div>
           )}
@@ -243,13 +243,13 @@ function ShortlistCard({
           {/* Footer */}
           <div className="mt-2 flex items-center justify-between">
             <p className="text-2xs text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock className="icon-sm" />
               Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             <div className="flex items-center gap-1.5">
               <Link href={`/matches/compare?ids=${item.userId}`}>
                 <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground">
-                  <GitMerge className="h-3 w-3" /> Compare
+                  <GitMerge className="icon-sm" /> Compare
                 </Button>
               </Link>
             </div>
@@ -361,7 +361,7 @@ export default function ShortlistPage() {
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
-                  <Icon className="h-4 w-4" />
+                  <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
@@ -377,7 +377,7 @@ export default function ShortlistPage() {
           {/* Search + sort + view */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
                 placeholder="Search saved profiles…"
                 value={searchQuery}
@@ -387,7 +387,7 @@ export default function ShortlistPage() {
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
               <SelectTrigger className="h-9 w-44 text-sm">
-                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <ArrowUpDown className="mr-1.5 icon-sm text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -399,10 +399,10 @@ export default function ShortlistPage() {
             </Select>
             <div className="flex items-center rounded-lg border border-border/60 p-0.5">
               <button onClick={() => setViewMode('list')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <List className="h-4 w-4" />
+                <List className="icon-sm" />
               </button>
               <button onClick={() => setViewMode('grid')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <Grid3X3 className="h-4 w-4" />
+                <Grid3X3 className="icon-sm" />
               </button>
             </div>
             <Button
@@ -411,7 +411,7 @@ export default function ShortlistPage() {
               className="h-9 gap-1.5"
               onClick={() => { setCompareMode((v) => !v); setSelectedIds(new Set()); }}
             >
-              <GitMerge className="h-3.5 w-3.5" />
+              <GitMerge className="icon-sm" />
               {compareMode ? 'Cancel compare' : 'Compare'}
             </Button>
           </div>
@@ -421,7 +421,7 @@ export default function ShortlistPage() {
             <TabsList className="h-auto flex-wrap gap-1 bg-transparent p-0">
               {ROLE_TABS.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger key={value} value={value} className="h-8 gap-1.5 rounded-lg border border-border/60 bg-card px-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
-                  <Icon className="h-3 w-3" />
+                  <Icon className="icon-sm" />
                   {label}
                   {roleCounts[value] !== undefined && (
                     <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-2xs font-semibold">
@@ -442,7 +442,7 @@ export default function ShortlistPage() {
             </p>
             <Link href={`/matches/compare?ids=${Array.from(selectedIds).join(',')}`}>
               <Button size="sm" className="gap-1.5">
-                <GitMerge className="h-3.5 w-3.5" /> Compare now
+                <GitMerge className="icon-sm" /> Compare now
               </Button>
             </Link>
           </div>
@@ -451,7 +451,7 @@ export default function ShortlistPage() {
         {/* Content */}
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
+            <AlertTriangle className="icon-xl text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">Failed to load shortlist.</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </div>

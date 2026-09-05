@@ -495,7 +495,7 @@ export default function OrgAdminPage() {
                   <div key={role} className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn('capitalize border', roleChip(role))}>
-                        {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                        {role === 'owner' && <Crown className="icon-sm mr-1" />}
                         {role}
                       </Badge>
                     </div>

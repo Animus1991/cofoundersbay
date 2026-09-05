@@ -151,7 +151,7 @@ export function ProfileCompleteness({
         {percentage < 100 && (
           <Link href="/profile/edit">
             <Button variant="ghost" size="icon" className="h-7 w-7">
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="icon-sm" />
             </Button>
           </Link>
         )}
@@ -174,7 +174,7 @@ export function ProfileCompleteness({
 
         {percentage >= 100 ? (
           <div className="flex items-center gap-2 rounded-lg border border-status-success-border bg-status-success-bg p-3">
-            <CheckCircle2 className="h-5 w-5 text-status-success shrink-0" />
+            <CheckCircle2 className="icon-md text-status-success shrink-0" />
             <div>
               <p className="text-sm font-medium text-status-success ">
                 Profile Complete!
@@ -188,7 +188,7 @@ export function ProfileCompleteness({
           <>
             {percentage < 50 && (
               <div className="flex items-start gap-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
-                <AlertCircle className="h-5 w-5 text-status-warning shrink-0 mt-0.5" />
+                <AlertCircle className="icon-md text-status-warning shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-status-warning ">
                     Complete your profile
@@ -214,13 +214,13 @@ export function ProfileCompleteness({
                       className="flex items-center gap-2 rounded-lg border border-border/60 p-2.5 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
+                        <Icon className="icon-sm text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         <p className="text-xs text-muted-foreground truncate">{field.description}</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                     </Link>
                   );
                 })}
@@ -240,7 +240,7 @@ export function ProfileCompleteness({
           <Link href="/profile/edit" className="block">
             <Button className="w-full gap-2">
               Complete Your Profile
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="icon-sm" />
             </Button>
           </Link>
         )}

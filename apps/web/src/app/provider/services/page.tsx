@@ -64,16 +64,16 @@ function ServiceCard({ service }: { service: Service }) {
             </p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm">
               <span className="flex items-center gap-1 text-muted-foreground">
-                <DollarSign className="h-4 w-4" />
+                <DollarSign className="icon-sm" />
                 {service.price}
                 {service.priceType === 'hourly' && '/hr'}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <Clock className="h-4 w-4" />
+                <Clock className="icon-sm" />
                 {service.deliveryTime}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <Star className="h-4 w-4 fill-status-warning text-status-warning" />
+                <Star className="icon-sm fill-status-warning text-status-warning" />
                 {service.rating} ({service.reviews})
               </span>
             </div>
@@ -94,20 +94,20 @@ function ServiceCard({ service }: { service: Service }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>
-                  <Edit className="mr-2 h-4 w-4" />
+                  <Edit className="mr-2 icon-sm" />
                   Edit Service
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Eye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 icon-sm" />
                   Preview
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-destructive-accessible">
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-2 icon-sm" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -187,7 +187,7 @@ export default function ProviderServicesPage() {
     <AppShell
       title="My Services"
       description="Manage your service offerings"
-      actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Service</Button>}
+      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
     >
       <div className="space-y-6">
         {!showDemoData && services.length === 0 && (
@@ -195,13 +195,13 @@ export default function ProviderServicesPage() {
             illustration="default"
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
-            action={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Service</Button>}
+            action={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Service</Button>}
           />
         )}
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search services..."
             value={search}

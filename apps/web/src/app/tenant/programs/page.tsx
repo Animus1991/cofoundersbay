@@ -195,7 +195,7 @@ export default function TenantProgramsPage() {
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
       actions={(
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-2 icon-sm" />
           Create Program
         </Button>
       )}
@@ -204,7 +204,7 @@ export default function TenantProgramsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input
             placeholder="Search programs..."
             value={search}

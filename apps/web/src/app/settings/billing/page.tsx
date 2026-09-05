@@ -52,7 +52,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-        <FileText className="h-4 w-4 text-muted-foreground" />
+        <FileText className="icon-sm text-muted-foreground" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -77,7 +77,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           className="shrink-0"
         >
           <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Download className="h-3.5 w-3.5" />
+            <Download className="icon-sm" />
           </Button>
         </a>
       )}
@@ -146,16 +146,16 @@ export default function UserBillingPage() {
   const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
 
   const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="h-4 w-4 text-status-success" />,
-    trialing: <Clock className="h-4 w-4 text-status-info" />,
-    past_due: <AlertTriangle className="h-4 w-4 text-status-warning" />,
-    canceled: <XCircle className="h-4 w-4 text-muted-foreground" />,
-    incomplete: <AlertTriangle className="h-4 w-4 text-status-warning" />,
-    incomplete_expired: <XCircle className="h-4 w-4 text-muted-foreground" />,
-    paused: <Clock className="h-4 w-4 text-muted-foreground" />,
-    unpaid: <AlertTriangle className="h-4 w-4 text-status-danger" />,
+    active: <CheckCircle2 className="icon-sm text-status-success" />,
+    trialing: <Clock className="icon-sm text-status-info" />,
+    past_due: <AlertTriangle className="icon-sm text-status-warning" />,
+    canceled: <XCircle className="icon-sm text-muted-foreground" />,
+    incomplete: <AlertTriangle className="icon-sm text-status-warning" />,
+    incomplete_expired: <XCircle className="icon-sm text-muted-foreground" />,
+    paused: <Clock className="icon-sm text-muted-foreground" />,
+    unpaid: <AlertTriangle className="icon-sm text-status-danger" />,
   };
-  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="h-4 w-4 text-muted-foreground" />;
+  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="icon-sm text-muted-foreground" />;
 
   return (
     <AppShell
@@ -169,7 +169,7 @@ export default function UserBillingPage() {
           <Link href="/pricing">
             <Button variant="outline" size="sm" className="gap-2">
               View plans
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="icon-sm" />
             </Button>
           </Link>
         </div>
@@ -185,14 +185,14 @@ export default function UserBillingPage() {
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
                 <span className="text-sm">Loading subscription…</span>
               </div>
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <PlanIcon className="h-6 w-6 text-primary-accessible" />
+                    <PlanIcon className="icon-lg text-primary-accessible" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -222,7 +222,7 @@ export default function UserBillingPage() {
 
                 {sub.cancelAtPeriodEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertTriangle className="icon-sm shrink-0" />
                     Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
                     Reactivate in the billing portal to continue.
                   </div>
@@ -230,14 +230,14 @@ export default function UserBillingPage() {
 
                 {sub.status === 'trialing' && sub.trialEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-info-bg border border-status-info-border p-3 text-sm text-status-info">
-                    <Clock className="h-4 w-4 shrink-0" />
+                    <Clock className="icon-sm shrink-0" />
                     Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
                   </div>
                 )}
 
                 {sub.status === 'past_due' && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertTriangle className="icon-sm shrink-0" />
                     Payment failed. Please update your payment method to avoid service interruption.
                   </div>
                 )}
@@ -250,14 +250,14 @@ export default function UserBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                    {portalLoading ? <Loader2 className="icon-sm animate-spin" /> : <CreditCard className="icon-sm" />}
                     Manage payment &amp; billing
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="icon-sm" />
                   </Button>
                   {(sub.plan?.name === 'free' || !sub) && (
                     <Link href="/pricing">
                       <Button size="sm" className="gap-2">
-                        <Crown className="h-3.5 w-3.5" />
+                        <Crown className="icon-sm" />
                         Upgrade plan
                       </Button>
                     </Link>
@@ -269,7 +269,7 @@ export default function UserBillingPage() {
                 <p className="text-sm text-muted-foreground">You are on the free plan.</p>
                 <Link href="/pricing">
                   <Button size="sm" className="gap-2">
-                    <Crown className="h-3.5 w-3.5" />
+                    <Crown className="icon-sm" />
                     Upgrade to Pro
                   </Button>
                 </Link>
@@ -290,7 +290,7 @@ export default function UserBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-status-success shrink-0" />
+                      <CheckCircle2 className="icon-sm text-status-success shrink-0" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}
@@ -396,7 +396,7 @@ export default function UserBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                    {savingContact && <Loader2 className="mr-1.5 icon-sm animate-spin" />}
                     Save contact
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -414,12 +414,12 @@ export default function UserBillingPage() {
           <CardContent className="p-0">
             {invoicesLoading ? (
               <div className="flex items-center justify-center p-8 gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" />
                 <span className="text-sm">Loading invoices…</span>
               </div>
             ) : invoices.length === 0 ? (
               <div className="p-8 text-center">
-                <FileText className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" />
                 <p className="text-sm text-muted-foreground">No invoices yet</p>
               </div>
             ) : (

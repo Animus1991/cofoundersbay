@@ -91,14 +91,14 @@ function ActionItem({
       )}
     >
       <div className="flex items-center gap-2.5">
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
         <span className="text-sm font-medium">{label}</span>
       </div>
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums">
           {count}
         </span>
-        <ChevronRight className="h-4 w-4 opacity-50" />
+        <ChevronRight className="icon-sm opacity-50" />
       </div>
     </Link>
   );
@@ -170,14 +170,14 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
         ) : (
-          <Building2 className="h-4 w-4 text-primary-accessible" />
+          <Building2 className="icon-sm text-primary-accessible" />
         )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible transition-colors">{group.name}</p>
         <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 opacity-40" />
+      <ChevronRight className="icon-sm shrink-0 opacity-40" />
     </Link>
   );
 }
@@ -199,9 +199,9 @@ function ActivityRow({
         )}
       >
         {item.type === 'connection' ? (
-          <UserPlus className="h-3.5 w-3.5" />
+          <UserPlus className="icon-sm" />
         ) : (
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="icon-sm" />
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -365,13 +365,13 @@ export function DashboardHome() {
           <div className="flex items-center gap-2">
             <Link href="/matches">
               <Button variant="outline" size="sm" className="gap-2">
-                <Heart className="h-4 w-4" />
+                <Heart className="icon-sm" />
                 View Matches
               </Button>
             </Link>
             <Link href="/discover">
               <Button size="sm" className="gap-2">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="icon-sm" />
                 Explore
               </Button>
             </Link>
@@ -387,7 +387,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary-accessible" />
+                    <Zap className="icon-sm text-primary-accessible" />
                     Priority Actions
                   </h2>
                   {totalActions > 0 && (
@@ -426,7 +426,7 @@ export function DashboardHome() {
                   )}
                   {totalActions === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
-                      <CheckCircle className="h-8 w-8 text-status-success" />
+                      <CheckCircle className="icon-xl text-status-success" />
                       <p className="text-sm text-muted-foreground">All caught up!</p>
                     </div>
                   )}
@@ -462,11 +462,11 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-status-danger" />
+                    <Heart className="icon-sm text-status-danger" />
                     Top Matches
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                    See all <ArrowRight className="h-3 w-3" />
+                    See all <ArrowRight className="icon-sm" />
                   </Link>
                 </div>
                 {matchesLoading ? (
@@ -510,11 +510,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-status-success" />
+                      <GraduationCap className="icon-sm text-status-success" />
                       Mentor Suggestions
                     </h2>
                     <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                      Browse all <ArrowRight className="h-3 w-3" />
+                      Browse all <ArrowRight className="icon-sm" />
                     </Link>
                   </div>
                   <div className="space-y-2">
@@ -532,11 +532,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Users className="h-4 w-4 text-status-info" />
+                      <Users className="icon-sm text-status-info" />
                       My Communities
                     </h2>
                     <Link href="/groups" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                      All groups <ArrowRight className="h-3 w-3" />
+                      All groups <ArrowRight className="icon-sm" />
                     </Link>
                   </div>
                   <div className="space-y-1">
@@ -554,7 +554,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-status-accent" />
+                      <Calendar className="icon-sm text-status-accent" />
                       Upcoming Events
                     </h2>
                     <Link href="/events" className="text-xs text-primary-accessible hover:underline">
@@ -601,7 +601,7 @@ export function DashboardHome() {
                     <Link href="/profile/edit">
                       <Button variant="outline" size="sm" className="w-full gap-2">
                         Complete Profile
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="icon-sm" />
                       </Button>
                     </Link>
                   </div>
@@ -613,7 +613,7 @@ export function DashboardHome() {
             <Card>
               <CardContent className="p-4">
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-status-success" />
+                  <TrendingUp className="icon-sm text-status-success" />
                   Ecosystem Pulse
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -644,7 +644,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Gauge className="h-4 w-4 text-primary-accessible" />
+                      <Gauge className="icon-sm text-primary-accessible" />
                       Milestone Progress
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">Details</Link>
@@ -677,7 +677,7 @@ export function DashboardHome() {
                   </div>
                   <Link href="/readiness">
                     <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
-                      <Target className="h-3.5 w-3.5" />
+                      <Target className="icon-sm" />
                       View Readiness
                     </Button>
                   </Link>
@@ -691,7 +691,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-status-warning" />
+                      <Flag className="icon-sm text-status-warning" />
                       Active Milestones
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">View all</Link>

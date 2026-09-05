@@ -418,7 +418,7 @@ export function BoardTemplatesDialog({
                   style={{ backgroundColor: `${template.color}20` }}
                 >
                   <Icon
-                    className="h-6 w-6"
+                    className="icon-lg"
                     style={{ color: template.color }}
                   />
                 </div>

@@ -122,7 +122,7 @@ export function WhiteboardNode({
         className="flex items-center gap-1.5 px-2 shrink-0 border-b"
         style={{ height: toolbarH, background: '#06B6D410', borderColor: '#06B6D420' }}
       >
-        <Pencil className="w-3.5 h-3.5 shrink-0" style={{ color: '#06B6D4' }} />
+        <Pencil className="icon-sm shrink-0" style={{ color: '#06B6D4' }} />
         <span className="text-2xs font-bold uppercase tracking-wide flex-1" style={{ color: '#06B6D4' }}>
           Whiteboard
         </span>
@@ -132,7 +132,7 @@ export function WhiteboardNode({
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-accessible transition-colors"
             title="Delete node"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="icon-sm" />
           </button>
         )}
       </div>
@@ -146,7 +146,7 @@ export function WhiteboardNode({
         )}
         {!tldraw && !loadError && (
           <div className="flex items-center justify-center h-full gap-2 text-muted-foreground/50">
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="icon-sm animate-spin" />
             <span className="text-2xs">Loading whiteboard…</span>
           </div>
         )}

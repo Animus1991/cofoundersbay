@@ -28,11 +28,11 @@ import {
 type Tab = 'extract' | 'connect' | 'synthesize' | 'questions' | 'chat';
 
 const TABS: { id: Tab; label: string; icon: React.ReactNode; desc: string }[] = [
-  { id: 'extract',    label: 'Extract',    icon: <FileText className="w-3.5 h-3.5" />,     desc: 'Extract nodes from text' },
-  { id: 'connect',    label: 'Connect',    icon: <GitBranch className="w-3.5 h-3.5" />,    desc: 'Suggest connections' },
-  { id: 'synthesize', label: 'Synthesize', icon: <Layers className="w-3.5 h-3.5" />,       desc: 'Synthesize cluster' },
-  { id: 'questions',  label: 'Questions',  icon: <HelpCircle className="w-3.5 h-3.5" />,   desc: 'Generate questions' },
-  { id: 'chat',       label: 'Chat',       icon: <MessageSquare className="w-3.5 h-3.5" />, desc: 'Ask about your board' },
+  { id: 'extract',    label: 'Extract',    icon: <FileText className="icon-sm" />,     desc: 'Extract nodes from text' },
+  { id: 'connect',    label: 'Connect',    icon: <GitBranch className="icon-sm" />,    desc: 'Suggest connections' },
+  { id: 'synthesize', label: 'Synthesize', icon: <Layers className="icon-sm" />,       desc: 'Synthesize cluster' },
+  { id: 'questions',  label: 'Questions',  icon: <HelpCircle className="icon-sm" />,   desc: 'Generate questions' },
+  { id: 'chat',       label: 'Chat',       icon: <MessageSquare className="icon-sm" />, desc: 'Ask about your board' },
 ];
 
 /* ─── Helpers ─── */
@@ -228,14 +228,14 @@ export function AIAnalysisPanel({
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
         <div className="w-6 h-6 rounded-lg bg-purple-400/15 flex items-center justify-center">
-          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <Sparkles className="icon-sm text-purple-400" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-foreground">AI Research Assistant</p>
           <p className="text-2xs text-muted-foreground">Analyze, extract, and synthesize</p>
         </div>
         <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-          <X className="w-3.5 h-3.5" />
+          <X className="icon-sm" />
         </button>
       </div>
 
@@ -264,9 +264,9 @@ export function AIAnalysisPanel({
       {/* Error banner */}
       {errorMsg && (
         <div className="flex-none flex items-start gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/20 text-2xs text-destructive-accessible overflow-hidden">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <AlertCircle className="icon-sm shrink-0 mt-0.5" />
           <span className="flex-1">{errorMsg}</span>
-          <button onClick={() => setErrorMsg(null)} className="shrink-0"><X className="w-3 h-3" /></button>
+          <button onClick={() => setErrorMsg(null)} className="shrink-0"><X className="icon-sm" /></button>
         </div>
       )}
 
@@ -299,7 +299,7 @@ export function AIAnalysisPanel({
                   disabled={loading || extractText.trim().length < 20}
                   className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {loading ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
                   Extract Nodes
                 </button>
               </div>
@@ -363,7 +363,7 @@ export function AIAnalysisPanel({
                     onClick={commitExtracted}
                     className="w-full h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <Plus className="w-3.5 h-3.5" />
+                    <Plus className="icon-sm" />
                     Add {extractedSuggestions.filter((s) => s.accepted !== false).length} nodes to canvas
                   </button>
                 </div>
@@ -403,7 +403,7 @@ export function AIAnalysisPanel({
                 disabled={loading || selectedNodes.length < 2}
                 className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GitBranch className="w-3.5 h-3.5" />}
+                {loading ? <Loader2 className="icon-sm animate-spin" /> : <GitBranch className="icon-sm" />}
                 Analyze {selectedNodes.length > 0 ? `${selectedNodes.length} nodes` : 'selected nodes'}
               </button>
 
@@ -491,14 +491,14 @@ export function AIAnalysisPanel({
                 disabled={loading || selectedNodes.length < 2}
                 className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Layers className="w-3.5 h-3.5" />}
+                {loading ? <Loader2 className="icon-sm animate-spin" /> : <Layers className="icon-sm" />}
                 Synthesize {selectedNodes.length > 0 ? `${selectedNodes.length} nodes` : ''}
               </button>
 
               {synthResult && (
                 <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/5 p-3 space-y-2">
                   <div className="flex items-center gap-1.5">
-                    <Lightbulb className="w-3.5 h-3.5 text-emerald-400" />
+                    <Lightbulb className="icon-sm text-emerald-400" />
                     <p className="text-2xs font-semibold text-emerald-400">Synthesis Result</p>
                   </div>
                   <input
@@ -517,10 +517,10 @@ export function AIAnalysisPanel({
                   </p>
                   <div className="flex items-center gap-2">
                     <button onClick={commitSynthesis} className="flex-1 h-7 rounded-lg bg-emerald-400/15 text-emerald-400 hover:bg-emerald-400/25 text-2xs font-semibold transition-colors flex items-center justify-center gap-1">
-                      <Plus className="w-3 h-3" /> Add to canvas
+                      <Plus className="icon-sm" /> Add to canvas
                     </button>
                     <button onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="icon-sm" />
                     </button>
                   </div>
                 </div>
@@ -555,7 +555,7 @@ export function AIAnalysisPanel({
                   disabled={loading || nodes.length === 0}
                   className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  {loading ? <Loader2 className="icon-sm animate-spin" /> : <RefreshCw className="icon-sm" />}
                   Generate
                 </button>
               </div>
@@ -569,7 +569,7 @@ export function AIAnalysisPanel({
                   {questionSuggestions.map((q) => (
                     <div key={q.id} className="rounded-xl border border-border bg-card p-2.5 space-y-1.5">
                       <div className="flex items-start gap-1.5">
-                        <HelpCircle className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
+                        <HelpCircle className="icon-sm text-purple-400 shrink-0 mt-0.5" />
                         <p className="text-2xs font-medium text-foreground leading-snug flex-1">{q.title}</p>
                         <ConfidenceBadge confidence={q.confidence} />
                       </div>
@@ -578,7 +578,7 @@ export function AIAnalysisPanel({
                         onClick={() => addQuestionToCanvas(q)}
                         className="flex items-center gap-1 text-2xs text-purple-400 hover:text-purple-300 transition-colors"
                       >
-                        <Plus className="w-3 h-3" /> Add to canvas
+                        <Plus className="icon-sm" /> Add to canvas
                       </button>
                     </div>
                   ))}
@@ -621,7 +621,7 @@ export function AIAnalysisPanel({
                   <div key={i} className={cn('rounded-xl p-2.5', msg.role === 'user' ? 'bg-secondary ml-4' : 'bg-purple-400/5 border border-purple-400/20')}>
                     {msg.role === 'assistant' && (
                       <div className="flex items-center gap-1 mb-1">
-                        <Sparkles className="w-3 h-3 text-purple-400" />
+                        <Sparkles className="icon-sm text-purple-400" />
                         <span className="text-2xs font-bold text-purple-400 uppercase tracking-wide">AI Assistant</span>
                       </div>
                     )}
@@ -638,7 +638,7 @@ export function AIAnalysisPanel({
                 ))}
                 {loading && tab === 'chat' && (
                   <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-400/5 border border-purple-400/20">
-                    <Loader2 className="w-3.5 h-3.5 text-purple-400 animate-spin" />
+                    <Loader2 className="icon-sm text-purple-400 animate-spin" />
                     <span className="text-2xs text-purple-400">Thinking…</span>
                   </div>
                 )}
@@ -659,7 +659,7 @@ export function AIAnalysisPanel({
                   disabled={loading || !chatInput.trim()}
                   className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  {loading ? <Loader2 className="icon-sm animate-spin" /> : <ChevronRight className="icon-sm" />}
                 </button>
               </div>
 
@@ -668,7 +668,7 @@ export function AIAnalysisPanel({
                   onClick={() => setChatHistory([])}
                   className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                 >
-                  <Trash2 className="w-3 h-3" /> Clear conversation
+                  <Trash2 className="icon-sm" /> Clear conversation
                 </button>
               )}
             </div>

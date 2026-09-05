@@ -177,7 +177,7 @@ function ReviewDecisionDialog({
                       n <= (rating ?? 0) ? 'text-yellow-400' : 'text-muted-foreground/40',
                     )}
                   >
-                    <Star className="h-5 w-5 fill-current" />
+                    <Star className="icon-md fill-current" />
                   </button>
                 ))}
               </div>
@@ -191,7 +191,7 @@ function ReviewDecisionDialog({
             onClick={handleSubmit}
             disabled={loading || (decision !== 'approved' && !feedback.trim())}
           >
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
             {decisionMeta.buttonLabel}
           </Button>
         </DialogFooter>
@@ -241,7 +241,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
         <SheetContent className="w-full sm:max-w-lg flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <ClipboardCheck className="h-4 w-4 text-primary-accessible" />
+              <ClipboardCheck className="icon-sm text-primary-accessible" />
               Change Proposals
               {openCount > 0 && (
                 <Badge variant="secondary" className="ml-1 bg-status-warning-bg text-status-warning">
@@ -287,7 +287,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <ClipboardCheck className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                <ClipboardCheck className="icon-xl mx-auto mb-2 opacity-30" />
                 <p className="text-sm">
                   {activeFilter === 'open' ? 'No pending proposals' : 'No proposals yet'}
                 </p>
@@ -315,7 +315,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 mb-0.5">
-                          <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <GitBranch className="icon-sm text-muted-foreground shrink-0" />
                           <p className="text-sm font-medium truncate">{proposal.title}</p>
                         </div>
                         {proposal.branch && (
@@ -360,7 +360,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                             setDecisionState({ proposal, decision: 'approved' })
                           }
                         >
-                          <ThumbsUp className="h-3 w-3 mr-1.5" />
+                          <ThumbsUp className="icon-sm mr-1.5" />
                           Approve
                         </Button>
                         <Button
@@ -371,7 +371,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                             setDecisionState({ proposal, decision: 'changes_requested' })
                           }
                         >
-                          <RotateCcw className="h-3 w-3 mr-1.5" />
+                          <RotateCcw className="icon-sm mr-1.5" />
                           Request Changes
                         </Button>
                         <Button
@@ -382,7 +382,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                             setDecisionState({ proposal, decision: 'closed' })
                           }
                         >
-                          <XCircle className="h-3 w-3" />
+                          <XCircle className="icon-sm" />
                         </Button>
                       </div>
                     )}
@@ -390,7 +390,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                     {/* Reviewer count */}
                     {proposal.reviewerIds && proposal.reviewerIds.length > 0 && (
                       <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
-                        <MessageSquare className="h-3 w-3" />
+                        <MessageSquare className="icon-sm" />
                         {proposal.reviewerIds.length} reviewer{proposal.reviewerIds.length > 1 ? 's' : ''} assigned
                       </div>
                     )}

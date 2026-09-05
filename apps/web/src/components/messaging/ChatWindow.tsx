@@ -179,7 +179,7 @@ function MessageBubble({
                 title="Reply"
                 onClick={() => onReply?.(message)}
               >
-                <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+                <Reply className="icon-sm text-muted-foreground" />
               </button>
               <button
                 type="button"
@@ -187,7 +187,7 @@ function MessageBubble({
                 title={copied ? 'Copied!' : 'Copy'}
                 onClick={handleCopy}
               >
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                <Copy className="icon-sm text-muted-foreground" />
               </button>
             </div>
           )}
@@ -216,7 +216,7 @@ function MessageBubble({
                     )}
                     onClick={(e) => { if (!a.url) e.preventDefault(); }}
                   >
-                    <Paperclip className="h-3 w-3 shrink-0" />
+                    <Paperclip className="icon-sm shrink-0" />
                     {a.name}
                   </a>
                 ))}
@@ -241,9 +241,9 @@ function MessageBubble({
           {isOwn && (
             <span className="text-muted-foreground">
               {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
-              {message.status === 'sent' && <Check className="h-3 w-3" />}
-              {message.status === 'delivered' && <CheckCheck className="h-3 w-3" />}
-              {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary-accessible" />}
+              {message.status === 'sent' && <Check className="icon-sm" />}
+              {message.status === 'delivered' && <CheckCheck className="icon-sm" />}
+              {message.status === 'read' && <CheckCheck className="icon-sm text-primary-accessible" />}
             </span>
           )}
         </div>
@@ -367,7 +367,7 @@ export function ChatWindow({
           <div className="flex items-center gap-3">
             {onBack && (
               <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="icon-md" />
               </Button>
             )}
             <Link href={`/profiles/${conversation.recipientId}`} className="flex items-center gap-3">
@@ -415,34 +415,34 @@ export function ChatWindow({
               />
             )}
             <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
-              <Search className="h-4 w-4" />
+              <Search className="icon-sm" />
             </Button>
             <Button variant="ghost" size="icon" disabled title="Voice call (coming soon)">
-              <Phone className="h-5 w-5" />
+              <Phone className="icon-md" />
             </Button>
             <Button variant="ghost" size="icon" disabled title="Video call (coming soon)">
-              <Video className="h-5 w-5" />
+              <Video className="icon-md" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="icon-md" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${conversation.recipientId}`}>
-                    <Info className="h-4 w-4 mr-2" />
+                    <Info className="icon-sm mr-2" />
                     View profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onReport}>
-                  <Flag className="h-4 w-4 mr-2" />
+                  <Flag className="icon-sm mr-2" />
                   Report
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onBlock} className="text-destructive-accessible">
-                  <Ban className="h-4 w-4 mr-2" />
+                  <Ban className="icon-sm mr-2" />
                   Block
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -453,7 +453,7 @@ export function ChatWindow({
         {searchOpen && (
           <div className="px-4 pb-3 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <input
                 autoFocus
                 type="text"
@@ -469,7 +469,7 @@ export function ChatWindow({
               </span>
             )}
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
-              <X className="h-3.5 w-3.5" />
+              <X className="icon-sm" />
             </Button>
           </div>
         )}
@@ -542,7 +542,7 @@ export function ChatWindow({
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
-            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary-accessible" />
+            <Reply className="mt-0.5 icon-sm shrink-0 text-primary-accessible" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-foreground/70">
                 {replyTo.senderId === currentUserId ? 'You' : conversation.recipientName}
@@ -550,7 +550,7 @@ export function ChatWindow({
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
             <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
-              <X className="h-3 w-3" />
+              <X className="icon-sm" />
             </Button>
           </div>
         )}
@@ -562,7 +562,7 @@ export function ChatWindow({
                 key={`${f.name}-${f.size}-${f.lastModified}`}
                 className="flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-1 text-xs text-foreground"
               >
-                <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                <Paperclip className="icon-sm text-muted-foreground" />
                 <span className="max-w-[220px] truncate">{f.name}</span>
                 <button
                   type="button"
@@ -573,7 +573,7 @@ export function ChatWindow({
                     )
                   }
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="icon-sm" />
                 </button>
               </div>
             ))}
@@ -599,7 +599,7 @@ export function ChatWindow({
             className="flex-shrink-0"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="icon-md" />
           </Button>
           <div className="flex-1 relative">
             <Textarea
@@ -615,7 +615,7 @@ export function ChatWindow({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <Smile className="h-4 w-4" />
+                    <Smile className="icon-sm" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="p-2 w-auto">
@@ -644,7 +644,7 @@ export function ChatWindow({
             disabled={!inputValue.trim()}
             className="flex-shrink-0"
           >
-            <Send className="h-5 w-5" />
+            <Send className="icon-md" />
           </Button>
         </div>
       </div>
@@ -675,14 +675,14 @@ export function NoChatSelected() {
           href="/discover"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary-accessible hover:bg-primary/20 transition-colors"
         >
-          <Users className="h-4 w-4" />
+          <Users className="icon-sm" />
           Find people to message
         </a>
         <a
           href="/connections"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
         >
-          <UserCheck className="h-4 w-4" />
+          <UserCheck className="icon-sm" />
           View connections
         </a>
       </div>

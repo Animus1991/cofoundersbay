@@ -53,7 +53,7 @@ function NotifIcon({ type }: { type: string }) {
   const color = TYPE_COLOR[type] ?? 'bg-secondary text-muted-foreground';
   return (
     <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-full', color)}>
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="icon-sm" />
     </div>
   );
 }
@@ -145,7 +145,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           className={cn('relative', className)}
           aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
         >
-          <Bell className={cn('h-5 w-5', hasNew && 'animate-pulse')} />
+          <Bell className={cn('icon-md', hasNew && 'animate-pulse')} />
           {unread > 0 && (
             <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground ring-2 ring-background">
               {unread > 9 ? '9+' : unread}
@@ -181,7 +181,7 @@ export function NotificationsBell({ className }: { className?: string }) {
               }
             }}
           >
-            <CheckCheck className="h-3.5 w-3.5" />
+            <CheckCheck className="icon-sm" />
             Mark all read
           </Button>
         </div>
@@ -191,7 +191,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           {items.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
-                <Bell className="h-5 w-5 text-muted-foreground" />
+                <Bell className="icon-md text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">
                 {loading ? 'Loading...' : "You're all caught up!"}

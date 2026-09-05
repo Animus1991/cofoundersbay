@@ -37,10 +37,10 @@ function Section({
         className="w-full flex items-center justify-between px-5 py-3.5 bg-muted hover:bg-muted transition-colors text-left"
       >
         <div className="flex items-center gap-2 font-semibold text-sm text-foreground">
-          <Icon className="w-4 h-4" />
+          <Icon className="icon-sm" />
           {title}
         </div>
-        {open ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        {open ? <ChevronUp className="icon-sm text-muted-foreground" /> : <ChevronDown className="icon-sm text-muted-foreground" />}
       </button>
       {open && <div className="p-5 bg-white">{children}</div>}
     </div>
@@ -113,7 +113,7 @@ export function ScoreInspector() {
       {/* Search bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <input
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
@@ -169,14 +169,14 @@ export function ScoreInspector() {
 
             {/* Human summary */}
             <div className="mt-4 bg-status-accent-bg rounded-lg px-4 py-3 text-sm text-status-accent">
-              <Shield className="inline w-3.5 h-3.5 mr-1 opacity-70" />
+              <Shield className="inline icon-sm mr-1 opacity-70" />
               {report.humanSummary}
             </div>
 
             {/* Suppression warning */}
             {report.suppressedUntil && (
               <div className="mt-3 bg-status-danger-bg border border-status-danger-border rounded-lg px-4 py-2.5 text-sm text-status-danger flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <AlertTriangle className="icon-sm shrink-0" />
                 Burst suppression active until{' '}
                 <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString()}</span>
               </div>
@@ -185,7 +185,7 @@ export function ScoreInspector() {
             {/* Open flags warning */}
             {pendingFlags.length > 0 && (
               <div className="mt-3 bg-status-warning-bg border border-status-warning-border rounded-lg px-4 py-2.5 text-sm text-status-warning flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <AlertTriangle className="icon-sm shrink-0" />
                 {pendingFlags.length} open abuse flag{pendingFlags.length > 1 ? 's' : ''} pending review
               </div>
             )}
@@ -264,7 +264,7 @@ export function ScoreInspector() {
                     key={b.badgeId}
                     className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-1.5 text-sm"
                   >
-                    <Award className="w-3.5 h-3.5 text-status-warning" />
+                    <Award className="icon-sm text-status-warning" />
                     <span className="font-medium text-foreground">{b.name}</span>
                     <span className="text-xs text-muted-foreground">· {b.category}</span>
                     {!b.seen && (

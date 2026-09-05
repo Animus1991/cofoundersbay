@@ -59,7 +59,7 @@ export function MobileNav() {
           aria-label="Open navigation"
           aria-expanded={mobileNavOpen}
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="icon-md" />
         </Button>
       </SheetTrigger>
       <SheetContent
@@ -122,7 +122,7 @@ export function MobileNav() {
                             : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                         )}
                       >
-                        <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary-accessible')} />
+                        <Icon className={cn('icon-sm shrink-0', active && 'text-primary-accessible')} />
                         <span className="truncate">{label}</span>
                         {badge > 0 && (
                           <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
@@ -145,14 +145,14 @@ export function MobileNav() {
                 href="/profile"
                 className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
-                <User className="h-5 w-5" />
+                <User className="icon-md" />
                 My Profile
               </OptimizedLink>
               <OptimizedLink
                 href="/settings"
                 className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="icon-md" />
                 Settings
               </OptimizedLink>
               <button
@@ -160,7 +160,7 @@ export function MobileNav() {
                 onClick={handleLogout}
                 className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-destructive-accessible hover:bg-destructive/10"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="icon-md" />
                 Sign out
               </button>
             </>

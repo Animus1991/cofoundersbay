@@ -284,7 +284,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                 <p className="text-xs text-muted-foreground">complete</p>
               </div>
               <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
-                <Globe className="h-3.5 w-3.5" />Share Room
+                <Globe className="icon-sm" />Share Room
               </Button>
             </div>
           </div>
@@ -331,11 +331,11 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className={cn('flex items-center gap-1 text-xs font-medium', STATUS[cfg.tone].text)}>
-                    <StatusIcon className="h-3.5 w-3.5" />{cfg.label}
+                    <StatusIcon className="icon-sm" />{cfg.label}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Upload className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Download className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Upload className="icon-sm" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Download className="icon-sm" /></Button>
                   </div>
                 </div>
               </CardContent>
@@ -364,7 +364,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="font-semibold text-sm">{lead.name}</p>
-                  {lead.isVerified && <BadgeCheck className={cn('h-3.5 w-3.5', STATUS.info.icon)} />}
+                  {lead.isVerified && <BadgeCheck className={cn('icon-sm', STATUS.info.icon)} />}
                 </div>
                 <p className="text-xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
                 {lead.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.notes}</p>}
@@ -379,8 +379,8 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
                   {cfg.label}
                 </Badge>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><MessageCircle className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><MessageCircle className="icon-sm" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="icon-sm" /></Button>
                 </div>
               </div>
             </CardContent>
@@ -452,11 +452,11 @@ export default function FundraisingPage() {
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" asChild>
                 <Link href="/investors">
-                  <Users className="h-3.5 w-3.5" /><BilingualText en="Find Investors" el="Εύρεση επενδυτών" compact />
+                  <Users className="icon-sm" /><BilingualText en="Find Investors" el="Εύρεση επενδυτών" compact />
                 </Link>
               </Button>
               <Button size="sm" className="h-8 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" /><BilingualText en="Add Lead" el="Προσθήκη επαφής" compact />
+                <Plus className="icon-sm" /><BilingualText en="Add Lead" el="Προσθήκη επαφής" compact />
               </Button>
             </div>
           </div>

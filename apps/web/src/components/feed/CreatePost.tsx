@@ -108,7 +108,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5 text-primary-accessible" />
+              <Send className="icon-md text-primary-accessible" />
               Create Post
             </DialogTitle>
           </DialogHeader>
@@ -160,7 +160,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Hash className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Add tags (press Enter)"
@@ -185,7 +185,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
                     <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
-                      <X className="h-3 w-3" />
+                      <X className="icon-sm" />
                     </button>
                   </Badge>
                 ))}
@@ -200,10 +200,10 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 <Image className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <Link2 className="h-4 w-4" />
+                <Link2 className="icon-sm" />
               </Button>
               <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
-                <AtSign className="h-4 w-4" />
+                <AtSign className="icon-sm" />
               </Button>
             </div>
             <div className="flex items-center gap-2">

@@ -121,7 +121,7 @@ function ExperimentCard({
                 : 'bg-green-50 text-green-700 hover:bg-green-100'
             }`}
           >
-            {exp.active ? <Square className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            {exp.active ? <Square className="icon-sm" /> : <Play className="icon-sm" />}
             {exp.active ? 'Stop' : 'Start'}
           </button>
           <button
@@ -131,11 +131,11 @@ function ExperimentCard({
             }}
             className="text-xs flex items-center gap-1 text-muted-foreground hover:text-muted-foreground px-2"
           >
-            <BarChart2 className="w-3.5 h-3.5" />
-            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            <BarChart2 className="icon-sm" />
+            {expanded ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
           </button>
           <button onClick={del} className="text-muted-foreground hover:text-status-danger">
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="icon-sm" />
           </button>
         </div>
       </div>
@@ -144,7 +144,7 @@ function ExperimentCard({
         <div className="border-t border-border px-5 py-4 bg-muted">
           {metricsLoading ? (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <RefreshCw className="w-4 h-4 animate-spin" /> Loading metrics…
+              <RefreshCw className="icon-sm animate-spin" /> Loading metrics…
             </div>
           ) : metrics ? (
             <div className="space-y-4">
@@ -358,7 +358,7 @@ function ConfigEditor() {
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <button onClick={load} className="text-muted-foreground hover:text-status-accent">
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         <button
@@ -366,18 +366,18 @@ function ConfigEditor() {
           disabled={seedLoading}
           className="text-xs flex items-center gap-1.5 border border-dashed border-status-accent-border text-status-accent px-3 py-1.5 rounded-lg hover:bg-status-accent-bg"
         >
-          <Settings className="w-3.5 h-3.5" />
+          <Settings className="icon-sm" />
           {seedLoading ? 'Seeding…' : 'Seed Defaults'}
         </button>
       </div>
 
       {loading && configs.length === 0 ? (
         <div className="flex items-center justify-center h-32 text-muted-foreground">
-          <RefreshCw className="w-4 h-4 animate-spin mr-2" /> Loading…
+          <RefreshCw className="icon-sm animate-spin mr-2" /> Loading…
         </div>
       ) : configs.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-          <Settings className="w-8 h-8 mb-2 opacity-30" />
+          <Settings className="icon-xl mb-2 opacity-30" />
           <p className="text-sm">No config keys found. Seed defaults to get started.</p>
         </div>
       ) : (
@@ -411,7 +411,7 @@ function ConfigEditor() {
                   onClick={() => void save(cfg)}
                   className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-status-accent-bg text-status-accent rounded-lg hover:bg-status-accent-bg disabled:opacity-50"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="icon-sm" />
                   {saving === cfg.key ? 'Saving…' : 'Save'}
                 </button>
               </div>
@@ -474,7 +474,7 @@ export function ExperimentationPanel() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <Icon className="w-4 h-4" /> {label}
+            <Icon className="icon-sm" /> {label}
           </button>
         ))}
       </div>
@@ -488,20 +488,20 @@ export function ExperimentationPanel() {
                 onClick={loadExperiments}
                 className="text-muted-foreground hover:text-status-accent"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} />
               </button>
               <button
                 onClick={() => setShowCreate(true)}
                 className="flex items-center gap-1.5 text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                <Plus className="w-4 h-4" /> New Experiment
+                <Plus className="icon-sm" /> New Experiment
               </button>
             </div>
           </div>
 
           {loading && experiments.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
-              <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading…
+              <RefreshCw className="icon-md animate-spin mr-2" /> Loading…
             </div>
           ) : experiments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-muted-foreground border-2 border-dashed border-border rounded-xl">

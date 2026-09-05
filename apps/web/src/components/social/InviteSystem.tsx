@@ -106,7 +106,7 @@ export function InviteSystem() {
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">
-              <Gift className="h-6 w-6 text-primary-accessible" />
+              <Gift className="icon-lg text-primary-accessible" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Invite Friends & Earn Rewards</h2>
@@ -136,11 +136,11 @@ export function InviteSystem() {
       <Tabs defaultValue="email">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="email">
-            <Mail className="h-4 w-4 mr-2" />
+            <Mail className="icon-sm mr-2" />
             Email Invite
           </TabsTrigger>
           <TabsTrigger value="link">
-            <Share2 className="h-4 w-4 mr-2" />
+            <Share2 className="icon-sm mr-2" />
             Share Link
           </TabsTrigger>
         </TabsList>
@@ -167,7 +167,7 @@ export function InviteSystem() {
                       type="submit"
                       disabled={sendInviteMutation.isPending || !email}
                     >
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="icon-sm mr-2" />
                       Send
                     </Button>
                   </div>
@@ -196,7 +196,7 @@ export function InviteSystem() {
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-full bg-secondary">
-                          <Mail className="h-4 w-4" />
+                          <Mail className="icon-sm" />
                         </div>
                         <div>
                           <p className="font-medium">{invite.email}</p>
@@ -246,12 +246,12 @@ export function InviteSystem() {
                   <Button onClick={handleCopyLink} variant="outline">
                     {copied ? (
                       <>
-                        <Check className="h-4 w-4 mr-2 text-status-success" />
+                        <Check className="icon-sm mr-2 text-status-success" />
                         Copied!
                       </>
                     ) : (
                       <>
-                        <Copy className="h-4 w-4 mr-2" />
+                        <Copy className="icon-sm mr-2" />
                         Copy
                       </>
                     )}

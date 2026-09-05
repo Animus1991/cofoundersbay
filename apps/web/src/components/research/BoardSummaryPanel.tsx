@@ -29,7 +29,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType
   return (
     <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border/50">
       <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
-        <Icon className="w-3.5 h-3.5" style={{ color }} />
+        <Icon className="icon-sm" style={{ color }} />
       </div>
       <div className="min-w-0">
         <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">{label}</p>
@@ -54,9 +54,9 @@ function CollapsibleSection({ title, icon: Icon, color, children, defaultOpen = 
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-secondary/30 transition-colors"
       >
-        <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
+        <Icon className="icon-sm shrink-0" style={{ color }} />
         <span className="text-xs font-semibold text-foreground flex-1">{title}</span>
-        {open ? <ChevronDown className="w-3 h-3 text-muted-foreground" /> : <ChevronRight className="w-3 h-3 text-muted-foreground" />}
+        {open ? <ChevronDown className="icon-sm text-muted-foreground" /> : <ChevronRight className="icon-sm text-muted-foreground" />}
       </button>
       {open && <div className="px-3 pb-3 space-y-2">{children}</div>}
     </div>
@@ -157,14 +157,14 @@ export function BoardSummaryPanel({
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
         <div className="w-6 h-6 rounded-lg bg-emerald-400/15 flex items-center justify-center">
-          <BarChart3 className="w-3.5 h-3.5 text-emerald-400" />
+          <BarChart3 className="icon-sm text-emerald-400" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-foreground">Board Summary</p>
           <p className="text-2xs text-muted-foreground truncate">{boardTitle}</p>
         </div>
         <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-          <X className="w-3.5 h-3.5" />
+          <X className="icon-sm" />
         </button>
       </div>
 
@@ -224,7 +224,7 @@ export function BoardSummaryPanel({
           <CollapsibleSection title="AI Analysis" icon={Sparkles} color="#A855F7">
             {!analysis ? (
               <div className="text-center py-3">
-                <Sparkles className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
+                <Sparkles className="icon-xl text-muted-foreground/20 mx-auto mb-2" />
                 <p className="text-2xs text-muted-foreground mb-3">
                   Generate an AI-powered summary of your research board with themes, insights, and gap analysis.
                 </p>
@@ -234,8 +234,8 @@ export function BoardSummaryPanel({
                   className="h-8 px-4 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 mx-auto"
                 >
                   {analyzeMutation.isPending
-                    ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing…</>
-                    : <><Sparkles className="w-3.5 h-3.5" /> Generate Summary</>
+                    ? <><Loader2 className="icon-sm animate-spin" /> Analyzing…</>
+                    : <><Sparkles className="icon-sm" /> Generate Summary</>
                   }
                 </button>
                 {nodes.length === 0 && (
@@ -251,14 +251,14 @@ export function BoardSummaryPanel({
                     disabled={analyzeMutation.isPending}
                     className="h-6 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground text-2xs font-medium transition-colors flex items-center gap-1 disabled:opacity-50"
                   >
-                    <RefreshCw className={cn('w-3 h-3', analyzeMutation.isPending && 'animate-spin')} />
+                    <RefreshCw className={cn('icon-sm', analyzeMutation.isPending && 'animate-spin')} />
                     Regenerate
                   </button>
                   <button
                     onClick={handleCopySummary}
                     className="h-6 px-2 rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground text-2xs font-medium transition-colors flex items-center gap-1"
                   >
-                    {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    {copied ? <Check className="icon-sm text-emerald-400" /> : <Copy className="icon-sm" />}
                     {copied ? 'Copied' : 'Copy'}
                   </button>
                 </div>
@@ -273,7 +273,7 @@ export function BoardSummaryPanel({
                 {analysis.themes.length > 0 && (
                   <div>
                     <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                      <Target className="w-3 h-3 text-blue-400" /> Themes ({analysis.themes.length})
+                      <Target className="icon-sm text-blue-400" /> Themes ({analysis.themes.length})
                     </p>
                     <div className="space-y-1">
                       {analysis.themes.map((theme, i) => (
@@ -290,12 +290,12 @@ export function BoardSummaryPanel({
                 {analysis.insights.length > 0 && (
                   <div>
                     <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3 text-amber-400" /> Key Insights ({analysis.insights.length})
+                      <Lightbulb className="icon-sm text-amber-400" /> Key Insights ({analysis.insights.length})
                     </p>
                     <div className="space-y-1">
                       {analysis.insights.map((insight, i) => (
                         <div key={i} className="flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-400/5 border border-amber-400/20">
-                          <Lightbulb className="w-3 h-3 text-amber-400 mt-0.5 shrink-0" />
+                          <Lightbulb className="icon-sm text-amber-400 mt-0.5 shrink-0" />
                           <span className="text-2xs text-foreground leading-snug">{insight}</span>
                         </div>
                       ))}
@@ -307,12 +307,12 @@ export function BoardSummaryPanel({
                 {analysis.gaps.length > 0 && (
                   <div>
                     <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 text-rose-400" /> Research Gaps ({analysis.gaps.length})
+                      <AlertTriangle className="icon-sm text-rose-400" /> Research Gaps ({analysis.gaps.length})
                     </p>
                     <div className="space-y-1">
                       {analysis.gaps.map((gap, i) => (
                         <div key={i} className="flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg bg-rose-400/5 border border-rose-400/20">
-                          <AlertTriangle className="w-3 h-3 text-rose-400 mt-0.5 shrink-0" />
+                          <AlertTriangle className="icon-sm text-rose-400 mt-0.5 shrink-0" />
                           <span className="text-2xs text-foreground leading-snug">{gap}</span>
                         </div>
                       ))}
@@ -324,7 +324,7 @@ export function BoardSummaryPanel({
                 {analysis.connections.length > 0 && (
                   <div>
                     <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1">
-                      <GitBranch className="w-3 h-3 text-emerald-400" /> Suggested Connections ({analysis.connections.length})
+                      <GitBranch className="icon-sm text-emerald-400" /> Suggested Connections ({analysis.connections.length})
                     </p>
                     <div className="space-y-1">
                       {analysis.connections.map((conn, i) => (
@@ -346,7 +346,7 @@ export function BoardSummaryPanel({
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <p className="text-2xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                        <Tag className="w-3 h-3 text-violet-400" /> Suggested Tags
+                        <Tag className="icon-sm text-violet-400" /> Suggested Tags
                       </p>
                       {onApplyTags && (
                         <button

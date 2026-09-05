@@ -83,7 +83,7 @@ export function AbuseMonitorPanel() {
           <p className="text-sm text-muted-foreground mt-0.5">Review and action detected anti-gaming signals.</p>
         </div>
         <button onClick={load} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent">
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} /> Refresh
         </button>
       </div>
 
@@ -130,16 +130,16 @@ export function AbuseMonitorPanel() {
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-3 border-b border-border flex items-center justify-between">
           <span className="text-sm font-medium text-foreground flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-status-warning" /> {total} flag{total !== 1 ? 's' : ''}
+            <AlertTriangle className="icon-sm text-status-warning" /> {total} flag{total !== 1 ? 's' : ''}
           </span>
         </div>
         {loading ? (
           <div className="flex items-center justify-center h-32 text-muted-foreground">
-            <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading…
+            <RefreshCw className="icon-md animate-spin mr-2" /> Loading…
           </div>
         ) : flags.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-            <Shield className="w-8 h-8 mb-2 opacity-30" />
+            <Shield className="icon-xl mb-2 opacity-30" />
             <p className="text-sm">No flags found.</p>
           </div>
         ) : (
@@ -177,7 +177,7 @@ export function AbuseMonitorPanel() {
                         onClick={() => setOpenAction(openAction === f.id ? null : f.id)}
                         className="flex items-center gap-1 text-xs border border-border rounded-lg px-2.5 py-1.5 hover:bg-muted"
                       >
-                        Action <ChevronDown className="w-3 h-3" />
+                        Action <ChevronDown className="icon-sm" />
                       </button>
                       {openAction === f.id && (
                         <div className="absolute right-0 top-8 z-10 bg-white border border-border rounded-lg shadow-lg min-w-[170px] py-1">
@@ -193,7 +193,7 @@ export function AbuseMonitorPanel() {
                               onClick={() => void resolve(f.id, action, action === 'safe' ? 'dismissed' : 'actioned')}
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
                             >
-                              <Icon className="w-3.5 h-3.5 text-muted-foreground" /> {label}
+                              <Icon className="icon-sm text-muted-foreground" /> {label}
                             </button>
                           ))}
                           <div className="border-t border-border mt-1 pt-1">
@@ -202,7 +202,7 @@ export function AbuseMonitorPanel() {
                               onClick={() => void resolve(f.id, 'safe', 'dismissed')}
                               className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-muted-foreground text-left"
                             >
-                              <XCircle className="w-3.5 h-3.5" /> Dismiss
+                              <XCircle className="icon-sm" /> Dismiss
                             </button>
                           </div>
                         </div>

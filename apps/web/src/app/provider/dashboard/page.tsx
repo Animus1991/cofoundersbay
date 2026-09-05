@@ -105,7 +105,7 @@ function ProjectCard({ project }: { project: Project }) {
       <div className="text-right">
         <p className="text-sm font-medium">{project.progress}%</p>
         <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <Clock className="h-3 w-3" />
+          <Clock className="icon-sm" />
           {project.dueDate}
         </p>
       </div>
@@ -196,7 +196,7 @@ export default function ProviderDashboardPage() {
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/provider/services">
-                <Store className="mr-2 h-4 w-4" />
+                <Store className="mr-2 icon-sm" />
                 Manage Services
               </Link>
             </Button>
@@ -209,7 +209,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <FolderKanban className="h-5 w-5 text-primary-accessible" />
+                  <FolderKanban className="icon-md text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Projects</p>
@@ -222,7 +222,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-info-bg">
-                  <MessageSquare className="h-5 w-5 text-status-info" />
+                  <MessageSquare className="icon-md text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
@@ -235,7 +235,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-success-bg">
-                  <DollarSign className="h-5 w-5 text-status-success" />
+                  <DollarSign className="icon-md text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
@@ -248,7 +248,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-status-warning-bg">
-                  <Star className="h-5 w-5 text-status-warning" />
+                  <Star className="icon-md text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
@@ -267,7 +267,7 @@ export default function ProviderDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/provider/inquiries">
                   View All
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -290,7 +290,7 @@ export default function ProviderDashboardPage() {
                     <span className="font-medium text-sm">{review.client}</span>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-status-warning text-status-warning" />
+                        <Star key={i} className="icon-sm fill-status-warning text-status-warning" />
                       ))}
                     </div>
                   </div>
@@ -311,7 +311,7 @@ export default function ProviderDashboardPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/provider/projects">
                 View All
-                <ChevronRight className="ml-1 h-4 w-4" />
+                <ChevronRight className="ml-1 icon-sm" />
               </Link>
             </Button>
           </CardHeader>

@@ -152,26 +152,26 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="font-semibold text-sm truncate">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-status-info shrink-0" />}
+                {provider.isVerified && <BadgeCheck className="icon-sm text-status-info shrink-0" />}
                 {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
               <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="h-3 w-3 fill-status-warning text-amber-400" />
+                <Star className="icon-sm fill-status-warning text-amber-400" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
               </div>
             </div>
           </div>
           <button onClick={() => setSaved(!saved)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors">
-            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
+            <Bookmark className={cn('icon-sm', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
           </button>
         </div>
 
         {/* Service */}
         <div>
           <div className="flex items-center gap-1.5 mb-1">
-            <CatIcon className={cn('h-3.5 w-3.5 shrink-0', catCfg.color)} />
+            <CatIcon className={cn('icon-sm shrink-0', catCfg.color)} />
             <h3 className="font-semibold text-sm">{provider.title}</h3>
           </div>
           <p className="text-xs text-muted-foreground line-clamp-2">{provider.description}</p>
@@ -189,9 +189,9 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
 
         {/* Meta */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Clock className="h-3 w-3" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="h-3 w-3" />{provider.clientCount} clients</div>
-          <div className="flex items-center gap-1"><MapPin className="h-3 w-3" />{provider.location}</div>
+          <div className="flex items-center gap-1"><Clock className="icon-sm" />{provider.responseTime}</div>
+          <div className="flex items-center gap-1"><Users className="icon-sm" />{provider.clientCount} clients</div>
+          <div className="flex items-center gap-1"><MapPin className="icon-sm" />{provider.location}</div>
           <div className="flex items-center gap-1">
             <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-green-500' : 'bg-gray-400')} />
             {provider.isAvailable ? 'Available' : 'Fully booked'}
@@ -206,7 +206,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-              <MessageCircle className="h-3.5 w-3.5" />Message
+              <MessageCircle className="icon-sm" />Message
             </Button>
             <Button size="sm" className="h-8 text-xs" disabled={!provider.isAvailable}>
               Request
@@ -316,7 +316,7 @@ export default function MarketplacePage() {
               <p className="text-sm text-muted-foreground">List your services and reach 500+ founders on CoFounderBay</p>
             </div>
             <Button size="sm" className="shrink-0">
-              <Plus className="mr-1.5 h-4 w-4" />List Your Service
+              <Plus className="mr-1.5 icon-sm" />List Your Service
             </Button>
           </CardContent>
         </Card>
@@ -327,12 +327,12 @@ export default function MarketplacePage() {
         {/* Search & Sort */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input placeholder="Search services, providers, specialties..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[160px]">
-              <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+              <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -347,7 +347,7 @@ export default function MarketplacePage() {
             className="h-10"
             onClick={() => setAvailableOnly(!availableOnly)}
           >
-            <CheckCircle className="mr-1.5 h-4 w-4" />Available
+            <CheckCircle className="mr-1.5 icon-sm" />Available
           </Button>
         </div>
 
@@ -359,7 +359,7 @@ export default function MarketplacePage() {
               const CatIcon = cfg.icon;
               return (
                 <TabsTrigger key={cat} value={cat} className="gap-1.5 text-xs data-[state=active]:bg-background">
-                  <CatIcon className={cn('h-3.5 w-3.5', cfg.color)} />
+                  <CatIcon className={cn('icon-sm', cfg.color)} />
                   {cfg.label}
                 </TabsTrigger>
               );
@@ -383,7 +383,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary-accessible" />
+                      <TrendingUp className="icon-sm text-primary-accessible" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">

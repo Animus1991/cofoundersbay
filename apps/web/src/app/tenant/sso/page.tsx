@@ -103,7 +103,7 @@ function ProviderCard({
               onClick={() => { if (confirm(`Delete "${provider.providerName}"?`)) onDelete(provider.id); }}
               className="text-muted-foreground hover:text-destructive-accessible transition-colors"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="icon-sm" />
             </button>
           </div>
         </div>
@@ -124,7 +124,7 @@ function DomainRow({
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border">
       <div className="flex items-center gap-3">
-        <Globe className="h-4 w-4 text-muted-foreground" />
+        <Globe className="icon-sm text-muted-foreground" />
         <div>
           <p className="text-sm font-medium">@{mapping.domain}</p>
           <p className="text-xs text-muted-foreground">
@@ -135,7 +135,7 @@ function DomainRow({
       <div className="flex items-center gap-2">
         {mapping.isVerified ? (
           <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
-            <CheckCircle className="mr-1 h-3 w-3" />Verified
+            <CheckCircle className="mr-1 icon-sm" />Verified
           </Badge>
         ) : (
           <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary-accessible hover:underline">
@@ -143,7 +143,7 @@ function DomainRow({
           </button>
         )}
         <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive-accessible transition-colors ml-1">
-          <X className="h-3.5 w-3.5" />
+          <X className="icon-sm" />
         </button>
       </div>
     </div>
@@ -357,7 +357,7 @@ export default function TenantSSOPage() {
         {ssoMode !== 'disabled' && activeProviderCount > 0 ? (
           <Card className="border-status-success-border bg-status-success-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <Shield className="h-5 w-5 text-status-success shrink-0" />
+              <Shield className="icon-md text-status-success shrink-0" />
               <div>
                 <p className="text-sm font-medium">SSO is active</p>
                 <p className="text-xs text-muted-foreground">
@@ -370,7 +370,7 @@ export default function TenantSSOPage() {
         ) : (
           <Card className="border-status-warning-border bg-status-warning-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-status-warning shrink-0" />
+              <AlertCircle className="icon-md text-status-warning shrink-0" />
               <div>
                 <p className="text-sm font-medium">SSO not configured</p>
                 <p className="text-xs text-muted-foreground">Add an identity provider and set SSO mode to enable org sign-on.</p>
@@ -381,7 +381,7 @@ export default function TenantSSOPage() {
 
         {saveError && (
           <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0" />{saveError}
+            <AlertTriangle className="icon-sm shrink-0" />{saveError}
           </div>
         )}
 
@@ -397,7 +397,7 @@ export default function TenantSSOPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">{providers?.length ?? 0} provider{(providers?.length ?? 0) !== 1 ? 's' : ''} configured</p>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="icon-sm" />
                 {showNewProvider ? 'Cancel' : 'Add Provider'}
               </Button>
             </div>
@@ -478,7 +478,7 @@ export default function TenantSSOPage() {
 
                   <div className="flex justify-end">
                     <Button size="sm" onClick={() => createProviderMut.mutate()} disabled={createProviderMut.isPending || !newProvider.providerName} className="gap-2">
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="icon-sm" />
                       {createProviderMut.isPending ? 'Creating…' : 'Create Provider'}
                     </Button>
                   </div>
@@ -490,7 +490,7 @@ export default function TenantSSOPage() {
               <div className="space-y-3">{[1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/50 animate-pulse" />)}</div>
             ) : !providers?.length ? (
               <div className="py-10 text-center text-muted-foreground border border-dashed rounded-xl">
-                <Key className="h-8 w-8 mx-auto mb-2" />
+                <Key className="icon-xl mx-auto mb-2" />
                 <p className="text-sm">No identity providers yet</p>
                 <p className="text-xs mt-1">Click "Add Provider" above to configure OIDC or SAML.</p>
               </div>
@@ -522,7 +522,7 @@ export default function TenantSSOPage() {
                   ] as const).map(([mode, label, Icon, desc]) => (
                     <button key={mode} type="button" onClick={() => setSsoMode(mode as SSOMode)}
                       className={`p-3 rounded-lg border text-left transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50'}`}>
-                      <Icon className={`h-4 w-4 mb-1 ${ssoMode === mode ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
+                      <Icon className={`icon-sm mb-1 ${ssoMode === mode ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
                       <p className={`text-sm font-medium ${ssoMode === mode ? 'text-primary-accessible' : ''}`}>{label}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
                     </button>
@@ -639,7 +639,7 @@ export default function TenantSSOPage() {
                     <label htmlFor="auto-redirect">Auto-redirect</label>
                   </div>
                   <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1.5 shrink-0">
-                    <Plus className="h-3.5 w-3.5" />Add
+                    <Plus className="icon-sm" />Add
                   </Button>
                 </div>
 

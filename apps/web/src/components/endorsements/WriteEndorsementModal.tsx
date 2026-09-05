@@ -91,7 +91,7 @@ export function WriteEndorsementModal({
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-status-warning-bg">
-              <Star className="h-4 w-4 text-status-warning" />
+              <Star className="icon-sm text-status-warning" />
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Write Endorsement</h2>
@@ -101,7 +101,7 @@ export function WriteEndorsementModal({
             </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" />
           </Button>
         </div>
 
@@ -196,9 +196,9 @@ export function WriteEndorsementModal({
             className="gap-2"
           >
             {mutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="icon-sm animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="icon-sm" />
             )}
             {mutation.isPending ? 'Sending…' : 'Send Endorsement'}
           </Button>

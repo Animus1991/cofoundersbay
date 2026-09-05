@@ -58,9 +58,9 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
 
 function CompatBadge({ label }: { label: string }) {
   const icon = label.toLowerCase().includes('vision') ? (
-    <Brain className="h-3.5 w-3.5" />
+    <Brain className="icon-sm" />
   ) : (
-    <Zap className="h-3.5 w-3.5" />
+    <Zap className="icon-sm" />
   );
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded"
@@ -325,7 +325,7 @@ export default function MatchDetailPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Info className="h-8 w-8 text-muted-foreground" />
+          <Info className="icon-xl text-muted-foreground" />
           <p className="text-muted-foreground">Could not load compatibility data.</p>
           <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
         </div>
@@ -346,7 +346,7 @@ export default function MatchDetailPage() {
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="Back"
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <ArrowLeft className="icon-md text-foreground" />
           </button>
           <span className="text-sm font-semibold"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}>
@@ -356,7 +356,7 @@ export default function MatchDetailPage() {
             className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="More options"
           >
-            <MoreVertical className="h-5 w-5 text-foreground" />
+            <MoreVertical className="icon-md text-foreground" />
           </button>
         </div>
 
@@ -478,7 +478,7 @@ export default function MatchDetailPage() {
               <div className="bg-card border border-border rounded-lg p-4 space-y-3">
                 {data.reasons.map(r => (
                   <div key={r} className="flex items-start gap-2.5">
-                    <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#4ADE80' }} />
+                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: '#4ADE80' }} />
                     <span className="text-sm text-muted-foreground leading-relaxed">{r}</span>
                   </div>
                 ))}
@@ -497,12 +497,12 @@ export default function MatchDetailPage() {
             className="gap-1.5 text-sm"
             onClick={handleShortlist}
           >
-            <Bookmark className={`h-4 w-4 ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
+            <Bookmark className={`icon-sm ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
           <Link href={`/messages?to=${targetUserId}`} className="contents">
             <Button variant="outline" className="gap-1.5 text-sm w-full">
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="icon-sm" />
               Message
             </Button>
           </Link>
@@ -512,7 +512,7 @@ export default function MatchDetailPage() {
             onClick={handlePropose}
             disabled={connectMutation.isPending}
           >
-            <Send className="h-4 w-4" />
+            <Send className="icon-sm" />
             Collaborate
           </Button>
         </div>

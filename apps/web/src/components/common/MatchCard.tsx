@@ -172,7 +172,7 @@ function MatchCardInner({
             'h-5 w-5 rounded border-2 flex items-center justify-center transition-colors',
             isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
           )}>
-            {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+            {isSelected && <Check className="icon-sm text-primary-foreground" />}
           </div>
         </button>
       )}
@@ -214,13 +214,13 @@ function MatchCardInner({
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3 shrink-0" />
+                <MapPin className="icon-sm shrink-0" />
                 {location}
               </span>
             )}
             {timezone && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3 shrink-0" />
+                <Clock className="icon-sm shrink-0" />
                 {timezone}
               </span>
             )}
@@ -244,9 +244,9 @@ function MatchCardInner({
           onClick={() => setShowReasons(!showReasons)}
           className={cn('mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
         >
-          <Sparkles className="h-3 w-3" />
+          <Sparkles className="icon-sm" />
           {showReasons ? 'Hide reasons' : 'Why this match?'}
-          {showReasons ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {showReasons ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
         </button>
 
         {/* Match reasons (collapsible) */}
@@ -271,7 +271,7 @@ function MatchCardInner({
               onClick={onPass}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
             >
-              <X className="h-4 w-4" />
+              <X className="icon-sm" />
             </button>
           )}
           {onLike && (
@@ -279,7 +279,7 @@ function MatchCardInner({
               onClick={onLike}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-status-accent hover:border-status-accent-border/40 transition-colors"
             >
-              <Heart className="h-4 w-4" />
+              <Heart className="icon-sm" />
             </button>
           )}
           <button
@@ -289,7 +289,7 @@ function MatchCardInner({
               bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
             )}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </button>
 
           <div className="flex-1" />
@@ -303,14 +303,14 @@ function MatchCardInner({
               style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}
               onClick={onBreakdown}
             >
-              <TrendingUp className="h-3.5 w-3.5" />
+              <TrendingUp className="icon-sm" />
               Breakdown
             </Button>
           ) : (
             <Link href={`/matches/${userId}`}>
               <Button size="sm" variant="outline" className={cn('gap-1.5 h-8 text-xs font-medium px-2.5', colors.text)}
                 style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}>
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="icon-sm" />
                 Compatibility
               </Button>
             </Link>
@@ -318,7 +318,7 @@ function MatchCardInner({
 
           {onMessage && (
             <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">
-              <MessageCircle className="h-3.5 w-3.5" />
+              <MessageCircle className="icon-sm" />
               Message
             </Button>
           )}

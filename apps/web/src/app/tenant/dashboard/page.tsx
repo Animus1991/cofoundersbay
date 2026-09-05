@@ -55,7 +55,7 @@ function StatCard({
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
-            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary-accessible')} />
+            <Icon className={cn('icon-md', iconColor ? 'text-white' : 'text-primary-accessible')} />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
@@ -104,10 +104,10 @@ export default function TenantDashboardPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/tenant/branding"><Building2 className="mr-1.5 h-4 w-4" /> Branding</Link>
+            <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" /> Branding</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/tenant/settings"><Settings className="mr-1.5 h-4 w-4" /> Settings</Link>
+            <Link href="/tenant/settings"><Settings className="mr-1.5 icon-sm" /> Settings</Link>
           </Button>
         </div>
       }
@@ -151,7 +151,7 @@ export default function TenantDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/tenant/programs">
                   View All
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  <ChevronRight className="ml-1 icon-sm" />
                 </Link>
               </Button>
             </CardHeader>
@@ -234,7 +234,7 @@ export default function TenantDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm">Upcoming Events</CardTitle>
             <Button variant="ghost" size="sm" className="gap-1.5">
-              <Calendar className="h-3.5 w-3.5" /> Add Event
+              <Calendar className="icon-sm" /> Add Event
             </Button>
           </CardHeader>
           <CardContent>
@@ -242,7 +242,7 @@ export default function TenantDashboardPage() {
               {upcomingEvents.map((event) => (
                 <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="icon-sm text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{event.date}</span>
                   </div>
                   <p className="font-medium text-sm">{event.name}</p>
@@ -263,7 +263,7 @@ export default function TenantDashboardPage() {
           ].map(({ label, icon: Icon, href, color }) => (
             <Button key={label} variant="outline" className="h-auto py-3 flex-col gap-1.5" asChild>
               <Link href={href}>
-                <Icon className={cn('h-5 w-5', color)} />
+                <Icon className={cn('icon-md', color)} />
                 <span className="text-xs">{label}</span>
               </Link>
             </Button>

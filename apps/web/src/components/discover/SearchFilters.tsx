@@ -232,7 +232,7 @@ export function SearchFilters({
               onClick={() => updateFilter('q', '')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
-              <X className="h-4 w-4" />
+              <X className="icon-sm" />
             </button>
           )}
         </div>
@@ -241,7 +241,7 @@ export function SearchFilters({
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" className="gap-2 relative">
-              <Filter className="h-4 w-4" />
+              <Filter className="icon-sm" />
               <span className="hidden sm:inline">Filters</span>
               {activeFiltersCount > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-2xs">
@@ -253,7 +253,7 @@ export function SearchFilters({
           <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary-accessible" />
+                <Filter className="icon-md text-primary-accessible" />
                 Search Filters
               </SheetTitle>
             </SheetHeader>
@@ -263,7 +263,7 @@ export function SearchFilters({
               <AccordionItem value="role">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
+                    <Users className="icon-sm" />
                     Role
                     {filters.role.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.role.length}</Badge>
@@ -283,7 +283,7 @@ export function SearchFilters({
               <AccordionItem value="skills">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="icon-sm" />
                     Skills
                     {filters.skills.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.skills.length}</Badge>
@@ -303,7 +303,7 @@ export function SearchFilters({
               <AccordionItem value="industry">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4" />
+                    <Briefcase className="icon-sm" />
                     Industry
                     {filters.industries.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.industries.length}</Badge>
@@ -323,7 +323,7 @@ export function SearchFilters({
               <AccordionItem value="stage">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4" />
+                    <Target className="icon-sm" />
                     Startup Stage
                     {filters.stage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.stage.length}</Badge>
@@ -343,7 +343,7 @@ export function SearchFilters({
               <AccordionItem value="location">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+                    <MapPin className="icon-sm" />
                     Location
                     {filters.location && <Badge variant="secondary" size="sm">1</Badge>}
                   </div>
@@ -377,7 +377,7 @@ export function SearchFilters({
               <AccordionItem value="availability">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="icon-sm" />
                     Availability
                     {filters.availability.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.availability.length}</Badge>
@@ -397,7 +397,7 @@ export function SearchFilters({
               <AccordionItem value="funding">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
+                    <DollarSign className="icon-sm" />
                     Funding Stage
                     {filters.fundingStage.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.fundingStage.length}</Badge>
@@ -417,7 +417,7 @@ export function SearchFilters({
               <AccordionItem value="languages">
                 <AccordionTrigger className="text-sm">
                   <div className="flex items-center gap-2">
-                    <Languages className="h-4 w-4" />
+                    <Languages className="icon-sm" />
                     Languages
                     {filters.languages.length > 0 && (
                       <Badge variant="secondary" size="sm">{filters.languages.length}</Badge>
@@ -486,7 +486,7 @@ export function SearchFilters({
                 onClick={pill.onRemove}
                 className="ml-1 rounded-full p-0.5 hover:bg-background/50"
               >
-                <X className="h-3 w-3" />
+                <X className="icon-sm" />
               </button>
             </Badge>
           ))}

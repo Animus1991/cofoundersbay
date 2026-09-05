@@ -216,7 +216,7 @@ export default function OrgEventsPage() {
       actions={(
         <Button asChild>
           <Link href="/events/create">
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 icon-sm" />
             Create Event
           </Link>
         </Button>
@@ -248,7 +248,7 @@ export default function OrgEventsPage() {
         {/* Search & Tabs */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
             <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>

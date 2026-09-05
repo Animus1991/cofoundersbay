@@ -148,13 +148,13 @@ export function SmartRecommendations() {
   const getTypeIcon = (type: Recommendation['type']) => {
     switch (type) {
       case 'person':
-        return <Users className="h-4 w-4" />;
+        return <Users className="icon-sm" />;
       case 'opportunity':
-        return <Briefcase className="h-4 w-4" />;
+        return <Briefcase className="icon-sm" />;
       case 'event':
-        return <Calendar className="h-4 w-4" />;
+        return <Calendar className="icon-sm" />;
       case 'group':
-        return <Building className="h-4 w-4" />;
+        return <Building className="icon-sm" />;
     }
   };
 
@@ -177,7 +177,7 @@ export function SmartRecommendations() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Sparkles className="h-8 w-8 text-primary-accessible" />
+            <Sparkles className="icon-xl text-primary-accessible" />
             Smart Recommendations
           </h2>
           <p className="text-muted-foreground">
@@ -193,7 +193,7 @@ export function SmartRecommendations() {
           onClick={() => setActiveCategory('all')}
           className="gap-2"
         >
-          <Target className="h-4 w-4" />
+          <Target className="icon-sm" />
           All Recommendations
         </Button>
         <Button
@@ -201,7 +201,7 @@ export function SmartRecommendations() {
           onClick={() => setActiveCategory('people')}
           className="gap-2"
         >
-          <Users className="h-4 w-4" />
+          <Users className="icon-sm" />
           People
         </Button>
         <Button
@@ -209,7 +209,7 @@ export function SmartRecommendations() {
           onClick={() => setActiveCategory('opportunities')}
           className="gap-2"
         >
-          <Briefcase className="h-4 w-4" />
+          <Briefcase className="icon-sm" />
           Opportunities
         </Button>
         <Button
@@ -217,7 +217,7 @@ export function SmartRecommendations() {
           onClick={() => setActiveCategory('events')}
           className="gap-2"
         >
-          <Calendar className="h-4 w-4" />
+          <Calendar className="icon-sm" />
           Events
         </Button>
       </div>
@@ -229,7 +229,7 @@ export function SmartRecommendations() {
             {/* Match Score Badge */}
             <div className="absolute top-4 right-4 z-10">
               <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary-accessible border-primary/20">
-                <Star className="h-3 w-3 fill-current" />
+                <Star className="icon-sm fill-current" />
                 {rec.matchScore}% Match
               </Badge>
             </div>
@@ -269,7 +269,7 @@ export function SmartRecommendations() {
               {/* Location */}
               {rec.location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
+                  <MapPin className="icon-sm" />
                   {rec.location}
                 </div>
               )}
@@ -299,13 +299,13 @@ export function SmartRecommendations() {
               {/* Match Reasons */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <Zap className="h-4 w-4 text-primary-accessible" />
+                  <Zap className="icon-sm text-primary-accessible" />
                   Why this matches you:
                 </div>
                 <ul className="space-y-1">
                   {rec.matchReasons.slice(0, 3).map((reason, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary-accessible mt-0.5 flex-shrink-0" />
+                      <Check className="icon-sm text-primary-accessible mt-0.5 flex-shrink-0" />
                       <span>{reason}</span>
                     </li>
                   ))}
@@ -318,7 +318,7 @@ export function SmartRecommendations() {
                   onClick={() => handleAccept(rec.id)}
                   className="flex-1 gap-2"
                 >
-                  <Check className="h-4 w-4" />
+                  <Check className="icon-sm" />
                   {rec.type === 'person' ? 'Connect' : 
                    rec.type === 'opportunity' ? 'Apply' : 
                    rec.type === 'event' ? 'Register' : 'Join'}
@@ -328,11 +328,11 @@ export function SmartRecommendations() {
                   onClick={() => handleDismiss(rec.id)}
                   className="gap-2"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" />
                   Dismiss
                 </Button>
                 <Button variant="ghost" size="icon">
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="icon-sm" />
                 </Button>
               </div>
             </CardContent>
@@ -345,7 +345,7 @@ export function SmartRecommendations() {
         <Card className="p-12">
           <div className="flex flex-col items-center justify-center text-center space-y-4">
             <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-              <Sparkles className="h-8 w-8 text-muted-foreground" />
+              <Sparkles className="icon-xl text-muted-foreground" />
             </div>
             <div>
               <h3 className="text-lg font-semibold">No recommendations yet</h3>
@@ -362,7 +362,7 @@ export function SmartRecommendations() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+            <TrendingUp className="icon-md" />
             Recommendation Insights
           </CardTitle>
         </CardHeader>

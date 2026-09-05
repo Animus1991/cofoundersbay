@@ -541,7 +541,7 @@ export default function MessagesPage() {
               <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
                 <TabsList className="w-full">
                   <TabsTrigger value="chats" className="flex-1 gap-1.5">
-                    <MessageSquare className="h-3.5 w-3.5" />
+                    <MessageSquare className="icon-sm" />
                     <BilingualText en="Chats" el="Συνομιλίες" compact />
                     {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
@@ -550,7 +550,7 @@ export default function MessagesPage() {
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="intros" className="flex-1 gap-1.5">
-                    <UserPlus className="h-3.5 w-3.5" />
+                    <UserPlus className="icon-sm" />
                     <BilingualText en="Intros" el="Εισαγωγές" compact />
                     {pendingIntrosCount > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">

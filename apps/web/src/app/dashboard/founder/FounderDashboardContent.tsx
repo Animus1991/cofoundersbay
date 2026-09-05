@@ -157,7 +157,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <span className={cn('text-sm font-bold tabular-nums flex items-center gap-0.5', scoreColor)}>
           <Sparkles className="icon-sm" />{score}%
         </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
     </Link>
   );

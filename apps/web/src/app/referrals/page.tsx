@@ -149,7 +149,7 @@ function ReferralLink({ code }: { code: string }) {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="h-5 w-5 text-primary-accessible" />
+          <Share2 className="icon-md text-primary-accessible" />
           Your Referral Link
         </CardTitle>
         <CardDescription>
@@ -164,22 +164,22 @@ function ReferralLink({ code }: { code: string }) {
             className="font-mono text-sm"
           />
           <Button onClick={copyLink}>
-            <Copy className="h-4 w-4 mr-1" />
+            <Copy className="icon-sm mr-1" />
             Copy
           </Button>
         </div>
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => shareVia('email')}>
-            <Mail className="h-4 w-4 mr-1" />
+            <Mail className="icon-sm mr-1" />
             Email
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('twitter')}>
-            <ExternalLink className="h-4 w-4 mr-1" />
+            <ExternalLink className="icon-sm mr-1" />
             Twitter
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('linkedin')}>
-            <ExternalLink className="h-4 w-4 mr-1" />
+            <ExternalLink className="icon-sm mr-1" />
             LinkedIn
           </Button>
         </div>
@@ -201,14 +201,14 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5 text-primary-accessible" />
+          <Award className="icon-md text-primary-accessible" />
           Your Tier
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
           <div className={cn('rounded-full p-3', currentTier.color.replace('text-', 'bg-').replace('500', '500/10'))}>
-            <CurrentIcon className={cn('h-8 w-8', currentTier.color)} />
+            <CurrentIcon className={cn('icon-xl', currentTier.color)} />
           </div>
           <div>
             <h3 className={cn('text-xl font-bold', currentTier.color)}>{currentTier.name}</h3>
@@ -236,7 +236,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
           <ul className="space-y-1">
             {currentTier.perks.map((perk) => (
               <li key={perk} className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-status-success" />
+                <CheckCircle className="icon-sm text-status-success" />
                 {perk}
               </li>
             ))}
@@ -280,7 +280,7 @@ function ReferralCard({ referral }: { referral: Referral }) {
           </Badge>
         )}
         <Badge className={cn('gap-1', config.color)}>
-          <StatusIcon className="h-3 w-3" />
+          <StatusIcon className="icon-sm" />
           {config.label}
         </Badge>
       </div>
@@ -299,7 +299,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-status-info-bg p-2">
-            <Users className="h-5 w-5 text-status-info" />
+            <Users className="icon-md text-status-info" />
           </div>
           <div>
             <p className="text-xl font-bold">{totalInvited}</p>
@@ -310,7 +310,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-status-success-bg p-2">
-            <CheckCircle className="h-5 w-5 text-status-success" />
+            <CheckCircle className="icon-md text-status-success" />
           </div>
           <div>
             <p className="text-xl font-bold">{signedUp}</p>
@@ -321,7 +321,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-status-accent-bg p-2">
-            <Gift className="h-5 w-5 text-status-accent" />
+            <Gift className="icon-md text-status-accent" />
           </div>
           <div>
             <p className="text-xl font-bold">{rewarded}</p>
@@ -332,7 +332,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-status-warning-bg p-2">
-            <TrendingUp className="h-5 w-5 text-status-warning" />
+            <TrendingUp className="icon-md text-status-warning" />
           </div>
           <div>
             <p className="text-xl font-bold">€{totalEarned}</p>
@@ -418,7 +418,7 @@ export default function ReferralsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary-accessible" />
+                  <Sparkles className="icon-md text-primary-accessible" />
                   How It Works
                 </CardTitle>
               </CardHeader>

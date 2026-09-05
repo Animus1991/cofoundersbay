@@ -142,7 +142,7 @@ export default function OrgMembersPage() {
       description="Invite and manage who can run programs, review applications, and access workspace settings."
       actions={(
         <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
+          <UserPlus className="mr-2 icon-sm" />
           Invite Member
         </Button>
       )}
@@ -168,7 +168,7 @@ export default function OrgMembersPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
           <Input placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 

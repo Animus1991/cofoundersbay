@@ -89,7 +89,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
   if (!content || Object.keys(content).length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
+        <FileText className="icon-xl mx-auto mb-2 opacity-30" />
         <p className="text-sm">No content available in this version.</p>
       </div>
     );
@@ -226,7 +226,7 @@ export default function SharePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary-accessible" />
+          <Loader2 className="icon-xl animate-spin mx-auto mb-3 text-primary-accessible" />
           <p className="text-sm text-muted-foreground">Loading shared document…</p>
         </div>
       </div>
@@ -242,7 +242,7 @@ export default function SharePage() {
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Lock className="h-6 w-6 text-primary-accessible" />
+                <Lock className="icon-lg text-primary-accessible" />
               </div>
             </div>
             <CardTitle>Password Protected</CardTitle>
@@ -273,7 +273,7 @@ export default function SharePage() {
               onClick={handlePasswordSubmit}
               disabled={submittingPassword || !password.trim()}
             >
-              {submittingPassword && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+              {submittingPassword && <Loader2 className="icon-sm mr-2 animate-spin" />}
               View Document
             </Button>
           </CardContent>
@@ -310,7 +310,7 @@ export default function SharePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-primary-accessible shrink-0" />
+              <Rocket className="icon-md text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
             </div>
             {document && (
@@ -324,7 +324,7 @@ export default function SharePage() {
             {linkInfo && <PermissionBadge permission={linkInfo.permissions} />}
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+                <Calendar className="icon-sm" />
                 Expires {new Date(linkInfo.expiresAt).toLocaleDateString()}
               </span>
             )}
@@ -334,7 +334,7 @@ export default function SharePage() {
               onClick={() => window.location.href = '/'}
               className="text-xs"
             >
-              <ExternalLink className="h-3 w-3 mr-1.5" />
+              <ExternalLink className="icon-sm mr-1.5" />
               Sign In
             </Button>
           </div>
@@ -377,7 +377,7 @@ export default function SharePage() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Rocket className="h-4 w-4 text-primary-accessible" />
+                        <Rocket className="icon-sm text-primary-accessible" />
                         <span className="font-medium text-sm">
                           {document.workspace.startupName ?? document.workspace.name}
                         </span>
@@ -394,7 +394,7 @@ export default function SharePage() {
                       )}
                       {document.owner && (
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto">
-                          <User className="h-3 w-3" />
+                          <User className="icon-sm" />
                           {document.owner.displayName}
                         </div>
                       )}
@@ -420,7 +420,7 @@ export default function SharePage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
+                    <FileText className="icon-sm" />
                     Document Content
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
@@ -436,7 +436,7 @@ export default function SharePage() {
             {/* View-only notice */}
             {linkInfo?.permissions === 'view' && (
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted rounded-lg p-3">
-                <Eye className="h-3.5 w-3.5 shrink-0" />
+                <Eye className="icon-sm shrink-0" />
                 You are viewing this document in read-only mode. To collaborate, request full access from the owner.
               </div>
             )}

@@ -147,13 +147,13 @@ export function ActivityFeed() {
                       </span>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="icon-sm" />
                     </Button>
                   </div>
 
                   <div className="flex items-center gap-2 mb-3">
                     <div className={cn('p-1.5 rounded-lg', config.bg)}>
-                      <Icon className={cn('h-4 w-4', config.color)} />
+                      <Icon className={cn('icon-sm', config.color)} />
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {activity.type === 'post' && 'shared a post'}
@@ -210,17 +210,17 @@ export function ActivityFeed() {
                         activity.isLiked && 'text-status-danger'
                       )}
                     >
-                      <Heart className={cn('h-4 w-4 mr-2', activity.isLiked && 'fill-current')} />
+                      <Heart className={cn('icon-sm mr-2', activity.isLiked && 'fill-current')} />
                       {activity.metadata?.stats?.likes || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <MessageSquare className="icon-sm mr-2" />
                       {activity.metadata?.stats?.comments || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="h-4 w-4 mr-2" />
+                      <Share2 className="icon-sm mr-2" />
                       {activity.metadata?.stats?.shares || 0}
                     </Button>
                   </div>

@@ -85,7 +85,7 @@ function NotificationRow({
       }}
     >
       <div className={cn('p-2 rounded-full bg-secondary/40 shrink-0', NOTIFICATION_COLORS[notification.type as keyof typeof NOTIFICATION_COLORS] || NOTIFICATION_COLORS.system)}>
-        <Icon className="h-4 w-4" />
+        <Icon className="icon-sm" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -111,7 +111,7 @@ function NotificationRow({
                   onMarkAsRead(notification.id);
                 }}
               >
-                <Check className="h-3 w-3" />
+                <Check className="icon-sm" />
               </Button>
             )}
             <Button
@@ -123,7 +123,7 @@ function NotificationRow({
                 onDelete(notification.id);
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="icon-sm" />
             </Button>
           </div>
         </div>
@@ -242,7 +242,7 @@ export function NotificationCenter() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="icon-md" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -265,11 +265,11 @@ export function NotificationCenter() {
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={unreadCount === 0}
               >
-                <CheckCheck className="h-4 w-4 mr-1" />
+                <CheckCheck className="icon-sm mr-1" />
                 Mark all read
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-4 w-4" />
+                <Settings className="icon-sm" />
               </Button>
             </div>
           </div>
@@ -295,7 +295,7 @@ export function NotificationCenter() {
                   className="cursor-pointer gap-1"
                   onClick={() => setCategoryFilter(category.value)}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="icon-sm" />
                   {category.label}
                 </Badge>
               );

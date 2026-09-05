@@ -234,18 +234,18 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
               <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
-                <StatusIcon className="h-3 w-3" />
+                <StatusIcon className="icon-sm" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
-                <TypeIcon className="h-3 w-3" />{type.label}
+                <TypeIcon className="icon-sm" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
                 <span className="text-2xs text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" /> €{review.agreedFee}
+                  <DollarSign className="icon-sm" /> €{review.agreedFee}
                 </span>
               )}
               {!review.isPaid && (
@@ -253,7 +253,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               )}
               {review.dueDate && review.status !== 'submitted' && (
                 <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
-                  <Clock className="h-3 w-3" />
+                  <Clock className="icon-sm" />
                   Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
               )}
@@ -287,11 +287,11 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             <div className="mt-3 flex items-center justify-between">
               <div className="flex gap-2">
                 <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                  <MessageCircle className="h-3 w-3" /> Message expert
+                  <MessageCircle className="icon-sm" /> Message expert
                 </Button>
                 {review.status === 'submitted' && (
                   <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                    <ExternalLink className="h-3 w-3" /> View full review
+                    <ExternalLink className="icon-sm" /> View full review
                   </Button>
                 )}
               </div>
@@ -301,7 +301,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
                   {expanded ? 'Collapse' : 'See feedback'}
-                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
+                  <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
                 </button>
               ) : null}
             </div>
@@ -408,19 +408,19 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className={cn('h-3 w-3 fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className={cn('icon-sm fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Turnaround: {expert.responseTime}
+              <Clock className="icon-sm" /> Turnaround: {expert.responseTime}
             </span>
           </div>
 
           <div className="mt-3 flex gap-2">
             <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Plus className="h-3 w-3" /> Request review
+              <Plus className="icon-sm" /> Request review
             </Button>
             <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="h-3 w-3" /> Message
+              <MessageCircle className="icon-sm" /> Message
             </Button>
           </div>
         </div>
@@ -470,7 +470,7 @@ export default function ExpertReviewsPage() {
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', STATUS[tone].bg, STATUS[tone].icon)}>
-                  <Icon className="h-4 w-4" />
+                  <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
@@ -489,7 +489,7 @@ export default function ExpertReviewsPage() {
               <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="h-3.5 w-3.5" /> Request review
+              <Plus className="icon-sm" /> Request review
             </Button>
           </div>
 
@@ -526,7 +526,7 @@ export default function ExpertReviewsPage() {
             {/* Search + domain filter */}
             <div className="flex gap-2 flex-wrap">
               <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                 <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-8 h-9 text-sm" />
               </div>
             </div>
@@ -564,7 +564,7 @@ export default function ExpertReviewsPage() {
 
             {/* CTA for becoming an expert */}
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <Award className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground mb-1">Are you a domain expert?</p>
               <p className="text-xs text-muted-foreground mb-3">Join as an expert reviewer and earn while helping founders.</p>
               <Button variant="outline" size="sm">Apply as expert</Button>
@@ -584,7 +584,7 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary-accessible" />
+                        <BarChart3 className="icon-sm text-primary-accessible" />
                         {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
                       </CardTitle>
                     </CardHeader>
@@ -610,13 +610,13 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className={cn('h-4 w-4', STATUS.warning.icon)} /> Top Recommendations
+                        <Lightbulb className={cn('icon-sm', STATUS.warning.icon)} /> Top Recommendations
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
                         <div key={`${r.id}-${i}`} className={cn('flex gap-2 rounded-lg border px-3 py-2', STATUS.warning.border, STATUS.warning.bg)}>
-                          <AlertTriangle className={cn('h-4 w-4 shrink-0 mt-0.5', STATUS.warning.icon)} />
+                          <AlertTriangle className={cn('icon-sm shrink-0 mt-0.5', STATUS.warning.icon)} />
                           <div>
                             <p className="text-xs font-semibold text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>

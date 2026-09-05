@@ -52,10 +52,10 @@ export function CanvasBranchSelector({
           size="sm"
           className={cn('h-8 gap-1.5 px-2.5 text-xs font-medium', className)}
         >
-          <GitBranch className="h-3.5 w-3.5 text-violet-500" />
+          <GitBranch className="icon-sm text-violet-500" />
           <span className="max-w-[100px] truncate">{label}</span>
-          {isLoading && <Loader2 className="h-3 w-3 animate-spin ml-0.5" />}
-          {!isLoading && <ChevronDown className="h-3 w-3 opacity-50 ml-0.5" />}
+          {isLoading && <Loader2 className="icon-sm animate-spin ml-0.5" />}
+          {!isLoading && <ChevronDown className="icon-sm opacity-50 ml-0.5" />}
         </Button>
       </DropdownMenuTrigger>
 
@@ -71,11 +71,11 @@ export function CanvasBranchSelector({
           onClick={() => { onBranchSelect(null, null); setOpen(false); }}
         >
           <div className="flex items-center gap-2">
-            <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
+            <GitBranch className="icon-sm text-muted-foreground" />
             <span className="text-sm">main</span>
             <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>
           </div>
-          {!activeBranchId && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}
+          {!activeBranchId && <Check className="icon-sm text-primary-accessible shrink-0" />}
         </DropdownMenuItem>
 
         {branches.filter((b) => !b.isDefault).length > 0 && (
@@ -97,16 +97,16 @@ export function CanvasBranchSelector({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {b.status === 'archived' ? (
-                      <Archive className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <Archive className="icon-sm text-muted-foreground shrink-0" />
                     ) : (
-                      <GitBranch className="h-3.5 w-3.5 text-violet-500 shrink-0" />
+                      <GitBranch className="icon-sm text-violet-500 shrink-0" />
                     )}
                     <span className="text-sm truncate">{b.name}</span>
                     {b.status === 'merged' && (
                       <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0 text-status-accent border-status-accent-border">merged</Badge>
                     )}
                   </div>
-                  {activeBranchId === b.id && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}
+                  {activeBranchId === b.id && <Check className="icon-sm text-primary-accessible shrink-0" />}
                 </DropdownMenuItem>
               ))}
           </>
@@ -119,7 +119,7 @@ export function CanvasBranchSelector({
               className="flex items-center gap-2 cursor-pointer text-primary-accessible"
               onClick={() => { setOpen(false); onCreateBranch(); }}
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="icon-sm" />
               <span className="text-sm">New branch…</span>
             </DropdownMenuItem>
           </>
