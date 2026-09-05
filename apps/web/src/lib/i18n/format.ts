@@ -27,3 +27,26 @@ export function bilingualInline(en: string, el?: string | null): string {
 export function fromPair(pair: BilingualPair): { en: string; el: string } {
   return { en: pair.en, el: pair.el };
 }
+
+const DATE_LOCALE: Record<'en' | 'el', string> = { en: 'en-GB', el: 'el-GR' };
+
+/**
+ * Short date in the user's primary language, e.g. "15 Apr" / "15 Απρ".
+ *
+ * The year is appended whenever the date is not in the current year. Omitting it
+ * unconditionally (the previous behaviour) makes a deadline 8 months out
+ * indistinguishable from one 4 months back.
+ */
+export function formatShortDate(
+  value: string | Date,
+  lang: 'en' | 'el' = 'en',
+): string {
+  const date = typeof value === 'string' ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return '';
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleDateString(DATE_LOCALE[lang], {
+    day: 'numeric',
+    month: 'short',
+    ...(sameYear ? {} : { year: 'numeric' }),
+  });
+}

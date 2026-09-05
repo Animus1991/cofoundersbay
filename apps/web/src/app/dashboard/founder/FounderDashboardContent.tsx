@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import {
-  ArrowRight, Briefcase, Calendar, CheckCircle, ChevronRight,
-  FileText, Flag, Lightbulb, MessageCircle, Rocket, Sparkles,
+  ArrowRight, Briefcase, Calendar, ChevronRight,
+  FileText, Flag, MessageCircle, Rocket, Sparkles,
   Target, TrendingUp, UserPlus, Users, Zap, DollarSign, Eye,
-  Award, BrainCircuit, GraduationCap, BarChart3, Clock,
-  BookOpen, Store, Globe, Shield, Gauge, Activity, Star,
+  Award, BrainCircuit, GraduationCap, BarChart3,
+  BookOpen, Store, Globe, Shield, Gauge, Activity,
   CheckCircle2, Circle, AlertCircle,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -31,7 +31,11 @@ import {
   getMyXP,
   type SearchHit,
 } from '@/lib/api';
-import { OnboardingChecklist, buildOnboardingSteps } from '@/components/gamification/OnboardingChecklist';
+import {
+  OnboardingChecklist,
+  buildOnboardingSteps,
+  useOnboardingChecklistDismissed,
+} from '@/components/gamification/OnboardingChecklist';
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -39,6 +43,7 @@ import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
+import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
@@ -48,12 +53,24 @@ function getTimeBasedGreeting(): { en: string; el: string } {
 }
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
+//
+// Dates are derived from "today", not hardcoded. Fixed dates silently rot: the
+// previous literals had all passed, so every demo milestone rendered with the
+// overdue alert icon and every "upcoming" event claimed to be days away while
+// showing a date months in the past.
+
+/** ISO date `offsetDays` from now. */
+function isoInDays(offsetDays: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
 
 const DEMO_MILESTONES = [
-  { id: '1', title: 'Complete MVP v1', status: 'in_progress', progress: 65, dueDate: '2026-04-15', priority: 'high' },
-  { id: '2', title: 'First 100 active users', status: 'in_progress', progress: 23, dueDate: '2026-05-01', priority: 'high' },
-  { id: '3', title: 'Seed funding round', status: 'pending', progress: 10, dueDate: '2026-06-30', priority: 'medium' },
-  { id: '4', title: 'Build founding team', status: 'pending', progress: 0, dueDate: '2026-04-30', priority: 'high' },
+  { id: '1', title: 'Complete MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
+  { id: '2', title: 'First 100 active users', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
+  { id: '3', title: 'Seed funding round', status: 'pending', progress: 10, dueDate: isoInDays(100), priority: 'medium' },
+  { id: '4', title: 'Build founding team', status: 'pending', progress: 0, dueDate: isoInDays(39), priority: 'high' },
 ];
 
 const DEMO_ACTIVITY = [
@@ -62,17 +79,6 @@ const DEMO_ACTIVITY = [
   { id: '3', type: 'message', text: 'New message from Marcus Chen', time: '8h ago', icon: MessageCircle, color: STATUS.info.icon },
   { id: '4', type: 'view', text: 'Your profile was viewed 12 times today', time: '1d ago', icon: Eye, color: STATUS.warning.icon },
 ];
-
-const READINESS_DIM_ICONS: Record<string, { icon: React.ElementType; tone: StatusTone }> = {
-  problemClarity:      { icon: Lightbulb,    tone: 'warning' },
-  solutionClarity:     { icon: Rocket,       tone: 'success' },
-  marketUnderstanding: { icon: Target,       tone: 'info' },
-  productDefinition:   { icon: Briefcase,    tone: 'accent' },
-  teamCompleteness:    { icon: Users,        tone: 'danger' },
-  executionReadiness:  { icon: TrendingUp,   tone: 'warning' },
-  validationScore:     { icon: Award,        tone: 'accent' },
-  artifactCompleteness:{ icon: FileText,     tone: 'success' },
-};
 
 const FUNDRAISING_DEMO = {
   roundName: 'Pre-Seed Round',
@@ -91,12 +97,15 @@ const EVENT_CONFIG: Record<EventType, StatusTone> = {
   pitch: 'success',
 };
 
-const DEMO_EVENTS = [
-  { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, date: '2026-03-26', time: '14:00', daysLeft: 2 },
-  { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, date: '2026-03-28', time: '23:59', daysLeft: 4 },
-  { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, date: '2026-04-02', time: '18:00', daysLeft: 9 },
-  { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, date: '2026-04-10', time: '10:00', daysLeft: 17 },
-];
+// daysLeft is derived from the date so the two can never disagree.
+const DEMO_EVENTS = (
+  [
+    { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
+    { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, time: '23:59', daysLeft: 4 },
+    { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, time: '18:00', daysLeft: 9 },
+    { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, time: '10:00', daysLeft: 17 },
+  ]
+).map((e) => ({ ...e, date: isoInDays(e.daysLeft) }));
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -156,27 +165,49 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
 
 function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
   const isComplete = milestone.status === 'completed';
-  const isOverdue = milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
+  const isOverdue = !!milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
+  const stateLabel = isComplete
+    ? bilingualAria('Completed', 'Ολοκληρωμένο')
+    : isOverdue
+    ? bilingualAria('Overdue', 'Εκπρόθεσμο')
+    : bilingualAria('In progress', 'Σε εξέλιξη');
   return (
     <div className="flex items-center gap-3">
-      <div className={cn('shrink-0 rounded-full p-1.5', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}>
+      <div
+        className={cn('shrink-0 rounded-full p-1.5', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}
+        role="img"
+        aria-label={stateLabel}
+        title={stateLabel}
+      >
         {isComplete
-          ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+          ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-hidden="true" />
           : isOverdue
-          ? <AlertCircle className={cn('icon-sm', STATUS.danger.icon)} />
-          : <Circle className="icon-sm text-primary-accessible" />}
+          ? <AlertCircle className={cn('icon-sm', STATUS.danger.icon)} aria-hidden="true" />
+          : <Circle className="icon-sm text-primary-accessible" aria-hidden="true" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{milestone.title}</p>
-          {milestone.priority === 'high' && <Badge variant="destructive" size="sm" className="shrink-0">High</Badge>}
+          {/* 'warning', not 'destructive': high priority is not an error state, and
+              reserving red for overdue/failure keeps the colour meaningful.
+              The word 'priority' is spelled out — a bare 'High' next to a
+              percentage was ambiguous. */}
+          {milestone.priority === 'high' && (
+            <Badge variant="warning" size="sm" className="shrink-0">
+              <BilingualText en="High priority" el="Υψηλή προτεραιότητα" compact />
+            </Badge>
+          )}
         </div>
         <div className="mt-0.5 flex items-center gap-2">
           <Progress value={milestone.progress} className="h-1.5 flex-1" />
-          <span className="text-xs text-muted-foreground shrink-0 w-8 text-right">{milestone.progress}%</span>
+          <span className="text-xs text-muted-foreground shrink-0 w-9 text-right tabular-nums">{milestone.progress}%</span>
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          Due {new Date(milestone.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+        <p className={cn('text-xs mt-0.5', isOverdue ? STATUS.danger.text : 'text-muted-foreground')}>
+          <BilingualText
+            en={`Due ${formatShortDate(milestone.dueDate, 'en')}`}
+            el={`Λήξη ${formatShortDate(milestone.dueDate, 'el')}`}
+            compact
+          />
         </p>
       </div>
     </div>
@@ -239,6 +270,9 @@ export default function FounderDashboardContent() {
     hasArtifact:     (vrs?.signals?.docCount ?? 0) > 0,
   });
 
+  const checklistDismissed = useOnboardingChecklistDismissed();
+  const checklistDone = onboardingSteps.every((s) => s.done);
+
   const nextAction = deriveNextAction({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
     hasPreferences:  !!((profile?.profile as any)?.lookingFor && ((profile?.profile as any)?.lookingFor as unknown[])?.length > 0),
@@ -284,12 +318,18 @@ export default function FounderDashboardContent() {
     >
       <div className="space-y-6">
 
-        {/* Onboarding Checklist */}
-        <OnboardingChecklist steps={onboardingSteps} userName={displayName} />
+        {/* Getting-started checklist. */}
+        <OnboardingChecklist steps={onboardingSteps} />
 
-        {/* Next Action Banner — only when no pending requests (handled by checklist otherwise) */}
-        {nextAction && <NextActionBanner action={nextAction} />
-        }
+        {/* One "what to do next" prompt at a time.
+            The checklist already names the next incomplete step and links to it,
+            so a NextActionBanner above it was a second copy of the same advice.
+            Once the checklist is finished or dismissed the banner takes over, so
+            the guidance is never lost. `undefined` means localStorage has not
+            been read yet — render nothing rather than flash the banner. */}
+        {nextAction && (checklistDone || checklistDismissed === true) && (
+          <NextActionBanner action={nextAction} />
+        )}
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
@@ -303,69 +343,38 @@ export default function FounderDashboardContent() {
           {/* Main column */}
           <div className="lg:col-span-2 space-y-5">
 
-            {/* Venture Readiness Score */}
-            {vrs && <VentureReadinessCard data={vrs} />}
-
-            {/* Startup Readiness — real dimensions from VRS API */}
+            {/* Readiness — single home.
+                This previously rendered VentureReadinessCard *and* a second
+                "Startup Readiness" card built from the same `vrs` payload: same
+                score, same dimensions, one just showed fewer of them and did not
+                link them. The three navigation actions that were unique to the
+                second card now sit in this card's footer, so nothing is lost. */}
             {vrs && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Gauge className="icon-sm text-primary-accessible" /> <BilingualText en={dashboardEn('startup_readiness')} el={dashboardEl('startup_readiness')} />
-                    </CardTitle>
-                    <Link href="/readiness">
-                      <Button variant="ghost" size="sm">
-                        Full report <ArrowRight className="ml-1 icon-sm" />
-                      </Button>
-                    </Link>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-6 mb-4">
-                    <div className="relative h-20 w-20 shrink-0">
-                      <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90">
-                        <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
-                        <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3"
-                          strokeDasharray={`${(avgReadiness / 100) * 97.4} 97.4`}
-                          className={cn(avgReadiness >= 70 ? 'stroke-status-success' : avgReadiness >= 50 ? 'stroke-status-warning' : 'stroke-status-danger')}
-                          strokeLinecap="round" />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center flex-col">
-                        <span className="text-sm font-bold text-foreground">{avgReadiness}%</span>
-                        <span className="text-xs text-muted-foreground">Ready</span>
-                      </div>
-                    </div>
-                    <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
-                      {vrs.dimensions.slice(0, 6).map((dim) => {
-                        const cfg = READINESS_DIM_ICONS[dim.key] ?? { icon: Activity, tone: 'neutral' as const };
-                        const dimColors = STATUS[cfg.tone];
-                        return (
-                          <div key={dim.key}>
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="text-xs text-muted-foreground truncate">{dim.label}</span>
-                              <span className={cn('text-xs font-semibold', dimColors.icon)}>{dim.score}%</span>
-                            </div>
-                            <Progress value={dim.score} className="h-1" />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Link href="/builder" className="flex-1">
+              <VentureReadinessCard
+                data={vrs}
+                footer={
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <Link href="/readiness" className="w-full">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <FileText className="icon-sm" /> Open Builder
+                        <Gauge className="icon-sm" aria-hidden="true" />
+                        <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
                       </Button>
                     </Link>
-                    <Link href="/expert-reviews" className="flex-1">
+                    <Link href="/builder" className="w-full">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Award className="icon-sm" /> Get Expert Review
+                        <FileText className="icon-sm" aria-hidden="true" />
+                        <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
+                      </Button>
+                    </Link>
+                    <Link href="/expert-reviews" className="w-full">
+                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                        <Award className="icon-sm" aria-hidden="true" />
+                        <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
                       </Button>
                     </Link>
                   </div>
-                </CardContent>
-              </Card>
+                }
+              />
             )}
 
             {/* Fundraising widget */}

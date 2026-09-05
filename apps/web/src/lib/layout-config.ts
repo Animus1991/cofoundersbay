@@ -97,9 +97,11 @@ export const layoutConfig = {
 export type LayoutConfig = typeof layoutConfig;
 
 /** Full-width main column inside AppShell (sidebar offset is on the parent wrapper).
- *  Bottom padding accounts for the safe-area inset above the mobile bottom nav / home indicator. */
+ *  Bottom padding accounts for the safe-area inset above the mobile bottom nav / home indicator.
+ *  On lg+ it reserves room for the floating chat bubble (ChatBubble: 52px button + unread pill,
+ *  anchored bottom-6 right-6) so the last row of content is never hidden behind it. */
 export const appShellMainClasses =
-  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-10';
+  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-28';
 
 /** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
 export const appShellLoadingClasses =
