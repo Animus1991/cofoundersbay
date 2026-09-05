@@ -1,11 +1,11 @@
-{
+﻿{
   "name": "CoFounderBay",
   "short_name": "CoFounderBay",
   "description": "Startup ecosystem networking for founders, mentors, and investors",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
-  "theme_color": "#8b5cf6",
+  "theme_color": "#3a45df",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
