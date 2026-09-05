@@ -88,6 +88,7 @@ export function SideNav() {
         'fixed left-0 top-0 z-40 flex h-full flex-col border-r border-border/60 bg-card/98 backdrop-blur-sm',
         'transition-[width] duration-200 ease-out will-change-[width]',
         'hidden lg:flex',
+        'max-lg:pointer-events-none max-lg:invisible',
         expanded ? 'w-[240px]' : 'w-[68px]',
       )}
       aria-label="Main navigation"
