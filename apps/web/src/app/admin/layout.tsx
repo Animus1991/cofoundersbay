@@ -18,13 +18,14 @@ function AdminSubNav() {
   const pathname = usePathname();
   return (
     <div className="border-b border-border/50 bg-card/60 px-4">
-      <nav className="flex gap-1 overflow-x-auto w-full min-w-0">
+      <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-7xl mx-auto">
         {ADMIN_NAV.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href !== '/admin' && pathname.startsWith(href));
           return (
             <Link
               key={href}
               href={href}
+              aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap',
                 active
@@ -32,7 +33,7 @@ function AdminSubNav() {
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="icon-sm" />
               {label}
             </Link>
           );

@@ -223,18 +223,18 @@ function BuilderPageContent() {
 
         {/* Main Builder Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9">
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
             {BUILDER_TABS.map(tab => {
               const Icon = tab.icon;
               return (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
-                  className="flex items-center gap-1 text-xs"
+                  className="flex min-h-10 shrink-0 items-center gap-1.5 text-xs"
                   title={tab.label}
                 >
                   <Icon className="icon-sm" />
-                  <span className="hidden lg:inline">{tab.label}</span>
+                  <span>{tab.label}</span>
                 </TabsTrigger>
               );
             })}

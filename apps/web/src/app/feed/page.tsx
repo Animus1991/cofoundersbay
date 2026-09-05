@@ -28,6 +28,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -257,8 +258,10 @@ function PostCard({
 
   // Track view when component mounts
   useEffect(() => {
-    if (onView) onView();
-  }, [onView]);
+    onView?.();
+    // Record a view once per post, not whenever the parent callback identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id]);
 
   const initials = post.author.displayName
     .split(' ')
@@ -568,7 +571,11 @@ export default function FeedPage() {
     mutationFn: recordFeedInteraction,
   });
 
-  const posts = feedData?.posts || [];
+  const posts = feedData?.posts?.length
+    ? feedData.posts
+    : isPreviewDemo()
+      ? DEMO_POSTS
+      : [];
 
   const handlePost = (content: string, type: PostType) => {
     // In a real implementation, this would create a new post via API
@@ -728,7 +735,7 @@ export default function FeedPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 hidden lg:block sticky top-6 self-start">
+          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <TrendingTopics topics={trendingData?.topics} />
             <SuggestedConnections />
             

@@ -40,6 +40,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/layout/SidebarContext';
 import { SideNav } from '@/components/layout/SideNav';
+import { TopBar } from '@/components/layout/TopBar';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1187,17 +1189,19 @@ export default function ResearchBoardPage() {
   const showLoading = !mounted || isLoading;
 
   return (
-    <div className="h-screen bg-background overflow-hidden">
+    <div className="h-[100dvh] bg-background overflow-hidden">
       {/* Sidebar */}
       <SideNav />
 
       {/* Main content area - offset by sidebar */}
       <div
         className={cn(
-          'h-screen flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
+          'h-[100dvh] flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
           expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
         )}
       >
+        <TopBar />
+        <MobileBottomNav />
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex-1 flex items-center justify-center">
@@ -1214,9 +1218,10 @@ export default function ResearchBoardPage() {
         )}
 
         {/* Board content */}
-        {!showLoading && board && <>
+        {!showLoading && board && (
+        <div className="flex min-h-0 flex-1 flex-col pb-16 lg:pb-0">
         {/* Toolbar — clean minimal design */}
-        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-4 shrink-0 z-50 gap-3">
+        <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-4 shrink-0 z-50 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
             <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -2090,7 +2095,8 @@ export default function ResearchBoardPage() {
           </div>
         </div>
       )}
-      </>}
+        </div>
+        )}
 
       {/* Canvas Version Panel (Snapshots + Versions + Branches) */}
       <CanvasVersionPanel

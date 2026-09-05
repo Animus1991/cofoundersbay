@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 type DemoDataCtx = {
   showDemoData: boolean;
@@ -24,6 +25,15 @@ export function DemoDataProvider({ children }: { children: ReactNode }) {
   // Read from localStorage after mount to prevent SSR/CSR mismatch
   useEffect(() => {
     setMounted(true);
+    if (isPreviewDemo()) {
+      setShowDemoDataState(true);
+      try {
+        localStorage.setItem(STORAGE_KEY, '1');
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored !== null) {

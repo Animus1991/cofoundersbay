@@ -96,10 +96,11 @@ export const layoutConfig = {
 
 export type LayoutConfig = typeof layoutConfig;
 
-/** Full-width main column inside AppShell (sidebar offset is on the parent wrapper). */
+/** Full-width main column inside AppShell (sidebar offset is on the parent wrapper).
+ *  Bottom padding accounts for the safe-area inset above the mobile bottom nav / home indicator. */
 export const appShellMainClasses =
-  'focus:outline-none flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 pb-24 lg:pb-10';
+  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-10';
 
 /** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
 export const appShellLoadingClasses =
-  'mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 space-y-5';
+  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 space-y-5';

@@ -1,3 +1,5 @@
+import { resolvePreviewApi } from '@/lib/preview-api';
+
 // Returns the API base URL evaluated at call time — not module load time.
 // Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
 import { getApiOrigin } from './api-origin';
@@ -53,14 +55,29 @@ function clearLegacyTokens() {
   // Note: 'user' key is kept as display data, not a security concern
 }
 
+function isPreviewDemoSession() {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('cfb_preview_demo=1') ||
+      document.cookie.includes('cfb_session=preview-demo') ||
+      window.localStorage.getItem('cfb_demo_data') === '1' ||
+      window.location.hostname.endsWith('.trycloudflare.com')
+    );
+  } catch {
+    return false;
+  }
+}
+
 function clearSessionIndicators() {
   if (typeof document === 'undefined') return;
+  if (isPreviewDemoSession()) return;
   document.cookie = 'cfb_session=; Max-Age=0; path=/; SameSite=Lax';
   document.cookie = 'cfb_csrf=; Max-Age=0; path=/; SameSite=Lax';
 }
 
 function broadcastLogout() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== 'undefined' && !isPreviewDemoSession()) {
     window.dispatchEvent(new CustomEvent('cfb:logout'));
   }
 }
@@ -259,6 +276,10 @@ export async function apiRequest<T>(
   init?: RequestInit,
   opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
 ): Promise<T> {
+  if (isPreviewDemoSession()) {
+    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
+  }
+
   const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
 
   const headers = new Headers(init?.headers ?? {});
@@ -350,6 +371,16 @@ export async function logout() {
 
 /** Get current user from HttpOnly cookie session */
 export async function getMe(): Promise<{ user: AuthUser }> {
+  if (isPreviewDemoSession()) {
+    return {
+      user: {
+        id: 'preview-demo-user',
+        email: 'demo@cofounderbay.com',
+        role: 'founder',
+        emailVerified: true,
+      },
+    };
+  }
   return apiRequest<{ user: AuthUser }>(
     '/api/auth/me',
     { method: 'GET' },
@@ -399,6 +430,32 @@ export type OwnProfile = {
 export type PublicProfile = OwnProfile & { email?: string };
 
 export async function getMeProfile(): Promise<{ profile: OwnProfile | null; hasCompletedOnboarding: boolean }> {
+  if (isPreviewDemoSession()) {
+    return {
+      hasCompletedOnboarding: true,
+      profile: {
+        id: 'preview-demo-profile',
+        userId: 'preview-demo-user',
+        displayName: 'Alex Demo',
+        headline: 'Founder exploring CoFounderBay',
+        bio: 'This is a preview profile with sample data so you can walk the product without a backend.',
+        location: 'Athens, Greece',
+        timezone: 'Europe/Athens',
+        languages: ['English', 'Greek'],
+        avatarUrl: null,
+        rolePayload: { stage: 'idea', lookingFor: ['cofounder', 'mentor'] },
+        visibilityRules: null,
+        role: 'founder',
+        email: 'demo@cofounderbay.com',
+        skills: [
+          { skillId: 'product', skillName: 'Product', slug: 'product', level: 'advanced' },
+          { skillId: 'growth', skillName: 'Growth', slug: 'growth', level: 'intermediate' },
+        ],
+        createdAt: '2026-01-01T00:00:00.000Z',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      },
+    };
+  }
   return apiRequest('/api/me/profile');
 }
 

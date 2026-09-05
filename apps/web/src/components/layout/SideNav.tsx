@@ -4,9 +4,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSectionsForMode, type NavSection, type SidebarMode } from './nav-modes';
+import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
+import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,39 +22,26 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
-
-type StoredUser = {
-  displayName?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
-} | null;
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { expanded, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
-  const [user, setUser] = useState<StoredUser>(null);
+  const user = useStoredUser();
   const [mounted, setMounted] = useState(false);
-  const [mode, setMode] = useState<SidebarMode>('work');
+  const [mode, setMode] = useSidebarMode();
 
   useEffect(() => {
     setMounted(true);
-    if (typeof window === 'undefined') return;
-    const raw = localStorage.getItem('user');
-    if (!raw) return;
-    try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
-    // Restore saved mode preference
-    const savedMode = localStorage.getItem('cfb:sidebar-mode') as SidebarMode | null;
-    if (savedMode && ['work', 'explore', 'account'].includes(savedMode)) {
-      setMode(savedMode);
-    }
   }, []);
 
   // Redirect to login when session expires
   useEffect(() => {
     const handleLogout = () => {
+      if (isPreviewDemo()) return;
       router.replace('/login');
     };
     window.addEventListener('cfb:logout', handleLogout);
@@ -103,6 +91,7 @@ export function SideNav() {
         'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-hidden border-r border-border/60 bg-card/98 backdrop-blur-sm',
         'transition-[width] duration-200 ease-out will-change-[width]',
         'hidden lg:flex',
+        'max-lg:pointer-events-none max-lg:invisible',
         expanded ? 'w-[240px]' : 'w-[68px]',
       )}
       aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}

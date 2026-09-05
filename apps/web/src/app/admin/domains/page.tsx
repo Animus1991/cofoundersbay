@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AppShell } from '@/components/layout/AppShell';
 import {
   Globe,
   Plus,
@@ -309,13 +310,11 @@ export default function DomainsAdminPage() {
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="text-xl font-bold">Domain Management</h1>
-        <p className="text-muted-foreground mt-1">
-          Configure subdomains and custom domains for each tenant organization.
-        </p>
-      </div>
+    <AppShell
+      title="Domain Management"
+      description="Configure subdomains and custom domains for each tenant organization."
+    >
+      <div className="space-y-6">
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         {/* Tenant selector */}
@@ -333,8 +332,10 @@ export default function DomainsAdminPage() {
                 {tenants.map((t) => (
                   <button
                     key={t.id}
+                    type="button"
                     onClick={() => setSelectedTenantId(t.id)}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors ${
+                    aria-pressed={selectedTenantId === t.id}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-muted/50 transition-colors focus-ring ${
                       selectedTenantId === t.id ? 'bg-primary/5 border-l-2 border-primary' : ''
                     }`}
                   >
@@ -379,6 +380,7 @@ export default function DomainsAdminPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AppShell>
   );
 }

@@ -70,8 +70,8 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="relative">
-        <Moon className="h-5 w-5" />
+      <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Moon className="h-4 w-4" />
       </Button>
     );
   }
@@ -81,8 +81,8 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <CurrentIcon className="h-5 w-5 transition-all" />
+        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+          <CurrentIcon className="h-4 w-4 transition-all" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>

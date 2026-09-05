@@ -58,7 +58,7 @@ export function AppShell({
     primaryLang === 'el' ? commonEl('skip_to_content') : commonEn('skip_to_content');
 
   return (
-    <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
+    <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
       {/* Skip link — first focusable element; lets keyboard users bypass nav (WCAG 2.4.1) */}
       <a
         href="#main-content"
@@ -106,17 +106,14 @@ export function AppShell({
       {/* Main column — offset by sidebar width on lg+ */}
       <div
         className={cn(
-          'flex flex-col overflow-x-clip',
-          fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
+          'flex min-w-0 flex-col',
+          fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
           'transition-[margin-left] duration-200 ease-out',
           (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
-          isDemo && 'pt-9',
         )}
       >
-        {/* Sticky top bar — always rendered once */}
         <MemoTopBar />
 
-        {/* Page body */}
         {fullHeight ? (
           <main
             id="main-content"
@@ -133,7 +130,7 @@ export function AppShell({
           >
             <div className="space-y-5">
               {(pageTitle || pageDescription || actions) && (
-                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
+                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
                   <div>
                     {pageTitle && (
                       <h1 className="text-lg font-semibold tracking-tight text-foreground">
@@ -155,7 +152,6 @@ export function AppShell({
           </main>
         )}
 
-        {/* Mobile bottom nav — hides itself on lg+ via lg:hidden */}
         <MemoMobileBottomNav />
       </div>
     </div>

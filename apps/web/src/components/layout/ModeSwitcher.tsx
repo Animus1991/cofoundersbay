@@ -41,7 +41,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               className={cn(
                 'flex items-center justify-center rounded-md transition-all duration-150 min-w-0 overflow-hidden',
                 expanded
-                  ? 'flex-col gap-0.5 px-1 py-1.5 text-center'
+                  ? 'min-h-10 flex-col gap-0.5 px-1 py-1.5 text-center sm:min-h-0'
                   : 'h-9 w-9',
                 isActive
                   ? 'bg-primary/10 text-primary shadow-sm'
@@ -57,8 +57,8 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
                   el={labelEl}
                   stacked
                   className="w-full max-w-full"
-                  primaryClassName="text-[10px] font-medium leading-tight"
-                  secondaryClassName="text-[8px] leading-tight"
+                  primaryClassName="text-[10px] font-medium leading-tight truncate"
+                  secondaryClassName="text-[8px] leading-tight truncate"
                 />
               )}
             </button>

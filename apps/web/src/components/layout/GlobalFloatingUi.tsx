@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
+import { ComponentErrorBoundary } from '@/components/common/ErrorBoundary';
 
 const ChatBubble = dynamic(
   () => import('@/components/common/ChatBubble').then((mod) => mod.ChatBubble),
@@ -40,8 +41,10 @@ export function GlobalFloatingUi() {
 
   return (
     <>
-      <ChatBubble />
-      <UnifiedChatPopup />
+      <ComponentErrorBoundary>
+        <ChatBubble />
+        <UnifiedChatPopup />
+      </ComponentErrorBoundary>
       <CookieConsent />
     </>
   );

@@ -2,6 +2,7 @@ import { io, type Socket } from 'socket.io-client';
 import type { MessageItem } from './api';
 import { isApiCircuitOpen } from './api';
 import { getSocketOrigin } from './api-origin';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 export type ServerToClientEvents = {
   'message:new': (payload: { message: MessageItem }) => void;
@@ -24,6 +25,18 @@ export type ClientToServerEvents = {
 };
 
 export function createMessagingSocket(accessToken?: string | null): Socket<ServerToClientEvents, ClientToServerEvents> {
+  if (isPreviewDemo()) {
+    const noop = () => undefined;
+    return {
+      on: noop,
+      off: noop,
+      emit: noop,
+      disconnect: noop,
+      connect: noop,
+      connected: false,
+    } as unknown as Socket<ServerToClientEvents, ClientToServerEvents>;
+  }
+
   const circuitOpen = isApiCircuitOpen();
   return io(getSocketOrigin(), {
     auth: accessToken ? { token: accessToken } : undefined,

@@ -3,8 +3,15 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Keyboard } from 'lucide-react';
+import { Eye, EyeOff, Keyboard, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
@@ -13,11 +20,42 @@ import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { useDemoData } from '@/contexts/DemoDataContext';
 
 const CommandPalette = dynamic(
   () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
   { ssr: false },
 );
+
+function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
+  const { showDemoData, toggleDemoData } = useDemoData();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0 md:hidden"
+          aria-label="More tools"
+        >
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={onCommand}>
+          <Keyboard className="mr-2 h-4 w-4" />
+          Command palette
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={toggleDemoData}>
+          {showDemoData ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
+          {showDemoData ? 'Hide sample data' : 'Show sample data'}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function TopBar() {
   const pathname = usePathname();
@@ -28,7 +66,6 @@ export function TopBar() {
     setReady(true);
   }, []);
 
-  // Hide TopBar on auth pages
   const isAuthPage =
     pathname?.startsWith('/login') ||
     pathname?.startsWith('/register') ||
@@ -41,34 +78,30 @@ export function TopBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-card/95 px-4 backdrop-blur-sm sm:px-6">
-        {/* Search */}
-        <div className="flex-1 max-w-sm">
-          <SearchBar />
-        </div>
+      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/60 bg-card/95 px-2 backdrop-blur-sm sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
+        <MobileNav />
+        <SearchBar />
 
-        {/* Cmd palette trigger */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="hidden shrink-0 lg:flex h-8 w-8 text-muted-foreground hover:text-foreground"
-          onClick={() => setCommandOpen(true)}
-          aria-label="Command palette (Ctrl+K)"
-          title="Command palette (Ctrl+K)"
-        >
-          <Keyboard className="h-4 w-4" />
-        </Button>
+        <div className="min-w-0 flex-1" />
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Actions */}
-        <div className="flex items-center gap-1">
-          <DemoDataToggle />
-          <LanguagePreferenceToggle />
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hidden h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:flex"
+            onClick={() => setCommandOpen(true)}
+            aria-label="Command palette"
+            title="Command palette (Ctrl+K)"
+          >
+            <Keyboard className="h-4 w-4" />
+          </Button>
+          <div className="hidden md:flex items-center gap-0.5">
+            <DemoDataToggle />
+            <LanguagePreferenceToggle />
+          </div>
+          <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
           <ThemeSwitcher />
-          <NotificationsBell />
-          <MobileNav />
+          <NotificationsBell className="h-9 w-9" />
           {ready && <UserMenu />}
         </div>
       </header>

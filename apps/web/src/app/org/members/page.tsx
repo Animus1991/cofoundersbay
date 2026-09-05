@@ -82,7 +82,10 @@ function MemberRow({ member }: { member: OrgMember }) {
             <Badge variant="outline" className={cn('text-xs border', STATUS.warning.chip)}>Invited</Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">{member.email}</p>
+        <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
+          {roleCfg.label}{member.department ? ` · ${member.department}` : ''} · {member.lastActive}
+        </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
         <RoleIcon className={cn('icon-sm', roleCfg.tone === 'neutral' && member.role === 'viewer' ? 'text-muted-foreground' : STATUS[roleCfg.tone].icon)} />

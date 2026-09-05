@@ -10,6 +10,7 @@ const PUBLIC_PATHS = new Set([
   '/verify-email',
   '/auth/oauth-callback',
   '/auth/sso-complete',
+  '/demo',
   '/pricing',
   '/terms',
   '/privacy',
@@ -70,9 +71,47 @@ function extractTenantSlugFromHostname(hostname: string): string | null {
   return null; // Custom domains resolved client-side via resolveTenantFromDomain()
 }
 
+function requestPublicOrigin(request: NextRequest): string {
+  const proto = request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol.replace(':', '') ?? 'https';
+  const host =
+    request.headers.get('x-forwarded-host') ??
+    request.headers.get('host') ??
+    request.nextUrl.host;
+  return `${proto}://${host}`;
+}
+
+function isCloudflarePreviewHost(request: NextRequest): boolean {
+  const host = (
+    request.headers.get('x-forwarded-host') ??
+    request.headers.get('host') ??
+    ''
+  )
+    .split(':')[0]
+    .toLowerCase();
+  return host.endsWith('.trycloudflare.com');
+}
+
+function applyPreviewDemoCookies(response: NextResponse, secure: boolean) {
+  const options = {
+    path: '/',
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 24 * 7,
+    secure,
+  };
+  response.cookies.set('cfb_session', 'preview-demo', options);
+  response.cookies.set('cfb_preview_demo', '1', options);
+  response.cookies.set('cfb_primary_role', 'existing_founder', options);
+}
+
+function isSafeInternalPath(value: string | null): value is string {
+  return Boolean(value && value.startsWith('/') && !value.startsWith('//') && !value.startsWith('/login') && !value.startsWith('/register'));
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
+  const publicOrigin = requestPublicOrigin(request);
+  const previewHost = isCloudflarePreviewHost(request);
 
   const response = NextResponse.next();
 
@@ -83,15 +122,31 @@ export function middleware(request: NextRequest) {
     response.headers.set('x-tenant-hostname', hostname.split(':')[0]);
   }
 
+  // Cloudflare Quick Tunnel previews have no reachable API, so keep a demo session
+  // on every request. Otherwise cookie wipes / deep links bounce people to login.
+  if (previewHost) {
+    applyPreviewDemoCookies(response, publicOrigin.startsWith('https:'));
+    if (pathname === '/login' || pathname === '/register') {
+      const redirectTo = request.nextUrl.searchParams.get('redirect');
+      const target = isSafeInternalPath(redirectTo) ? redirectTo : '/dashboard/founder';
+      const bounce = NextResponse.redirect(new URL(target, publicOrigin));
+      applyPreviewDemoCookies(bounce, publicOrigin.startsWith('https:'));
+      return bounce;
+    }
+  }
+
   // Always allow public paths (after setting tenant headers)
   if (isPublicPath(pathname)) {
     return response;
   }
 
   // ── Auth guard ─────────────────────────────────────────────────────────────
-  const hasSession = request.cookies.has('cfb_session');
+  const hasSession =
+    previewHost ||
+    request.cookies.has('cfb_session') ||
+    request.cookies.get('cfb_preview_demo')?.value === '1';
   if (!hasSession) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = new URL('/login', publicOrigin);
     loginUrl.searchParams.set('redirect', pathname);
     // Preserve tenant context through login redirect
     if (tenantSlug) loginUrl.searchParams.set('tenant', tenantSlug);
@@ -125,9 +180,11 @@ export function middleware(request: NextRequest) {
       recruiter:           '/dashboard/provider',
       platform_admin:      '/admin/dashboard',
     };
-    const target = (primaryRole && ROLE_ROUTES[primaryRole]) || null;
+    const target = (primaryRole && ROLE_ROUTES[primaryRole]) || (previewHost ? '/dashboard/founder' : null);
     if (target) {
-      return NextResponse.redirect(new URL(target, request.url));
+      const redirect = NextResponse.redirect(new URL(target, publicOrigin));
+      if (previewHost) applyPreviewDemoCookies(redirect, publicOrigin.startsWith('https:'));
+      return redirect;
     }
     // No role cookie yet → let the client DashboardRouter handle it
   }

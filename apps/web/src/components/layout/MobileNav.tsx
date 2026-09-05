@@ -1,143 +1,164 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User, Settings } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { navSections } from './nav-links';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ModeSwitcher } from './ModeSwitcher';
+import { getSectionsForMode } from './nav-modes';
+import { useSidebar } from './SidebarContext';
+import { useSidebarMode } from '@/hooks/use-sidebar-mode';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { cn } from '@/lib/utils';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { useStoredUser } from '@/hooks/useStoredUser';
 
 export function MobileNav() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<{ email?: string; role?: string } | null>(null);
+  const { mobileNavOpen, setMobileNavOpen } = useSidebar();
+  const [mode, setMode] = useSidebarMode();
+  const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
+  const user = useStoredUser();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('user');
-        if (stored) setUser(JSON.parse(stored));
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
+    setMobileNavOpen(false);
+  }, [pathname, setMobileNavOpen]);
 
-  // Close sheet when route changes
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const sections = useMemo(
+    () => getSectionsForMode(mode, user?.role),
+    [mode, user?.role],
+  );
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    clearPreviewDemoSession();
     window.location.href = '/login';
   };
 
-  const roleGradient = {
-    founder: 'from-indigo-500 to-purple-500',
-    mentor: 'from-cyan-500 to-teal-500',
-    investor: 'from-orange-500 to-red-500',
-    org: 'from-violet-500 to-indigo-500',
+  const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
+    if (badgeType === 'messages' || href === '/messages') return unreadMessages;
+    if (badgeType === 'connections' || href === '/connections') return pendingIntros;
+    return 0;
   };
 
-  const userRole = user?.role as keyof typeof roleGradient;
-  const gradient = roleGradient[userRole] || roleGradient.founder;
+  const initials =
+    user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
+    user?.email?.slice(0, 2).toUpperCase() ||
+    'ME';
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
       <SheetTrigger asChild>
-        <Button variant="secondary" size="icon" className="lg:hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0 lg:hidden"
+          aria-label="Open navigation"
+          aria-expanded={mobileNavOpen}
+        >
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[280px] p-0">
-        {/* Header with gradient */}
-        <div className={cn('relative h-32 bg-gradient-to-br p-6', gradient)}>
-          <div className="absolute inset-0 bg-black/20" />
-          <SheetHeader className="relative z-10">
+      <SheetContent
+        side="left"
+        className="flex h-full w-[min(22rem,92vw)] flex-col p-0 gap-0"
+      >
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/60 px-4 pr-12">
+          <SheetHeader className="space-y-0 text-left">
             <SheetTitle asChild>
-              <Logo size="sm" inverted />
+              <OptimizedLink href="/" className="flex items-center">
+                <Logo size="sm" />
+              </OptimizedLink>
             </SheetTitle>
           </SheetHeader>
-          
-          {user && (
-            <div className="relative z-10 mt-4 flex items-center gap-3">
-              <Avatar className="h-10 w-10 border-2 border-white/30">
-                <AvatarFallback className="bg-white/20 text-white font-semibold">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium text-white truncate max-w-[160px]">
-                  {user.email}
-                </p>
-                <p className="text-xs text-white/70 capitalize">{user.role}</p>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Navigation links grouped by section */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-4">
-          {navSections
-            .filter((s) => s.section !== 'Account')
-            .map(({ section, links }) => (
-            <div key={section}>
-              <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+        {user && (
+          <OptimizedLink
+            href="/profile"
+            className="flex items-center gap-3 border-b border-border/60 px-4 py-3 hover:bg-secondary/50"
+          >
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={user.avatarUrl ?? undefined} />
+              <AvatarFallback className="bg-primary/15 text-primary font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-foreground">
+                {user.displayName ?? user.email ?? 'Account'}
+              </p>
+              {user.role && (
+                <p className="truncate text-xs capitalize text-muted-foreground">{user.role}</p>
+              )}
+            </div>
+          </OptimizedLink>
+        )}
+
+        <ModeSwitcher currentMode={mode} onModeChange={setMode} expanded />
+
+        <nav className="flex-1 overflow-y-auto overscroll-contain px-2 py-3" aria-label="Mobile navigation">
+          {sections.map(({ section, links }) => (
+            <div key={section} className="mb-3">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
                 {section}
               </p>
-              {links.map(({ href, label, icon: Icon }) => {
-                const active = pathname === href || (href !== '/' && pathname?.startsWith(href));
-                return (
-                  <Link
-                    key={`${section}-${href}`}
-                    href={href}
-                    className={cn(
-                      'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200',
-                      active
-                        ? 'bg-primary/15 text-primary shadow-sm'
-                        : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
-                    )}
-                  >
-                    <Icon className={cn('h-4 w-4 transition-transform', active && 'scale-110')} />
-                    {label}
-                    {active && (
-                      <div className="ml-auto h-2 w-2 rounded-full bg-primary animate-pulse-glow" />
-                    )}
-                  </Link>
-                );
-              })}
+              <ul className="space-y-0.5">
+                {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
+                  const active = pathname === href || (href !== '/' && pathname?.startsWith(href));
+                  const badge = badgeFor(href, badgeType);
+                  return (
+                    <li key={`${section}-${href}`}>
+                      <OptimizedLink
+                        href={href}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn(
+                          'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
+                          active
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+                        )}
+                      >
+                        <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
+                        <span className="truncate">{label}</span>
+                        {badge > 0 && (
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                            {badge > 99 ? '99+' : badge}
+                          </span>
+                        )}
+                      </OptimizedLink>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           ))}
         </nav>
 
-        {/* Bottom actions */}
-        <div className="border-t border-border/60 p-4 space-y-2">
+        <div className="safe-bottom shrink-0 space-y-1 border-t border-border/60 p-3">
           {user ? (
             <>
-              <Link
+              <OptimizedLink
                 href="/profile"
-                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
                 <User className="h-5 w-5" />
                 My Profile
-              </Link>
-              <Link
+              </OptimizedLink>
+              <OptimizedLink
                 href="/settings"
-                className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
                 <Settings className="h-5 w-5" />
                 Settings
-              </Link>
+              </OptimizedLink>
               <button
+                type="button"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+                className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-5 w-5" />
                 Sign out
@@ -145,12 +166,12 @@ export function MobileNav() {
             </>
           ) : (
             <div className="flex gap-2">
-              <Link href="/login" className="flex-1">
+              <OptimizedLink href="/login" className="flex-1">
                 <Button variant="secondary" className="w-full">Sign in</Button>
-              </Link>
-              <Link href="/register" className="flex-1">
+              </OptimizedLink>
+              <OptimizedLink href="/register" className="flex-1">
                 <Button className="w-full">Sign up</Button>
-              </Link>
+              </OptimizedLink>
             </div>
           )}
         </div>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Link2, Twitter, Linkedin, Facebook, Mail, Check, Share2, QrCode, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
 interface ShareModalProps {
@@ -108,9 +108,12 @@ export function ShareModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="icon-sm" />
             Share
           </DialogTitle>
+          <DialogDescription>
+            Copy the link or share this page on your preferred channel.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5">

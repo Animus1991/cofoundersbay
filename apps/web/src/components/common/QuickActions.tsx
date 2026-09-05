@@ -74,9 +74,9 @@ export function QuickActions({
   const [isOpen, setIsOpen] = useState(false);
 
   const positionClasses = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6',
-    'bottom-center': 'bottom-6 left-1/2 -translate-x-1/2',
+    'bottom-right': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6',
+    'bottom-left': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-4 lg:bottom-6 lg:left-6',
+    'bottom-center': 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 lg:bottom-6',
   };
 
   return (
@@ -176,7 +176,7 @@ export function FloatingActionButton({
     <Button
       size="icon"
       className={cn(
-        'fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
+        'fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
         className
       )}
       onClick={onClick}

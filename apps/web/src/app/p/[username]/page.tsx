@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { Logo } from '@/components/brand/Logo';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 
 function deriveProfileFields(profile: PublicProfile) {
@@ -135,9 +135,8 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-sm font-bold text-primary-foreground">C</span></div>
-              <span className="font-semibold text-foreground">CoFounderBay</span>
+            <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+              <Logo size="sm" />
             </Link>
           </div>
         </header>
@@ -168,11 +167,8 @@ export default function PublicProfilePage() {
       {/* Header */}
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">C</span>
-            </div>
-            <span className="font-semibold text-foreground">CoFounderBay</span>
+          <Link href="/" className="flex items-center gap-2" aria-label="CoFounderBay home">
+            <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" asChild>
@@ -185,7 +181,7 @@ export default function PublicProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
+      <main id="main-content" className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">

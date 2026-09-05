@@ -440,7 +440,10 @@ export default function ReputationPage() {
       actions={
         <div className="flex items-center gap-2">
           <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+            <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile">
+              <Shield className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
               <Shield className="h-4 w-4" />
               My Profile
             </Button>

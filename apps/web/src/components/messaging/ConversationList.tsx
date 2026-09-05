@@ -175,21 +175,26 @@ export function ConversationList({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-border/60">
-        <div className="flex items-center justify-between mb-4">
+      <div className="border-b border-border/60 p-3">
+        <div className="mb-3 hidden items-center justify-between md:flex">
           <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-          <Button size="icon" variant="ghost" onClick={onNewMessage}>
+          <Button size="icon" variant="ghost" onClick={onNewMessage} aria-label="New message">
             <Edit className="h-5 w-5" />
           </Button>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search conversations..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search conversations..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Button size="icon" variant="ghost" className="shrink-0 md:hidden" onClick={onNewMessage} aria-label="New message">
+            <Edit className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 

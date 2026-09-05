@@ -74,7 +74,10 @@ function UserRow({ user }: { user: User }) {
           </Link>
           {user.verified && <CheckCircle2 className="icon-sm text-primary" />}
         </div>
-        <p className="text-sm text-muted-foreground">{user.email}</p>
+        <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+        <p className="mt-0.5 text-xs capitalize text-muted-foreground md:hidden">
+          {user.role} · {user.status}{user.tenant ? ` · ${user.tenant}` : ''}
+        </p>
       </div>
       <div className="hidden md:block text-sm text-muted-foreground w-24">
         {user.role}

@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -204,8 +204,8 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">I am a&hellip;</label>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-sm font-medium" id="role-label">I am a&hellip;</p>
+              <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="role-label">
                 {ROLES.map((r) => {
                   const active = role === r.value;
                   return (
@@ -213,7 +213,8 @@ export default function RegisterPage() {
                       key={r.value}
                       type="button"
                       onClick={() => setRole(r.value)}
-                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all ${
+                      aria-pressed={active}
+                      className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
                           ? 'border-primary/60 bg-primary/10 text-primary'
                           : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
@@ -236,7 +237,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
+            <Button type="submit" loading={loading} className="w-full" size="lg">
               {loading ? 'Creating account…' : 'Create account'}
             </Button>
 

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { LogOut, User, Settings, Edit, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { useStoredUser } from '@/hooks/useStoredUser';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -14,22 +15,9 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 
-type StoredUser = { id?: string; displayName?: string; email?: string; role?: string; avatarUrl?: string } | null;
-
 export function UserMenu() {
   const router = useRouter();
-  const [user, setUser] = useState<StoredUser>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const raw = localStorage.getItem('user');
-    if (!raw) return;
-    try {
-      setUser(JSON.parse(raw));
-    } catch {
-      setUser(null);
-    }
-  }, []);
+  const user = useStoredUser();
 
   const initials =
     user?.displayName?.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase() ||
@@ -37,17 +25,13 @@ export function UserMenu() {
     'ME';
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-    }
+    clearPreviewDemoSession();
     router.push('/login');
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 px-2.5 py-1.5 text-sm hover:bg-secondary/80 transition-colors outline-none">
+      <DropdownMenuTrigger className="flex h-9 items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 px-1.5 text-sm hover:bg-secondary/80 transition-colors outline-none sm:h-10 sm:px-2.5">
         <Avatar className="h-7 w-7">
           <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.displayName ?? 'User'} />
           <AvatarFallback className="text-xs font-bold bg-primary/20 text-primary">{initials}</AvatarFallback>

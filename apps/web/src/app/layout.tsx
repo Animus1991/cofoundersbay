@@ -16,6 +16,7 @@ import { DemoDataProvider } from '@/contexts/DemoDataContext';
 import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
+import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
 
 export const metadata: Metadata = {
   title: {
@@ -53,6 +54,7 @@ export const viewport: Viewport = {
   // Do NOT lock zoom: maximumScale/userScalable:false fails WCAG 2.2 SC 1.4.4 (Resize Text)
   // and SC 1.4.10 (Reflow). Users must be able to pinch-zoom up to at least 5x.
   maximumScale: 5,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -72,6 +74,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"
       >
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
         <ErrorBoundary>
           <QueryProvider>
             <LanguagePreferenceProvider>
@@ -85,6 +90,7 @@ export default function RootLayout({
                       <MessagingProvider>
                         <DemoDataProvider>
                           <RoleTheme>
+                            <PreviewSessionGuard />
                             <OfflineBanner />
                             {children}
                             <GlobalFloatingUi />

@@ -1,0 +1,11 @@
+# CoFounderBay web — Cloudflare Pages / Workers
+name = "cofounderbay-web"
+compatibility_date = "2026-09-04"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".open-next"
+
+[vars]
+NEXT_PUBLIC_APP_NAME = "CoFounderBay"
+
+[[env.preview.vars]]
+NEXT_PUBLIC_APP_NAME = "CoFounderBay Preview"

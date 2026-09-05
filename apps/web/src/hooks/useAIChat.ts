@@ -70,8 +70,8 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           getAIAgents().catch(() => ({ agents: [] })),
         ]);
         
-        setIsAIAvailable(health.available);
-        setAgents(agentsData.agents);
+        setIsAIAvailable(Boolean(health?.available));
+        setAgents(agentsData?.agents ?? []);
       } catch {
         setIsAIAvailable(false);
       }

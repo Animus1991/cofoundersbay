@@ -35,6 +35,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/hooks/useSession';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { cn } from '@/lib/utils';
 import {
   getDashboardActivity,
@@ -216,6 +217,7 @@ export function DashboardHome() {
   const { hasSession, mounted: sessionReady } = useSession();
 
   useEffect(() => {
+    if (isPreviewDemo()) return;
     if (sessionReady && !hasSession) {
       router.replace('/login');
     }

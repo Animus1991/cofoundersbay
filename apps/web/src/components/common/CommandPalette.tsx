@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
 
 type CommandItem = {
   id: string;
@@ -149,9 +150,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       description: 'Log out of your account',
       icon: LogOut,
       action: () => {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        clearPreviewDemoSession();
         router.push('/login');
       },
       category: 'settings',

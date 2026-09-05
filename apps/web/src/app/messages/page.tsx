@@ -31,6 +31,7 @@ import {
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 import { useSession } from '@/hooks/useSession';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
 import type { ConversationValidationState, ValidationMode } from '@/components/messaging/ConversationValidation';
 
@@ -112,7 +113,7 @@ export default function MessagesPage() {
       return;
     }
 
-    if (!hasSession) {
+    if (!hasSession && !isPreviewDemo()) {
       router.replace('/login');
       return;
     }
@@ -234,11 +235,17 @@ export default function MessagesPage() {
         socket.on('presence:update', onPresence);
       } catch (error) {
         if (!mounted) return;
-        if (error instanceof ApiError && error.status === 401) {
+        if (error instanceof ApiError && error.status === 401 && !isPreviewDemo()) {
           router.replace('/login');
           return;
         }
-        showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+        const previewDemo =
+          typeof document !== 'undefined' &&
+          (document.cookie.includes('cfb_preview_demo=1') ||
+            window.localStorage.getItem('cfb_demo_data') === '1');
+        if (!previewDemo) {
+          showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+        }
       }
     };
 
@@ -513,27 +520,16 @@ export default function MessagesPage() {
   }
 
   return (
-    <AppShell>
-      <div className="flex flex-col h-full">
-        {/* Context Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-              <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              <BilingualText en="Connect with co-founders, mentors, and team members" el="Συνδεθείτε με συνιδρυτές, μέντορες και μέλη ομάδας" />
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
-              <MessageSquare className="icon-sm" />
-              <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} />
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-1 min-h-0">
+    <AppShell
+      actions={
+        <Button variant="outline" size="sm" className="gap-2">
+          <MessageSquare className="icon-sm" />
+          <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} />
+        </Button>
+      }
+    >
+      <div className="flex min-h-[28rem] flex-col overflow-hidden rounded-xl border border-border/60 bg-card md:min-h-[32rem]">
+        <div className="flex min-h-0 flex-1">
           {/* Messenger sidebar — conversations + intros */}
           <div
             className={cn(

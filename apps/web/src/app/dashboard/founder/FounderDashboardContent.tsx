@@ -499,8 +499,8 @@ export default function FounderDashboardContent() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-foreground">Level {xpData?.level} — {xpData?.levelLabel}</span>
-                    <span className="text-muted-foreground tabular-nums">{xpData?.totalXp.toLocaleString()} XP</span>
+                    <span className="font-semibold text-foreground">Level {xpData?.level ?? 1} — {xpData?.levelLabel ?? 'Member'}</span>
+                    <span className="text-muted-foreground tabular-nums">{(xpData?.totalXp ?? 0).toLocaleString()} XP</span>
                   </div>
                   <Progress value={(xpData?.levelProgress ?? 0) * 100} className="h-2" />
                   <p className="text-xs text-muted-foreground">

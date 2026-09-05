@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, Rea
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import { apiRequest } from '@/lib/api';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 // Role types matching backend
 export type UserRoleType =
@@ -113,6 +114,33 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     if (!hasSession) {
       setState({
         ...EMPTY_ROLE_STATE,
+        isLoading: false,
+        error: null,
+      });
+      return;
+    }
+
+    if (isPreviewDemo()) {
+      setState({
+        primaryRole: 'existing_founder',
+        allRoles: [
+          {
+            id: 'preview-founder',
+            roleType: 'existing_founder',
+            scope: 'global',
+            isPrimary: true,
+            isVerified: true,
+          },
+        ],
+        permissions: ['*'],
+        dashboard: {
+          defaultRoute: '/dashboard/founder',
+          dashboardWidgets: [],
+          sidebarItems: [],
+          features: [],
+        },
+        organizations: [],
+        tenants: [],
         isLoading: false,
         error: null,
       });

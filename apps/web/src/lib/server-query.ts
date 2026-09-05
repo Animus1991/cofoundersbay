@@ -33,6 +33,12 @@ export async function serverFetch<T>(
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('cfb_session');
   const accessToken = cookieStore.get('cfb_access_token');
+  if (
+    sessionCookie?.value === 'preview-demo' ||
+    cookieStore.get('cfb_preview_demo')?.value === '1'
+  ) {
+    return null;
+  }
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
