@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useId, ReactNode } from 'react';
 import type { SidebarMode } from './nav-modes';
 
 type SidebarCtx = {
@@ -9,6 +9,7 @@ type SidebarCtx = {
   toggle: () => void;
   setExpanded: (v: boolean) => void;
   mobileNavOpen: boolean;
+  mobileNavId: string;
   setMobileNavOpen: (open: boolean) => void;
   mode: SidebarMode;
   setMode: (mode: SidebarMode) => void;
@@ -20,6 +21,7 @@ const SidebarContext = createContext<SidebarCtx>({
   toggle: () => {},
   setExpanded: () => {},
   mobileNavOpen: false,
+  mobileNavId: 'mobile-navigation',
   setMobileNavOpen: () => {},
   mode: 'work',
   setMode: () => {},
@@ -33,6 +35,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [expanded, setExpandedState] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavId = useId();
   const [mode, setModeState] = useState<SidebarMode>('work');
 
   // Only read localStorage after mount to prevent SSR/CSR mismatch
@@ -82,7 +85,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   return (
     <SidebarContext.Provider
-      value={{ expanded, mounted, toggle, setExpanded, mobileNavOpen, setMobileNavOpen, mode, setMode }}
+      value={{ expanded, mounted, toggle, setExpanded, mobileNavOpen, mobileNavId, setMobileNavOpen, mode, setMode }}
     >
       {children}
     </SidebarContext.Provider>

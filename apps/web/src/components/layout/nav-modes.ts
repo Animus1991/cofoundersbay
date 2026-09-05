@@ -550,6 +550,14 @@ export function getWorkSectionsForRole(role: string | undefined): NavSection[] {
 // Helper: Get sections for a specific mode
 // ─────────────────────────────────────────────────────────────────────────────
 
+export function getActiveNavHref(pathname: string | null, sections: NavSection[]): string | undefined {
+  if (!pathname) return undefined;
+  return sections.flatMap((section) => section.links).reduce<string | undefined>((active, { href }) => {
+    const matches = pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
+    return matches && href.length > (active?.length ?? 0) ? href : active;
+  }, undefined);
+}
+
 export function getSectionsForMode(mode: SidebarMode, role?: string): NavSection[] {
   switch (mode) {
     case 'work':
