@@ -639,7 +639,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       xpToNextLevel: 80,
       levelProgress: 0.68,
       recentEvents: [],
-      streak: { currentStreak: 4, longestStreak: 7, lastActiveAt: NOW },
+      streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
     };
   }
   if (pathname === '/api/gamification/users/me/badges' || pathname.endsWith('/badges')) {
