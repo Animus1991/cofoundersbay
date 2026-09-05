@@ -16,7 +16,6 @@ import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria } from '@/lib/i18n/format';
 import { Card, CardContent } from '@/components/ui/card';
 
 type ViewMode = 'grid' | 'list';

@@ -37,7 +37,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
             <button
               key={mode.id}
               onClick={() => onModeChange(mode.id)}
-              title={!expanded ? aria : aria}
+              title={aria}
               className={cn(
                 'flex items-center justify-center rounded-md transition-all duration-150 min-w-0 overflow-hidden',
                 expanded

@@ -643,8 +643,8 @@ export default function MatchesPage() {
         {/* ── Not authenticated ── */}
         {!hasToken && (
           <EmptyState
-            title={bilingualAria(matchesEn('sign_in_to_see'), matchesEl('sign_in_to_see'))}
-            description={bilingualAria(matchesEn('sign_in_desc'), matchesEl('sign_in_desc'))}
+            title={<BilingualText en={matchesEn('sign_in_to_see')} el={matchesEl('sign_in_to_see')} />}
+            description={<BilingualText en={matchesEn('sign_in_desc')} el={matchesEl('sign_in_desc')} />}
             illustration="connection"
             action={
               <Link href="/login">
@@ -745,8 +745,8 @@ export default function MatchesPage() {
         {/* ── No data at all ── */}
         {hasToken && !isLoading && visible.length === 0 && (
           <EmptyState
-            title={bilingualAria(matchesEn('no_matches_yet'), matchesEl('no_matches_yet'))}
-            description={bilingualAria(matchesEn('no_matches_desc'), matchesEl('no_matches_desc'))}
+            title={<BilingualText en={matchesEn('no_matches_yet')} el={matchesEl('no_matches_yet')} />}
+            description={<BilingualText en={matchesEn('no_matches_desc')} el={matchesEl('no_matches_desc')} />}
             illustration="rocket"
             action={
               <Link href="/profile/edit">

@@ -56,7 +56,7 @@ import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { profileEn, profileEl } from '@/lib/i18n/strings-profile';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
@@ -162,7 +162,7 @@ const ROLE_ICONS: Record<string, React.ElementType> = {
 function RoleDetails({ role, payload }: { role: string; payload: Record<string, unknown> }) {
   const Icon = ROLE_ICONS[role] ?? Briefcase;
 
-  const renderList = (arr: unknown, label: string): React.ReactNode => {
+  const renderList = (arr: unknown, label: React.ReactNode): React.ReactNode => {
     if (!Array.isArray(arr) || arr.length === 0) return null;
     return (
       <div className="space-y-1.5">
@@ -176,7 +176,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     );
   };
 
-  const renderValue = (val: unknown, label: string): React.ReactNode => {
+  const renderValue = (val: unknown, label: React.ReactNode): React.ReactNode => {
     if (!val || (typeof val === 'string' && !val.trim())) return null;
     return (
       <div className="space-y-0.5">
@@ -189,11 +189,12 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
   const linkEntries = payload.links && typeof payload.links === 'object'
     ? (
         [
-          { key: 'websiteUrl', icon: Globe, label: bilingualAria(profileEn('website'), profileEl('website')) },
+          { key: 'websiteUrl', icon: Globe, label: <BilingualText en={profileEn('website')} el={profileEl('website')} compact /> },
+          // Brand names are proper nouns — intentionally not translated.
           { key: 'linkedinUrl', icon: Linkedin, label: profileEn('linkedin') },
           { key: 'githubUrl', icon: Github, label: profileEn('github') },
           { key: 'twitterUrl', icon: Twitter, label: profileEn('twitter_x') },
-        ] as { key: string; icon: React.ElementType; label: string }[]
+        ] as { key: string; icon: React.ElementType; label: React.ReactNode }[]
       ).reduce<React.ReactNode[]>((acc, { key, icon: Icon2, label }) => {
         const url = (payload.links as Record<string, unknown>)[key];
         if (typeof url !== 'string' || !url.trim()) return acc;
@@ -228,32 +229,32 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
       <CardContent className="space-y-5 pt-5">
         {role === 'founder' && (
           <>
-            {renderValue(payload.stage, bilingualAria(profileEn('startup_stage'), profileEl('startup_stage')))}
-            {renderValue(payload.commitment, bilingualAria(profileEn('commitment'), profileEl('commitment')))}
-            {renderList(payload.rolesSought, bilingualAria(profileEn('looking_for'), profileEl('looking_for')))}
-            {renderList(payload.industries ?? (payload.industry ? [payload.industry] : []), bilingualAria(profileEn('industries'), profileEl('industries')))}
+            {renderValue(payload.stage, <BilingualText en={profileEn('startup_stage')} el={profileEl('startup_stage')} stacked />)}
+            {renderValue(payload.commitment, <BilingualText en={profileEn('commitment')} el={profileEl('commitment')} stacked />)}
+            {renderList(payload.rolesSought, <BilingualText en={profileEn('looking_for')} el={profileEl('looking_for')} stacked />)}
+            {renderList(payload.industries ?? (payload.industry ? [payload.industry] : []), <BilingualText en={profileEn('industries')} el={profileEl('industries')} stacked />)}
           </>
         )}
         {role === 'mentor' && (
           <>
-            {renderList(payload.expertiseAreas, bilingualAria(profileEn('expertise_areas'), profileEl('expertise_areas')))}
-            {renderValue(payload.availability, bilingualAria(profileEn('availability'), profileEl('availability')))}
-            {renderValue(payload.meetingPreferences, bilingualAria(profileEn('meeting_preference'), profileEl('meeting_preference')))}
-            {renderValue(payload.hourlyRate, bilingualAria(profileEn('rate'), profileEl('rate')))}
+            {renderList(payload.expertiseAreas, <BilingualText en={profileEn('expertise_areas')} el={profileEl('expertise_areas')} stacked />)}
+            {renderValue(payload.availability, <BilingualText en={profileEn('availability')} el={profileEl('availability')} stacked />)}
+            {renderValue(payload.meetingPreferences, <BilingualText en={profileEn('meeting_preference')} el={profileEl('meeting_preference')} stacked />)}
+            {renderValue(payload.hourlyRate, <BilingualText en={profileEn('rate')} el={profileEl('rate')} stacked />)}
           </>
         )}
         {role === 'investor' && (
           <>
-            {renderList(payload.investmentFocus, bilingualAria(profileEn('investment_focus'), profileEl('investment_focus')))}
-            {renderList(payload.stages, bilingualAria(profileEn('investment_stages'), profileEl('investment_stages')))}
-            {renderValue(payload.typicalCheckSize ?? [payload.checkSizeMin, payload.checkSizeMax].filter(Boolean).join(' – '), bilingualAria(profileEn('check_size'), profileEl('check_size')))}
-            {renderList(payload.geography, bilingualAria(profileEn('geography'), profileEl('geography')))}
+            {renderList(payload.investmentFocus, <BilingualText en={profileEn('investment_focus')} el={profileEl('investment_focus')} stacked />)}
+            {renderList(payload.stages, <BilingualText en={profileEn('investment_stages')} el={profileEl('investment_stages')} stacked />)}
+            {renderValue(payload.typicalCheckSize ?? [payload.checkSizeMin, payload.checkSizeMax].filter(Boolean).join(' – '), <BilingualText en={profileEn('check_size')} el={profileEl('check_size')} stacked />)}
+            {renderList(payload.geography, <BilingualText en={profileEn('geography')} el={profileEl('geography')} stacked />)}
           </>
         )}
         {role === 'org' && (
           <>
-            {renderValue(payload.organizationType, bilingualAria(profileEn('organization_type'), profileEl('organization_type')))}
-            {renderList(payload.programTypes, bilingualAria(profileEn('programs'), profileEl('programs')))}
+            {renderValue(payload.organizationType, <BilingualText en={profileEn('organization_type')} el={profileEl('organization_type')} stacked />)}
+            {renderList(payload.programTypes, <BilingualText en={profileEn('programs')} el={profileEl('programs')} stacked />)}
           </>
         )}
         {linkEntries && linkEntries.length > 0 && (
@@ -294,7 +295,7 @@ export default function ProfilePage() {
     if (!profile) return;
     const url = `${window.location.origin}/profiles/${profile.userId}`;
     navigator.clipboard.writeText(url).then(() =>
-      success(bilingualAria(profileEn('link_copied'), profileEl('link_copied')), bilingualAria(profileEn('link_copied_desc'), profileEl('link_copied_desc')))
+      success(bilingualInline(profileEn('link_copied'), profileEl('link_copied')), bilingualInline(profileEn('link_copied_desc'), profileEl('link_copied_desc')))
     );
   };
 

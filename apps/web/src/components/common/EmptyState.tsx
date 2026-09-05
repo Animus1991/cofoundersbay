@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
 
 type EmptyStateProps = {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   action?: ReactNode;
   className?: string;
   illustration?: IllustrationType;

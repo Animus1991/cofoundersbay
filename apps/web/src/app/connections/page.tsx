@@ -387,8 +387,8 @@ export default function ConnectionsPage() {
           ) : connections.length === 0 ? (
             <EmptyState
               illustration="default"
-              title={bilingualAria(connectionsEn('no_intro_requests'), connectionsEl('no_intro_requests'))}
-              description={bilingualAria(connectionsEn('no_intro_desc'), connectionsEl('no_intro_desc'))}
+              title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
+              description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
               action={
                 <Link href="/discover">
                   <Button variant="secondary" className="gap-2">
@@ -424,22 +424,34 @@ export default function ConnectionsPage() {
             ) : connections.length === 0 ? (
               <EmptyState
                 illustration={t === 'accepted' ? 'connection' : 'default'}
-                title={bilingualAria(
-                  t === 'received' ? connectionsEn('no_pending_requests')
-                    : t === 'sent' ? connectionsEn('no_sent_requests')
-                    : connectionsEn('no_connections_yet'),
-                  t === 'received' ? connectionsEl('no_pending_requests')
-                    : t === 'sent' ? connectionsEl('no_sent_requests')
-                    : connectionsEl('no_connections_yet'),
-                )}
-                description={bilingualAria(
-                  t === 'accepted' ? connectionsEn('start_connecting')
-                    : t === 'sent' ? connectionsEn('browse_profiles')
-                    : connectionsEn('when_people_send'),
-                  t === 'accepted' ? connectionsEl('start_connecting')
-                    : t === 'sent' ? connectionsEl('browse_profiles')
-                    : connectionsEl('when_people_send'),
-                )}
+                title={
+                  <BilingualText
+                    en={
+                      t === 'received' ? connectionsEn('no_pending_requests')
+                        : t === 'sent' ? connectionsEn('no_sent_requests')
+                        : connectionsEn('no_connections_yet')
+                    }
+                    el={
+                      t === 'received' ? connectionsEl('no_pending_requests')
+                        : t === 'sent' ? connectionsEl('no_sent_requests')
+                        : connectionsEl('no_connections_yet')
+                    }
+                  />
+                }
+                description={
+                  <BilingualText
+                    en={
+                      t === 'accepted' ? connectionsEn('start_connecting')
+                        : t === 'sent' ? connectionsEn('browse_profiles')
+                        : connectionsEn('when_people_send')
+                    }
+                    el={
+                      t === 'accepted' ? connectionsEl('start_connecting')
+                        : t === 'sent' ? connectionsEl('browse_profiles')
+                        : connectionsEl('when_people_send')
+                    }
+                  />
+                }
                 action={
                   t !== 'received' ? (
                     <Link href="/discover">

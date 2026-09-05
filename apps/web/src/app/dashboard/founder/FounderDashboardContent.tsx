@@ -39,7 +39,6 @@ import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
 import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
-import { bilingualAria } from '@/lib/i18n/format';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
@@ -104,7 +103,7 @@ const DEMO_EVENTS = [
 function StatCard({
   icon: Icon, label, value, trend, href, accent,
 }: {
-  icon: React.ElementType; label: string; value: number | string;
+  icon: React.ElementType; label: React.ReactNode; value: number | string;
   trend?: { value: number; positive: boolean }; href?: string; accent?: string;
 }) {
   const content = (
@@ -267,7 +266,7 @@ export default function FounderDashboardContent() {
   return (
     <AppShell
       title={`${getTimeBasedGreeting().en}, ${displayName}`}
-      description="Your startup command center \u2014 track progress, find team, and close your round."
+      description="Your startup command center — track progress, find team, and close your round."
       showHelp
       actions={
         <>
@@ -294,10 +293,10 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <StatCard icon={Users} label={bilingualAria(dashboardEn('profile_views'), dashboardEl('profile_views'))} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
-          <StatCard icon={Sparkles} label={bilingualAria(dashboardEn('top_matches'), dashboardEl('top_matches'))} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard icon={MessageCircle} label={bilingualAria('Unread Messages', 'Αδιάβαστα μηνύματα')} value={3} href="/messages" />
-          <StatCard icon={Target} label={bilingualAria(dashboardEn('milestones'), dashboardEl('milestones'))} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard icon={Users} label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
+          <StatCard icon={Sparkles} label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
+          <StatCard icon={MessageCircle} label={<BilingualText en="Unread Messages" el="Αδιάβαστα μηνύματα" stacked />} value={3} href="/messages" />
+          <StatCard icon={Target} label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

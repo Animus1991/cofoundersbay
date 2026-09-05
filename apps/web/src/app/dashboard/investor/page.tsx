@@ -240,7 +240,7 @@ export default function InvestorDashboard() {
   return (
     <AppShell
       title={`${getTimeBasedGreeting()}, ${displayName}`}
-      description="Pipeline health, deal flow, and portfolio performance \u2014 in one view."
+      description="Pipeline health, deal flow, and portfolio performance — in one view."
       actions={
         <Badge variant="outline" className="gap-1.5">
           <DollarSign className="icon-sm" />

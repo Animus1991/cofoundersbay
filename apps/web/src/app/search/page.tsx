@@ -20,7 +20,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { BilingualText } from '@/components/common/BilingualText';
-import { bilingualAria } from '@/lib/i18n/format';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import {
   searchEn,
   searchEl,
@@ -346,7 +346,7 @@ export default function SearchPage() {
             <Input
               ref={inputRef}
               type="text"
-              placeholder={bilingualAria(searchEn('input_placeholder'), searchEl('input_placeholder'))}
+              placeholder={bilingualInline(searchEn('input_placeholder'), searchEl('input_placeholder'))}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setInputFocused(true)}
