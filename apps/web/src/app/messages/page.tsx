@@ -236,7 +236,13 @@ export default function MessagesPage() {
           router.replace('/login');
           return;
         }
-        showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+        const previewDemo =
+          typeof document !== 'undefined' &&
+          (document.cookie.includes('cfb_preview_demo=1') ||
+            window.localStorage.getItem('cfb_demo_data') === '1');
+        if (!previewDemo) {
+          showError('Failed to initialize messages', error instanceof Error ? error.message : 'Please try again');
+        }
       }
     };
 
