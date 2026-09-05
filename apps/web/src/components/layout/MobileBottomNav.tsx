@@ -34,7 +34,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-1 pt-1 backdrop-blur-md lg:hidden safe-bottom"
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-1 pt-1.5 backdrop-blur-md lg:hidden safe-bottom safe-x"
       role="navigation"
       aria-label="Primary mobile navigation"
     >

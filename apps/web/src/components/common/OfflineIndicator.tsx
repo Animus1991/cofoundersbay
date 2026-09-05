@@ -64,9 +64,27 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
 }
 
 // Offline banner shown when user's browser is offline OR when the API server is down.
+function isPreviewDemo() {
+  if (typeof document === 'undefined') return false;
+  try {
+    return (
+      document.cookie.includes('cfb_preview_demo=1') ||
+      window.localStorage.getItem('cfb_demo_data') === '1'
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function OfflineBanner() {
   const { isOnline, isApiOnline, wasOffline } = useNetwork();
   const [showReconnected, setShowReconnected] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const [previewDemo, setPreviewDemo] = useState(false);
+
+  useEffect(() => {
+    setPreviewDemo(isPreviewDemo());
+  }, []);
 
   const fullyOnline = isOnline && isApiOnline;
   const wasEverOffline = wasOffline;
@@ -81,7 +99,7 @@ export function OfflineBanner() {
 
   if (!isOnline) {
     return (
-      <div className="sticky top-0 z-40 bg-amber-500 px-3 py-1.5 text-amber-950 sm:px-4 sm:py-2">
+      <div className="bg-amber-500 px-3 py-1.5 text-amber-950 sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <WifiOff className="h-4 w-4 shrink-0" />
@@ -96,20 +114,25 @@ export function OfflineBanner() {
     );
   }
 
-  if (!isApiOnline) {
+  if (!isApiOnline && !previewDemo && !dismissed) {
     return (
-      <div className="sticky top-0 z-40 bg-orange-600 px-3 py-1.5 text-white sm:px-4 sm:py-2">
+      <div className="bg-orange-600 px-3 py-1.5 text-white sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <ServerCrash className="h-4 w-4 shrink-0" />
             <span className="truncate text-xs font-medium sm:text-sm">
-              API unavailable — demo data still works.
+              API unavailable — sample data still works.
             </span>
           </div>
-          <Button size="sm" variant="ghost" className="h-7 shrink-0 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Reload</span>
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
+              <RefreshCw className="h-3 w-3 sm:mr-1" />
+              <span className="hidden sm:inline">Reload</span>
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => setDismissed(true)} aria-label="Dismiss">
+              ×
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -117,7 +140,7 @@ export function OfflineBanner() {
 
   if (showReconnected) {
     return (
-      <div className="sticky top-0 z-40 bg-emerald-500 px-3 py-1.5 text-emerald-950 sm:px-4 sm:py-2">
+      <div className="bg-emerald-500 px-3 py-1.5 text-emerald-950 sm:px-4">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-center gap-2">
           <Wifi className="h-4 w-4" />
           <span className="text-xs font-medium sm:text-sm">Back online!</span>

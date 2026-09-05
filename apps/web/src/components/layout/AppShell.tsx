@@ -38,7 +38,7 @@ export function AppShell({
 
       <div
         className={cn(
-          'flex flex-col overflow-x-clip',
+          'flex min-w-0 flex-col',
           fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
           'transition-[margin-left] duration-200 ease-out',
           (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
@@ -58,8 +58,8 @@ export function AppShell({
             id="main-content"
             className={cn(
               'flex-1 mx-auto w-full max-w-screen-2xl',
-              'px-4 sm:px-6 lg:px-8',
-              'pt-4 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-10',
+              'px-3 sm:px-6 lg:px-8',
+              'pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-10',
               contentClassName,
             )}
           >

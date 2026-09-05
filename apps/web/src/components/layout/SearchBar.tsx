@@ -32,7 +32,7 @@ export function SearchBar() {
         type="button"
         variant="ghost"
         size="icon"
-        className="md:hidden tap-target shrink-0"
+        className="h-9 w-9 shrink-0 md:hidden"
         onClick={() => router.push('/search')}
         aria-label="Search"
       >

@@ -71,7 +71,7 @@ export function MobileNav() {
         <Button
           variant="ghost"
           size="icon"
-          className="lg:hidden tap-target shrink-0"
+          className="h-9 w-9 shrink-0 lg:hidden"
           aria-label="Open navigation"
           aria-expanded={mobileNavOpen}
         >

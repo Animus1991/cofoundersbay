@@ -511,25 +511,18 @@ export default function MessagesPage() {
   }
 
   return (
-    <AppShell>
-      <div className="flex flex-col h-full">
-        {/* Context Bar */}
-        <div className="flex flex-col gap-3 px-4 py-4 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">Messages</h1>
-            <p className="text-sm text-muted-foreground">
-              Connect with co-founders, mentors, and team members
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="w-full gap-2 sm:w-auto">
-              <MessageSquare className="icon-sm" />
-              New Message
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-1 min-h-0">
+    <AppShell
+      title="Messages"
+      description="Connect with co-founders, mentors, and team members"
+      actions={
+        <Button variant="outline" size="sm" className="gap-2">
+          <MessageSquare className="icon-sm" />
+          New Message
+        </Button>
+      }
+    >
+      <div className="flex min-h-[28rem] flex-col overflow-hidden rounded-xl border border-border/60 bg-card md:min-h-[32rem]">
+        <div className="flex min-h-0 flex-1">
           {/* Messenger sidebar — conversations + intros */}
           <div
             className={cn(
