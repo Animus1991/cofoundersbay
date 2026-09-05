@@ -20,6 +20,7 @@ import { EventsModule } from './events/events.module';
 import { MentoringModule } from './mentoring/mentoring.module';
 import { ModerationModule } from './moderation/moderation.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { GraphModule } from './graph/graph.module';
 import { PollsModule } from './polls/polls.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ConnectionsModule } from './connections/connections.module';
@@ -95,6 +96,7 @@ function findEnvFiles(): string[] {
     MentoringModule,
     ModerationModule,
     DashboardModule,
+    GraphModule,
     PollsModule,
     JobsModule,
     ConnectionsModule,

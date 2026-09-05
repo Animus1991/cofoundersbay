@@ -1217,6 +1217,29 @@ export async function getVentureReadiness(): Promise<VentureReadiness> {
   return apiRequest('/api/dashboard/venture-readiness');
 }
 
+export interface GraphMeResponse {
+  me: {
+    id: string;
+    displayName: string | null;
+    headline: string | null;
+    avatarUrl: string | null;
+    primaryRole: string | null;
+    organizations: Array<{ id: string; name: string; type: string; role: string }>;
+    tenants: Array<{ id: string; name: string; slug: string; role: string }>;
+  };
+  unreadMessages: number;
+  pendingConnections: number;
+  unreadNotifications: number;
+  readiness: VentureReadiness | null;
+}
+
+/** Single-call summary used by the get_graph AI tool and available for any
+ * surface that needs "what does this user see right now" without stitching
+ * together profile + connections + messages + readiness itself. */
+export async function getGraphMe(): Promise<GraphMeResponse> {
+  return apiRequest('/api/graph/me');
+}
+
 // --- Analytics ---
 
 export interface UserMetrics {
