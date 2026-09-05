@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { LogOut, User, Settings, Edit, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -37,11 +38,7 @@ export function UserMenu() {
     'ME';
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-    }
+    clearPreviewDemoSession();
     router.push('/login');
   };
 

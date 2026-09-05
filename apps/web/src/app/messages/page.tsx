@@ -29,6 +29,7 @@ import {
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 import { useSession } from '@/hooks/useSession';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { useMessaging } from '@/contexts/MessagingContext';
 import type { ConversationValidationState, ValidationMode } from '@/components/messaging/ConversationValidation';
 
@@ -110,7 +111,7 @@ export default function MessagesPage() {
       return;
     }
 
-    if (!hasSession) {
+    if (!hasSession && !isPreviewDemo()) {
       router.replace('/login');
       return;
     }
@@ -232,7 +233,7 @@ export default function MessagesPage() {
         socket.on('presence:update', onPresence);
       } catch (error) {
         if (!mounted) return;
-        if (error instanceof ApiError && error.status === 401) {
+        if (error instanceof ApiError && error.status === 401 && !isPreviewDemo()) {
           router.replace('/login');
           return;
         }

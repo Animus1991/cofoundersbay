@@ -1,13 +1,24 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { restorePreviewDemoSessionIfNeeded } from '@/lib/preview-demo';
 
 /**
  * Check if the user has an active session.
  * Returns true when the session presence cookie exists.
  */
 function checkSession(): boolean {
-  return typeof document !== 'undefined' && document.cookie.includes('cfb_session=');
+  if (typeof document === 'undefined') return false;
+  if (document.cookie.includes('cfb_session=')) return true;
+  if (document.cookie.includes('cfb_preview_demo=1')) return true;
+  try {
+    return (
+      window.localStorage.getItem('cfb_demo_data') === '1' ||
+      window.location.hostname.endsWith('.trycloudflare.com')
+    );
+  } catch {
+    return false;
+  }
 }
 
 type Listener = () => void;
@@ -55,6 +66,9 @@ export function useSession() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    if (restorePreviewDemoSessionIfNeeded()) {
+      emitSessionChange();
+    }
     setMounted(true);
   }, []);
 

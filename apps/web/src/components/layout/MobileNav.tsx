@@ -14,6 +14,7 @@ import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { cn } from '@/lib/utils';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
 
 type StoredUser = {
   displayName?: string;
@@ -48,9 +49,7 @@ export function MobileNav() {
   );
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    clearPreviewDemoSession();
     window.location.href = '/login';
   };
 

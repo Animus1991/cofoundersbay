@@ -41,6 +41,7 @@ import {
   User,
 } from 'lucide-react';
 import { getMeProfile } from '@/lib/api';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -267,6 +268,7 @@ export default function ProfilePage() {
   });
 
   React.useEffect(() => {
+    if (isPreviewDemo()) return;
     if (error) { router.replace('/login'); return; }
     if (meData && !meData.hasCompletedOnboarding) { router.replace('/onboarding'); }
   }, [meData, error, router]);

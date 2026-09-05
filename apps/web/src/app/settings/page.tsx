@@ -37,6 +37,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
+import { clearPreviewDemoSession } from '@/lib/preview-demo';
 
 type NotifPrefs = {
   messages: boolean;
@@ -196,12 +197,8 @@ export default function SettingsPage() {
   };
 
   const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
+    clearPreviewDemoSession();
+    window.location.href = '/login';
   };
 
   useEffect(() => {
