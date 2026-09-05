@@ -99,3 +99,47 @@ export function categoryChip(category: string): StatusChipClasses {
   const tone = CATEGORY_TONE[category.toLowerCase()] ?? 'info';
   return STATUS[tone];
 }
+
+/**
+ * Readiness ladder → semantic tone. Used by the builder's readiness scoring and
+ * by anything else that grades a dimension on the same four-step scale.
+ *
+ * Centralising it matters beyond theming: the same ladder was previously spelled
+ * out as a copy-pasted ternary chain at five call sites, and they had already
+ * drifted — one rendered "excellent" as `text-green-500`, another as
+ * `text-green-600`, so the identical status looked like two different states.
+ */
+export type ReadinessStatus = 'excellent' | 'good' | 'needs-work' | 'critical';
+
+export const READINESS_TONE: Record<ReadinessStatus, StatusTone> = {
+  excellent: 'success',
+  good: 'info',
+  'needs-work': 'warning',
+  critical: 'danger',
+};
+
+export function readinessClasses(status: ReadinessStatus): StatusChipClasses {
+  return STATUS[READINESS_TONE[status]];
+}
+
+/** Solid fill for meters/progress bars, keyed by the same ladder. */
+export const READINESS_FILL: Record<ReadinessStatus, string> = {
+  excellent: 'bg-status-success',
+  good: 'bg-status-info',
+  'needs-work': 'bg-status-warning',
+  critical: 'bg-status-danger',
+};
+
+/**
+ * Same fills, but targeting the inner bar of `<Progress>`.
+ *
+ * Written out in full rather than composed as `` `[&>div]:${FILL[s]}` `` — Tailwind
+ * scans source text at build time, so a class assembled at runtime is never
+ * generated and the bar would silently render unpainted.
+ */
+export const READINESS_BAR: Record<ReadinessStatus, string> = {
+  excellent: '[&>div]:bg-status-success',
+  good: '[&>div]:bg-status-info',
+  'needs-work': '[&>div]:bg-status-warning',
+  critical: '[&>div]:bg-status-danger',
+};

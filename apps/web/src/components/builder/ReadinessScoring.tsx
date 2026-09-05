@@ -22,6 +22,7 @@ import {
   Code
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { READINESS_BAR, STATUS, readinessClasses } from '@/lib/semantic-colors';
 
 interface ReadinessDimension {
   id: string;
@@ -320,12 +321,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       </div>
 
       {/* Overall Score */}
-      <Card className={cn(
-        "border-2",
-        data.overallStatus === 'excellent' ? 'border-green-500' :
-        data.overallStatus === 'good' ? 'border-blue-500' :
-        data.overallStatus === 'needs-work' ? 'border-yellow-500' : 'border-red-500'
-      )}>
+      <Card className={cn("border-2", readinessClasses(data.overallStatus).border)}>
         <CardContent className="p-6">
           <div className="grid gap-6 md:grid-cols-3">
             {/* Score Circle */}
@@ -339,7 +335,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     stroke="currentColor"
                     strokeWidth="12"
                     fill="none"
-                    className="text-gray-200"
+                    className="text-border"
                   />
                   <circle
                     cx="64"
@@ -349,11 +345,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     strokeWidth="12"
                     fill="none"
                     strokeDasharray={`${(data.overallScore / 100) * 352} 352`}
-                    className={cn(
-                      data.overallStatus === 'excellent' ? 'text-green-500' :
-                      data.overallStatus === 'good' ? 'text-blue-500' :
-                      data.overallStatus === 'needs-work' ? 'text-yellow-500' : 'text-red-500'
-                    )}
+                    className={readinessClasses(data.overallStatus).text}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -386,7 +378,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                       "h-2 flex-1 rounded-full",
                       ['idea', 'validation', 'mvp', 'growth', 'scale'].indexOf(data.readinessLevel) >= index
                         ? 'bg-primary'
-                        : 'bg-gray-200'
+                        // `bg-gray-200` is a fixed light value — on the dark theme the
+                        // unreached segments read as a bright bar, inverting the meaning.
+                        : 'bg-muted'
                     )}
                   />
                 ))}
@@ -402,9 +396,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     <span>{dim.name}</span>
                     <span className={cn(
                       "font-medium",
-                      dim.status === 'excellent' ? 'text-green-600' :
-                      dim.status === 'good' ? 'text-blue-600' :
-                      dim.status === 'needs-work' ? 'text-yellow-600' : 'text-red-600'
+                      readinessClasses(dim.status).text
                     )}>
                       {dim.score}%
                     </span>
@@ -420,9 +412,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       {(data.blockers.length > 0 || data.nextMilestones.length > 0) && (
         <div className="grid gap-4 md:grid-cols-2">
           {data.blockers.length > 0 && (
-            <Card className="border-red-200">
+            <Card className={STATUS.danger.border}>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-red-600">
+                <CardTitle className={cn("flex items-center gap-2", STATUS.danger.text)}>
                   <XCircle className="icon-md" />
                   Critical Blockers
                 </CardTitle>
@@ -441,9 +433,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
           )}
           
           {data.nextMilestones.length > 0 && (
-            <Card className="border-green-200">
+            <Card className={STATUS.success.border}>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-green-600">
+                <CardTitle className={cn("flex items-center gap-2", STATUS.success.text)}>
                   <Lightbulb className="icon-md" />
                   Recommended Next Steps
                 </CardTitle>
@@ -491,9 +483,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     </Badge>
                     <StatusIcon className={cn(
                       "icon-md",
-                      dimension.status === 'excellent' ? 'text-green-500' :
-                      dimension.status === 'good' ? 'text-blue-500' :
-                      dimension.status === 'needs-work' ? 'text-yellow-500' : 'text-red-500'
+                      readinessClasses(dimension.status).text
                     )} />
                   </div>
                 </div>
@@ -503,9 +493,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                   value={dimension.score} 
                   className={cn(
                     "h-2 mb-4",
-                    dimension.status === 'excellent' ? '[&>div]:bg-green-500' :
-                    dimension.status === 'good' ? '[&>div]:bg-blue-500' :
-                    dimension.status === 'needs-work' ? '[&>div]:bg-yellow-500' : '[&>div]:bg-red-500'
+                    READINESS_BAR[dimension.status]
                   )}
                 />
                 
@@ -523,7 +511,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                         <div className={cn(
                           "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5",
                           criterion.completed 
-                            ? "bg-green-500 border-green-500" 
+                            ? "bg-status-success border-status-success" 
                             : "border-border"
                         )}>
                           {criterion.completed && (
