@@ -29,7 +29,7 @@ export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { expanded, toggle } = useSidebar();
-  const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
+  const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
@@ -75,7 +75,7 @@ export function SideNav() {
   const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
     if (badgeType === 'messages' || href === '/messages') return unreadMessages;
     if (badgeType === 'connections' || href === '/connections') return pendingIntros;
-    if (badgeType === 'notifications' || href === '/notifications') return 0; // TODO: Add notifications count when available
+    if (badgeType === 'notifications' || href === '/notifications') return unreadNotifications;
     return 0;
   };
 

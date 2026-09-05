@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { listMessageConversations, listConnectionRequests } from '@/lib/api';
+import { listMessageConversations, listConnectionRequests, getNotificationUnreadCount } from '@/lib/api';
 import { useHasSession } from './useSession';
 import { useAuthenticatedSession } from './useAuthenticatedSession';
 import { useApiAvailability } from './useApiAvailability';
@@ -10,10 +10,11 @@ import { useApiAvailability } from './useApiAvailability';
 export type UnreadCounts = {
   messages: number;
   intros: number;
+  notifications: number;
 };
 
 /**
- * Returns unread message count + pending intro requests.
+ * Returns unread message count + pending intro requests + unread notifications.
  * Uses React Query for deduplication — all components share the same cached fetch.
  * Reacts to login/logout events immediately (same-tab and cross-tab).
  */
@@ -65,12 +66,28 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
     retry: 0,
   });
 
+  const { data: notifData, isError: notifError } = useQuery({
+    queryKey: ['notifications', 'unread-count'],
+    queryFn: getNotificationUnreadCount,
+    staleTime: 60_000,
+    refetchInterval: (query) => {
+      if (!isVisible || query.state.status === 'error') return false;
+      return pollIntervalMs;
+    },
+    enabled: hasToken && isAuthenticated && isVisible && apiAvailable,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    retry: 0,
+  });
+
   // Silence unused-variable warnings
   void convError;
   void introError;
+  void notifError;
 
   const messages = convData?.conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
   const intros = introData?.connections.filter((c) => c.status === 'pending').length ?? 0;
+  const notifications = notifData?.count ?? 0;
 
-  return { messages, intros };
+  return { messages, intros, notifications };
 }

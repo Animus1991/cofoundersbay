@@ -6,6 +6,8 @@
 
 Το παλαιότερο `docs/AI_CHAT_IMPLEMENTATION_PLAN.md` περιγράφει orchestrator + tools που **δεν έχουν υλοποιηθεί**. Αυτό το έγγραφο αντικαθιστά εκείνο ως πηγή αλήθειας για το *τι υπάρχει* και *τι πρέπει να γίνει*.
 
+> **Σημείωση συγχώνευσης (2026-09-05):** Αυτό το έγγραφο ενσωματώθηκε στο branch `integration/ai-platform-upgrade` — προϊόν merge του `cursor/ui-upgrade-cloudflare-preview-53e0` (102 αρχεία: design-system a11y, Cloudflare offline preview, αυτό το πλάνο) με ανεξάρτητη ταυτόχρονη ανάλυση της ίδιας πλατφόρμας (δημοσιευμένη ως docket "Cognitive Core"). Οι δύο αναλύσεις κατέληξαν ανεξάρτητα στην ίδια διάγνωση (τρία αποσυνδεδεμένα AI stacks, μηδενικό tool-calling, `context` που ποτέ δεν στέλνεται) — σύγκλιση που ενισχύει την εγκυρότητα και των δύο. Το §13 παρακάτω προσθέτει το συμπληρωματικό υλικό από εκείνη την ανάλυση (multi-provider tiering, ενοποιημένη τηλεμετρία) χωρίς να αφαιρεί τίποτα από το πρωτότυπο. Το ζήτημα #7 στο §1.2 (notification badge hardcoded σε `0`) διορθώθηκε στο ίδιο commit — βλ. `apps/web/src/hooks/useUnreadCounts.ts` + `SideNav.tsx`.
+
 ---
 
 ## 1. Διάγνωση (μετρήσιμη)
@@ -342,3 +344,32 @@
 Αυτό μετατρέπει το σημερινό άδειο AI tab σε copilot που βλέπει τον χρήστη και μπορεί να συνδέσει / να γράψει μήνυμα / να πλοηγηθεί — πάνω στα API που ήδη υπάρχουν — χωρίς να ξαναχτιστεί η πλατφόρμα.
 
 Ό,τι ακολουθεί (canvas, feed, calendar, extra ρόλοι) είναι επέκταση του ίδιου καταλόγου tools, όχι νέα «AI προϊόντα».
+
+---
+
+## 13. Παράρτημα — Multi-provider AI & ενοποιημένη τηλεμετρία
+
+*Συμπληρωματικό υλικό από την ανεξάρτητη ανάλυση "Cognitive Core" (2026-09-05), δεν αντικαθιστά τίποτα από τα §1–12.*
+
+### 13.1 Γιατί το `IAIProvider` παραμένει μονο-provider (Ollama) ενώ σχεδιάστηκε για πολλούς
+
+`apps/api/src/ai/providers/ai-provider.interface.ts` δηλώνει ρητά στην τεκμηρίωσή του: *"Adding a new provider (OpenAI, Anthropic, Groq, etc.) requires: 1. Create a service that implements this interface 2. Register it with AIProviderRegistry..."* — και το Prisma σχόλιο του `BuilderAIGeneration.model` ήδη ανέμενε τιμές όπως `"claude-3-opus"`. Η πρόθεση για πολλαπλούς παρόχους υπήρχε από την αρχή· απλά δεν υλοποιήθηκε ποτέ δεύτερος. Το §5 του παρόντος πλάνου σωστά αποφεύγει να «ενώσει Ollama+OpenAI+Anthropic σε ένα super model χωρίς router» (§10) — αυτό το παράρτημα προτείνει *πώς* να προστεθεί ένας δεύτερος provider με σαφή ρόλο, όχι σε αντίθεση με εκείνη την αρχή αλλά ως η συγκεκριμένη υλοποίησή της.
+
+### 13.2 Προτεινόμενο tiering (τιμές Ιανουαρίου 2026, ανά 1M tokens)
+
+| Χρήση | Μοντέλο | Input / Output | Γιατί |
+|---|---|---|---|
+| Καθημερινό chat, όλα τα agent personas | `claude-sonnet-5` | $3 / $15 | Ισορροπία ποιότητας-κόστους για high-volume interactive chat με αξιόπιστο tool-calling |
+| Βαριά σύνθεση (canvas-pitch, market-analyst deep dive, Phase E artifacts) | `claude-opus-5` | $5 / $25 | Μεγαλύτερη ικανότητα agentic reasoning όταν η σύνθεση αξίζει το κόστος |
+| Φθηνό/γρήγορο triage, background jobs (`AIJobQueueService`) | `claude-haiku-4-5` | $1 / $5 | Εργασίες χαμηλής πολυπλοκότητας, μαζικές |
+| Offline / fallback / cost-sensitive tenants | Ollama (τοπικό) | $0 | Διατηρείται όπως προδιαγράφει το §7 «graceful degradation» |
+
+Το επιλεγμένο μοντέλο/provider ανά χρήστη προκύπτει από το ήδη υπάρχον `AIUserPreference.preferredProvider`/`preferredModel` (Prisma) — υλοποίηση ενός ήδη μοντελοποιημένου πεδίου, όχι νέο schema. Prompt caching στο σταθερό τμήμα κάθε system prompt (15 agent personas × μεγάλα, στατικά prompts) μετριάζει σημαντικά το κόστος tier 1.
+
+### 13.3 Ενοποιημένη τηλεμετρία πέρα από το AI chat
+
+Το §1.1 σωστά εντοπίζει ότι τα agents δεν βλέπουν `MatchInferenceLog`/`UserBehaviorSignal`. Πέρα από το `get_graph` tool του §5, υπάρχει ευκαιρία για μια read-only SQL view που ενώνει `AIUsageLog` + `MatchInferenceLog` + `NudgeLog` + `UserBehaviorSignal` ανά `userId` — ώστε ο `matching` agent να μπορεί να εξηγήσει ένα score παραθέτοντας το πραγματικό `MatchInferenceLog` αντί για γενική θεωρία, χωρίς να αλλάξει το ML pipeline του matching (§10 μη-στόχος παραμένει ακέραιος).
+
+### 13.4 Πλήρης αφήγηση
+
+Η αναλυτική, εικονογραφημένη εκδοχή αυτού του παραρτήματος (με πλήρη απογραφή πλατφόρμας, τεκμηρίωση κενών, και οπτικό υλικό) είναι δημοσιευμένη ως docket: "Cognitive Core" — βλ. σημείωση commit `feat: wire notification badge`.
