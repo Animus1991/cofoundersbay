@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
   allowedDevOrigins,
+  devIndicators: false,
   
   // Performance optimizations
   compiler: {
