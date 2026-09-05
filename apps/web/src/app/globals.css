@@ -496,18 +496,23 @@
   .bg-white\/12 { background-color: rgb(255 255 255 / 0.12); }
   .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
 
-  /* Skip-to-content — fully clipped until keyboard focus (never peek as a blue sliver) */
-  .skip-to-content {
+  /* Skip-to-content — stays in the tab order, but has no paint until focused */
+  .skip-to-content:not(:focus) {
     position: absolute;
+    left: -10000px;
+    top: 0;
     width: 1px;
     height: 1px;
     padding: 0;
-    margin: -1px;
+    margin: 0;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
     clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
+    background: transparent;
+    color: transparent;
+    opacity: 0;
     pointer-events: none;
   }
   .skip-to-content:focus {
@@ -521,6 +526,7 @@
     clip: auto;
     clip-path: none;
     overflow: visible;
+    opacity: 1;
     pointer-events: auto;
     transform: translateX(-50%);
     padding: 0.5rem 1.25rem;

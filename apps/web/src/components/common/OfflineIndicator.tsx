@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 // Network status context
 type NetworkContextType = {
@@ -63,19 +64,6 @@ export function NetworkProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Offline banner shown when user's browser is offline OR when the API server is down.
-function isPreviewDemo() {
-  if (typeof document === 'undefined') return false;
-  try {
-    return (
-      document.cookie.includes('cfb_preview_demo=1') ||
-      window.localStorage.getItem('cfb_demo_data') === '1'
-    );
-  } catch {
-    return false;
-  }
-}
-
 export function OfflineBanner() {
   const { isOnline, isApiOnline, wasOffline } = useNetwork();
   const [showReconnected, setShowReconnected] = useState(false);
@@ -83,7 +71,16 @@ export function OfflineBanner() {
   const [previewDemo, setPreviewDemo] = useState(false);
 
   useEffect(() => {
-    setPreviewDemo(isPreviewDemo());
+    const sync = () => setPreviewDemo(isPreviewDemo());
+    sync();
+    window.addEventListener('cfb:login', sync);
+    window.addEventListener('cfb:user', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('cfb:login', sync);
+      window.removeEventListener('cfb:user', sync);
+      window.removeEventListener('storage', sync);
+    };
   }, []);
 
   const fullyOnline = isOnline && isApiOnline;
