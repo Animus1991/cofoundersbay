@@ -206,7 +206,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="h-5 w-5 text-primary-accessible" />
                 What would you like to do?
               </DialogTitle>
               <DialogDescription>
@@ -235,7 +235,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                  <Ban className="h-5 w-5 text-destructive" />
+                  <Ban className="h-5 w-5 text-destructive-accessible" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Block user</p>
@@ -282,7 +282,7 @@ export function ReportBlockModal({
                         value={reason.value}
                         checked={selectedReason === reason.value}
                         onChange={() => setSelectedReason(reason.value)}
-                        className="mt-1 h-4 w-4 text-primary border-border focus:ring-primary"
+                        className="mt-1 h-4 w-4 text-primary-accessible border-border focus:ring-primary"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{reason.label}</p>
@@ -355,7 +355,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5 text-destructive" />
+                <Ban className="h-5 w-5 text-destructive-accessible" />
                 Block {userName}?
               </DialogTitle>
               <DialogDescription>
@@ -368,15 +368,15 @@ export function ReportBlockModal({
                 <p className="text-sm text-foreground">When you block someone:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't be able to message you
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't see your profile
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                    <X className="h-4 w-4 shrink-0 mt-0.5 text-destructive-accessible" />
                     They won't appear in your matches
                   </li>
                   <li className="flex items-start gap-2">

@@ -45,7 +45,7 @@ type ListEmptyStateTone = 'neutral' | 'primary' | 'success' | 'warning' | 'info'
 
 const TONE_CLASSES: Record<ListEmptyStateTone, string> = {
   neutral: 'bg-secondary text-muted-foreground',
-  primary: 'bg-primary/10 text-primary',
+  primary: 'bg-primary/10 text-primary-accessible',
   success: STATUS.success.chip,
   warning: STATUS.warning.chip,
   info: STATUS.info.chip,

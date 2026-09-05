@@ -231,7 +231,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
+                <Trophy className="h-5 w-5 text-primary-accessible" />
                 Achievements & Badges
               </CardTitle>
               <CardDescription>

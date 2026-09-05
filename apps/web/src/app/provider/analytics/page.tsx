@@ -113,7 +113,7 @@ function MetricCard({
         <div className="flex items-start justify-between mb-2">
           <p className="text-xs text-muted-foreground">{label}</p>
           <div className="rounded-md bg-primary/10 p-1.5">
-            <Icon className="h-3.5 w-3.5 text-primary" />
+            <Icon className="h-3.5 w-3.5 text-primary-accessible" />
           </div>
         </div>
         <p className="text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
@@ -161,7 +161,7 @@ export default function ProviderAnalyticsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <BarChart3 className="h-6 w-6 text-primary-accessible" />
               Analytics
             </h1>
             <p className="text-muted-foreground">Track your profile performance and service metrics</p>

@@ -209,7 +209,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <FolderKanban className="h-5 w-5 text-primary" />
+                  <FolderKanban className="h-5 w-5 text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Projects</p>

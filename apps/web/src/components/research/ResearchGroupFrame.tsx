@@ -219,7 +219,7 @@ export function ResearchGroupFrame({
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
-            <X className="w-3 h-3 text-destructive" />
+            <X className="w-3 h-3 text-destructive-accessible" />
           </button>
         </div>
       </div>

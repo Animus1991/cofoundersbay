@@ -272,7 +272,7 @@ export function BranchPanel({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-primary" />
+              <GitBranch className="h-4 w-4 text-primary-accessible" />
               Draft Variants
             </SheetTitle>
             <SheetDescription>
@@ -283,7 +283,7 @@ export function BranchPanel({
           <div className="flex-1 overflow-y-auto mt-4 space-y-4">
             {/* Main branch indicator */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
-              <GitBranch className="h-3.5 w-3.5 text-primary" />
+              <GitBranch className="h-3.5 w-3.5 text-primary-accessible" />
               <span className="text-sm font-medium">main</span>
               <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>
             </div>
@@ -345,7 +345,7 @@ export function BranchPanel({
                               )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive"
+                                className="text-destructive-accessible"
                                 onClick={() => handleClose(branch.id)}
                               >
                                 <XCircle className="h-3.5 w-3.5 mr-2" />

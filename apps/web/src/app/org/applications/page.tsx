@@ -75,14 +75,14 @@ function ApplicationCard({ application }: { application: Application }) {
         <div className="flex gap-4">
           <Avatar className="icon-md rounded-lg">
             <AvatarImage src={application.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/org/applications/${application.id}`} className="font-medium hover:text-primary transition-colors">
+                <Link href={`/org/applications/${application.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {application.startupName}
                 </Link>
                 <p className="text-sm text-muted-foreground">
@@ -107,7 +107,7 @@ function ApplicationCard({ application }: { application: Application }) {
                     <DropdownMenuItem>Mark as Shortlisted</DropdownMenuItem>
                     <DropdownMenuItem>Schedule Interview</DropdownMenuItem>
                     <DropdownMenuItem className={STATUS.success.text}>Accept</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Reject</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Reject</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

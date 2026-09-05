@@ -310,7 +310,7 @@ export function ShapeNode({
 
           {/* Delete */}
           <button
-            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-accessible transition-colors"
             title="Delete shape"
             onClick={onDelete}
           >

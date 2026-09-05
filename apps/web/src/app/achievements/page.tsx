@@ -253,7 +253,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
     <Card
       className={cn(
         'transition-all shadow-sm border-border/50',
-        achievement.unlocked ? 'hover:shadow-md' : 'opacity-75'
+        achievement.unlocked && 'hover:shadow-md'
       )}
     >
       <CardContent className="p-5">
@@ -344,7 +344,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary" />
+                <Trophy className="icon-lg text-primary-accessible" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('current_level')} el={achievementsEl('current_level')} compact /></p>
@@ -576,7 +576,12 @@ export default function AchievementsPage() {
                           onClick={() => setCategoryFilter(category.value)}
                         >
                           {Icon && <Icon className="icon-sm" />}
-                          <BilingualText en={category.labelEn} el={category.labelEl} compact />
+                          <BilingualText
+                            en={category.labelEn}
+                            el={category.labelEl}
+                            compact
+                            secondaryClassName={categoryFilter === category.value ? 'text-primary-foreground' : undefined}
+                          />
                         </Badge>
                       );
                     })}
@@ -653,11 +658,11 @@ export default function AchievementsPage() {
                             <span className={cn('w-6 text-center text-sm font-bold shrink-0', RANK_COLORS[user.rank] ?? 'text-muted-foreground')}>
                               {user.rank <= 3 ? ['🥇','🥈','🥉'][user.rank - 1] : `#${user.rank}`}
                             </span>
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
                               {user.name[0]}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary')}>
+                              <p className={cn('text-sm font-medium truncate', (user as any).isMe && 'text-primary-accessible')}>
                                 {user.name}{(user as any).isMe && ' (You)'}
                               </p>
                               <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>

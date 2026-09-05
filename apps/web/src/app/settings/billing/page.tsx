@@ -192,7 +192,7 @@ export default function UserBillingPage() {
               <>
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <PlanIcon className="h-6 w-6 text-primary" />
+                    <PlanIcon className="h-6 w-6 text-primary-accessible" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">

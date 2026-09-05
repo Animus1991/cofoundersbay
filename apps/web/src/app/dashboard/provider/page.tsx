@@ -70,7 +70,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -84,7 +84,7 @@ function ServiceCard({ service }: { service: any }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <div className="rounded-lg bg-primary/10 p-2">
-        <Package className="icon-md text-primary" />
+        <Package className="icon-md text-primary-accessible" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ function ServiceCard({ service }: { service: any }) {
         <p className="text-xs text-muted-foreground mt-0.5">{service.category}</p>
         <div className="flex items-center gap-4 mt-1.5">
           <span className="text-xs text-muted-foreground">{service.bookings} bookings</span>
-          <span className="text-xs font-medium text-primary">{service.price}</span>
+          <span className="text-xs font-medium text-primary-accessible">{service.price}</span>
         </div>
       </div>
       <Button variant="ghost" size="icon">
@@ -118,7 +118,7 @@ function ProjectCard({ project }: { project: any }) {
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10">
         <AvatarImage src={project.clientAvatar} />
-        <AvatarFallback className="bg-primary/10 text-primary">
+        <AvatarFallback className="bg-primary/10 text-primary-accessible">
           {project.clientName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -337,7 +337,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Briefcase className="icon-sm text-primary" />
+                    <Briefcase className="icon-sm text-primary-accessible" />
                     Active Projects
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -364,7 +364,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Package className="icon-sm text-primary" />
+                    <Package className="icon-sm text-primary-accessible" />
                     Your Services
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>

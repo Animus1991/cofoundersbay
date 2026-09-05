@@ -178,7 +178,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Award className="h-8 w-8 text-primary" />
+                <Award className="h-8 w-8 text-primary-accessible" />
               </div>
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
@@ -219,7 +219,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="h-3 w-3 text-primary" />
+                  <Star className="h-3 w-3 text-primary-accessible" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -360,7 +360,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                          <Icon className="h-5 w-5 text-primary" />
+                          <Icon className="h-5 w-5 text-primary-accessible" />
                         </div>
                         <span className="font-medium">{item.action}</span>
                       </div>

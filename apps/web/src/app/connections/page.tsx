@@ -76,7 +76,7 @@ function ConnectionCard({
         <Link href={`/profiles/${other.id}`}>
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+            <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
               {other.displayName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -84,7 +84,7 @@ function ConnectionCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -128,7 +128,7 @@ function ConnectionCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1 text-muted-foreground hover:text-destructive"
+                className="gap-1 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >
@@ -166,7 +166,7 @@ function IntroRequestCard({
           <Link href={`/profiles/${sender.id}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                 {sender.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -174,11 +174,11 @@ function IntroRequestCard({
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
-              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary gap-1">
+              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary-accessible gap-1">
                 <Handshake className="icon-sm" />
                 <BilingualText en={connectionsEn('intro_request')} el={connectionsEl('intro_request')} compact />
               </Badge>
@@ -203,7 +203,7 @@ function IntroRequestCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 text-muted-foreground hover:text-destructive"
+                className="gap-1.5 text-muted-foreground hover:text-destructive-accessible"
                 onClick={onDecline}
                 disabled={isPending}
               >

@@ -266,7 +266,7 @@ export default function AdminUserManagementPage() {
           Use the <strong>filters</strong> on the left to narrow by role or status. Select rows with
           checkboxes for <strong>bulk activate, suspend, or delete</strong>. Open a user with the eye
           icon or row menu — full detail lives on{' '}
-          <Link href="/admin/user-detail/1" className="text-primary underline-offset-2 hover:underline">
+          <Link href="/admin/user-detail/1" className="text-primary-accessible underline-offset-2 hover:underline">
             User detail
           </Link>
           .
@@ -404,10 +404,10 @@ export default function AdminUserManagementPage() {
                   </Avatar>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <Link href={`/admin/user-detail/${user.id}`} className="font-medium hover:text-primary">
+                      <Link href={`/admin/user-detail/${user.id}`} className="font-medium hover:text-primary-accessible">
                         {user.name}
                       </Link>
-                      {user.verified && <CheckCircle2 className="icon-sm text-primary" aria-label="Verified" />}
+                      {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" aria-label="Verified" />}
                     </div>
                     <p className="truncate text-sm text-muted-foreground">{user.email}</p>
                   </div>
@@ -446,7 +446,7 @@ export default function AdminUserManagementPage() {
                           <Shield className="mr-2 icon-sm" /> Make admin
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onClick={() => removeUser(user.id)}>
+                        <DropdownMenuItem className="text-destructive-accessible" onClick={() => removeUser(user.id)}>
                           <UserX className="mr-2 icon-sm" /> Remove user
                         </DropdownMenuItem>
                       </DropdownMenuContent>

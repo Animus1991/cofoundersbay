@@ -99,7 +99,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
+              <Building2 className="h-5 w-5 text-primary-accessible" />
               <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
@@ -151,7 +151,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive-accessible" />
               <p>Failed to load tenants</p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 Retry
@@ -184,7 +184,7 @@ export default function TenantsAdminPage() {
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary" />
+                        <Building2 className="icon-md text-primary-accessible" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -384,7 +384,7 @@ function TenantEditor({
               </TabsList>
 
               {saveError && (
-                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
                   <AlertTriangle className="icon-sm shrink-0" />
                   {saveError}
                 </div>
@@ -441,7 +441,7 @@ function TenantEditor({
                     <div className="flex gap-2">
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                           {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
                       ))}
@@ -483,7 +483,7 @@ function TenantEditor({
                   <div className="flex gap-2 flex-wrap">
                     {BG_STYLES.map(s => (
                       <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
-                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                         {s.charAt(0).toUpperCase() + s.slice(1)}
                       </button>
                     ))}
@@ -692,7 +692,7 @@ function TenantEditor({
           </div>
           <div className="flex gap-2">
             {tenant && (
-              <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>

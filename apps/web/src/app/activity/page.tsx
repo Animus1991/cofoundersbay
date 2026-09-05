@@ -288,7 +288,7 @@ export default function ActivityPage() {
             return (
               <Link key={action.href} href={action.href}>
                 <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2">
-                  <ActionIcon className="h-4 w-4 shrink-0 text-primary" />
+                  <ActionIcon className="h-4 w-4 shrink-0 text-primary-accessible" />
                   <span className="text-xs font-medium text-foreground">{action.label}</span>
                 </div>
               </Link>
@@ -451,7 +451,7 @@ export default function ActivityPage() {
                 {notifications.length > 0 && (
                   <div className="mt-3 flex items-center justify-between px-1">
                     <p className="text-xs text-muted-foreground">{unreadCount} unread of {notifications.length} total</p>
-                    <Link href="/notifications" className="text-xs text-primary hover:underline flex items-center gap-1">
+                    <Link href="/notifications" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
                       View all <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
@@ -542,7 +542,7 @@ export default function ActivityPage() {
             <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-violet-500/5">
               <CardContent className="p-4 text-center">
                 <div className="flex h-12 w-12 mx-auto items-center justify-center rounded-full bg-primary/10">
-                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <BarChart3 className="h-5 w-5 text-primary-accessible" />
                 </div>
                 <p className="mt-2 text-sm font-semibold text-foreground">Stay Active</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Connect, engage, and grow your network daily.</p>

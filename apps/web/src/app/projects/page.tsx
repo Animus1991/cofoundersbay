@@ -147,7 +147,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
           <div className="flex items-center gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                   {project.name}
                 </Link>
                 <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
@@ -163,7 +163,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
                 {project.members.slice(0, 3).map((m) => (
                   <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
                     <AvatarImage src={m.avatar} />
-                    <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                    <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                       {m.name[0]}
                     </AvatarFallback>
                   </Avatar>
@@ -203,7 +203,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+              <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                 {project.name}
               </Link>
               {project.isStarred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
@@ -283,7 +283,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
             {project.members.slice(0, 4).map((m) => (
               <Avatar key={m.id} className="h-8 w-8 border-2 border-background">
                 <AvatarImage src={m.avatar} />
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                   {m.name[0]}
                 </AvatarFallback>
               </Avatar>
@@ -295,7 +295,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
               <p className="text-xs font-medium text-muted-foreground">Looking for:</p>
               <div className="flex flex-wrap gap-1">
                 {project.rolesNeeded.map((role) => (
-                  <Badge key={role} variant="outline" className="text-xs bg-primary/5 border-primary/20 text-primary">
+                  <Badge key={role} variant="outline" className="text-xs bg-primary/5 border-primary/20 text-primary-accessible">
                     {role}
                   </Badge>
                 ))}

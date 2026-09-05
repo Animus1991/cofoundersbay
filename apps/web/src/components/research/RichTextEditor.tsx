@@ -165,7 +165,7 @@ export function RichTextEditor({
             '[&_p]:mb-2 [&_p]:leading-relaxed',
             '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3',
             '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3',
-            '[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2',
+            '[&_a]:text-primary-accessible [&_a]:underline [&_a]:underline-offset-2',
             '[&_blockquote]:border-l-4 [&_blockquote]:border-primary/30 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-3',
             '[&_pre]:bg-secondary [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-3 [&_pre]:overflow-x-auto',
             '[&_code]:bg-secondary [&_code]:rounded [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-sm',

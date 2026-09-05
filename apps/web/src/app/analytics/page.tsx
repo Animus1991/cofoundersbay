@@ -209,7 +209,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card className="border-primary/20 bg-primary/[0.02]">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-primary" />
+          <Zap className="h-4 w-4 text-primary-accessible" />
           <span className="text-sm font-semibold">Network Velocity</span>
           <Badge variant="secondary" className="text-[10px] ml-auto">vs prev period</Badge>
         </div>
@@ -255,7 +255,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
               key={item.id}
               className="flex items-start gap-3 p-3 rounded-lg hover:bg-secondary/40 transition-colors"
             >
-              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/20 text-primary font-semibold text-sm shrink-0">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/20 text-primary-accessible font-semibold text-sm shrink-0">
                 {index + 1}
               </div>
               <div className="flex-1 min-w-0">
@@ -395,7 +395,7 @@ export default function AnalyticsPage() {
               className={cn(
                 'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
                 period === p
-                  ? 'border-primary bg-primary/20 text-primary'
+                  ? 'border-primary bg-primary/20 text-primary-accessible'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
               )}
             >

@@ -205,12 +205,12 @@ export default function ResearchBoardsPage() {
     >
       {isLoading && (
         <div className="flex items-center justify-center min-h-[40vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
         </div>
       )}
       {!isLoading && error && (
         <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-          <p className="text-destructive mb-4">Failed to load research boards</p>
+          <p className="text-destructive-accessible mb-4">Failed to load research boards</p>
           <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
             Retry
           </Button>
@@ -258,7 +258,7 @@ export default function ResearchBoardsPage() {
       {boards.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-            <FolderOpen className="h-10 w-10 text-primary" />
+            <FolderOpen className="h-10 w-10 text-primary-accessible" />
           </div>
           <h2 className="text-xl font-semibold mb-2">No research boards yet</h2>
           <p className="text-muted-foreground mb-6 max-w-md">
@@ -395,7 +395,7 @@ export default function ResearchBoardsPage() {
                       className={cn(
                         'w-10 h-10 rounded-lg border flex items-center justify-center transition-all',
                         newBoardIcon === icon.value
-                          ? 'border-primary bg-primary/10 text-primary'
+                          ? 'border-primary bg-primary/10 text-primary-accessible'
                           : 'border-border hover:border-primary/50'
                       )}
                       title={icon.name}
@@ -472,7 +472,7 @@ function BoardCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold truncate">{board.title}</h3>
-              {board.isPinned && <Pin className="h-3 w-3 text-primary shrink-0" />}
+              {board.isPinned && <Pin className="h-3 w-3 text-primary-accessible shrink-0" />}
             </div>
             {board.description && (
               <p className="text-sm text-muted-foreground truncate">{board.description}</p>
@@ -500,7 +500,7 @@ function BoardCard({
                 Archive
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
+              <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </DropdownMenuItem>
@@ -527,7 +527,7 @@ function BoardCard({
           />
           {board.isPinned && (
             <div className="absolute top-3 left-3">
-              <Pin className="h-4 w-4 text-primary" />
+              <Pin className="h-4 w-4 text-primary-accessible" />
             </div>
           )}
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -547,7 +547,7 @@ function BoardCard({
                   Archive
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </DropdownMenuItem>

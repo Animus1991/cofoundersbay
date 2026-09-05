@@ -174,7 +174,7 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="h-4 w-4 text-primary" />
+            <GitCommit className="h-4 w-4 text-primary-accessible" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -479,7 +479,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="h-4 w-4 text-primary" />
+                <History className="h-4 w-4 text-primary-accessible" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
             </DialogHeader>
@@ -826,7 +826,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                 )}
                 <Button
                   variant="ghost" size="sm"
-                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive hover:text-destructive"
+                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-accessible hover:text-destructive-accessible"
                   title="Delete"
                   onClick={() => setDeletingId(b.id)}
                 >
@@ -842,7 +842,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="h-4 w-4 text-destructive" />Delete branch?
+              <AlertTriangle className="h-4 w-4 text-destructive-accessible" />Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.
@@ -880,7 +880,7 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
         <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/60">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <History className="h-4 w-4 text-primary" />
+            <History className="h-4 w-4 text-primary-accessible" />
             Canvas History
           </SheetTitle>
           <SheetDescription className="text-xs">

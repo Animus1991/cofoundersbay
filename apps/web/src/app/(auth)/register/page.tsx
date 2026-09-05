@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+              <div role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -216,13 +216,13 @@ export default function RegisterPage() {
                       aria-pressed={active}
                       className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all focus-ring ${
                         active
-                          ? 'border-primary/60 bg-primary/10 text-primary'
+                          ? 'border-primary/60 bg-primary/10 text-primary-accessible'
                           : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
                       <span
                         className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
-                          active ? 'bg-primary/15 text-primary' : 'bg-background text-muted-foreground'
+                          active ? 'bg-primary/15 text-primary-accessible' : 'bg-background text-muted-foreground'
                         }`}
                       >
                         {r.badge}
@@ -247,7 +247,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link href="/login" className="font-medium text-primary-accessible hover:underline">
               Sign in
             </Link>
           </p>

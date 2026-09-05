@@ -124,7 +124,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
           <ul className="space-y-1">
             {val.slice(0, 10).map((item, i) => (
               <li key={i} className="flex items-start gap-1.5 text-sm">
-                <span className="text-primary mt-1 shrink-0">•</span>
+                <span className="text-primary-accessible mt-1 shrink-0">•</span>
                 {typeof item === 'string' ? item : JSON.stringify(item)}
               </li>
             ))}
@@ -226,7 +226,7 @@ export default function SharePage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-3 text-primary-accessible" />
           <p className="text-sm text-muted-foreground">Loading shared document…</p>
         </div>
       </div>
@@ -242,7 +242,7 @@ export default function SharePage() {
           <CardHeader className="text-center pb-3">
             <div className="flex justify-center mb-3">
               <div className="p-3 bg-primary/10 rounded-full">
-                <Lock className="h-6 w-6 text-primary" />
+                <Lock className="h-6 w-6 text-primary-accessible" />
               </div>
             </div>
             <CardTitle>Password Protected</CardTitle>
@@ -265,7 +265,7 @@ export default function SharePage() {
                 className={cn(passwordError && 'border-destructive')}
               />
               {passwordError && (
-                <p className="text-xs text-destructive">{passwordError}</p>
+                <p className="text-xs text-destructive-accessible">{passwordError}</p>
               )}
             </div>
             <Button
@@ -289,7 +289,7 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
-            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive" />
+            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-accessible" />
             <h2 className="font-semibold mb-2">Link Unavailable</h2>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
@@ -310,7 +310,7 @@ export default function SharePage() {
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <div className="flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-primary shrink-0" />
+              <Rocket className="h-5 w-5 text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm hidden sm:block">CoFounderBay</span>
             </div>
             {document && (
@@ -377,7 +377,7 @@ export default function SharePage() {
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <Rocket className="h-4 w-4 text-primary" />
+                        <Rocket className="h-4 w-4 text-primary-accessible" />
                         <span className="font-medium text-sm">
                           {document.workspace.startupName ?? document.workspace.name}
                         </span>
@@ -470,7 +470,7 @@ export default function SharePage() {
       {/* Footer */}
       <footer className="border-t mt-12 py-6 text-center text-xs text-muted-foreground">
         Shared via{' '}
-        <a href="/" className="text-primary hover:underline font-medium">
+        <a href="/" className="text-primary-accessible hover:underline font-medium">
           CoFounderBay
         </a>{' '}
         — Startup Builder Platform

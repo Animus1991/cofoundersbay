@@ -80,7 +80,7 @@ function ConversationItem({
       <div className="relative">
         <Avatar className="h-12 w-12">
           <AvatarImage src={conversation.recipientAvatar || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
+          <AvatarFallback className="bg-primary/20 text-primary-accessible">
             {conversation.recipientName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -93,7 +93,7 @@ function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            {conversation.isPinned && <Pin className="h-3 w-3 text-primary flex-shrink-0" />}
+            {conversation.isPinned && <Pin className="h-3 w-3 text-primary-accessible flex-shrink-0" />}
             <span className={cn(
               'text-sm font-semibold truncate',
               conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
@@ -142,7 +142,7 @@ function ConversationItem({
             <Archive className="h-4 w-4 mr-2" />
             Archive
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete} className="text-destructive">
+          <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </DropdownMenuItem>
@@ -239,7 +239,7 @@ export function ConversationList({
         {filteredConversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="h-6 w-6 text-primary" />
+              <MessageSquarePlus className="h-6 w-6 text-primary-accessible" />
             </div>
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'No conversations found' : 'No messages yet'}
@@ -252,7 +252,7 @@ export function ConversationList({
             {!searchQuery && (
               <Link
                 href="/discover"
-                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20 transition-colors"
               >
                 Find people to message
               </Link>

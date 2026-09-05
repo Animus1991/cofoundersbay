@@ -115,7 +115,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
               <DropdownMenuItem><CheckCircle className="mr-2 h-4 w-4" />Mark Resolved</DropdownMenuItem>
               <DropdownMenuItem><XCircle className="mr-2 h-4 w-4" />Dismiss</DropdownMenuItem>
               <DropdownMenuItem><UserX className="mr-2 h-4 w-4" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Ban className="mr-2 h-4 w-4" />Ban User</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible"><Ban className="mr-2 h-4 w-4" />Ban User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -123,7 +123,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
           <div className="flex gap-2 mt-3">
             <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 h-3 w-3" />Resolve</Button>
             <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 h-3 w-3" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive border-destructive/30"><Ban className="mr-1 h-3 w-3" />Ban User</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-accessible border-destructive/30"><Ban className="mr-1 h-3 w-3" />Ban User</Button>
           </div>
         )}
       </CardContent>

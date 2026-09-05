@@ -66,14 +66,14 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <BarChart3 className="h-5 w-5 text-primary-accessible" />
             <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-4xl font-extrabold tabular-nums text-primary">{score}%</p>
+            <p className="text-4xl font-extrabold tabular-nums text-primary-accessible">{score}%</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
             </p>
@@ -89,7 +89,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <Zap className="h-3.5 w-3.5 text-primary-accessible mt-0.5 flex-shrink-0" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -228,7 +228,7 @@ function MatchListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -280,7 +280,7 @@ function MatchListRow({
         <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 justify-between">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
               title="Pass">
               <X className="h-3.5 w-3.5" />
             </button>
@@ -292,7 +292,7 @@ function MatchListRow({
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onBreakdown}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary-accessible transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
               <BarChart3 className="h-3.5 w-3.5" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
@@ -422,7 +422,7 @@ function MatchPreviewPanel({
                 {isSaved ? <BookmarkCheck className={cn('h-3.5 w-3.5', STATUS.warning.icon)} /> : <Bookmark className="h-3.5 w-3.5" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
+              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive-accessible" onClick={onPass}>
                 <X className="h-3.5 w-3.5" /> Pass
               </Button>
             </div>
@@ -782,7 +782,12 @@ export default function MatchesPage() {
                         )}>
                         <span className="flex items-center gap-1.5">
                           {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
-                          <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+                          <BilingualText
+                            en={tab.labelEn}
+                            el={tab.labelEl}
+                            compact
+                            secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
+                          />
                         </span>
                         <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
                           isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
@@ -806,7 +811,7 @@ export default function MatchesPage() {
                       <button key={key} onClick={() => setRoleFilter(key)}
                         className={cn(
                           'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                          isActive ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}>
                         <Icon className="h-3 w-3 shrink-0" />
                         <BilingualText en={labelEn} el={labelEl} compact />
@@ -849,7 +854,7 @@ export default function MatchesPage() {
                         const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
                       })}
                         className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isOn ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                          isOn ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
                         <span className={cn('h-3.5 w-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
                           isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
                           {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
@@ -874,7 +879,7 @@ export default function MatchesPage() {
                   ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
                     <button key={key} onClick={() => setSortBy(key)}
                       className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                        sortBy === key ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                        sortBy === key ? 'bg-primary/10 text-primary-accessible border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
                       <Icon className="h-3 w-3 shrink-0" />
                       <BilingualText en={labelEn} el={labelEl} compact />
                     </button>
@@ -899,7 +904,7 @@ export default function MatchesPage() {
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
                   className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
-                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
+                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border/60 text-muted-foreground')}>
                   <SlidersHorizontal className="h-3 w-3" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                 </button>
@@ -1157,7 +1162,7 @@ export default function MatchesPage() {
             }}>
             <BarChart3 className="h-3.5 w-3.5" /> Compare
           </Button>
-          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive"
+          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive-accessible"
             onClick={() => {
               filtered.forEach(h => {
                 if (selectedIds.has(h.id)) handlePass(h.id, h.displayName, h.userId);

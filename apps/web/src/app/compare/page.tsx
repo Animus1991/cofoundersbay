@@ -78,7 +78,7 @@ function ProfileColumn({
         <div className="flex flex-col items-center text-center">
           <Avatar className="h-16 w-16 border-2 border-primary/20">
             <AvatarImage src={profile.avatarUrl} />
-            <AvatarFallback className="text-base font-bold bg-primary/10 text-primary">
+            <AvatarFallback className="text-base font-bold bg-primary/10 text-primary-accessible">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -100,7 +100,7 @@ function ProfileColumn({
       {/* Match Score */}
       {profile.matchScore !== undefined && (
         <div className="mb-4 rounded-lg bg-primary/5 p-3 text-center">
-          <p className="text-2xl font-bold text-primary">{profile.matchScore}%</p>
+          <p className="text-2xl font-bold text-primary-accessible">{profile.matchScore}%</p>
           <p className="text-xs text-muted-foreground">Match Score</p>
         </div>
       )}
@@ -183,7 +183,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
       className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/60 bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-[400px]"
     >
       <div className="rounded-full bg-primary/10 p-4 mb-3">
-        <Plus className="h-8 w-8 text-primary" />
+        <Plus className="h-8 w-8 text-primary-accessible" />
       </div>
       <p className="font-medium text-foreground">Add Profile</p>
       <p className="text-sm text-muted-foreground mt-1">Select from matches or search</p>
@@ -203,7 +203,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="icon-md text-primary" />
+          <Zap className="icon-md text-primary-accessible" />
           Skills Comparison
         </CardTitle>
       </CardHeader>
@@ -221,7 +221,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
                       className={cn(
                         'flex-1 h-6 rounded flex items-center justify-center text-xs font-medium',
                         hasSkill
-                          ? 'bg-primary/20 text-primary'
+                          ? 'bg-primary/20 text-primary-accessible'
                           : 'bg-secondary/50 text-muted-foreground'
                       )}
                     >
@@ -333,7 +333,7 @@ export default function ComparePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <ArrowLeftRight className="icon-lg text-primary" />
+              <ArrowLeftRight className="icon-lg text-primary-accessible" />
               Compare Profiles
             </h1>
             <p className="text-muted-foreground mt-1">

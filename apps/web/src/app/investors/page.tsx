@@ -152,7 +152,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
           {/* Avatar */}
           <Avatar className="h-11 w-11 rounded-xl shrink-0">
             <AvatarImage src={investor.avatarUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -183,7 +183,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   {TYPE_LABEL[investor.investorType] ?? investor.investorType}
                 </Badge>
                 <button onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
-                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
                 </button>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function InvestorsPage() {
           ].map(s => (
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-2">
-                <s.icon className="h-4 w-4 text-primary shrink-0" />
+                <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
                 <div><p className="text-xs font-bold">{s.value}</p><p className="text-[10px] text-muted-foreground">{s.label}</p></div>
               </CardContent>
             </Card>

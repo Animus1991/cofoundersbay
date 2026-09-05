@@ -37,7 +37,7 @@ const ACTION_COLORS: Record<string, string> = {
   update: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
   delete: 'bg-red-500/10 text-red-600 border-red-500/20',
   view: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  login: 'bg-primary/10 text-primary border-primary/20',
+  login: 'bg-primary/10 text-primary-accessible border-primary/20',
   logout: 'bg-muted text-muted-foreground border-border',
   ban: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
   unban: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
@@ -193,7 +193,7 @@ export default function AdminAuditLogPage() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="icon-sm text-primary" />
+              <Shield className="icon-sm text-primary-accessible" />
               Activity Log
             </CardTitle>
             <span className="text-xs text-muted-foreground">{total} total entries</span>

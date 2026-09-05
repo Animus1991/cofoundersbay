@@ -65,7 +65,7 @@ function CommunityCard({ community }: { community: Community }) {
       <CardContent className="p-4">
         <div className="flex gap-4">
           <Avatar className="h-12 w-12 rounded-lg">
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {community.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -73,7 +73,7 @@ function CommunityCard({ community }: { community: Community }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/communities/${community.id}`} className="font-medium hover:text-primary transition-colors">
+                  <Link href={`/communities/${community.id}`} className="font-medium hover:text-primary-accessible transition-colors">
                     {community.name}
                   </Link>
                   <span className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -101,7 +101,7 @@ function CommunityCard({ community }: { community: Community }) {
                     <DropdownMenuItem>Manage Members</DropdownMenuItem>
                     <DropdownMenuItem>View Reports</DropdownMenuItem>
                     <DropdownMenuItem className="text-amber-600">Archive</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

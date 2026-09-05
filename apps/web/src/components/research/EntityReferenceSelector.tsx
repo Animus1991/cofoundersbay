@@ -134,7 +134,7 @@ export function EntityReferenceSelector({
                   )}
                 >
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="h-5 w-5 text-primary" />
+                    <Icon className="h-5 w-5 text-primary-accessible" />
                   </div>
                   <div>
                     <div className="font-medium">{entityType.label}</div>
@@ -160,7 +160,7 @@ export function EntityReferenceSelector({
             <div className="max-h-[300px] overflow-y-auto space-y-2">
               {isLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary-accessible" />
                 </div>
               )}
 
@@ -196,7 +196,7 @@ export function EntityReferenceSelector({
                       />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Icon className="h-5 w-5 text-primary" />
+                        <Icon className="h-5 w-5 text-primary-accessible" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -205,7 +205,7 @@ export function EntityReferenceSelector({
                         <div className="text-sm text-muted-foreground truncate">{entity.subtitle}</div>
                       )}
                     </div>
-                    <Check className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100" />
+                    <Check className="h-4 w-4 text-primary-accessible opacity-0 group-hover:opacity-100" />
                   </button>
                 );
               })}

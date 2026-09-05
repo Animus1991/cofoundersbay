@@ -84,7 +84,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
         <div className="flex gap-4">
           <Avatar className="h-12 w-12 rounded-lg">
             <AvatarImage src={investment.logoUrl} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold">
               {investment.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -92,7 +92,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/startups/${investment.id}`} className="font-semibold hover:text-primary transition-colors">
+                  <Link href={`/startups/${investment.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {investment.name}
                   </Link>
                   <Badge variant="outline" className={cn('text-xs', statusColors[investment.status])}>
@@ -192,7 +192,7 @@ export default function InvestorPortfolioPage() {
         <div className="grid gap-3 sm:grid-cols-4">
           {[
             { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
-            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary' },
+            { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
             { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600' },
             { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600' },
           ].map(({ label, value, icon: Icon, color }) => (

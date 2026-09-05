@@ -105,7 +105,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
       <div className="relative shrink-0">
         <Avatar className="h-9 w-9">
           <AvatarImage src={conv.recipientAvatar ?? undefined} />
-          <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary">
+          <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
             {conv.recipientName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -814,7 +814,7 @@ export function UnifiedChatPopup() {
               <div className="relative shrink-0">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                  <AvatarFallback className="text-[10px] font-semibold bg-primary/15 text-primary">
+                  <AvatarFallback className="text-[10px] font-semibold bg-primary/15 text-primary-accessible">
                     {selected.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -851,7 +851,7 @@ export function UnifiedChatPopup() {
                 ) : msgMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <MessageCircle className="h-5 w-5 text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">Say hello!</p>
                     <p className="text-xs text-muted-foreground">Start a conversation with {selected.recipientName}</p>
@@ -875,7 +875,7 @@ export function UnifiedChatPopup() {
                             {!isMe && (
                               <Avatar className="h-6 w-6 shrink-0 mb-0.5">
                                 <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                                <AvatarFallback className="text-[9px] bg-primary/15 text-primary">
+                                <AvatarFallback className="text-[9px] bg-primary/15 text-primary-accessible">
                                   {selected.recipientName[0]?.toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -891,7 +891,7 @@ export function UnifiedChatPopup() {
                                 {msg.status === 'sending' ? (
                                   <Loader2 className="h-3 w-3 animate-spin" />
                                 ) : msg.status === 'read' ? (
-                                  <CheckCheck className="h-3 w-3 text-primary" />
+                                  <CheckCheck className="h-3 w-3 text-primary-accessible" />
                                 ) : (
                                   <Check className="h-3 w-3" />
                                 )}
@@ -947,7 +947,7 @@ export function UnifiedChatPopup() {
                 {filteredConvos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <MessageCircle className="h-5 w-5 text-primary-accessible" />
                     </div>
                     <p className="text-sm font-medium">
                       {searchQuery ? 'No results' : 'No messages yet'}

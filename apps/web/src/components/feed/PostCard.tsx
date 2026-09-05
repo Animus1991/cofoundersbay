@@ -130,7 +130,7 @@ export function PostCard({
             <Link href={`/profiles/${author.id}`}>
               <Avatar className="h-11 w-11 ring-2 ring-border/40">
                 <AvatarImage src={author.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-accessible font-semibold">
                   {author.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -139,7 +139,7 @@ export function PostCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${author.id}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors"
+                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors"
                 >
                   {author.displayName}
                 </Link>
@@ -176,7 +176,7 @@ export function PostCard({
                       <Edit className="h-4 w-4 mr-2" />
                       Edit post
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                    <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete post
                     </DropdownMenuItem>
@@ -211,7 +211,7 @@ export function PostCard({
               <Link
                 key={tag}
                 href={`/discover?tag=${encodeURIComponent(tag)}`}
-                className="text-xs text-primary hover:underline"
+                className="text-xs text-primary-accessible hover:underline"
               >
                 #{tag}
               </Link>
@@ -267,7 +267,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={onComment}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
               <MessageCircle className="h-4 w-4" />
               <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
@@ -276,7 +276,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={onShare}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-accessible"
             >
               <Share2 className="h-4 w-4" />
             </Button>

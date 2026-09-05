@@ -273,7 +273,7 @@ export default function TenantBrandingPage() {
       <div className="space-y-6 max-w-5xl">
 
         {saveMutation.isError && (
-          <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
             <AlertCircle className="h-4 w-4 shrink-0" />
             Failed to save changes. Please try again.
           </div>
@@ -335,7 +335,7 @@ export default function TenantBrandingPage() {
                           onClick={() => setField('backgroundStyle', s.value)}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                             form.backgroundStyle === s.value
-                              ? 'border-primary bg-primary/10 text-primary'
+                              ? 'border-primary bg-primary/10 text-primary-accessible'
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
@@ -391,7 +391,7 @@ export default function TenantBrandingPage() {
                             onClick={() => setField(key, font)}
                             className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
                               form[key] === font
-                                ? 'border-primary bg-primary/10 text-primary font-medium'
+                                ? 'border-primary bg-primary/10 text-primary-accessible font-medium'
                                 : 'border-border hover:border-primary/50'
                             }`}
                           >

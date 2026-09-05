@@ -180,7 +180,7 @@ function CoverSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   const c = slide.content as any;
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-gradient-to-br from-primary/10 via-background to-primary/5">
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary font-medium">
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible font-medium">
         {c.stage} • Raising {c.raising}
       </div>
       <h1 className="text-5xl font-bold text-foreground mb-4">{slide.title}</h1>
@@ -342,7 +342,7 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
               </AvatarFallback>
             </Avatar>
             <p className="font-semibold">{member.name}</p>
-            <p className="text-sm text-primary mt-1">{member.role}</p>
+            <p className="text-sm text-primary-accessible mt-1">{member.role}</p>
             <p className="text-xs text-muted-foreground mt-2">{member.background}</p>
           </div>
         ))}
@@ -363,7 +363,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       </div>
       <div className="flex items-center gap-8 mb-8">
         <div>
-          <p className="text-5xl font-bold text-primary">{c.amount}</p>
+          <p className="text-5xl font-bold text-primary-accessible">{c.amount}</p>
           <p className="text-muted-foreground mt-1">Raising</p>
         </div>
         <ArrowRight className="h-8 w-8 text-muted-foreground" />

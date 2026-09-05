@@ -188,7 +188,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
                 {difficultyConfig.label}
               </Badge>
               {resource.isFeatured && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary">
+                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary-accessible">
                   Featured
                 </Badge>
               )}
@@ -196,7 +196,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             onClick={() => setSaved(!saved)}
-            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary' : 'text-muted-foreground/40 hover:text-muted-foreground')}
+            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground')}
           >
             <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
           </button>
@@ -258,7 +258,7 @@ function LearningPathCard({ path }: { path: LearningPath }) {
         <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary">
+      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary-accessible">
         {path.progress > 0 ? 'Continue path' : 'Start path'}
         <ChevronRight className="h-3 w-3" />
       </div>
@@ -402,7 +402,7 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
+              <Target className="h-4 w-4 text-primary-accessible" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
             </div>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
@@ -419,7 +419,7 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary-accessible" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recommended for you
             </h2>
@@ -463,7 +463,7 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
                     typeFilter === tf.key
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >{tf.label}</button>
@@ -479,7 +479,7 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
                     selectedCategory === category
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-accessible'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -512,7 +512,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
+                <TrendingUp className="h-4 w-4 text-primary-accessible" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Featured Resources
                 </h2>

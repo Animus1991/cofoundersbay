@@ -206,7 +206,7 @@ export function RichTextEditor({
           className={cn(
             'p-3 text-sm outline-none',
             'prose prose-sm max-w-none dark:prose-invert',
-            '[&_a]:text-primary [&_a]:underline',
+            '[&_a]:text-primary-accessible [&_a]:underline',
             '[&_blockquote]:border-l-2 [&_blockquote]:border-primary/40 [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground',
             '[&_pre]:bg-muted [&_pre]:rounded [&_pre]:p-2 [&_pre]:font-mono [&_pre]:text-xs',
             '[&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5',

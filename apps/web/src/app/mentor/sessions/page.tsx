@@ -110,7 +110,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
                 <Button size="sm" variant="outline" className="h-7 text-xs">
                   Reschedule
                 </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-accessible">
                   Cancel
                 </Button>
               </div>
@@ -162,7 +162,7 @@ export default function MentorSessionsPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
               <h3 className="font-medium">Failed to load sessions</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
@@ -234,7 +234,7 @@ export default function MentorSessionsPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Clock className="h-5 w-5 text-primary" />
+                <Clock className="h-5 w-5 text-primary-accessible" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalDuration} min</p>

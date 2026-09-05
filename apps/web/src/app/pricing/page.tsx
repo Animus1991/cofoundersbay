@@ -88,7 +88,7 @@ const PLANS = [
     priceMonthly: 19,
     priceAnnual: 159,
     icon: Sparkles,
-    color: 'text-primary',
+    color: 'text-primary-accessible',
     bgColor: 'bg-primary/10',
     popular: true,
     cta: 'Start Free Trial',
@@ -324,7 +324,7 @@ export default function PricingPage() {
                 <tr className="border-b border-border/60">
                   <th className="py-4 text-left text-sm font-semibold text-foreground">Feature</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Free</th>
-                  <th className="py-4 text-center text-sm font-semibold text-primary">Pro</th>
+                  <th className="py-4 text-center text-sm font-semibold text-primary-accessible">Pro</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Team</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
                 </tr>

@@ -235,8 +235,8 @@ export default function AdminDashboardPage() {
     return (
       <AppShell title="Admin Dashboard" description="Monitor and manage your CoFounderBay platform">
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-8 text-center">
-          <AlertTriangle className="icon-xl text-destructive mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-destructive mb-2">Dashboard Error</h2>
+          <AlertTriangle className="icon-xl text-destructive-accessible mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-destructive-accessible mb-2">Dashboard Error</h2>
           <p className="text-muted-foreground">Failed to load admin metrics</p>
           <Button onClick={() => refetchMetrics()} className="mt-4">
             Retry

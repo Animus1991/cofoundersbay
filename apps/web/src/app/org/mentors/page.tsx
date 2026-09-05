@@ -66,7 +66,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
           <Link href={`/p/${mentor.userId}`}>
             <Avatar className="icon-md">
               <AvatarImage src={mentor.avatar} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -75,11 +75,11 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary transition-colors">
+                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary-accessible transition-colors">
                     {mentor.name}
                   </Link>
                   {mentor.isVerified && (
-                    <CheckCircle2 className="icon-sm text-primary" />
+                    <CheckCircle2 className="icon-sm text-primary-accessible" />
                   )}
                 </div>
                 {mentor.headline && (
@@ -103,7 +103,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     <DropdownMenuItem>Assign to Startup</DropdownMenuItem>
                     <DropdownMenuItem>View Sessions</DropdownMenuItem>
                     <DropdownMenuItem>Send Message</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Remove from Pool</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-accessible">Remove from Pool</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

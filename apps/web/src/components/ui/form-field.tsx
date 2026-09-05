@@ -29,7 +29,7 @@ export function FormField({
       <Label htmlFor={htmlFor} className="inline-flex items-center gap-1">
         {label}
         {required && (
-          <span className="text-destructive" aria-hidden="true">
+          <span className="text-destructive-accessible" aria-hidden="true">
             *
           </span>
         )}
@@ -42,7 +42,7 @@ export function FormField({
         </p>
       )}
       {error && (
-        <p id={errorId} className="text-xs text-destructive" role="alert">
+        <p id={errorId} className="text-xs text-destructive-accessible" role="alert">
           {error}
         </p>
       )}

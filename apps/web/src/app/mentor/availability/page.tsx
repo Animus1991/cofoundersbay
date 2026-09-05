@@ -153,7 +153,7 @@ export default function MentorAvailabilityPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" />
+              <Calendar className="h-6 w-6 text-primary-accessible" />
               Availability Settings
             </h1>
             <p className="text-muted-foreground">
@@ -182,7 +182,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-primary" />
+                <Clock className="h-4 w-4 text-primary-accessible" />
                 <span className="text-sm font-medium">Weekly Hours</span>
               </div>
               <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
@@ -192,7 +192,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="h-4 w-4 text-primary" />
+                <Globe className="h-4 w-4 text-primary-accessible" />
                 <span className="text-sm font-medium">Timezone</span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>
@@ -278,7 +278,7 @@ export default function MentorAvailabilityPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive-accessible"
                                 onClick={() => removeSlot(slot.id)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" />

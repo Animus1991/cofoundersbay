@@ -67,7 +67,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
     <Card className={cn('', className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
+          <BarChart3 className="h-4 w-4 text-primary-accessible" />
           Active poll
         </CardTitle>
       </CardHeader>
@@ -86,7 +86,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
                   className={cn(
                     'w-full rounded-lg border p-3 text-left text-sm transition-colors',
                     isSelected
-                      ? 'border-primary bg-primary/10 text-primary'
+                      ? 'border-primary bg-primary/10 text-primary-accessible'
                       : 'border-border/60 hover:bg-secondary/60',
                     voted && !isSelected && 'cursor-default opacity-80',
                   )}

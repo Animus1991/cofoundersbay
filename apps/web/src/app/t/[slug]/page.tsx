@@ -114,7 +114,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             )}
 
             <Link href={b?.ctaUrl || '/register'}>
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2 shadow">
+              <Button size="lg" className="bg-white text-primary-accessible hover:bg-white/90 gap-2 shadow">
                 {b?.ctaLabel || 'Get Started'}
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -140,7 +140,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
-                <Building2 className="h-5 w-5 text-primary" />
+                <Building2 className="h-5 w-5 text-primary-accessible" />
               </div>
               <div>
                 <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
@@ -164,7 +164,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <Card key={f.title} className="text-center border-border/60 hover:shadow-md transition-shadow">
               <CardContent className="pt-6 pb-6">
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <f.icon className="h-6 w-6 text-primary" />
+                  <f.icon className="h-6 w-6 text-primary-accessible" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
@@ -178,7 +178,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
       <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-8 pb-8">
-            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary" />
+            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary-accessible" />
             <h2 className="text-2xl font-bold mb-2">
               {b?.dashboardWelcomeText || `Ready to join ${tenant.displayName || tenant.name}?`}
             </h2>

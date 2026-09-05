@@ -274,7 +274,7 @@ export default function CalendarPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary' },
+            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-accessible' },
             { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-red-600' },
             { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-blue-600' },
             { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
@@ -343,7 +343,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="icon-sm text-primary" />
+                    <CalendarDays className="icon-sm text-primary-accessible" />
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </CardTitle>
                 </CardHeader>
@@ -365,7 +365,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
+                    <Sparkles className="icon-sm text-primary-accessible" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Logo } from '@/components/brand/Logo';
+import { cn } from '@/lib/utils';
 import { getPublicProfile, getEndorsementsForUser, type PublicProfile, type EndorsementItem } from '@/lib/api';
 
 function deriveProfileFields(profile: PublicProfile) {
@@ -51,7 +52,7 @@ function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
       <div className="flex items-center gap-3 mt-4">
         <Avatar className="h-10 w-10">
           <AvatarImage src={endorsement.fromUser.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
             {endorsement.fromUser.displayName[0]}
           </AvatarFallback>
         </Avatar>
@@ -191,7 +192,7 @@ export default function PublicProfilePage() {
                 <div className="flex flex-col sm:flex-row gap-6">
                   <Avatar className="h-20 w-20 shrink-0">
                     <AvatarImage src={profile.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-xl bg-primary/10 text-primary">
+                    <AvatarFallback className="text-xl bg-primary/10 text-primary-accessible">
                       {firstName[0]}{lastName[0] || firstName[1] || ''}
                     </AvatarFallback>
                   </Avatar>
@@ -202,7 +203,7 @@ export default function PublicProfilePage() {
                           {firstName} {lastName}
                         </h1>
                         {isVerified && (
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                          <CheckCircle2 className="h-5 w-5 text-primary-accessible" />
                         )}
                         <RoleBadge role={profile.role} />
                       </div>
@@ -278,14 +279,14 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="h-5 w-5 text-primary-accessible" />
                     Looking For
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {lookingFor.map((role) => (
-                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary-accessible">
                         {role}
                       </Badge>
                     ))}

@@ -179,7 +179,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-bold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-bold">
               {startup.name[0]}
             </AvatarFallback>
           </Avatar>
@@ -189,7 +189,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               <div>
                 <Link
                   href={`/startups/${startup.id}`}
-                  className="font-semibold hover:text-primary transition-colors"
+                  className="font-semibold hover:text-primary-accessible transition-colors"
                 >
                   {startup.name}
                 </Link>
@@ -204,7 +204,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                   title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
                 >
                   {alertsEnabled ? (
-                    <Bell className="h-3.5 w-3.5 text-primary" />
+                    <Bell className="h-3.5 w-3.5 text-primary-accessible" />
                   ) : (
                     <BellOff className="h-3.5 w-3.5 text-muted-foreground" />
                   )}
@@ -230,7 +230,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                     <DropdownMenuItem>
                       <GitCompare className="mr-2 h-4 w-4" /> Compare
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem className="text-destructive-accessible">
                       <Trash2 className="mr-2 h-4 w-4" /> Remove from Watchlist
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -243,7 +243,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               <Badge variant="outline" className="text-[10px]">{startup.stage}</Badge>
               <span className="flex items-center gap-1"><Users className="h-3 w-3" />{startup.teamSize}</span>
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{startup.location}</span>
-              <span className="flex items-center gap-1 text-primary font-medium">{startup.raisingAmount}</span>
+              <span className="flex items-center gap-1 text-primary-accessible font-medium">{startup.raisingAmount}</span>
             </div>
 
             {/* Scores */}
@@ -268,7 +268,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match</p>
-                <p className="text-sm font-bold text-primary">{startup.matchScore}%</p>
+                <p className="text-sm font-bold text-primary-accessible">{startup.matchScore}%</p>
               </div>
             </div>
 
@@ -314,7 +314,7 @@ export default function InvestorWatchlistPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Eye className="h-6 w-6 text-primary" />
+              <Eye className="h-6 w-6 text-primary-accessible" />
               Watchlist
             </h1>
             <p className="text-muted-foreground">
@@ -350,7 +350,7 @@ export default function InvestorWatchlistPage() {
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
               </CardContent>
             </Card>
@@ -419,7 +419,7 @@ export default function InvestorWatchlistPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-9 w-9 rounded-lg shrink-0">
-                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
+                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">
                           {item.startupName[0]}
                         </AvatarFallback>
                       </Avatar>

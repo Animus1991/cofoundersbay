@@ -101,7 +101,7 @@ function ProviderCard({
             <Switch checked={provider.isActive} onCheckedChange={() => onToggle(provider)} />
             <button
               onClick={() => { if (confirm(`Delete "${provider.providerName}"?`)) onDelete(provider.id); }}
-              className="text-muted-foreground hover:text-destructive transition-colors"
+              className="text-muted-foreground hover:text-destructive-accessible transition-colors"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -138,11 +138,11 @@ function DomainRow({
             <CheckCircle className="mr-1 h-3 w-3" />Verified
           </Badge>
         ) : (
-          <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary hover:underline">
+          <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary-accessible hover:underline">
             Mark Verified
           </button>
         )}
-        <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive transition-colors ml-1">
+        <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive-accessible transition-colors ml-1">
           <X className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -166,7 +166,7 @@ function RoleMappingEditor({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium">Role Mapping Rules</label>
-        <button type="button" onClick={add} className="text-xs text-primary hover:underline flex items-center gap-1">
+        <button type="button" onClick={add} className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
           <Plus className="icon-sm" />Add rule
         </button>
       </div>
@@ -184,7 +184,7 @@ function RoleMappingEditor({
                   <option key={role} value={role}>{role}</option>
                 )}
               </select>
-              <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive">
+              <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive-accessible">
                 <X className="icon-sm" />
               </button>
             </div>
@@ -380,7 +380,7 @@ export default function TenantSSOPage() {
         )}
 
         {saveError && (
-          <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-accessible flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0" />{saveError}
           </div>
         )}
@@ -411,7 +411,7 @@ export default function TenantSSOPage() {
                   <div className="grid grid-cols-3 gap-2">
                     {(['oidc', 'saml', 'oauth2'] as const).map(t => (
                       <button key={t} type="button" onClick={() => setProviderType(t)}
-                        className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border hover:bg-muted/50'}`}>
                         {t === 'oidc' ? 'OpenID Connect' : t === 'saml' ? 'SAML 2.0' : 'OAuth 2.0'}
                       </button>
                     ))}
@@ -522,8 +522,8 @@ export default function TenantSSOPage() {
                   ] as const).map(([mode, label, Icon, desc]) => (
                     <button key={mode} type="button" onClick={() => setSsoMode(mode as SSOMode)}
                       className={`p-3 rounded-lg border text-left transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50'}`}>
-                      <Icon className={`h-4 w-4 mb-1 ${ssoMode === mode ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <p className={`text-sm font-medium ${ssoMode === mode ? 'text-primary' : ''}`}>{label}</p>
+                      <Icon className={`h-4 w-4 mb-1 ${ssoMode === mode ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
+                      <p className={`text-sm font-medium ${ssoMode === mode ? 'text-primary-accessible' : ''}`}>{label}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
                     </button>
                   ))}

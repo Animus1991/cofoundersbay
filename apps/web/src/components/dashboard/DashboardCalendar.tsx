@@ -37,7 +37,7 @@ export function DashboardCalendar({ events = defaultEvents, className }: Dashboa
     <Card className={cn('', className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-primary" />
+          <Calendar className="h-4 w-4 text-primary-accessible" />
           Upcoming events
         </CardTitle>
         <Button variant="ghost" size="sm" asChild>
@@ -54,7 +54,7 @@ export function DashboardCalendar({ events = defaultEvents, className }: Dashboa
                 href={ev.href ?? '/events'}
                 className="flex items-center gap-3 rounded-lg border border-border/60 bg-card/60 p-3 text-sm transition-colors hover:bg-secondary/60"
               >
-                <span className="flex shrink-0 rounded bg-primary/15 px-2 py-1 text-xs font-medium text-primary">
+                <span className="flex shrink-0 rounded bg-primary/15 px-2 py-1 text-xs font-medium text-primary-accessible">
                   {formatDate(ev.date)}
                 </span>
                 <div className="min-w-0 flex-1">

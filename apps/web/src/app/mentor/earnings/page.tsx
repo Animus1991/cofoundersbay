@@ -67,7 +67,7 @@ function StatCard({
   value,
   sub,
   trend,
-  iconColor = 'text-primary',
+  iconColor = 'text-primary-accessible',
 }: {
   icon: React.ElementType;
   label: string;
@@ -140,7 +140,7 @@ export default function MentorEarningsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-primary" />
+              <Wallet className="h-6 w-6 text-primary-accessible" />
               Earnings
             </h1>
             <p className="text-muted-foreground">Track your mentoring income and session history</p>
@@ -215,7 +215,7 @@ export default function MentorEarningsPage() {
                     <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
                       <Avatar className="h-8 w-8 shrink-0">
                         <AvatarImage src={tx.mentee.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                        <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
                           {tx.mentee.name[0]}
                         </AvatarFallback>
                       </Avatar>
@@ -256,7 +256,7 @@ export default function MentorEarningsPage() {
                 <div className="flex items-end gap-3 h-48">
                   {monthlyData.map(m => (
                     <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                      <span className="text-xs font-semibold text-primary">{formatCurrency(m.earned)}</span>
+                      <span className="text-xs font-semibold text-primary-accessible">{formatCurrency(m.earned)}</span>
                       <div
                         className="w-full rounded-t bg-primary/80 hover:bg-primary transition-colors min-h-[4px]"
                         style={{ height: `${monthlyData.length ? (m.earned / Math.max(...monthlyData.map(d => d.earned))) * 160 : 4}px` }}

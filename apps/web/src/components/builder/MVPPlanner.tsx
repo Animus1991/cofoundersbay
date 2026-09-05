@@ -603,7 +603,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                   {data.sprints.map((sprint, index) => (
                     <Card key={sprint.id} className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary-accessible font-bold">
                           {index + 1}
                         </div>
                         <div className="flex-1 space-y-3">
@@ -643,7 +643,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                       };
                                       setData(prev => ({ ...prev, sprints: newSprints }));
                                     }}
-                                    className="ml-1 hover:text-destructive"
+                                    className="ml-1 hover:text-destructive-accessible"
                                   >
                                     ×
                                   </button>

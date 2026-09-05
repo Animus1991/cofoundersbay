@@ -142,7 +142,7 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: Rocket,
     title: 'Start building together',
     desc: 'Send a connection request, open a private conversation, set shared milestones, and access mentors, investors, and communities — all in one workspace.',
-    color: 'text-primary bg-primary/10',
+    color: 'text-primary-accessible bg-primary/10',
   },
 ];
 
@@ -282,7 +282,7 @@ const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
   { name: 'Techstars',       abbr: 'TS',  color: 'text-blue-500'   },
   { name: 'EIT Digital',     abbr: 'EIT', color: 'text-cyan-500'   },
   { name: 'Innovate UK',     abbr: 'IUK', color: 'text-green-500'  },
-  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary' },
+  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary-accessible' },
   { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-red-500'    },
 ];
 
@@ -301,7 +301,7 @@ export function LandingHome() {
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-accessible">
               <Sparkles className="h-3.5 w-3.5" />
               The startup ecosystem, connected
             </span>
@@ -342,7 +342,7 @@ export function LandingHome() {
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
-                <Play className="h-4 w-4 text-primary" />
+                <Play className="h-4 w-4 text-primary-accessible" />
                 Try Demo
               </Button>
             </Link>
@@ -395,7 +395,7 @@ export function LandingHome() {
       <section id="how-it-works" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">How it works</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">How it works</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               From profile to co-founder in 3 steps
             </h2>
@@ -434,7 +434,7 @@ export function LandingHome() {
       <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Roles</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Roles</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Built for every role in the ecosystem
             </h2>
@@ -478,7 +478,7 @@ export function LandingHome() {
       <section id="features" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Platform</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Platform</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Everything your startup network needs
             </h2>
@@ -494,7 +494,7 @@ export function LandingHome() {
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Icon className="h-5 w-5 text-primary" />
+                  <Icon className="h-5 w-5 text-primary-accessible" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">{title}</h3>
@@ -510,7 +510,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">By the numbers</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">By the numbers</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               A thriving ecosystem
             </h2>
@@ -525,7 +525,7 @@ export function LandingHome() {
                 className="animate-fade-in rounded-2xl border border-border/60 bg-card/80 p-6 text-center backdrop-blur-sm"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
-                <p className="font-display text-4xl font-bold text-primary">{value}</p>
+                <p className="font-display text-4xl font-bold text-primary-accessible">{value}</p>
                 <p className="mt-2 font-semibold text-foreground">{label}</p>
                 {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
               </div>
@@ -538,7 +538,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Testimonials</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Testimonials</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Loved by founders, mentors & investors
             </h2>
@@ -565,7 +565,7 @@ export function LandingHome() {
                   &ldquo;{quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 border-t border-border/40 pt-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-accessible">
                     {avatar}
                   </div>
                   <div>
@@ -583,7 +583,7 @@ export function LandingHome() {
       <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Pricing</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-accessible border-primary/30">Pricing</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Simple, transparent pricing
             </h2>
@@ -646,7 +646,7 @@ export function LandingHome() {
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Network className="h-7 w-7 text-primary" />
+              <Network className="h-7 w-7 text-primary-accessible" />
             </div>
           </div>
           <h2 className="font-display text-4xl font-bold text-foreground">
@@ -672,7 +672,7 @@ export function LandingHome() {
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">Sign in</Link>
+            <Link href="/login" className="text-primary-accessible hover:underline font-medium">Sign in</Link>
           </p>
         </div>
       </section>
@@ -772,7 +772,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="h-3 w-3 text-primary" />
+              <Zap className="h-3 w-3 text-primary-accessible" />
               Built for founders, by founders
             </div>
           </div>

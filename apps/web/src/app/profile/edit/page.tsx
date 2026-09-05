@@ -222,7 +222,7 @@ function TagInput({
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
-            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
               <X className="h-3 w-3" />
             </button>
           </Badge>
@@ -302,7 +302,7 @@ function SelectButtons({
             className={cn(
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
               selected.includes(opt.value)
-                ? 'border-primary bg-primary/10 text-primary'
+                ? 'border-primary bg-primary/10 text-primary-accessible'
                 : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
@@ -510,7 +510,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
         </div>
       </AppShell>
     );
@@ -543,7 +543,7 @@ export default function ProfileEditPage() {
           </Link>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact />
+            <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
           </Button>
         </div>
       }
@@ -589,7 +589,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-primary" />
+                    <Camera className="h-5 w-5 text-primary-accessible" />
                     Profile Photo
                   </CardTitle>
                   <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
@@ -619,7 +619,7 @@ export default function ProfileEditPage() {
                       <div className="relative group cursor-pointer">
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
                           <AvatarImage src={form.avatarUrl || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                          <AvatarFallback className="bg-primary/10 text-primary-accessible text-3xl font-semibold">
                             {form.displayName[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -660,7 +660,7 @@ export default function ProfileEditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="h-5 w-5 text-primary" />
+                        <User className="h-5 w-5 text-primary-accessible" />
                         Personal Identity
                       </CardTitle>
                       <CardDescription>How you'll appear across the platform</CardDescription>
@@ -669,7 +669,7 @@ export default function ProfileEditPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-primary border-primary/30 hover:bg-primary/10 self-start"
+                      className="gap-2 text-primary-accessible border-primary/30 hover:bg-primary/10 self-start"
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
@@ -680,7 +680,7 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name <span className="text-destructive">*</span></label>
+                    <label className="text-sm font-medium">Display Name <span className="text-destructive-accessible">*</span></label>
                     <Input
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
@@ -719,7 +719,7 @@ export default function ProfileEditPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="h-4 w-4 text-primary" />
+                            <Sparkles className="h-4 w-4 text-primary-accessible" />
                           </div>
                           <span className="font-semibold text-foreground">AI Review</span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
@@ -785,7 +785,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
+                    <MapPin className="h-5 w-5 text-primary-accessible" />
                     Location & Timezone
                   </CardTitle>
                 </CardHeader>
@@ -813,7 +813,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="h-5 w-5 text-primary-accessible" />
                     Skills & Expertise
                   </CardTitle>
                   <CardDescription>What are your core strengths and areas of focus?</CardDescription>
@@ -855,7 +855,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-primary/20 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-primary" />
+                    <Briefcase className="h-5 w-5 text-primary-accessible" />
                     Your Primary Role
                   </CardTitle>
                   <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
@@ -878,7 +878,7 @@ export default function ProfileEditPage() {
                         >
                           <div className={cn(
                             'rounded-lg p-2',
-                            form.role === opt.value ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'
+                            form.role === opt.value ? 'bg-primary/20 text-primary-accessible' : 'bg-secondary text-muted-foreground'
                           )}>
                             <Icon className="h-5 w-5" />
                           </div>
@@ -1064,7 +1064,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-primary" />
+                    <Globe className="h-5 w-5 text-primary-accessible" />
                     Web & Social Links
                   </CardTitle>
                   <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
@@ -1123,7 +1123,7 @@ export default function ProfileEditPage() {
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               <Card className="shadow-sm border-border/50 text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-accessible mb-4">
                     <LayoutDashboard className="h-8 w-8" />
                   </div>
                   <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
@@ -1148,7 +1148,7 @@ export default function ProfileEditPage() {
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-2xl font-bold text-primary">{completionPercentage}%</span>
+                  <span className="text-2xl font-bold text-primary-accessible">{completionPercentage}%</span>
                   <span className="text-sm text-muted-foreground pb-1">Complete</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">

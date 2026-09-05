@@ -135,7 +135,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 <Edit className="mr-2 icon-sm" />
                 Edit Cohort
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-accessible">
                 <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>

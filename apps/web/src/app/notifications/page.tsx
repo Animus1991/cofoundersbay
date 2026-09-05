@@ -38,7 +38,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 
 const TYPE_COLORS: Record<string, string> = {
   connection: 'bg-blue-500/10 text-blue-500',
-  message: 'bg-primary/10 text-primary',
+  message: 'bg-primary/10 text-primary-accessible',
   event: 'bg-purple-500/10 text-purple-500',
   match: 'bg-emerald-500/10 text-emerald-500',
   achievement: 'bg-amber-500/10 text-amber-500',
@@ -138,8 +138,8 @@ const NotificationRow = memo(function NotificationRow({
       )}
     >
       {selectable && (
-        <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground/60 hover:text-primary transition-colors">
-          {selected ? <SquareCheck className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4" />}
+        <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground/60 hover:text-primary-accessible transition-colors">
+          {selected ? <SquareCheck className="h-4 w-4 text-primary-accessible" /> : <Square className="h-4 w-4" />}
         </button>
       )}
 
@@ -174,7 +174,7 @@ const NotificationRow = memo(function NotificationRow({
             <Link
               href={item.link}
               onClick={() => onRead(item.id)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary-accessible hover:underline"
             >
               <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="h-3 w-3" />
             </Link>
@@ -189,7 +189,7 @@ const NotificationRow = memo(function NotificationRow({
           )}
           <button
             onClick={() => onDelete(item.id)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive-accessible transition-colors"
           >
             <Trash2 className="h-3 w-3" /> <BilingualText en="Delete" el="Διαγραφή" compact />
           </button>
@@ -334,7 +334,7 @@ export default function NotificationsPage() {
                   <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
                     <BilingualText en={t.labelEn} el={t.labelEl} compact />
                     {catCounts[t.value] ? (
-                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary">
+                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary-accessible">
                         {catCounts[t.value]}
                       </span>
                     ) : null}
@@ -349,7 +349,7 @@ export default function NotificationsPage() {
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
                   <Check className="h-3 w-3" /><BilingualText en={`Mark read (${selectedIds.size})`} el={`Αναγνωσμένες (${selectedIds.size})`} compact />
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive hover:text-destructive" onClick={handleBulkDelete}>
+                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={handleBulkDelete}>
                   <Trash2 className="h-3 w-3" /><BilingualText en={`Delete (${selectedIds.size})`} el={`Διαγραφή (${selectedIds.size})`} compact />
                 </Button>
               </>
@@ -363,7 +363,7 @@ export default function NotificationsPage() {
               onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                bulkMode ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
+                bulkMode ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
               <SquareCheck className="h-3.5 w-3.5" />
@@ -373,7 +373,7 @@ export default function NotificationsPage() {
               onClick={() => setShowUnreadOnly((v) => !v)}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
+                showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary-accessible' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
               <Filter className="h-3.5 w-3.5" />
@@ -441,7 +441,7 @@ export default function NotificationsPage() {
             grouped.map(({ label, items }) => (
               <div key={label}>
                 <div className="px-4 py-2 border-b border-border/40 bg-muted/30">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">{label}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
                 </div>
                 {items.map((item) => (
                   <NotificationRow

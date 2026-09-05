@@ -94,7 +94,7 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
 
       <div className="flex items-start gap-3 pr-6">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-background shadow-sm">
-          <Icon className="h-4 w-4 text-primary" />
+          <Icon className="h-4 w-4 text-primary-accessible" />
         </div>
         <div className="flex-1 space-y-1">
           <p className="text-sm font-semibold text-foreground leading-snug">{action.title}</p>

@@ -223,7 +223,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
       <div className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+            <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
               {review.expertName.split(' ').map((n) => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
@@ -370,7 +370,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
     <div className="rounded-xl border border-border/60 bg-card p-4 hover:shadow-sm hover:border-border transition-all">
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
             {expert.name.split(' ').map((n) => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -380,7 +380,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
                 )}
                 {expert.badges?.map((b) => (
                   <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-[10px]">{b}</Badge>
@@ -510,7 +510,7 @@ export default function ExpertReviewsPage() {
             {myReviews.length === 0 && (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <Award className="h-7 w-7 text-primary" />
+                  <Award className="h-7 w-7 text-primary-accessible" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">No reviews yet</p>
@@ -557,7 +557,7 @@ export default function ExpertReviewsPage() {
               {filteredExperts.map((e) => <ExpertCard key={e.id} expert={e} />)}
               {filteredExperts.length === 0 && (
                 <div className="text-center py-10 text-sm text-muted-foreground">
-                  No experts match your search. <button className="text-primary hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
+                  No experts match your search. <button className="text-primary-accessible hover:underline" onClick={() => { setSearchExperts(''); setSelectedDomain('all'); }}>Clear filters</button>
                 </div>
               )}
             </div>
@@ -584,7 +584,7 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary" />
+                        <BarChart3 className="h-4 w-4 text-primary-accessible" />
                         {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
                       </CardTitle>
                     </CardHeader>

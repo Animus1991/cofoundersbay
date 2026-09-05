@@ -47,7 +47,7 @@ function SeatRow({
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-destructive hover:text-destructive gap-1.5 shrink-0"
+        className="h-7 text-destructive-accessible hover:text-destructive-accessible gap-1.5 shrink-0"
         onClick={() => onRevoke(seat.userId)}
         disabled={revoking}
       >
@@ -408,7 +408,7 @@ export default function TenantBillingPage() {
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="h-5 w-5 text-primary-accessible" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">Need enterprise features?</p>

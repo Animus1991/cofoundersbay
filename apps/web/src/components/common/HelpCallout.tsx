@@ -46,7 +46,7 @@ export function HelpCallout({
         type="button"
         onClick={() => persist(true)}
         className={cn(
-          'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10',
+          'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
           className,
         )}
       >
@@ -66,13 +66,13 @@ export function HelpCallout({
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 font-semibold text-primary">
+        <div className="flex items-center gap-2 font-semibold text-primary-accessible">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
             <HelpCircle className="icon-sm" aria-hidden="true" />
           </span>
           <span>{title}</span>
           {badge && (
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-accessible">
               {badge}
             </span>
           )}
@@ -86,7 +86,7 @@ export function HelpCallout({
           <X className="icon-sm" />
         </button>
       </div>
-      <div className="space-y-2 pl-9 text-muted-foreground [&_a]:text-primary [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
+      <div className="space-y-2 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
         {children}
       </div>
     </div>

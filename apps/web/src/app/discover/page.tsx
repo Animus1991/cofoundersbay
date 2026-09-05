@@ -236,7 +236,7 @@ export default function DiscoverPage() {
               <Card key={s.labelEn} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
                 <CardContent className="flex items-center gap-3 p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <SIcon className="icon-sm text-primary" />
+                    <SIcon className="icon-sm text-primary-accessible" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
@@ -351,7 +351,7 @@ export default function DiscoverPage() {
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-status-accent-bg/30 p-4">
               <div className="flex items-center gap-2 mb-3">
-                <BadgeCheck className="icon-sm text-primary" />
+                <BadgeCheck className="icon-sm text-primary-accessible" />
                 <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
                 <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
               </div>
@@ -359,7 +359,7 @@ export default function DiscoverPage() {
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profile/${h.userId}`}
                     className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>
                     <div className="min-w-0">
@@ -381,7 +381,7 @@ export default function DiscoverPage() {
           {!loading && filteredHits.length === 0 && hits.length > 0 && roleFilter !== 'all' && (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
               <p className="text-sm text-muted-foreground">No {roleFilter.replace('_', ' ')}s found. Try clearing the role filter.</p>
-              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary hover:underline">Show all roles</button>
+              <button onClick={() => setRoleFilter('all')} className="text-xs text-primary-accessible hover:underline">Show all roles</button>
             </div>
           )}
 
@@ -430,7 +430,7 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="icon-md text-primary" />
+                <Sparkles className="icon-md text-primary-accessible" />
                 Suggested for you
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -497,7 +497,7 @@ export default function DiscoverPage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="icon-md text-primary" />
+                <TrendingUp className="icon-md text-primary-accessible" />
                 Your Top Matches
               </h2>
               <p className="text-sm text-muted-foreground">

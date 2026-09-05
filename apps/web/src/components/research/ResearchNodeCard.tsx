@@ -558,7 +558,7 @@ export function ResearchNodeCard({
             <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive">
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
               <Trash2 className="w-3 h-3" />
             </button>
           </div>
@@ -645,7 +645,7 @@ export function ResearchNodeCard({
               onClick={handleDelete}
               className="w-4 h-4 flex items-center justify-center rounded hover:bg-red-200/50"
             >
-              <X className="w-2.5 h-2.5 text-destructive" />
+              <X className="w-2.5 h-2.5 text-destructive-accessible" />
             </button>
           </div>
         </div>
@@ -762,7 +762,7 @@ export function ResearchNodeCard({
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-primary hover:bg-primary/10 w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
                 >
                   <Rocket className="w-3.5 h-3.5" /> Open in Builder
                 </button>
@@ -802,7 +802,7 @@ export function ResearchNodeCard({
               <div className="my-1 border-t border-border/60" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-destructive hover:bg-destructive/10 w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -917,7 +917,7 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-[11px] text-primary truncate underline">{node.url}</p>
+            <p className="text-[11px] text-primary-accessible truncate underline">{node.url}</p>
           )}
 
           {/* Reference preview */}
@@ -952,8 +952,8 @@ export function ResearchNodeCard({
               onClick={(e) => { e.stopPropagation(); router.push('/builder'); }}
               title="Linked to a Builder document — click to open Builder"
             >
-              <Rocket className="w-2.5 h-2.5 text-primary" />
-              <span className="text-[9px] font-medium text-primary">Linked to Builder</span>
+              <Rocket className="w-2.5 h-2.5 text-primary-accessible" />
+              <span className="text-[9px] font-medium text-primary-accessible">Linked to Builder</span>
             </div>
           )}
 

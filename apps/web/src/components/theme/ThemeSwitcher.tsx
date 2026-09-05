@@ -118,7 +118,7 @@ export function ThemeSwitcher() {
                   <span className="text-sm font-medium leading-tight">{theme.label}</span>
                   <span className="text-[11px] text-muted-foreground leading-tight">{theme.description}</span>
                 </div>
-                {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary shrink-0" />}
+                {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary-accessible shrink-0" />}
               </DropdownMenuItem>
             </div>
           );

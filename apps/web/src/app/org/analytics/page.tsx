@@ -78,7 +78,7 @@ function StatCard({
             )}
           </div>
           <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>

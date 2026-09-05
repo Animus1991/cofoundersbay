@@ -40,7 +40,7 @@ function CommentBubble({
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-[10px] font-semibold text-primary">
+          <span className="text-[10px] font-semibold text-primary-accessible">
             {(comment.authorName ?? 'U')[0].toUpperCase()}
           </span>
         )}
@@ -81,7 +81,7 @@ function CommentBubble({
           {isOwn && (
             <button
               onClick={() => onDelete(comment.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-destructive-accessible transition-colors"
               title="Delete comment"
             >
               <Trash2 className="h-3 w-3" />
@@ -142,12 +142,12 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <MessageCircle className="h-4 w-4 text-primary" />
+          <MessageCircle className="h-4 w-4 text-primary-accessible" />
           <span className="text-sm font-semibold truncate max-w-[180px]">
             {nodeTitle ? `Comments: ${nodeTitle}` : 'Comments'}
           </span>
           {active.length > 0 && (
-            <span className="text-xs bg-primary/15 text-primary px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-primary/15 text-primary-accessible px-1.5 py-0.5 rounded-full font-medium">
               {active.length}
             </span>
           )}

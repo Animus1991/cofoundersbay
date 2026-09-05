@@ -73,13 +73,13 @@ function GroupCard({ group }: { group: ManagedGroup }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-10 w-10 rounded-xl shrink-0">
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
                 {group.name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary transition-colors">
+                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                   {group.name}
                 </Link>
                 <Badge variant="secondary" className="text-xs">{group.category}</Badge>
@@ -118,7 +118,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
                 <DropdownMenuItem><UserPlus className="mr-2 h-4 w-4" />Invite Members</DropdownMenuItem>
                 <DropdownMenuItem><Settings className="mr-2 h-4 w-4" />Group Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete Group</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 h-4 w-4" />Delete Group</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

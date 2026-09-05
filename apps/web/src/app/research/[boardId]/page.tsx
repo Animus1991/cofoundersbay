@@ -1205,14 +1205,14 @@ export default function ResearchBoardPage() {
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary-accessible" />
           </div>
         )}
 
         {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="text-destructive mb-4">Failed to load board</p>
+            <p className="text-destructive-accessible mb-4">Failed to load board</p>
             <Button onClick={() => router.push('/research')}>Back to Boards</Button>
           </div>
         )}
@@ -1225,7 +1225,7 @@ export default function ResearchBoardPage() {
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
             <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Layers className="h-5 w-5 text-primary shrink-0" />
+              <Layers className="h-5 w-5 text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
             </Link>
             <span className="text-[11px] text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
@@ -1799,7 +1799,7 @@ export default function ResearchBoardPage() {
         {isDragOver && (
           <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-primary/5 backdrop-blur-[2px] transition-all duration-200">
             <div className="bg-card/95 border-2 border-dashed border-primary rounded-2xl p-10 text-center shadow-2xl">
-              <Upload className="h-14 w-14 text-primary mx-auto mb-4 animate-bounce" />
+              <Upload className="h-14 w-14 text-primary-accessible mx-auto mb-4 animate-bounce" />
               <p className="text-lg font-semibold">Drop files here</p>
               <p className="text-sm text-muted-foreground mt-1">PDFs, images, documents, screenshots</p>
             </div>
@@ -1951,7 +1951,7 @@ export default function ResearchBoardPage() {
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
-                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-2"
+                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" /> Delete
               </button>
@@ -2050,7 +2050,7 @@ export default function ResearchBoardPage() {
           <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Keyboard className="w-5 h-5 text-primary" />
+                <Keyboard className="w-5 h-5 text-primary-accessible" />
                 Keyboard Shortcuts
               </h2>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>

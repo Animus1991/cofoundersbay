@@ -196,7 +196,7 @@ function MatchCardInner({
           <div className="flex-1 min-w-0 pr-14">
             <Link
               href={`/profiles/${userId}`}
-              className="text-base font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+              className="text-base font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1"
             >
               {displayName}
             </Link>
@@ -269,7 +269,7 @@ function MatchCardInner({
           {onPass && (
             <button
               onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>

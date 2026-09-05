@@ -89,7 +89,7 @@ function CollaboratorRow({
         {collab.avatarUrl ? (
           <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-xs font-semibold text-primary-accessible">
             {(collab.displayName ?? collab.email)[0].toUpperCase()}
           </span>
         )}
@@ -116,7 +116,7 @@ function CollaboratorRow({
                   <DropdownMenuItem
                     key={r}
                     onClick={() => updateMutation.mutate(r)}
-                    className={cn('gap-2', collab.role === r && 'text-primary')}
+                    className={cn('gap-2', collab.role === r && 'text-primary-accessible')}
                   >
                     <Icon className="h-3.5 w-3.5" />
                     <div>
@@ -138,7 +138,7 @@ function CollaboratorRow({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive-accessible"
             onClick={() => removeMutation.mutate()}
             disabled={removeMutation.isPending}
           >
@@ -149,7 +149,7 @@ function CollaboratorRow({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+            className="h-7 text-xs text-muted-foreground hover:text-destructive-accessible"
             onClick={() => removeMutation.mutate()}
           >
             Leave
@@ -204,7 +204,7 @@ function OrgOwnershipSection({
             className={cn(
               'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
               !currentOrgId
-                ? 'border-primary bg-primary/5 text-primary'
+                ? 'border-primary bg-primary/5 text-primary-accessible'
                 : 'border-border hover:border-primary/40',
             )}
           >
@@ -213,7 +213,7 @@ function OrgOwnershipSection({
               <p className="text-sm font-medium">Personal</p>
               <p className="text-xs text-muted-foreground">Owned by you only</p>
             </div>
-            {!currentOrgId && <Check className="h-4 w-4 text-primary shrink-0" />}
+            {!currentOrgId && <Check className="h-4 w-4 text-primary-accessible shrink-0" />}
           </button>
 
           {/* Org options */}
@@ -228,7 +228,7 @@ function OrgOwnershipSection({
                 className={cn(
                   'flex items-center gap-3 p-2.5 rounded-lg border text-left transition-all',
                   isActive
-                    ? 'border-primary bg-primary/5 text-primary'
+                    ? 'border-primary bg-primary/5 text-primary-accessible'
                     : 'border-border hover:border-primary/40',
                 )}
               >
@@ -236,14 +236,14 @@ function OrgOwnershipSection({
                   <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" />
                 ) : (
                   <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    <Building2 className="h-3.5 w-3.5 text-primary-accessible" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{m.organization.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                 </div>
-                {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                {isActive && <Check className="h-4 w-4 text-primary-accessible shrink-0" />}
               </button>
             );
           })}
@@ -328,7 +328,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
               className={cn(
                 'text-sm font-medium py-2.5 px-4 border-b-2 capitalize transition-colors',
                 activeTab === tab
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
@@ -355,7 +355,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                         className={cn(
                           'flex items-center gap-3 p-3 rounded-lg border text-left transition-all',
                           isActive
-                            ? 'border-primary bg-primary/5 text-primary'
+                            ? 'border-primary bg-primary/5 text-primary-accessible'
                             : 'border-border hover:border-primary/40',
                           !isOwner && 'cursor-not-allowed opacity-60',
                         )}
@@ -365,7 +365,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                           <p className="text-sm font-medium">{opt.label}</p>
                           <p className="text-xs text-muted-foreground">{opt.desc}</p>
                         </div>
-                        {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        {isActive && <Check className="h-4 w-4 text-primary-accessible shrink-0" />}
                       </button>
                     );
                   })}
@@ -421,7 +421,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                                 <img src={hit.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                  <span className="text-xs font-bold text-primary">{(hit.displayName ?? 'U')[0]}</span>
+                                  <span className="text-xs font-bold text-primary-accessible">{(hit.displayName ?? 'U')[0]}</span>
                                 </div>
                               )}
                               <div className="min-w-0">

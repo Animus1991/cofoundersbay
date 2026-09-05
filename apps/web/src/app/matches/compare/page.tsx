@@ -128,11 +128,11 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
         <CardContent className="pt-6 text-center">
           <Avatar className="h-16 w-16 mx-auto mb-3">
             <AvatarImage src={user.avatar} />
-            <AvatarFallback className="text-base bg-primary/10 text-primary">
+            <AvatarFallback className="text-base bg-primary/10 text-primary-accessible">
               {user.name[0]}
             </AvatarFallback>
           </Avatar>
-          <Link href={`/profiles/${user.id}`} className="font-semibold text-lg text-foreground hover:text-primary transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-semibold text-lg text-foreground hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
           <div className="mt-1">
@@ -143,7 +143,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           
           {/* Match Score */}
           <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <div className="text-2xl font-bold text-primary">{user.matchScore}%</div>
+            <div className="text-2xl font-bold text-primary-accessible">{user.matchScore}%</div>
             <div className="text-xs text-muted-foreground">Match Score</div>
           </div>
 
@@ -364,7 +364,7 @@ export default function MatchComparePage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Brain className="h-5 w-5 text-primary" />
+                <Brain className="h-5 w-5 text-primary-accessible" />
                 AI Recommendation
               </CardTitle>
             </CardHeader>

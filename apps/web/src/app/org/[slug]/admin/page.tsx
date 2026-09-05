@@ -180,7 +180,7 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
             )}
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-            <Icon className="icon-lg text-primary" />
+            <Icon className="icon-lg text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -234,7 +234,7 @@ export default function OrgAdminPage() {
           <div className="flex items-center gap-4 flex-1">
             <Avatar className="h-12 w-12">
               <AvatarImage src={org.logo} />
-              <AvatarFallback className="bg-primary/10 text-primary text-lg">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible text-lg">
                 {org.name[0]}
               </AvatarFallback>
             </Avatar>
@@ -366,7 +366,7 @@ export default function OrgAdminPage() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={member.avatar} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                            <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
                               {member.name[0]}
                             </AvatarFallback>
                           </Avatar>
@@ -425,7 +425,7 @@ export default function OrgAdminPage() {
                             ) : null}
                             <DropdownMenuItem
                               onClick={() => handleRemoveMember(member.id)}
-                              className="text-destructive"
+                              className="text-destructive-accessible"
                             >
                               <UserMinus className="icon-sm mr-2" />
                               Remove

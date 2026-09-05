@@ -150,7 +150,7 @@ function ReviewDecisionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Feedback {decision !== 'approved' && <span className="text-destructive">*</span>}</Label>
+            <Label>Feedback {decision !== 'approved' && <span className="text-destructive-accessible">*</span>}</Label>
             <Textarea
               placeholder={
                 decision === 'approved'
@@ -241,7 +241,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
         <SheetContent className="w-full sm:max-w-lg flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <ClipboardCheck className="h-4 w-4 text-primary" />
+              <ClipboardCheck className="h-4 w-4 text-primary-accessible" />
               Change Proposals
               {openCount > 0 && (
                 <Badge variant="secondary" className="ml-1 bg-orange-100 text-orange-700">

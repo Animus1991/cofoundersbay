@@ -20,6 +20,12 @@
     /* Primary: professional blue-violet — modern, trustworthy */
     --primary:          236 72% 55%;
     --primary-foreground: 0 0% 100%;
+    /* Accent text on dark/tinted surfaces (avatars, active nav, badges) — distinct from
+       --primary because a single lightness can't satisfy both "text on dark background"
+       (needs high luminance) and "white text on primary-colored button" (needs low
+       luminance) against the same background — verified via axe-core, computed per theme.
+       Light theme's own --primary already clears 4.5:1 as text, so this matches it. */
+    --primary-accessible: 236 72% 55%;
 
     /* Secondary: subtle gray for secondary actions */
     --secondary:        220 13% 94%;
@@ -35,6 +41,11 @@
 
     --destructive:      0 84% 50%; /* WCAG AA: white on destructive ≥4.5:1 (was 60%) */
     --destructive-foreground: 0 0% 100%;
+    /* Text-only destructive (headings, labels, ghost-button labels) — same tension as
+       --primary-accessible: text needs to be darker than the button's own fill for
+       contrast against a light surface, while the button fill must stay light enough
+       for white text on it. Slightly darker than --destructive. */
+    --destructive-accessible: 0 84% 46%;
 
     /* Borders: subtle, consistent */
     --border:           220 13% 90%;
@@ -90,6 +101,7 @@
     --popover-foreground: 210 40% 96%;
     --primary: 235 88% 62%; /* WCAG AA: white on primary ≥4.5:1 (was 66%) */
     --primary-foreground: 0 0% 100%;
+    --primary-accessible: 235 88% 71%; /* text-on-dark variant — bumped from 70% (axe: 4.42:1 vs sidebar bg, needed 4.5) */
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
@@ -98,6 +110,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 46%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 0 62% 61%; /* text-on-dark variant — 46% measures ~2.9:1 as inline text (axe-core) */
     --border: 220 18% 20%;
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
@@ -113,6 +126,7 @@
     --popover-foreground: 210 20% 98%;
     --primary: 199 89% 36%; /* WCAG AA: white on cyan primary ≥4.5:1 (was 48%) */
     --primary-foreground: 0 0% 100%;
+    --primary-accessible: 199 89% 48%; /* text-on-dark variant — reuses the original pre-reduction lightness */
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
@@ -121,6 +135,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 0 70% 69%; /* text-on-dark variant — 50% measures ~2.6:1 as inline text on this theme's card */
     --border: 215 20% 30%;
     --input: 215 20% 30%;
     --ring: 199 89% 36%;
@@ -138,6 +153,8 @@
     --popover-foreground: 220 100% 3%;
     --primary: 34 100% 52%;
     --primary-foreground: 220 100% 3%; /* dark on amber — ≥9:1 */
+    --primary-accessible: 34 100% 28%; /* amber is a light hue even at moderate lightness —
+       52% measures ~1.9:1 as text on this theme's near-white background; darkened to clear 4.5:1 */
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
@@ -146,6 +163,7 @@
     --accent-foreground: 220 100% 3%;
     --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 0 84% 46%; /* text-on-light variant, darkened like light theme above */
     --border: 200 15% 88%;
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
@@ -162,6 +180,7 @@
     --popover-foreground: 0 0% 98%;
     --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
+    --primary-accessible: 262 83% 68%; /* text-on-dark variant, same pattern as .dark above */
     --secondary: 240 6% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 15%;
@@ -170,6 +189,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 0 72% 58%; /* text-on-dark variant, same pattern as .dark above */
     --border: 240 6% 18%;
     --input: 240 6% 18%;
     --ring: 262 83% 58%;

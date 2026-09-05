@@ -62,7 +62,7 @@ export function AdminGuard({ children }: AdminGuardProps) {
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <AlertTriangle className="h-8 w-8 text-destructive" />
+              <AlertTriangle className="h-8 w-8 text-destructive-accessible" />
             </div>
             <h2 className="mb-2 text-xl font-semibold text-foreground">Access Denied</h2>
             <p className="mb-6 text-sm text-muted-foreground">

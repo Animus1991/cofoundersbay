@@ -115,7 +115,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
                 <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
                 <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" />Resend Last</DropdownMenuItem>
                 <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

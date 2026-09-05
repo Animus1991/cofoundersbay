@@ -122,7 +122,7 @@ export function AccordionTrigger({ children, className }: AccordionTriggerProps)
       type="button"
       onClick={handleClick}
       className={cn(
-        'flex w-full items-center justify-between py-2 font-medium text-foreground transition-all hover:text-primary [&[data-state=open]>svg]:rotate-180',
+        'flex w-full items-center justify-between py-2 font-medium text-foreground transition-all hover:text-primary-accessible [&[data-state=open]>svg]:rotate-180',
         className
       )}
       data-state={isOpen ? 'open' : 'closed'}

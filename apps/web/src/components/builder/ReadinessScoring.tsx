@@ -370,7 +370,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
             <div className="flex flex-col justify-center">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Current Stage</h3>
               <div className="flex items-center gap-2 mb-2">
-                <Rocket className="h-5 w-5 text-primary" />
+                <Rocket className="h-5 w-5 text-primary-accessible" />
                 <span className="text-xl font-semibold capitalize">{data.readinessLevel}</span>
               </div>
               <p className="text-sm text-muted-foreground">

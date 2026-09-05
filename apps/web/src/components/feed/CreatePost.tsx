@@ -85,7 +85,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -108,7 +108,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5 text-primary" />
+              <Send className="h-5 w-5 text-primary-accessible" />
               Create Post
             </DialogTitle>
           </DialogHeader>
@@ -136,7 +136,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -184,7 +184,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-accessible">
                       <X className="h-3 w-3" />
                     </button>
                   </Badge>

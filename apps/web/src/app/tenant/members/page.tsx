@@ -119,7 +119,7 @@ function MemberCard({ member }: { member: Member }) {
                   <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
                   <DropdownMenuItem><Shield className="mr-2 icon-sm" />Change Role</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive-accessible"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -156,7 +156,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" /> Invite Members
+            <Send className="h-5 w-5 text-primary-accessible" /> Invite Members
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
@@ -252,7 +252,7 @@ export default function TenantMembersPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary' },
+            { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-accessible' },
             { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600' },
             { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600' },
             { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600' },

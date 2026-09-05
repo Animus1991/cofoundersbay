@@ -78,7 +78,7 @@ function ActionItem({
 }) {
   const colors = {
     default: 'bg-secondary/60 text-foreground hover:bg-secondary',
-    primary: 'bg-primary/10 text-primary hover:bg-primary/20 border-primary/20',
+    primary: 'bg-primary/10 text-primary-accessible hover:bg-primary/20 border-primary/20',
     warning: 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20',
   };
 
@@ -115,12 +115,12 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
     >
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+        <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
           {match.displayName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible transition-colors">
           {match.displayName}
         </p>
         <p className="truncate text-xs text-muted-foreground">{match.headline ?? match.role}</p>
@@ -148,7 +148,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">{mentor.displayName}</p>
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible transition-colors">{mentor.displayName}</p>
         <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
       </div>
       {mentor.isFree ? (
@@ -170,11 +170,11 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
         ) : (
-          <Building2 className="h-4 w-4 text-primary" />
+          <Building2 className="h-4 w-4 text-primary-accessible" />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">{group.name}</p>
+        <p className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible transition-colors">{group.name}</p>
         <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
       </div>
       <ChevronRight className="h-4 w-4 shrink-0 opacity-40" />
@@ -195,7 +195,7 @@ function ActivityRow({
       <div
         className={cn(
           'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-          item.type === 'connection' ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary'
+          item.type === 'connection' ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary-accessible'
         )}
       >
         {item.type === 'connection' ? (
@@ -387,11 +387,11 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" />
+                    <Zap className="h-4 w-4 text-primary-accessible" />
                     Priority Actions
                   </h2>
                   {totalActions > 0 && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
                       {totalActions}
                     </span>
                   )}
@@ -439,7 +439,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
-                  <Link href="/activity" className="text-xs text-primary hover:underline">
+                  <Link href="/activity" className="text-xs text-primary-accessible hover:underline">
                     View all
                   </Link>
                 </div>
@@ -465,7 +465,7 @@ export function DashboardHome() {
                     <Heart className="h-4 w-4 text-rose-500" />
                     Top Matches
                   </h2>
-                  <Link href="/matches" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                  <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
                     See all <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
@@ -513,7 +513,7 @@ export function DashboardHome() {
                       <GraduationCap className="h-4 w-4 text-emerald-500" />
                       Mentor Suggestions
                     </h2>
-                    <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                    <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
                       Browse all <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
@@ -535,7 +535,7 @@ export function DashboardHome() {
                       <Users className="h-4 w-4 text-blue-500" />
                       My Communities
                     </h2>
-                    <Link href="/groups" className="flex items-center gap-1 text-xs text-primary hover:underline">
+                    <Link href="/groups" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
                       All groups <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
@@ -557,7 +557,7 @@ export function DashboardHome() {
                       <Calendar className="h-4 w-4 text-purple-500" />
                       Upcoming Events
                     </h2>
-                    <Link href="/events" className="text-xs text-primary hover:underline">
+                    <Link href="/events" className="text-xs text-primary-accessible hover:underline">
                       View all
                     </Link>
                   </div>
@@ -644,16 +644,16 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Gauge className="h-4 w-4 text-primary" />
+                      <Gauge className="h-4 w-4 text-primary-accessible" />
                       Milestone Progress
                     </h2>
-                    <Link href="/milestones" className="text-xs text-primary hover:underline">Details</Link>
+                    <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">Details</Link>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
                       <svg className="h-16 w-16 -rotate-90" viewBox="0 0 36 36">
                         <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-secondary" />
-                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary"
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary-accessible"
                           strokeDasharray={`${milestoneSummary.completionRate * 87.96 / 100} 87.96`} strokeLinecap="round" />
                       </svg>
                       <span className="absolute text-base font-bold text-foreground">{milestoneSummary.completionRate}%</span>
@@ -694,7 +694,7 @@ export function DashboardHome() {
                       <Flag className="h-4 w-4 text-amber-500" />
                       Active Milestones
                     </h2>
-                    <Link href="/milestones" className="text-xs text-primary hover:underline">View all</Link>
+                    <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">View all</Link>
                   </div>
                   <div className="space-y-2">
                     {activeMilestonesList.map((m: { id: string; title: string; priority: string; dueDate?: string | null }) => (

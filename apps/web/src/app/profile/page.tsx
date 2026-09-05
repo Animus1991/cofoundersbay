@@ -81,7 +81,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
           <p className="text-sm font-semibold text-foreground">
             <BilingualText en={profileEn('profile_completion')} el={profileEl('profile_completion')} />
           </p>
-          <span className="text-sm font-bold text-primary">{pct}%</span>
+          <span className="text-sm font-bold text-primary-accessible">{pct}%</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
@@ -95,7 +95,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
               key={item.labelEn}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs ${
                 item.done
-                  ? 'bg-primary/10 text-primary'
+                  ? 'bg-primary/10 text-primary-accessible'
                   : 'bg-secondary/60 text-muted-foreground'
               }`}
             >
@@ -135,13 +135,13 @@ function VerificationCard({ email }: { email?: string | null }) {
         {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
           <div key={labelEn} className="flex items-center gap-2.5 text-xs">
             <div className={`flex h-6 w-6 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
-              <Icon className={`icon-sm ${verified ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Icon className={`icon-sm ${verified ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
             </div>
             <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>
               <BilingualText en={labelEn} el={labelEl} compact />
             </span>
             {verified
-              ? <CheckCircle className="ml-auto icon-sm text-primary" />
+              ? <CheckCircle className="ml-auto icon-sm text-primary-accessible" />
               : <span className="ml-auto text-xs text-muted-foreground/60">
                   <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} />
                 </span>}
@@ -218,7 +218,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="icon-md text-primary" />
+          <Icon className="icon-md text-primary-accessible" />
           <BilingualText
             en={`${role.charAt(0).toUpperCase() + role.slice(1)} ${profileEn('details_suffix')}`}
             el={`${profileEl(role as 'founder' | 'mentor' | 'investor' | 'org') || role} — ${profileEl('details_suffix')}`}
@@ -352,7 +352,7 @@ export default function ProfilePage() {
               <div className="relative inline-block">
                 <Avatar className="h-32 w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary-accessible text-4xl font-bold">
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
@@ -424,7 +424,7 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <UserIcon className="icon-md text-primary" />
+                    <UserIcon className="icon-md text-primary-accessible" />
                     <BilingualText en={profileEn('about')} el={profileEl('about')} />
                   </CardTitle>
                   <AIInsightButton
@@ -470,7 +470,7 @@ export default function ProfilePage() {
               <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary" />
+                    <Target className="icon-md text-primary-accessible" />
                     <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
                   </CardTitle>
                 </CardHeader>
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                   {cards.map(({ icon: Icon, labelEn, labelEl, value }) => (
                     <div key={labelEn} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="flex items-center gap-2.5 mb-2">
-                        <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                        <div className="p-1.5 rounded-md bg-primary/10 text-primary-accessible">
                           <Icon className="icon-sm" />
                         </div>
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -506,11 +506,11 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="icon-md text-primary" />
+                    <BarChart3 className="icon-md text-primary-accessible" />
                     <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
                   </CardTitle>
                   <Link href="/profile/edit">
-                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
                       <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                     </Button>
                   </Link>
@@ -553,17 +553,17 @@ export default function ProfilePage() {
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FolderOpen className="icon-md text-primary" />
+                  <FolderOpen className="icon-md text-primary-accessible" />
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
                   <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-5">
               <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-accessible">
                   <FolderOpen className="icon-lg" />
                 </div>
                 <div>
@@ -588,7 +588,7 @@ export default function ProfilePage() {
             <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
-                  <Activity className="h-8 w-8 text-primary" />
+                  <Activity className="h-8 w-8 text-primary-accessible" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-lg">

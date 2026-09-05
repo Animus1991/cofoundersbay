@@ -187,7 +187,7 @@ function MilestoneCard({
                       )}
                       <div className="my-1 border-t border-border/40" />
                       <button
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-accessible hover:bg-destructive/10"
                         onClick={() => { setMenuOpen(false); onDelete(item.id); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -432,7 +432,7 @@ export default function MilestonesPage() {
                 className={cn(
                   'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
                   categoryFilter === cat
-                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
                     : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -453,7 +453,7 @@ export default function MilestonesPage() {
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                   statusFilter === tab.value
-                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    ? 'border-primary/40 bg-primary/10 text-primary-accessible'
                     : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -461,7 +461,7 @@ export default function MilestonesPage() {
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
                     'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px]',
-                    statusFilter === tab.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+                    statusFilter === tab.value ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
                   )}>
                     {tab.count}
                   </span>
@@ -521,7 +521,7 @@ export default function MilestonesPage() {
         ) : milestones.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <Target className="h-7 w-7 text-primary" />
+              <Target className="h-7 w-7 text-primary-accessible" />
             </div>
             <div>
               <p className="font-medium text-foreground">

@@ -83,7 +83,7 @@ export function MobileNav() {
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/15 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/15 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -118,11 +118,11 @@ export function MobileNav() {
                         className={cn(
                           'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
                           active
-                            ? 'bg-primary/10 text-primary'
+                            ? 'bg-primary/10 text-primary-accessible'
                             : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                         )}
                       >
-                        <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
+                        <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary-accessible')} />
                         <span className="truncate">{label}</span>
                         {badge > 0 && (
                           <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
@@ -158,7 +158,7 @@ export function MobileNav() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-destructive hover:bg-destructive/10"
+                className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-destructive-accessible hover:bg-destructive/10"
               >
                 <LogOut className="h-5 w-5" />
                 Sign out

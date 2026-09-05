@@ -451,19 +451,19 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (
           <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-[12px]">
-            <Link2 className="w-3.5 h-3.5 text-primary shrink-0" />
+            <Link2 className="w-3.5 h-3.5 text-primary-accessible shrink-0" />
             {node.builderDocumentId ? (
               <>
-                <span className="text-primary font-medium">Linked to Builder document</span>
+                <span className="text-primary-accessible font-medium">Linked to Builder document</span>
                 <button
                   onClick={() => router.push('/builder')}
-                  className="flex items-center gap-1 text-primary hover:underline ml-1"
+                  className="flex items-center gap-1 text-primary-accessible hover:underline ml-1"
                 >
                   <ExternalLink className="w-3 h-3" /> Open
                 </button>
                 <button
                   onClick={() => { onUpdate({ builderDocumentId: null }); }}
-                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive transition-colors"
+                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive-accessible transition-colors"
                   title="Remove link"
                 >
                   <Link2Off className="w-3.5 h-3.5" />
@@ -595,7 +595,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   />
                   <button
                     onClick={() => removeChecklistItem(item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-accessible"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -703,7 +703,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 href={node.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline break-all text-center"
+                className="text-primary-accessible hover:underline break-all text-center"
               >
                 {node.url}
               </a>

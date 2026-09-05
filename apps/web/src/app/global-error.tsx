@@ -21,7 +21,7 @@ export default function GlobalError({
       <body className="bg-background text-foreground font-sans antialiased">
         <div className="flex min-h-screen items-center justify-center px-6">
           <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-6 text-center shadow-sm">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive text-xl" aria-hidden="true">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-accessible text-xl" aria-hidden="true">
               !
             </div>
             <h1 className="mt-4 text-xl font-semibold">Something went wrong</h1>

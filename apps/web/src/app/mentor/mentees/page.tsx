@@ -62,7 +62,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <Link href={`/p/${relationship.menteeId}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={mentee?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -70,7 +70,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary transition-colors">
+                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary-accessible transition-colors">
                   {displayName}
                 </Link>
                 {mentee?.headline && (
@@ -103,7 +103,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
                 {relationship.totalSessions} sessions
               </span>
               {nextSessionFormatted && (
-                <span className="flex items-center gap-1 text-primary">
+                <span className="flex items-center gap-1 text-primary-accessible">
                   <Clock className="h-3.5 w-3.5" />
                   Next: {nextSessionFormatted}
                 </span>
@@ -164,7 +164,7 @@ export default function MenteesPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-accessible mb-4" />
               <h3 className="font-medium">Failed to load mentees</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}
@@ -204,7 +204,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="h-5 w-5 text-primary" />
+                <Users className="h-5 w-5 text-primary-accessible" />
               </div>
               <div>
                 <p className="text-xl font-bold">{activeRelationships.length}</p>

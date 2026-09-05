@@ -132,7 +132,7 @@ export function AdvancedAnalyticsDashboard() {
       description: 'Connected with 100+ founders',
       date: '2 days ago',
       icon: <Users className="h-5 w-5" />,
-      color: 'text-primary',
+      color: 'text-primary-accessible',
     },
     {
       title: 'Active Contributor',

@@ -120,7 +120,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="h-4 w-4 text-primary" />
+          <Settings className="h-4 w-4 text-primary-accessible" />
           Automation Settings
         </CardTitle>
         <CardDescription className="text-xs">
@@ -224,7 +224,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
           {rule.tenantId !== null && (
             <Button
               variant="ghost" size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
+              className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
               onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}
               disabled={remove.isPending}
             >
@@ -300,7 +300,7 @@ export default function TenantAutomationPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                activeTab === tab ? 'border-primary text-primary-accessible' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab === 'rules' ? 'Rules' : 'Settings'}

@@ -108,7 +108,7 @@ function MemberRow({ member }: { member: OrgMember }) {
           <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Role</DropdownMenuItem>
           <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem className="text-destructive-accessible">
             <UserMinus className="mr-2 icon-sm" />Remove Member
           </DropdownMenuItem>
         </DropdownMenuContent>

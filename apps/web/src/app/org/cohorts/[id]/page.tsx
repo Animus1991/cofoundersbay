@@ -639,7 +639,7 @@ export default function CohortDetailPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-primary">{match.matchScore}%</div>
+                        <div className="text-2xl font-bold text-primary-accessible">{match.matchScore}%</div>
                         <div className="text-xs text-muted-foreground">Match Score</div>
                       </div>
                       {getStatusBadge(match.status)}

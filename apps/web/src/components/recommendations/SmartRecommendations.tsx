@@ -177,7 +177,7 @@ export function SmartRecommendations() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Sparkles className="h-8 w-8 text-primary" />
+            <Sparkles className="h-8 w-8 text-primary-accessible" />
             Smart Recommendations
           </h2>
           <p className="text-muted-foreground">
@@ -228,7 +228,7 @@ export function SmartRecommendations() {
           <Card key={rec.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
             {/* Match Score Badge */}
             <div className="absolute top-4 right-4 z-10">
-              <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+              <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary-accessible border-primary/20">
                 <Star className="h-3 w-3 fill-current" />
                 {rec.matchScore}% Match
               </Badge>
@@ -299,13 +299,13 @@ export function SmartRecommendations() {
               {/* Match Reasons */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm font-medium">
-                  <Zap className="h-4 w-4 text-primary" />
+                  <Zap className="h-4 w-4 text-primary-accessible" />
                   Why this matches you:
                 </div>
                 <ul className="space-y-1">
                   {rec.matchReasons.slice(0, 3).map((reason, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <Check className="h-4 w-4 text-primary-accessible mt-0.5 flex-shrink-0" />
                       <span>{reason}</span>
                     </li>
                   ))}

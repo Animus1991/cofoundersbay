@@ -205,7 +205,7 @@ function DomainRow({
                 {domain.domainName}
               </a>
               {domain.isPrimary && (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">Primary</Badge>
+                <Badge className="bg-primary/10 text-primary-accessible border-primary/20 text-xs">Primary</Badge>
               )}
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
@@ -278,7 +278,7 @@ function DomainRow({
             size="sm" variant="ghost"
             onClick={() => { if (confirm(`Remove ${domain.domainName}?`)) remove.mutate(); }}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -401,7 +401,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="h-4 w-4 text-primary" />
+              <Globe className="h-4 w-4 text-primary-accessible" />
               Platform Subdomain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -433,7 +433,7 @@ export default function TenantDomainsPage() {
               </Button>
             </div>
             {addSub.isError && (
-              <p className="text-xs text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive-accessible flex items-center gap-1">
                 <XCircle className="icon-sm" />{(addSub.error as Error).message}
               </p>
             )}
@@ -447,7 +447,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary" />
+              <Shield className="icon-sm text-primary-accessible" />
               Custom Domain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -473,7 +473,7 @@ export default function TenantDomainsPage() {
               </Button>
             </div>
             {addCustom.isError && (
-              <p className="text-xs text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive-accessible flex items-center gap-1">
                 <XCircle className="icon-sm" />{(addCustom.error as Error).message}
               </p>
             )}

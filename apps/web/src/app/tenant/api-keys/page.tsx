@@ -88,7 +88,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit Scopes</DropdownMenuItem>
             <DropdownMenuItem>Regenerate</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Revoke</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Revoke</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

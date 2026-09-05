@@ -132,7 +132,7 @@ function ResultCard({ result }: { result: SearchResult }) {
             {result.imageUrl ? (
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={result.imageUrl} />
-                <AvatarFallback className="bg-primary/10 text-primary">
+                <AvatarFallback className="bg-primary/10 text-primary-accessible">
                   {result.title[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -147,7 +147,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                <h3 className="font-medium text-foreground group-hover:text-primary-accessible transition-colors truncate">
                   {result.title}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -466,7 +466,7 @@ export default function SearchPage() {
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                <X className="h-7 w-7 text-destructive" />
+                <X className="h-7 w-7 text-destructive-accessible" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 <BilingualText en={searchEn('search_failed_title')} el={searchEl('search_failed_title')} />
@@ -513,7 +513,7 @@ export default function SearchPage() {
                       <Users className="h-5 w-5 text-blue-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                         <BilingualText
                           en={searchEn('discover_people_title')}
                           el={searchEl('discover_people_title')}
@@ -536,7 +536,7 @@ export default function SearchPage() {
                       <GraduationCap className="h-5 w-5 text-purple-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                         <BilingualText
                           en={searchEn('find_mentors_title')}
                           el={searchEl('find_mentors_title')}
@@ -559,7 +559,7 @@ export default function SearchPage() {
                       <Briefcase className="h-5 w-5 text-emerald-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                         <BilingualText
                           en={searchEn('browse_jobs_title')}
                           el={searchEl('browse_jobs_title')}
@@ -582,7 +582,7 @@ export default function SearchPage() {
                       <Calendar className="h-5 w-5 text-orange-500" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                         <BilingualText
                           en={searchEn('upcoming_events_title')}
                           el={searchEl('upcoming_events_title')}

@@ -78,7 +78,7 @@ function SubRow({
           </Button>
         )}
         {sub.status !== 'canceled' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => onCancel(sub.id, false)}>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-accessible hover:text-destructive-accessible" onClick={() => onCancel(sub.id, false)}>
             <XCircle className="icon-sm mr-1" />Cancel
           </Button>
         )}
@@ -459,7 +459,7 @@ export default function AdminBillingPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+                            className="h-7 w-7 text-destructive-accessible hover:text-destructive-accessible shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
                             <Trash2 className="h-3.5 w-3.5" />

@@ -398,7 +398,7 @@ export default function EnhancedOnboardingPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Sparkles className="h-6 w-6 text-primary" />
+                <Sparkles className="h-6 w-6 text-primary-accessible" />
               </div>
               <div>
                 <h1 className="text-xl font-bold">CoFounderBay Onboarding</h1>
@@ -512,7 +512,7 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
     <Card className="text-center">
       <CardHeader>
         <CardTitle className="flex items-center justify-center gap-3 text-2xl">
-          <Sparkles className="h-8 w-8 text-primary" />
+          <Sparkles className="h-8 w-8 text-primary-accessible" />
           Welcome to CoFounderBay
         </CardTitle>
       </CardHeader>
@@ -1243,7 +1243,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Search className="h-5 w-5 text-primary" />
+          <Search className="h-5 w-5 text-primary-accessible" />
           Match Preferences
         </CardTitle>
         <p className="text-muted-foreground">Tell us what you're looking for so we can find your best matches</p>
@@ -1288,7 +1288,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm border-2 transition-all',
                   data.matchPrefs.industries.includes(ind)
-                    ? 'border-primary bg-primary/10 border-primary text-primary'
+                    ? 'border-primary bg-primary/10 border-primary text-primary-accessible'
                     : 'border-border hover:border-primary/40'
                 )}
               >
@@ -1311,7 +1311,7 @@ function MatchPrefsStep({ data, setData }: { data: OnboardingData; setData: (d: 
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm border-2 font-medium transition-all',
                   data.matchPrefs.stages.includes(stage)
-                    ? 'border-primary bg-primary/5 text-primary'
+                    ? 'border-primary bg-primary/5 text-primary-accessible'
                     : 'border-border hover:border-primary/40'
                 )}
               >

@@ -111,7 +111,7 @@ function ProgramCard({ program }: { program: Program }) {
                 <Edit className="mr-2 icon-sm" />
                 Edit Program
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-accessible">
                 <Trash2 className="mr-2 icon-sm" />
                 Archive
               </DropdownMenuItem>

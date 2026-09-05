@@ -205,7 +205,7 @@ export function EnhancedMessageThread({
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-accessible">
                 <Trash2 className="icon-sm mr-2" />
                 Delete conversation
               </DropdownMenuItem>
@@ -350,7 +350,7 @@ export function EnhancedMessageThread({
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-destructive"
+                              className="text-destructive-accessible"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
                               <Trash2 className="icon-sm mr-2" />
@@ -371,7 +371,7 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="icon-sm text-primary" />
+                        <CheckCheck className="icon-sm text-primary-accessible" />
                       ) : (
                         <Check className="icon-sm" />
                       )

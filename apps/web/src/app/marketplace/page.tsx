@@ -145,7 +145,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-11 w-11 shrink-0 rounded-xl">
               <AvatarImage src={provider.providerAvatar} />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
@@ -153,7 +153,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="font-semibold text-sm truncate">{provider.providerName}</p>
                 {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />}
-                {featured && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20 border">Featured</Badge>}
+                {featured && <Badge className="text-[10px] bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
               <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
@@ -164,7 +164,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             </div>
           </div>
           <button onClick={() => setSaved(!saved)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors">
-            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary-accessible' : 'text-muted-foreground')} />
           </button>
         </div>
 
@@ -232,7 +232,7 @@ function StatsBar() {
       {stats.map(s => (
         <Card key={s.label}>
           <CardContent className="p-3 flex items-center gap-2">
-            <s.icon className="h-4 w-4 text-primary shrink-0" />
+            <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
             <div>
               <p className="text-xs font-bold">{s.value}</p>
               <p className="text-[10px] text-muted-foreground">{s.label}</p>
@@ -383,7 +383,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <TrendingUp className="h-4 w-4 text-primary-accessible" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">

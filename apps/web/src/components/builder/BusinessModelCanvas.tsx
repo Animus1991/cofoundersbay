@@ -218,7 +218,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Target className="h-5 w-5 text-primary" />
+            <Target className="h-5 w-5 text-primary-accessible" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Business Model Canvas</h2>

@@ -193,7 +193,7 @@ function DomainRow({
             variant="ghost"
             onClick={() => { if (confirm('Delete this domain?')) remove.mutate(); }}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+            className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >
             <Trash2 className="icon-sm" />
           </Button>
@@ -267,7 +267,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             Add
           </Button>
         </div>
-        {addSub.isError && <p className="text-xs text-destructive">{(addSub.error as Error).message}</p>}
+        {addSub.isError && <p className="text-xs text-destructive-accessible">{(addSub.error as Error).message}</p>}
       </div>
 
       {/* Add custom domain */}
@@ -291,7 +291,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             Add
           </Button>
         </div>
-        {addCustom.isError && <p className="text-xs text-destructive">{(addCustom.error as Error).message}</p>}
+        {addCustom.isError && <p className="text-xs text-destructive-accessible">{(addCustom.error as Error).message}</p>}
       </div>
     </div>
   );
@@ -341,7 +341,7 @@ export default function DomainsAdminPage() {
                   >
                     {t.logoUrl
                       ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" /></div>}
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-accessible" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>

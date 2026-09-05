@@ -129,8 +129,8 @@ function BuilderPageContent() {
         {/* Error Alert */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" />
-            <p className="text-sm text-destructive">{error}</p>
+            <AlertCircle className="icon-md text-destructive-accessible" />
+            <p className="text-sm text-destructive-accessible">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               <BilingualText en="Dismiss" el="Απόρριψη" compact />
             </Button>
@@ -172,7 +172,7 @@ function BuilderPageContent() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="icon-lg text-primary" />
+                <Rocket className="icon-lg text-primary-accessible" />
               </div>
               {workspace?.name || 'Startup Builder'}
             </h1>

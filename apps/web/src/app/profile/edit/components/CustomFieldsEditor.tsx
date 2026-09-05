@@ -182,7 +182,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     variant="ghost"
                     size="sm"
                     onClick={() => removeField(field.id)}
-                    className="text-destructive hover:text-destructive"
+                    className="text-destructive-accessible hover:text-destructive-accessible"
                   >
                     <X className="h-4 w-4" />
                   </Button>

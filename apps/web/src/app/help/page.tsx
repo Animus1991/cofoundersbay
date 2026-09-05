@@ -254,14 +254,14 @@ function FAQAccordion({ faq, isOpen, onToggle }: { faq: FAQItem; isOpen: boolean
         onClick={onToggle}
         className={cn(
           'flex w-full items-center justify-between py-4 text-left transition-colors',
-          isOpen ? 'text-primary' : 'hover:text-primary text-foreground',
+          isOpen ? 'text-primary-accessible' : 'hover:text-primary-accessible text-foreground',
         )}
       >
         <span className="text-sm font-medium pr-4">{faq.question}</span>
         <ChevronDown
           className={cn(
             'h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200',
-            isOpen && 'rotate-180 text-primary',
+            isOpen && 'rotate-180 text-primary-accessible',
           )}
         />
       </button>
@@ -324,7 +324,7 @@ export default function HelpPage() {
         {/* Search Hero */}
         <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <HelpCircle className="h-6 w-6 text-primary" />
+            <HelpCircle className="h-6 w-6 text-primary-accessible" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
           <p className="text-sm text-muted-foreground mb-4">Search our knowledge base or browse topics below</p>
@@ -395,7 +395,7 @@ export default function HelpPage() {
             </p>
             <button
               onClick={() => { setSearchQuery(''); setSelectedCategory(null); }}
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary-accessible hover:underline"
             >
               Clear all filters
             </button>
@@ -421,7 +421,7 @@ export default function HelpPage() {
                 <CardHeader className="border-b border-border/50 py-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <category.icon className="h-4 w-4 text-primary" />
+                      <category.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
@@ -451,7 +451,7 @@ export default function HelpPage() {
         <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
           <CardContent className="p-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="h-6 w-6 text-primary" />
+              <Mail className="h-6 w-6 text-primary-accessible" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>
             <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
@@ -479,7 +479,7 @@ export default function HelpPage() {
           <Link href="/terms" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <BookOpen className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Terms of Service</h3>
                 <p className="text-xs text-muted-foreground">Read our terms and conditions</p>
               </CardContent>
@@ -488,7 +488,7 @@ export default function HelpPage() {
           <Link href="/privacy" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <Shield className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Privacy Policy</h3>
                 <p className="text-xs text-muted-foreground">Learn how we protect your data</p>
               </CardContent>
@@ -497,7 +497,7 @@ export default function HelpPage() {
           <Link href="/settings" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">
-                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary transition-colors mb-2" />
+                <Settings className="mx-auto h-7 w-7 text-muted-foreground group-hover:text-primary-accessible transition-colors mb-2" />
                 <h3 className="text-sm font-medium text-foreground mb-0.5">Account Settings</h3>
                 <p className="text-xs text-muted-foreground">Manage your preferences</p>
               </CardContent>

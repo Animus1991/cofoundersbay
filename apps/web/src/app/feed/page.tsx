@@ -279,7 +279,7 @@ function PostCard({
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -328,7 +328,7 @@ function PostCard({
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-accessible">
                 <Flag className="h-4 w-4 mr-2" />
                 Report
               </DropdownMenuItem>
@@ -363,7 +363,7 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onLike}
-            className={cn(post.isLiked && 'text-primary')}
+            className={cn(post.isLiked && 'text-primary-accessible')}
           >
             <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} />
             Like
@@ -384,7 +384,7 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            className={cn(post.isBookmarked && 'text-primary')}
+            className={cn(post.isBookmarked && 'text-primary-accessible')}
           >
             <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} />
           </Button>
@@ -452,7 +452,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground w-4">{i + 1}</span>
-                <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
@@ -484,7 +484,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="h-4 w-4 text-primary-accessible" />
           Suggested Connections
         </h3>
       </CardHeader>
@@ -493,7 +493,7 @@ function SuggestedConnections() {
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary-accessible">
                   {person.name.split(' ').map((n) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>

@@ -50,11 +50,11 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-            <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary' : 'text-foreground')}>{value}</p>
+            <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary-accessible' : 'text-foreground')}>{value}</p>
             {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
           </div>
           <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', accent ? 'bg-primary/15' : 'bg-secondary')}>
-            <Icon className={cn('h-4 w-4', accent ? 'text-primary' : 'text-muted-foreground')} />
+            <Icon className={cn('h-4 w-4', accent ? 'text-primary-accessible' : 'text-muted-foreground')} />
           </div>
         </div>
       </CardContent>
@@ -85,7 +85,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive-accessible"
           onClick={() => onCancel(invite.id)}
           disabled={cancelling}
         >
@@ -182,7 +182,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Sparkles className="h-5 w-5 text-primary-accessible" />
               Send an Invitation
             </CardTitle>
             <CardDescription>
@@ -200,7 +200,7 @@ export default function InvitePage() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="invite-email">Email address <span className="text-destructive">*</span></Label>
+              <Label htmlFor="invite-email">Email address <span className="text-destructive-accessible">*</span></Label>
               <Input
                 id="invite-email"
                 type="email"

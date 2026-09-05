@@ -132,7 +132,7 @@ function MultiSelect({
           className={cn(
             'rounded-full border px-3 py-1 text-xs transition-colors',
             selected.includes(opt.value)
-              ? 'border-primary bg-primary/10 text-primary'
+              ? 'border-primary bg-primary/10 text-primary-accessible'
               : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
           )}
         >
@@ -253,7 +253,7 @@ export function SearchFilters({
           <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5 text-primary" />
+                <Filter className="h-5 w-5 text-primary-accessible" />
                 Search Filters
               </SheetTitle>
             </SheetHeader>
@@ -362,7 +362,7 @@ export function SearchFilters({
                         className={cn(
                           'rounded-full border px-3 py-1 text-xs transition-colors',
                           (i === 0 && filters.remote === true) || (i === 1 && filters.remote === false)
-                            ? 'border-primary bg-primary/10 text-primary'
+                            ? 'border-primary bg-primary/10 text-primary-accessible'
                             : 'border-border/60 text-muted-foreground hover:border-primary/50'
                         )}
                       >

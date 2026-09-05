@@ -54,7 +54,7 @@ function DealCard({ deal }: { deal: Deal }) {
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 rounded-lg">
           <AvatarImage src={deal.logoUrl} />
-          <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold text-sm">
+          <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible font-semibold text-sm">
             {deal.name[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -78,7 +78,7 @@ function DealCard({ deal }: { deal: Deal }) {
             <DropdownMenuItem>Move to Next Stage</DropdownMenuItem>
             <DropdownMenuItem>Schedule Meeting</DropdownMenuItem>
             <DropdownMenuItem>Add Note</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">Pass</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive-accessible">Pass</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -165,7 +165,7 @@ export default function InvestorPipelinePage() {
         {/* Stats Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary' },
+            { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary-accessible' },
             { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-emerald-600' },
             { label: 'Avg Readiness', value: `${avgReadiness}%`, icon: Target, color: 'text-blue-600' },
             { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-green-600' },
@@ -231,7 +231,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Pipeline Conversion</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-primary-accessible" /> Pipeline Conversion</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">

@@ -562,7 +562,7 @@ export default function DataRoomPage() {
                                     <Edit className="h-4 w-4 mr-2" />
                                     Edit
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem className="text-destructive">
+                                  <DropdownMenuItem className="text-destructive-accessible">
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Delete
                                   </DropdownMenuItem>
@@ -598,7 +598,7 @@ export default function DataRoomPage() {
                                   <DropdownMenuItem>Download</DropdownMenuItem>
                                   <DropdownMenuItem>Share</DropdownMenuItem>
                                   <DropdownMenuSeparator />
-                                  <DropdownMenuItem className="text-destructive">
+                                  <DropdownMenuItem className="text-destructive-accessible">
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -721,7 +721,7 @@ export default function DataRoomPage() {
                             <DropdownMenuItem>Edit Access</DropdownMenuItem>
                             <DropdownMenuItem>Resend Invite</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem className="text-destructive-accessible">
                               Revoke Access
                             </DropdownMenuItem>
                           </DropdownMenuContent>

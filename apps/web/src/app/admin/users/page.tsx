@@ -69,10 +69,10 @@ function UserRow({ user }: { user: User }) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary transition-colors">
+          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary-accessible transition-colors">
             {user.name}
           </Link>
-          {user.verified && <CheckCircle2 className="icon-sm text-primary" />}
+          {user.verified && <CheckCircle2 className="icon-sm text-primary-accessible" />}
         </div>
         <p className="text-sm text-muted-foreground truncate">{user.email}</p>
         <p className="mt-0.5 text-xs capitalize text-muted-foreground md:hidden">
@@ -123,7 +123,7 @@ function UserRow({ user }: { user: User }) {
               Reactivate User
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem className="text-destructive-accessible">
             <UserX className="mr-2 icon-sm" />
             Ban User
           </DropdownMenuItem>

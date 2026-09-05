@@ -146,7 +146,7 @@ export default function InvestorAnalyticsPage() {
   const [period, setPeriod] = useState<'3m' | '6m' | '1y'>('6m');
 
   const kpis = [
-    { label: 'Deals Reviewed', value: '45', icon: Target, trend: +18, color: 'text-primary' },
+    { label: 'Deals Reviewed', value: '45', icon: Target, trend: +18, color: 'text-primary-accessible' },
     { label: 'Invested', value: '9', icon: DollarSign, trend: +12, color: 'text-green-500' },
     { label: 'Conversion Rate', value: '8.9%', icon: TrendingUp, trend: +2.1, color: 'text-blue-500' },
     { label: 'Avg Time to Close', value: '6 wks', icon: Calendar, trend: -5, color: 'text-amber-500' },
@@ -161,7 +161,7 @@ export default function InvestorAnalyticsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <BarChart3 className="h-6 w-6 text-primary-accessible" />
               Investment Analytics
             </h1>
             <p className="text-muted-foreground">Deal flow performance and portfolio insights</p>
@@ -187,7 +187,7 @@ export default function InvestorAnalyticsPage() {
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <kpi.icon className="h-4 w-4 text-primary" />
+                      <kpi.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <span className={cn('text-xs flex items-center gap-0.5', kpi.trend > 0 ? 'text-green-500' : 'text-red-500')}>
                       {kpi.trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -295,7 +295,7 @@ export default function InvestorAnalyticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
+                  <MapPin className="h-4 w-4 text-primary-accessible" />
                   Geographic Distribution
                 </CardTitle>
               </CardHeader>
@@ -318,7 +318,7 @@ export default function InvestorAnalyticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" />
+                  <Zap className="h-4 w-4 text-primary-accessible" />
                   Portfolio Returns
                 </CardTitle>
               </CardHeader>

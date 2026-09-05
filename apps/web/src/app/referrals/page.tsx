@@ -149,7 +149,7 @@ function ReferralLink({ code }: { code: string }) {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="h-5 w-5 text-primary" />
+          <Share2 className="h-5 w-5 text-primary-accessible" />
           Your Referral Link
         </CardTitle>
         <CardDescription>
@@ -201,7 +201,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5 text-primary" />
+          <Award className="h-5 w-5 text-primary-accessible" />
           Your Tier
         </CardTitle>
       </CardHeader>
@@ -261,7 +261,7 @@ function ReferralCard({ referral }: { referral: Referral }) {
     <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
       <Avatar className="h-10 w-10">
         <AvatarImage src={referral.avatarUrl} />
-        <AvatarFallback className="bg-primary/10 text-primary text-sm">
+        <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -418,14 +418,14 @@ export default function ReferralsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Sparkles className="h-5 w-5 text-primary-accessible" />
                   How It Works
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ol className="space-y-4">
                   <li className="flex gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       1
                     </div>
                     <div>
@@ -436,7 +436,7 @@ export default function ReferralsPage() {
                     </div>
                   </li>
                   <li className="flex gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       2
                     </div>
                     <div>
@@ -447,7 +447,7 @@ export default function ReferralsPage() {
                     </div>
                   </li>
                   <li className="flex gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-bold flex items-center justify-center">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary-accessible text-sm font-bold flex items-center justify-center">
                       3
                     </div>
                     <div>

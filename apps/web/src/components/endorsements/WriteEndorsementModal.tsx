@@ -110,7 +110,7 @@ export function WriteEndorsementModal({
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={targetUser.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary">
+              <AvatarFallback className="bg-primary/10 text-primary-accessible">
                 {targetUser.displayName[0]}
               </AvatarFallback>
             </Avatar>
@@ -164,7 +164,7 @@ export function WriteEndorsementModal({
           {/* Content */}
           <div className="space-y-1.5">
             <Label htmlFor="content">
-              Your endorsement <span className="text-destructive">*</span>
+              Your endorsement <span className="text-destructive-accessible">*</span>
             </Label>
             <Textarea
               id="content"

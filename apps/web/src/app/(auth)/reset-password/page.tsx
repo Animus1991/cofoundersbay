@@ -96,7 +96,7 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              <div className="flex items-start gap-2.5 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>
@@ -169,7 +169,7 @@ export default function ResetPasswordPage() {
                     className={confirm && confirm !== password ? 'border-destructive focus-visible:ring-destructive/30' : undefined}
                   />
                   {confirm && confirm !== password && (
-                    <p className="text-xs text-destructive">Passwords don&apos;t match</p>
+                    <p className="text-xs text-destructive-accessible">Passwords don&apos;t match</p>
                   )}
                 </div>
 

@@ -126,7 +126,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
                     className={cn(
                       'flex-1 flex items-center justify-center gap-1 rounded-lg border py-2 text-xs font-medium transition-colors',
                       form.privacy === p
-                        ? 'border-primary bg-primary/15 text-primary'
+                        ? 'border-primary bg-primary/15 text-primary-accessible'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40',
                     )}
                   >

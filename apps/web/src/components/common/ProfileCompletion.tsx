@@ -134,7 +134,7 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary-accessible" />
             Profile Strength
           </CardTitle>
           <span className="text-xs text-muted-foreground">

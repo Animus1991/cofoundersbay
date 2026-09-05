@@ -79,7 +79,7 @@ function PostCard({
   return (
     <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
-        <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
+        <div className="flex items-center gap-1.5 text-xs text-primary-accessible font-medium">
           <Pin className="h-3 w-3" />
           Pinned post
         </div>
@@ -99,7 +99,7 @@ function PostCard({
             {isOwn && (
               <button
                 onClick={() => onDelete(post.id)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -126,7 +126,7 @@ function PostCard({
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
               post.myReaction
-                ? 'bg-primary/15 text-primary'
+                ? 'bg-primary/15 text-primary-accessible'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
@@ -349,7 +349,7 @@ export default function GroupDetailPage() {
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary" />
+                    <Users className="h-7 w-7 text-primary-accessible" />
                   )}
                 </div>
                 <div className="pb-1">
@@ -508,7 +508,7 @@ export default function GroupDetailPage() {
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible text-[10px] font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -535,7 +535,7 @@ export default function GroupDetailPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-[10px] text-primary capitalize">{m.role}</p>
+                            <p className="text-[10px] text-primary-accessible capitalize">{m.role}</p>
                           )}
                         </div>
                       </div>
@@ -544,7 +544,7 @@ export default function GroupDetailPage() {
                   {group.memberCount > 6 && (
                     <button
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary hover:underline"
+                      className="text-xs text-primary-accessible hover:underline"
                     >
                       View all {group.memberCount} members →
                     </button>
@@ -576,7 +576,7 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-[10px] text-primary capitalize font-medium">{m.role}</span>
+                      <span className="text-[10px] text-primary-accessible capitalize font-medium">{m.role}</span>
                     )}
                   </div>
                 </div>

@@ -75,7 +75,7 @@ export function CanvasBranchSelector({
             <span className="text-sm">main</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">default</Badge>
           </div>
-          {!activeBranchId && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+          {!activeBranchId && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}
         </DropdownMenuItem>
 
         {branches.filter((b) => !b.isDefault).length > 0 && (
@@ -106,7 +106,7 @@ export function CanvasBranchSelector({
                       <Badge variant="outline" className="text-[10px] px-1 py-0 h-3.5 shrink-0 text-violet-600 border-violet-200">merged</Badge>
                     )}
                   </div>
-                  {activeBranchId === b.id && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  {activeBranchId === b.id && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}
                 </DropdownMenuItem>
               ))}
           </>
@@ -116,7 +116,7 @@ export function CanvasBranchSelector({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              className="flex items-center gap-2 cursor-pointer text-primary"
+              className="flex items-center gap-2 cursor-pointer text-primary-accessible"
               onClick={() => { setOpen(false); onCreateBranch(); }}
             >
               <Plus className="h-3.5 w-3.5" />

@@ -121,7 +121,7 @@ function LoginPageContent() {
             {error && (
               <div
                 role="alert"
-                className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2"
+                className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-accessible flex items-start gap-2"
               >
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
@@ -148,7 +148,7 @@ function LoginPageContent() {
             {ssoDiscovery?.ssoAvailable && ssoDiscovery.provider && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                  <span className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary-accessible">
                     SSO
                   </span>
                   <span className="font-medium text-sm">
@@ -185,7 +185,7 @@ function LoginPageContent() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label htmlFor="password" className="text-sm font-medium">Password</label>
-                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary transition-colors">Forgot password?</Link>
+                    <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary-accessible transition-colors">Forgot password?</Link>
                   </div>
                   <div className="relative">
                     <Input
@@ -221,7 +221,7 @@ function LoginPageContent() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="font-medium text-primary hover:underline">
+            <Link href="/register" className="font-medium text-primary-accessible hover:underline">
               Create one free
             </Link>
           </p>

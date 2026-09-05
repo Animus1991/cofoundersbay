@@ -15,7 +15,7 @@ const ADMIN_NAV = [
 ];
 
 function AdminSubNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '/admin';
   return (
     <div className="border-b border-border/50 bg-card/60 px-4">
       <nav aria-label="Admin sections" className="flex gap-1 overflow-x-auto w-full min-w-0 max-w-7xl mx-auto">
@@ -29,7 +29,7 @@ function AdminSubNav() {
               className={cn(
                 'flex items-center gap-2 px-3 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap',
                 active
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
               )}
             >

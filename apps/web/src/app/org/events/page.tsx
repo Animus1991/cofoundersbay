@@ -183,7 +183,7 @@ function EventCard({ event }: { event: OrgEvent }) {
               <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
               <DropdownMenuItem><Copy className="mr-2 icon-sm" />Duplicate</DropdownMenuItem>
               <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -238,7 +238,7 @@ export default function OrgEventsPage() {
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
               </CardContent>
             </Card>

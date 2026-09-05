@@ -175,7 +175,7 @@ function RoundCard({ round }: { round: Round }) {
           ].map(s => (
             <div key={s.label} className="rounded-lg bg-background/60 p-3">
               <div className="flex items-center gap-1.5 mb-1">
-                <s.icon className="h-3.5 w-3.5 text-primary" />
+                <s.icon className="h-3.5 w-3.5 text-primary-accessible" />
                 <p className="text-xs text-muted-foreground">{s.label}</p>
               </div>
               <p className="text-sm font-semibold truncate">{s.value}</p>
@@ -216,7 +216,7 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
                     <CardContent className="p-3 space-y-1.5">
                       <div className="flex items-center gap-1.5">
                         <Avatar className="h-7 w-7 rounded-lg shrink-0">
-                          <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
+                          <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">
                             {lead.name[0]}
                           </AvatarFallback>
                         </Avatar>
@@ -280,7 +280,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-xl font-bold text-primary">{Math.round((ready / docs.length) * 100)}%</p>
+                <p className="text-xl font-bold text-primary-accessible">{Math.round((ready / docs.length) * 100)}%</p>
                 <p className="text-xs text-muted-foreground">complete</p>
               </div>
               <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
@@ -300,7 +300,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             onClick={() => setCatFilter(c)}
             className={cn(
               'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              catFilter === c ? 'border-primary bg-primary/15 text-primary' : 'border-border/60 text-muted-foreground hover:border-primary/40',
+              catFilter === c ? 'border-primary bg-primary/15 text-primary-accessible' : 'border-border/60 text-muted-foreground hover:border-primary/40',
             )}
           >
             {c}
@@ -359,7 +359,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
           <Card key={lead.id} className="hover:border-primary/20 transition-colors">
             <CardContent className="p-4 flex items-center gap-4">
               <Avatar className="h-10 w-10 rounded-xl shrink-0">
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">{lead.name[0]}</AvatarFallback>
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">{lead.name[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -488,7 +488,7 @@ export default function FundraisingPage() {
             ].map(r => (
               <Link key={r.href} href={r.href} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors group">
                 <div>
-                  <p className="text-sm font-medium group-hover:text-primary transition-colors">{r.title}</p>
+                  <p className="text-sm font-medium group-hover:text-primary-accessible transition-colors">{r.title}</p>
                   <p className="text-xs text-muted-foreground">{r.desc}</p>
                 </div>
                 <ChevronRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />

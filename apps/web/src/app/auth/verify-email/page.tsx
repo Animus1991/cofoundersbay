@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  <Loader2 className="h-8 w-8 text-primary-accessible animate-spin" />
                 </div>
                 <CardTitle>Verifying your email</CardTitle>
                 <CardDescription>Please wait while we verify your email address...</CardDescription>
@@ -156,9 +156,9 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                  <XCircle className="h-8 w-8 text-destructive" />
+                  <XCircle className="h-8 w-8 text-destructive-accessible" />
                 </div>
-                <CardTitle className="text-destructive">Verification Failed</CardTitle>
+                <CardTitle className="text-destructive-accessible">Verification Failed</CardTitle>
                 <CardDescription>
                   {errorMessage || 'The verification link is invalid or has expired.'}
                 </CardDescription>
@@ -258,7 +258,7 @@ export default function VerifyEmailPage() {
                 )}
                 
                 <div className="text-center pt-2">
-                  <Link href="/login" className="text-sm text-primary hover:underline">
+                  <Link href="/login" className="text-sm text-primary-accessible hover:underline">
                     Back to Login
                   </Link>
                 </div>
@@ -269,7 +269,7 @@ export default function VerifyEmailPage() {
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Need help?{' '}
-          <Link href="/help" className="text-primary hover:underline">
+          <Link href="/help" className="text-primary-accessible hover:underline">
             Contact Support
           </Link>
         </p>

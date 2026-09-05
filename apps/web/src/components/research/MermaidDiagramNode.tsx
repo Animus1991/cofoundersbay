@@ -91,7 +91,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(false); }}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded text-[11px] transition-colors',
-              !showCode ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+              !showCode ? 'bg-primary/15 text-primary-accessible' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Preview diagram"
           >
@@ -102,7 +102,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded text-[11px] transition-colors',
-              showCode ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+              showCode ? 'bg-primary/15 text-primary-accessible' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Edit Mermaid code"
           >
@@ -149,7 +149,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             </div>
           )}
           {!loading && error && (
-            <div className="flex flex-col items-center gap-2 text-destructive p-3 text-center">
+            <div className="flex flex-col items-center gap-2 text-destructive-accessible p-3 text-center">
               <AlertTriangle className="w-5 h-5" />
               <p className="text-[11px] font-medium">Syntax error</p>
               <p className="text-[10px] text-muted-foreground max-w-[200px] leading-relaxed">{error}</p>
@@ -178,7 +178,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="px-2 py-1 bg-primary/10 text-primary rounded text-[11px] hover:bg-primary/20"
+                  className="px-2 py-1 bg-primary/10 text-primary-accessible rounded text-[11px] hover:bg-primary/20"
                 >
                   Write Mermaid code
                 </button>

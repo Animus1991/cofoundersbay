@@ -136,7 +136,7 @@ export function MilestoneFormModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-2">
-            <Flag className="h-4 w-4 text-primary" />
+            <Flag className="h-4 w-4 text-primary-accessible" />
             <h2 className="text-sm font-semibold text-foreground">
               {isEdit ? 'Edit milestone' : 'New milestone'}
             </h2>
@@ -152,7 +152,7 @@ export function MilestoneFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto p-5 space-y-4">
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive-accessible">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
               {error}
             </div>
@@ -161,7 +161,7 @@ export function MilestoneFormModal({
           {/* Title */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Title <span className="text-destructive">*</span>
+              Title <span className="text-destructive-accessible">*</span>
             </label>
             <Input
               value={form.title}

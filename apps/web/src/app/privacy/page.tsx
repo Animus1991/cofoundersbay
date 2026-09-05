@@ -235,7 +235,7 @@ export default function PrivacyPage() {
       <section className="border-b border-border/60 bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-            <Shield className="h-7 w-7 text-primary" />
+            <Shield className="h-7 w-7 text-primary-accessible" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Privacy Policy</h1>
           <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
@@ -255,7 +255,7 @@ export default function PrivacyPage() {
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border/60 bg-card p-4">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <item.icon className="h-4 w-4 text-primary" />
+                  <item.icon className="h-4 w-4 text-primary-accessible" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">{item.label}</p>
@@ -294,7 +294,7 @@ export default function PrivacyPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <section.icon className="h-4 w-4 text-primary" />
+                    <section.icon className="h-4 w-4 text-primary-accessible" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>
                 </div>

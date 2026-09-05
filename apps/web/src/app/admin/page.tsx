@@ -268,14 +268,14 @@ function ReportCard({
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${report.reported.id}`}>
               <Avatar className="icon-md">
-                <AvatarFallback className="bg-destructive/20 text-destructive">
+                <AvatarFallback className="bg-destructive/20 text-destructive-accessible">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                   {report.reported.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
@@ -316,7 +316,7 @@ function ReportCard({
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBanUser} className="text-destructive">
+                <DropdownMenuItem onClick={onBanUser} className="text-destructive-accessible">
                   <Ban className="icon-sm mr-2" />
                   Ban user
                 </DropdownMenuItem>
@@ -364,14 +364,14 @@ function UserRow({
       <Link href={`/profiles/${user.id}`}>
         <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
+          <AvatarFallback className="bg-primary/20 text-primary-accessible">
             {displayName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-accessible transition-colors">
             {displayName}
           </Link>
           <Badge
@@ -427,7 +427,7 @@ function UserRow({
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
-            <DropdownMenuItem onClick={onBan} className="text-destructive">
+            <DropdownMenuItem onClick={onBan} className="text-destructive-accessible">
               <Ban className="mr-2 icon-sm" />
               Ban permanently
             </DropdownMenuItem>
@@ -837,7 +837,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
             ) : (
@@ -860,7 +860,7 @@ export default function AdminPage() {
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
@@ -893,7 +893,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-accessible">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
             ) : (
@@ -916,7 +916,7 @@ export default function AdminPage() {
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-accessible"
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
@@ -1043,7 +1043,7 @@ export default function AdminPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive opacity-0 group-hover:opacity-100"
+                        className="h-8 w-8 shrink-0 text-destructive-accessible opacity-0 group-hover:opacity-100"
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >
@@ -1155,7 +1155,7 @@ export default function AdminPage() {
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="h-4 w-4 text-primary" />
+                      <Shield className="h-4 w-4 text-primary-accessible" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

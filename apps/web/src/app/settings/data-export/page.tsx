@@ -135,7 +135,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
     idle: { label: 'Pending', color: 'text-muted-foreground', icon: Clock },
     processing: { label: 'Processing', color: 'text-amber-500', icon: Loader2 },
     ready: { label: 'Ready', color: 'text-emerald-500', icon: Check },
-    expired: { label: 'Expired', color: 'text-destructive', icon: AlertTriangle },
+    expired: { label: 'Expired', color: 'text-destructive-accessible', icon: AlertTriangle },
   };
 
   const config = statusConfig[exportReq.status];
@@ -273,7 +273,7 @@ export default function DataExportPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Database className="h-6 w-6 text-primary" />
+              <Database className="h-6 w-6 text-primary-accessible" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Export Your Data</h1>
@@ -288,7 +288,7 @@ export default function DataExportPage() {
         <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <Shield className="h-5 w-5 text-primary-accessible shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -348,7 +348,7 @@ export default function DataExportPage() {
                     )}>
                       <Icon className={cn(
                         'h-4 w-4',
-                        isSelected ? 'text-primary' : 'text-muted-foreground'
+                        isSelected ? 'text-primary-accessible' : 'text-muted-foreground'
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -398,7 +398,7 @@ export default function DataExportPage() {
         {/* Delete Account Link */}
         <div className="mt-8 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <div className="flex items-start gap-3">
-            <Trash2 className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <Trash2 className="h-5 w-5 text-destructive-accessible shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
               <p className="text-xs text-muted-foreground mb-3">
@@ -406,7 +406,7 @@ export default function DataExportPage() {
                 you can do so from your account settings.
               </p>
               <Link href="/settings">
-                <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                <Button variant="outline" size="sm" className="text-destructive-accessible border-destructive/30 hover:bg-destructive/10">
                   Go to Account Settings
                 </Button>
               </Link>

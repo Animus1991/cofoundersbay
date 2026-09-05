@@ -136,7 +136,7 @@ function MessageBubble({
         {showAvatar && !isOwn && (
           <Avatar className="h-8 w-8">
             <AvatarImage src={recipientAvatar || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+            <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
               {recipientName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -243,7 +243,7 @@ function MessageBubble({
               {message.status === 'sending' && <span className="text-[10px]" title="Sending">•</span>}
               {message.status === 'sent' && <Check className="h-3 w-3" />}
               {message.status === 'delivered' && <CheckCheck className="h-3 w-3" />}
-              {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary" />}
+              {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary-accessible" />}
             </span>
           )}
         </div>
@@ -374,7 +374,7 @@ export function ChatWindow({
               <div className="relative">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={conversation.recipientAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary">
+                  <AvatarFallback className="bg-primary/20 text-primary-accessible">
                     {conversation.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -441,7 +441,7 @@ export function ChatWindow({
                   <Flag className="h-4 w-4 mr-2" />
                   Report
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onBlock} className="text-destructive">
+                <DropdownMenuItem onClick={onBlock} className="text-destructive-accessible">
                   <Ban className="h-4 w-4 mr-2" />
                   Block
                 </DropdownMenuItem>
@@ -520,7 +520,7 @@ export function ChatWindow({
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={conversation.recipientAvatar || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+              <AvatarFallback className="bg-primary/20 text-primary-accessible text-xs">
                 {conversation.recipientName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -542,7 +542,7 @@ export function ChatWindow({
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
-            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary-accessible" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-foreground/70">
                 {replyTo.senderId === currentUserId ? 'You' : conversation.recipientName}
@@ -566,7 +566,7 @@ export function ChatWindow({
                 <span className="max-w-[220px] truncate">{f.name}</span>
                 <button
                   type="button"
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive-accessible"
                   onClick={() =>
                     setPendingFiles((prev) =>
                       prev.filter((x) => !(x.name === f.name && x.size === f.size && x.lastModified === f.lastModified)),
@@ -658,7 +658,7 @@ export function NoChatSelected() {
     <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
       <div className="relative">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <MessageCircle className="h-10 w-10 text-primary" />
+          <MessageCircle className="h-10 w-10 text-primary-accessible" />
         </div>
         <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center border-2 border-background">
           <span className="text-emerald-400 text-xs font-bold">✓</span>
@@ -673,7 +673,7 @@ export function NoChatSelected() {
       <div className="flex flex-col gap-2 w-full max-w-[200px]">
         <a
           href="/discover"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary-accessible hover:bg-primary/20 transition-colors"
         >
           <Users className="h-4 w-4" />
           Find people to message

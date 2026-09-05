@@ -124,7 +124,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
-            {paramsError && <p className="text-xs text-destructive">{paramsError}</p>}
+            {paramsError && <p className="text-xs text-destructive-accessible">{paramsError}</p>}
             <p className="text-xs text-muted-foreground">
               Keys depend on action type: <code>title</code>/<code>body</code> for notifications, <code>subject</code>/<code>bodyHtml</code> for emails, <code>url</code>/<code>method</code> for webhooks.
             </p>
@@ -286,7 +286,7 @@ function statusBadge(status: string) {
 
 function execStatusIcon(status: string) {
   if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" />;
+  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive-accessible" />;
   if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
   if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
   return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
@@ -306,10 +306,10 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" />}
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-accessible mt-0.5 shrink-0" />}
           {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" />}
           {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" />}
-          <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
+          <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
             [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
         </div>
@@ -429,7 +429,7 @@ export default function AutomationsPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-accessible'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -523,7 +523,7 @@ export default function AutomationsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
                       title="Delete"
                       onClick={() => {
                         if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
@@ -573,7 +573,7 @@ export default function AutomationsPage() {
                 {selectedExecution === exec.id && (
                   <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
                     {exec.errorMessage && (
-                      <p className="text-xs text-destructive mb-2 font-mono">{exec.errorMessage}</p>
+                      <p className="text-xs text-destructive-accessible mb-2 font-mono">{exec.errorMessage}</p>
                     )}
                     <LogPanel executionId={exec.id} />
                   </Card>

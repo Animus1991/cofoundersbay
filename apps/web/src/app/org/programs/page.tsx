@@ -54,7 +54,7 @@ function ProgramCard({ program }: { program: Program }) {
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/org/programs/${program.id}`} className="font-semibold hover:text-primary transition-colors">
+              <Link href={`/org/programs/${program.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                 {program.name}
               </Link>
               <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
@@ -95,7 +95,7 @@ function ProgramCard({ program }: { program: Program }) {
                 <Link href={`/org/programs/${program.id}/participants`}>Manage Participants</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-accessible">Archive</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

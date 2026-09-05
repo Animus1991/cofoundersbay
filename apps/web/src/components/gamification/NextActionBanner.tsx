@@ -35,8 +35,8 @@ const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string;
   primary: {
     border: 'border-primary/30',
     bg:     'bg-primary/5',
-    icon:   'text-primary',
-    cta:    'text-primary hover:bg-primary/10',
+    icon:   'text-primary-accessible',
+    cta:    'text-primary-accessible hover:bg-primary/10',
   },
   amber: {
     border: 'border-amber-500/30',
@@ -100,7 +100,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
         <p className="text-sm font-semibold text-foreground truncate">{action.label}</p>
         <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{action.description}</p>
         {action.identitySignal && (
-          <p className={cn('text-xs italic mt-1', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
+          <p className={cn('text-xs italic mt-1', ac.icon)}>{action.identitySignal}</p>
         )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">

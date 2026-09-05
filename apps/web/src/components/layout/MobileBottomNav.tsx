@@ -49,7 +49,7 @@ export function MobileBottomNav() {
             aria-current={isActive ? 'page' : undefined}
             className={cn(
               'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
-              isActive ? 'text-primary' : 'text-muted-foreground',
+              isActive ? 'text-primary-accessible' : 'text-muted-foreground',
             )}
           >
             <span className="relative">
@@ -72,7 +72,7 @@ export function MobileBottomNav() {
         aria-expanded={mobileNavOpen}
         className={cn(
           'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
-          mobileNavOpen ? 'text-primary' : 'text-muted-foreground',
+          mobileNavOpen ? 'text-primary-accessible' : 'text-muted-foreground',
         )}
       >
         <Menu className={cn('h-5 w-5', mobileNavOpen && 'stroke-[2.5px]')} aria-hidden />
@@ -89,7 +89,7 @@ export function MobileBottomNav() {
             aria-current={isActive ? 'page' : undefined}
             className={cn(
               'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
-              isActive ? 'text-primary' : 'text-muted-foreground',
+              isActive ? 'text-primary-accessible' : 'text-muted-foreground',
             )}
           >
             <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />

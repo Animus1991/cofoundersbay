@@ -215,7 +215,7 @@ export default function EventsPage() {
             {isError ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <p className="text-sm text-muted-foreground">Failed to load events.</p>
-                <button onClick={() => refetch()} className="text-sm text-primary hover:underline">Try again</button>
+                <button onClick={() => refetch()} className="text-sm text-primary-accessible hover:underline">Try again</button>
               </div>
             ) : loading ? (
               <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>

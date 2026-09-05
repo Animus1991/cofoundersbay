@@ -99,7 +99,7 @@ function GroupCard({
       <CardContent className="p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary-accessible">
               {group.avatarUrl ? (
                 <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" />
               ) : (
@@ -321,7 +321,7 @@ export default function GroupsPage() {
             <TabsTrigger value="my-groups">
               <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />
               {myGroups.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">
+                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary-accessible">
                   {myGroups.length}
                 </span>
               )}
@@ -337,7 +337,7 @@ export default function GroupsPage() {
                   className={cn(
                     'rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors',
                     sort === s
-                      ? 'bg-primary/15 text-primary'
+                      ? 'bg-primary/15 text-primary-accessible'
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
                   )}
                 >
@@ -392,7 +392,7 @@ export default function GroupsPage() {
                     className={cn(
                       'rounded-full border px-3.5 py-1 text-xs font-medium transition-colors whitespace-nowrap',
                       selectedCategory === cat
-                        ? 'border-primary bg-primary/15 text-primary'
+                        ? 'border-primary bg-primary/15 text-primary-accessible'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
                     )}
                   >
@@ -460,7 +460,7 @@ export default function GroupsPage() {
           {!discoverQuery.isLoading && topGroups.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="h-4 w-4 text-primary-accessible" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
                 </h2>

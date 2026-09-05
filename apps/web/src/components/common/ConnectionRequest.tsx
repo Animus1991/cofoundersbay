@@ -86,7 +86,7 @@ export function ConnectionRequestDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" />
+            <Send className="h-5 w-5 text-primary-accessible" />
             Request Connection
           </DialogTitle>
           <DialogDescription>
@@ -98,7 +98,7 @@ export function ConnectionRequestDialog({
         <div className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={recipient.avatarUrl || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary">
+            <AvatarFallback className="bg-primary/20 text-primary-accessible">
               {recipient.displayName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -118,7 +118,7 @@ export function ConnectionRequestDialog({
         {/* Suggested messages */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary-accessible" />
             Quick suggestions
           </div>
           <div className="flex flex-wrap gap-2">
@@ -152,7 +152,7 @@ export function ConnectionRequestDialog({
           <div className="flex items-center justify-between text-xs">
             <span className={cn(
               'text-muted-foreground',
-              charCount > 500 && 'text-destructive'
+              charCount > 500 && 'text-destructive-accessible'
             )}>
               {charCount}/500 characters
             </span>
@@ -166,7 +166,7 @@ export function ConnectionRequestDialog({
 
         {/* Error message */}
         {error && (
-          <div className="flex items-center gap-2 text-sm text-destructive animate-fade-in">
+          <div className="flex items-center gap-2 text-sm text-destructive-accessible animate-fade-in">
             <AlertCircle className="h-4 w-4" />
             {error}
           </div>

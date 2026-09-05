@@ -222,7 +222,7 @@ export default function CreateProjectPage() {
                       >
                         <div className={cn(
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-                          status === opt.value ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                          status === opt.value ? 'bg-primary/10 text-primary-accessible' : 'bg-muted text-muted-foreground'
                         )}>
                           <Icon className="h-5 w-5" />
                         </div>

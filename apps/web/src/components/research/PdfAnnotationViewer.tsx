@@ -247,13 +247,13 @@ export function PdfAnnotationViewer({
             className={cn(
               'h-7 px-2 flex items-center gap-1 rounded-lg text-[11px] font-medium transition-colors',
               showAnnotationPanel
-                ? 'bg-primary/10 text-primary'
+                ? 'bg-primary/10 text-primary-accessible'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
           >
             <Type className="w-3 h-3" />
             {annotations.length > 0 && (
-              <span className="text-[10px] bg-primary/20 text-primary rounded-full px-1.5 py-0">{annotations.length}</span>
+              <span className="text-[10px] bg-primary/20 text-primary-accessible rounded-full px-1.5 py-0">{annotations.length}</span>
             )}
           </button>
         </div>
@@ -266,7 +266,7 @@ export function PdfAnnotationViewer({
           {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <Loader2 className="w-8 h-8 text-primary-accessible animate-spin" />
                 <span className="text-sm text-muted-foreground">Loading PDF…</span>
               </div>
             </div>
@@ -305,7 +305,7 @@ export function PdfAnnotationViewer({
           <div className="w-64 flex-none border-l border-border bg-card overflow-y-auto">
             <div className="p-3 border-b border-border">
               <h3 className="text-[12px] font-semibold text-foreground flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-primary" />
+                <MessageSquare className="w-3.5 h-3.5 text-primary-accessible" />
                 Annotations
                 <span className="text-[10px] text-muted-foreground ml-auto">{annotations.length}</span>
               </h3>
@@ -330,7 +330,7 @@ export function PdfAnnotationViewer({
                       </div>
                       <button
                         onClick={() => removeAnnotation(a.id)}
-                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-accessible transition-colors"
                       >
                         <X className="w-2.5 h-2.5" />
                       </button>
@@ -361,7 +361,7 @@ export function PdfAnnotationViewer({
                     note: '',
                   });
                 }}
-                className="w-full h-7 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-[11px] font-medium transition-colors flex items-center justify-center gap-1"
+                className="w-full h-7 rounded-lg bg-primary/10 text-primary-accessible hover:bg-primary/20 text-[11px] font-medium transition-colors flex items-center justify-center gap-1"
               >
                 <Plus className="w-3 h-3" />
                 Add note for page {currentPage}

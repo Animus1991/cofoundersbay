@@ -553,7 +553,7 @@ export default function ReputationPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Sparkles className="h-5 w-5 text-primary-accessible" />
               Tips to Improve Your Score
             </CardTitle>
           </CardHeader>

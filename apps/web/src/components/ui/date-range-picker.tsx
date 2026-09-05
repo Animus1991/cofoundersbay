@@ -85,7 +85,7 @@ function CalendarMonth({
                 !isCurrentMonth && 'opacity-30',
                 isDisabled && 'opacity-20 cursor-not-allowed',
                 !isFrom && !isTo && !inRange && isCurrentMonth && !isDisabled && 'hover:bg-accent',
-                isToday && !isFrom && !isTo && 'font-bold text-primary',
+                isToday && !isFrom && !isTo && 'font-bold text-primary-accessible',
                 inRange && 'bg-primary/15 rounded-none',
                 (isFrom || isTo) && 'bg-primary text-primary-foreground font-medium rounded-sm',
                 isFrom && effectiveTo && !isSameDay(selectedRange.from!, effectiveTo) && 'rounded-r-none',
