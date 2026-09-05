@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -29,6 +29,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -445,12 +446,12 @@ export default function RecommendationsPage() {
 
   return (
     <AppShell
-      title="Recommendations"
-      description="AI-powered matches based on your profile, skills, and goals"
+      title="For you"
+      description="AI-powered picks based on your profile, skills, and recent activity. Refreshes daily."
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
           <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
+          <BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       }
     >
@@ -458,19 +459,19 @@ export default function RecommendationsPage() {
         {/* Stats header */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:grid-rows-1">
           {[
-            { label: 'New Matches', value: recommendations.length, icon: Target },
-            { label: 'This Week', value: weeklyRecs.length, icon: Sparkles },
-            { label: 'Connections', value: stats?.totalConnections ?? 0, icon: Users },
-            { label: 'Acceptance Rate', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
-          ].map(({ label, value, icon: Icon }) => (
-            <Card key={label}>
+            { labelEn: 'New Matches', labelEl: 'Νέες αντιστοιχίσεις', value: recommendations.length, icon: Target },
+            { labelEn: 'This Week', labelEl: 'Αυτή την εβδομάδα', value: weeklyRecs.length, icon: Sparkles },
+            { labelEn: 'Connections', labelEl: 'Συνδέσεις', value: stats?.totalConnections ?? 0, icon: Users },
+            { labelEn: 'Acceptance Rate', labelEl: 'Ποσοστό αποδοχής', value: stats ? `${Math.round(stats.acceptanceRate)}%` : '—', icon: TrendingUp },
+          ].map(({ labelEn, labelEl, value, icon: Icon }) => (
+            <Card key={labelEn}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
                   <Icon className="h-4 w-4 text-primary" />
                 </div>
                 <div>
                   <p className="text-xl font-bold leading-none">{value}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -483,7 +484,7 @@ export default function RecommendationsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
+                <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
                   {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
                 </Badge>
@@ -557,23 +558,23 @@ export default function RecommendationsPage() {
           <TabsList>
             <TabsTrigger value="all" className="gap-1.5">
               <Target className="h-3.5 w-3.5" />
-              All
+              <BilingualText en="All" el="Όλοι" compact />
             </TabsTrigger>
             <TabsTrigger value="founders" className="gap-1.5">
               <Briefcase className="h-3.5 w-3.5" />
-              Founders
+              <BilingualText en="Founders" el="Ιδρυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="mentors" className="gap-1.5">
               <GraduationCap className="h-3.5 w-3.5" />
-              Mentors
+              <BilingualText en="Mentors" el="Μέντορες" compact />
             </TabsTrigger>
             <TabsTrigger value="investors" className="gap-1.5">
               <DollarSign className="h-3.5 w-3.5" />
-              Investors
+              <BilingualText en="Investors" el="Επενδυτές" compact />
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-1.5">
               <BookmarkPlus className="h-3.5 w-3.5" />
-              Saved
+              <BilingualText en="Saved" el="Αποθηκευμένα" compact />
               {savedIds.size > 0 && (
                 <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                   {savedIds.size}
@@ -587,14 +588,14 @@ export default function RecommendationsPage() {
               <Skeleton3 />
             ) : recsError ? (
               <Card><CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-                <p className="text-sm text-muted-foreground">Failed to load recommendations.</p>
-                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}>Retry</Button>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load recommendations." el="Αποτυχία φόρτωσης συστάσεων." /></p>
+                <Button variant="secondary" size="sm" onClick={() => void refetchRecs()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
               <Card><CardContent className="py-14 text-center">
                 <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                <h3 className="font-semibold mb-1">No saved matches yet</h3>
-                <p className="text-sm text-muted-foreground">Bookmark matches you want to revisit later.</p>
+                <h3 className="font-semibold mb-1"><BilingualText en="No saved matches yet" el="Δεν υπάρχουν αποθηκευμένες αντιστοιχίσεις" /></h3>
+                <p className="text-sm text-muted-foreground"><BilingualText en="Bookmark matches you want to revisit later." el="Αποθηκεύστε αντιστοιχίσεις που θέλετε να επαναξεταστούν αργότερα." /></p>
               </CardContent></Card>
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
@@ -610,14 +611,14 @@ export default function RecommendationsPage() {
               <Card>
                 <CardContent className="py-14 text-center">
                   <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
-                  <h3 className="font-semibold mb-1">No recommendations yet</h3>
+                  <h3 className="font-semibold mb-1"><BilingualText en="No recommendations yet" el="Δεν υπάρχουν συστάσεις ακόμα" /></h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}
                   </p>
                   {minScore > 0 ? (
-                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}>Clear Filter</Button>
+                    <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
                   ) : (
-                    <Link href="/profile/edit"><Button size="sm">Complete Profile</Button></Link>
+                    <Link href="/profile/edit"><Button size="sm"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Button></Link>
                   )}
                 </CardContent>
               </Card>

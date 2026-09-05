@@ -58,28 +58,24 @@ export default function TenantAnalyticsPage() {
   ];
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Analytics</h1>
-            <p className="text-muted-foreground">
-              Track your organization's performance
-            </p>
-          </div>
-          <Select defaultValue="30d">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Time period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-              <SelectItem value="1y">Last year</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+    <AppShell
+      title="Analytics"
+      description="Member growth, engagement, and program activity. Filter by time range to compare periods."
+      actions={(
+        <Select defaultValue="30d">
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Time period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+            <SelectItem value="90d">Last 90 days</SelectItem>
+            <SelectItem value="1y">Last year</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-4">

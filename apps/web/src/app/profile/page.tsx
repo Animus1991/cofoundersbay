@@ -47,11 +47,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { RoleBadge } from '@/components/common/RoleBadge';
+import { BilingualText } from '@/components/common/BilingualText';
 import { SkillChip } from '@/components/common/SkillChip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { ContributionGraph } from '@/components/shared/ContributionGraph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { profileEn, profileEl } from '@/lib/i18n/strings-profile';
+import { bilingualAria } from '@/lib/i18n/format';
 
 type ProfileData = Awaited<ReturnType<typeof getMeProfile>>['profile'];
 
@@ -59,12 +62,12 @@ const UserIcon = User;
 
 function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> }) {
   const items = [
-    { done: !!profile.displayName, label: 'Display name' },
-    { done: !!profile.headline, label: 'Headline' },
-    { done: !!profile.bio, label: 'Bio' },
-    { done: (profile.skills?.length ?? 0) >= 3, label: '3+ skills' },
-    { done: !!profile.location, label: 'Location' },
-    { done: !!profile.avatarUrl, label: 'Avatar' },
+    { done: !!profile.displayName, labelEn: profileEn('display_name'), labelEl: profileEl('display_name') },
+    { done: !!profile.headline, labelEn: profileEn('headline'), labelEl: profileEl('headline') },
+    { done: !!profile.bio, labelEn: profileEn('bio'), labelEl: profileEl('bio') },
+    { done: (profile.skills?.length ?? 0) >= 3, labelEn: profileEn('three_plus_skills'), labelEl: profileEl('three_plus_skills') },
+    { done: !!profile.location, labelEn: profileEn('location'), labelEl: profileEl('location') },
+    { done: !!profile.avatarUrl, labelEn: profileEn('avatar'), labelEl: profileEl('avatar') },
   ];
   const pct = Math.round((items.filter((i) => i.done).length / items.length) * 100);
   if (pct === 100) return null;
@@ -73,7 +76,9 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
     <Card className="animate-fade-in">
       <CardContent className="p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-foreground">Profile completion</p>
+          <p className="text-sm font-semibold text-foreground">
+            <BilingualText en={profileEn('profile_completion')} el={profileEl('profile_completion')} />
+          </p>
           <span className="text-sm font-bold text-primary">{pct}%</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
@@ -85,7 +90,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
         <div className="grid grid-cols-2 gap-1.5">
           {items.map((item) => (
             <div
-              key={item.label}
+              key={item.labelEn}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs ${
                 item.done
                   ? 'bg-primary/10 text-primary'
@@ -95,14 +100,14 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
               {item.done
                 ? <CheckCircle className="icon-sm shrink-0" />
                 : <AlertCircle className="icon-sm shrink-0" />}
-              {item.label}
+              <BilingualText en={item.labelEn} el={item.labelEl} compact />
             </div>
           ))}
         </div>
         <Link href="/profile/edit">
           <Button size="sm" variant="secondary" className="w-full gap-2 mt-1">
             <Edit className="h-3.5 w-3.5" />
-            Complete profile
+            <BilingualText en={profileEn('complete_profile')} el={profileEl('complete_profile')} />
           </Button>
         </Link>
       </CardContent>
@@ -112,28 +117,32 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
 
 function VerificationCard({ email }: { email?: string | null }) {
   const items = [
-    { label: 'Email verified', verified: !!email, icon: Mail },
-    { label: 'LinkedIn connected', verified: false, icon: Linkedin },
-    { label: 'GitHub connected', verified: false, icon: Github },
-    { label: 'Identity verified', verified: false, icon: Shield },
+    { labelEn: profileEn('email_verified'), labelEl: profileEl('email_verified'), verified: !!email, icon: Mail },
+    { labelEn: profileEn('linkedin_connected'), labelEl: profileEl('linkedin_connected'), verified: false, icon: Linkedin },
+    { labelEn: profileEn('github_connected'), labelEl: profileEl('github_connected'), verified: false, icon: Github },
+    { labelEn: profileEn('identity_verified'), labelEl: profileEl('identity_verified'), verified: false, icon: Shield },
   ];
   return (
     <Card className="animate-fade-in">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          Verification
+          <BilingualText en={profileEn('verification')} el={profileEl('verification')} />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 pt-0">
-        {items.map(({ label, verified, icon: Icon }) => (
-          <div key={label} className="flex items-center gap-2.5 text-xs">
+        {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
+          <div key={labelEn} className="flex items-center gap-2.5 text-xs">
             <div className={`flex h-6 w-6 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
               <Icon className={`icon-sm ${verified ? 'text-primary' : 'text-muted-foreground'}`} />
             </div>
-            <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
+            <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>
+              <BilingualText en={labelEn} el={labelEl} compact />
+            </span>
             {verified
               ? <CheckCircle className="ml-auto icon-sm text-primary" />
-              : <span className="ml-auto text-xs text-muted-foreground/60">Not connected</span>}
+              : <span className="ml-auto text-xs text-muted-foreground/60">
+                  <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} />
+                </span>}
           </div>
         ))}
       </CardContent>
@@ -178,10 +187,10 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
   const linkEntries = payload.links && typeof payload.links === 'object'
     ? (
         [
-          { key: 'websiteUrl', icon: Globe, label: 'Website' },
-          { key: 'linkedinUrl', icon: Linkedin, label: 'LinkedIn' },
-          { key: 'githubUrl', icon: Github, label: 'GitHub' },
-          { key: 'twitterUrl', icon: Twitter, label: 'Twitter/X' },
+          { key: 'websiteUrl', icon: Globe, label: bilingualAria(profileEn('website'), profileEl('website')) },
+          { key: 'linkedinUrl', icon: Linkedin, label: profileEn('linkedin') },
+          { key: 'githubUrl', icon: Github, label: profileEn('github') },
+          { key: 'twitterUrl', icon: Twitter, label: profileEn('twitter_x') },
         ] as { key: string; icon: React.ElementType; label: string }[]
       ).reduce<React.ReactNode[]>((acc, { key, icon: Icon2, label }) => {
         const url = (payload.links as Record<string, unknown>)[key];
@@ -208,43 +217,48 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
       <CardHeader className="pb-3 border-b border-border/50">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Icon className="icon-md text-primary" />
-          {role.charAt(0).toUpperCase() + role.slice(1)} Details
+          <BilingualText
+            en={`${role.charAt(0).toUpperCase() + role.slice(1)} ${profileEn('details_suffix')}`}
+            el={`${profileEl(role as 'founder' | 'mentor' | 'investor' | 'org') || role} — ${profileEl('details_suffix')}`}
+          />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 pt-5">
         {role === 'founder' && (
           <>
-            {renderValue(payload.stage, 'Startup stage')}
-            {renderValue(payload.commitment, 'Commitment')}
-            {renderList(payload.rolesSought, 'Looking for')}
-            {renderList(payload.industries ?? (payload.industry ? [payload.industry] : []), 'Industries')}
+            {renderValue(payload.stage, bilingualAria(profileEn('startup_stage'), profileEl('startup_stage')))}
+            {renderValue(payload.commitment, bilingualAria(profileEn('commitment'), profileEl('commitment')))}
+            {renderList(payload.rolesSought, bilingualAria(profileEn('looking_for'), profileEl('looking_for')))}
+            {renderList(payload.industries ?? (payload.industry ? [payload.industry] : []), bilingualAria(profileEn('industries'), profileEl('industries')))}
           </>
         )}
         {role === 'mentor' && (
           <>
-            {renderList(payload.expertiseAreas, 'Expertise areas')}
-            {renderValue(payload.availability, 'Availability')}
-            {renderValue(payload.meetingPreferences, 'Meeting preference')}
-            {renderValue(payload.hourlyRate, 'Rate')}
+            {renderList(payload.expertiseAreas, bilingualAria(profileEn('expertise_areas'), profileEl('expertise_areas')))}
+            {renderValue(payload.availability, bilingualAria(profileEn('availability'), profileEl('availability')))}
+            {renderValue(payload.meetingPreferences, bilingualAria(profileEn('meeting_preference'), profileEl('meeting_preference')))}
+            {renderValue(payload.hourlyRate, bilingualAria(profileEn('rate'), profileEl('rate')))}
           </>
         )}
         {role === 'investor' && (
           <>
-            {renderList(payload.investmentFocus, 'Investment focus')}
-            {renderList(payload.stages, 'Investment stages')}
-            {renderValue(payload.typicalCheckSize ?? [payload.checkSizeMin, payload.checkSizeMax].filter(Boolean).join(' – '), 'Check size')}
-            {renderList(payload.geography, 'Geography')}
+            {renderList(payload.investmentFocus, bilingualAria(profileEn('investment_focus'), profileEl('investment_focus')))}
+            {renderList(payload.stages, bilingualAria(profileEn('investment_stages'), profileEl('investment_stages')))}
+            {renderValue(payload.typicalCheckSize ?? [payload.checkSizeMin, payload.checkSizeMax].filter(Boolean).join(' – '), bilingualAria(profileEn('check_size'), profileEl('check_size')))}
+            {renderList(payload.geography, bilingualAria(profileEn('geography'), profileEl('geography')))}
           </>
         )}
         {role === 'org' && (
           <>
-            {renderValue(payload.organizationType, 'Organization type')}
-            {renderList(payload.programTypes, 'Programs')}
+            {renderValue(payload.organizationType, bilingualAria(profileEn('organization_type'), profileEl('organization_type')))}
+            {renderList(payload.programTypes, bilingualAria(profileEn('programs'), profileEl('programs')))}
           </>
         )}
         {linkEntries && linkEntries.length > 0 && (
           <div className="space-y-1.5 pt-2 border-t border-border/60">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Links</p>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <BilingualText en={profileEn('links')} el={profileEl('links')} />
+            </p>
             <div className="flex flex-wrap gap-2">
               {linkEntries}
             </div>
@@ -277,7 +291,7 @@ export default function ProfilePage() {
     if (!profile) return;
     const url = `${window.location.origin}/profiles/${profile.userId}`;
     navigator.clipboard.writeText(url).then(() =>
-      success('Link copied!', 'Your profile link is in your clipboard.')
+      success(bilingualAria(profileEn('link_copied'), profileEl('link_copied')), bilingualAria(profileEn('link_copied_desc'), profileEl('link_copied_desc')))
     );
   };
 
@@ -293,7 +307,9 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">Preparing your profile...</p>
+        <p className="text-sm text-muted-foreground">
+          <BilingualText en={profileEn('preparing_profile')} el={profileEl('preparing_profile')} />
+        </p>
       </div>
     );
   }
@@ -302,21 +318,19 @@ export default function ProfilePage() {
 
   return (
     <AppShell
-      title="My Profile"
-      description="Your public presence in the CoFounderBay ecosystem"
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
             <Share2 className="icon-sm" />
-            Share Profile
+            <BilingualText en={profileEn('share_profile')} el={profileEl('share_profile')} />
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
+          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title={bilingualAria(profileEn('copy_link'), profileEl('copy_link'))}>
             <Share2 className="icon-sm" />
           </Button>
           <Link href="/profile/edit">
             <Button size="sm" className="gap-2">
               <Edit className="icon-sm" />
-              Edit Profile
+              <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
             </Button>
           </Link>
         </div>
@@ -339,7 +353,7 @@ export default function ProfilePage() {
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
-                <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title="Verified Member">
+                  <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title={bilingualAria(profileEn('verified_member'), profileEl('verified_member'))}>
                   <BadgeCheck className="icon-lg text-blue-500" />
                 </div>
               </div>
@@ -356,7 +370,7 @@ export default function ProfilePage() {
                       </p>
                     ) : (
                       <p className="text-base text-muted-foreground italic opacity-70">
-                        No headline set
+                        <BilingualText en={profileEn('no_headline_set')} el={profileEl('no_headline_set')} />
                       </p>
                     )}
                   </div>
@@ -365,7 +379,7 @@ export default function ProfilePage() {
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
                     <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                      Open to work
+                      <BilingualText en={profileEn('open_to_work')} el={profileEl('open_to_work')} />
                     </Badge>
                   </div>
                 </div>
@@ -406,16 +420,16 @@ export default function ProfilePage() {
             <Card className="animate-fade-in stagger-1 shadow-sm border-border/50">
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <UserIcon className="icon-md text-primary" />
-                    About
+                    <BilingualText en={profileEn('about')} el={profileEl('about')} />
                   </CardTitle>
                   <AIInsightButton
                     prompt={`Review my profile as a ${profile.role} and give me 3 specific tips to improve my positioning and appeal to the right collaborators:\nHeadline: ${profile.headline || 'Not set'}\nBio: ${profile.bio || 'Not set'}\nSkills: ${profile.skills?.map((s) => s.skillName).join(', ') || 'None listed'}`}
                     agentId="pitch-coach"
                     cacheKey={`own-profile-coach-${profile.userId}`}
                     variant="icon"
-                    label="Get AI coaching tips for your profile"
+                    label={bilingualAria(profileEn('ai_coaching_label'), profileEl('ai_coaching_label'))}
                   />
                 </div>
               </CardHeader>
@@ -426,9 +440,13 @@ export default function ProfilePage() {
                   </p>
                 ) : (
                   <div className="text-center py-6 bg-secondary/20 rounded-lg border border-dashed border-border/50">
-                    <p className="text-sm text-muted-foreground mb-3">Your bio is empty. Tell the community about yourself!</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      <BilingualText en={profileEn('bio_empty_hint')} el={profileEl('bio_empty_hint')} />
+                    </p>
                     <Link href="/profile/edit">
-                      <Button variant="outline" size="sm">Add Bio</Button>
+                      <Button variant="outline" size="sm">
+                        <BilingualText en={profileEn('add_bio')} el={profileEl('add_bio')} />
+                      </Button>
                     </Link>
                   </div>
                 )}
@@ -438,11 +456,11 @@ export default function ProfilePage() {
           {/* Intent cards — What I'm looking for */}
           {(() => {
             const p = rolePayload as Record<string, string | undefined>;
-            const cards: { icon: React.ElementType; label: string; value: string | undefined }[] = [
-              { icon: Target, label: 'Looking for', value: p.lookingFor },
-              { icon: Rocket, label: 'Startup stage', value: p.stage },
-              { icon: Users, label: 'Commitment', value: p.commitment },
-              { icon: DollarSign, label: 'Compensation', value: p.compensation },
+            const cards: { icon: React.ElementType; labelEn: string; labelEl: string; value: string | undefined }[] = [
+              { icon: Target, labelEn: profileEn('looking_for'), labelEl: profileEl('looking_for'), value: p.lookingFor },
+              { icon: Rocket, labelEn: profileEn('startup_stage'), labelEl: profileEl('startup_stage'), value: p.stage },
+              { icon: Users, labelEn: profileEn('commitment'), labelEl: profileEl('commitment'), value: p.commitment },
+              { icon: DollarSign, labelEn: profileEn('compensation'), labelEl: profileEl('compensation'), value: p.compensation },
             ].filter((c) => c.value);
             if (!cards.length) return null;
             return (
@@ -450,17 +468,19 @@ export default function ProfilePage() {
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <Target className="icon-md text-primary" />
-                    What I&apos;m Looking For
+                    <BilingualText en={profileEn('what_looking_for')} el={profileEl('what_looking_for')} />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2 pt-5">
-                  {cards.map(({ icon: Icon, label, value }) => (
-                    <div key={label} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
+                  {cards.map(({ icon: Icon, labelEn, labelEl, value }) => (
+                    <div key={labelEn} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="flex items-center gap-2.5 mb-2">
                         <div className="p-1.5 rounded-md bg-primary/10 text-primary">
                           <Icon className="icon-sm" />
                         </div>
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <BilingualText en={labelEn} el={labelEl} compact />
+                        </span>
                       </div>
                       <p className="text-sm font-medium text-foreground pl-1">{value}</p>
                     </div>
@@ -484,11 +504,11 @@ export default function ProfilePage() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
                     <BarChart3 className="icon-md text-primary" />
-                    Top Skills & Proficiency
+                    <BilingualText en={profileEn('top_skills')} el={profileEl('top_skills')} />
                   </CardTitle>
                   <Link href="/profile/edit">
                     <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
-                      <Plus className="h-3.5 w-3.5" /> Add
+                      <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                     </Button>
                   </Link>
                 </div>
@@ -517,7 +537,7 @@ export default function ProfilePage() {
                 {profile.skills.length > 6 && (
                   <div className="mt-4 pt-4 border-t border-border/50 text-center">
                     <Button variant="link" size="sm" className="text-muted-foreground h-auto p-0">
-                      Show all {profile.skills.length} skills
+                      <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
                     </Button>
                   </div>
                 )}
@@ -531,10 +551,10 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <FolderOpen className="icon-md text-primary" />
-                  Portfolio &amp; Showcase
+                  <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
-                  <Plus className="h-3.5 w-3.5" /> Add
+                  <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
                 </Button>
               </div>
             </CardHeader>
@@ -544,12 +564,16 @@ export default function ProfilePage() {
                   <FolderOpen className="icon-lg" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">Showcase your best work</p>
-                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">Add projects, startups, publications, or key achievements to stand out.</p>
+                  <p className="text-sm font-medium text-foreground">
+                    <BilingualText en={profileEn('showcase_title')} el={profileEl('showcase_title')} />
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                    <BilingualText en={profileEn('showcase_desc')} el={profileEl('showcase_desc')} />
+                  </p>
                 </div>
                 <Link href="/profile/edit" className="mt-2">
                   <Button variant="outline" size="sm" className="gap-1.5">
-                    <Plus className="h-3.5 w-3.5" /> Add First Item
+                    <Plus className="h-3.5 w-3.5" /> <BilingualText en={profileEn('add_first_item')} el={profileEl('add_first_item')} />
                   </Button>
                 </Link>
               </div>
@@ -564,15 +588,17 @@ export default function ProfilePage() {
                   <Activity className="h-8 w-8 text-primary" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-lg">Your profile is looking bare</h3>
+                  <h3 className="font-semibold text-lg">
+                    <BilingualText en={profileEn('profile_bare_title')} el={profileEl('profile_bare_title')} />
+                  </h3>
                   <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                    Profiles with bios and role details receive 4x more connection requests. Take 2 minutes to fill it out!
+                    <BilingualText en={profileEn('profile_bare_desc')} el={profileEl('profile_bare_desc')} />
                   </p>
                 </div>
                 <Link href="/profile/edit">
                   <Button className="gap-2 mt-2">
                     <Edit className="h-4 w-4" />
-                    Complete Profile Now
+                    <BilingualText en={profileEn('complete_profile_now')} el={profileEl('complete_profile_now')} />
                   </Button>
                 </Link>
               </CardContent>
@@ -588,18 +614,18 @@ export default function ProfilePage() {
               <Link href="/profile/edit" className="block w-full">
                 <Button className="w-full gap-2 font-medium">
                   <Edit className="h-4 w-4" />
-                  Edit Profile
+                  <BilingualText en={profileEn('edit_profile')} el={profileEl('edit_profile')} />
                 </Button>
               </Link>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
                   <LinkIcon className="h-4 w-4" />
-                  Copy Link
+                  <BilingualText en={profileEn('copy_link')} el={profileEl('copy_link')} />
                 </Button>
                 <Link href="/settings/general" className="block w-full">
                   <Button variant="outline" className="w-full gap-2">
                     <Zap className="h-4 w-4" />
-                    Settings
+                    <BilingualText en={profileEn('settings')} el={profileEl('settings')} />
                   </Button>
                 </Link>
               </div>
@@ -616,27 +642,31 @@ export default function ProfilePage() {
           <Card className="animate-fade-in shadow-sm border-border/50">
             <CardHeader className="pb-3 border-b border-border/50">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Activity & Reputation
+                <BilingualText en={profileEn('activity_reputation')} el={profileEl('activity_reputation')} />
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 grid grid-cols-2 gap-3">
               {[
-                { icon: Users,    label: 'Connections', value: '0', color: 'text-violet-500', bg: 'bg-violet-500/10' },
-                { icon: Star,     label: 'Endorsements',value: '0', color: 'text-amber-500', bg: 'bg-amber-500/10'  },
-                { icon: MessageSquare, label: 'Posts', value: '0', color: 'text-blue-500', bg: 'bg-blue-500/10'   },
-                { icon: Award,    label: 'Achievements', value: '0', color: 'text-emerald-500', bg: 'bg-emerald-500/10'},
-              ].map(({ icon: Icon, label, value, color, bg }) => (
-                <div key={label} className="flex flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
+                { icon: Users, labelEn: profileEn('connections'), labelEl: profileEl('connections'), value: '0', color: 'text-violet-500', bg: 'bg-violet-500/10' },
+                { icon: Star, labelEn: profileEn('endorsements'), labelEl: profileEl('endorsements'), value: '0', color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
+                <div key={labelEn} className="flex flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className={`p-2 rounded-full ${bg} mb-2`}>
                     <Icon className={`h-4 w-4 ${color}`} />
                   </div>
                   <span className="text-lg font-bold text-foreground leading-none">{value}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">{label}</span>
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                    <BilingualText en={labelEn} el={labelEl} compact />
+                  </span>
                 </div>
               ))}
               <div className="col-span-2 mt-2">
                 <Link href="/reputation">
-                  <Button variant="secondary" className="w-full text-xs h-8">View Reputation Dashboard</Button>
+                  <Button variant="secondary" className="w-full text-xs h-8">
+                    <BilingualText en={profileEn('view_reputation')} el={profileEl('view_reputation')} />
+                  </Button>
                 </Link>
               </div>
             </CardContent>
@@ -646,7 +676,7 @@ export default function ProfilePage() {
           <Card className="animate-fade-in shadow-sm border-border/50">
             <CardHeader className="pb-3 border-b border-border/50">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Activity Graph
+                <BilingualText en={profileEn('activity_graph')} el={profileEl('activity_graph')} />
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 overflow-hidden">

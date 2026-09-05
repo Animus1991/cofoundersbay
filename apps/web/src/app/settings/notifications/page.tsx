@@ -21,6 +21,8 @@ import {
 } from '@/components/ui/select';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { cn } from '@/lib/utils';
 import { getNotificationPreferences, updateNotificationPreferences } from '@/lib/api';
 
@@ -314,14 +316,12 @@ export default function NotificationPreferencesPage() {
 
   return (
     <AppShell
-      title="Notification Preferences"
-      description="Control how and when you receive notifications"
       actions={
         <div className="flex items-center gap-2">
           <Link href="/settings">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
               <ArrowLeft className="h-4 w-4" />
-              Settings
+              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
             </Button>
           </Link>
           <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
@@ -330,7 +330,7 @@ export default function NotificationPreferencesPage() {
             ) : (
               <Save className="h-4 w-4" />
             )}
-            Save Changes
+            <BilingualText en={savePrefs.isPending ? settingsEn('saving') : 'Save Changes'} el={savePrefs.isPending ? settingsEl('saving') : 'Αποθήκευση αλλαγών'} />
           </Button>
         </div>
       }

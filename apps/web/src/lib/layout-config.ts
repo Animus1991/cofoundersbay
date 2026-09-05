@@ -95,3 +95,11 @@ export const layoutConfig = {
 } as const;
 
 export type LayoutConfig = typeof layoutConfig;
+
+/** Full-width main column inside AppShell (sidebar offset is on the parent wrapper). */
+export const appShellMainClasses =
+  'focus:outline-none flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 pb-24 lg:pb-10';
+
+/** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
+export const appShellLoadingClasses =
+  'mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 space-y-5';

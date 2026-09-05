@@ -1,0 +1,568 @@
+import type { PageMetaEl } from './types';
+
+/** Greek page titles and descriptions keyed by route path. */
+export const PAGE_META_EL: Record<string, PageMetaEl> = {
+  // ── Public ──
+  '/': {
+    title: 'Αρχική',
+    description:
+      'Το landing του CoFounderBay — εύρεση συνιδρυτών, mentors και επενδυτών.',
+    section: 'Δημόσιο',
+  },
+  '/pricing': {
+    title: 'Τιμολόγηση',
+    description: 'Σχέδια για founders, mentors, οργανισμούς και επιχειρήσεις.',
+    section: 'Δημόσιο',
+  },
+  '/login': {
+    title: 'Σύνδεση',
+    description:
+      'Πρόσβαση στον χώρο εργασίας μέσω email, Google, LinkedIn ή SSO.',
+    section: 'Αυθεντικοποίηση',
+  },
+  '/register': {
+    title: 'Δημιουργία λογαριασμού',
+    description: 'Εγγραφή ως founder, mentor, επενδυτής ή οργανισμός.',
+    section: 'Αυθεντικοποίηση',
+  },
+  '/onboarding': {
+    title: 'Καλώς ήρθατε στο CoFounderBay',
+    description:
+      'Ρύθμιση 3 λεπτών ώστε η αντιστοίχιση, η αναζήτηση και οι προτάσεις να λειτουργούν αποτελεσματικά για εσάς.',
+    section: 'Αυθεντικοποίηση',
+  },
+
+  // ── Founder work ──
+  '/dashboard/founder': {
+    title: 'Πίνακας ελέγχου founder',
+    description:
+      'Το κεντρικό σημείο επιχείρησης του startup — ετοιμότητα, αντιστοιχίσεις και επόμενες ενέργειες.',
+    section: 'Εργασία',
+  },
+  '/readiness': {
+    title: 'Readiness Score',
+    description:
+      'Αξιολόγηση της ετοιμότητας του startup σε 6 βασικές διαστάσεις και προτεραιότητες βελτίωσης.',
+    section: 'Εργασία',
+  },
+  '/builder': {
+    title: 'Startup Builder',
+    description:
+      'Δομή ιδέας, ομάδας, αγοράς, traction και pitch — σε έναν ενοποιημένο χώρο εργασίας.',
+    section: 'Εργασία',
+  },
+  '/builder/pitch-deck': {
+    title: 'Pitch deck',
+    description:
+      'Δημιουργία και βελτίωση περιεχομένου slides συνδεδεμένου με τα δεδομένα του builder.',
+    section: 'Εργασία',
+  },
+  '/builder/applications': {
+    title: 'Αιτήσεις προγράμματος',
+    description:
+      'Παρακολούθηση αιτήσεων σε accelerators και επιχορηγήσεις σε ένα σημείο.',
+    section: 'Εργασία',
+  },
+  '/research': {
+    title: 'Πίνακες έρευνας',
+    description:
+      'Οπτικές επιφάνειες για έρευνα αγοράς, προϊόντος και ανταγωνισμού.',
+    section: 'Εργασία',
+  },
+  '/milestones': {
+    title: 'Ορόσημα',
+    description:
+      'Σχεδιασμός και παρακολούθηση ορόσημων του startup με ημερομηνίες και υπεύθυνους.',
+    section: 'Εργασία',
+  },
+  '/projects': {
+    title: 'Έργα',
+    description: 'Διαχείριση παράλληλων έργων και πρωτοβουλιών του startup.',
+    section: 'Εργασία',
+  },
+  '/fundraising': {
+    title: 'Fundraising',
+    description:
+      'Παρακολούθηση γύρου χρηματοδότησης, pipeline επενδυτών και οργάνωση του data room.',
+    section: 'Εργασία',
+  },
+
+  // ── Discovery ──
+  '/matches': {
+    title: 'Αντιστοιχίσεις',
+    description:
+      'Αντιστοιχίσεις συνιδρυτών και ομάδων με βάση τη συμβατότητα του προφίλ σας, κατάταξη AI.',
+    section: 'Εξερεύνηση',
+  },
+  '/matches/compare': {
+    title: 'Σύγκριση προφίλ',
+    description:
+      'Παράλληλη σύγκριση δεξιοτήτων, στάδιου και συμβατότητας.',
+    section: 'Εξερεύνηση',
+  },
+  '/discover': {
+    title: 'Εξερεύνηση',
+    description:
+      'Ανακάλυψη founders, mentors, επενδυτών και μελών ομάδας με φίλτρα ρόλου, δεξιοτήτων και τοποθεσίας.',
+    section: 'Εξερεύνηση',
+  },
+  '/recommendations': {
+    title: 'Για εσάς',
+    description:
+      'Εξατομικευμένες προτάσεις βάσει του προφίλ και της δραστηριότητάς σας.',
+    section: 'Εξερεύνηση',
+  },
+  '/search': {
+    title: 'Αναζήτηση',
+    description:
+      'Εύρεση ατόμων, θέσεων εργασίας, εκδηλώσεων, προγραμμάτων και δημοσιεύσεων. Χρησιμοποιήστε τα φίλτρα στις καρτέλες αποτελεσμάτων για περιορισμό κατά τύπο.',
+    section: 'Εξερεύνηση',
+  },
+  '/connections': {
+    title: 'Συνδέσεις',
+    description:
+      'Διαχείριση εκκρεμών αιτημάτων και ενεργών επαγγελματικών σχέσεων.',
+    section: 'Δίκτυο',
+  },
+  '/shortlist': {
+    title: 'Αποθηκευμένα προφίλ',
+    description: 'Προφίλ που αποθηκεύσατε για μελλοντική επικοινωνία.',
+    section: 'Δίκτυο',
+  },
+  '/messages': {
+    title: 'Μηνύματα',
+    description:
+      'Άμεσες συνομιλίες και αιτήματα εισαγωγής με το δίκτυό σας.',
+    section: 'Επικοινωνία',
+  },
+  '/calendar': {
+    title: 'Ημερολόγιο',
+    description: 'Συνεδρίες, κλήσεις και εκδηλώσεις σε μία χρονολογική ακολουθία.',
+    section: 'Επικοινωνία',
+  },
+
+  // ── Mentor ──
+  '/dashboard/mentor': {
+    title: 'Πίνακας ελέγχου mentor',
+    description:
+      'Συνεδρίες, αιτήματα, αποδοχές και επισκόπηση mentees.',
+    section: 'Εργασία',
+  },
+  '/mentor/sessions': {
+    title: 'Οι συνεδρίες μου',
+    description: 'Προγραμματισμένες και προηγούμενες συνεδρίες mentoring.',
+    section: 'Εργασία',
+  },
+  '/mentor/requests': {
+    title: 'Αιτήματα mentees',
+    description: 'Αποδοχή ή απόρριψη νέων αιτημάτων mentoring.',
+    section: 'Εργασία',
+  },
+  '/mentoring': {
+    title: 'Εύρεση mentors',
+    description:
+      'Κατάλογος mentors — φιλτράρισμα κατά εξειδίκευση και διαθεσιμότητα.',
+    section: 'Εξερεύνηση',
+  },
+
+  // ── Investor ──
+  '/dashboard/investor': {
+    title: 'Πίνακας ελέγχου επενδυτή',
+    description:
+      'KPIs ροής deals, στιγμιότυπο pipeline και watchlist.',
+    section: 'Εργασία',
+  },
+  '/investor/scouting': {
+    title: 'Αναζήτηση startups',
+    description:
+      'Αναζήτηση και φιλτράρισμα startups κατά στάδιο, κλάδο και traction.',
+    section: 'Εργασία',
+  },
+  '/investor/pipeline': {
+    title: 'Pipeline',
+    description:
+      'Kanban deals από την εισαγωγή έως το term sheet.',
+    section: 'Εργασία',
+  },
+  '/investors': {
+    title: 'Κατάλογος επενδυτών',
+    description:
+      'Ανακάλυψη angels, VCs και syndicates στην πλατφόρμα.',
+    section: 'Εξερεύνηση',
+  },
+
+  // ── Provider ──
+  '/dashboard/provider': {
+    title: 'Πίνακας ελέγχου παρόχου',
+    description: 'Υπηρεσίες, αιτήματα και ενεργά έργα πελατών.',
+    section: 'Εργασία',
+  },
+  '/marketplace': {
+    title: 'Marketplace υπηρεσιών',
+    description:
+      'Περιήγηση σε παρόχους νομικών, σχεδιασμού, growth και operations.',
+    section: 'Πόροι',
+  },
+
+  // ── Organization ──
+  '/org/dashboard': {
+    title: 'Πίνακας ελέγχου οργανισμού',
+    description: 'Προγράμματα, cohorts και υγεία χαρτοφυλακίου.',
+    section: 'Εργασία',
+  },
+  '/org/programs': {
+    title: 'Προγράμματα',
+    description:
+      'Δημιουργία, εκτέλεση και αξιολόγηση προγραμμάτων accelerator, bootcamp και incubator.',
+    section: 'Εργασία',
+  },
+  '/org/applications': {
+    title: 'Αιτήσεις',
+    description:
+      'Αξιολόγηση και βαθμολόγηση αιτήσεων startups σε όλα τα ανοιχτά προγράμματα.',
+    section: 'Εργασία',
+  },
+  '/org/cohorts': {
+    title: 'Cohorts',
+    description:
+      'Διαχείριση cohorts προγράμματος, κάλυψης mentors και προόδου συμμετεχόντων.',
+    section: 'Εργασία',
+  },
+  '/org/startups': {
+    title: 'Startups χαρτοφυλακίου',
+    description: 'Startups σε ενεργά προγράμματα και αποφοιτήσαντες.',
+    section: 'Εργασία',
+  },
+  '/org/members': {
+    title: 'Μέλη ομάδας',
+    description:
+      'Πρόσκληση και διαχείριση δικαιωμάτων εκτέλεσης προγραμμάτων, αξιολόγησης αιτήσεων και ρυθμίσεων.',
+    section: 'Εργασία',
+  },
+  '/org/mentors': {
+    title: 'Δεξαμενή mentors',
+    description:
+      'Mentors διαθέσιμοι για τα cohorts σας. Πρόσκληση μέσω email ή onboarding από τον κατάλογο.',
+    section: 'Εργασία',
+  },
+  '/org/events': {
+    title: 'Εκδηλώσεις οργανισμού',
+    description:
+      'Demo days, office hours, εργαστήρια και pitch nights για τα cohorts σας.',
+    section: 'Εργασία',
+  },
+  '/org/analytics': {
+    title: 'Αναλυτικά οργανισμού',
+    description:
+      'Υγεία cohorts, αντίκτυπος προγραμμάτων, funnel αιτήσεων και ανάπτυξη μελών.',
+    section: 'Εργασία',
+  },
+  '/org/settings': {
+    title: 'Ρυθμίσεις οργανισμού',
+    description:
+      'Προφίλ, branding, ομάδα, δικαιώματα και τιμολόγηση του οργανισμού.',
+    section: 'Εργασία',
+  },
+
+  // ── Tenant admin ──
+  '/tenant/dashboard': {
+    title: 'Πίνακας ελέγχου tenant',
+    description:
+      'Επισκόπηση white-label κοινότητας και βασικών μετρικών.',
+    section: 'Tenant',
+  },
+  '/tenant/branding': {
+    title: 'Branding',
+    description:
+      'Προσαρμογή χρωμάτων, λογοτύπων, γραμματοσειρών και κειμένου landing. Εργασία σε draft, δημοσίευση για εφαρμογή σε όλο τον tenant.',
+    section: 'Tenant',
+  },
+  '/tenant/sso': {
+    title: 'SSO / Αυθεντικοποίηση',
+    description:
+      'Ρύθμιση SAML, OIDC ή Google Workspace SSO. Προαιρετικοί κανόνες αντιστοίχισης claims IdP σε ρόλους.',
+    section: 'Tenant',
+  },
+  '/tenant/domains': {
+    title: 'Διαχείριση domain',
+    description:
+      'Προσθήκη subdomain ή σύνδεση custom domain. Το SSL προμηθεύεται αυτόματα μετά την επαλήθευση DNS.',
+    section: 'Tenant',
+  },
+  '/tenant/members': {
+    title: 'Μέλη tenant',
+    description:
+      'Πρόσκληση, ανάθεση ρόλων και αφαίρεση μελών του χώρου εργασίας.',
+    section: 'Tenant',
+  },
+  '/tenant/programs': {
+    title: 'Προγράμματα tenant',
+    description:
+      'Χώροι εργασίας με προγράμματα ενεργοποιούν αιτήσεις, cohorts και δομημένο mentoring.',
+    section: 'Tenant',
+  },
+  '/tenant/automation': {
+    title: 'Αυτοματισμός',
+    description:
+      'Ροές εργασίας βάσει εκδηλώσεων: triggers, conditions και actions για τον χώρο εργασίας.',
+    section: 'Tenant',
+  },
+  '/tenant/webhooks': {
+    title: 'Webhooks',
+    description:
+      'Αποστολή εκδηλώσεων σε πραγματικό χρόνο σε Zapier, Slack ή οποιοδήποτε HTTPS endpoint.',
+    section: 'Tenant',
+  },
+  '/tenant/api-keys': {
+    title: 'API Keys',
+    description:
+      'Πρόσβαση προγραμματιστικής διεπαφής με συγκεκριμένα δικαιώματα. Περιοδική ανανέωση.',
+    section: 'Tenant',
+  },
+  '/tenant/billing': {
+    title: 'Τιμολόγηση οργανισμού',
+    description:
+      'Σχέδιο, θέσεις, τιμολόγια και μέθοδοι πληρωμής του χώρου εργασίας.',
+    section: 'Tenant',
+  },
+  '/tenant/analytics': {
+    title: 'Αναλυτικά tenant',
+    description:
+      'Ανάπτυξη μελών, engagement και δραστηριότητα προγραμμάτων του χώρου εργασίας.',
+    section: 'Tenant',
+  },
+  '/tenant/settings': {
+    title: 'Ρυθμίσεις tenant',
+    description:
+      'Γενικές ρυθμίσεις χώρου εργασίας: πολιτική συμμετοχής, ειδοποιήσεις και προτιμήσεις email.',
+    section: 'Tenant',
+  },
+
+  // ── Platform admin ──
+  '/admin': {
+    title: 'Πίνακας ελέγχου διαχειριστή',
+    description:
+      'Υγεία πλατφόρμας, ειδοποιήσεις και γρήγορες ενέργειες.',
+    section: 'Διαχείριση',
+  },
+  '/admin/users': {
+    title: 'Χρήστες',
+    description: 'Αναζήτηση και διαχείριση λογαριασμών πλατφόρμας.',
+    section: 'Διαχείριση',
+  },
+  '/admin/user-management': {
+    title: 'Διαχείριση χρηστών',
+    description:
+      'Εξειδικευμένα φίλτρα, μαζικές ενέργειες και έλεγχοι επαλήθευσης.',
+    section: 'Διαχείριση',
+  },
+  '/admin/analytics': {
+    title: 'Παγκόσμια αναλυτικά',
+    description:
+      'Μετρικές ανάπτυξης, engagement και οικονομικών της πλατφόρμας.',
+    section: 'Διαχείριση',
+  },
+  '/admin/content-moderation': {
+    title: 'Μέτρηση περιεχομένου',
+    description:
+      'Αξιολόγηση σημειωμένων δημοσιεύσεων, προφίλ και πολυμέσων.',
+    section: 'Διαχείριση',
+  },
+  '/admin/security-monitoring': {
+    title: 'Παρακολούθηση ασφάλειας',
+    description:
+      'Εκδηλώσεις αυθεντικοποίησης, ανωμαλίες και αρχεία ελέγχου.',
+    section: 'Διαχείριση',
+  },
+  '/admin/community-management': {
+    title: 'Διαχείριση κοινότητας',
+    description:
+      'Επιθεώρηση υγείας κοινότητας, ανάπτυξης και σημειωμένου περιεχομένου.',
+    section: 'Διαχείριση',
+  },
+  '/admin/mentorship-management': {
+    title: 'Διαχείριση mentoring',
+    description:
+      'Έγκριση mentors, αξιολόγηση προσόντων και παρακολούθηση ποιότητας συνεδριών.',
+    section: 'Διαχείριση',
+  },
+  '/admin/system-settings': {
+    title: 'Ρυθμίσεις συστήματος',
+    description:
+      'Πλατφορμικοί διακόπτες συντήρησης, εγγραφής και email.',
+    section: 'Διαχείριση',
+  },
+
+  // ── Account ──
+  '/profile': {
+    title: 'Το προφίλ μου',
+    description:
+      'Ακριβώς όπως εμφανίζεστε στους άλλους. Διατηρείτε δεξιότητες, headline και βιογραφικό ενημερωμένα — τροφοδοτούν αντιστοιχίσεις και αναζήτηση.',
+    section: 'Λογαριασμός',
+  },
+  '/profile/edit': {
+    title: 'Επεξεργασία προφίλ',
+    description:
+      'Ενημέρωση φωτογραφίας, βιογραφικού, δεξιοτήτων και ρυθμίσεων ορατότητας. Αποθήκευση αυτόματα κατά την πληκτρολόγηση.',
+    section: 'Λογαριασμός',
+  },
+  '/settings': {
+    title: 'Ρυθμίσεις',
+    description:
+      'Διαχείριση τιμολόγησης, ειδοποιήσεων, ενσωματώσεων και ιδιωτικότητας.',
+    section: 'Λογαριασμός',
+  },
+  '/notifications': {
+    title: 'Ειδοποιήσεις',
+    description:
+      'Ειδοποιήσεις δραστηριότητας — αντιστοιχίσεις, μηνύματα και ενημερώσεις προγραμμάτων.',
+    section: 'Λογαριασμός',
+  },
+  '/achievements': {
+    title: 'Επιτεύγματα',
+    description:
+      'Badges και XP από τη δραστηριότητα στην πλατφόρμα.',
+    section: 'Λογαριασμός',
+  },
+  '/help': {
+    title: 'Βοήθεια και υποστήριξη',
+    description: 'Οδηγοί, συχνές ερωτήσεις και επιλογές επικοινωνίας.',
+    section: 'Πόροι',
+  },
+
+  // ── Programs, jobs, marketplace, community ──
+  '/jobs': {
+    title: 'Θέσεις εργασίας',
+    description:
+      'Θέσεις equity, πλήρους απασχόλησης και συμβατικών που δημοσιεύουν startups στην πλατφόρμα.',
+    section: 'Πόροι',
+  },
+  '/opportunities': {
+    title: 'Ευκαιρίες',
+    description:
+      'Κλήσεις συνιδρυτών, αμειβόμενες αναθέσεις, θέσεις equity και βραχυπρόθεσμες συνεργασίες σε ένα feed.',
+    section: 'Πόροι',
+  },
+  '/events': {
+    title: 'Εκδηλώσεις',
+    description:
+      'Εργαστήρια, demo days, meetups και διαδικτυακές συνεδρίες — RSVP και προσθήκη στο ημερολόγιο.',
+    section: 'Πόροι',
+  },
+  '/learning': {
+    title: 'Κέντρο μάθησης',
+    description:
+      'Επιλεγμένα courses, οδηγοί founders και πρότυπα ευθυγραμμισμένα με τα κενά ετοιμότητας.',
+    section: 'Πόροι',
+  },
+  '/groups': {
+    title: 'Κοινότητες',
+    description:
+      'Ομάδες βάσει κλάδου, στάδιου και ενδιαφέροντος. Συμμετοχή για αλληλεπίδραση· δημιουργία δικής σας ομάδας.',
+    section: 'Κοινότητα',
+  },
+  '/posts': {
+    title: 'Feed',
+    description:
+      'Ενημερώσεις από το δίκτυό σας, τις κοινότητες και τους ακολουθούμενους.',
+    section: 'Κοινότητα',
+  },
+
+  // ── Mentor sub-pages ──
+  '/mentor/profile-setup': {
+    title: 'Ρύθμιση mentor',
+    description:
+      'Περιγραφή προσφοράς, τιμών και διαθεσιμότητας για founders.',
+    section: 'Εργασία',
+  },
+
+  // ── Investor sub-pages ──
+  '/investor/profile-setup': {
+    title: 'Ρύθμιση επενδυτή',
+    description:
+      'Ρύθμιση thesis, check size, κλάδων και σταδίων για αντιστοιχισμένη ροή deals.',
+    section: 'Εργασία',
+  },
+
+  // ── Provider sub-pages ──
+  '/provider/listings': {
+    title: 'Οι καταχωρίσεις μου',
+    description:
+      'Διαχείριση υπηρεσιών που προσφέρετε σε startups στο marketplace.',
+    section: 'Εργασία',
+  },
+};
+
+/** Dynamic route patterns with Greek metadata. */
+export const PAGE_META_EL_PATTERNS: Array<{
+  pattern: RegExp;
+  meta: PageMetaEl;
+}> = [
+  {
+    pattern: /^\/matches\/[^/]+$/,
+    meta: {
+      title: 'Λεπτομέρεια αντιστοίχισης',
+      description:
+        'Ανάλυση συμβατότητας και προτεινόμενες επόμενες ενέργειες με αυτό το άτομο.',
+      section: 'Εξερεύνηση',
+    },
+  },
+  {
+    pattern: /^\/profiles\/[^/]+$/,
+    meta: {
+      title: 'Προφίλ μέλους',
+      description:
+        'Δημόσιο προφίλ — σύνδεση, μήνυμα ή αποθήκευση στη shortlist.',
+      section: 'Εξερεύνηση',
+    },
+  },
+  {
+    pattern: /^\/admin\/user-detail\/[^/]+$/,
+    meta: {
+      title: 'Λεπτομέρεια χρήστη',
+      description:
+        'Πλήρης διαχειριστική επισκόπηση — δραστηριότητα, ιστορικό μέτρησης και έλεγχοι λογαριασμού.',
+      section: 'Διαχείριση',
+    },
+  },
+  {
+    pattern: /^\/research\/[^/]+$/,
+    meta: {
+      title: 'Επιφάνεια έρευνας',
+      description:
+        'Συνεργατικό whiteboard για έρευνα startup.',
+      section: 'Εργασία',
+    },
+  },
+  {
+    pattern: /^\/groups\/[^/]+$/,
+    meta: {
+      title: 'Κοινότητα',
+      description:
+        'Δημοσιεύσεις, μέλη και εκδηλώσεις αυτής της ομάδας.',
+      section: 'Κοινότητα',
+    },
+  },
+];
+
+/** Resolve Greek page metadata for the current pathname (exact, pattern, then prefix fallback). */
+export function getPageMetaEl(pathname: string): PageMetaEl | undefined {
+  const normalized = pathname.replace(/\/$/, '') || '/';
+  const exact = PAGE_META_EL[normalized];
+  if (exact) return exact;
+
+  for (const { pattern, meta } of PAGE_META_EL_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return meta;
+    }
+  }
+
+  const sorted = Object.keys(PAGE_META_EL).sort((a, b) => b.length - a.length);
+  for (const path of sorted) {
+    if (path !== '/' && normalized.startsWith(path)) {
+      return PAGE_META_EL[path];
+    }
+  }
+
+  return undefined;
+}

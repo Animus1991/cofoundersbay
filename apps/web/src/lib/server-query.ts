@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { cookies } from 'next/headers';
+import { getAbsoluteApiOrigin } from './api-origin';
 
 /**
  * Create a fresh QueryClient for server-side prefetching.
@@ -26,7 +27,7 @@ export async function serverFetch<T>(
   endpoint: string,
   opts?: { timeout?: number },
 ): Promise<T | null> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  const apiBase = getAbsoluteApiOrigin();
   const timeout = opts?.timeout ?? 4_000;
 
   const cookieStore = await cookies();

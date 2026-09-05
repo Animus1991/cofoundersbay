@@ -21,7 +21,10 @@ import {
   type NotificationItem,
 } from '@/lib/api';
 import { useHasSession } from '@/hooks/useSession';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 import { cn, formatRelativeTime } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 const TYPE_ICON: Record<string, React.ElementType> = {
   message: MessageCircle,
@@ -35,14 +38,14 @@ const TYPE_ICON: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  message: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
-  connection_request: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-  connection_accepted: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400',
-  match: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
-  event: 'bg-purple-500/15 text-purple-700 dark:text-purple-400',
-  job: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
-  group: 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-400',
-  mention: 'bg-pink-500/15 text-pink-700 dark:text-pink-400',
+  message: STATUS.info.chip,
+  connection_request: STATUS.success.chip,
+  connection_accepted: STATUS.success.chip,
+  match: STATUS.warning.chip,
+  event: STATUS.accent.chip,
+  job: STATUS.warning.chip,
+  group: STATUS.info.chip,
+  mention: STATUS.accent.chip,
 };
 
 function NotifIcon({ type }: { type: string }) {
@@ -59,6 +62,8 @@ export function NotificationsBell({ className }: { className?: string }) {
   const router = useRouter();
   const { error: showError } = useToast();
   const hasSession = useHasSession();
+  const { isAuthenticated, isChecking } = useAuthenticatedSession();
+  const apiAvailable = useApiAvailability();
 
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -68,13 +73,14 @@ export function NotificationsBell({ className }: { className?: string }) {
   const MIN_RELOAD_MS = 30_000; // minimum 30 s between background reloads
 
   const unread = items.filter((notification) => !notification.readAt).length;
+  const ready = hasSession && !isChecking && isAuthenticated && apiAvailable;
 
   const load = async (force = false) => {
     if (loadingRef.current) return;
     const now = Date.now();
     if (!force && now - lastLoadedAt.current < MIN_RELOAD_MS) return;
 
-    if (!hasSession) {
+    if (!ready) {
       setItems([]);
       setHasNew(false);
       return;
@@ -95,7 +101,7 @@ export function NotificationsBell({ className }: { className?: string }) {
   };
 
   useEffect(() => {
-    if (!hasSession) {
+    if (!ready) {
       setItems([]);
       setHasNew(false);
       return;
@@ -119,9 +125,9 @@ export function NotificationsBell({ className }: { className?: string }) {
       document.removeEventListener('visibilitychange', refreshIfVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSession]);
+  }, [ready]);
 
-  if (!hasSession) return null;
+  if (!hasSession || isChecking || !isAuthenticated) return null;
 
   return (
     <DropdownMenu

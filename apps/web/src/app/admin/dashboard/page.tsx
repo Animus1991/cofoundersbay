@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import {
   Card,
   CardContent,
@@ -137,6 +138,9 @@ const fetchSecurityAlerts = async (): Promise<SecurityAlert[]> => {
 export default function AdminDashboardPage() {
   const [timeRange, setTimeRange] = useState('7d');
   const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
+  // queryFns below are mock data sources (no network) — only pause polling while
+  // the tab is hidden; no apiAvailable gate needed since they never hit the API.
+  const { pollInterval } = usePollingGuards();
 
   const {
     data: metrics,
@@ -146,7 +150,9 @@ export default function AdminDashboardPage() {
   } = useQuery({
     queryKey: ['admin-metrics', timeRange],
     queryFn: fetchAdminMetrics,
-    refetchInterval: refreshInterval,
+    refetchInterval: pollInterval(refreshInterval),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const {
@@ -156,7 +162,9 @@ export default function AdminDashboardPage() {
   } = useQuery({
     queryKey: ['admin-alerts'],
     queryFn: fetchSecurityAlerts,
-    refetchInterval: refreshInterval,
+    refetchInterval: pollInterval(refreshInterval),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   // Prepare chart data

@@ -9,6 +9,7 @@ import {
   Layers, BookOpen, Rocket, Star, ArrowRight, Zap,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,6 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { STATUS, categoryChip } from '@/lib/semantic-colors';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import {
   listGroups,
   getMyGroups,
@@ -44,13 +47,6 @@ const COVER_GRADIENTS = [
   'from-purple-500/30 to-fuchsia-500/20',
 ];
 
-const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  industry: { bg: 'bg-blue-500/15', text: 'text-blue-600' },
-  stage:    { bg: 'bg-amber-500/15', text: 'text-amber-600' },
-  role:     { bg: 'bg-violet-500/15', text: 'text-violet-600' },
-  learning: { bg: 'bg-emerald-500/15', text: 'text-emerald-600' },
-};
-
 function GroupCard({
   group,
   onToggle,
@@ -65,7 +61,7 @@ function GroupCard({
   const router = useRouter();
   const gradientClass = COVER_GRADIENTS[index % COVER_GRADIENTS.length];
   const groupType = (group.category?.toLowerCase() ?? 'industry') as string;
-  const typeColor = TYPE_COLORS[groupType] ?? TYPE_COLORS['industry'];
+  const typeColor = categoryChip(groupType);
   return (
     <Card
       className="card-interactive hover-lift group transition-all duration-300 hover:border-primary/30 cursor-pointer overflow-hidden"
@@ -78,7 +74,7 @@ function GroupCard({
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize border', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -94,7 +90,7 @@ function GroupCard({
             <Users className="h-10 w-10 text-white/20" />
           </div>
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize border', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -125,7 +121,7 @@ function GroupCard({
               </div>
             </div>
           </div>
-          {group.isMember && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />}
+          {group.isMember && <CheckCircle2 className={cn('h-4 w-4 shrink-0 mt-0.5', STATUS.success.icon)} />}
         </div>
 
         {group.description && (
@@ -264,6 +260,14 @@ export default function GroupsPage() {
   const myGroupsCount = myGroups.length;
   const trendingGroup = discoverGroups.find((g) => g.postCount > 0) ?? discoverGroups[0];
 
+  const discoverFiltersActive =
+    searchQuery.trim() !== '' || selectedCategory !== 'All' || typeFilter !== 'all';
+  const clearDiscoverFilters = useCallback(() => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setTypeFilter('all');
+  }, []);
+
   return (
     <AppShell
       title="Communities"
@@ -271,7 +275,7 @@ export default function GroupsPage() {
       actions={
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
           <Plus className="h-4 w-4" />
-          Create Community
+          <BilingualText en="Create Community" el="Δημιουργία κοινότητας" compact />
         </Button>
       }
     >
@@ -289,20 +293,20 @@ export default function GroupsPage() {
       {/* Stats strip */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
-          { label: 'Total Communities', value: totalGroups || '5+', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Joined', value: myGroupsCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Active Now', value: discoverGroups.filter((g) => g.postCount > 0).length, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { labelEn: 'Total Communities', labelEl: 'Συνολικές κοινότητες', value: totalGroups || '5+', Icon: Users, tone: STATUS.accent },
+          { labelEn: 'Joined', labelEl: 'Συμμετοχές', value: myGroupsCount, Icon: CheckCircle2, tone: STATUS.success },
+          { labelEn: 'Active Now', labelEl: 'Ενεργές τώρα', value: discoverGroups.filter((g) => g.postCount > 0).length, Icon: Zap, tone: STATUS.warning },
         ].map((s) => {
-          const SIcon = s.icon;
+          const Icon = s.Icon;
           return (
-            <Card key={s.label} className="shadow-sm border-border/50">
+            <Card key={s.labelEn} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
-                  <SIcon className="h-4 w-4" />
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.tone.bg, s.tone.icon)}>
+                  <Icon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                  <p className="mt-0.5 text-[11px] text-muted-foreground truncate"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -313,9 +317,9 @@ export default function GroupsPage() {
       <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as any); setTypeFilter('all'); }} className="space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <TabsList className="grid w-full max-w-xs grid-cols-2">
-            <TabsTrigger value="discover">Discover</TabsTrigger>
+            <TabsTrigger value="discover"><BilingualText en="Discover" el="Ανακάλυψη" compact /></TabsTrigger>
             <TabsTrigger value="my-groups">
-              My Communities
+              <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />
               {myGroups.length > 0 && (
                 <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">
                   {myGroups.length}
@@ -428,19 +432,19 @@ export default function GroupsPage() {
 
           {/* Trending banner */}
           {activeTab === 'discover' && !discoverQuery.isLoading && trendingGroup && (
-            <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5 px-4 py-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
-                <Star className="h-4 w-4 text-amber-500" />
+            <div className="flex items-center gap-3 rounded-xl border border-status-warning-border/30 bg-status-warning-bg px-4 py-3">
+              <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full', STATUS.warning.bg)}>
+                <Star className={cn('h-4 w-4', STATUS.warning.icon)} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">
-                  🔥 Trending: <span className="text-amber-600">{trendingGroup.name}</span>
+                  🔥 Trending: <span className={STATUS.warning.text}>{trendingGroup.name}</span>
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
               </div>
               <button
                 onClick={() => {/* navigate */}}
-                className="shrink-0 text-xs text-amber-600 hover:underline flex items-center gap-1"
+                className={cn('shrink-0 text-xs hover:underline flex items-center gap-1', STATUS.warning.text)}
               >
                 View <ArrowRight className="h-3 w-3" />
               </button>
@@ -479,25 +483,41 @@ export default function GroupsPage() {
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Empty State — filter-aware */}
           {!discoverQuery.isLoading && !myGroupsQuery.isLoading && displayGroups.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Users className="h-12 w-12 mb-4 text-muted-foreground/20" />
-              <p className="font-medium text-foreground">
-                {activeTab === 'my-groups' ? "You haven't joined any groups yet" : 'No groups found'}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                {activeTab === 'my-groups'
-                  ? 'Browse the Discover tab to find communities that match your interests'
-                  : 'Try a different search or category, or create your own group'}
-              </p>
-              {activeTab === 'my-groups' && (
-                <Button className="mt-4 gap-2" onClick={() => setActiveTab('discover')}>
-                  <Search className="h-4 w-4" />
-                  Browse Groups
-                </Button>
-              )}
-            </div>
+            activeTab === 'my-groups' ? (
+              <ListEmptyState
+                icon={Users}
+                tone="primary"
+                title={<BilingualText en="You haven't joined any communities yet" el="Δεν έχετε ενταχθεί ακόμα σε κοινότητες" />}
+                description={<BilingualText en="Browse the Discover tab to find industry, stage, and role-based communities that match your goals — then join to follow the conversation." el="Περιηγηθείτε στην καρτέλα Ανακάλυψη για κοινότητες ανά κλάδο, στάδιο και ρόλο — και ενταχθείτε για να παρακολουθείτε τη συζήτηση." />}
+                action={(
+                  <Button className="gap-2" onClick={() => setActiveTab('discover')}>
+                    <Search className="h-4 w-4" />
+                    <BilingualText en="Browse communities" el="Περιήγηση κοινοτήτων" compact />
+                  </Button>
+                )}
+              />
+            ) : discoverFiltersActive ? (
+              <NoFilterResults
+                entity="communities"
+                onClear={clearDiscoverFilters}
+                description="No communities match your search and filters. Clear them to see everything, or start the community you're looking for."
+              />
+            ) : (
+              <ListEmptyState
+                icon={Sparkles}
+                tone="primary"
+                title={<BilingualText en="No communities yet" el="Δεν υπάρχουν κοινότητες ακόμα" />}
+                description={<BilingualText en="Be the first to start one. Bring founders, mentors, and operators together around a shared industry, stage, or goal." el="Γίνετε οι πρώτοι που δημιουργούν μία. Φέρτε ιδρυτές, μέντορες και operators κοντά γύρω από κοινό κλάδο, στάδιο ή στόχο." />}
+                action={(
+                  <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
+                    <Plus className="h-4 w-4" />
+                    <BilingualText en="Create community" el="Δημιουργία κοινότητας" compact />
+                  </Button>
+                )}
+              />
+            )
           )}
         </TabsContent>
       </Tabs>

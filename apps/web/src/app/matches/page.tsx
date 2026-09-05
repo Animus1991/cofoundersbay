@@ -27,7 +27,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
 import { ProfileCardSkeleton } from '@/components/discover/ProfileCard';
+import { BilingualText } from '@/components/common/BilingualText';
+import { matchesEn, matchesEl } from '@/lib/i18n/strings-matches';
+import { bilingualAria } from '@/lib/i18n/format';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import type { ProfileCardData } from '@/components/discover/ProfileCard';
 
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -63,14 +67,16 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
-            Compatibility with {hit.displayName}
+            <BilingualText en={`${matchesEn('compatibility_with')} ${hit.displayName}`} el={`${matchesEl('compatibility_with')} ${hit.displayName}`} />
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
             <p className="text-4xl font-extrabold tabular-nums text-primary">{score}%</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Overall Match</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              <BilingualText en={matchesEn('overall_match')} el={matchesEl('overall_match')} />
+            </p>
           </div>
         </div>
 
@@ -78,7 +84,9 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
         {reasons.length > 0 && (
           <div className="rounded-lg border border-border/40 bg-secondary/30 p-3 space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you match</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <BilingualText en={matchesEn('why_you_match')} el={matchesEl('why_you_match')} />
+            </p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
                 <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
@@ -125,21 +133,34 @@ type SortKey = 'score' | 'name' | 'recent';
 type AvailFilter = 'full_time' | 'part_time' | 'advisory' | 'contract';
 type ViewMode = 'grid2' | 'grid3' | 'list';
 
-const TIER_COLORS = {
-  excellent: '#4ADE80',
-  strong:    '#22D3EE',
-  good:      '#FB923C',
-  potential: '#F87171',
+type MatchTier = 'excellent' | 'strong' | 'good' | 'potential';
+
+const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
+  excellent: 'success',
+  strong: 'info',
+  good: 'warning',
+  potential: 'danger',
 };
 
-const TIER_CLASSES: Record<string, string> = {
-  excellent: 'bg-green-500/10 text-green-600 border-green-500/20',
-  strong:    'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
-  good:      'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  potential: 'bg-red-500/10 text-red-500 border-red-500/20',
+const TIER_STROKE: Record<MatchTier, string> = {
+  excellent: 'hsl(var(--status-success-fg))',
+  strong: 'hsl(var(--status-info-fg))',
+  good: 'hsl(var(--status-warning-fg))',
+  potential: 'hsl(var(--status-danger-fg))',
 };
 
-function getTier(score: number): keyof typeof TIER_COLORS {
+const TIER_DOT: Record<MatchTier, string> = {
+  excellent: 'bg-status-success',
+  strong: 'bg-status-info',
+  good: 'bg-status-warning',
+  potential: 'bg-status-danger',
+};
+
+function tierStyle(tier: MatchTier) {
+  return STATUS[MATCH_TIER_TONE[tier]];
+}
+
+function getTier(score: number): MatchTier {
   if (score >= 80) return 'excellent';
   if (score >= 65) return 'strong';
   if (score >= 45) return 'good';
@@ -178,7 +199,8 @@ function MatchListRow({
 }) {
   const score = hit.matchScore ?? 50;
   const tier = getTier(score);
-  const color = TIER_COLORS[tier];
+  const colors = tierStyle(tier);
+  const stroke = TIER_STROKE[tier];
   const initials = hit.displayName.slice(0, 2).toUpperCase();
 
   return (
@@ -189,7 +211,7 @@ function MatchListRow({
           <div className="relative shrink-0">
             <svg width={52} height={52} viewBox="0 0 52 52" className="absolute inset-0">
               <circle cx={26} cy={26} r={23} fill="none" stroke="hsl(var(--border))" strokeWidth={3} />
-              <circle cx={26} cy={26} r={23} fill="none" stroke={color} strokeWidth={3}
+              <circle cx={26} cy={26} r={23} fill="none" stroke={stroke} strokeWidth={3}
                 strokeDasharray={`${(score / 100) * 2 * Math.PI * 23} ${2 * Math.PI * 23}`}
                 strokeDashoffset={2 * Math.PI * 23 * 0.25}
                 strokeLinecap="round" />
@@ -210,7 +232,7 @@ function MatchListRow({
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <Badge variant="outline" className={cn('text-[10px] h-5', TIER_CLASSES[tier])}>
+                  <Badge variant="outline" className={cn('text-[10px] h-5 border', colors.chip)}>
                     {tier.charAt(0).toUpperCase() + tier.slice(1)} · {score}%
                   </Badge>
                   {hit.location && (
@@ -223,7 +245,7 @@ function MatchListRow({
               </div>
               {/* Score text */}
               <div className="text-right shrink-0">
-                <p className="text-lg font-black tabular-nums leading-none" style={{ color }}>{score}%</p>
+                <p className={cn('text-lg font-black tabular-nums leading-none', colors.icon)}>{score}%</p>
                 <p className="text-[10px] text-muted-foreground mt-0.5">match</p>
               </div>
             </div>
@@ -245,7 +267,7 @@ function MatchListRow({
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {matchReasons.slice(0, 3).map((r, i) => (
                   <span key={i} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Zap className="h-2.5 w-2.5 shrink-0" style={{ color }} />
+                    <Zap className={cn('h-2.5 w-2.5 shrink-0', colors.icon)} />
                     {r.text}
                   </span>
                 ))}
@@ -263,7 +285,7 @@ function MatchListRow({
               <X className="h-3.5 w-3.5" />
             </button>
             <button onClick={onSave}
-              className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? 'text-amber-400' : 'border border-border/60 text-muted-foreground hover:text-amber-400')}
+              className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
               title={isSaved ? 'Saved' : 'Save to shortlist'}>
               {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
             </button>
@@ -302,7 +324,7 @@ function MatchPreviewPanel({
 }) {
   const score = hit.matchScore ?? 50;
   const tier = getTier(score);
-  const color = TIER_COLORS[tier];
+  const colors = tierStyle(tier);
   const isSaved = savedIds.has(hit.userId);
 
   return (
@@ -339,9 +361,9 @@ function MatchPreviewPanel({
           {/* Score */}
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
-              <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
-              <p className="text-[10px] font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
-                {TIER_CLASSES[tier] ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Match'}
+              <p className={cn('text-2xl font-extrabold tabular-nums', colors.icon)}>{score}%</p>
+              <p className={cn('text-[10px] font-bold tracking-wider uppercase mt-0.5', colors.icon)}>
+                {tier.charAt(0).toUpperCase() + tier.slice(1)}
               </p>
             </div>
           </div>
@@ -377,7 +399,7 @@ function MatchPreviewPanel({
               <div className="space-y-1.5">
                 {matchReasons.map((r, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
-                    <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
+                    <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tier])} />
                     <span className="text-foreground">{r.text}</span>
                   </div>
                 ))}
@@ -397,7 +419,7 @@ function MatchPreviewPanel({
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
-                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" /> : <Bookmark className="h-3.5 w-3.5" />}
+                {isSaved ? <BookmarkCheck className={cn('h-3.5 w-3.5', STATUS.warning.icon)} /> : <Bookmark className="h-3.5 w-3.5" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
               <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
@@ -573,44 +595,43 @@ export default function MatchesPage() {
     });
   }, [success]);
 
-  const TIER_TABS: { key: FilterKey; label: string; color?: string }[] = [
-    { key: 'all',       label: 'All' },
-    { key: 'excellent', label: 'Excellent',  color: TIER_COLORS.excellent },
-    { key: 'strong',    label: 'Strong',     color: TIER_COLORS.strong },
-    { key: 'good',      label: 'Good',       color: TIER_COLORS.good },
-    { key: 'potential', label: 'Potential',  color: TIER_COLORS.potential },
+  const TIER_TABS: { key: FilterKey; labelEn: string; labelEl: string; tier?: MatchTier }[] = [
+    { key: 'all',       labelEn: matchesEn('tier_all'),       labelEl: matchesEl('tier_all') },
+    { key: 'excellent', labelEn: matchesEn('tier_excellent'), labelEl: matchesEl('tier_excellent'), tier: 'excellent' },
+    { key: 'strong',    labelEn: matchesEn('tier_strong'),    labelEl: matchesEl('tier_strong'),    tier: 'strong' },
+    { key: 'good',      labelEn: matchesEn('tier_good'),      labelEl: matchesEl('tier_good'),      tier: 'good' },
+    { key: 'potential', labelEn: matchesEn('tier_potential'), labelEl: matchesEl('tier_potential'), tier: 'potential' },
   ];
 
-  const ROLE_TABS: { key: RoleFilter; label: string; icon: typeof Users }[] = [
-    { key: 'all',      label: 'All roles',  icon: Users },
-    { key: 'founder',  label: 'Founders',   icon: Briefcase },
-    { key: 'mentor',   label: 'Mentors',    icon: GraduationCap },
-    { key: 'investor', label: 'Investors',  icon: DollarSign },
-    { key: 'org',      label: 'Orgs',       icon: Users },
+  const ROLE_TABS: { key: RoleFilter; labelEn: string; labelEl: string; icon: typeof Users }[] = [
+    { key: 'all',      labelEn: matchesEn('all_roles'),  labelEl: matchesEl('all_roles'),  icon: Users },
+    { key: 'founder',  labelEn: matchesEn('founders'),   labelEl: matchesEl('founders'),   icon: Briefcase },
+    { key: 'mentor',   labelEn: matchesEn('mentors'),    labelEl: matchesEl('mentors'),    icon: GraduationCap },
+    { key: 'investor', labelEn: matchesEn('investors'),  labelEl: matchesEl('investors'),  icon: DollarSign },
+    { key: 'org',      labelEn: matchesEn('orgs'),       labelEl: matchesEl('orgs'),       icon: Users },
   ];
 
-  const AVAIL_OPTIONS: { key: AvailFilter; label: string }[] = [
-    { key: 'full_time', label: 'Full-time' },
-    { key: 'part_time', label: 'Part-time' },
-    { key: 'advisory',  label: 'Advisory' },
-    { key: 'contract',  label: 'Contract' },
+  const AVAIL_OPTIONS: { key: AvailFilter; labelEn: string; labelEl: string }[] = [
+    { key: 'full_time', labelEn: matchesEn('full_time'), labelEl: matchesEl('full_time') },
+    { key: 'part_time', labelEn: matchesEn('part_time'), labelEl: matchesEl('part_time') },
+    { key: 'advisory',  labelEn: matchesEn('advisory'),  labelEl: matchesEl('advisory') },
+    { key: 'contract',  labelEn: matchesEn('contract'),  labelEl: matchesEl('contract') },
   ];
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
 
   return (
     <AppShell
-      title="Matches"
-      description="AI-ranked co-founder and team matches based on your profile compatibility"
+      showHelp
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} />
           </Button>
           <Link href="/discover">
             <Button variant="outline" size="sm" className="gap-2">
-              Explore
+              <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} />
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
@@ -622,14 +643,14 @@ export default function MatchesPage() {
         {/* ── Not authenticated ── */}
         {!hasToken && (
           <EmptyState
-            title="Sign in to see matches"
-            description="Your matches are personalized based on your profile and preferences."
+            title={bilingualAria(matchesEn('sign_in_to_see'), matchesEl('sign_in_to_see'))}
+            description={bilingualAria(matchesEn('sign_in_desc'), matchesEl('sign_in_desc'))}
             illustration="connection"
             action={
               <Link href="/login">
                 <Button className="gap-2">
                   <UserPlus className="h-4 w-4" />
-                  Sign in
+                  <BilingualText en={matchesEn('sign_in')} el={matchesEl('sign_in')} />
                 </Button>
               </Link>
             }
@@ -640,8 +661,12 @@ export default function MatchesPage() {
         {hasToken && isError && (
           <Card className="shadow-sm border-border/50">
             <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load matches.</p>
-              <Button variant="secondary" size="sm" onClick={() => void refetch()}>Retry</Button>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText en={matchesEn('failed_to_load')} el={matchesEl('failed_to_load')} />
+              </p>
+              <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+                <BilingualText en={matchesEn('retry')} el={matchesEl('retry')} />
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -662,32 +687,38 @@ export default function MatchesPage() {
         {hasToken && !isLoading && visible.length > 0 && (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
-              { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',   icon: Star },
-              { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
-              { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600',  bg: 'bg-violet-500/10',  icon: Award },
-            ].map(({ label, value, color, bg, icon: Icon }) => (
-              <Card key={label} className="shadow-sm border-border/50">
+              { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all, tone: 'neutral' as const, icon: Users },
+              { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent, tone: 'success' as const, icon: Star },
+              { labelEn: matchesEn('avg_score'), labelEl: matchesEl('avg_score'), value: `${avgScore}%`, tone: 'info' as const, icon: TrendingUp },
+              { labelEn: matchesEn('top_score'), labelEl: matchesEl('top_score'), value: `${topScore}%`, tone: 'accent' as const, icon: Award },
+            ].map(({ labelEn, labelEl, value, tone, icon: Icon }) => {
+              const statColors = tone === 'neutral'
+                ? { bg: 'bg-muted/40', icon: 'text-foreground' }
+                : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
+              return (
+              <Card key={labelEn} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', bg)}>
-                    <Icon className={cn('h-4 w-4', color)} />
+                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', statColors.bg)}>
+                    <Icon className={cn('h-4 w-4', statColors.icon)} />
                   </div>
                   <div>
-                    <p className={cn('text-xl font-black tabular-nums leading-none', color)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                    <p className={cn('text-xl font-black tabular-nums leading-none', statColors.icon)}>{value}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      <BilingualText en={labelEn} el={labelEl} compact />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            );})}
           </div>
         )}
 
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
-          <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className={cn('rounded-xl border bg-gradient-to-r from-status-success-bg/50 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300', STATUS.success.border)}>
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2 shrink-0">
-                <Award className="h-5 w-5 text-green-600" />
+              <div className={cn('rounded-lg p-2 shrink-0', STATUS.success.bg)}>
+                <Award className={cn('h-5 w-5', STATUS.success.icon)} />
               </div>
               <div>
                 <p className="font-semibold text-sm text-foreground">
@@ -714,13 +745,13 @@ export default function MatchesPage() {
         {/* ── No data at all ── */}
         {hasToken && !isLoading && visible.length === 0 && (
           <EmptyState
-            title="No matches yet"
-            description="Complete your profile (stage, commitment, roles sought) to get better cofounder and team suggestions."
+            title={bilingualAria(matchesEn('no_matches_yet'), matchesEl('no_matches_yet'))}
+            description={bilingualAria(matchesEn('no_matches_desc'), matchesEl('no_matches_desc'))}
             illustration="rocket"
             action={
               <Link href="/profile/edit">
                 <Button className="gap-2">
-                  Complete profile
+                  <BilingualText en={matchesEn('complete_profile')} el={matchesEl('complete_profile')} />
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -738,7 +769,9 @@ export default function MatchesPage() {
               {/* Tier filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Match Tier</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                    <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact />
+                  </p>
                   {TIER_TABS.map(tab => {
                     const isActive = activeFilter === tab.key;
                     return (
@@ -748,8 +781,8 @@ export default function MatchesPage() {
                           isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}>
                         <span className="flex items-center gap-1.5">
-                          {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
-                          {tab.label}
+                          {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
+                          <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
                         </span>
                         <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
                           isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
@@ -764,8 +797,10 @@ export default function MatchesPage() {
               {/* Role filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Role</p>
-                  {ROLE_TABS.map(({ key, label, icon: Icon }) => {
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                    <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
+                  </p>
+                  {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
                     const isActive = roleFilter === key;
                     return (
                       <button key={key} onClick={() => setRoleFilter(key)}
@@ -774,7 +809,7 @@ export default function MatchesPage() {
                           isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}>
                         <Icon className="h-3 w-3 shrink-0" />
-                        {label}
+                        <BilingualText en={labelEn} el={labelEl} compact />
                       </button>
                     );
                   })}
@@ -784,7 +819,9 @@ export default function MatchesPage() {
               {/* Location */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">Location</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
+                    <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
+                  </p>
                   <div className="relative">
                     <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
                     <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
@@ -802,8 +839,10 @@ export default function MatchesPage() {
               {/* Availability */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Availability</p>
-                  {AVAIL_OPTIONS.map(({ key, label }) => {
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                    <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact />
+                  </p>
+                  {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
                     const isOn = availFilter.has(key);
                     return (
                       <button key={key} onClick={() => setAvailFilter(prev => {
@@ -815,7 +854,7 @@ export default function MatchesPage() {
                           isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
                           {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
                         </span>
-                        {label}
+                        <BilingualText en={labelEn} el={labelEl} compact />
                       </button>
                     );
                   })}
@@ -825,17 +864,19 @@ export default function MatchesPage() {
               {/* Sort */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Sort by</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                    <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact />
+                  </p>
                   {([
-                    { key: 'score'  as SortKey, label: 'Best Match',   icon: Zap },
-                    { key: 'name'   as SortKey, label: 'Name A–Z',     icon: ArrowUpDown },
-                    { key: 'recent' as SortKey, label: 'Newest First',  icon: Clock },
-                  ]).map(({ key, label, icon: Icon }) => (
+                    { key: 'score'  as SortKey, labelEn: matchesEn('sort_best_match'), labelEl: matchesEl('sort_best_match'), icon: Zap },
+                    { key: 'name'   as SortKey, labelEn: matchesEn('sort_name_az'),    labelEl: matchesEl('sort_name_az'),    icon: ArrowUpDown },
+                    { key: 'recent' as SortKey, labelEn: matchesEn('sort_newest'),     labelEl: matchesEl('sort_newest'),     icon: Clock },
+                  ]).map(({ key, labelEn, labelEl, icon: Icon }) => (
                     <button key={key} onClick={() => setSortBy(key)}
                       className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
                         sortBy === key ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
                       <Icon className="h-3 w-3 shrink-0" />
-                      {label}
+                      <BilingualText en={labelEn} el={labelEl} compact />
                     </button>
                   ))}
                 </CardContent>
@@ -846,7 +887,7 @@ export default function MatchesPage() {
                 <button
                   onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
                   className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="h-3 w-3" /> Clear all filters
+                  <X className="h-3 w-3" /> <BilingualText en={matchesEn('clear_all_filters')} el={matchesEl('clear_all_filters')} compact />
                 </button>
               )}
             </aside>
@@ -868,8 +909,8 @@ export default function MatchesPage() {
                     <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
                       className={cn('flex items-center gap-1 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
                         isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
-                      {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
-                      {tab.label}
+                      {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
+                      <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
                     </button>
                   );
                 })}
@@ -880,17 +921,21 @@ export default function MatchesPage() {
                 <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
                   <div className="grid gap-3 grid-cols-2">
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
+                        <BilingualText en={matchesEn('tier')} el={matchesEl('tier')} compact />
+                      </label>
                       <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
                         className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {TIER_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                        {TIER_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
+                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
+                        <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
+                      </label>
                       <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
                         className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
-                        {ROLE_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
+                        {ROLE_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
                       </select>
                     </div>
                     <div className="col-span-2">

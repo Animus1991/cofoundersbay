@@ -33,7 +33,15 @@ const DEMO_BAR_DATA = [
   { name: 'Shares',      value: 5  },
 ];
 
-const PIE_COLORS = ['#8b5cf6', '#22d3ee', '#4ade80', '#fb923c', '#f87171'];
+const CHART_SERIES_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--status-info-fg))',
+  'hsl(var(--status-success-fg))',
+  'hsl(var(--status-warning-fg))',
+  'hsl(var(--status-danger-fg))',
+] as const;
+
+const PIE_COLORS = [...CHART_SERIES_COLORS];
 
 const TOOLTIP_STYLE = {
   background: 'hsl(var(--card))',
@@ -73,8 +81,8 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
                 <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorUnique" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#22d3ee" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
+                <stop offset="5%"  stopColor="hsl(var(--status-info-fg))" stopOpacity={0.25} />
+                <stop offset="95%" stopColor="hsl(var(--status-info-fg))" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -82,7 +90,7 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
             <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Area type="monotone" dataKey="views"  stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorViews)"  name="Views" />
-            <Area type="monotone" dataKey="unique" stroke="#22d3ee"             strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
+            <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>

@@ -325,7 +325,7 @@ export default function MatchComparePage() {
   };
 
   return (
-    <AppShell>
+    <AppShell title="Compare matches" description="Open two or more match profiles side by side to weigh fit.">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">

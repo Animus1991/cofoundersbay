@@ -11,6 +11,7 @@ import {
   Layers, BadgeCheck, Bookmark,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -68,20 +70,20 @@ function fmt(n: number) {
   return `$${n}`;
 }
 
-const ROUND_STATUS_STYLE: Record<RoundStatus, string> = {
-  planning: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  active: 'bg-green-500/10 text-green-600 border-green-500/20',
-  closing: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  closed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+const ROUND_STATUS_TONE: Record<RoundStatus, StatusTone> = {
+  planning: 'neutral',
+  active: 'success',
+  closing: 'warning',
+  closed: 'info',
 };
 
-const INVESTOR_STATUS_STYLE: Record<InvestorStatus, { color: string; label: string }> = {
-  prospect:  { color: 'bg-gray-500/10 text-gray-600', label: 'Prospect' },
-  contacted: { color: 'bg-blue-500/10 text-blue-600', label: 'Contacted' },
-  meeting:   { color: 'bg-violet-500/10 text-violet-600', label: 'Meeting' },
-  dd:        { color: 'bg-amber-500/10 text-amber-600', label: 'Due Diligence' },
-  committed: { color: 'bg-green-500/10 text-green-600', label: 'Committed' },
-  passed:    { color: 'bg-red-500/10 text-red-600', label: 'Passed' },
+const INVESTOR_STATUS_STYLE: Record<InvestorStatus, { tone: StatusTone; label: string }> = {
+  prospect:  { tone: 'neutral', label: 'Prospect' },
+  contacted: { tone: 'info', label: 'Contacted' },
+  meeting:   { tone: 'accent', label: 'Meeting' },
+  dd:        { tone: 'warning', label: 'Due Diligence' },
+  committed: { tone: 'success', label: 'Committed' },
+  passed:    { tone: 'danger', label: 'Passed' },
 };
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
@@ -137,7 +139,7 @@ function RoundCard({ round }: { round: Round }) {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold">{round.name}</h2>
-              <Badge variant="outline" className={cn('border', ROUND_STATUS_STYLE[round.status])}>
+              <Badge variant="outline" className={cn('border', STATUS[ROUND_STATUS_TONE[round.status]].chip)}>
                 {round.status.charAt(0).toUpperCase() + round.status.slice(1)}
               </Badge>
             </div>
@@ -200,10 +202,11 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
       <div className="flex gap-3 min-w-max">
         {PIPELINE_STAGES.map(stage => {
           const cfg = INVESTOR_STATUS_STYLE[stage];
+          const stageColors = STATUS[cfg.tone];
           const items = byStage[stage];
           return (
             <div key={stage} className="w-56 shrink-0">
-              <div className={cn('rounded-lg px-2.5 py-1.5 mb-2 flex items-center justify-between', cfg.color)}>
+              <div className={cn('rounded-lg px-2.5 py-1.5 mb-2 flex items-center justify-between border', stageColors.chip)}>
                 <span className="text-xs font-semibold">{cfg.label}</span>
                 <Badge variant="secondary" size="sm" className="px-1.5">{items.length}</Badge>
               </div>
@@ -221,7 +224,7 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
                           <p className="text-xs font-semibold truncate">{lead.name}</p>
                           {lead.firm && <p className="text-xs text-muted-foreground truncate">{lead.firm}</p>}
                         </div>
-                        {lead.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0 ml-auto" />}
+                        {lead.isVerified && <BadgeCheck className={cn('icon-sm shrink-0 ml-auto', STATUS.info.icon)} />}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <DollarSign className="icon-sm" />{lead.checkSize}
@@ -248,10 +251,10 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
 
 // ── Data Room ─────────────────────────────────────────────────────────────────
 
-const DOC_STATUS_STYLE: Record<DocStatus, { color: string; icon: React.ElementType; label: string }> = {
-  draft:  { color: 'text-amber-600', icon: AlertCircle, label: 'Draft' },
-  ready:  { color: 'text-green-600', icon: CheckCircle2, label: 'Ready' },
-  shared: { color: 'text-blue-600', icon: Globe, label: 'Shared' },
+const DOC_STATUS_STYLE: Record<DocStatus, { tone: StatusTone; icon: React.ElementType; label: string }> = {
+  draft:  { tone: 'warning', icon: AlertCircle, label: 'Draft' },
+  ready:  { tone: 'success', icon: CheckCircle2, label: 'Ready' },
+  shared: { tone: 'info', icon: Globe, label: 'Shared' },
 };
 
 const DOC_CATEGORIES = ['All', 'Pitch', 'Financials', 'Legal', 'Product', 'Market', 'Team', 'Traction'];
@@ -319,7 +322,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-sm truncate">{doc.name}</p>
-                    {doc.isRequired && <Badge variant="secondary" size="sm" className="bg-red-500/10 text-red-600">Required</Badge>}
+                    {doc.isRequired && <Badge variant="secondary" size="sm" className={STATUS.danger.chip}>Required</Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                     <span>{doc.category}</span>
@@ -327,7 +330,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <div className={cn('flex items-center gap-1 text-xs font-medium', cfg.color)}>
+                  <div className={cn('flex items-center gap-1 text-xs font-medium', STATUS[cfg.tone].text)}>
                     <StatusIcon className="h-3.5 w-3.5" />{cfg.label}
                   </div>
                   <div className="flex gap-1">
@@ -351,6 +354,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
     <div className="space-y-2">
       {leads.map(lead => {
         const cfg = INVESTOR_STATUS_STYLE[lead.status];
+        const leadColors = STATUS[cfg.tone];
         return (
           <Card key={lead.id} className="hover:border-primary/20 transition-colors">
             <CardContent className="p-4 flex items-center gap-4">
@@ -360,7 +364,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="font-semibold text-sm">{lead.name}</p>
-                  {lead.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500" />}
+                  {lead.isVerified && <BadgeCheck className={cn('h-3.5 w-3.5', STATUS.info.icon)} />}
                 </div>
                 <p className="text-xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
                 {lead.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.notes}</p>}
@@ -371,7 +375,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
                     <Clock className="icon-sm inline mr-1" />{lead.lastContact}
                   </p>
                 )}
-                <Badge variant="outline" className={cn('text-xs border-0', cfg.color)}>
+                <Badge variant="outline" className={cn('text-xs border', leadColors.chip)}>
                   {cfg.label}
                 </Badge>
                 <div className="flex gap-1">
@@ -404,7 +408,7 @@ export default function FundraisingPage() {
   const committed = leads.filter(l => l.status === 'committed').length;
 
   return (
-    <AppShell title="Fundraising" description="Track your round, manage investor pipeline, and organize your data room">
+    <AppShell title="Fundraising" description="Track your round, manage investor pipeline, and organize your data room" showHelp>
       <div className="space-y-6">
         {/* Active Round */}
         {round && <RoundCard round={round} />}
@@ -412,19 +416,19 @@ export default function FundraisingPage() {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: Users, label: 'Total Leads', value: totalLeads, color: 'text-primary' },
-            { icon: Zap, label: 'Active Conversations', value: activeLeads, color: 'text-amber-600' },
-            { icon: CheckCircle2, label: 'Committed', value: committed, color: 'text-green-600' },
-            { icon: BarChart3, label: 'Conversion Rate', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', color: 'text-blue-600' },
+            { icon: Users, labelEn: 'Total Leads', labelEl: 'Συνολικές επαφές', value: totalLeads, tone: 'accent' as const },
+            { icon: Zap, labelEn: 'Active Conversations', labelEl: 'Ενεργές συζητήσεις', value: activeLeads, tone: 'warning' as const },
+            { icon: CheckCircle2, labelEn: 'Committed', labelEl: 'Δεσμευμένοι', value: committed, tone: 'success' as const },
+            { icon: BarChart3, labelEn: 'Conversion Rate', labelEl: 'Ποσοστό μετατροπής', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', tone: 'info' as const },
           ].map(s => (
-            <Card key={s.label}>
+            <Card key={s.labelEn}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary shrink-0">
-                  <s.icon className={cn('icon-sm', s.color)} />
+                  <s.icon className={cn('icon-sm', STATUS[s.tone].icon)} />
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -436,23 +440,23 @@ export default function FundraisingPage() {
           <div className="flex items-center justify-between gap-4">
             <TabsList>
               <TabsTrigger value="pipeline">
-                Pipeline
+                <BilingualText en="Pipeline" el="Αγωγός" compact />
                 <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{totalLeads}</Badge>
               </TabsTrigger>
               <TabsTrigger value="kanban">Kanban</TabsTrigger>
               <TabsTrigger value="dataroom">
-                Data Room
+                <BilingualText en="Data Room" el="Δωμάτιο δεδομένων" compact />
                 <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{DATA_ROOM_DOCS.length}</Badge>
               </TabsTrigger>
             </TabsList>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" asChild>
                 <Link href="/investors">
-                  <Users className="h-3.5 w-3.5" />Find Investors
+                  <Users className="h-3.5 w-3.5" /><BilingualText en="Find Investors" el="Εύρεση επενδυτών" compact />
                 </Link>
               </Button>
               <Button size="sm" className="h-8 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" />Add Lead
+                <Plus className="h-3.5 w-3.5" /><BilingualText en="Add Lead" el="Προσθήκη επαφής" compact />
               </Button>
             </div>
           </div>
@@ -473,7 +477,7 @@ export default function FundraisingPage() {
         {/* Resources */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Fundraising Resources</CardTitle>
+            <CardTitle className="text-sm font-semibold"><BilingualText en="Fundraising Resources" el="Πόροι χρηματοδότησης" /></CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {[

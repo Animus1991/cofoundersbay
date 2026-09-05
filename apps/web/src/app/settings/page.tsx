@@ -223,6 +223,7 @@ export default function SettingsPage() {
     <AppShell
       title="Settings"
       description="Manage billing, notifications, and integrations."
+      showHelp
     >
       {!hasToken && (
         <Card className="max-w-2xl">

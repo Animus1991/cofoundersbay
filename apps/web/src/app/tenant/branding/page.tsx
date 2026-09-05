@@ -229,54 +229,48 @@ export default function TenantBrandingPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6 max-w-5xl">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Palette className="h-6 w-6 text-primary" />
-              Branding
-            </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Customize your organization's visual identity and content
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {branding?.isBrandingActive ? (
-              <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Published
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Draft
-              </Badge>
-            )}
-            {tenantSlug && (
-              <Button variant="outline" size="sm" onClick={handlePreview}>
-                <Eye className="mr-1.5 h-4 w-4" />
-                Preview
-                <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
-              </Button>
-            )}
-            <Button
-              size="sm"
-              onClick={handleSave}
-              disabled={saveMutation.isPending}
-            >
-              {saveMutation.isPending ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : saved ? (
-                <CheckCircle2 className="mr-1.5 h-4 w-4" />
-              ) : (
-                <Save className="mr-1.5 h-4 w-4" />
-              )}
-              {saved ? 'Saved!' : 'Save Changes'}
+    <AppShell
+      title="Branding"
+      description="Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant."
+      showHelp
+      actions={(
+        <>
+          {branding?.isBrandingActive ? (
+            <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Published
+            </Badge>
+          ) : (
+            <Badge variant="secondary" className="gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5" />
+              Draft
+            </Badge>
+          )}
+          {tenantSlug && (
+            <Button variant="outline" size="sm" onClick={handlePreview}>
+              <Eye className="mr-1.5 h-4 w-4" />
+              Preview
+              <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
             </Button>
-          </div>
-        </div>
+          )}
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+          >
+            {saveMutation.isPending ? (
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            ) : saved ? (
+              <CheckCircle2 className="mr-1.5 h-4 w-4" />
+            ) : (
+              <Save className="mr-1.5 h-4 w-4" />
+            )}
+            {saved ? 'Saved!' : 'Save Changes'}
+          </Button>
+        </>
+      )}
+    >
+      <div className="space-y-6 max-w-5xl">
 
         {saveMutation.isError && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">

@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { EmptyTenantWebhooks } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type WebhookItem = {
@@ -150,14 +151,7 @@ export default function TenantWebhooksPage() {
         </div>
 
         {webhooks.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="p-12 text-center">
-              <Webhook className="icon-lg mx-auto text-muted-foreground/40 mb-3" />
-              <p className="font-medium">No webhooks configured</p>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">Connect Zapier, Slack, or any HTTP endpoint to receive real-time events</p>
-              <Button size="sm"><Plus className="mr-1.5 icon-sm" />Add Webhook</Button>
-            </CardContent>
-          </Card>
+          <EmptyTenantWebhooks />
         ) : (
           <>
             <div className="space-y-3">

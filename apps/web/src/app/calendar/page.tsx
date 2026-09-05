@@ -23,6 +23,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -264,7 +265,7 @@ export default function CalendarPage() {
               <List className="h-3.5 w-3.5" />
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" /> Add Event</Button>
+          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" /> <BilingualText en="Add Event" el="Προσθήκη εκδήλωσης" compact /></Button>
         </div>
       }
     >
@@ -273,17 +274,17 @@ export default function CalendarPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'This Month', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary' },
-            { label: 'Deadlines', value: deadlineCount, icon: Clock, color: 'text-red-600' },
-            { label: 'Sessions', value: sessionCount, icon: Video, color: 'text-blue-600' },
-            { label: 'Milestones', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <Card key={label}>
+            { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary' },
+            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-red-600' },
+            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-blue-600' },
+            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
+          ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
+            <Card key={labelEn}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('icon-sm', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -292,7 +293,7 @@ export default function CalendarPage() {
 
         {/* Type filter pills */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant={typeFilter === 'all' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setTypeFilter('all')}>All</Button>
+          <Button variant={typeFilter === 'all' ? 'default' : 'outline'} size="sm" className="h-7 text-xs" onClick={() => setTypeFilter('all')}><BilingualText en="All" el="Όλα" compact /></Button>
           {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
             <Button key={key} variant={typeFilter === key ? 'default' : 'outline'} size="sm" className="gap-1" onClick={() => setTypeFilter(key)}>
               <cfg.icon className="icon-sm" /> {cfg.label}
@@ -326,7 +327,7 @@ export default function CalendarPage() {
               {/* Legend */}
               <Card>
                 <CardContent className="p-3 space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">Event Types</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2"><BilingualText en="Event Types" el="Τύποι εκδηλώσεων" compact /></p>
                   {(Object.entries(TYPE_CONFIG) as [EventType, typeof TYPE_CONFIG[EventType]][]).map(([key, cfg]) => (
                     <div key={key} className="flex items-center gap-2 text-xs">
                       <cfg.icon className={cn('icon-sm', cfg.color)} />
@@ -354,8 +355,8 @@ export default function CalendarPage() {
                   ) : (
                     <div className="py-8 text-center">
                       <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">No events on this day</p>
-                      <Button variant="outline" size="sm" className="mt-3 gap-1"><Plus className="h-3.5 w-3.5" /> Schedule something</Button>
+                      <p className="text-sm text-muted-foreground"><BilingualText en="No events on this day" el="Καμία εκδήλωση αυτή την ημέρα" /></p>
+                      <Button variant="outline" size="sm" className="mt-3 gap-1"><Plus className="h-3.5 w-3.5" /> <BilingualText en="Schedule something" el="Προγραμματισμός" compact /></Button>
                     </div>
                   )}
                 </CardContent>
@@ -364,7 +365,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" /> Upcoming
+                    <Sparkles className="icon-sm text-primary" /> <BilingualText en="Upcoming" el="Επερχόμενες" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -393,7 +394,7 @@ export default function CalendarPage() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="text-sm text-muted-foreground">No events match your filters</p>
+                  <p className="text-sm text-muted-foreground"><BilingualText en="No events match your filters" el="Καμία εκδήλωση δεν ταιριάζει με τα φίλτρα" /></p>
                 </CardContent>
               </Card>
             )}

@@ -11,6 +11,8 @@ export * from './MatchCard';
 
 // Empty & Error States
 export * from './EmptyState';
+export * from './HelpCallout';
+export * from './PageContextualHelp';
 export * from './ErrorBoundary';
 
 // Loading States

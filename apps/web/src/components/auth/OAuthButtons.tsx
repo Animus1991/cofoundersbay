@@ -2,8 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getAbsoluteApiOrigin } from '@/lib/api-origin';
 
 interface OAuthButtonsProps {
   mode?: 'login' | 'register' | 'link';
@@ -25,7 +24,7 @@ export function OAuthButtons({ mode = 'login', disabled }: OAuthButtonsProps) {
 
   const handleOAuth = (provider: 'google' | 'linkedin') => {
     setLoadingProvider(provider);
-    window.location.href = `${API_URL}/api/auth/${provider}`;
+    window.location.href = `${getAbsoluteApiOrigin()}/api/auth/${provider}`;
   };
 
   const buttonText = {

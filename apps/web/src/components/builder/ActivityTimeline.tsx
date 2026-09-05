@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import type { BuilderActivityLog } from '@/lib/builder-api';
 
 // ── Activity type metadata ────────────────────────────────────────────────────
@@ -94,11 +95,14 @@ export function ActivityTimeline({
   compact = false,
   className,
 }: ActivityTimelineProps) {
+  const { apiAvailable, pollInterval } = usePollingGuards();
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['activityLog', workspaceId, limit],
     queryFn: () => getActivityLog(workspaceId, limit),
-    refetchInterval: 60_000,
-    enabled: !!workspaceId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
+    enabled: !!workspaceId && apiAvailable,
   });
 
   const activities: BuilderActivityLog[] = data ?? [];

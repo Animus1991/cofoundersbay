@@ -1,4 +1,5 @@
 import { apiRequest } from './api';
+import { getApiOrigin } from './api-origin';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -90,7 +91,7 @@ export async function* streamAIChat(
   request: ChatRequest,
   signal?: AbortSignal,
 ): AsyncGenerator<{ chunk?: string; done: boolean; model?: string; fallback?: boolean }> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  const baseUrl = `${getApiOrigin() || ''}/api`.replace(/\/\/api$/, '/api');
 
   // 30s timeout for the initial connection — matches api.ts circuit breaker intent
   const timeoutController = new AbortController();

@@ -41,7 +41,7 @@ const themeConfig = [
     label: 'Alliance',
     description: 'Professional & clean',
     icon: Palette,
-    swatch: ['#eef6f7', '#efa758', '#fafdfd'],
+    swatch: ['#eef6f7', '#e8940a', '#fafdfd'],
   },
   {
     name: 'cofounder' as ThemeName,

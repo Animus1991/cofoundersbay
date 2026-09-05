@@ -57,6 +57,7 @@ import {
   type ChangeProposal,
   type ArtifactShareLink,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { ReviewPanel } from './ReviewPanel';
 import { BranchPanel } from './BranchPanel';
 
@@ -244,21 +245,26 @@ export function CollabToolbar({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showBranchPanel, setShowBranchPanel] = useState(false);
   const [showReviewPanel, setShowReviewPanel] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   // ── Data fetching ─────────────────────────────────────────────────────────
 
   const { data: branchesData } = useQuery({
     queryKey: ['branches', documentId],
     queryFn: () => listBranches(documentId),
-    refetchInterval: 30_000,
-    enabled: !!documentId,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
+    enabled: !!documentId && apiAvailable,
   });
 
   const { data: proposalsData } = useQuery({
     queryKey: ['proposals', documentId],
     queryFn: () => listProposals(documentId),
-    refetchInterval: 30_000,
-    enabled: !!documentId,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
+    enabled: !!documentId && apiAvailable,
   });
 
   const branches: ArtifactBranch[] = Array.isArray(branchesData) ? branchesData : [];

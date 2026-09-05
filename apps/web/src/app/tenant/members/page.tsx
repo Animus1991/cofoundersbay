@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EmptyTenantMembers } from '@/components/common/EmptyStates';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -309,13 +310,10 @@ export default function TenantMembersPage() {
                 <MemberCard key={member.id} member={member} />
               ))}
               {filteredMembers.length === 0 && (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                    <h3 className="font-medium">No members found</h3>
-                    <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
-                  </CardContent>
-                </Card>
+                <EmptyTenantMembers
+                  filtersActive={!!search || roleFilter !== 'all' || statusFilter !== 'all'}
+                  onClearFilters={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all'); }}
+                />
               )}
             </div>
           </TabsContent>

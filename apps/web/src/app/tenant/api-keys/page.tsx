@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { EmptyTenantApiKeys } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type ApiKey = {
@@ -114,12 +115,7 @@ export default function TenantApiKeysPage() {
         </Card>
 
         {keys.length === 0 ? (
-          <div className="py-16 text-center rounded-lg border border-dashed">
-            <KeyRound className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="font-medium">No API keys yet</p>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">Create an API key to enable programmatic access</p>
-            <Button size="sm"><Plus className="mr-2 h-4 w-4" />Create API Key</Button>
-          </div>
+          <EmptyTenantApiKeys />
         ) : (
           <div className="space-y-3">
             {keys.map(k => <KeyRow key={k.id} apiKey={k} />)}

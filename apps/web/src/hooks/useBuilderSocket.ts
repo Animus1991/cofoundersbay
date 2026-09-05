@@ -1,7 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+import { isApiCircuitOpen } from '@/lib/api';
+import { getSocketOrigin } from '@/lib/api-origin';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 
 // Reconnection config — identical to messagingSocket.ts for consistency.
 // Prevents the WebSocket flood visible in the browser console when the API is down.
@@ -105,16 +106,30 @@ export interface BuilderSocketEvents {
 export function useBuilderSocket(events?: BuilderSocketEvents) {
   const socketRef = useRef<Socket | null>(null);
   const apiOnlineRef = useRef(true);
+  const { isAuthenticated } = useAuthenticatedSession();
   const [isConnected, setIsConnected] = useState(false);
   const [collaborators, setCollaborators] = useState<CollaboratorPresence[]>([]);
   const [workspaceMembers, setWorkspaceMembers] = useState<{ odId: string; odName: string }[]>([]);
 
-  // Initialize socket connection
+  // Initialize socket connection (debounced — avoids connect storms during fast navigation)
   useEffect(() => {
+    if (!isAuthenticated) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setIsConnected(false);
+      }
+      return;
+    }
+
     function createSocket() {
       if (socketRef.current) return;
 
-      const socket = io(`${SOCKET_URL}/builder`, SOCKET_OPTS);
+      const socket = io(`${getSocketOrigin()}/builder`, {
+        ...SOCKET_OPTS,
+        autoConnect: !isApiCircuitOpen(),
+        reconnectionAttempts: isApiCircuitOpen() ? 0 : SOCKET_OPTS.reconnectionAttempts,
+      });
       socketRef.current = socket;
 
       socket.on('connect', () => setIsConnected(true));
@@ -184,7 +199,9 @@ export function useBuilderSocket(events?: BuilderSocketEvents) {
     }
 
     // Don't open socket if API is already known to be down
-    if (apiOnlineRef.current) createSocket();
+    const connectTimer = setTimeout(() => {
+      if (apiOnlineRef.current) createSocket();
+    }, 450);
 
     const handleApiOffline = () => {
       apiOnlineRef.current = false;
@@ -203,6 +220,7 @@ export function useBuilderSocket(events?: BuilderSocketEvents) {
     window.addEventListener('cfb:api-online', handleApiOnline);
 
     return () => {
+      clearTimeout(connectTimer);
       window.removeEventListener('cfb:api-offline', handleApiOffline);
       window.removeEventListener('cfb:api-online', handleApiOnline);
       if (socketRef.current) {
@@ -210,7 +228,7 @@ export function useBuilderSocket(events?: BuilderSocketEvents) {
         socketRef.current = null;
       }
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // Workspace actions
   const joinWorkspace = useCallback((workspaceId: string) => {

@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { getMeProfile } from '@/lib/api';
 
 function getTimeBasedGreeting(): string {
@@ -65,7 +66,7 @@ function StatCard({
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs', trend.positive ? TREND.up : TREND.down)}>
                 {trend.positive ? '+' : ''}{trend.value}% vs last cohort
               </p>
             )}
@@ -81,13 +82,15 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
+const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
+  active: 'success',
+  upcoming: 'info',
+  completed: 'neutral',
+  draft: 'warning',
+};
+
 function ProgramCard({ program }: { program: any }) {
-  const statusColors: Record<string, string> = {
-    'active': 'bg-green-500/10 text-green-600 border-green-500/20',
-    'upcoming': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    'completed': 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    'draft': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  };
+  const statusColors = STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'];
 
   return (
     <Link
@@ -100,7 +103,7 @@ function ProgramCard({ program }: { program: any }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{program.name}</p>
-          <Badge variant="outline" size="sm" className={cn(statusColors[program.status] || '')}>
+          <Badge variant="outline" size="sm" className={cn('border', statusColors.chip)}>
             {program.status}
           </Badge>
         </div>
@@ -146,10 +149,10 @@ function StartupCard({ startup }: { startup: any }) {
 
 function ApplicationCard({ application }: { application: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+    <div className={cn('flex items-start gap-3 rounded-lg border p-3', STATUS.warning.border, STATUS.warning.bg)}>
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={application.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-amber-500/10 text-amber-600">
+        <AvatarFallback className={cn('rounded-lg', STATUS.warning.bg, STATUS.warning.icon)}>
           {application.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -173,12 +176,9 @@ function ApplicationCard({ application }: { application: any }) {
 function MilestoneItem({ milestone }: { milestone: any }) {
   return (
     <div className="flex items-center gap-3 py-2">
-      <div className={cn(
-        'rounded-full p-1.5',
-        milestone.completed ? 'bg-green-500/10' : 'bg-muted'
-      )}>
+      <div className={cn('rounded-full p-1.5', milestone.completed ? STATUS.success.bg : 'bg-muted')}>
         {milestone.completed ? (
-          <Award className="icon-sm text-green-500" />
+          <Award className={cn('icon-sm', STATUS.success.icon)} />
         ) : (
           <Target className="icon-sm text-muted-foreground" />
         )}
@@ -321,7 +321,7 @@ export default function IncubatorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <UserPlus className="icon-sm text-amber-500" />
+                      <UserPlus className={cn('icon-sm', STATUS.warning.icon)} />
                       Pending Applications ({pendingApplications.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>

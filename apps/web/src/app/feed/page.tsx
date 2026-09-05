@@ -10,6 +10,7 @@ import {
   Plus, RefreshCw, ChevronDown, X, Flag, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -652,9 +653,9 @@ export default function FeedPage() {
         <div className="flex items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="following">Following</TabsTrigger>
-              <TabsTrigger value="trending">Trending</TabsTrigger>
+              <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
+              <TabsTrigger value="following"><BilingualText en="Following" el="Ακολουθώ" compact /></TabsTrigger>
+              <TabsTrigger value="trending"><BilingualText en="Trending" el="Τάσεις" compact /></TabsTrigger>
             </TabsList>
           </Tabs>
           <Button
@@ -664,7 +665,7 @@ export default function FeedPage() {
             className="gap-1"
           >
             <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Preferences</span>
+            <span className="hidden sm:inline"><BilingualText en="Preferences" el="Προτιμήσεις" compact /></span>
           </Button>
         </div>
       }

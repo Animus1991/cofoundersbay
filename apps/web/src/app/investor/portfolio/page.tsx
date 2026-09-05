@@ -6,11 +6,8 @@ import {
   Briefcase, TrendingUp, TrendingDown, DollarSign,
   MoreVertical, ExternalLink, Users, PieChart, Download,
 } from 'lucide-react';
-import {
-  ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
-  CartesianGrid, Tooltip as RechartsTooltip, PieChart as RPieChart,
-  Pie, Cell, Legend,
-} from 'recharts';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
 import { AppShell } from '@/components/layout/AppShell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +20,16 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+
+const ChartFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
+const PortfolioValueChart = dynamic(
+  () => import('./InvestorPortfolioCharts').then((m) => ({ default: m.PortfolioValueChart })),
+  { ssr: false, loading: ChartFallback },
+);
+const SectorMixChart = dynamic(
+  () => import('./InvestorPortfolioCharts').then((m) => ({ default: m.SectorMixChart })),
+  { ssr: false, loading: ChartFallback },
+);
 
 const PORTFOLIO_VALUE_HISTORY = [
   { month: 'Oct', value: 200 },
@@ -213,21 +220,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle className="text-sm">Portfolio Value (K USD)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={valueHistory}>
-                    <defs>
-                      <linearGradient id="portGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}K`} />
-                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Value']} />
-                    <Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="url(#portGrad)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <PortfolioValueChart data={valueHistory} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -237,17 +230,7 @@ export default function InvestorPortfolioPage() {
                 <CardTitle className="text-sm">Investment by Sector (K USD)</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <RPieChart>
-                    <Pie data={sectorData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: $${value}K`} labelLine={false}>
-                      {sectorData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Legend />
-                    <RechartsTooltip formatter={(v: number) => [`$${v}K`, 'Invested']} />
-                  </RPieChart>
-                </ResponsiveContainer>
+                <SectorMixChart data={sectorData} />
               </CardContent>
             </Card>
           </TabsContent>

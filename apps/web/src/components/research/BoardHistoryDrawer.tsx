@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -204,12 +205,15 @@ export function BoardHistoryDrawer({
   const [snapshotLabel, setSnapshotLabel] = useState('');
   const [previewSnapshot, setPreviewSnapshot] = useState<BoardSnapshot | null>(null);
   const [creatingSnapshot, setCreatingSnapshot] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['snapshots', boardId],
     queryFn: () => listSnapshots(boardId),
-    enabled: open && !!boardId,
-    refetchInterval: 60_000,
+    enabled: open && !!boardId && apiAvailable,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const snapshots: BoardSnapshot[] = data ?? [];

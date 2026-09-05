@@ -1,18 +1,11 @@
 'use client';
 
-import {
-  BarChart3,
-  TrendingUp,
-  Users,
-  Rocket,
-  MessageSquare,
-  Calendar,
-  Award,
-  Building2,
-} from 'lucide-react';
+import dynamic from 'next/dynamic';
+import { BarChart3, Download, RefreshCw, Rocket, TrendingUp, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { HelpCallout } from '@/components/common/HelpCallout';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -20,60 +13,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useState } from 'react';
+
+const UserRoleChart = dynamic(
+  () => import('../dashboard/Charts').then((m) => ({ default: m.UserRoleChart })),
+  { ssr: false, loading: () => <div className="h-[280px] animate-pulse rounded-lg bg-muted/40" /> },
+);
+
+const METRICS = {
+  totalUsers: 15420,
+  activeUsers: 8934,
+  totalStartups: 2841,
+  totalMentors: 1204,
+  totalInvestors: 892,
+  totalTenants: 47,
+};
 
 export default function AdminAnalyticsPage() {
-  // Mock data
-  const platformMetrics = {
-    totalUsers: 5420,
-    activeUsers: 3250,
-    totalStartups: 890,
-    totalMentors: 245,
-    totalInvestors: 180,
-    totalTenants: 28,
-  };
-
-  const growthMetrics = [
-    { month: 'Jan', users: 4800, startups: 750 },
-    { month: 'Feb', users: 5100, startups: 820 },
-    { month: 'Mar', users: 5420, startups: 890 },
-  ];
-
-  const engagementMetrics = [
-    { name: 'Messages Sent', value: '45.2K', change: '+12%' },
-    { name: 'Connections Made', value: '8.5K', change: '+18%' },
-    { name: 'Mentor Sessions', value: '1.2K', change: '+25%' },
-    { name: 'Events Hosted', value: 156, change: '+8%' },
-  ];
-
-  const topTenants = [
-    { name: 'TechHub Accelerator', members: 156, startups: 28 },
-    { name: 'AI Ventures', members: 98, startups: 18 },
-    { name: 'StartupU', members: 85, startups: 15 },
-    { name: 'FinLab', members: 72, startups: 12 },
-  ];
-
-  const userDistribution = [
-    { role: 'Founders', count: 2800, percentage: 52 },
-    { role: 'Mentors', count: 650, percentage: 12 },
-    { role: 'Investors', count: 450, percentage: 8 },
-    { role: 'Service Providers', count: 320, percentage: 6 },
-    { role: 'Other', count: 1200, percentage: 22 },
-  ];
+  const [range, setRange] = useState('30d');
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Platform Analytics</h1>
-            <p className="text-muted-foreground">
-              Monitor platform-wide metrics and performance
-            </p>
-          </div>
-          <Select defaultValue="30d">
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Time period" />
+    <AppShell
+      title="Global analytics"
+      description="Platform growth, engagement, and role distribution — export for board or investor updates."
+      actions={
+        <div className="flex gap-2">
+          <Select value={range} onValueChange={setRange}>
+            <SelectTrigger className="w-[140px] h-9">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="7d">Last 7 days</SelectItem>
@@ -82,169 +49,58 @@ export default function AdminAnalyticsPage() {
               <SelectItem value="1y">Last year</SelectItem>
             </SelectContent>
           </Select>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="icon-sm mr-1.5" /> Refresh
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="icon-sm mr-1.5" /> Export
+          </Button>
         </div>
+      }
+    >
+      <HelpCallout id="admin-analytics" title="Reading these metrics">
+        <p>
+          <strong>Active users</strong> logged in during the selected range. Role charts show signup mix — use this to
+          balance supply (mentors/investors) vs demand (founders). Tenant count reflects white-label communities.
+        </p>
+      </HelpCallout>
 
-        {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <Card>
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {[
+          { label: 'Total users', value: METRICS.totalUsers, icon: Users },
+          { label: 'Active users', value: METRICS.activeUsers, icon: TrendingUp },
+          { label: 'Startups', value: METRICS.totalStartups, icon: Rocket },
+          { label: 'Mentors', value: METRICS.totalMentors, icon: BarChart3 },
+          { label: 'Investors', value: METRICS.totalInvestors, icon: TrendingUp },
+          { label: 'Tenants', value: METRICS.totalTenants, icon: Users },
+        ].map(({ label, value, icon: Icon }) => (
+          <Card key={label}>
             <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Users className="icon-sm text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">Total Users</p>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Icon className="icon-sm" />
+                <span className="text-sm">{label}</span>
               </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.totalUsers.toLocaleString()}</p>
+              <p className="mt-1 text-xl font-bold tabular-nums">{value.toLocaleString()}</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-green-600" />
-                <p className="text-sm text-muted-foreground">Active Users</p>
-              </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.activeUsers.toLocaleString()}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Rocket className="icon-sm text-blue-600" />
-                <p className="text-sm text-muted-foreground">Startups</p>
-              </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.totalStartups}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Award className="icon-sm text-purple-600" />
-                <p className="text-sm text-muted-foreground">Mentors</p>
-              </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.totalMentors}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-amber-600" />
-                <p className="text-sm text-muted-foreground">Investors</p>
-              </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.totalInvestors}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="icon-sm text-cyan-600" />
-                <p className="text-sm text-muted-foreground">Tenants</p>
-              </div>
-              <p className="text-xl font-bold mt-1">{platformMetrics.totalTenants}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* User Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">User Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {userDistribution.map((item) => (
-                <div key={item.role}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span>{item.role}</span>
-                    <span className="text-muted-foreground">
-                      {item.count.toLocaleString()} ({item.percentage}%)
-                    </span>
-                  </div>
-                  <Progress value={item.percentage} className="h-2" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Engagement Metrics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Engagement</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {engagementMetrics.map((metric) => (
-                  <div key={metric.name} className="p-3 rounded-lg bg-muted/50">
-                    <p className="text-sm text-muted-foreground">{metric.name}</p>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-xl font-bold">{metric.value}</span>
-                      <span className="text-xs text-green-600">{metric.change}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Top Tenants */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Top Tenants</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {topTenants.map((tenant, index) => (
-                <div key={tenant.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-                  <span className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1">
-                    <p className="font-medium">{tenant.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {tenant.members} members · {tenant.startups} startups
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Growth Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Growth Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {growthMetrics.map((month, index) => {
-                  const prevUsers = index > 0 ? growthMetrics[index - 1].users : month.users;
-                  const userGrowth = ((month.users - prevUsers) / prevUsers * 100).toFixed(1);
-                  return (
-                    <div key={month.month} className="flex items-center gap-4">
-                      <div className="w-12 text-sm font-medium">{month.month}</div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-4 bg-primary/20 rounded"
-                            style={{ width: `${(month.users / 6000) * 100}%` }}
-                          />
-                          <span className="text-xs text-muted-foreground">{month.users.toLocaleString()} users</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="h-4 bg-blue-500/20 rounded"
-                            style={{ width: `${(month.startups / 1000) * 100}%` }}
-                          />
-                          <span className="text-xs text-muted-foreground">{month.startups} startups</span>
-                        </div>
-                      </div>
-                      {index > 0 && (
-                        <span className="text-xs text-green-600 w-12">+{userGrowth}%</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        ))}
       </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">Users by role</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UserRoleChart
+            data={[
+              { name: 'Founders', value: 6789 },
+              { name: 'Mentors', value: 3456 },
+              { name: 'Investors', value: 2345 },
+              { name: 'Other', value: 2830 },
+            ]}
+          />
+        </CardContent>
+      </Card>
     </AppShell>
   );
 }

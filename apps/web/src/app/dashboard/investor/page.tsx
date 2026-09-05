@@ -237,23 +237,17 @@ export default function InvestorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h1>
-            <p className="text-muted-foreground">
-              Your investment portfolio and deal flow
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <DollarSign className="icon-sm" />
-            Investor
-          </Badge>
-        </div>
+    <AppShell
+      title={`${getTimeBasedGreeting()}, ${displayName}`}
+      description="Pipeline health, deal flow, and portfolio performance \u2014 in one view."
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <DollarSign className="icon-sm" />
+          Investor
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-4">

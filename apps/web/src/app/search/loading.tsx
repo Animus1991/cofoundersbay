@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function SearchLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
-      <div className="mx-auto w-full max-w-5xl px-4 pt-6 space-y-6">
+      <div className="mx-auto w-full min-w-0 px-4 pt-6 space-y-6">
         <Skeleton className="h-12 w-full rounded-xl" />
         <div className="flex gap-2">
           {Array.from({ length: 5 }).map((_, i) => (

@@ -10,6 +10,7 @@ import {
   ClipboardList, Zap, BookOpen,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -392,19 +393,19 @@ export default function CoachingPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
-            { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Action items done', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Avg rating', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <Card key={label} className="shadow-sm border-border/50">
+            { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          ].map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
+            <Card key={labelEn} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
                   <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground"><BilingualText en={labelEn} el={labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -416,7 +417,7 @@ export default function CoachingPage() {
           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">Next Session</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1"><BilingualText en="Next Session" el="Επόμενη συνεδρία" compact /></p>
                 <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   with {upcoming[0].coachName} ·{' '}
@@ -426,7 +427,7 @@ export default function CoachingPage() {
               </div>
               {upcoming[0].meetingUrl && (
                 <Button size="sm" className="gap-1.5 shrink-0">
-                  <Video className="h-3.5 w-3.5" /> Join
+                  <Video className="h-3.5 w-3.5" /> <BilingualText en="Join" el="Σύνδεση" compact />
                 </Button>
               )}
             </div>
@@ -436,13 +437,13 @@ export default function CoachingPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between gap-3">
             <TabsList className="h-9">
-              <TabsTrigger value="sessions" className="text-xs">My Sessions</TabsTrigger>
-              <TabsTrigger value="find" className="text-xs">Find a Coach</TabsTrigger>
-              <TabsTrigger value="actions" className="text-xs">Action Items</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
+              <TabsTrigger value="sessions" className="text-xs"><BilingualText en="My Sessions" el="Οι συνεδρίες μου" compact /></TabsTrigger>
+              <TabsTrigger value="find" className="text-xs"><BilingualText en="Find a Coach" el="Εύρεση coach" compact /></TabsTrigger>
+              <TabsTrigger value="actions" className="text-xs"><BilingualText en="Action Items" el="Ενέργειες" compact /></TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs"><BilingualText en="Insights" el="Αναλύσεις" compact /></TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs">
-              <Plus className="h-3.5 w-3.5" /> Book session
+              <Plus className="h-3.5 w-3.5" /> <BilingualText en="Book session" el="Κράτηση συνεδρίας" compact />
             </Button>
           </div>
 
@@ -454,22 +455,22 @@ export default function CoachingPage() {
                   <BrainCircuit className="h-7 w-7 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-foreground">No coaching sessions yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Book your first session with a coach to get started.</p>
+                  <p className="font-medium text-foreground"><BilingualText en="No coaching sessions yet" el="Δεν υπάρχουν συνεδρίες coaching ακόμα" /></p>
+                  <p className="mt-1 text-sm text-muted-foreground"><BilingualText en="Book your first session with a coach to get started." el="Κλείστε την πρώτη σας συνεδρία με coach για να ξεκινήσετε." /></p>
                 </div>
-                <Button size="sm" onClick={() => setActiveTab('find')}>Find a coach</Button>
+                <Button size="sm" onClick={() => setActiveTab('find')}><BilingualText en="Find a coach" el="Εύρεση coach" compact /></Button>
               </div>
             ) : (
               <>
                 {upcoming.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Upcoming</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Upcoming" el="Επερχόμενες" compact /></p>
                     <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} session={s} />)}</div>
                   </div>
                 )}
                 {completed.length > 0 && (
                   <div className="mt-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Completed</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"><BilingualText en="Completed" el="Ολοκληρωμένες" compact /></p>
                     <div className="space-y-3">{completed.map((s) => <SessionCard key={s.id} session={s} />)}</div>
                   </div>
                 )}
@@ -494,9 +495,9 @@ export default function CoachingPage() {
 
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
               <BookOpen className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">Become a coach on CoFounderBay</p>
-              <p className="text-xs text-muted-foreground mb-3">Share your expertise and earn while helping founders grow.</p>
-              <Button variant="outline" size="sm">Apply as coach</Button>
+              <p className="text-sm font-medium text-foreground mb-1"><BilingualText en="Become a coach on CoFounderBay" el="Γίνετε coach στο CoFounderBay" /></p>
+              <p className="text-xs text-muted-foreground mb-3"><BilingualText en="Share your expertise and earn while helping founders grow." el="Μοιραστείτε την εμπειρογνωμοσύνη σας και κερδίστε βοηθώντας ιδρυτές να αναπτυχθούν." /></p>
+              <Button variant="outline" size="sm"><BilingualText en="Apply as coach" el="Αίτηση ως coach" compact /></Button>
             </div>
           </TabsContent>
 
@@ -504,7 +505,7 @@ export default function CoachingPage() {
           <TabsContent value="actions" className="mt-4">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">All Action Items</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en="All Action Items" el="Όλες οι ενέργειες" compact /></CardTitle>
               </CardHeader>
               <CardContent className="space-y-1">
                 {sessions.flatMap((session) =>
@@ -516,7 +517,7 @@ export default function CoachingPage() {
                         <p className="text-[11px] text-muted-foreground">From: {session.title}</p>
                       </div>
                       {!item.done && (
-                        <Badge variant="outline" className="shrink-0 text-[10px]">Pending</Badge>
+                        <Badge variant="outline" className="shrink-0 text-[10px]"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
                       )}
                     </div>
                   ))
@@ -531,7 +532,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-primary" /> Session Themes
+                    <TrendingUp className="h-4 w-4 text-primary" /> <BilingualText en="Session Themes" el="Θέματα συνεδριών" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -553,7 +554,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <ListChecks className="h-4 w-4 text-emerald-500" /> Execution Rate
+                    <ListChecks className="h-4 w-4 text-emerald-500" /> <BilingualText en="Execution Rate" el="Ποσοστό εκτέλεσης" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -574,9 +575,9 @@ export default function CoachingPage() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm font-semibold text-foreground">Action completion</p>
+                      <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-emerald-600 font-medium">Keep the momentum going!</p>
+                      <p className="text-xs text-emerald-600 font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact /></p>
                     </div>
                   </div>
                 </CardContent>
@@ -588,7 +589,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-amber-500" /> Key Insights
+                    <Lightbulb className="h-4 w-4 text-amber-500" /> <BilingualText en="Key Insights" el="Βασικές αναλύσεις" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

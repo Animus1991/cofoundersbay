@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { TREND } from '@/lib/semantic-colors';
 
 type StatCardProps = {
   label: string;
@@ -11,10 +12,10 @@ type StatCardProps = {
 };
 
 export function StatCard({ label, value, icon, trend, className }: StatCardProps) {
-  const trendColor = trend 
-    ? trend.value >= 0 
-      ? 'text-emerald-400' 
-      : 'text-red-400'
+  const trendColor = trend
+    ? trend.value >= 0
+      ? TREND.up
+      : TREND.down
     : '';
 
   return (

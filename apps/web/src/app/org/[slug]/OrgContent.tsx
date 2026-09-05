@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getOrgOpportunities, getOrgCohorts, getOrgMembers, type OrgProfile, type OpportunityItem, type CohortItem, type OrgMember } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/utils';
 import { AppShell } from '@/components/layout/AppShell';
+import { ListEmptyState } from '@/components/common/EmptyStates';
 
 interface OrgContentProps {
   org: OrgProfile;
@@ -42,7 +43,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
   return (
     <AppShell>
-      <div className="container mx-auto max-w-5xl px-4 py-8">
+      <div className="w-full min-w-0 px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -178,13 +179,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 ))}
               </div>
             ) : opportunities.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Briefcase className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-                  <h3 className="text-sm font-semibold text-foreground mb-1">No opportunities yet</h3>
-                  <p className="text-xs text-muted-foreground">Check back soon.</p>
-                </CardContent>
-              </Card>
+              <ListEmptyState
+                icon={Briefcase}
+                tone="info"
+                size="compact"
+                title="No open opportunities"
+                description="This organization is not currently hiring or posting collaboration calls. Follow them to be notified when new ones are posted."
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {opportunities.map((opp) => (
@@ -240,13 +241,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 ))}
               </div>
             ) : cohorts.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-                  <h3 className="text-sm font-semibold text-foreground mb-1">No programs yet</h3>
-                  <p className="text-xs text-muted-foreground">Check back soon.</p>
-                </CardContent>
-              </Card>
+              <ListEmptyState
+                icon={GraduationCap}
+                tone="success"
+                size="compact"
+                title="No public programs yet"
+                description="When this organization publishes accelerators, bootcamps, or incubators, they will appear here with open applications."
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {cohorts.map((cohort) => (
@@ -304,13 +305,13 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 ))}
               </div>
             ) : members.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-                  <h3 className="text-sm font-semibold text-foreground mb-1">No members yet</h3>
-                  <p className="text-xs text-muted-foreground">Members will appear here when they join programs.</p>
-                </CardContent>
-              </Card>
+              <ListEmptyState
+                icon={Users}
+                tone="primary"
+                size="compact"
+                title="No public members listed"
+                description="Members appear here once they accept a program invite and choose to display their affiliation publicly."
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {members.map((member) => (

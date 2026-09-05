@@ -40,6 +40,7 @@ import {
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 
 type OrgMember = {
   id: string;
@@ -133,17 +134,25 @@ const MOCK_MEMBERS: OrgMember[] = [
   },
 ];
 
-const ROLE_COLORS: Record<string, string> = {
-  owner: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  admin: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
-  member: 'bg-muted text-muted-foreground border-border',
+const ROLE_TONE: Record<string, StatusTone | 'neutral'> = {
+  owner: 'warning',
+  admin: 'info',
+  member: 'neutral',
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-  pending: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  suspended: 'bg-destructive/10 text-destructive border-destructive/30',
+const MEMBER_STATUS_TONE: Record<string, StatusTone | 'neutral'> = {
+  active: 'success',
+  pending: 'warning',
+  suspended: 'danger',
 };
+
+function roleChip(role: string) {
+  return STATUS[ROLE_TONE[role] ?? 'neutral'].chip;
+}
+
+function memberStatusChip(status: string) {
+  return STATUS[MEMBER_STATUS_TONE[status] ?? 'neutral'].chip;
+}
 
 function StatCard({ title, value, change, icon: Icon, trend }: {
   title: string;
@@ -162,8 +171,8 @@ function StatCard({ title, value, change, icon: Icon, trend }: {
             {change && (
               <p className={cn(
                 'text-xs mt-1',
-                trend === 'up' && 'text-emerald-600',
-                trend === 'down' && 'text-destructive',
+                trend === 'up' && TREND.up,
+                trend === 'down' && TREND.down,
                 trend === 'neutral' && 'text-muted-foreground'
               )}>
                 {change}
@@ -368,13 +377,13 @@ export default function OrgAdminPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[member.role])}>
+                        <Badge variant="outline" className={cn('capitalize border', roleChip(member.role))}>
                           {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
                           {member.role}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={cn('capitalize', STATUS_COLORS[member.status])}>
+                        <Badge variant="outline" className={cn('capitalize border', memberStatusChip(member.status))}>
                           {member.status}
                         </Badge>
                       </TableCell>
@@ -485,7 +494,7 @@ export default function OrgAdminPage() {
                 {['owner', 'admin', 'member'].map((role) => (
                   <div key={role} className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[role])}>
+                      <Badge variant="outline" className={cn('capitalize border', roleChip(role))}>
                         {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
                         {role}
                       </Badge>
@@ -501,7 +510,7 @@ export default function OrgAdminPage() {
                       ].map((perm, i) => (
                         <div key={perm} className="flex items-center gap-2">
                           {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
-                            <CheckCircle2 className="icon-sm text-emerald-500" />
+                            <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
                           ) : (
                             <XCircle className="icon-sm text-muted-foreground" />
                           )}

@@ -10,27 +10,19 @@ import Link from 'next/link';
 
 function ApplicationsPageContent() {
   const {
-    workspace,
-    workspaces,
     isLoadingWorkspaces,
     documents,
     activeDocument,
     error,
     loadWorkspaces,
-    selectWorkspace,
     updateDocumentSection,
     clearError,
   } = useBuilder();
 
+  // Load workspaces + auto-select first in a single flow (no waterfall)
   useEffect(() => {
-    loadWorkspaces();
+    loadWorkspaces(true);
   }, [loadWorkspaces]);
-
-  useEffect(() => {
-    if (!workspace && workspaces.length > 0) {
-      selectWorkspace(workspaces[0].id);
-    }
-  }, [workspace, workspaces, selectWorkspace]);
 
   const handleSave = async (data: any) => {
     if (!activeDocument) return;

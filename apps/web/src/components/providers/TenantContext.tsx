@@ -11,6 +11,7 @@ import {
   type TenantMembershipItem,
 } from '@/lib/api';
 import { useSession } from '@/hooks/useSession';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 
 // ── Domain detection (client-side only) ──────────────────────────────────────
 
@@ -138,6 +139,7 @@ function applyBrandingFonts(branding: TenantBranding | null) {
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const { hasSession } = useSession();
+  const apiAvailable = useApiAvailability();
 
   // Detect if we're on a tenant-owned domain (subdomain or custom)
   const [domainCtx] = useState(() => detectDomainContext());
@@ -162,7 +164,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
   const { data: membershipsData, isLoading: membershipsLoading } = useQuery({
     queryKey: ['tenant', 'memberships'],
     queryFn: getUserTenantMemberships,
-    enabled: hasSession && domainCtx.type === 'none',
+    enabled: hasSession && domainCtx.type === 'none' && apiAvailable,
     staleTime: 5 * 60 * 1000,
   });
 

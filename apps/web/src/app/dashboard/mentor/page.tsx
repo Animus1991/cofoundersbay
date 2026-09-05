@@ -218,23 +218,17 @@ export default function MentorDashboard() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName}
-            </h1>
-            <p className="text-muted-foreground">
-              Your mentoring impact at a glance
-            </p>
-          </div>
-          <Badge variant="outline" className="gap-1.5">
-            <GraduationCap className="icon-sm" />
-            Mentor
-          </Badge>
-        </div>
+    <AppShell
+      title={`${getTimeBasedGreeting()}, ${displayName}`}
+      description="Sessions, mentee requests, reviews, and earnings at a glance."
+      actions={
+        <Badge variant="outline" className="gap-1.5">
+          <GraduationCap className="icon-sm" />
+          Mentor
+        </Badge>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Next Session Banner */}
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (

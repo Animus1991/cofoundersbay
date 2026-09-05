@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
+import { BilingualText } from '@/components/common/BilingualText';
+import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
 import { cn } from '@/lib/utils';
 import {
   getOrCreateDirectConversation,
@@ -503,7 +505,7 @@ export default function MessagesPage() {
       <AppShell fullHeight contentClassName="min-h-0">
         <div className="flex flex-1 items-center justify-center bg-background/40">
           <div className="rounded-xl border border-border/60 bg-card px-4 py-3 text-sm text-muted-foreground shadow-sm">
-            Preparing your messages...
+            <BilingualText en="Preparing your messages..." el="Προετοιμασία μηνυμάτων..." />
           </div>
         </div>
       </AppShell>
@@ -516,15 +518,17 @@ export default function MessagesPage() {
         {/* Context Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              <BilingualText en={messagesEn('page_title')} el={messagesEl('page_title')} />
+            </h1>
             <p className="text-sm text-muted-foreground">
-              Connect with co-founders, mentors, and team members
+              <BilingualText en="Connect with co-founders, mentors, and team members" el="Συνδεθείτε με συνιδρυτές, μέντορες και μέλη ομάδας" />
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2">
               <MessageSquare className="icon-sm" />
-              New Message
+              <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} />
             </Button>
           </div>
         </div>
@@ -542,7 +546,7 @@ export default function MessagesPage() {
                 <TabsList className="w-full">
                   <TabsTrigger value="chats" className="flex-1 gap-1.5">
                     <MessageSquare className="h-3.5 w-3.5" />
-                    Chats
+                    <BilingualText en="Chats" el="Συνομιλίες" compact />
                     {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                         {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0)}
@@ -551,7 +555,7 @@ export default function MessagesPage() {
                   </TabsTrigger>
                   <TabsTrigger value="intros" className="flex-1 gap-1.5">
                     <UserPlus className="h-3.5 w-3.5" />
-                    Intros
+                    <BilingualText en="Intros" el="Εισαγωγές" compact />
                     {pendingIntrosCount > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
                         {pendingIntrosCount}
@@ -599,8 +603,12 @@ export default function MessagesPage() {
                 <div className="rounded-full bg-secondary p-3">
                   <UserPlus className="icon-lg text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-foreground">No pending intros</p>
-                <p className="text-xs text-muted-foreground">When someone sends you a connection request, it will appear here.</p>
+                <p className="text-sm font-medium text-foreground">
+                  <BilingualText en={messagesEn('no_pending')} el={messagesEl('no_pending')} />
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <BilingualText en="When someone sends you a connection request, it will appear here." el="Όταν κάποιος σας στείλει αίτημα σύνδεσης, θα εμφανιστεί εδώ." />
+                </p>
               </div>
             ) : (
               <div className="space-y-2 p-4">
@@ -639,7 +647,7 @@ export default function MessagesPage() {
                             onClick={() => handleIntroRespond(req.id, 'accepted')}
                           >
                             <Check className="icon-sm" />
-                            Accept
+                            <BilingualText en={messagesEn('accept')} el={messagesEl('accept')} compact />
                           </Button>
                           <Button
                             size="sm"
@@ -649,7 +657,7 @@ export default function MessagesPage() {
                             onClick={() => handleIntroRespond(req.id, 'declined')}
                           >
                             <X className="icon-sm" />
-                            Decline
+                            <BilingualText en={messagesEn('decline')} el={messagesEl('decline')} compact />
                           </Button>
                         </div>
                       </div>

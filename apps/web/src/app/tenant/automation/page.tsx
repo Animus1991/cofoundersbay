@@ -24,6 +24,7 @@ import {
   CheckCircle2, XCircle, AlertTriangle,
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
+import { EmptyTenantAutomations } from '@/components/common/EmptyStates';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -270,17 +271,11 @@ export default function TenantAutomationPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Automation</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Event-driven workflows — triggers, conditions, actions for your organization.
-            </p>
-          </div>
-        </div>
+    <AppShell
+      title="Automation"
+      description="Event-driven workflows: triggers fire when events happen, conditions filter, actions notify or update data."
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
@@ -337,13 +332,7 @@ export default function TenantAutomationPage() {
               </div>
             )}
 
-            {!isLoading && rules.length === 0 && (
-              <div className="py-16 text-center rounded-xl border border-dashed border-border/60">
-                <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="font-medium">No automation rules yet</p>
-                <p className="text-sm text-muted-foreground mt-1">Platform-wide rules will appear here once the automation engine seeds default rules.</p>
-              </div>
-            )}
+            {!isLoading && rules.length === 0 && <EmptyTenantAutomations />}
 
             {rules.map(rule => (
               <RuleRow key={rule.id} rule={rule} tenantId={tenantId} onRefresh={refetch} />

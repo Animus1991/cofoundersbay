@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -309,12 +310,15 @@ export function CanvasCommentPins({
   const [newPinBody, setNewPinBody] = useState('');
   const [newPinType, setNewPinType] = useState<'general' | 'suggestion' | 'question'>('general');
   const [submitting, setSubmitting] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
     queryKey: ['node-comments', nodeId],
     queryFn: () => listNodeComments(nodeId),
-    enabled: enabled && !!nodeId,
-    refetchInterval: 30_000,
+    enabled: enabled && !!nodeId && apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const comments: CanvasComment[] = (data ?? []).filter(

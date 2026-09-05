@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import {
   listPrograms,
   getMyPrograms,
@@ -53,13 +54,19 @@ import {
 } from '@/lib/api';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-const STATUS_COLORS: Record<string, string> = {
-  open:     'bg-green-500/10 text-green-600 border-green-500/20',
-  upcoming: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  active:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  closed:   'bg-gray-500/10 text-gray-500 border-gray-500/20',
-  draft:    'bg-gray-500/10 text-gray-500 border-gray-500/20',
+const PROGRAM_STATUS_TONE: Record<string, StatusTone> = {
+  open: 'success',
+  upcoming: 'info',
+  active: 'warning',
+  closed: 'neutral',
+  draft: 'neutral',
 };
+
+function deadlineUrgencyClass(days: number): string {
+  if (days <= 3) return cn('font-medium', STATUS.danger.icon);
+  if (days <= 7) return cn('font-medium', STATUS.warning.icon);
+  return 'text-muted-foreground';
+}
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   accelerator: Rocket,
@@ -198,7 +205,7 @@ function ProgramCard({
                 </p>
               </div>
               <div className="flex flex-wrap gap-1.5 items-center">
-                <Badge variant="outline" className={cn('text-xs capitalize', STATUS_COLORS[program.status] ?? STATUS_COLORS.closed)}>
+                <Badge variant="outline" className={cn('text-xs capitalize border', STATUS[PROGRAM_STATUS_TONE[program.status] ?? 'neutral'].chip)}>
                   {program.status === 'open' ? 'Open' : typeLabel(program.status)}
                 </Badge>
                 <Badge variant="outline" className="text-xs capitalize text-muted-foreground">
@@ -213,7 +220,7 @@ function ProgramCard({
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
               {program.applicationDeadline && program.status === 'open' && deadline !== null && (
-                <span className={cn('flex items-center gap-1', deadline <= 7 && 'text-red-600 font-medium')}>
+                <span className={cn('flex items-center gap-1', deadline !== null && deadline <= 7 && deadlineUrgencyClass(deadline))}>
                   <Clock className="h-3.5 w-3.5" />
                   {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
                 </span>
@@ -229,7 +236,10 @@ function ProgramCard({
                 {program.isRemote ? 'Remote' : (program.location ?? 'On-site')}
               </span>
               {spotsLeft !== null && (
-                <span className={cn('flex items-center gap-1', isFull && 'text-red-500', spotsLeft <= 3 && !isFull && 'text-amber-600')}>
+                <span className={cn(
+                  'flex items-center gap-1',
+                  isFull ? cn('font-medium', STATUS.danger.icon) : spotsLeft <= 3 ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
+                )}>
                   <Users className="h-3.5 w-3.5" />
                   {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
@@ -247,7 +257,7 @@ function ProgramCard({
             {(program.benefits as string[] | undefined)?.length ? (
               <div className="flex flex-wrap gap-1 mt-2">
                 {(program.benefits as string[]).slice(0, 3).map((b, i) => (
-                  <span key={i} className="text-xs flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
+                  <span key={i} className={cn('text-xs flex items-center gap-1', STATUS.success.text)}>
                     <Star className="h-3 w-3" />{b}
                   </span>
                 ))}
@@ -378,15 +388,15 @@ export default function ProgramsPage() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Programs', value: data?.total ?? 0, icon: Award, color: 'text-primary' },
-              { label: 'Open Applications', value: openPrograms.length, icon: Zap, color: 'text-green-600' },
-              { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, color: 'text-blue-600' },
-              { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, color: 'text-violet-600' },
-            ].map(({ label, value, icon: Icon, color }) => (
+              { label: 'Total Programs', value: data?.total ?? 0, icon: Award, tone: 'accent' as const },
+              { label: 'Open Applications', value: openPrograms.length, icon: Zap, tone: 'success' as const },
+              { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, tone: 'info' as const },
+              { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, tone: 'accent' as const },
+            ].map(({ label, value, icon: Icon, tone }) => (
               <Card key={label}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="rounded-lg p-2 bg-secondary">
-                    <Icon className={cn('h-4 w-4', color)} />
+                    <Icon className={cn('h-4 w-4', STATUS[tone].icon)} />
                   </div>
                   <div>
                     <p className="text-lg font-bold tabular-nums">{value}</p>
@@ -461,11 +471,11 @@ export default function ProgramsPage() {
                     <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
                     <div className="mt-2 flex items-center justify-between">
                       {d !== null && d >= 0 ? (
-                        <span className={cn('text-[10px] font-medium', d <= 3 ? 'text-red-500' : 'text-amber-600')}>
+                        <span className={cn('text-[10px] font-medium', d <= 3 ? cn(STATUS.danger.icon) : cn(STATUS.warning.icon))}>
                           {d === 0 ? 'Today!' : `${d}d left`}
                         </span>
                       ) : <span />}
-                      <Badge variant="outline" className={cn('text-[9px] px-1.5 capitalize', STATUS_COLORS[p.status] ?? STATUS_COLORS.closed)}>{p.status}</Badge>
+                      <Badge variant="outline" className={cn('text-[9px] px-1.5 capitalize border', STATUS[PROGRAM_STATUS_TONE[p.status] ?? 'neutral'].chip)}>{p.status}</Badge>
                     </div>
                   </div>
                 );

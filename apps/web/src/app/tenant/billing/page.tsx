@@ -120,21 +120,19 @@ export default function TenantBillingPage() {
   const seatPct = seatLimit ? Math.round((seatUsage / seatLimit) * 100) : null;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6 max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Organization Billing</h1>
-            <p className="text-sm text-muted-foreground">Manage your organization plan, seats, and billing details.</p>
-          </div>
-          <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
-              View plans
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
-          </Link>
-        </div>
+    <AppShell
+      title="Organization Billing"
+      description="Plan, seats, invoices, and payment methods for your workspace."
+      actions={(
+        <Link href="/pricing">
+          <Button variant="outline" size="sm" className="gap-2">
+            View plans
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+        </Link>
+      )}
+    >
+      <div className="space-y-6 max-w-3xl">
 
         {/* Plan Overview */}
         <Card>

@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -64,13 +65,13 @@ const TYPE_LABEL: Record<string, string> = {
   syndicate: 'Syndicate', cvc: 'CVC', family_office: 'Family Office',
 };
 
-const STAGE_COLOR: Record<string, string> = {
-  'pre-seed': 'bg-violet-500/10 text-violet-600 border-violet-500/20',
-  seed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  'series-a': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  'series-b': 'bg-orange-500/10 text-orange-600 border-orange-500/20',
-  'series-c': 'bg-red-500/10 text-red-600 border-red-500/20',
-  growth: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+const STAGE_TONE: Record<string, StatusTone> = {
+  'pre-seed': 'accent',
+  seed: 'info',
+  'series-a': 'success',
+  'series-b': 'warning',
+  'series-c': 'danger',
+  growth: 'warning',
 };
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
@@ -162,9 +163,9 @@ function InvestorCard({ investor }: { investor: Investor }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h3 className="font-semibold truncate">{investor.displayName}</h3>
-                  {investor.isVerified && <BadgeCheck className="h-4 w-4 text-blue-500 shrink-0" />}
+                  {investor.isVerified && <BadgeCheck className={cn('h-4 w-4 shrink-0', STATUS.info.icon)} />}
                   {investor.isActivelyScouting && (
-                    <Badge className="text-[10px] bg-green-500/10 text-green-600 border border-green-500/20">
+                    <Badge className={cn('text-[10px] border', STATUS.success.chip)}>
                       <Zap className="h-2.5 w-2.5 mr-1" />Actively Scouting
                     </Badge>
                   )}
@@ -193,7 +194,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stages */}
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {investor.stages.map(s => (
-                <Badge key={s} variant="outline" className={cn('text-[10px] border', STAGE_COLOR[s] ?? '')}>
+                <Badge key={s} variant="outline" className={cn('text-[10px] border', STATUS[STAGE_TONE[s] ?? 'neutral'].chip)}>
                   {s.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </Badge>
               ))}

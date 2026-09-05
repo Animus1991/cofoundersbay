@@ -58,6 +58,10 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "typescript": "^5.9.3"
+    "@types/webpack": "^5.28.5",
+    "eslint": "^9",
+    "eslint-config-next": "^15.1.0",
+    "typescript": "^5.9.3",
+    "webpack": "^5.107.2"
   }
 }

@@ -48,6 +48,38 @@ const config: Config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        status: {
+          success: {
+            DEFAULT: 'hsl(var(--status-success-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-success-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-success-border) / <alpha-value>)',
+          },
+          warning: {
+            DEFAULT: 'hsl(var(--status-warning-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-warning-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-warning-border) / <alpha-value>)',
+          },
+          danger: {
+            DEFAULT: 'hsl(var(--status-danger-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-danger-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-danger-border) / <alpha-value>)',
+          },
+          info: {
+            DEFAULT: 'hsl(var(--status-info-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-info-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-info-border) / <alpha-value>)',
+          },
+          accent: {
+            DEFAULT: 'hsl(var(--status-accent-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-accent-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-accent-border) / <alpha-value>)',
+          },
+          neutral: {
+            DEFAULT: 'hsl(var(--status-neutral-fg) / <alpha-value>)',
+            bg: 'hsl(var(--status-neutral-bg) / <alpha-value>)',
+            border: 'hsl(var(--status-neutral-border) / <alpha-value>)',
+          },
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

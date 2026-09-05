@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { BuilderWorkspace } from '@/components/builder/BuilderWorkspace';
 import { IdeaCore } from '@/components/builder/IdeaCore';
 import { BusinessModelCanvas } from '@/components/builder/BusinessModelCanvas';
@@ -12,6 +13,8 @@ import { PitchDeckBuilder } from '@/components/builder/PitchDeckBuilder';
 import { ReadinessScoring } from '@/components/builder/ReadinessScoring';
 import { ApplicationGenerator } from '@/components/builder/ApplicationGenerator';
 import { BuilderProvider, useBuilder } from '@/contexts/BuilderContext';
+import { STATUS } from '@/lib/semantic-colors';
+import { cn } from '@/lib/utils';
 import { CollabToolbar } from '@/components/builder/CollabToolbar';
 import { WorkspaceMetricsPanels } from '@/components/gamification/WorkspaceMetricsPanels';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
@@ -108,7 +111,7 @@ function BuilderPageContent() {
 
   if (isLoadingWorkspaces) {
     return (
-      <AppShell>
+      <AppShell title="Startup Builder" description="Structure idea, team, market, traction, and pitch — all in one workspace.">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -117,7 +120,11 @@ function BuilderPageContent() {
   }
 
   return (
-    <AppShell>
+    <AppShell
+      title="Startup Builder"
+      description="Structure idea, team, market, traction, and pitch — all in one workspace."
+      showHelp
+    >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
@@ -125,7 +132,7 @@ function BuilderPageContent() {
             <AlertCircle className="icon-md text-destructive" />
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
-              Dismiss
+              <BilingualText en="Dismiss" el="Απόρριψη" compact />
             </Button>
           </div>
         )}
@@ -135,19 +142,19 @@ function BuilderPageContent() {
 
         {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
-          <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-            <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
+          <div className={cn('flex items-center gap-3 rounded-xl border px-4 py-3', STATUS.warning.border, STATUS.warning.bg)}>
+            <Sparkles className={cn('h-4 w-4 shrink-0', STATUS.warning.icon)} />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
-                Your artifacts are ready for expert review
+                <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Get actionable feedback from a domain expert — investors, mentors, or industry specialists.
+                <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />
               </p>
             </div>
             <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10">
-                Get review <ArrowRight className="h-3 w-3" />
+              <Button variant="ghost" size="sm" className={cn('h-7 gap-1 text-xs font-semibold hover:bg-status-warning-bg', STATUS.warning.text)}>
+                <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="h-3 w-3" />
               </Button>
             </a>
             <button

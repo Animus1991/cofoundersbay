@@ -13,7 +13,9 @@ import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
+import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
+import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 
 export const metadata: Metadata = {
   title: {
@@ -48,8 +50,9 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Do NOT lock zoom: maximumScale/userScalable:false fails WCAG 2.2 SC 1.4.4 (Resize Text)
+  // and SC 1.4.10 (Reflow). Users must be able to pinch-zoom up to at least 5x.
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -60,6 +63,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-bilingual="en-el"
       data-scroll-behavior="smooth"
       className="scroll-smooth"
       suppressHydrationWarning
@@ -70,10 +74,12 @@ export default function RootLayout({
       >
         <ErrorBoundary>
           <QueryProvider>
+            <LanguagePreferenceProvider>
             <TenantProvider>
               <SidebarProvider>
                 <ServiceWorkerRegistration />
                 <NetworkProvider>
+                  <ApiHealthProbe />
                   <ToastProvider>
                     <PopupChatProvider>
                       <MessagingProvider>
@@ -93,6 +99,7 @@ export default function RootLayout({
                 </NetworkProvider>
               </SidebarProvider>
             </TenantProvider>
+            </LanguagePreferenceProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

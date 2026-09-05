@@ -36,7 +36,11 @@ import { useToast } from '@/components/ui/toast';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { BilingualText } from '@/components/common/BilingualText';
+import { connectionsEn, connectionsEl } from '@/lib/i18n/strings-connections';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const CollaborationStarter = dynamic(
   () => import('@/components/collaboration/CollaborationStarter').then((m) => ({ default: m.CollaborationStarter })),
@@ -103,11 +107,11 @@ function ConnectionCard({
                 agentId="matching"
                 cacheKey={`conn-match-${connection.id}`}
                 variant="icon"
-                label="AI collaboration insight"
+                label={bilingualAria(connectionsEn('ai_collaboration'), connectionsEl('ai_collaboration'))}
               />
               <Button variant="secondary" size="sm" className="gap-2" onClick={onMessage}>
                 <MessageCircle className="icon-sm" />
-                Message
+                <BilingualText en={connectionsEn('message')} el={connectionsEl('message')} compact />
               </Button>
             </>
           ) : isReceiver && connection.status === 'pending' ? (
@@ -119,7 +123,7 @@ function ConnectionCard({
                 disabled={isPending}
               >
                 <Check className="icon-sm" />
-                Accept
+                <BilingualText en={connectionsEn('accept')} el={connectionsEl('accept')} compact />
               </Button>
               <Button
                 variant="ghost"
@@ -134,7 +138,7 @@ function ConnectionCard({
           ) : (
             <Badge variant="outline" className="text-muted-foreground">
               <Clock className="mr-1 icon-sm" />
-              Pending
+              <BilingualText en={connectionsEn('pending')} el={connectionsEl('pending')} compact />
             </Badge>
           )}
         </div>
@@ -176,7 +180,7 @@ function IntroRequestCard({
               <RoleBadge role={sender.role} size="sm" />
               <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary gap-1">
                 <Handshake className="icon-sm" />
-                Intro request
+                <BilingualText en={connectionsEn('intro_request')} el={connectionsEl('intro_request')} compact />
               </Badge>
             </div>
 
@@ -194,7 +198,7 @@ function IntroRequestCard({
             <div className="flex items-center gap-2 pt-1">
               <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
                 <Check className="h-3.5 w-3.5" />
-                Accept intro
+                <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
               </Button>
               <Button
                 size="sm"
@@ -204,7 +208,7 @@ function IntroRequestCard({
                 disabled={isPending}
               >
                 <X className="h-3.5 w-3.5" />
-                Decline
+                <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
               <p className="ml-auto text-xs text-muted-foreground">
                 {new Date(connection.createdAt).toLocaleDateString()}
@@ -305,13 +309,12 @@ export default function ConnectionsPage() {
       />
     )}
     <AppShell
-      title="Connections"
-      description="Manage your network and connection requests"
+      showHelp
       actions={
         <Link href="/discover">
           <Button className="gap-2">
             <UserPlus className="icon-sm" />
-            Find people
+            <BilingualText en={connectionsEn('find_people')} el={connectionsEl('find_people')} />
           </Button>
         </Link>
       }
@@ -321,21 +324,24 @@ export default function ConnectionsPage() {
       {!isLoading && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Connected', value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Intro Requests', value: introCount, icon: Handshake, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Sent Pending', value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Total Interactions', value: (data?.connections ?? []).length, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { labelEn: connectionsEn('stat_connected'), labelEl: connectionsEl('stat_connected'), value: (data?.connections ?? []).filter((c) => c.status === 'accepted').length, icon: Users, tone: 'accent' as const },
+            { labelEn: connectionsEn('stat_intro_requests'), labelEl: connectionsEl('stat_intro_requests'), value: introCount, icon: Handshake, tone: 'warning' as const },
+            { labelEn: connectionsEn('stat_sent_pending'), labelEl: connectionsEl('stat_sent_pending'), value: (data?.connections ?? []).filter((c) => c.requesterId === viewerId && c.status === 'pending').length, icon: Send, tone: 'info' as const },
+            { labelEn: connectionsEn('stat_total_interactions'), labelEl: connectionsEl('stat_total_interactions'), value: (data?.connections ?? []).length, icon: TrendingUp, tone: 'success' as const },
           ].map((s) => {
             const SIcon = s.icon;
+            const colors = STATUS[s.tone];
             return (
-              <Card key={s.label} className="shadow-sm border-border/50">
+              <Card key={s.labelEn} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
                     <SIcon className="icon-sm" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -348,7 +354,7 @@ export default function ConnectionsPage() {
         <TabsList>
           <TabsTrigger value="intros" className="gap-2">
             <Handshake className="icon-sm" />
-            Intro Requests
+            <BilingualText en={connectionsEn('intro_requests')} el={connectionsEl('intro_requests')} compact />
             {introCount > 0 && (
               <Badge variant="destructive" size="sm" className="ml-1 px-1.5">
                 {introCount}
@@ -357,15 +363,15 @@ export default function ConnectionsPage() {
           </TabsTrigger>
           <TabsTrigger value="received" className="gap-2">
             <UserCheck className="icon-sm" />
-            Received
+            <BilingualText en={connectionsEn('received')} el={connectionsEl('received')} compact />
           </TabsTrigger>
           <TabsTrigger value="sent" className="gap-2">
             <Send className="icon-sm" />
-            Sent
+            <BilingualText en={connectionsEn('sent')} el={connectionsEl('sent')} compact />
           </TabsTrigger>
           <TabsTrigger value="accepted" className="gap-2">
             <Users className="icon-sm" />
-            Connected
+            <BilingualText en={connectionsEn('connected')} el={connectionsEl('connected')} compact />
           </TabsTrigger>
         </TabsList>
 
@@ -381,13 +387,13 @@ export default function ConnectionsPage() {
           ) : connections.length === 0 ? (
             <EmptyState
               illustration="default"
-              title="No intro requests"
-              description="When someone sends you a connection request with a message, it appears here."
+              title={bilingualAria(connectionsEn('no_intro_requests'), connectionsEl('no_intro_requests'))}
+              description={bilingualAria(connectionsEn('no_intro_desc'), connectionsEl('no_intro_desc'))}
               action={
                 <Link href="/discover">
                   <Button variant="secondary" className="gap-2">
                     <Compass className="icon-sm" />
-                    Discover people
+                    <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
                   </Button>
                 </Link>
               }
@@ -418,26 +424,28 @@ export default function ConnectionsPage() {
             ) : connections.length === 0 ? (
               <EmptyState
                 illustration={t === 'accepted' ? 'connection' : 'default'}
-                title={
-                  t === 'received'
-                    ? 'No pending requests'
-                    : t === 'sent'
-                      ? 'No sent requests'
-                      : 'No connections yet'
-                }
-                description={
-                  t === 'accepted'
-                    ? 'Start connecting with founders, mentors, and investors.'
-                    : t === 'sent'
-                      ? 'Browse profiles and send connection requests.'
-                      : 'When people send you requests, they appear here.'
-                }
+                title={bilingualAria(
+                  t === 'received' ? connectionsEn('no_pending_requests')
+                    : t === 'sent' ? connectionsEn('no_sent_requests')
+                    : connectionsEn('no_connections_yet'),
+                  t === 'received' ? connectionsEl('no_pending_requests')
+                    : t === 'sent' ? connectionsEl('no_sent_requests')
+                    : connectionsEl('no_connections_yet'),
+                )}
+                description={bilingualAria(
+                  t === 'accepted' ? connectionsEn('start_connecting')
+                    : t === 'sent' ? connectionsEn('browse_profiles')
+                    : connectionsEn('when_people_send'),
+                  t === 'accepted' ? connectionsEl('start_connecting')
+                    : t === 'sent' ? connectionsEl('browse_profiles')
+                    : connectionsEl('when_people_send'),
+                )}
                 action={
                   t !== 'received' ? (
                     <Link href="/discover">
                       <Button variant="secondary" className="gap-2">
                         <Compass className="icon-sm" />
-                        Discover people
+                        <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
                       </Button>
                     </Link>
                   ) : undefined

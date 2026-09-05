@@ -12,6 +12,7 @@ import {
   deleteNodeComment,
   type ResearchComment,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { formatDistanceToNow } from 'date-fns';
 
 interface CommentsPanelProps {
@@ -96,11 +97,15 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState('');
   const [showResolved, setShowResolved] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
     queryKey: ['node-comments', nodeId],
     queryFn: () => listNodeComments(nodeId),
-    refetchInterval: 15000,
+    enabled: apiAvailable && !!nodeId,
+    refetchInterval: pollInterval(15_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const createMutation = useMutation({

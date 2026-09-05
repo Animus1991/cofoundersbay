@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSession } from '@/hooks/useSession';
+import { useApiAvailability } from '@/hooks/useApiAvailability';
 import {
   ChatMessage,
   AgentConfig,
@@ -45,6 +46,7 @@ export interface UseAIChatReturn {
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const { hasSession, mounted } = useSession();
+  const apiAvailable = useApiAvailability();
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +61,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   // Check AI health and load agents on mount
   useEffect(() => {
-    if (!hasSession || !mounted) return;
+    if (!hasSession || !mounted || !apiAvailable) return;
 
     const init = async () => {
       try {
@@ -76,7 +78,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     };
 
     init();
-  }, [hasSession, mounted]);
+  }, [hasSession, mounted, apiAvailable]);
 
   // Create conversation if needed
   useEffect(() => {

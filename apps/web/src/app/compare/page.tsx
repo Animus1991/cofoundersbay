@@ -326,7 +326,7 @@ export default function ComparePage() {
   return (
     <AppShell
       title="Compare Profiles"
-      description="Side-by-side comparison to find your best match"
+      description="Side-by-side comparison to find your best match. Tip: bookmark a /matches/compare URL with profile ids to share."
     >
       <div className="space-y-6 pb-10">
         {/* Header */}

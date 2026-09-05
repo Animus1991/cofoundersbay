@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listMessageConversations, listConnectionRequests } from '@/lib/api';
 import { useHasSession } from './useSession';
+import { useAuthenticatedSession } from './useAuthenticatedSession';
+import { useApiAvailability } from './useApiAvailability';
 
 export type UnreadCounts = {
   messages: number;
@@ -17,6 +19,8 @@ export type UnreadCounts = {
  */
 export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   const hasToken = useHasSession();
+  const { isAuthenticated } = useAuthenticatedSession();
+  const apiAvailable = useApiAvailability();
   const [isVisible, setIsVisible] = useState(
     () => typeof document === 'undefined' || document.visibilityState === 'visible',
   );
@@ -41,7 +45,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
       if (!isVisible || query.state.status === 'error') return false;
       return pollIntervalMs;
     },
-    enabled: hasToken && isVisible,
+    enabled: hasToken && isAuthenticated && isVisible && apiAvailable,
     refetchOnWindowFocus: true,
     refetchIntervalInBackground: false,
     retry: 0,
@@ -55,7 +59,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
       if (!isVisible || query.state.status === 'error') return false;
       return pollIntervalMs;
     },
-    enabled: hasToken && isVisible,
+    enabled: hasToken && isAuthenticated && isVisible && apiAvailable,
     refetchOnWindowFocus: true,
     refetchIntervalInBackground: false,
     retry: 0,

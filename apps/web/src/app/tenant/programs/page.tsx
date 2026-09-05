@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyTenantPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 type Program = {
@@ -189,21 +190,17 @@ export default function TenantProgramsPage() {
   );
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Programs</h1>
-            <p className="text-muted-foreground">
-              Manage your accelerator and incubator programs
-            </p>
-          </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Program
-          </Button>
-        </div>
+    <AppShell
+      title="Programs"
+      description="Workspaces with programs unlock applications, cohorts, and structured mentoring."
+      actions={(
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Program
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Search */}
         <div className="relative max-w-md">
@@ -256,15 +253,7 @@ export default function TenantProgramsPage() {
             <ProgramCard key={program.id} program={program} />
           ))}
           {filteredPrograms.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium">No programs found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Try adjusting your search or create a new program
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyTenantPrograms filtersActive={!!search} onClearFilters={() => setSearch('')} />
           )}
         </div>
       </div>

@@ -1,8 +1,9 @@
 // Returns the API base URL evaluated at call time — not module load time.
-// Always uses NEXT_PUBLIC_API_URL if set (set it to http://localhost:3001 in .env.local).
-// Never derives host from window.location to avoid LAN IP (192.168.x.x) mismatches.
+// Dev proxy: browser uses same-origin `/api/*` (see next.config rewrites + api-origin.ts).
+import { getApiOrigin } from './api-origin';
+
 function getApiBase(): string {
-  return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return getApiOrigin();
 }
 
 export type AuthUser = { id: string; email: string; role: string; emailVerified?: boolean };
@@ -172,6 +173,45 @@ function markApiReachable() {
     apiReachable = true;
     broadcastApiReachability(true);
   }
+}
+
+/** True while the client-side circuit breaker is suppressing API calls. */
+export function isApiCircuitOpen(): boolean {
+  if (typeof window === 'undefined') return false;
+  return Date.now() < apiUnavailableUntil;
+}
+
+/**
+ * True when the API is believed reachable. Unlike `isApiCircuitOpen`, this does
+ * NOT flip back to "reachable" merely because a backoff window elapsed — only a
+ * successful request/probe (markApiReachable) can do that. This prevents the
+ * re-enable→burst→fail oscillation that floods the console with connection-refused
+ * errors while the backend is down.
+ */
+export function isApiReachable(): boolean {
+  if (typeof window === 'undefined') return true;
+  return apiReachable;
+}
+
+/** Lightweight liveness probe — used to recover after API restarts. */
+export async function probeApiHealth(): Promise<boolean> {
+  if (typeof window === 'undefined') return true;
+  try {
+    const res = await fetchWithTimeout(`${getApiBase()}/api/health/liveness`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      markApiReachable();
+      return true;
+    }
+  } catch {
+    // fall through to re-arm backoff below
+  }
+  // Probe failed: re-arm/extend the circuit breaker so callers keep gating
+  // their requests instead of bursting and re-flooding the network.
+  markApiUnavailable();
+  return false;
 }
 
 function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {

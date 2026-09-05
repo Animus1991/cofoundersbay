@@ -6,9 +6,8 @@ import { Link2, Unlink, Loader2, Check, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { getLinkedAccounts, unlinkGoogleAccount, unlinkLinkedInAccount } from '@/lib/api';
+import { getAbsoluteApiOrigin } from '@/lib/api-origin';
 import { useHasSession } from '@/hooks/useSession';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export function LinkedAccounts() {
   const queryClient = useQueryClient();
@@ -44,7 +43,7 @@ export function LinkedAccounts() {
   });
 
   const handleLink = (provider: 'google' | 'linkedin') => {
-    window.location.href = `${API_URL}/api/auth/${provider}`;
+    window.location.href = `${getAbsoluteApiOrigin()}/api/auth/${provider}`;
   };
 
   const handleUnlink = (provider: 'google' | 'linkedin') => {

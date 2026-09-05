@@ -6,6 +6,7 @@ import { CheckCircle2, Circle, ArrowRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ProfileField = {
   id: string;
@@ -40,15 +41,15 @@ export function ProfileCompletionRing({
   const circumference = 2 * Math.PI * config.radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const colorClass = 
-    percentage >= 80 ? 'stroke-emerald-500 dark:stroke-emerald-400' : 
-    percentage >= 50 ? 'stroke-amber-500 dark:stroke-amber-400' : 
-    'stroke-red-500 dark:stroke-red-400';
+  const strokeColor =
+    percentage >= 80 ? 'hsl(var(--status-success-fg))' :
+    percentage >= 50 ? 'hsl(var(--status-warning-fg))' :
+    'hsl(var(--status-danger-fg))';
 
-  const textColorClass = 
-    percentage >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 
-    percentage >= 50 ? 'text-amber-600 dark:text-amber-400' : 
-    'text-red-600 dark:text-red-400';
+  const textColorClass =
+    percentage >= 80 ? STATUS.success.text :
+    percentage >= 50 ? STATUS.warning.text :
+    STATUS.danger.text;
 
   return (
     <div className={cn('relative flex items-center justify-center', config.container)}>
@@ -72,7 +73,8 @@ export function ProfileCompletionRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className={cn(colorClass, 'transition-all duration-1000 ease-out')}
+          stroke={strokeColor}
+          className="transition-all duration-1000 ease-out"
         />
       </svg>
       {showLabel && (
@@ -149,15 +151,15 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
         {/* Status message */}
         <div className="text-center">
           {percentage >= 80 ? (
-            <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.success.text)}>
               Great job! Your profile is looking strong.
             </p>
           ) : percentage >= 50 ? (
-            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.warning.text)}>
               Good progress! Complete a few more fields to stand out.
             </p>
           ) : (
-            <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+            <p className={cn('text-sm font-medium', STATUS.danger.text)}>
               Complete your profile to get better matches.
             </p>
           )}
@@ -170,11 +172,11 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
               key={field.id}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors',
-                field.completed ? 'bg-emerald-500/10' : 'bg-secondary/40'
+                field.completed ? STATUS.success.bg : 'bg-secondary/40'
               )}
             >
               {field.completed ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                <CheckCircle2 className={cn('h-5 w-5 flex-shrink-0', STATUS.success.icon)} />
               ) : (
                 <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
               )}

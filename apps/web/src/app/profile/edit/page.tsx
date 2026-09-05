@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -533,12 +534,12 @@ export default function ProfileEditPage() {
           <Link href="/profile">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
               <ArrowLeft className="h-4 w-4" />
-              Cancel
+              <BilingualText en="Cancel" el="Ακύρωση" compact />
             </Button>
           </Link>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            Save changes
+            <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact />
           </Button>
         </div>
       }
@@ -553,28 +554,28 @@ export default function ProfileEditPage() {
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
                 <User className="h-4 w-4" />
-                Basic Info
+                <BilingualText en="Basic Info" el="Βασικά στοιχεία" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="role" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
                 <Briefcase className="h-4 w-4" />
-                Role Details
+                <BilingualText en="Role Details" el="Λεπτομέρειες ρόλου" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="links" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
                 <Globe className="h-4 w-4" />
-                Social Links
+                <BilingualText en="Social Links" el="Κοινωνικοί σύνδεσμοι" compact />
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolio" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
                 <LayoutDashboard className="h-4 w-4" />
-                Portfolio
+                <BilingualText en="Portfolio" el="Χαρτοφυλάκιο" compact />
               </TabsTrigger>
             </TabsList>
 

@@ -26,6 +26,7 @@ import {
   Star, Power, Copy, ChevronDown, ChevronRight, Link2, AlertTriangle,
   Shield, Info,
 } from 'lucide-react';
+import { EmptyTenantDomains } from '@/components/common/EmptyStates';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -341,15 +342,11 @@ export default function TenantDomainsPage() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Domain Management</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Configure how members reach your organization — via platform subdomain or your own custom domain.
-          </p>
-        </div>
+    <AppShell
+      title="Domain Management"
+      description="Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies."
+    >
+      <div className="space-y-6">
 
         {/* Status overview */}
         <div className="grid grid-cols-3 gap-3">
@@ -389,11 +386,7 @@ export default function TenantDomainsPage() {
                 {[1, 2].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />)}
               </div>
             ) : domains.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border/60 py-10 text-center">
-                <Globe className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No domains configured yet.</p>
-                <p className="text-xs text-muted-foreground mt-1">Add a subdomain or custom domain below.</p>
-              </div>
+              <EmptyTenantDomains />
             ) : (
               <div className="space-y-2">
                 {domains.map(d => (

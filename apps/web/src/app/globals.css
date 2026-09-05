@@ -33,7 +33,7 @@
     --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 60%;
+    --destructive:      0 84% 50%; /* WCAG AA: white on destructive ≥4.5:1 (was 60%) */
     --destructive-foreground: 0 0% 100%;
 
     /* Borders: subtle, consistent */
@@ -88,13 +88,13 @@
     --card-foreground: 210 40% 96%;
     --popover: 222 30% 10%;
     --popover-foreground: 210 40% 96%;
-    --primary: 235 88% 66%;
+    --primary: 235 88% 62%; /* WCAG AA: white on primary ≥4.5:1 (was 66%) */
     --primary-foreground: 0 0% 100%;
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
     --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
-    --accent: 292 84% 66%;
+    --accent: 292 84% 48%; /* WCAG AA: white on accent ≥4.5:1 (was 66%) */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62% 46%;
     --destructive-foreground: 0 0% 100%;
@@ -111,23 +111,24 @@
     --card-foreground: 210 20% 98%;
     --popover: 215 25% 21%;
     --popover-foreground: 210 20% 98%;
-    --primary: 199 89% 48%;
+    --primary: 199 89% 36%; /* WCAG AA: white on cyan primary ≥4.5:1 (was 48%) */
     --primary-foreground: 0 0% 100%;
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
     --muted-foreground: 215 16% 70%;
-    --accent: 199 89% 48%;
+    --accent: 199 89% 36%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 215 20% 30%;
     --input: 215 20% 30%;
-    --ring: 199 89% 48%;
+    --ring: 199 89% 36%;
     --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
   }
 
-  /* ── Alliance theme: warm cream & amber ── */
+  /* ── Alliance theme: warm cream & amber ──
+     Amber primary uses dark foreground — white on amber fails WCAG AA (~2.2:1). */
   [data-theme="alliance"] {
     --background: 195 26% 96%;
     --foreground: 220 100% 3%;
@@ -136,14 +137,14 @@
     --popover: 180 25% 98%;
     --popover-foreground: 220 100% 3%;
     --primary: 34 100% 52%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 220 100% 3%; /* dark on amber — ≥9:1 */
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 46%;
+    --muted-foreground: 210 5% 44%; /* WCAG AA on background (was 46%) */
     --accent: 34 100% 52%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --accent-foreground: 220 100% 3%;
+    --destructive: 0 84% 50%;
     --destructive-foreground: 0 0% 100%;
     --border: 200 15% 88%;
     --input: 200 15% 88%;
@@ -165,7 +166,7 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 15%;
     --muted-foreground: 240 5% 65%;
-    --accent: 280 100% 70%;
+    --accent: 280 100% 55%; /* WCAG AA: white on magenta accent ≥4.5:1 (was 70%) */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -176,31 +177,78 @@
   }
 
   .role-founder {
-    --primary: 235 88% 66%;
+    --primary: 235 88% 62%;
     --primary-foreground: 0 0% 100%;
-    --accent: 292 84% 66%;
+    --accent: 292 84% 48%;
     --accent-foreground: 0 0% 100%;
   }
 
   .role-mentor {
     --primary: 200 84% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 220 26% 9%; /* dark on bright cyan — warm primaries */
     --accent: 180 72% 52%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 220 26% 9%;
   }
 
   .role-investor {
     --primary: 32 92% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 220 100% 3%; /* dark on orange — ≥9:1 */
     --accent: 14 82% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 220 100% 3%;
   }
 
   .role-org {
-    --primary: 268 84% 68%;
+    --primary: 268 84% 62%; /* WCAG AA: white on purple ≥4.5:1 (was 68%) */
     --primary-foreground: 0 0% 100%;
     --accent: 248 70% 60%;
     --accent-foreground: 0 0% 100%;
+  }
+
+  /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
+     Light surfaces: :root + alliance. Dark surfaces: .dark + cofounder + system. ── */
+  :root,
+  [data-theme="alliance"] {
+    --status-success-fg:     142 64% 30%;
+    --status-success-bg:     142 55% 94%;
+    --status-success-border: 142 45% 78%;
+    --status-warning-fg:     32 95% 34%;
+    --status-warning-bg:     38 92% 95%;
+    --status-warning-border: 38 80% 78%;
+    --status-danger-fg:      0 72% 42%;
+    --status-danger-bg:      0 80% 96%;
+    --status-danger-border:  0 65% 82%;
+    --status-info-fg:        217 85% 40%;
+    --status-info-bg:        217 80% 96%;
+    --status-info-border:    217 60% 82%;
+    --status-accent-fg:      263 70% 42%;
+    --status-accent-bg:      263 60% 96%;
+    --status-accent-border:  263 50% 82%;
+    --status-neutral-fg:     220 10% 42%;
+    --status-neutral-bg:     220 12% 94%;
+    --status-neutral-border: 220 13% 85%;
+  }
+
+  .dark,
+  [data-theme="cofounder"],
+  [data-theme="system"] {
+    --status-success-fg:     142 55% 58%;
+    --status-success-bg:     142 35% 14%;
+    --status-success-border: 142 30% 26%;
+    --status-warning-fg:     38 92% 58%;
+    --status-warning-bg:     38 60% 14%;
+    --status-warning-border: 38 50% 26%;
+    --status-danger-fg:      0 75% 62%;
+    --status-danger-bg:      0 45% 14%;
+    --status-danger-border:  0 40% 28%;
+    --status-info-fg:        217 85% 65%;
+    --status-info-bg:        217 50% 14%;
+    --status-info-border:    217 45% 28%;
+    --status-accent-fg:      263 75% 68%;
+    --status-accent-bg:      263 40% 16%;
+    --status-accent-border:  263 35% 28%;
+    --status-neutral-fg:     215 16% 65%;
+    --status-neutral-bg:     218 18% 16%;
+    --status-neutral-border: 220 18% 24%;
   }
 
   * {
@@ -494,24 +542,40 @@
   .bg-white\/12 { background-color: rgb(255 255 255 / 0.12); }
   .bg-white\/15 { background-color: rgb(255 255 255 / 0.15); }
 
-  /* Skip-to-content — screen reader + keyboard accessible */
+  /* Skip-to-content — visually hidden until keyboard focus (WCAG 2.4.1) */
   .skip-to-content {
     position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  .skip-to-content:focus {
+    position: fixed;
     left: 50%;
-    transform: translateX(-50%) translateY(-120%);
     top: 0.75rem;
     z-index: 9999;
+    width: auto;
+    height: auto;
+    margin: 0;
     padding: 0.5rem 1.25rem;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    transform: translateX(-50%);
     border-radius: var(--radius);
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     font-size: 0.875rem;
     font-weight: 600;
-    transition: transform 0.15s ease;
     white-space: nowrap;
-  }
-  .skip-to-content:focus {
-    transform: translateX(-50%) translateY(0);
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   /* Hide scrollbar while keeping scroll functionality */
@@ -599,6 +663,70 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Reduced motion (WCAG 2.3.3 Animation from Interactions)
+   Honors the OS "Reduce motion" setting. Decorative entrance/loop animations
+   are removed so the UI is calm and stable, while functional loading spinners
+   (.animate-spin) keep rotating so progress is still communicated. This also
+   eliminates the idle GPU cost of infinite loops (shimmer/pulse/bounce).
+   ────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  html.scroll-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  /* Decorative entrance + infinite loop animations → render final state instantly */
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-fade-in-down,
+  .animate-fade-in-left,
+  .animate-scale-in,
+  .animate-bounce-subtle,
+  .animate-pulse-glow,
+  .shimmer,
+  .focus-ring-animated:focus-visible {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Hover lifts / interactive card translation → no movement */
+  .hover-lift,
+  .hover-lift-sm,
+  .card-interactive,
+  .card-hover {
+    transition: none !important;
+  }
+  .hover-lift:hover,
+  .hover-lift-sm:hover,
+  .card-interactive:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  /* Collapse generic transitions to near-instant (keeps state changes legible) */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+  }
+
+  /* Keep functional spinners animating — progress feedback must survive */
+  .animate-spin {
+    animation: spin 0.8s linear infinite !important;
+  }
+
+  /* Disable View Transition page animations */
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none !important;
+    }
+  }
 }
 
 /* ── Enhanced component utilities ── */

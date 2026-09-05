@@ -1,9 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { appShellLoadingClasses } from '@/lib/layout-config';
 
 export default function MilestonesLoading() {
   return (
     <div className="min-h-screen pb-20 lg:pb-16">
-      <div className="mx-auto w-full max-w-5xl px-4 pt-6 space-y-6">
+      <div className={appShellLoadingClasses + ' space-y-6'}>
         <div className="flex items-center justify-between py-3">
           <Skeleton className="h-8 w-36" />
           <Skeleton className="h-9 w-32 rounded-lg" />

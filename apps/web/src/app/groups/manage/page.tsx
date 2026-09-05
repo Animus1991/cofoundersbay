@@ -32,7 +32,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ManagedGroup = {
   id: string;
@@ -49,9 +51,9 @@ type ManagedGroup = {
 };
 
 const PRIVACY_CONFIG = {
-  public: { label: 'Public', icon: Globe, color: 'text-green-500' },
-  private: { label: 'Private', icon: Lock, color: 'text-amber-500' },
-  secret: { label: 'Secret', icon: Shield, color: 'text-red-500' },
+  public: { label: 'Public', icon: Globe, iconClass: STATUS.success.icon },
+  private: { label: 'Private', icon: Lock, iconClass: STATUS.warning.icon },
+  secret: { label: 'Secret', icon: Shield, iconClass: STATUS.danger.icon },
 };
 
 const MOCK_GROUPS: ManagedGroup[] = [
@@ -81,7 +83,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
                   {group.name}
                 </Link>
                 <Badge variant="secondary" className="text-xs">{group.category}</Badge>
-                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.color)}>
+                <Badge variant="outline" className={cn('text-xs gap-1', privacyCfg.iconClass)}>
                   <PrivacyIcon className="h-3 w-3" />
                   {privacyCfg.label}
                 </Badge>
@@ -107,7 +109,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Actions for ${group.name}`}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -137,25 +139,19 @@ export default function ManageGroupsPage() {
   const pendingTotal = MOCK_GROUPS.reduce((s, g) => s + (g.pendingRequests ?? 0), 0);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="h-6 w-6 text-primary" />
-              Manage Communities
-            </h1>
-            <p className="text-muted-foreground">Groups you own or administer</p>
-          </div>
-          <Button asChild>
-            <Link href="/groups">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Group
-            </Link>
-          </Button>
-        </div>
-
+    <AppShell
+      title="Manage communities"
+      description="Communities you own or administer — review members, pending requests, and activity at a glance."
+      actions={(
+        <Button asChild>
+          <Link href="/groups">
+            <Plus className="mr-2 h-4 w-4" />
+            Create community
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-3">
           {[
@@ -184,13 +180,24 @@ export default function ManageGroupsPage() {
             <GroupCard key={group.id} group={group} />
           ))}
           {filtered.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                <p className="font-medium">No groups found</p>
-                <p className="text-sm text-muted-foreground mt-1">Create a community to get started</p>
-              </CardContent>
-            </Card>
+            search ? (
+              <NoFilterResults entity="communities" onClear={() => setSearch('')} />
+            ) : (
+              <ListEmptyState
+                icon={Users}
+                tone="primary"
+                title="You don't manage any communities yet"
+                description="Create a community to bring people together. As owner you control privacy, membership, and moderation."
+                action={(
+                  <Button asChild className="gap-2">
+                    <Link href="/groups">
+                      <Plus className="h-4 w-4" />
+                      Create community
+                    </Link>
+                  </Button>
+                )}
+              />
+            )
           )}
         </div>
       </div>

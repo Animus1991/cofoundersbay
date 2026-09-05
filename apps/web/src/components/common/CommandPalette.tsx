@@ -20,6 +20,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -253,6 +254,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg p-0 overflow-hidden">
+        <DialogTitle className="sr-only">Command palette</DialogTitle>
         {/* Search input */}
         <div className="border-b border-border/60 p-4">
           <div className="relative">

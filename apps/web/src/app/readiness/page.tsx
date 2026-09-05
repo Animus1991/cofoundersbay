@@ -30,21 +30,10 @@ import {
   History,
   Sparkles,
 } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-} from 'recharts';
+import dynamic from 'next/dynamic';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { readinessEn, readinessEl } from '@/lib/i18n/strings-readiness';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -54,7 +43,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusChipClasses, type StatusTone } from '@/lib/semantic-colors';
 import { assessReadiness, updateReadinessCriterion, type ReadinessOverall } from '@/lib/api';
+
+const RadarFallback = () => <Skeleton className="h-[280px] w-full rounded-lg" />;
+const LineFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
+const ReadinessRadarChartInner = dynamic(
+  () => import('./ReadinessCharts').then((m) => ({ default: m.ReadinessRadarChartInner })),
+  { ssr: false, loading: RadarFallback },
+);
+const ScoreHistoryChartInner = dynamic(
+  () => import('./ReadinessCharts').then((m) => ({ default: m.ScoreHistoryChartInner })),
+  { ssr: false, loading: LineFallback },
+);
 
 // ── Static dimension metadata ─────────────────────────────────────────────────
 const DIMENSION_META: Record<string, {
@@ -154,19 +155,38 @@ type DimData = {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function scoreToStatus(pct: number): 'excellent' | 'good' | 'needs-work' | 'critical' {
+type ScoreLevel = 'excellent' | 'good' | 'needs-work' | 'critical';
+
+function scoreToStatus(pct: number): ScoreLevel {
   if (pct >= 80) return 'excellent';
   if (pct >= 60) return 'good';
   if (pct >= 40) return 'needs-work';
   return 'critical';
 }
 
-const STATUS_COLORS = {
-  excellent:   { bg: 'bg-green-500/10',  text: 'text-green-600',  border: 'border-green-500/20',  bar: 'bg-green-500'  },
-  good:        { bg: 'bg-blue-500/10',   text: 'text-blue-600',   border: 'border-blue-500/20',   bar: 'bg-blue-500'   },
-  'needs-work':{ bg: 'bg-amber-500/10',  text: 'text-amber-600',  border: 'border-amber-500/20',  bar: 'bg-amber-500'  },
-  critical:    { bg: 'bg-red-500/10',    text: 'text-red-600',    border: 'border-red-500/20',    bar: 'bg-red-500'    },
+const SCORE_TONE: Record<ScoreLevel, StatusTone> = {
+  excellent: 'success',
+  good: 'info',
+  'needs-work': 'warning',
+  critical: 'danger',
 };
+
+function scoreColors(level: ScoreLevel): StatusChipClasses {
+  return STATUS[SCORE_TONE[level]];
+}
+
+const SCORE_STROKE: Record<ScoreLevel, string> = {
+  excellent: 'hsl(var(--status-success-fg))',
+  good: 'hsl(var(--status-info-fg))',
+  'needs-work': 'hsl(var(--status-warning-fg))',
+  critical: 'hsl(var(--status-danger-fg))',
+};
+
+function readinessSignalText(pct: number): string {
+  if (pct >= 70) return STATUS.success.text;
+  if (pct >= 50) return STATUS.warning.text;
+  return STATUS.danger.text;
+}
 
 function buildDimensions(apiData?: ReadinessOverall): DimData[] {
   return Object.entries(DIMENSION_META).map(([key, meta]) => {
@@ -184,13 +204,12 @@ function ScoreRing({ score, size = 128 }: { score: number; size?: number }) {
   const r = size / 2 - 10;
   const circ = 2 * Math.PI * r;
   const status = scoreToStatus(score);
-  const colorMap = { excellent: '#22c55e', good: '#3b82f6', 'needs-work': '#f59e0b', critical: '#ef4444' };
   return (
     <svg width={size} height={size} className="-rotate-90" aria-hidden>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="currentColor" strokeWidth={8} className="text-muted/20" />
       <circle
         cx={size/2} cy={size/2} r={r} fill="none"
-        stroke={colorMap[status]} strokeWidth={8} strokeLinecap="round"
+        stroke={SCORE_STROKE[status]} strokeWidth={8} strokeLinecap="round"
         strokeDasharray={`${(score / 100) * circ} ${circ}`}
       />
     </svg>
@@ -211,7 +230,7 @@ function DimensionCard({
   const [expanded, setExpanded] = useState(false);
   const pct = Math.round((dim.score / dim.maxScore) * 100);
   const status = scoreToStatus(pct);
-  const colors = STATUS_COLORS[status];
+  const colors = scoreColors(status);
   const done = dim.criteria.filter((c) => c.completed).length;
   const Icon = dim.icon;
 
@@ -235,7 +254,7 @@ function DimensionCard({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Badge variant="outline" className={cn('text-xs capitalize', colors.bg, colors.text, colors.border)}>
+              <Badge variant="outline" className={cn('text-xs capitalize border', colors.chip)}>
                 {status.replace('-', ' ')}
               </Badge>
             </div>
@@ -258,7 +277,7 @@ function DimensionCard({
                   )}
                 >
                   {c.completed
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    ? <CheckCircle2 className={cn('h-4 w-4 flex-shrink-0', STATUS.success.icon)} />
                     : <AlertCircle className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />}
                   <span className={cn('truncate', c.completed && 'text-muted-foreground line-through')}>{c.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{c.weight}%</span>
@@ -269,7 +288,7 @@ function DimensionCard({
                   onClick={() => setExpanded((e) => !e)}
                   className="text-xs text-primary/70 hover:text-primary pl-6 transition-colors"
                 >
-                  {expanded ? 'Show less' : `+${dim.criteria.length - 3} more`}
+                  {expanded ? <BilingualText en="Show less" el="Λιγότερα" compact /> : `+${dim.criteria.length - 3}`}
                 </button>
               )}
             </div>
@@ -277,8 +296,8 @@ function DimensionCard({
             {dim.recommendations.length > 0 && status !== 'excellent' && (
               <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border/60">
                 <p className="text-xs font-medium flex items-center gap-1.5 mb-1">
-                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
-                  Recommendation
+                  <Lightbulb className={cn('h-3.5 w-3.5', STATUS.warning.icon)} />
+                  <BilingualText en="Recommendation" el="Σύσταση" compact />
                 </p>
                 <p className="text-xs text-muted-foreground">{dim.recommendations[0]}</p>
               </div>
@@ -301,26 +320,14 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
           <Target className="h-4 w-4 text-primary" />
-          Readiness Radar
+          <BilingualText en={readinessEn('readiness_radar')} el={readinessEl('readiness_radar')} compact />
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={280}>
-          <RadarChart data={data} margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
-            <PolarGrid className="stroke-border/40" />
-            <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} tickCount={4} />
-            <Radar name="Your Score" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} strokeWidth={2} />
-            <Radar name="Benchmark" dataKey="benchmark" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 2" />
-            <RechartsTooltip
-              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
-              formatter={(val: number, name: string) => [`${val}%`, name]}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
+        <ReadinessRadarChartInner data={data} />
         <div className="flex items-center justify-center gap-4 mt-1 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" />Your Score</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-slate-400/40" />Benchmark (65%)</span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" /><BilingualText en={readinessEn('your_score')} el={readinessEl('your_score')} compact /></span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-slate-400/40" /><BilingualText en={readinessEn('benchmark')} el={readinessEl('benchmark')} compact /></span>
         </div>
       </CardContent>
     </Card>
@@ -334,32 +341,19 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <History className="h-4 w-4 text-primary" />
-            Score Progression (7 weeks)
+            <BilingualText en={readinessEn('score_progression')} el={readinessEl('score_progression')} compact />
           </CardTitle>
           <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
-            <Download className="h-3.5 w-3.5" />Export
+            <Download className="h-3.5 w-3.5" /><BilingualText en={readinessEn('export')} el={readinessEl('export')} compact />
           </button>
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={history} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-            <XAxis dataKey="week" tick={{ fontSize: 11 }} />
-            <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-            <RechartsTooltip
-              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
-              formatter={(val: number, name: string) => [`${val}%`, name]}
-            />
-            <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name="Overall" />
-            <Line type="monotone" dataKey="accel" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 2.5 }} name="Accelerator" strokeDasharray="4 2" />
-            <Line type="monotone" dataKey="invest" stroke="#22c55e" strokeWidth={2} dot={{ r: 2.5 }} name="Investor" strokeDasharray="4 2" />
-          </LineChart>
-        </ResponsiveContainer>
+        <ScoreHistoryChartInner history={history} />
         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground justify-center">
-          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" />Overall</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-violet-500" />Accelerator</span>
-          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-green-500" />Investor</span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" /><BilingualText en={readinessEn('overall')} el={readinessEl('overall')} compact /></span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-accent" /><BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact /></span>
+          <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-success" /><BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact /></span>
         </div>
       </CardContent>
     </Card>
@@ -419,32 +413,46 @@ export default function ReadinessPage() {
   const accelScore    = apiData?.acceleratorReadiness ?? Math.round(dimensions.reduce((s, d) => s + (d.score / d.maxScore) * d.acceleratorWeight, 0) / 100 * 100);
   const investScore   = apiData?.investorReadiness    ?? Math.round(dimensions.reduce((s, d) => s + (d.score / d.maxScore) * d.investorWeight, 0) / 100 * 100);
   const overallStatus = scoreToStatus(overallScore);
-  const overallColors = STATUS_COLORS[overallStatus];
+  const overallColors = scoreColors(overallStatus);
   const weakDims      = dimensions.filter((d) => scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'critical' || scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'needs-work');
 
+  const reassessAction = (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => refetch()}
+      disabled={isLoading || isRefetching}
+    >
+      {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+      <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
+    </Button>
+  );
+
+  const readinessDescription = apiData?.lastAssessedAt
+    ? `Assess across 6 dimensions · Last assessed ${new Date(apiData.lastAssessedAt).toLocaleDateString()}`
+    : 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.';
+
   if (isLoading) {
-    return <AppShell><div className="py-6"><ReadinessSkeleton /></div></AppShell>;
+    return (
+      <AppShell
+        title={readinessEn('page_title')}
+        description={readinessEn('page_description')}
+        actions={reassessAction}
+        showHelp
+      >
+        <div className="py-6"><ReadinessSkeleton /></div>
+      </AppShell>
+    );
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Startup Readiness Score</h1>
-            <p className="text-muted-foreground text-sm">
-              Assess your startup&apos;s readiness across 6 key dimensions
-              {apiData?.lastAssessedAt && (
-                <span className="ml-2 text-muted-foreground/60">· Last assessed {new Date(apiData.lastAssessedAt).toLocaleDateString()}</span>
-              )}
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-            {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
-            Reassess
-          </Button>
-        </div>
+    <AppShell
+      title={readinessEn('page_title')}
+      description={readinessDescription}
+      actions={reassessAction}
+      showHelp
+    >
+      <div className="space-y-6">
 
         {/* Overall Score + Readiness Benchmarks */}
         <div className="grid gap-4 lg:grid-cols-3">
@@ -461,8 +469,8 @@ export default function ReadinessPage() {
                 </div>
               </div>
               <div>
-                <p className="font-semibold">Overall Readiness</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Based on {dimensions.length} dimensions</p>
+                <p className="font-semibold"><BilingualText en={readinessEn('overall_readiness')} el={readinessEl('overall_readiness')} /></p>
+                <p className="text-xs text-muted-foreground mt-0.5"><BilingualText en={`Based on ${dimensions.length} dimensions`} el={`Βάσει ${dimensions.length} διαστάσεων`} compact /></p>
               </div>
               <div className="flex gap-2 flex-wrap justify-center">
                 {weakDims.slice(0, 3).map((d) => (
@@ -479,29 +487,29 @@ export default function ReadinessPage() {
           <Card>
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <div className="rounded-lg p-2 bg-violet-500/10">
-                  <Building2 className="h-4 w-4 text-violet-600" />
+                <div className={cn('rounded-lg p-2', STATUS.accent.bg)}>
+                  <Building2 className={cn('h-4 w-4', STATUS.accent.icon)} />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Accelerator Readiness</p>
-                  <p className="text-xs text-muted-foreground">Program & cohort applications</p>
+                  <p className="font-semibold text-sm"><BilingualText en={readinessEn('accelerator_readiness')} el={readinessEl('accelerator_readiness')} /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('accel_programs_cohorts')} el={readinessEl('accel_programs_cohorts')} compact /></p>
                 </div>
               </div>
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Ready to apply</span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingUp className="h-3 w-3" /> <BilingualText en={readinessEn('ready_to_apply')} el={readinessEl('ready_to_apply')} compact /></span>
                   : accelScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Almost ready</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Not ready yet</span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><Minus className="h-3 w-3" /> <BilingualText en={readinessEn('almost_ready')} el={readinessEl('almost_ready')} compact /></span>
+                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(accelScore))}><TrendingDown className="h-3 w-3" /> <BilingualText en={readinessEn('not_ready_yet')} el={readinessEl('not_ready_yet')} compact /></span>
                 }
               </div>
               <Progress value={accelScore} className="h-2" />
               <p className="text-xs text-muted-foreground">
-                Most accelerators expect 65–75%+ readiness. Focus on team, market, and product dimensions.
+                <BilingualText en={readinessEn('accel_threshold_note')} el={readinessEl('accel_threshold_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" />Browse Programs</Link>
+                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" /><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -510,29 +518,29 @@ export default function ReadinessPage() {
           <Card>
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
-                <div className="rounded-lg p-2 bg-emerald-500/10">
-                  <DollarSign className="h-4 w-4 text-emerald-600" />
+                <div className={cn('rounded-lg p-2', STATUS.success.bg)}>
+                  <DollarSign className={cn('h-4 w-4', STATUS.success.icon)} />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm">Investor Readiness</p>
-                  <p className="text-xs text-muted-foreground">Seed & pre-seed fundraising</p>
+                  <p className="font-semibold text-sm"><BilingualText en={readinessEn('investor_readiness')} el={readinessEl('investor_readiness')} /></p>
+                  <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('investor_seed_preseed')} el={readinessEl('investor_seed_preseed')} compact /></p>
                 </div>
               </div>
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Fundable signal</span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingUp className="h-3 w-3" /> <BilingualText en={readinessEn('fundable_signal')} el={readinessEl('fundable_signal')} compact /></span>
                   : investScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Building traction</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Pre-investment stage</span>
+                  ? <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><Minus className="h-3 w-3" /> <BilingualText en={readinessEn('building_traction')} el={readinessEl('building_traction')} compact /></span>
+                  : <span className={cn('text-xs flex items-center gap-1 mb-1', readinessSignalText(investScore))}><TrendingDown className="h-3 w-3" /> <BilingualText en={readinessEn('pre_investment_stage')} el={readinessEl('pre_investment_stage')} compact /></span>
                 }
               </div>
               <Progress value={investScore} className="h-2" />
               <p className="text-xs text-muted-foreground">
-                Investors weight team (30%) and market (25%) most heavily. Build strong validation first.
+                <BilingualText en={readinessEn('investor_weight_note')} el={readinessEl('investor_weight_note')} />
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" />Find Investors</Link>
+                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" /><BilingualText en={readinessEn('find_investors')} el={readinessEl('find_investors')} compact /></Link>
               </Button>
             </CardContent>
           </Card>
@@ -549,13 +557,13 @@ export default function ReadinessPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <BrainCircuit className="h-4 w-4 text-primary" />
-                  AI Insight
+                  <BilingualText en={readinessEn('ai_insight')} el={readinessEl('ai_insight')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {weakDims.slice(0, 3).map((d) => (
                   <div key={d.key} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-card border border-border/60">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <Sparkles className={cn('h-3.5 w-3.5 mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground">{d.label} — {Math.round((d.score / d.maxScore) * 100)}%</p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{d.recommendations[0]}</p>
@@ -564,8 +572,8 @@ export default function ReadinessPage() {
                 ))}
                 {weakDims.length === 0 && (
                   <div className="flex items-center gap-2 p-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <p className="text-xs text-muted-foreground">All dimensions look strong. Keep up the momentum!</p>
+                    <CheckCircle2 className={cn('h-4 w-4 flex-shrink-0', STATUS.success.icon)} />
+                    <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
                   </div>
                 )}
               </CardContent>
@@ -573,10 +581,10 @@ export default function ReadinessPage() {
             {/* Score delta card */}
             <Card>
               <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground mb-2">Score change (7 weeks)</p>
+                <p className="text-xs text-muted-foreground mb-2"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact /></p>
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
-                  <span className="text-xs text-green-600 flex items-center gap-0.5 mb-1">
+                  <span className={cn('text-xs flex items-center gap-0.5 mb-1', TREND.up)}>
                     <TrendingUp className="h-3 w-3" />+{overallScore - DEMO_HISTORY[0].score} pts
                   </span>
                 </div>
@@ -597,18 +605,18 @@ export default function ReadinessPage() {
         {/* Tabs: Dimensions / Priority Actions / Benchmarks / History */}
         <Tabs defaultValue="dimensions">
           <TabsList>
-            <TabsTrigger value="dimensions">All Dimensions</TabsTrigger>
-            <TabsTrigger value="actions">Priority Actions</TabsTrigger>
-            <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="dimensions"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
+            <TabsTrigger value="actions"><BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact /></TabsTrigger>
+            <TabsTrigger value="benchmarks"><BilingualText en={readinessEn('tab_benchmarks')} el={readinessEl('tab_benchmarks')} compact /></TabsTrigger>
+            <TabsTrigger value="history"><BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact /></TabsTrigger>
           </TabsList>
 
           <TabsContent value="dimensions" className="mt-4">
             {!workspaceId && (
-              <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className={cn('mb-4 rounded-lg border p-4 flex items-start gap-3', STATUS.warning.border, STATUS.warning.bg)}>
+                <AlertCircle className={cn('h-4 w-4 mt-0.5 flex-shrink-0', STATUS.warning.icon)} />
                 <div>
-                  <p className="text-sm font-medium text-amber-800 dark:text-amber-400">No workspace connected</p>
+                  <p className={cn('text-sm font-medium', STATUS.warning.text)}><BilingualText en={readinessEn('no_workspace_title')} el={readinessEl('no_workspace_title')} /></p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Create a workspace in the <Link href="/builder" className="underline hover:no-underline">Startup Builder</Link> to track and update your readiness criteria.
                   </p>
@@ -632,16 +640,16 @@ export default function ReadinessPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
-                  Priority Action Plan
+                  <Lightbulb className={cn('h-4 w-4', STATUS.warning.icon)} />
+                  <BilingualText en={readinessEn('priority_action_plan')} el={readinessEl('priority_action_plan')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {weakDims.length === 0 ? (
                   <div className="text-center py-8">
-                    <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
-                    <p className="font-medium">Excellent! All dimensions are strong.</p>
-                    <p className="text-sm text-muted-foreground mt-1">Keep iterating and maintain your momentum.</p>
+                    <CheckCircle2 className={cn('h-10 w-10 mx-auto mb-3', STATUS.success.icon)} />
+                    <p className="font-medium"><BilingualText en={readinessEn('all_dimensions_excellent')} el={readinessEl('all_dimensions_excellent')} /></p>
+                    <p className="text-sm text-muted-foreground mt-1"><BilingualText en={readinessEn('keep_iterating')} el={readinessEl('keep_iterating')} /></p>
                   </div>
                 ) : (
                   weakDims
@@ -656,22 +664,24 @@ export default function ReadinessPage() {
                       }))
                     )
                     .slice(0, 8)
-                    .map((item) => (
+                    .map((item) => {
+                      const itemColors = scoreColors(item.status);
+                      return (
                       <div key={item.key} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/40">
-                        <div className={cn('rounded-full p-1.5 mt-0.5', STATUS_COLORS[item.status].bg)}>
-                          <ChevronRight className={cn('h-3 w-3', STATUS_COLORS[item.status].text)} />
+                        <div className={cn('rounded-full p-1.5 mt-0.5', itemColors.bg)}>
+                          <ChevronRight className={cn('h-3 w-3', itemColors.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <p className="text-sm font-semibold">{item.dimLabel}</p>
-                            <Badge variant="outline" className={cn('text-xs', STATUS_COLORS[item.status].bg, STATUS_COLORS[item.status].text, STATUS_COLORS[item.status].border)}>
+                            <Badge variant="outline" className={cn('text-xs border', itemColors.chip)}>
                               {item.pct}%
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-0.5">{item.rec}</p>
                         </div>
                       </div>
-                    ))
+                    );})
                 )}
               </CardContent>
             </Card>
@@ -683,8 +693,8 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-violet-600" />
-                    Accelerator Benchmark
+                    <Building2 className={cn('h-4 w-4', STATUS.accent.icon)} />
+                    <BilingualText en={readinessEn('accelerator_benchmark')} el={readinessEl('accelerator_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -697,15 +707,15 @@ export default function ReadinessPage() {
                           <span className="font-medium tabular-nums">{pct}%</span>
                         </div>
                         <div className="relative h-2 rounded-full bg-muted/50">
-                          <div className="absolute inset-y-0 left-0 rounded-full bg-violet-500/60" style={{ width: `${pct}%` }} />
-                          <div className="absolute inset-y-0 rounded-full w-0.5 bg-violet-600" style={{ left: '65%' }} title="Target: 65%" />
+                          <div className="absolute inset-y-0 left-0 rounded-full bg-status-accent/60" style={{ width: `${pct}%` }} />
+                          <div className="absolute inset-y-0 rounded-full w-0.5 bg-status-accent" style={{ left: '65%' }} title="Target: 65%" />
                         </div>
                       </div>
                     );
                   })}
                   <p className="text-xs text-muted-foreground pt-1">
-                    <span className="inline-block w-0.5 h-3 bg-violet-600 mr-1 align-middle" />
-                    Vertical line = typical accelerator threshold (65%)
+                    <span className="inline-block w-0.5 h-3 bg-status-accent mr-1 align-middle" />
+                    <BilingualText en={readinessEn('accel_threshold_line')} el={readinessEl('accel_threshold_line')} compact />
                   </p>
                 </CardContent>
               </Card>
@@ -714,8 +724,8 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-emerald-600" />
-                    Investor Benchmark
+                    <Shield className={cn('h-4 w-4', STATUS.success.icon)} />
+                    <BilingualText en={readinessEn('investor_benchmark')} el={readinessEl('investor_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -728,15 +738,15 @@ export default function ReadinessPage() {
                           <span className="font-medium tabular-nums">{pct}%</span>
                         </div>
                         <div className="relative h-2 rounded-full bg-muted/50">
-                          <div className="absolute inset-y-0 left-0 rounded-full bg-emerald-500/60" style={{ width: `${pct}%` }} />
-                          <div className="absolute inset-y-0 rounded-full w-0.5 bg-emerald-600" style={{ left: '70%' }} title="Target: 70%" />
+                          <div className="absolute inset-y-0 left-0 rounded-full bg-status-success/60" style={{ width: `${pct}%` }} />
+                          <div className="absolute inset-y-0 rounded-full w-0.5 bg-status-success" style={{ left: '70%' }} title="Target: 70%" />
                         </div>
                       </div>
                     );
                   })}
                   <p className="text-xs text-muted-foreground pt-1">
-                    <span className="inline-block w-0.5 h-3 bg-emerald-600 mr-1 align-middle" />
-                    Vertical line = investor-ready threshold (70%)
+                    <span className="inline-block w-0.5 h-3 bg-status-success mr-1 align-middle" />
+                    <BilingualText en={readinessEn('investor_threshold_line')} el={readinessEl('investor_threshold_line')} compact />
                   </p>
                 </CardContent>
               </Card>
@@ -745,7 +755,7 @@ export default function ReadinessPage() {
             {/* Weighted score breakdown */}
             <Card className="mt-4">
               <CardHeader>
-                <CardTitle className="text-sm">Dimension Weights & Weighted Scores</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en={readinessEn('dimension_weights')} el={readinessEl('dimension_weights')} /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -761,8 +771,8 @@ export default function ReadinessPage() {
                           <p className="text-xs text-muted-foreground">Score: {pct}%</p>
                         </div>
                         <div className="text-right text-xs space-y-0.5">
-                          <p className="text-violet-600 font-medium">+{accelContrib} <span className="text-muted-foreground font-normal">accel</span></p>
-                          <p className="text-emerald-600 font-medium">+{investContrib} <span className="text-muted-foreground font-normal">invest</span></p>
+                          <p className={cn('font-medium', STATUS.accent.text)}>+{accelContrib} <span className="text-muted-foreground font-normal">accel</span></p>
+                          <p className={cn('font-medium', STATUS.success.text)}>+{investContrib} <span className="text-muted-foreground font-normal">invest</span></p>
                         </div>
                       </div>
                     );
@@ -779,7 +789,7 @@ export default function ReadinessPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <History className="h-4 w-4 text-muted-foreground" />
-                    Assessment Log
+                    <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -792,7 +802,7 @@ export default function ReadinessPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{h.score}% overall</span>
                           {i < DEMO_HISTORY.length - 1 && (
-                            <span className="text-xs text-green-600 flex items-center gap-0.5">
+                            <span className={cn('text-xs flex items-center gap-0.5', TREND.up)}>
                               <TrendingUp className="h-3 w-3" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
                             </span>
                           )}
@@ -815,22 +825,22 @@ export default function ReadinessPage() {
           <Button asChild className="h-auto py-3 flex-col gap-1">
             <Link href="/builder">
               <Rocket className="h-4 w-4" />
-              <span className="text-sm font-medium">Open Builder</span>
-              <span className="text-xs opacity-70">Build your workspace</span>
+              <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
+              <span className="text-xs opacity-70"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/mentoring">
               <Lightbulb className="h-4 w-4" />
-              <span className="text-sm font-medium">Find a Mentor</span>
-              <span className="text-xs opacity-70">Get expert guidance</span>
+              <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
+              <span className="text-xs opacity-70"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/programs">
               <Building2 className="h-4 w-4" />
-              <span className="text-sm font-medium">Browse Programs</span>
-              <span className="text-xs opacity-70">Accelerators & cohorts</span>
+              <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>
+              <span className="text-xs opacity-70"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
             </Link>
           </Button>
         </div>

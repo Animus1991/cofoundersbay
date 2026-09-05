@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
+import { ListEmptyState } from '@/components/common/EmptyStates';
+import { STATUS } from '@/lib/semantic-colors';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import {
   getGroup,
@@ -378,7 +380,7 @@ export default function GroupDetailPage() {
                 {togglingMembership ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : isMember ? (
-                  <><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Joined</>
+                  <><CheckCircle2 className={cn('h-4 w-4', STATUS.success.icon)} /> Joined</>
                 ) : (
                   <><UserPlus className="h-4 w-4" /> Join Group</>
                 )}
@@ -471,14 +473,17 @@ export default function GroupDetailPage() {
                 </div>
               )}
 
-              {!postsQuery.isLoading && posts.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <MessageCircle className="h-10 w-10 mb-3 text-muted-foreground/20" />
-                  <p className="text-sm font-medium">No posts yet</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {isMember ? 'Be the first to post in this group!' : 'Join to start posting.'}
-                  </p>
-                </div>
+              {!postsQuery.isLoading && !postsQuery.isError && posts.length === 0 && (
+                <ListEmptyState
+                  icon={MessageCircle}
+                  tone="primary"
+                  variant="dashed"
+                  size="compact"
+                  title="No posts yet"
+                  description={isMember
+                    ? 'Be the first to start a discussion — share an update, ask a question, or post a resource.'
+                    : 'Join this community to read and start discussions.'}
+                />
               )}
 
               {posts.map((post) => (

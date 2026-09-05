@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { SkillChip } from './SkillChip';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type MatchReason = {
   type: 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
@@ -43,17 +44,40 @@ type MatchCardProps = {
 
 // ── Score tier helpers ────────────────────────────────────────────────────────
 
+type MatchTier = 'excellent' | 'strong' | 'good' | 'potential';
+
+const MATCH_TIER_TONE: Record<MatchTier, StatusTone> = {
+  excellent: 'success',
+  strong: 'info',
+  good: 'warning',
+  potential: 'danger',
+};
+
+const TIER_STROKE: Record<MatchTier, string> = {
+  excellent: 'hsl(var(--status-success-fg))',
+  strong: 'hsl(var(--status-info-fg))',
+  good: 'hsl(var(--status-warning-fg))',
+  potential: 'hsl(var(--status-danger-fg))',
+};
+
+function tierGlow(stroke: string) {
+  return `color-mix(in srgb, ${stroke} 12%, transparent)`;
+}
+
 function getScoreTier(score: number) {
-  if (score >= 80) return { label: 'EXCELLENT', color: '#4ADE80', glow: 'rgba(74,222,128,0.12)' };
-  if (score >= 65) return { label: 'STRONG',    color: '#22D3EE', glow: 'rgba(34,211,238,0.12)' };
-  if (score >= 45) return { label: 'GOOD',      color: '#FB923C', glow: 'rgba(251,146,60,0.10)' };
-  return              { label: 'LOW',       color: '#F87171', glow: 'rgba(248,113,113,0.08)' };
+  let tier: MatchTier = 'potential';
+  let label = 'LOW';
+  if (score >= 80) { tier = 'excellent'; label = 'EXCELLENT'; }
+  else if (score >= 65) { tier = 'strong'; label = 'STRONG'; }
+  else if (score >= 45) { tier = 'good'; label = 'GOOD'; }
+  const stroke = TIER_STROKE[tier];
+  return { label, tier, stroke, glow: tierGlow(stroke), colors: STATUS[MATCH_TIER_TONE[tier]] };
 }
 
 // ── Score Badge (top-right) ───────────────────────────────────────────────────
 
 function ScoreBadge({ score }: { score: number }) {
-  const { label, color } = getScoreTier(score);
+  const { label, stroke } = getScoreTier(score);
   const r = 18, cx = 22, cy = 22;
   const circ = 2 * Math.PI * r;
   const filled = (score / 100) * circ;
@@ -63,19 +87,19 @@ function ScoreBadge({ score }: { score: number }) {
       <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
         <svg width={44} height={44} viewBox="0 0 44 44">
           <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(107,114,128,0.2)" strokeWidth={4} />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={4}
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={stroke} strokeWidth={4}
             strokeDasharray={`${filled} ${circ - filled}`}
             strokeDashoffset={circ / 4}
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
         <span className="absolute text-[11px] font-black tabular-nums"
-          style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
           {score}%
         </span>
       </div>
       <span className="text-[8px] font-bold tracking-wider"
-        style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
+        style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
         {label}
       </span>
     </div>
@@ -108,7 +132,7 @@ function MatchCardInner({
 }: MatchCardProps) {
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [showReasons, setShowReasons] = useState(false);
-  const { color, glow } = getScoreTier(compatibilityScore);
+  const { stroke, glow, colors } = getScoreTier(compatibilityScore);
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked);
@@ -134,7 +158,7 @@ function MatchCardInner({
       {/* Left score-color border strip */}
       <div
         className="absolute left-0 inset-y-0 w-0.5 transition-all duration-200 group-hover:w-1"
-        style={{ background: color }}
+        style={{ background: stroke }}
       />
 
       {/* Selection checkbox */}
@@ -218,8 +242,7 @@ function MatchCardInner({
         {/* Match reasons toggle */}
         <button
           onClick={() => setShowReasons(!showReasons)}
-          className="mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors"
-          style={{ color }}
+          className={cn('mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
         >
           <Sparkles className="h-3 w-3" />
           {showReasons ? 'Hide reasons' : 'Why this match?'}
@@ -231,7 +254,7 @@ function MatchCardInner({
           <div className="mt-2 space-y-1.5">
             {matchReasons.map((reason, i) => (
               <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
-                <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: color }} />
+                <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ background: stroke }} />
                 <span className="text-foreground flex-1">{reason.text}</span>
               </div>
             ))}
@@ -254,7 +277,7 @@ function MatchCardInner({
           {onLike && (
             <button
               onClick={onLike}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-pink-500 hover:border-pink-400/40 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-status-accent hover:border-status-accent-border/40 transition-colors"
             >
               <Heart className="h-4 w-4" />
             </button>
@@ -263,7 +286,7 @@ function MatchCardInner({
             onClick={handleBookmark}
             className={cn(
               'h-8 w-8 flex items-center justify-center rounded-full transition-colors',
-              bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
+              bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
             )}
           >
             <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
@@ -276,8 +299,8 @@ function MatchCardInner({
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 h-8 text-xs font-medium px-2.5"
-              style={{ borderColor: `${color}40`, color }}
+              className={cn('gap-1.5 h-8 text-xs font-medium px-2.5', colors.border, colors.text)}
+              style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}
               onClick={onBreakdown}
             >
               <TrendingUp className="h-3.5 w-3.5" />
@@ -285,8 +308,8 @@ function MatchCardInner({
             </Button>
           ) : (
             <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
-                style={{ borderColor: `${color}40`, color }}>
+              <Button size="sm" variant="outline" className={cn('gap-1.5 h-8 text-xs font-medium px-2.5', colors.text)}
+                style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}>
                 <TrendingUp className="h-3.5 w-3.5" />
                 Compatibility
               </Button>

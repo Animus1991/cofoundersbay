@@ -154,17 +154,38 @@ async function main() {
   console.log(`Starting web dev server on http://${WEB_ORIGIN_HOST}:${WEB_PORT}`);
 
   const nextBin = require.resolve('next/dist/bin/next', { paths: [webDir] });
+
+  // Turbopack is the default dev compiler (stable in Next 15.5). It compiles routes
+  // incrementally and is dramatically faster than the webpack dev compiler on this
+  // large app (per-route recompiles drop from ~0.7-2.6s to ~50-200ms). Opt out with
+  // CFB_DISABLE_TURBOPACK=1 if a dependency ever proves incompatible.
+  const useTurbopack = process.env.CFB_DISABLE_TURBOPACK !== '1';
+  const devArgs = [nextBin, 'dev', '-H', WEB_HOST, '-p', String(WEB_PORT)];
+  if (useTurbopack) devArgs.push('--turbopack');
+  devArgs.push(...forwardedArgs);
+
+  if (useTurbopack) {
+    console.log('Using Turbopack dev compiler (set CFB_DISABLE_TURBOPACK=1 to fall back to webpack).');
+  }
+
+  const devEnv = { ...process.env };
+  // .env.local often sets NEXT_PUBLIC_API_URL=http://localhost:3001 which bypasses
+  // the dev proxy and causes ERR_CONNECTION_REFUSED when only web is running.
+  delete devEnv.NEXT_PUBLIC_API_URL;
+  delete devEnv.NEXT_PUBLIC_WS_URL;
+
   const child = spawn(
     process.execPath,
-    [nextBin, 'dev', '-H', WEB_HOST, '-p', String(WEB_PORT), ...forwardedArgs],
+    devArgs,
     {
       cwd: webDir,
       env: {
-        ...process.env,
+        ...devEnv,
         PORT: String(WEB_PORT),
         HOSTNAME: WEB_HOST,
-        NEXT_PUBLIC_API_URL: API_ORIGIN,
-        NEXT_PUBLIC_WS_URL: API_ORIGIN,
+        NEXT_PUBLIC_API_USE_PROXY: '1',
+        API_PROXY_TARGET: API_ORIGIN,
+        // OAuth / SSR use getAbsoluteApiOrigin() → API_PROXY_TARGET.
       },
       stdio: 'inherit',
     },

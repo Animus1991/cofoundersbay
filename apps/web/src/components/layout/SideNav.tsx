@@ -10,6 +10,16 @@ import { useSidebar } from './SidebarContext';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NAV_LINK_DESCRIPTIONS } from '@/lib/nav-descriptions';
+import {
+  getNavDescriptionEl,
+  getNavLabelEl,
+  getNavSectionEl,
+} from '@/lib/i18n/strings-nav';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
 
 type StoredUser = {
@@ -87,14 +97,15 @@ export function SideNav() {
     'ME';
 
   return (
+    <TooltipProvider delayDuration={400}>
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 flex h-full flex-col border-r border-border/60 bg-card/98 backdrop-blur-sm',
+        'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-hidden border-r border-border/60 bg-card/98 backdrop-blur-sm',
         'transition-[width] duration-200 ease-out will-change-[width]',
         'hidden lg:flex',
         expanded ? 'w-[240px]' : 'w-[68px]',
       )}
-      aria-label="Main navigation"
+      aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
     >
       {/* ── Logo header ── */}
       <div
@@ -116,7 +127,7 @@ export function SideNav() {
           <button
             onClick={toggle}
             className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label="Collapse sidebar"
+            aria-label={bilingualAria(commonEn('collapse_sidebar'), commonEl('collapse_sidebar'))}
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
@@ -132,7 +143,13 @@ export function SideNav() {
           <div key={section} className="mb-1">
             {expanded ? (
               <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
-                {section}
+                <BilingualText
+                  en={section}
+                  el={getNavSectionEl(section)}
+                  stacked
+                  primaryClassName="text-[10px] font-semibold uppercase tracking-widest"
+                  secondaryClassName="text-[9px] normal-case tracking-normal"
+                />
               </p>
             ) : (
               <div className="mx-3 my-2 h-px bg-border/50" />
@@ -143,20 +160,30 @@ export function SideNav() {
                   pathname === href || (href !== '/' && pathname?.startsWith(href));
                 const badge = badgeFor(href, badgeType);
 
-                return (
-                  <li key={`${section}-${href}`}>
-                    <OptimizedLink
-                      href={href}
-                      aria-current={active ? 'page' : undefined}
-                      title={!expanded ? label : undefined}
-                      className={cn(
-                        'group relative flex items-center rounded-lg transition-all duration-150',
-                        expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
-                        active
-                          ? 'bg-primary/8 text-primary font-medium'
-                          : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
-                      )}
-                    >
+                const navHint = NAV_LINK_DESCRIPTIONS[href];
+                const navHintEl = getNavDescriptionEl(href);
+                const labelEl = getNavLabelEl(href);
+
+                const link = (
+                  <OptimizedLink
+                    href={href}
+                    aria-current={active ? 'page' : undefined}
+                    title={
+                      !expanded
+                        ? bilingualAria(
+                            navHint ?? label,
+                            navHintEl ?? labelEl,
+                          )
+                        : undefined
+                    }
+                    className={cn(
+                      'group relative flex items-center rounded-lg transition-all duration-150 min-w-0 overflow-hidden',
+                      expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
+                      active
+                        ? 'bg-primary/8 text-primary font-medium'
+                        : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+                    )}
+                  >
                       {/* Active left bar */}
                       {active && expanded && (
                         <span
@@ -184,7 +211,7 @@ export function SideNav() {
                       {/* Label + badge (expanded) */}
                       {expanded && (
                         <>
-                          <span className="truncate text-sm leading-none">{label}</span>
+                          <BilingualText en={label} el={labelEl} stacked className="min-w-0 flex-1" />
                           {badge > 0 && (
                             <span
                               className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"
@@ -196,6 +223,27 @@ export function SideNav() {
                         </>
                       )}
                     </OptimizedLink>
+                );
+
+                return (
+                  <li key={`${section}-${href}`}>
+                    {expanded && navHint ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>{link}</TooltipTrigger>
+                        <TooltipContent side="right" className="max-w-[240px] text-xs">
+                          <p className="font-medium text-foreground">
+                            <BilingualText en={label} el={labelEl} />
+                          </p>
+                          {navHint && (
+                            <p className="text-muted-foreground">
+                              <BilingualText en={navHint} el={navHintEl} />
+                            </p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      link
+                    )}
                   </li>
                 );
               })}
@@ -243,12 +291,13 @@ export function SideNav() {
           <button
             onClick={toggle}
             className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label="Expand sidebar"
+            aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
           >
             <PanelLeftOpen className="h-4 w-4" />
           </button>
         )}
       </div>
     </aside>
+    </TooltipProvider>
   );
 }

@@ -33,21 +33,17 @@ export default function TenantSettingsPage() {
   const [weeklyDigest, setWeeklyDigest] = useState(true);
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Tenant Settings</h1>
-            <p className="text-muted-foreground">
-              Configure your organization settings
-            </p>
-          </div>
-          <Button>
-            <Save className="mr-2 h-4 w-4" />
-            Save Changes
-          </Button>
-        </div>
+    <AppShell
+      title="Tenant Settings"
+      description="General workspace settings: membership policy, notifications, and email preferences."
+      actions={(
+        <Button>
+          <Save className="mr-2 h-4 w-4" />
+          Save Changes
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList>

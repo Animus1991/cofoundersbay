@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { STATUS, scoreTenPointClass, type StatusTone } from '@/lib/semantic-colors';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -62,25 +63,46 @@ interface ExpertProfile {
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; color: string }> = {
-  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  business_model:         { label: 'Business Model',        icon: Target,      color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
-  financial_model:        { label: 'Financial Model',       icon: DollarSign,  color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-  legal_structure:        { label: 'Legal Structure',       icon: Scale,       color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   color: 'bg-teal-500/10 text-teal-600 border-teal-500/20' },
-  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
-  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   color: 'bg-pink-500/10 text-pink-600 border-pink-500/20' },
-  general:                { label: 'General Review',        icon: Eye,         color: 'bg-muted text-muted-foreground border-border' },
+const REVIEW_TYPE_TONE: Record<ReviewType, StatusTone> = {
+  pitch_deck: 'info',
+  business_model: 'accent',
+  financial_model: 'success',
+  legal_structure: 'warning',
+  market_analysis: 'info',
+  go_to_market: 'warning',
+  technical_architecture: 'accent',
+  product_strategy: 'accent',
+  general: 'neutral',
 };
 
-const STATUS_CONFIG: Record<ReviewStatus, { label: string; color: string; icon: React.ElementType }> = {
-  requested:   { label: 'Requested',   color: 'bg-blue-500/10 text-blue-600',    icon: Clock },
-  accepted:    { label: 'Accepted',    color: 'bg-teal-500/10 text-teal-600',    icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600',  icon: RefreshCw },
-  submitted:   { label: 'Submitted',   color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle2 },
-  declined:    { label: 'Declined',    color: 'bg-destructive/10 text-destructive', icon: XCircle },
-  expired:     { label: 'Expired',     color: 'bg-muted text-muted-foreground',  icon: AlertTriangle },
+const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; tone: StatusTone }> = {
+  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    tone: 'info' },
+  business_model:         { label: 'Business Model',        icon: Target,      tone: 'accent' },
+  financial_model:        { label: 'Financial Model',       icon: DollarSign,  tone: 'success' },
+  legal_structure:        { label: 'Legal Structure',       icon: Scale,       tone: 'warning' },
+  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   tone: 'info' },
+  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  tone: 'warning' },
+  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       tone: 'accent' },
+  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   tone: 'accent' },
+  general:                { label: 'General Review',        icon: Eye,         tone: 'neutral' },
+};
+
+const REVIEW_STATUS_TONE: Record<ReviewStatus, StatusTone> = {
+  requested: 'info',
+  accepted: 'success',
+  in_progress: 'warning',
+  submitted: 'success',
+  declined: 'danger',
+  expired: 'neutral',
+};
+
+const STATUS_CONFIG: Record<ReviewStatus, { label: string; tone: StatusTone; icon: React.ElementType }> = {
+  requested:   { label: 'Requested',   tone: 'info',    icon: Clock },
+  accepted:    { label: 'Accepted',    tone: 'success', icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', tone: 'warning', icon: RefreshCw },
+  submitted:   { label: 'Submitted',   tone: 'success', icon: CheckCircle2 },
+  declined:    { label: 'Declined',    tone: 'danger',  icon: XCircle },
+  expired:     { label: 'Expired',     tone: 'neutral', icon: AlertTriangle },
 };
 
 // ── Mock Data ─────────────────────────────────────────────────────────────────
@@ -211,14 +233,14 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0', status.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium shrink-0', STATUS[status.tone].chip)}>
                 <StatusIcon className="h-3 w-3" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', type.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS[type.tone].chip)}>
                 <TypeIcon className="h-3 w-3" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
@@ -230,7 +252,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <Badge variant="outline" className="text-[10px] h-4 px-1.5">Free</Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className="text-[11px] text-amber-600 flex items-center gap-1">
+                <span className={cn('text-[11px] flex items-center gap-1', STATUS.warning.icon)}>
                   <Clock className="h-3 w-3" />
                   Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
@@ -242,19 +264,14 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               <div className="mt-2 flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-muted-foreground">Overall score:</span>
-                  <span className={cn(
-                    'text-sm font-bold',
-                    review.scoreOverall >= 8 ? 'text-emerald-600'
-                      : review.scoreOverall >= 6 ? 'text-amber-600'
-                      : 'text-destructive',
-                  )}>
+                  <span className={cn('text-sm font-bold', scoreTenPointClass(review.scoreOverall))}>
                     {review.scoreOverall}/10
                   </span>
                 </div>
                 {review.rating && (
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? cn('fill-current', STATUS.warning.icon) : 'text-muted-foreground/30')} />
                     ))}
                   </div>
                 )}
@@ -304,7 +321,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   <div key={area} className="flex items-center gap-2">
                     <span className="text-[11px] text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
-                    <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive')}>
+                    <span className={cn('text-xs font-semibold w-8 text-right', scoreTenPointClass(score))}>
                       {score}/10
                     </span>
                   </div>
@@ -316,7 +333,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 mb-2">✅ Strengths</p>
+              <p className={cn('text-[11px] font-semibold uppercase tracking-wider mb-2', STATUS.success.icon)}>✅ Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -331,7 +348,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-600 mb-2">⚡ Recommendations</p>
+              <p className={cn('text-[11px] font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -382,7 +399,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', cfg.color)}>
+                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS[cfg.tone].chip)}>
                   {cfg.label}
                 </span>
               );
@@ -391,7 +408,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className={cn('h-3 w-3 fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> Turnaround: {expert.responseTime}
@@ -445,14 +462,14 @@ export default function ExpertReviewsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total reviews', value: myReviews.length, icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
-            { label: 'In progress', value: pending.length, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Completed', value: submitted.length, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
+            { label: 'Total reviews', value: myReviews.length, icon: FileText, tone: 'accent' as StatusTone },
+            { label: 'In progress', value: pending.length, icon: Clock, tone: 'warning' as StatusTone },
+            { label: 'Completed', value: submitted.length, icon: CheckCircle2, tone: 'success' as StatusTone },
+            { label: 'Avg score', value: avgScore ? `${avgScore.toFixed(1)}/10` : '—', icon: BarChart3, tone: 'info' as StatusTone },
+          ].map(({ label, value, icon: Icon, tone }) => (
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', STATUS[tone].bg, STATUS[tone].icon)}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div>
@@ -528,7 +545,7 @@ export default function ExpertReviewsPage() {
                   onClick={() => setSelectedDomain(key)}
                   className={cn(
                     'flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-all',
-                    selectedDomain === key ? cfg.color + ' border-current' : 'border-border/60 text-muted-foreground hover:border-border',
+                    selectedDomain === key ? cn(STATUS[cfg.tone].chip, 'border-current') : 'border-border/60 text-muted-foreground hover:border-border',
                   )}
                 >
                   <cfg.icon className="h-3 w-3" />{cfg.label}
@@ -578,7 +595,7 @@ export default function ExpertReviewsPage() {
                           <Progress value={score * 10} className="flex-1 h-2" />
                           <span className={cn(
                             'text-xs font-bold w-8 text-right',
-                            score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive',
+                            scoreTenPointClass(score),
                           )}>
                             {score}/10
                           </span>
@@ -593,13 +610,13 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className="h-4 w-4 text-amber-500" /> Top Recommendations
+                        <Lightbulb className={cn('h-4 w-4', STATUS.warning.icon)} /> Top Recommendations
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
-                        <div key={`${r.id}-${i}`} className="flex gap-2 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div key={`${r.id}-${i}`} className={cn('flex gap-2 rounded-lg border px-3 py-2', STATUS.warning.border, STATUS.warning.bg)}>
+                          <AlertTriangle className={cn('h-4 w-4 shrink-0 mt-0.5', STATUS.warning.icon)} />
                           <div>
                             <p className="text-xs font-semibold text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>

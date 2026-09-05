@@ -9,6 +9,8 @@ import {
   Shield, Zap, Users, Building2, RefreshCw,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { settingsEn, settingsEl } from '@/lib/i18n/strings-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -157,13 +159,11 @@ export default function UserBillingPage() {
 
   return (
     <AppShell
-      title="Billing & Subscription"
-      description="Manage your plan, invoices, and billing details"
       actions={
         <div className="flex items-center gap-2">
           <Link href="/settings">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              Settings
+              <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
             </Button>
           </Link>
           <Link href="/pricing">

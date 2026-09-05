@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { notificationsEn, notificationsEl } from '@/lib/i18n/strings-notifications';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,14 +48,14 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 const FILTER_TABS = [
-  { value: 'all', label: 'All' },
-  { value: 'connection', label: 'Connections' },
-  { value: 'message', label: 'Messages' },
-  { value: 'match', label: 'Matches' },
-  { value: 'event', label: 'Events' },
-  { value: 'achievement', label: 'Achievements' },
-  { value: 'community', label: 'Community' },
-  { value: 'system', label: 'System' },
+  { value: 'all', labelEn: 'All', labelEl: 'Όλες' },
+  { value: 'connection', labelEn: 'Connections', labelEl: 'Συνδέσεις' },
+  { value: 'message', labelEn: 'Messages', labelEl: 'Μηνύματα' },
+  { value: 'match', labelEn: 'Matches', labelEl: 'Αντιστοιχίσεις' },
+  { value: 'event', labelEn: 'Events', labelEl: 'Εκδηλώσεις' },
+  { value: 'achievement', labelEn: 'Achievements', labelEl: 'Επιτεύγματα' },
+  { value: 'community', labelEn: 'Community', labelEl: 'Κοινότητα' },
+  { value: 'system', labelEn: 'System', labelEl: 'Σύστημα' },
 ];
 
 const TYPE_LABELS: Record<string, string> = {
@@ -174,7 +176,7 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              View <ExternalLink className="h-3 w-3" />
+              <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="h-3 w-3" />
             </Link>
           )}
           {isUnread && (
@@ -182,14 +184,14 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Check className="h-3 w-3" /> Mark read
+              <Check className="h-3 w-3" /> <BilingualText en="Mark read" el="Αναγνωσμένη" compact />
             </button>
           )}
           <button
             onClick={() => onDelete(item.id)}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
           >
-            <Trash2 className="h-3 w-3" /> Delete
+            <Trash2 className="h-3 w-3" /> <BilingualText en="Delete" el="Διαγραφή" compact />
           </button>
         </div>
       </div>
@@ -297,14 +299,16 @@ export default function NotificationsPage() {
 
   return (
     <AppShell
-      title="Notifications"
-      description="Stay on top of your connections, messages, and activity"
+      title={notificationsEn('page_title')}
+      description={notificationsEn('page_description')}
     >
       <div className="">
         {/* Stats bar */}
         {unreadCount > 0 && (
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground font-medium">Unread by type:</span>
+            <span className="text-xs text-muted-foreground font-medium">
+              <BilingualText en={notificationsEn('unread_by_type')} el={notificationsEl('unread_by_type')} compact />
+            </span>
             {Object.entries(catCounts).map(([type, count]) => {
               const Icon = TYPE_ICONS[type] ?? Bell;
               const color = TYPE_COLORS[type] ?? TYPE_COLORS.system;
@@ -328,7 +332,7 @@ export default function NotificationsPage() {
               <TabsList className="h-8 gap-0.5 flex-nowrap">
                 {FILTER_TABS.map((t) => (
                   <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
-                    {t.label}
+                    <BilingualText en={t.labelEn} el={t.labelEl} compact />
                     {catCounts[t.value] ? (
                       <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary">
                         {catCounts[t.value]}
@@ -343,16 +347,16 @@ export default function NotificationsPage() {
             {bulkMode && selectedIds.size > 0 && (
               <>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
-                  <Check className="h-3 w-3" />Mark read ({selectedIds.size})
+                  <Check className="h-3 w-3" /><BilingualText en={`Mark read (${selectedIds.size})`} el={`Αναγνωσμένες (${selectedIds.size})`} compact />
                 </Button>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive hover:text-destructive" onClick={handleBulkDelete}>
-                  <Trash2 className="h-3 w-3" />Delete ({selectedIds.size})
+                  <Trash2 className="h-3 w-3" /><BilingualText en={`Delete (${selectedIds.size})`} el={`Διαγραφή (${selectedIds.size})`} compact />
                 </Button>
               </>
             )}
             {bulkMode && (
               <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={selectAll}>
-                Select all
+                <BilingualText en={notificationsEn('select_all')} el={notificationsEl('select_all')} compact />
               </Button>
             )}
             <button
@@ -363,7 +367,7 @@ export default function NotificationsPage() {
               )}
             >
               <SquareCheck className="h-3.5 w-3.5" />
-              {bulkMode ? 'Exit select' : 'Select'}
+              <BilingualText en={bulkMode ? notificationsEn('exit_select') : notificationsEn('select')} el={bulkMode ? notificationsEl('exit_select') : notificationsEl('select')} compact />
             </button>
             <button
               onClick={() => setShowUnreadOnly((v) => !v)}
@@ -373,14 +377,14 @@ export default function NotificationsPage() {
               )}
             >
               <Filter className="h-3.5 w-3.5" />
-              Unread
+              <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact />
               {unreadCount > 0 && (
                 <Badge className="h-4 min-w-[1rem] px-1 text-[10px]" variant="default">{unreadCount}</Badge>
               )}
             </button>
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
-                <CheckCheck className="h-3.5 w-3.5" />Mark all read
+                <CheckCheck className="h-3.5 w-3.5" /><BilingualText en={notificationsEn('mark_all_read')} el={notificationsEl('mark_all_read')} compact />
               </Button>
             )}
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
@@ -399,9 +403,11 @@ export default function NotificationsPage() {
           {isError ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <BellOff className="h-8 w-8 text-muted-foreground/50" />
-              <p className="text-sm text-muted-foreground">Failed to load notifications.</p>
+              <p className="text-sm text-muted-foreground">
+                <BilingualText en={notificationsEn('error_load')} el={notificationsEl('error_load')} />
+              </p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> <BilingualText en={notificationsEn('retry')} el={notificationsEl('retry')} compact />
               </Button>
             </div>
           ) : isLoading ? (
@@ -412,13 +418,23 @@ export default function NotificationsPage() {
                 <Bell className="h-6 w-6 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-medium text-foreground">{showUnreadOnly ? 'No unread notifications' : 'All caught up!'}</p>
+                <p className="font-medium text-foreground">
+                  <BilingualText
+                    en={showUnreadOnly ? notificationsEn('empty_no_unread_title') : notificationsEn('empty_all_caught_up')}
+                    el={showUnreadOnly ? notificationsEl('empty_no_unread_title') : notificationsEl('empty_all_caught_up')}
+                  />
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {showUnreadOnly ? 'You have no unread notifications right now.' : "We'll notify you about connections, messages, and activity."}
+                  <BilingualText
+                    en={showUnreadOnly ? notificationsEn('empty_no_unread_desc') : notificationsEn('empty_desc')}
+                    el={showUnreadOnly ? notificationsEl('empty_no_unread_desc') : notificationsEl('empty_desc')}
+                  />
                 </p>
               </div>
               {showUnreadOnly && (
-                <Button variant="outline" size="sm" onClick={() => setShowUnreadOnly(false)}>Show all notifications</Button>
+                <Button variant="outline" size="sm" onClick={() => setShowUnreadOnly(false)}>
+                  <BilingualText en={notificationsEn('show_all_notifications')} el={notificationsEl('show_all_notifications')} compact />
+                </Button>
               )}
             </div>
           ) : (

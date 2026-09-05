@@ -18,7 +18,7 @@ function AdminSubNav() {
   const pathname = usePathname();
   return (
     <div className="border-b border-border/50 bg-card/60 px-4">
-      <nav className="flex gap-1 overflow-x-auto max-w-7xl mx-auto">
+      <nav className="flex gap-1 overflow-x-auto w-full min-w-0">
         {ADMIN_NAV.map(({ href, label, icon: Icon }) => {
           const active = pathname === href;
           return (

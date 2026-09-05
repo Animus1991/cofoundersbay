@@ -15,6 +15,8 @@ import { useToast } from '@/components/ui/toast';
 import { listEvents, rsvpEvent, type EventItem } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { useIsAuthenticated } from '@/hooks/useIsAuthenticated';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
 import { Card, CardContent } from '@/components/ui/card';
 
 type ViewMode = 'grid' | 'list';
@@ -108,13 +110,11 @@ export default function EventsPage() {
 
   return (
     <AppShell
-      title="Events"
-      description="Discover networking events, workshops, and meetups"
       actions={
         <Link href="/events/create">
           <Button className="gap-2">
             <Plus className="icon-sm" />
-            Create Event
+            <BilingualText en="Create Event" el="Δημιουργία εκδήλωσης" />
           </Button>
         </Link>
       }
@@ -123,21 +123,23 @@ export default function EventsPage() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Total Events', value: events.length || '40+', icon: Calendar, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Online', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'In-Person', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'RSVP\'d', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { labelEn: 'Total Events', labelEl: 'Συνολικές εκδηλώσεις', value: events.length || '40+', icon: Calendar, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+          { labelEn: 'Online', labelEl: 'Διαδικτυακές', value: events.filter((e) => e.type === 'online').length || '15+', icon: Video, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+          { labelEn: 'In-Person', labelEl: 'Δια ζώσης', value: events.filter((e) => e.type === 'in-person').length || '20+', icon: MapPin, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+          { labelEn: "RSVP'd", labelEl: 'Δηλώσεις', value: events.filter((e) => e.isRsvped).length, icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         ].map((s) => {
           const SIcon = s.icon;
           return (
-            <Card key={s.label} className="shadow-sm border-border/50">
+            <Card key={s.labelEn} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    <BilingualText en={s.labelEn} el={s.labelEl} compact />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -150,13 +152,13 @@ export default function EventsPage() {
           <TabsList>
             <TabsTrigger value="upcoming" className="gap-2">
               <Calendar className="icon-sm" />
-              Upcoming
+              <BilingualText en="Upcoming" el="Επερχόμενες" compact />
             </TabsTrigger>
             <TabsTrigger value="my-events" className="gap-2">
-              My Events
+              <BilingualText en="My Events" el="Οι εκδηλώσεις μου" compact />
             </TabsTrigger>
             <TabsTrigger value="past" className="gap-2">
-              Past
+              <BilingualText en="Past" el="Παρελθούσες" compact />
             </TabsTrigger>
           </TabsList>
 

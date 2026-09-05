@@ -30,7 +30,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgEvents } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type OrgEvent = {
   id: string;
@@ -47,19 +49,19 @@ type OrgEvent = {
   description: string;
 };
 
-const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; color: string }> = {
-  workshop: { label: 'Workshop', color: 'bg-blue-500/10 text-blue-600' },
-  demo_day: { label: 'Demo Day', color: 'bg-purple-500/10 text-purple-600' },
-  networking: { label: 'Networking', color: 'bg-green-500/10 text-green-600' },
-  mentorship: { label: 'Mentorship', color: 'bg-amber-500/10 text-amber-600' },
-  keynote: { label: 'Keynote', color: 'bg-red-500/10 text-red-600' },
+const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; tone: StatusTone }> = {
+  workshop: { label: 'Workshop', tone: 'info' },
+  demo_day: { label: 'Demo Day', tone: 'accent' },
+  networking: { label: 'Networking', tone: 'success' },
+  mentorship: { label: 'Mentorship', tone: 'warning' },
+  keynote: { label: 'Keynote', tone: 'danger' },
 };
 
-const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; color: string }> = {
-  upcoming: { label: 'Upcoming', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  ongoing: { label: 'Live', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
-  completed: { label: 'Completed', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 border-red-500/20' },
+const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; tone: StatusTone }> = {
+  upcoming: { label: 'Upcoming', tone: 'info' },
+  ongoing: { label: 'Live', tone: 'success' },
+  completed: { label: 'Completed', tone: 'neutral' },
+  cancelled: { label: 'Cancelled', tone: 'danger' },
 };
 
 const MOCK_EVENTS: OrgEvent[] = [
@@ -124,7 +126,10 @@ const MOCK_EVENTS: OrgEvent[] = [
 function EventCard({ event }: { event: OrgEvent }) {
   const typeCfg = TYPE_CONFIG[event.type];
   const statusCfg = STATUS_CONFIG[event.status];
+  const typeColors = STATUS[typeCfg.tone];
+  const statusColors = STATUS[statusCfg.tone];
   const fill = Math.round((event.attendees / event.capacity) * 100);
+  const fillColor = fill >= 90 ? STATUS.danger.icon : fill >= 70 ? STATUS.warning.icon : STATUS.success.icon;
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/20">
@@ -133,8 +138,8 @@ function EventCard({ event }: { event: OrgEvent }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-semibold">{event.title}</h3>
-              <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
-                {event.status === 'ongoing' && <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />}
+              <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
+                {event.status === 'ongoing' && <span className={cn('mr-1 inline-block h-1.5 w-1.5 rounded-full animate-pulse bg-status-success')} />}
                 {statusCfg.label}
               </Badge>
             </div>
@@ -162,9 +167,9 @@ function EventCard({ event }: { event: OrgEvent }) {
               </div>
             )}
             <div className="flex items-center gap-3 mt-3">
-              <Badge variant="secondary" className={cn('text-xs', typeCfg.color)}>{typeCfg.label}</Badge>
+              <Badge variant="secondary" className={cn('text-xs border', typeColors.chip)}>{typeCfg.label}</Badge>
               <span className="text-xs text-muted-foreground">
-                Capacity: <span className={cn('font-medium', fill >= 90 ? 'text-red-500' : fill >= 70 ? 'text-amber-500' : 'text-green-500')}>{fill}% full</span>
+                Capacity: <span className={cn('font-medium', fillColor)}>{fill}% full</span>
               </span>
             </div>
           </div>
@@ -201,25 +206,23 @@ export default function OrgEventsPage() {
   const upcoming = MOCK_EVENTS.filter(e => e.status === 'upcoming').length;
   const totalAttendees = MOCK_EVENTS.reduce((s, e) => s + e.attendees, 0);
 
+  const filtersActive = !!search || activeTab !== 'all';
+  const clearFilters = () => { setSearch(''); setActiveTab('all'); };
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" />
-              Organization Events
-            </h1>
-            <p className="text-muted-foreground">Manage workshops, demo days, and cohort events</p>
-          </div>
-          <Button asChild>
-            <Link href="/events/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Event
-            </Link>
-          </Button>
-        </div>
+    <AppShell
+      title="Organization Events"
+      description="Demo days, office hours, workshops, and pitch nights for your cohorts. Members RSVP automatically."
+      actions={(
+        <Button asChild>
+          <Link href="/events/create">
+            <Plus className="mr-2 h-4 w-4" />
+            Create Event
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-3">
@@ -261,16 +264,7 @@ export default function OrgEventsPage() {
               <EventCard key={event.id} event={event} />
             ))}
             {filtered.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
-                  <h3 className="font-medium">No events found</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Create your first event to get started</p>
-                  <Button size="sm" className="mt-4" asChild>
-                    <Link href="/events/create">Create Event</Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <EmptyOrgEvents filtersActive={filtersActive} onClearFilters={clearFilters} />
             )}
           </TabsContent>
         </Tabs>

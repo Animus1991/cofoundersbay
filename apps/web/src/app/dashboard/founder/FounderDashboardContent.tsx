@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import {
   getDashboardStats,
   getMeProfile,
@@ -33,12 +34,17 @@ import { OnboardingChecklist, buildOnboardingSteps } from '@/components/gamifica
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
+import { XPProgressWidget } from '@/components/gamification/XPProgressWidget';
+import { BadgesWidget } from '@/components/gamification/BadgesWidget';
+import { BilingualText } from '@/components/common/BilingualText';
+import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
+import { bilingualAria } from '@/lib/i18n/format';
 
-function getTimeBasedGreeting(): string {
+function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
+  if (hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
+  return { en: dashboardEn('good_evening'), el: dashboardEl('good_evening') };
 }
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -52,20 +58,20 @@ const DEMO_MILESTONES = [
 
 const DEMO_ACTIVITY = [
   { id: '1', type: 'match', text: 'New 87% match — Nikos Papadakis, CTO', time: '2h ago', icon: Sparkles, color: 'text-primary' },
-  { id: '2', type: 'connection', text: 'Elena Papadopoulos accepted your request', time: '5h ago', icon: UserPlus, color: 'text-emerald-500' },
-  { id: '3', type: 'message', text: 'New message from Marcus Chen', time: '8h ago', icon: MessageCircle, color: 'text-blue-500' },
-  { id: '4', type: 'view', text: 'Your profile was viewed 12 times today', time: '1d ago', icon: Eye, color: 'text-amber-500' },
+  { id: '2', type: 'connection', text: 'Elena Papadopoulos accepted your request', time: '5h ago', icon: UserPlus, color: STATUS.success.icon },
+  { id: '3', type: 'message', text: 'New message from Marcus Chen', time: '8h ago', icon: MessageCircle, color: STATUS.info.icon },
+  { id: '4', type: 'view', text: 'Your profile was viewed 12 times today', time: '1d ago', icon: Eye, color: STATUS.warning.icon },
 ];
 
-const READINESS_DIM_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
-  problemClarity:      { icon: Lightbulb,    color: 'text-amber-500' },
-  solutionClarity:     { icon: Rocket,       color: 'text-emerald-500' },
-  marketUnderstanding: { icon: Target,       color: 'text-blue-500' },
-  productDefinition:   { icon: Briefcase,    color: 'text-indigo-500' },
-  teamCompleteness:    { icon: Users,        color: 'text-red-500' },
-  executionReadiness:  { icon: TrendingUp,   color: 'text-orange-500' },
-  validationScore:     { icon: Award,        color: 'text-violet-500' },
-  artifactCompleteness:{ icon: FileText,     color: 'text-teal-500' },
+const READINESS_DIM_ICONS: Record<string, { icon: React.ElementType; tone: StatusTone }> = {
+  problemClarity:      { icon: Lightbulb,    tone: 'warning' },
+  solutionClarity:     { icon: Rocket,       tone: 'success' },
+  marketUnderstanding: { icon: Target,       tone: 'info' },
+  productDefinition:   { icon: Briefcase,    tone: 'accent' },
+  teamCompleteness:    { icon: Users,        tone: 'danger' },
+  executionReadiness:  { icon: TrendingUp,   tone: 'warning' },
+  validationScore:     { icon: Award,        tone: 'accent' },
+  artifactCompleteness:{ icon: FileText,     tone: 'success' },
 };
 
 const FUNDRAISING_DEMO = {
@@ -78,11 +84,11 @@ const FUNDRAISING_DEMO = {
 };
 
 type EventType = 'mentorship' | 'deadline' | 'event' | 'pitch';
-const EVENT_CONFIG: Record<EventType, { color: string; bg: string }> = {
-  mentorship: { color: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/30' },
-  deadline: { color: 'text-rose-600', bg: 'bg-rose-100 dark:bg-rose-900/30' },
-  event: { color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-  pitch: { color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+const EVENT_CONFIG: Record<EventType, StatusTone> = {
+  mentorship: 'accent',
+  deadline: 'danger',
+  event: 'info',
+  pitch: 'success',
 };
 
 const DEMO_EVENTS = [
@@ -108,7 +114,7 @@ function StatCard({
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {trend && (
-              <p className={cn('text-xs font-medium', trend.positive ? 'text-emerald-500' : 'text-red-500')}>
+              <p className={cn('text-xs font-medium', trend.positive ? TREND.up : TREND.down)}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}% this week
               </p>
             )}
@@ -125,7 +131,7 @@ function StatCard({
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
-  const scoreColor = score >= 85 ? 'text-emerald-500' : score >= 70 ? 'text-blue-500' : 'text-amber-500';
+  const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
   return (
     <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
       <Avatar className="h-10 w-10 shrink-0">
@@ -153,11 +159,11 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
   const isOverdue = milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
   return (
     <div className="flex items-center gap-3">
-      <div className={cn('shrink-0 rounded-full p-1.5', isComplete ? 'bg-emerald-500/10' : isOverdue ? 'bg-red-500/10' : 'bg-primary/10')}>
+      <div className={cn('shrink-0 rounded-full p-1.5', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}>
         {isComplete
-          ? <CheckCircle2 className="icon-sm text-emerald-500" />
+          ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
           : isOverdue
-          ? <AlertCircle className="icon-sm text-red-500" />
+          ? <AlertCircle className={cn('icon-sm', STATUS.danger.icon)} />
           : <Circle className="icon-sm text-primary" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -258,31 +264,25 @@ export default function FounderDashboardContent() {
   }
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
-              {getTimeBasedGreeting()}, {displayName} 👋
-            </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Your startup command center — track progress, find team, and close your round.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Badge variant="outline" className="gap-1.5">
-              <Rocket className="icon-sm" /> Founder
-            </Badge>
-            <Link href="/readiness">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Gauge className="icon-sm" />
-                Readiness: {avgReadiness}%
-              </Button>
-            </Link>
-          </div>
-        </div>
+    <AppShell
+      title={`${getTimeBasedGreeting().en}, ${displayName}`}
+      description="Your startup command center \u2014 track progress, find team, and close your round."
+      showHelp
+      actions={
+        <>
+          <Badge variant="outline" className="gap-1.5">
+            <Rocket className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
+          </Badge>
+          <Link href="/readiness">
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Gauge className="icon-sm" />
+              <BilingualText en={`Readiness: ${avgReadiness}%`} el={`Ετοιμότητα: ${avgReadiness}%`} compact />
+            </Button>
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-6">
 
         {/* Onboarding Checklist */}
         <OnboardingChecklist steps={onboardingSteps} userName={displayName} />
@@ -293,10 +293,10 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <StatCard icon={Users} label="Profile Views (7d)" value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
-          <StatCard icon={Sparkles} label="New Matches" value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard icon={MessageCircle} label="Unread Messages" value={3} href="/messages" />
-          <StatCard icon={Target} label="Milestone Progress" value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard icon={Users} label={bilingualAria(dashboardEn('profile_views'), dashboardEl('profile_views'))} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
+          <StatCard icon={Sparkles} label={bilingualAria(dashboardEn('top_matches'), dashboardEl('top_matches'))} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
+          <StatCard icon={MessageCircle} label={bilingualAria('Unread Messages', 'Αδιάβαστα μηνύματα')} value={3} href="/messages" />
+          <StatCard icon={Target} label={bilingualAria(dashboardEn('milestones'), dashboardEl('milestones'))} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -312,7 +312,7 @@ export default function FounderDashboardContent() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Gauge className="icon-sm text-primary" /> Startup Readiness
+                      <Gauge className="icon-sm text-primary" /> <BilingualText en={dashboardEn('startup_readiness')} el={dashboardEl('startup_readiness')} />
                     </CardTitle>
                     <Link href="/readiness">
                       <Button variant="ghost" size="sm">
@@ -328,7 +328,7 @@ export default function FounderDashboardContent() {
                         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
                         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3"
                           strokeDasharray={`${(avgReadiness / 100) * 97.4} 97.4`}
-                          className={cn(avgReadiness >= 70 ? 'stroke-emerald-500' : avgReadiness >= 50 ? 'stroke-amber-500' : 'stroke-red-500')}
+                          className={cn(avgReadiness >= 70 ? 'stroke-status-success' : avgReadiness >= 50 ? 'stroke-status-warning' : 'stroke-status-danger')}
                           strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center flex-col">
@@ -338,12 +338,13 @@ export default function FounderDashboardContent() {
                     </div>
                     <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
                       {vrs.dimensions.slice(0, 6).map((dim) => {
-                        const cfg = READINESS_DIM_ICONS[dim.key] ?? { icon: Activity, color: 'text-muted-foreground' };
+                        const cfg = READINESS_DIM_ICONS[dim.key] ?? { icon: Activity, tone: 'neutral' as const };
+                        const dimColors = STATUS[cfg.tone];
                         return (
                           <div key={dim.key}>
                             <div className="flex items-center justify-between mb-0.5">
                               <span className="text-xs text-muted-foreground truncate">{dim.label}</span>
-                              <span className={cn('text-xs font-semibold', cfg.color)}>{dim.score}%</span>
+                              <span className={cn('text-xs font-semibold', dimColors.icon)}>{dim.score}%</span>
                             </div>
                             <Progress value={dim.score} className="h-1" />
                           </div>
@@ -372,7 +373,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <DollarSign className="icon-sm text-emerald-500" /> Fundraising
+                    <DollarSign className={cn('icon-sm', STATUS.success.icon)} /> <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
                   <Link href="/fundraising">
                     <Button variant="ghost" size="sm">
@@ -395,7 +396,7 @@ export default function FounderDashboardContent() {
                     </div>
                     <span className={cn(
                       'text-sm font-bold',
-                      fundingPct >= 75 ? 'text-emerald-500' : fundingPct >= 40 ? 'text-amber-500' : 'text-muted-foreground'
+                      fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
                     )}>
                       {fundingPct}%
                     </span>
@@ -403,7 +404,7 @@ export default function FounderDashboardContent() {
                   <Progress value={fundingPct} className="h-2.5" />
                   <div className="flex gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Users className="icon-sm" /> {FUNDRAISING_DEMO.leadCount} leads tracked</span>
-                    <span className="flex items-center gap-1"><CheckCircle2 className="icon-sm text-emerald-500" /> {FUNDRAISING_DEMO.committedCount} committed</span>
+                    <span className="flex items-center gap-1"><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> {FUNDRAISING_DEMO.committedCount} committed</span>
                   </div>
                   <div className="flex gap-2">
                     <Link href="/fundraising" className="flex-1">
@@ -426,7 +427,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" /> Top Matches for You
+                    <Sparkles className="icon-sm text-primary" /> <BilingualText en="Top Matches for You" el="Κορυφαίες αντιστοιχίσεις" />
                   </CardTitle>
                   <Link href="/matches">
                     <Button variant="ghost" size="sm">View all <ArrowRight className="ml-1 icon-sm" /></Button>
@@ -439,10 +440,12 @@ export default function FounderDashboardContent() {
                 ))}
                 {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
                   <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground">Complete your profile to get personalized matches</p>
+                    <p className="text-sm text-muted-foreground">
+                      <BilingualText en="Complete your profile to get personalized matches" el="Ολοκληρώστε το προφίλ σας για εξατομικευμένες αντιστοιχίσεις" />
+                    </p>
                     <Link href="/profile/edit">
                       <Button variant="outline" size="sm" className="mt-2 gap-1.5">
-                        Complete profile
+                        <BilingualText en="Complete profile" el="Ολοκλήρωση προφίλ" />
                       </Button>
                     </Link>
                   </div>
@@ -455,7 +458,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm text-primary" /> Milestones
+                    <Flag className="icon-sm text-primary" /> <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
                   <Link href="/milestones">
                     <Button variant="ghost" size="sm">Manage <ArrowRight className="ml-1 icon-sm" /></Button>
@@ -474,64 +477,74 @@ export default function FounderDashboardContent() {
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />
 
-            {/* XP Progress Strip */}
-            {xpData && (
+            {/* XP Progress Widget (new comprehensive version) */}
+            <XPProgressWidget />
+
+            {/* Badges Widget */}
+            <BadgesWidget />
+
+            {/* XP Progress Strip (legacy - can be removed after testing) */}
+            {false && xpData ? (
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Zap className="icon-sm text-amber-500" />
+                    <Zap className={cn('icon-sm', STATUS.warning.icon)} />
                     XP Progress
-                    {xpData.streak.currentStreak > 0 && (
-                      <span className="ml-auto text-xs font-normal text-orange-500">
-                        🔥 {xpData.streak.currentStreak}-day streak
+                    {(xpData?.streak?.currentStreak ?? 0) > 0 && (
+                      <span className={cn('ml-auto text-xs font-normal', STATUS.warning.icon)}>
+                        🔥 {xpData?.streak?.currentStreak}-day streak
                       </span>
                     )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-foreground">Level {xpData.level} — {xpData.levelLabel}</span>
-                    <span className="text-muted-foreground tabular-nums">{xpData.totalXp.toLocaleString()} XP</span>
+                    <span className="font-semibold text-foreground">Level {xpData?.level} — {xpData?.levelLabel}</span>
+                    <span className="text-muted-foreground tabular-nums">{xpData?.totalXp.toLocaleString()} XP</span>
                   </div>
-                  <Progress value={xpData.levelProgress * 100} className="h-2" />
+                  <Progress value={(xpData?.levelProgress ?? 0) * 100} className="h-2" />
                   <p className="text-xs text-muted-foreground">
-                    {xpData.xpToNextLevel > 0
-                      ? `${xpData.xpToNextLevel.toLocaleString()} XP to next level`
+                    {(xpData?.xpToNextLevel ?? 0) > 0
+                      ? `${xpData?.xpToNextLevel.toLocaleString()} XP to next level`
                       : 'Maximum level reached'}
                   </p>
                 </CardContent>
               </Card>
-            )}
+            ) : null}
 
             {/* Profile Strength */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Shield className="icon-sm text-primary" /> Profile Strength
+                  <Shield className="icon-sm text-primary" /> <BilingualText en="Profile Strength" el="Ισχύς προφίλ" />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Completion</span>
-                  <span className={cn('font-bold', profilePct >= 80 ? 'text-emerald-500' : 'text-amber-500')}>{profilePct}%</span>
+                  <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
                 </div>
                 <Progress value={profilePct} className="h-2" />
                 <div className="space-y-1.5">
                   {[
-                    { label: 'Photo & headline', done: true },
-                    { label: 'Skills (5+)', done: profilePct > 50 },
-                    { label: 'Work experience', done: profilePct > 70 },
-                    { label: 'Startup idea linked', done: profilePct > 80 },
+                    { labelEn: 'Photo & headline', labelEl: 'Φωτογραφία & τίτλος', done: true },
+                    { labelEn: 'Skills (5+)', labelEl: 'Δεξιότητες (5+)', done: profilePct > 50 },
+                    { labelEn: 'Work experience', labelEl: 'Εργασιακή εμπειρία', done: profilePct > 70 },
+                    { labelEn: 'Startup idea linked', labelEl: 'Σύνδεση ιδέας νεοφυούς', done: profilePct > 80 },
                   ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-2 text-xs">
-                      <CheckCircle2 className={cn('icon-sm shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} />
-                      <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>{item.label}</span>
+                    <div key={item.labelEn} className="flex items-center gap-2 text-xs">
+                      <CheckCircle2 className={cn('icon-sm shrink-0', item.done ? STATUS.success.icon : 'text-muted-foreground/30')} />
+                      <span className={item.done ? 'text-foreground' : 'text-muted-foreground'}>
+                        <BilingualText en={item.labelEn} el={item.labelEl} compact />
+                      </span>
                     </div>
                   ))}
                 </div>
                 {profilePct < 100 && (
                   <Link href="/profile/edit">
-                    <Button variant="secondary" size="sm" className="w-full">Complete profile</Button>
+                    <Button variant="secondary" size="sm" className="w-full">
+                      <BilingualText en="Complete profile" el="Ολοκλήρωση προφίλ" />
+                    </Button>
                   </Link>
                 )}
               </CardContent>
@@ -540,23 +553,25 @@ export default function FounderDashboardContent() {
             {/* Quick Actions Grid */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Quick Actions</CardTitle>
+                <CardTitle className="text-sm"><BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} /></CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { href: '/discover', icon: Users, label: 'Find Co-founders', color: 'text-primary' },
-                    { href: '/mentoring', icon: GraduationCap, label: 'Find Mentors', color: 'text-blue-500' },
-                    { href: '/coaching', icon: BrainCircuit, label: 'Coaching', color: 'text-purple-500' },
-                    { href: '/expert-reviews', icon: Award, label: 'Expert Review', color: 'text-amber-500' },
-                    { href: '/opportunities', icon: Briefcase, label: 'Opportunities', color: 'text-teal-500' },
-                    { href: '/programs', icon: BookOpen, label: 'Programs', color: 'text-emerald-500' },
-                    { href: '/marketplace', icon: Store, label: 'Services', color: 'text-orange-500' },
-                    { href: '/analytics', icon: BarChart3, label: 'Analytics', color: 'text-indigo-500' },
-                  ].map(({ href, icon: Icon, label, color }) => (
+                    { href: '/discover', icon: Users, labelEn: 'Find Co-founders', labelEl: 'Εύρεση συνιδρυτών', tone: 'accent' as const },
+                    { href: '/mentoring', icon: GraduationCap, labelEn: 'Find Mentors', labelEl: 'Εύρεση μεντόρων', tone: 'info' as const },
+                    { href: '/coaching', icon: BrainCircuit, labelEn: 'Coaching', labelEl: 'Καθοδήγηση', tone: 'accent' as const },
+                    { href: '/expert-reviews', icon: Award, labelEn: 'Expert Review', labelEl: 'Αξιολόγηση ειδικού', tone: 'warning' as const },
+                    { href: '/opportunities', icon: Briefcase, labelEn: 'Opportunities', labelEl: 'Ευκαιρίες', tone: 'success' as const },
+                    { href: '/programs', icon: BookOpen, labelEn: 'Programs', labelEl: 'Προγράμματα', tone: 'success' as const },
+                    { href: '/marketplace', icon: Store, labelEn: 'Services', labelEl: 'Υπηρεσίες', tone: 'warning' as const },
+                    { href: '/analytics', icon: BarChart3, labelEn: 'Analytics', labelEl: 'Αναλυτικά', tone: 'info' as const },
+                  ].map(({ href, icon: Icon, labelEn, labelEl, tone }) => (
                     <Link key={href} href={href} className="flex flex-col items-center gap-1.5 rounded-lg border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border">
-                      <Icon className={cn('icon-md', color)} />
-                      <span className="text-xs font-medium text-foreground leading-tight">{label}</span>
+                      <Icon className={cn('icon-md', STATUS[tone].icon)} />
+                      <span className="text-xs font-medium text-foreground leading-tight">
+                        <BilingualText en={labelEn} el={labelEl} compact />
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -568,7 +583,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Activity className="icon-sm text-muted-foreground" /> Recent Activity
+                    <Activity className="icon-sm text-muted-foreground" /> <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
                   </CardTitle>
                   <Link href="/activity">
                     <Button variant="ghost" size="sm">All</Button>
@@ -598,7 +613,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Calendar className="icon-sm" /> Upcoming
+                    <Calendar className="icon-sm" /> <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
                   </CardTitle>
                   <Link href="/events">
                     <Button variant="ghost" size="sm">View all</Button>
@@ -608,18 +623,19 @@ export default function FounderDashboardContent() {
               <CardContent className="space-y-2.5">
                 {showDemoData ? (
                   DEMO_EVENTS.slice(0, 3).map((event) => {
-                    const cfg = EVENT_CONFIG[event.type];
+                    const tone = EVENT_CONFIG[event.type];
+                    const cfg = STATUS[tone];
                     const isUrgent = event.daysLeft <= 3;
                     return (
                       <div
                         key={event.id}
                         className={cn(
                           'flex items-start gap-2.5 rounded-lg border p-2.5 transition-colors',
-                          isUrgent ? 'border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-900/10' : 'border-border/60'
+                          isUrgent ? cn('border', cfg.border, cfg.bg) : 'border-border/60'
                         )}
                       >
                         <div className={cn('mt-0.5 rounded-md p-1.5 shrink-0', cfg.bg)}>
-                          <Calendar className={cn('icon-sm', cfg.color)} />
+                          <Calendar className={cn('icon-sm', cfg.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
@@ -629,7 +645,7 @@ export default function FounderDashboardContent() {
                             </span>
                             <span className={cn(
                               'text-xs font-medium',
-                              isUrgent ? 'text-rose-600' : event.daysLeft <= 7 ? 'text-amber-600' : 'text-muted-foreground'
+                              isUrgent ? STATUS.danger.icon : event.daysLeft <= 7 ? STATUS.warning.icon : 'text-muted-foreground'
                             )}>
                               {event.daysLeft === 0 ? 'Today' : event.daysLeft === 1 ? 'Tomorrow' : `In ${event.daysLeft}d`}
                             </span>
@@ -640,10 +656,12 @@ export default function FounderDashboardContent() {
                   })
                 ) : (
                   <div className="rounded-lg bg-muted/40 p-3 text-center">
-                    <p className="text-xs text-muted-foreground">No events this week</p>
+                    <p className="text-xs text-muted-foreground">
+                      <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" />
+                    </p>
                     <Link href="/events">
                       <Button variant="ghost" size="sm" className="mt-1.5 gap-1">
-                        Browse events <ArrowRight className="icon-sm" />
+                        <BilingualText en="Browse events" el="Περιήγηση εκδηλώσεων" /> <ArrowRight className="icon-sm" />
                       </Button>
                     </Link>
                   </div>

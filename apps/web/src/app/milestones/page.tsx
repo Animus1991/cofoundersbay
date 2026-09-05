@@ -10,10 +10,14 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { useAuthenticatedSession } from '@/hooks/useAuthenticatedSession';
 import {
   listMilestones,
   getMilestoneSummary,
@@ -27,18 +31,27 @@ import {
 import { MilestoneFormModal } from './MilestoneFormModal';
 
 // ── Status config ────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<MilestoneStatus, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  todo:        { label: 'To Do',      icon: Flag,          color: 'text-muted-foreground', bg: 'bg-muted/60' },
-  in_progress: { label: 'In Progress', icon: Clock,         color: 'text-blue-500',         bg: 'bg-blue-500/10' },
-  blocked:     { label: 'Blocked',    icon: AlertTriangle, color: 'text-amber-500',        bg: 'bg-amber-500/10' },
-  completed:   { label: 'Completed',  icon: CheckCircle2,  color: 'text-emerald-500',      bg: 'bg-emerald-500/10' },
-  cancelled:   { label: 'Cancelled',  icon: XCircle,       color: 'text-muted-foreground', bg: 'bg-muted/40' },
+const STATUS_CONFIG: Record<MilestoneStatus, { label: string; icon: React.ElementType; tone: StatusTone }> = {
+  todo:        { label: 'To Do',      icon: Flag,          tone: 'neutral' },
+  in_progress: { label: 'In Progress', icon: Clock,         tone: 'info' },
+  blocked:     { label: 'Blocked',    icon: AlertTriangle, tone: 'warning' },
+  completed:   { label: 'Completed',  icon: CheckCircle2,  tone: 'success' },
+  cancelled:   { label: 'Cancelled',  icon: XCircle,       tone: 'neutral' },
 };
 
-const PRIORITY_CONFIG: Record<MilestonePriority, { label: string; dot: string }> = {
-  low:    { label: 'Low',    dot: 'bg-muted-foreground' },
-  medium: { label: 'Medium', dot: 'bg-amber-400' },
-  high:   { label: 'High',   dot: 'bg-red-500' },
+const PRIORITY_CONFIG: Record<MilestonePriority, { label: string; tone: StatusTone }> = {
+  low:    { label: 'Low',    tone: 'neutral' },
+  medium: { label: 'Medium', tone: 'warning' },
+  high:   { label: 'High',   tone: 'danger' },
+};
+
+const PRIORITY_DOT: Record<StatusTone, string> = {
+  success: 'bg-status-success',
+  warning: 'bg-status-warning',
+  danger: 'bg-status-danger',
+  info: 'bg-status-info',
+  accent: 'bg-status-accent',
+  neutral: 'bg-muted-foreground',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -98,6 +111,7 @@ function MilestoneCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const status = STATUS_CONFIG[item.status];
+  const statusColors = STATUS[status.tone];
   const priority = PRIORITY_CONFIG[item.priority];
   const StatusIcon = status.icon;
   const overdue = isOverdue(item.dueDate, item.status);
@@ -107,23 +121,23 @@ function MilestoneCard({
     <div
       className={cn(
         'group relative rounded-xl border bg-card transition-all hover:shadow-sm',
-        item.status === 'completed' ? 'border-emerald-500/20 opacity-75 hover:opacity-100' : 'border-border/60',
-        overdue && 'border-red-500/30',
+        item.status === 'completed' ? cn('border', STATUS.success.border, 'opacity-75 hover:opacity-100') : 'border-border/60',
+        overdue && cn('border', STATUS.danger.border),
       )}
     >
       {/* Priority stripe */}
       <div
         className={cn(
           'absolute left-0 top-3 bottom-3 w-0.5 rounded-r-full',
-          item.priority === 'high' ? 'bg-red-500' : item.priority === 'medium' ? 'bg-amber-400' : 'bg-border',
+          item.priority === 'high' ? PRIORITY_DOT.danger : item.priority === 'medium' ? PRIORITY_DOT.warning : PRIORITY_DOT.neutral,
         )}
       />
 
       <div className="px-5 py-4">
         <div className="flex items-start gap-3">
           {/* Status icon */}
-          <div className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', status.bg)}>
-            <StatusIcon className={cn('h-4 w-4', status.color)} />
+          <div className={cn('mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', statusColors.bg)}>
+            <StatusIcon className={cn('h-4 w-4', statusColors.icon)} />
           </div>
 
           {/* Main content */}
@@ -160,7 +174,7 @@ function MilestoneCard({
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'completed'); }}
                         >
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Mark complete
+                          <CheckCircle2 className={cn('h-3.5 w-3.5', STATUS.success.icon)} /> Mark complete
                         </button>
                       )}
                       {item.status === 'completed' && (
@@ -168,7 +182,7 @@ function MilestoneCard({
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'in_progress'); }}
                         >
-                          <Clock className="h-3.5 w-3.5 text-blue-500" /> Reopen
+                          <Clock className={cn('h-3.5 w-3.5', STATUS.info.icon)} /> Reopen
                         </button>
                       )}
                       <div className="my-1 border-t border-border/40" />
@@ -195,7 +209,7 @@ function MilestoneCard({
                   <div
                     className={cn(
                       'h-1.5 rounded-full transition-all',
-                      item.status === 'completed' ? 'bg-emerald-500' : 'bg-primary',
+                      item.status === 'completed' ? 'bg-status-success' : 'bg-primary',
                     )}
                     style={{ width: `${item.progress}%` }}
                   />
@@ -210,13 +224,13 @@ function MilestoneCard({
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={cn('h-5 gap-1 rounded-full px-2 text-[10px] font-medium', status.color, status.bg, 'border-0')}
+                className={cn('h-5 gap-1 rounded-full px-2 text-[10px] font-medium border', statusColors.chip)}
               >
                 {status.label}
               </Badge>
 
               <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                <span className={cn('h-1.5 w-1.5 rounded-full', priority.dot)} />
+                <span className={cn('h-1.5 w-1.5 rounded-full', PRIORITY_DOT[priority.tone])} />
                 {priority.label}
               </div>
 
@@ -230,7 +244,7 @@ function MilestoneCard({
                 <div
                   className={cn(
                     'flex items-center gap-1 text-[11px]',
-                    overdue ? 'font-medium text-red-500' : dueSoon ? 'font-medium text-amber-500' : 'text-muted-foreground',
+                    overdue ? cn('font-medium', STATUS.danger.icon) : dueSoon ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
                   )}
                 >
                   <Calendar className="h-3 w-3" />
@@ -256,22 +270,24 @@ function MilestoneCard({
 function SummaryBar({ summary }: { summary: { counts: Record<string, number>; total: number; overdue: number; dueSoon: number; completionRate: number } | undefined }) {
   if (!summary) return null;
   const stats = [
-    { label: 'Total', value: summary.total, icon: Target, color: 'text-foreground' },
-    { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
-    { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
-    { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, color: 'text-red-500' },
-    { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, color: 'text-primary' },
+    { label: 'Total', value: summary.total, icon: Target, tone: 'neutral' as const },
+    { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, tone: 'info' as const },
+    { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, tone: 'success' as const },
+    { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, tone: 'danger' as const },
+    { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, tone: 'accent' as const },
   ];
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-      {stats.map((s) => (
+      {stats.map((s) => {
+        const colors = s.tone === 'neutral' ? { icon: 'text-foreground', text: 'text-foreground' } : STATUS[s.tone];
+        return (
         <div key={s.label} className="rounded-xl border border-border/60 bg-card/70 px-4 py-3 text-center">
-          <s.icon className={cn('mx-auto mb-1 h-4 w-4', s.color)} />
-          <p className={cn('text-xl font-semibold tabular-nums', s.color)}>{s.value}</p>
+          <s.icon className={cn('mx-auto mb-1 h-4 w-4', colors.icon)} />
+          <p className={cn('text-xl font-semibold tabular-nums', colors.icon)}>{s.value}</p>
           <p className="text-[11px] text-muted-foreground">{s.label}</p>
         </div>
-      ))}
+      );})}
     </div>
   );
 }
@@ -279,6 +295,8 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MilestonesPage() {
   const qc = useQueryClient();
+  const { primary } = useLanguagePreference();
+  const { isAuthenticated, isChecking } = useAuthenticatedSession();
   const [statusFilter, setStatusFilter] = useState<MilestoneStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -298,12 +316,14 @@ export default function MilestonesPage() {
         limit: 100,
       }),
     staleTime: 30_000,
+    enabled: isAuthenticated && !isChecking,
   });
 
   const { data: summaryData } = useQuery({
     queryKey: ['milestones', 'summary'],
     queryFn: getMilestoneSummary,
     staleTime: 60_000,
+    enabled: isAuthenticated && !isChecking,
   });
 
   const allMilestones = data?.milestones ?? [];
@@ -357,21 +377,22 @@ export default function MilestonesPage() {
   );
 
   const statusCounts = (summaryData as any)?.counts ?? {};
-  const statusTabs: Array<{ value: MilestoneStatus | 'all'; label: string; count?: number }> = [
-    { value: 'all', label: 'All', count: summaryData?.total },
-    { value: 'todo', label: 'To Do', count: statusCounts.todo },
-    { value: 'in_progress', label: 'In Progress', count: statusCounts.in_progress },
-    { value: 'blocked', label: 'Blocked', count: statusCounts.blocked },
-    { value: 'completed', label: 'Completed', count: statusCounts.completed },
+  const statusTabs: Array<{ value: MilestoneStatus | 'all'; labelEn: string; labelEl: string; count?: number }> = [
+    { value: 'all', labelEn: 'All', labelEl: 'Όλα', count: summaryData?.total },
+    { value: 'todo', labelEn: 'To Do', labelEl: 'Προς εκτέλεση', count: statusCounts.todo },
+    { value: 'in_progress', labelEn: 'In Progress', labelEl: 'Σε εξέλιξη', count: statusCounts.in_progress },
+    { value: 'blocked', labelEn: 'Blocked', labelEl: 'Αποκλεισμένα', count: statusCounts.blocked },
+    { value: 'completed', labelEn: 'Completed', labelEl: 'Ολοκληρωμένα', count: statusCounts.completed },
   ];
 
   return (
     <AppShell
       title="Milestones"
-      description="Track your startup progress, goals, and collaboration checkpoints"
+      description="Atomic goals with owners and due dates. Completed milestones feed your readiness score."
+      showHelp
       actions={
         <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> New milestone
+          <Plus className="h-4 w-4" /> <BilingualText en="New milestone" el="Νέο ορόσημο" compact />
         </Button>
       }
     >
@@ -415,7 +436,7 @@ export default function MilestonesPage() {
                     : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
-                {cat === 'all' ? 'All' : CATEGORY_LABELS[cat] ?? cat}
+                {cat === 'all' ? <BilingualText en="All" el="Όλα" compact /> : CATEGORY_LABELS[cat] ?? cat}
               </button>
             ))}
           </div>
@@ -436,7 +457,7 @@ export default function MilestonesPage() {
                     : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
-                {tab.label}
+                <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
                     'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px]',
@@ -458,10 +479,16 @@ export default function MilestonesPage() {
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
                 className="bg-transparent text-xs text-foreground outline-none cursor-pointer"
               >
-                <option value="all">All priorities</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
+                {[
+                  { value: 'all', en: 'All priorities', el: 'Όλες οι προτεραιότητες' },
+                  { value: 'high', en: 'High', el: 'Υψηλή' },
+                  { value: 'medium', en: 'Medium', el: 'Μεσαία' },
+                  { value: 'low', en: 'Low', el: 'Χαμηλή' },
+                ].map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {primary === 'el' ? opt.el : opt.en}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="flex items-center rounded-lg border border-border/50 bg-secondary/30 p-0.5 gap-0.5">
@@ -484,8 +511,8 @@ export default function MilestonesPage() {
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
             <AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">Failed to load milestones.</p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+            <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load milestones." el="Αποτυχία φόρτωσης ορόσημων." /></p>
+            <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Retry" el="Επανάληψη" compact /></Button>
           </div>
         ) : isLoading ? (
           <div className="space-y-3">
@@ -509,7 +536,7 @@ export default function MilestonesPage() {
               </p>
             </div>
             <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" /> Add your first milestone
+              <Plus className="h-4 w-4" /> <BilingualText en="Add your first milestone" el="Προσθέστε το πρώτο σας ορόσημο" compact />
             </Button>
           </div>
         ) : (

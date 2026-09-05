@@ -56,10 +56,10 @@ const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>>
 };
 
 const toastStyles: Record<ToastType, string> = {
-  success: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-  error: 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400',
-  warning: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-  info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  success: 'border-status-success-border/40 bg-status-success-bg text-status-success',
+  error: 'border-status-danger-border/40 bg-status-danger-bg text-status-danger',
+  warning: 'border-status-warning-border/40 bg-status-warning-bg text-status-warning',
+  info: 'border-status-info-border/40 bg-status-info-bg text-status-info',
 };
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {

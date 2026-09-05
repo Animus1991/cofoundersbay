@@ -28,7 +28,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ListEmptyState, NoFilterResults } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ReportStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed';
 
@@ -45,19 +47,19 @@ type ModerationReport = {
   priority: 'high' | 'medium' | 'low';
 };
 
-const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-orange-500/10 text-orange-600' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/10 text-red-600' },
-  misinformation: { label: 'Misinformation', color: 'bg-yellow-500/10 text-yellow-600' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-purple-500/10 text-purple-600' },
-  'off-topic': { label: 'Off-topic', color: 'bg-gray-500/10 text-gray-600' },
+const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; chip: string }> = {
+  spam: { label: 'Spam', chip: STATUS.warning.chip },
+  harassment: { label: 'Harassment', chip: STATUS.danger.chip },
+  misinformation: { label: 'Misinformation', chip: STATUS.warning.chip },
+  inappropriate: { label: 'Inappropriate', chip: STATUS.accent.chip },
+  'off-topic': { label: 'Off-topic', chip: STATUS.neutral.chip },
 };
 
-const STATUS_CONFIG: Record<ReportStatus, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-  reviewed: { label: 'Reviewed', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Eye },
-  resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
-  dismissed: { label: 'Dismissed', color: 'bg-gray-500/10 text-gray-500 border-gray-500/20', icon: XCircle },
+const STATUS_CONFIG: Record<ReportStatus, { label: string; chip: string; icon: React.ElementType }> = {
+  pending: { label: 'Pending', chip: STATUS.warning.chip, icon: Clock },
+  reviewed: { label: 'Reviewed', chip: STATUS.info.chip, icon: Eye },
+  resolved: { label: 'Resolved', chip: STATUS.success.chip, icon: CheckCircle },
+  dismissed: { label: 'Dismissed', chip: STATUS.neutral.chip, icon: XCircle },
 };
 
 const MOCK_REPORTS: ModerationReport[] = [
@@ -79,12 +81,12 @@ function ReportCard({ report }: { report: ModerationReport }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className={cn('text-xs', typeCfg.color)}>
+              <Badge variant="secondary" className={cn('text-xs border', typeCfg.chip)}>
                 <AlertTriangle className="mr-1 h-3 w-3" />
                 {typeCfg.label}
               </Badge>
               <Badge variant="secondary" className="text-xs capitalize">{report.contentType}</Badge>
-              <Badge variant="outline" className={cn('text-xs', statusCfg.color)}>
+              <Badge variant="outline" className={cn('text-xs border', statusCfg.chip)}>
                 <StatusIcon className="mr-1 h-3 w-3" />
                 {statusCfg.label}
               </Badge>
@@ -104,7 +106,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Report actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -144,22 +146,16 @@ export default function GroupsModerationPage() {
   });
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
-            Moderation Queue
-          </h1>
-          <p className="text-muted-foreground">Review and action community reports</p>
-        </div>
-
+    <AppShell
+      title="Moderation queue"
+      description="Review and action community reports. High-priority items are flagged first so nothing urgent slips through."
+    >
+      <div className="space-y-6">
         {/* Alert Banner */}
         {highPriority > 0 && (
-          <Card className="border-red-500/30 bg-red-500/5">
+          <Card className="border-status-danger-border/40 bg-status-danger-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+              <AlertTriangle className={cn('h-5 w-5 shrink-0', STATUS.danger.icon)} />
               <p className="text-sm">
                 <span className="font-semibold">{highPriority} high-priority report{highPriority > 1 ? 's' : ''}</span> require immediate attention
               </p>
@@ -170,9 +166,9 @@ export default function GroupsModerationPage() {
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { label: 'Pending', value: pendingCount, color: 'text-amber-500' },
-            { label: 'High Priority', value: highPriority, color: 'text-red-500' },
-            { label: 'Resolved (30d)', value: MOCK_REPORTS.filter(r => r.status === 'resolved').length, color: 'text-green-500' },
+            { label: 'Pending', value: pendingCount, color: STATUS.warning.icon },
+            { label: 'High Priority', value: highPriority, color: STATUS.danger.icon },
+            { label: 'Resolved (30d)', value: MOCK_REPORTS.filter(r => r.status === 'resolved').length, color: STATUS.success.icon },
             { label: 'Total Reports', value: MOCK_REPORTS.length, color: 'text-foreground' },
           ].map(stat => (
             <Card key={stat.label}>
@@ -200,15 +196,23 @@ export default function GroupsModerationPage() {
           <TabsContent value={activeTab} className="mt-4 space-y-3">
             {filtered.map(report => <ReportCard key={report.id} report={report} />)}
             {filtered.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
-                  <p className="font-medium">No reports found</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {activeTab === 'pending' ? 'All caught up! No pending reports.' : 'No reports match your search.'}
-                  </p>
-                </CardContent>
-              </Card>
+              search ? (
+                <NoFilterResults entity="reports" onClear={() => setSearch('')} />
+              ) : activeTab === 'pending' ? (
+                <ListEmptyState
+                  icon={CheckCircle}
+                  tone="success"
+                  title="All caught up"
+                  description="There are no pending reports to review. New community reports will appear here for action."
+                />
+              ) : (
+                <ListEmptyState
+                  icon={Shield}
+                  tone="neutral"
+                  title="No reports here"
+                  description={`There are no ${activeTab === 'all' ? '' : `${activeTab} `}reports to show right now.`}
+                />
+              )
             )}
           </TabsContent>
         </Tabs>

@@ -104,6 +104,9 @@ export function OfflineBanner() {
             <ServerCrash className="h-4 w-4 shrink-0" />
             <span className="text-sm font-medium">
               API server is unavailable — pages will reload automatically when it recovers.
+              {process.env.NODE_ENV === 'development' && (
+                <> Run: pnpm dev:stack (starts API on :3001 + web on :3000)</>
+              )}
             </span>
           </div>
           <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>

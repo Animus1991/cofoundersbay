@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Program = {
   id: string;
@@ -49,13 +50,15 @@ type Program = {
   progress: number;
 };
 
+const PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
+  draft: 'neutral',
+  active: 'success',
+  completed: 'info',
+  archived: 'warning',
+};
+
 function ProgramCard({ program }: { program: Program }) {
-  const statusColors: Record<string, string> = {
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    archived: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  };
+  const statusColors = STATUS[PROGRAM_STATUS_TONE[program.status]];
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
@@ -64,7 +67,7 @@ function ProgramCard({ program }: { program: Program }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold">{program.name}</span>
-              <Badge variant="outline" className={cn('text-xs', statusColors[program.status])}>
+              <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 {program.status}
               </Badge>
             </div>
@@ -191,7 +194,7 @@ export default function AdminProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className={cn('text-xl font-bold', STATUS.success.text)}>
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>

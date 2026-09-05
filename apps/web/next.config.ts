@@ -7,8 +7,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@cofounderbay/shared'],
-  allowedDevOrigins,
-  
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -66,60 +67,58 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Webpack: improve chunk splitting for production
-  webpack: (config, { dev, isServer, nextRuntime }) => {
-    if (dev) {
-      // Use persistent filesystem cache on all platforms (including Windows).
-      // Filesystem cache is incremental and safe; Next.js manages cache invalidation.
-      // Each compiler (client / nodejs-server / edge-server) needs a UNIQUE cache name.
-      const cacheName = !isServer
-        ? 'cfb-client'
-        : nextRuntime === 'edge'
-          ? 'cfb-edge'
-          : 'cfb-server';
+  // Turbopack is the dev compiler (enabled via `next dev --turbopack` in scripts/dev.js).
+  // Declaring the key keeps Turbopack/webpack config resolution explicit. The webpack()
+  // hook below still runs for `next build` (production), which uses webpack.
+  turbopack: {},
 
-      config.cache = {
-        type: 'filesystem',
-        name: cacheName,
-        // Bump version to bust stale cache entries (increment when deps change broadly)
-        version: '3',
-      };
-    }
-
-    if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...(config.optimization?.splitChunks as object),
-          cacheGroups: {
-            ...((config.optimization?.splitChunks as any)?.cacheGroups ?? {}),
-            radix: {
-              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
-              name: 'radix-ui',
-              chunks: 'all',
-              priority: 20,
-            },
-            charts: {
-              test: /[\\/]node_modules[\\/]recharts[\\/]/,
-              name: 'recharts',
-              chunks: 'all',
-              priority: 20,
-            },
-            motion: {
-              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              name: 'framer-motion',
-              chunks: 'all',
-              priority: 20,
-            },
-          },
-        },
-      };
-    }
-
-    return config;
+  async rewrites() {
+    if (process.env.NODE_ENV !== 'development') return [];
+    const target = (process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:3001').replace(/\/$/, '');
+    return [
+      { source: '/api/:path*', destination: `${target}/api/:path*` },
+      { source: '/socket.io/:path*', destination: `${target}/socket.io/:path*` },
+    ];
   },
-  
-  // Production optimizations
+
+  // Production-only webpack tuning (dev uses Turbopack — omit webpack hook to avoid Next warning).
+  ...(isProduction
+    ? {
+        webpack: (config: import('webpack').Configuration, { isServer }: { isServer: boolean }) => {
+          if (!isServer) {
+            config.optimization = {
+              ...config.optimization,
+              splitChunks: {
+                ...(config.optimization?.splitChunks as object),
+                cacheGroups: {
+                  ...((config.optimization?.splitChunks as { cacheGroups?: Record<string, unknown> })?.cacheGroups ?? {}),
+                  radix: {
+                    test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+                    name: 'radix-ui',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                  charts: {
+                    test: /[\\/]node_modules[\\/]recharts[\\/]/,
+                    name: 'recharts',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                  motion: {
+                    test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+                    name: 'framer-motion',
+                    chunks: 'all',
+                    priority: 20,
+                  },
+                },
+              },
+            };
+          }
+          return config;
+        },
+      }
+    : {}),
+
   poweredByHeader: false,
   
   // Compression

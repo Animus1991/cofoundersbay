@@ -346,21 +346,12 @@ export default function TenantSSOPage() {
   const activeProviderCount = providers?.filter(p => p.isActive).length ?? 0;
 
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Lock className="h-6 w-6 text-primary" />
-              SSO / Authentication
-            </h1>
-            <p className="text-muted-foreground">Configure single sign-on for your organization members</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <SSOModeBadge mode={config?.ssoMode} />
-          </div>
-        </div>
+    <AppShell
+      title="SSO / Authentication"
+      description="Configure SAML, OIDC, or Google Workspace SSO for your members. Optional rules map IdP claims to roles."
+      actions={<SSOModeBadge mode={config?.ssoMode} />}
+    >
+      <div className="space-y-6">
 
         {/* Status Banner */}
         {ssoMode !== 'disabled' && activeProviderCount > 0 ? (

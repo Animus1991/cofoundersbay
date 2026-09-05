@@ -32,12 +32,14 @@ import {
   Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 
 const ProfileViewsChart = dynamic(
   () => import('./AnalyticsCharts').then((m) => ({ default: m.ProfileViewsChart })),
@@ -54,9 +56,30 @@ interface AnalyticsMetric {
   change: number;
   changeType: 'increase' | 'decrease' | 'neutral';
   icon: typeof TrendingUp;
-  color: string;
+  tone: StatusTone;
 }
 
+const METRIC_TONE: Record<string, StatusTone> = {
+  'Profile Views': 'info',
+  'New Connections': 'success',
+  'Messages Sent': 'accent',
+  'Engagement Rate': 'accent',
+  'Search Appearances': 'warning',
+  'Activity Score': 'info',
+};
+
+function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
+  const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
+    v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
+  return [
+    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, tone: METRIC_TONE['Profile Views'] },
+    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, tone: METRIC_TONE['New Connections'] },
+    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, tone: METRIC_TONE['Messages Sent'] },
+    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, tone: METRIC_TONE['Engagement Rate'] },
+    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, tone: METRIC_TONE['Search Appearances'] },
+    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, tone: METRIC_TONE['Activity Score'] },
+  ];
+}
 interface ProfileView {
   date: string;
   views: number;
@@ -78,21 +101,9 @@ interface TopContent {
   date: string;
 }
 
-function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
-  const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
-    v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
-  return [
-    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, color: 'text-blue-500' },
-    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, color: 'text-green-500' },
-    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, color: 'text-purple-500' },
-    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, color: 'text-red-500' },
-    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, color: 'text-orange-500' },
-    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, color: 'text-cyan-500' },
-  ];
-}
-
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
   const Icon = metric.icon;
+  const colors = STATUS[metric.tone];
   const ChangeIcon =
     metric.changeType === 'increase'
       ? ArrowUp
@@ -104,7 +115,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
     <Card className="card-interactive hover-lift">
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
-          <div className={cn('p-2.5 rounded-lg bg-secondary/40', metric.color)}>
+          <div className={cn('p-2.5 rounded-lg', colors.bg, colors.icon)}>
             <Icon className="h-5 w-5" />
           </div>
           <Badge
@@ -133,7 +144,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
 }
 
 // SVG sparkline helper
-function Sparkline({ values, color = '#8b5cf6' }: { values: number[]; color?: string }) {
+function Sparkline({ values, color = 'hsl(var(--status-accent-fg))' }: { values: number[]; color?: string }) {
   if (values.length < 2) return null;
   const max = Math.max(...values, 1);
   const min = Math.min(...values);
@@ -156,10 +167,10 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? 0;
   const messages = metrics.find((m) => m.label === 'Messages Sent')?.value ?? 0;
   const stages = [
-    { label: 'Profile Views', value: views, pct: 100, color: 'bg-violet-500' },
-    { label: 'Connection Requests', value: Math.round(views * 0.12), pct: views ? Math.round((connections / views) * 100 * 12) : 0, color: 'bg-blue-500' },
-    { label: 'Accepted Connections', value: connections, pct: views ? Math.round((connections / views) * 100) : 0, color: 'bg-emerald-500' },
-    { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, color: 'bg-amber-500' },
+    { label: 'Profile Views', value: views, pct: 100, bar: 'bg-status-accent' },
+    { label: 'Connection Requests', value: Math.round(views * 0.12), pct: views ? Math.round((connections / views) * 100 * 12) : 0, bar: 'bg-status-info' },
+    { label: 'Accepted Connections', value: connections, pct: views ? Math.round((connections / views) * 100) : 0, bar: 'bg-status-success' },
+    { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, bar: 'bg-status-warning' },
   ];
   return (
     <Card>
@@ -176,7 +187,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
               <span className="font-semibold text-foreground">{s.value.toLocaleString()}</span>
             </div>
             <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-              <div className={cn('h-full rounded-full transition-all duration-700', s.color)} style={{ width: `${Math.min(s.pct, 100)}%` }} />
+              <div className={cn('h-full rounded-full transition-all duration-700', s.bar)} style={{ width: `${Math.min(s.pct, 100)}%` }} />
             </div>
           </div>
         ))}
@@ -192,7 +203,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     change: m.change,
     changeType: m.changeType,
     icon: m.icon,
-    color: m.color,
+    tone: m.tone,
   }));
   return (
     <Card className="border-primary/20 bg-primary/[0.02]">
@@ -205,15 +216,16 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => {
             const Icon = item.icon;
+            const colors = STATUS[item.tone];
             return (
               <div key={item.label} className="text-center">
-                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1 bg-secondary/60', item.color)}>
+                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1', colors.bg, colors.icon)}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <p className={cn('text-xs font-bold',
-                  item.changeType === 'increase' ? 'text-emerald-600 dark:text-emerald-400'
-                  : item.changeType === 'decrease' ? 'text-red-500'
-                  : 'text-muted-foreground'
+                  item.changeType === 'increase' ? TREND.up
+                  : item.changeType === 'decrease' ? TREND.down
+                  : TREND.flat
                 )}>
                   {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
                 </p>
@@ -277,7 +289,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
     title: a.title,
     description: a.description,
     icon: Award,
-    color: 'text-yellow-500',
+    color: STATUS.warning.icon,
     unlocked: a.unlocked,
   }));
 
@@ -387,12 +399,12 @@ export default function AnalyticsPage() {
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
               )}
             >
-              {p === '7d' ? '7 days' : p === '14d' ? '14 days' : p === '30d' ? '30 days' : '90 days'}
+              {p === '7d' ? <BilingualText en="7 days" el="7 ημέρες" compact /> : p === '14d' ? <BilingualText en="14 days" el="14 ημέρες" compact /> : p === '30d' ? <BilingualText en="30 days" el="30 ημέρες" compact /> : <BilingualText en="90 days" el="90 ημέρες" compact />}
             </button>
           ))}
         </div>
         <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
-          <Activity className="h-3.5 w-3.5" />Refresh
+          <Activity className="h-3.5 w-3.5" /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
 
@@ -400,23 +412,23 @@ export default function AnalyticsPage() {
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            Overview
+            <BilingualText en="Overview" el="Επισκόπηση" compact />
           </TabsTrigger>
           <TabsTrigger value="engagement" className="gap-2">
             <Activity className="h-4 w-4" />
-            Engagement
+            <BilingualText en="Engagement" el="Αφοσίωση" compact />
           </TabsTrigger>
           <TabsTrigger value="growth" className="gap-2">
             <TrendingUp className="h-4 w-4" />
-            Growth
+            <BilingualText en="Growth" el="Ανάπτυξη" compact />
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load analytics data." el="Αποτυχία φόρτωσης αναλυτικών δεδομένων." /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Επανάληψη" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
             <AnalyticsSkeleton />
@@ -438,11 +450,12 @@ export default function AnalyticsPage() {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {metrics.map((metric) => {
                   const sparkValues = demoSparklines[metric.label] ?? [];
+                  const colors = STATUS[metric.tone];
                   return (
                     <Card key={metric.label} className="card-interactive hover-lift relative overflow-hidden">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-2">
-                          <div className={cn('p-2 rounded-lg bg-secondary/40', metric.color)}>
+                          <div className={cn('p-2 rounded-lg', colors.bg, colors.icon)}>
                             <metric.icon className="h-4 w-4" />
                           </div>
                           <Badge
@@ -507,8 +520,8 @@ export default function AnalyticsPage() {
         <TabsContent value="engagement" className="mt-4 space-y-4">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load analytics data." el="Αποτυχία φόρτωσης αναλυτικών δεδομένων." /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Επανάληψη" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
             <AnalyticsSkeleton />
@@ -533,8 +546,8 @@ export default function AnalyticsPage() {
         <TabsContent value="growth" className="mt-4 space-y-4">
           {isError ? (
             <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-              <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
-              <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
+              <p className="text-sm text-muted-foreground"><BilingualText en="Failed to load analytics data." el="Αποτυχία φόρτωσης αναλυτικών δεδομένων." /></p>
+              <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en="Try again" el="Επανάληψη" compact /></Button>
             </CardContent></Card>
           ) : isLoading ? (
             <AnalyticsSkeleton />

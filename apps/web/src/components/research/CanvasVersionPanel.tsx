@@ -52,6 +52,7 @@ import {
   type CanvasDiff,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -329,11 +330,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
   const [restoring, setRestoring] = useState(false);
   const [previewData, setPreviewData] = useState<BoardSnapshotFull | null>(null);
   const [previewDiff, setPreviewDiff] = useState<CanvasDiff | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['snapshots', boardId],
     queryFn: () => listSnapshots(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const snapshots: BoardSnapshot[] = data ?? [];
@@ -529,11 +534,15 @@ function VersionsTab({ boardId }: { boardId: string }) {
   const [diffVersion, setDiffVersion] = useState<CanvasVersion | null>(null);
   const [restoreTarget, setRestoreTarget] = useState<CanvasVersion | null>(null);
   const [restoring, setRestoring] = useState(false);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['canvas-versions', boardId],
     queryFn: () => listCanvasVersions(boardId),
-    refetchInterval: 90_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(90_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const versions: CanvasVersion[] = data ?? [];
@@ -682,11 +691,15 @@ function BranchesTab({ boardId }: { boardId: string }) {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['canvas-branches', boardId],
     queryFn: () => listCanvasBranches(boardId),
-    refetchInterval: 60_000,
+    enabled: apiAvailable && !!boardId,
+    refetchInterval: pollInterval(60_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const branches: CanvasBranch[] = data ?? [];

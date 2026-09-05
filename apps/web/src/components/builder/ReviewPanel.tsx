@@ -35,6 +35,7 @@ import {
   submitProposalReview,
   type ChangeProposal,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // ── Proposal Status helpers ────────────────────────────────────────────────
 
@@ -216,12 +217,15 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
     proposal: ChangeProposal;
     decision: 'approved' | 'changes_requested' | 'closed';
   } | null>(null);
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data, isLoading } = useQuery({
     queryKey: ['proposals', documentId],
     queryFn: () => listProposals(documentId),
-    enabled: open && !!documentId,
-    refetchInterval: 30_000,
+    enabled: open && !!documentId && apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const allProposals: ChangeProposal[] = Array.isArray(data) ? data : [];

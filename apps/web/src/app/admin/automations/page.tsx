@@ -15,6 +15,7 @@ import {
   type AutomationExecutionItem,
   type AutomationLogItem,
 } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -320,6 +321,7 @@ function LogPanel({ executionId }: { executionId: string }) {
 export default function AutomationsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const { apiAvailable, pollInterval } = usePollingGuards();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
   const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
@@ -333,8 +335,10 @@ export default function AutomationsPage() {
   const { data: executions = [], isLoading: execLoading } = useQuery<AutomationExecutionItem[]>({
     queryKey: ['automation-executions'],
     queryFn: () => listAutomationExecutions({ limit: 50 }),
-    enabled: activeTab === 'executions',
-    refetchInterval: 10000,
+    enabled: activeTab === 'executions' && apiAvailable,
+    refetchInterval: pollInterval(10_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const setStatusMutation = useMutation({

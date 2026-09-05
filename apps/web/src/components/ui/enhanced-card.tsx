@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { TREND } from '@/lib/semantic-colors';
 import { Slot } from '@radix-ui/react-slot';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -268,9 +269,9 @@ export const StatsCard = React.forwardRef<
   }
 >(({ title, value, change, icon, trend, className, ...props }, ref) => {
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-green-600';
-    if (trend === 'down') return 'text-red-600';
-    return 'text-muted-foreground';
+    if (trend === 'up') return TREND.up;
+    if (trend === 'down') return TREND.down;
+    return TREND.flat;
   };
 
   const getTrendIcon = () => {
@@ -296,7 +297,7 @@ export const StatsCard = React.forwardRef<
               <span
                 className={cn(
                   'text-xs font-medium',
-                  change.type === 'increase' ? 'text-green-600' : 'text-red-600'
+                  change.type === 'increase' ? TREND.up : TREND.down
                 )}
               >
                 {change.type === 'increase' ? '+' : '-'}{change.value}%

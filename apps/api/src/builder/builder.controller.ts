@@ -17,6 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { BuilderService } from './builder.service';
 import { BuilderAIService } from './builder-ai.service';
 import { BuilderOrgService } from './builder-org.service';
+import { GamificationEventsService } from '../gamification/gamification-events.service';
 import {
   CreateWorkspaceDto,
   UpdateWorkspaceDto,
@@ -44,6 +45,7 @@ export class BuilderController {
     private readonly builderService: BuilderService,
     private readonly builderAIService: BuilderAIService,
     private readonly builderOrgService: BuilderOrgService,
+    private readonly gamificationEvents: GamificationEventsService,
   ) {}
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -100,7 +102,15 @@ export class BuilderController {
 
   @Post('documents')
   async createDocument(@Request() req: any, @Body() dto: CreateDocumentDto) {
-    return this.builderService.createDocument(req.user.id, dto);
+    const document = await this.builderService.createDocument(req.user.id, dto);
+    // Record XP for artifact creation
+    this.gamificationEvents.onArtifactCreated(
+      req.user.id,
+      document.id,
+      dto.workspaceId,
+      dto.type || 'document'
+    ).catch(() => {});
+    return document;
   }
 
   @Get('documents/:id')
@@ -114,7 +124,19 @@ export class BuilderController {
     @Param('id') id: string,
     @Body() dto: UpdateDocumentDto,
   ) {
-    return this.builderService.updateDocument(req.user.id, id, dto);
+    const document = await this.builderService.updateDocument(req.user.id, id, dto);
+    // Record XP for artifact improvement
+    if (dto.completionPercent !== undefined) {
+      const completionDelta = Math.abs(dto.completionPercent - (document.completionPercent || 0));
+      this.gamificationEvents.onArtifactImproved(
+        req.user.id,
+        id,
+        document.workspaceId,
+        completionDelta,
+        1 // TODO: get actual collaborator count from workspace
+      ).catch(() => {});
+    }
+    return document;
   }
 
   @Patch('documents/:id/sections/:sectionKey')
@@ -124,7 +146,21 @@ export class BuilderController {
     @Param('sectionKey') sectionKey: string,
     @Body() dto: UpdateDocumentSectionDto,
   ) {
-    return this.builderService.updateDocumentSection(req.user.id, id, sectionKey, dto);
+    const section = await this.builderService.updateDocumentSection(req.user.id, id, sectionKey, dto);
+    // Record XP for section improvement (fetch document to get workspaceId)
+    const contentLength = dto.content?.length || 0;
+    if (contentLength > 50) {
+      const doc = await this.builderService.getDocument(req.user.id, id);
+      const completionDelta = Math.min(contentLength / 100, 20);
+      this.gamificationEvents.onArtifactImproved(
+        req.user.id,
+        id,
+        doc.workspaceId,
+        completionDelta,
+        1
+      ).catch(() => {});
+    }
+    return section;
   }
 
   @Delete('documents/:id')

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { getNativeWebSocketOrigin } from '@/lib/api-origin';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Bell,
@@ -30,6 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { listNotifications, markNotificationRead, markAllNotificationsRead, type NotificationItem } from '@/lib/api';
+import { usePollingGuards } from '@/hooks/usePollingGuards';
 
 // Use NotificationItem from @/lib/api
 
@@ -145,6 +147,7 @@ export function NotificationCenter() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const queryClient = useQueryClient();
+  const { apiAvailable, pollInterval } = usePollingGuards();
 
   const { data: notifications = [], isLoading } = useQuery({
     queryKey: ['notifications', filter, categoryFilter],
@@ -163,7 +166,10 @@ export function NotificationCenter() {
       }
       return items;
     },
-    refetchInterval: 30000,
+    enabled: apiAvailable,
+    refetchInterval: pollInterval(30_000),
+    refetchIntervalInBackground: false,
+    retry: 0,
   });
 
   const markAsReadMutation = useMutation({
@@ -197,26 +203,26 @@ export function NotificationCenter() {
   const unreadCount = notifications.filter((n: NotificationItem) => n.readAt === null).length;
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'WebSocket' in window) {
-      const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001');
-      
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === 'notification') {
-          queryClient.invalidateQueries({ queryKey: ['notifications'] });
-          
-          if (Notification.permission === 'granted') {
-            new Notification(data.title, {
-              body: data.message,
-              icon: '/logo.png',
-            });
-          }
-        }
-      };
+    if (!apiAvailable || typeof window === 'undefined' || !('WebSocket' in window)) return;
 
-      return () => ws.close();
-    }
-  }, [queryClient]);
+    const ws = new WebSocket(getNativeWebSocketOrigin());
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === 'notification') {
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
+
+        if (Notification.permission === 'granted') {
+          new Notification(data.title, {
+            body: data.message,
+            icon: '/logo.png',
+          });
+        }
+      }
+    };
+
+    return () => ws.close();
+  }, [queryClient, apiAvailable]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {

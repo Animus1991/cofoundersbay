@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RoleBadge } from './RoleBadge';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
 
 type ConnectionRequestProps = {
   open: boolean;
@@ -156,7 +157,7 @@ export function ConnectionRequestDialog({
               {charCount}/500 characters
             </span>
             {charCount < 20 && charCount > 0 && (
-              <span className="text-amber-400">
+              <span className={STATUS.warning.icon}>
                 {20 - charCount} more characters needed
               </span>
             )}
@@ -198,19 +199,19 @@ export function ConnectionRequestDialog({
 type ConnectionStatus = 'none' | 'pending' | 'connected' | 'declined';
 
 export function ConnectionStatusBadge({ status }: { status: ConnectionStatus }) {
-  const config: Record<ConnectionStatus, { label: string; className: string }> = {
-    none: { label: 'Not connected', className: 'bg-muted text-muted-foreground' },
-    pending: { label: 'Request pending', className: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-    connected: { label: 'Connected', className: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-    declined: { label: 'Request declined', className: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  const config: Record<ConnectionStatus, { label: string; chip: string }> = {
+    none: { label: 'Not connected', chip: STATUS.neutral.chip },
+    pending: { label: 'Request pending', chip: STATUS.warning.chip },
+    connected: { label: 'Connected', chip: STATUS.success.chip },
+    declined: { label: 'Request declined', chip: STATUS.danger.chip },
   };
 
-  const { label, className } = config[status];
+  const { label, chip } = config[status];
 
   return (
     <span className={cn(
       'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium',
-      className
+      chip
     )}>
       {label}
     </span>

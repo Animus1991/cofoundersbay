@@ -41,6 +41,7 @@ import {
   MessageSquare, Star, Activity, Zap, BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
@@ -74,12 +75,16 @@ const DEFAULT_DOC_TYPES = [
 
 // ── Role display helpers ───────────────────────────────────────────────────
 
-const ROLE_META: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-  owner:     { label: 'Owner',     color: 'text-yellow-600 bg-yellow-50 border-yellow-200',   icon: Crown },
-  editor:    { label: 'Editor',    color: 'text-blue-600 bg-blue-50 border-blue-200',          icon: Edit2 },
-  commenter: { label: 'Commenter', color: 'text-purple-600 bg-purple-50 border-purple-200',   icon: MessageSquare },
-  viewer:    { label: 'Viewer',    color: 'text-gray-600 bg-gray-50 border-gray-200',          icon: Eye },
+const ROLE_META: Record<string, { label: string; tone: StatusTone; icon: React.ElementType }> = {
+  owner:     { label: 'Owner',     tone: 'warning', icon: Crown },
+  editor:    { label: 'Editor',    tone: 'info',    icon: Edit2 },
+  commenter: { label: 'Commenter', tone: 'accent',  icon: MessageSquare },
+  viewer:    { label: 'Viewer',    tone: 'neutral', icon: Eye },
 };
+
+function roleChip(role: string) {
+  return STATUS[ROLE_META[role]?.tone ?? 'neutral'].chip;
+}
 
 function docStatus(doc: BuilderDocument): 'not-started' | 'in-progress' | 'reviewed' | 'completed' {
   if (doc.status === 'approved') return 'completed';
@@ -90,10 +95,10 @@ function docStatus(doc: BuilderDocument): 'not-started' | 'in-progress' | 'revie
 
 function statusColor(s: string) {
   switch (s) {
-    case 'completed': return 'bg-green-500';
-    case 'in-progress': return 'bg-yellow-500';
-    case 'reviewed': return 'bg-blue-500';
-    default: return 'bg-gray-300';
+    case 'completed': return 'bg-status-success';
+    case 'in-progress': return 'bg-status-warning';
+    case 'reviewed': return 'bg-status-info';
+    default: return 'bg-muted-foreground/30';
   }
 }
 
@@ -115,10 +120,24 @@ function dimensionLabel(d: string) {
 }
 
 function dimensionColor(score: number) {
-  if (score >= 80) return 'text-green-600';
-  if (score >= 60) return 'text-blue-600';
-  if (score >= 40) return 'text-yellow-600';
-  return 'text-red-500';
+  if (score >= 80) return STATUS.success.text;
+  if (score >= 60) return STATUS.info.text;
+  if (score >= 40) return STATUS.warning.text;
+  return STATUS.danger.text;
+}
+
+function readinessStatusChip(status: string) {
+  if (status === 'excellent' || status === 'good') return STATUS.success.chip;
+  if (status === 'needs-work') return STATUS.warning.chip;
+  if (status === 'critical') return STATUS.danger.chip;
+  return STATUS.neutral.chip;
+}
+
+function docStatusChip(status: string) {
+  if (status === 'approved') return STATUS.success.chip;
+  if (status === 'review') return STATUS.info.chip;
+  if (status === 'in_progress') return STATUS.warning.chip;
+  return STATUS.neutral.chip;
 }
 
 // ── Invite Collaborator Dialog ─────────────────────────────────────────────
@@ -399,7 +418,7 @@ export function BuilderWorkspace() {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{completedDocs}</div>
+            <div className={cn('text-2xl font-bold', STATUS.success.text)}>{completedDocs}</div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completed</div>
             <div className="text-xs text-muted-foreground mt-1.5">{inProgressDocs} in progress</div>
           </CardContent>
@@ -522,11 +541,7 @@ export function BuilderWorkspace() {
                       {existing ? (
                         <Badge
                           variant="secondary"
-                          className={cn('text-xs', {
-                            'bg-green-100 text-green-700': existing.status === 'approved',
-                            'bg-blue-100 text-blue-700': existing.status === 'review',
-                            'bg-yellow-100 text-yellow-700': existing.status === 'in_progress',
-                          })}
+                          className={cn('text-xs border', docStatusChip(existing.status))}
                         >
                           {existing.completionPercent}%
                         </Badge>
@@ -541,7 +556,7 @@ export function BuilderWorkspace() {
                   <div className="pt-2 border-t mt-2 space-y-1.5">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Gaps</p>
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
-                      <div key={i} className="flex items-start gap-1.5 text-xs text-red-600">
+                      <div key={i} className={cn('flex items-start gap-1.5 text-xs', STATUS.danger.text)}>
                         <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
                         {b}
                       </div>
@@ -557,7 +572,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <Zap className={cn('h-4 w-4', STATUS.warning.icon)} />
                   Recommended Next Steps
                 </CardTitle>
               </CardHeader>
@@ -712,7 +727,7 @@ export function BuilderWorkspace() {
                         <div className="flex items-center gap-2 shrink-0">
                           <Badge
                             variant="outline"
-                            className={cn('text-xs flex items-center gap-1 px-2', roleMeta.color)}
+                            className={cn('text-xs flex items-center gap-1 px-2 border', roleChip(collab.role))}
                           >
                             <RoleIcon className="h-2.5 w-2.5" />
                             {roleMeta.label}
@@ -848,11 +863,7 @@ export function BuilderWorkspace() {
                     <Progress value={dim.score} className="h-2" />
                     <Badge
                       variant="outline"
-                      className={cn('text-xs capitalize', {
-                        'border-green-200 text-green-700': dim.status === 'excellent' || dim.status === 'good',
-                        'border-yellow-200 text-yellow-700': dim.status === 'needs-work',
-                        'border-red-200 text-red-700': dim.status === 'critical',
-                      })}
+                      className={cn('text-xs capitalize border', readinessStatusChip(dim.status ?? ''))}
                     >
                       {dim.status?.replace('-', ' ')}
                     </Badge>

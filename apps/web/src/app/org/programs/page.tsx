@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Layers,
   Plus,
   Search,
   Calendar,
@@ -23,7 +22,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { EmptyOrgPrograms } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
+import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 
 type Program = {
   id: string;
@@ -37,13 +38,15 @@ type Program = {
   description?: string;
 };
 
+const ORG_PROGRAM_STATUS_TONE: Record<Program['status'], StatusTone> = {
+  draft: 'neutral',
+  active: 'success',
+  completed: 'info',
+  archived: 'warning',
+};
+
 function ProgramCard({ program }: { program: Program }) {
-  const statusColors: Record<string, string> = {
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    archived: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  };
+  const statusColors = STATUS[ORG_PROGRAM_STATUS_TONE[program.status]];
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">
@@ -54,7 +57,7 @@ function ProgramCard({ program }: { program: Program }) {
               <Link href={`/org/programs/${program.id}`} className="font-semibold hover:text-primary transition-colors">
                 {program.name}
               </Link>
-              <Badge variant="outline" className={cn('text-xs', statusColors[program.status])}>
+              <Badge variant="outline" className={cn('text-xs border', statusColors.chip)}>
                 {program.status}
               </Badge>
             </div>
@@ -158,24 +161,23 @@ export default function OrgProgramsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  const filtersActive = !!search || statusFilter !== 'all';
+  const clearFilters = () => { setSearch(''); setStatusFilter('all'); };
+
   return (
-    <AppShell>
-      <div className="py-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Programs</h1>
-            <p className="text-muted-foreground">
-              Manage your accelerator programs and cohorts
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/org/programs/new">
-              <Plus className="mr-2 icon-sm" />
-              New Program
-            </Link>
-          </Button>
-        </div>
+    <AppShell
+      title="Programs"
+      description="Create, run, and review accelerator, bootcamp, and incubator programs."
+      actions={(
+        <Button asChild>
+          <Link href="/org/programs/new">
+            <Plus className="mr-2 icon-sm" />
+            New Program
+          </Link>
+        </Button>
+      )}
+    >
+      <div className="space-y-6">
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -188,7 +190,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className={cn('text-xl font-bold', STATUS.success.icon)}>
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -204,7 +206,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-xl font-bold text-blue-600">
+              <p className={cn('text-xl font-bold', STATUS.info.icon)}>
                 {programs.filter((p) => p.status === 'completed').length}
               </p>
             </CardContent>
@@ -230,21 +232,7 @@ export default function OrgProgramsPage() {
             <ProgramCard key={program.id} program={program} />
           ))}
           {filteredPrograms.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Layers className="icon-lg mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="font-medium">No programs found</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Create your first program to get started
-                </p>
-                <Button className="mt-4" asChild>
-                  <Link href="/org/programs/new">
-                    <Plus className="mr-2 icon-sm" />
-                    Create Program
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <EmptyOrgPrograms filtersActive={filtersActive} onClearFilters={clearFilters} />
           )}
         </div>
       </div>
