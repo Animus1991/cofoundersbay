@@ -138,13 +138,13 @@ export function SideNav() {
         {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80 first:mt-1">
+              <p className="mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
                 <BilingualText
                   en={section}
                   el={getNavSectionEl(section)}
                   stacked
-                  primaryClassName="text-[10px] font-semibold uppercase tracking-widest"
-                  secondaryClassName="text-[9px] normal-case tracking-normal"
+                  primaryClassName="font-semibold uppercase tracking-widest"
+                  secondaryClassName="normal-case tracking-normal"
                 />
               </p>
             ) : (
@@ -173,7 +173,7 @@ export function SideNav() {
                         : undefined
                     }
                     className={cn(
-                      'group relative flex items-center rounded-lg transition-all duration-150 min-w-0 overflow-hidden',
+                      'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
                       expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
                       active
                         ? 'bg-primary/8 text-primary-accessible font-medium'

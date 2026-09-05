@@ -24,7 +24,11 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
       <div
         className={cn(
           'min-w-0 shrink-0 overflow-hidden border-b border-border/60 bg-secondary/30',
-          expanded ? 'grid grid-cols-3 gap-0.5 px-1.5 py-1.5' : 'flex flex-col gap-1 px-1 py-2',
+          // Expanded: one row per mode. A 3-up grid gives each label only ~66px,
+          // which forced 10px/8px type and still truncated the Greek labels.
+          // Full-width rows fit both languages at legible sizes and match the
+          // nav list directly below.
+          expanded ? 'flex flex-col gap-0.5 px-2 py-2' : 'flex flex-col gap-1 px-1 py-2',
         )}
       >
         {sidebarModes.map((mode) => {
@@ -39,10 +43,10 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               onClick={() => onModeChange(mode.id)}
               title={aria}
               className={cn(
-                'flex items-center justify-center rounded-md transition-all duration-150 min-w-0 overflow-hidden',
+                'flex items-center rounded-md transition-all duration-150 min-w-0 overflow-hidden',
                 expanded
-                  ? 'min-h-10 flex-col gap-0.5 px-1 py-1.5 text-center sm:min-h-0'
-                  : 'h-9 w-9',
+                  ? 'w-full gap-2.5 px-2.5 py-1.5 text-left'
+                  : 'h-9 w-9 justify-center',
                 isActive
                   ? 'bg-primary/10 text-primary-accessible shadow-sm'
                   : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
@@ -50,15 +54,14 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               aria-pressed={isActive}
               aria-label={aria}
             >
-              <Icon className={cn('shrink-0', expanded ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
+              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
               {expanded && (
                 <BilingualText
                   en={mode.shortLabel}
                   el={labelEl}
                   stacked
-                  className="w-full max-w-full"
-                  primaryClassName="text-[10px] font-medium leading-tight truncate"
-                  secondaryClassName="text-[8px] leading-tight truncate"
+                  className="min-w-0 flex-1 text-sm"
+                  primaryClassName="font-medium"
                 />
               )}
             </button>

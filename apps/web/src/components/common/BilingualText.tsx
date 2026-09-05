@@ -48,12 +48,12 @@ export function BilingualText({
         <span lang={resolved.primaryLang} className={cn('truncate', primaryClassName)}>
           {resolved.primaryText}
         </span>
-        <span className="shrink-0 text-muted-foreground/40" aria-hidden="true">
+        <span className="bilingual-separator shrink-0" aria-hidden="true">
           ·
         </span>
         <span
           lang={resolved.secondaryLang ?? undefined}
-          className={cn('truncate text-[9px] font-normal text-muted-foreground', secondaryClassName)}
+          className={cn('bilingual-secondary truncate text-muted-foreground', secondaryClassName)}
         >
           {resolved.secondaryText}
         </span>
@@ -63,19 +63,18 @@ export function BilingualText({
 
   if (stacked) {
     return (
-      <span className={cn('flex min-w-0 flex-col gap-0.5 overflow-hidden', className)}>
+      <span className={cn('flex min-w-0 flex-col overflow-hidden', className)}>
+        {/* leading-tight, not leading-none: leading-none clips Greek diacritics
+            on capitals (Ά, Έ, Ό) and Latin descenders. */}
         <span
           lang={resolved.primaryLang}
-          className={cn('truncate leading-none', primaryClassName)}
+          className={cn('truncate leading-tight', primaryClassName)}
         >
           {resolved.primaryText}
         </span>
         <span
           lang={resolved.secondaryLang ?? undefined}
-          className={cn(
-            'truncate text-[10px] font-normal leading-tight text-muted-foreground',
-            secondaryClassName,
-          )}
+          className={cn('bilingual-secondary truncate text-muted-foreground', secondaryClassName)}
         >
           {resolved.secondaryText}
         </span>
@@ -88,12 +87,12 @@ export function BilingualText({
       <span lang={resolved.primaryLang} className={primaryClassName}>
         {resolved.primaryText}
       </span>
-      <span className="mx-1.5 text-muted-foreground/40" aria-hidden="true">
+      <span className="bilingual-separator mx-1.5" aria-hidden="true">
         ·
       </span>
       <span
         lang={resolved.secondaryLang ?? undefined}
-        className={cn('font-normal text-muted-foreground/90', secondaryClassName)}
+        className={cn('bilingual-secondary text-muted-foreground', secondaryClassName)}
       >
         {resolved.secondaryText}
       </span>

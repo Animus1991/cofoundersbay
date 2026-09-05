@@ -820,6 +820,28 @@
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
   .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
 
+  /* ── Bilingual secondary text ──
+     The secondary language must read as subordinate to the primary without
+     becoming illegible. Sizing is relative (0.85em) so the ratio holds in an
+     h1, in body copy and in a badge alike, with an 11px floor via max() so it
+     never drops below a readable size in already-small containers.
+     Replaces the previous hardcoded text-[9px] / text-[10px].
+     Colour is deliberately NOT set here: it stays a Tailwind class on the
+     element so tailwind-merge can resolve a caller-supplied override
+     (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
+  .bilingual-secondary {
+    font-size: max(0.6875rem, 0.85em); /* >= 11px */
+    line-height: 1.35;                 /* room for Greek diacritics */
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  /* Separator between primary and secondary in inline mode. */
+  .bilingual-separator {
+    @apply select-none text-muted-foreground/40;
+    font-size: max(0.6875rem, 0.85em);
+  }
+
   /* ── Card padding standards ── */
   .card-compact { @apply p-4; }      /* Compact cards - lists, dense info */
   .card-comfortable { @apply p-6; }  /* Comfortable cards - default */
