@@ -81,15 +81,15 @@ export function OfflineBanner() {
 
   if (!isOnline) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-amber-950">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <WifiOff className="h-4 w-4" />
-            <span className="text-sm font-medium">You&apos;re offline. Some features may be unavailable.</span>
+      <div className="sticky top-0 z-40 bg-amber-500 px-3 py-1.5 text-amber-950 sm:px-4 sm:py-2">
+        <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <WifiOff className="h-4 w-4 shrink-0" />
+            <span className="truncate text-xs font-medium sm:text-sm">You&apos;re offline. Some features may be unavailable.</span>
           </div>
-          <Button size="sm" variant="ghost" className="h-7 text-amber-950 hover:bg-amber-600" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Retry
+          <Button size="sm" variant="ghost" className="h-7 shrink-0 text-amber-950 hover:bg-amber-600" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Retry</span>
           </Button>
         </div>
       </div>
@@ -98,17 +98,17 @@ export function OfflineBanner() {
 
   if (!isApiOnline) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-orange-600 px-4 py-2 text-white">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <div className="sticky top-0 z-40 bg-orange-600 px-3 py-1.5 text-white sm:px-4 sm:py-2">
+        <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <ServerCrash className="h-4 w-4 shrink-0" />
-            <span className="text-sm font-medium">
-              API server is unavailable — pages will reload automatically when it recovers.
+            <span className="truncate text-xs font-medium sm:text-sm">
+              API unavailable — demo data still works.
             </span>
           </div>
-          <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 mr-1" />
-            Reload now
+          <Button size="sm" variant="ghost" className="h-7 shrink-0 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
+            <RefreshCw className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Reload</span>
           </Button>
         </div>
       </div>
@@ -117,10 +117,10 @@ export function OfflineBanner() {
 
   if (showReconnected) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 px-4 py-2 text-emerald-950">
-        <div className="container mx-auto flex items-center justify-center gap-2">
+      <div className="sticky top-0 z-40 bg-emerald-500 px-3 py-1.5 text-emerald-950 sm:px-4 sm:py-2">
+        <div className="mx-auto flex max-w-screen-2xl items-center justify-center gap-2">
           <Wifi className="h-4 w-4" />
-          <span className="text-sm font-medium">Back online!</span>
+          <span className="text-xs font-medium sm:text-sm">Back online!</span>
         </div>
       </div>
     );

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Cookie, X, Settings, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/layout/SidebarContext';
 
 type CookiePreferences = {
   essential: boolean;
@@ -24,6 +25,7 @@ const defaultPreferences: CookiePreferences = {
 };
 
 export function CookieConsent() {
+  const { mobileNavOpen } = useSidebar();
   const [isVisible, setIsVisible] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
@@ -80,12 +82,12 @@ export function CookieConsent() {
     saveConsent(preferences);
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || mobileNavOpen) return null;
 
   return (
     <div
       className={cn(
-        'fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-[100] p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
+        'fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 p-3 sm:p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >

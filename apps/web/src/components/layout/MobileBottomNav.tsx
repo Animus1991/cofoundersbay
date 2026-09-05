@@ -9,7 +9,7 @@ import { useSidebar } from './SidebarContext';
 
 const PRIMARY_TABS = [
   { icon: Home, label: 'Home', path: '/dashboard', match: ['/dashboard'] },
-  { icon: Compass, label: 'Discover', path: '/discover', match: ['/discover', '/matches', '/search'] },
+  { icon: Compass, label: 'Discover', path: '/discover', match: ['/discover'] },
   { icon: MessageCircle, label: 'Messages', path: '/messages', match: ['/messages'], badgeKey: 'messages' as const },
   { icon: User, label: 'Profile', path: '/profile', match: ['/profile'] },
 ] as const;
