@@ -33,6 +33,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 const DAYS = [
   { key: 0, label: 'Sunday',    short: 'Sun' },
@@ -95,7 +96,7 @@ export default function MentorAvailabilityPage() {
   const [noticeHours, setNoticeHours] = useState(24);
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });

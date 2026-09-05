@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getMeProfile, listLearningResources, getLearningCategories, type LearningResourceItem } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -298,7 +299,7 @@ export default function LearningPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: meData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
   });

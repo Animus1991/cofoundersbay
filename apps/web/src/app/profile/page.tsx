@@ -41,6 +41,7 @@ import {
   User,
 } from 'lucide-react';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -275,7 +276,7 @@ export default function ProfilePage() {
   const { success } = useToast();
 
   const { data: meData, isLoading, error } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
     retry: 1,

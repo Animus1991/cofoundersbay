@@ -27,6 +27,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { getMeProfile, listSkills, updateProfile, uploadAvatar, getAIProfileSuggestions, type Skill, type ProfileSuggestions } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -341,7 +342,7 @@ export default function ProfileEditPage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
   });
@@ -469,7 +470,7 @@ export default function ProfileEditPage() {
         rolePayload: Object.keys(rolePayload).length ? rolePayload : undefined,
         skillIds,
       });
-      queryClient.invalidateQueries({ queryKey: ['me', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.me.profile() });
       // Sync updated name/avatar to localStorage so TopNav UserMenu reflects changes immediately
       if (typeof window !== 'undefined') {
         try {

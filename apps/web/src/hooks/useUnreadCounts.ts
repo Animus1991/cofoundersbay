@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { listMessageConversations, listConnectionRequests, getNotificationUnreadCount } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import { useHasSession } from './useSession';
 import { useAuthenticatedSession } from './useAuthenticatedSession';
 import { useApiAvailability } from './useApiAvailability';
@@ -53,7 +54,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   });
 
   const { data: introData, isError: introError } = useQuery({
-    queryKey: ['connections', 'pending-received'],
+    queryKey: queryKeys.connections.pendingReceived(),
     queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     staleTime: 60_000,
     refetchInterval: (query) => {

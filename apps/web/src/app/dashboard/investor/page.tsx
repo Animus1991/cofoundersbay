@@ -31,6 +31,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -180,7 +181,7 @@ export default function InvestorDashboard() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });

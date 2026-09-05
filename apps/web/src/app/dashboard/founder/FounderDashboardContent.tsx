@@ -21,6 +21,7 @@ import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
+import { queryKeys } from '@/lib/query-keys';
 import {
   getDashboardStats,
   getMeProfile,
@@ -188,7 +189,7 @@ export default function FounderDashboardContent() {
   const { showDemoData } = useDemoData();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -206,7 +207,7 @@ export default function FounderDashboardContent() {
   });
 
   const { data: connectionRequests } = useQuery({
-    queryKey: ['connection-requests'],
+    queryKey: queryKeys.connections.pendingReceived(),
     queryFn: () => listConnectionRequests(),
     enabled: hasSession && mounted,
   });

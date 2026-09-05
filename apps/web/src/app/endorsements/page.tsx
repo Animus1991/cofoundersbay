@@ -12,6 +12,7 @@ import {
   declineEndorsement,
   type EndorsementItem,
 } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, MessageSquare,
   User, ChevronRight, Award, TrendingUp, BadgeCheck, Quote,
@@ -305,7 +306,7 @@ export default function EndorsementsPage() {
 
   // Real API: current user
   const { data: meData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 300_000,
     enabled: !showDemoData,

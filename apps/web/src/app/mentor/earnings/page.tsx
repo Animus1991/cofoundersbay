@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { getMeProfile } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 // ── Mock data (replace with real API calls) ──────────────────────────────────
 
@@ -105,7 +106,7 @@ export default function MentorEarningsPage() {
   const [period, setPeriod] = useState('this_month');
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });

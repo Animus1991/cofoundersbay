@@ -54,6 +54,7 @@ import {
   type MilestoneSummary,
   type MentorProfileItem,
 } from '@/lib/api';
+import { queryKeys } from '@/lib/query-keys';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -226,7 +227,7 @@ export function DashboardHome() {
   const queryEnabled = sessionReady && hasSession;
 
   const { data: profileData } = useQuery({
-    queryKey: ['me', 'profile'],
+    queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
     enabled: queryEnabled,
@@ -236,7 +237,7 @@ export function DashboardHome() {
   const greeting = getTimeBasedGreeting();
 
   const { data: pendingData } = useQuery({
-    queryKey: ['connections', 'pending-received'],
+    queryKey: queryKeys.connections.pendingReceived(),
     queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     staleTime: 30_000,
     enabled: queryEnabled,
