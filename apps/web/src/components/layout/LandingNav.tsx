@@ -19,7 +19,7 @@ export function LandingNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl"
+      className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl safe-top"
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
         <Link href="/" aria-label="CoFounderBay home">

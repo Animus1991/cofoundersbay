@@ -29,7 +29,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
             className={cn(
               'flex items-center justify-center rounded-md transition-all duration-150',
               expanded
-                ? 'flex-1 gap-1.5 px-2 py-1.5 text-xs font-medium'
+                ? 'min-h-10 flex-1 gap-1.5 px-2 py-2 text-xs font-medium sm:min-h-0 sm:py-1.5'
                 : 'h-9 w-9',
               isActive
                 ? 'bg-primary/10 text-primary shadow-sm'

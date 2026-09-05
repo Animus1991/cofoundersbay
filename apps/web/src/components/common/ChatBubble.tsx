@@ -46,7 +46,7 @@ export function ChatBubble() {
 
   return (
     <div 
-      className="fixed bottom-11 right-6 z-50 flex flex-col items-end gap-2"
+      className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex flex-col items-end gap-2 lg:bottom-6 lg:right-6"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}

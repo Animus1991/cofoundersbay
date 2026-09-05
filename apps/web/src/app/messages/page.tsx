@@ -514,15 +514,15 @@ export default function MessagesPage() {
     <AppShell>
       <div className="flex flex-col h-full">
         {/* Context Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+        <div className="flex flex-col gap-3 px-4 py-4 border-b border-border/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">Messages</h1>
             <p className="text-sm text-muted-foreground">
               Connect with co-founders, mentors, and team members
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="w-full gap-2 sm:w-auto">
               <MessageSquare className="icon-sm" />
               New Message
             </Button>

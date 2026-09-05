@@ -951,8 +951,9 @@ export default function MatchesPage() {
                   </div>
 
                   {lastPassed && (
-                    <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground hidden sm:flex">
-                      <RotateCcw className="h-3.5 w-3.5" /> Undo
+                    <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground px-2 sm:px-3">
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Undo</span>
                     </Button>
                   )}
                 </div>

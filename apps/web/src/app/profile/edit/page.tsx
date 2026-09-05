@@ -531,7 +531,10 @@ export default function ProfileEditPage() {
       actions={
         <div className="flex items-center gap-2">
           <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+            <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
               <ArrowLeft className="h-4 w-4" />
               Cancel
             </Button>

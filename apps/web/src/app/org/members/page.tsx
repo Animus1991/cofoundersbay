@@ -80,7 +80,10 @@ function MemberRow({ member }: { member: OrgMember }) {
             <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">Invited</Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground">{member.email}</p>
+        <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground md:hidden">
+          {roleCfg.label}{member.department ? ` · ${member.department}` : ''} · {member.lastActive}
+        </p>
       </div>
       <div className="hidden md:flex items-center gap-1 w-28 shrink-0">
         <RoleIcon className={cn('icon-sm', roleCfg.color)} />
@@ -132,7 +135,7 @@ export default function OrgMembersPage() {
     <AppShell>
       <div className="py-6 space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Users className="h-6 w-6 text-primary" />
@@ -140,7 +143,7 @@ export default function OrgMembersPage() {
             </h1>
             <p className="text-muted-foreground">Manage your organization's team and permissions</p>
           </div>
-          <Button>
+          <Button className="w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" />
             Invite Member
           </Button>

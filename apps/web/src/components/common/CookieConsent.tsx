@@ -85,7 +85,7 @@ export function CookieConsent() {
   return (
     <div
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-[100] p-4 transition-transform duration-300',
+        'fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] left-0 right-0 z-[100] p-4 transition-transform duration-300 lg:bottom-0 lg:pb-[calc(1rem+env(safe-area-inset-bottom))]',
         isVisible ? 'translate-y-0' : 'translate-y-full'
       )}
     >

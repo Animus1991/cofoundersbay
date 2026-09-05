@@ -4,9 +4,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getSectionsForMode, type NavSection, type SidebarMode } from './nav-modes';
+import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
 import { useSidebar } from './SidebarContext';
+import { useSidebarMode } from '@/hooks/use-sidebar-mode';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,7 +27,7 @@ export function SideNav() {
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
   const [user, setUser] = useState<StoredUser>(null);
   const [mounted, setMounted] = useState(false);
-  const [mode, setMode] = useState<SidebarMode>('work');
+  const [mode, setMode] = useSidebarMode();
 
   useEffect(() => {
     setMounted(true);
@@ -34,11 +35,6 @@ export function SideNav() {
     const raw = localStorage.getItem('user');
     if (!raw) return;
     try { setUser(JSON.parse(raw) as StoredUser); } catch { /* silent */ }
-    // Restore saved mode preference
-    const savedMode = localStorage.getItem('cfb:sidebar-mode') as SidebarMode | null;
-    if (savedMode && ['work', 'explore', 'account'].includes(savedMode)) {
-      setMode(savedMode);
-    }
   }, []);
 
   // Redirect to login when session expires

@@ -162,7 +162,7 @@ export default function UserBillingPage() {
       actions={
         <div className="flex items-center gap-2">
           <Link href="/settings">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+            <Button variant="outline" size="sm" className="gap-2">
               Settings
             </Button>
           </Link>

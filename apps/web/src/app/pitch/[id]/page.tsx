@@ -497,9 +497,27 @@ export default function PitchDeckPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+      <div className="flex flex-1 flex-col xl:flex-row max-w-7xl mx-auto w-full px-4 py-6 gap-6">
+        <div className="flex gap-2 overflow-x-auto pb-2 xl:hidden -mx-1 px-1">
+          {slides.map((slide, i) => (
+            <button
+              key={slide.id}
+              onClick={() => setCurrentSlide(i)}
+              className={cn(
+                'min-w-[8.5rem] rounded-lg border p-2 text-left text-xs transition-all',
+                i === currentSlide
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-border bg-card',
+              )}
+            >
+              <div className="text-[10px] text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="font-medium truncate">{slide.title}</div>
+            </button>
+          ))}
+        </div>
+
         {/* Slide thumbnails sidebar */}
-        <aside className="hidden lg:flex flex-col gap-2 w-36 flex-shrink-0">
+        <aside className="hidden xl:flex flex-col gap-2 w-36 flex-shrink-0">
           {slides.map((slide, i) => (
             <button
               key={slide.id}
@@ -564,7 +582,7 @@ export default function PitchDeckPage() {
         </main>
 
         {/* Author sidebar */}
-        <aside className="hidden xl:flex flex-col gap-4 w-56 flex-shrink-0">
+        <aside className="flex flex-col gap-4 w-full xl:w-56 flex-shrink-0">
           <div className="rounded-xl border bg-card p-4">
             <div className="flex items-center gap-3 mb-3">
               <Avatar className="h-10 w-10">

@@ -627,7 +627,7 @@ export function UnifiedChatPopup() {
   if (isMinimized) {
     return (
       <div
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-1 animate-in slide-in-from-bottom-2"
+        className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex items-center gap-1 animate-in slide-in-from-bottom-2 lg:bottom-6 lg:right-6"
         style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
       >
         <div
@@ -668,12 +668,10 @@ export function UnifiedChatPopup() {
     <div
       ref={popupRef}
       tabIndex={-1}
-      className="fixed z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 focus:outline-none"
+      className="fixed z-50 flex flex-col rounded-2xl border border-border bg-card shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200 focus:outline-none bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 lg:bottom-6 lg:right-6"
       style={{
-        bottom: `calc(1.5rem + env(safe-area-inset-bottom, 0px))`,
-        right: '1.5rem',
         width: 'min(400px, calc(100vw - 2rem))',
-        height: 'min(560px, calc(100dvh - 6rem))',
+        height: 'min(560px, calc(100dvh - 8.5rem))',
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >

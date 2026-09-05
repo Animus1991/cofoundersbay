@@ -33,13 +33,13 @@ export function AppShell({
   const { expanded, mounted } = useSidebar();
 
   return (
-    <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
+    <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
       <MemoSideNav />
 
       <div
         className={cn(
           'flex flex-col overflow-x-clip',
-          fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
+          fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
           'transition-[margin-left] duration-200 ease-out',
           (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
         )}
@@ -59,13 +59,13 @@ export function AppShell({
             className={cn(
               'flex-1 mx-auto w-full max-w-screen-2xl',
               'px-4 sm:px-6 lg:px-8',
-              'pt-4 pb-24 lg:pb-10',
+              'pt-4 pb-[calc(5.75rem+env(safe-area-inset-bottom))] lg:pb-10',
               contentClassName,
             )}
           >
             <div className="space-y-5">
               {(title || description || actions) && (
-                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
+                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
                   <div>
                     {title && (
                       <h1 className="text-lg font-semibold tracking-tight text-foreground">

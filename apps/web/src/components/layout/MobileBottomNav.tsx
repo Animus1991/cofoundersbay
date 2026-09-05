@@ -2,60 +2,97 @@
 
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { usePathname } from 'next/navigation';
-import { Home, Search, MessageCircle, Briefcase, User } from 'lucide-react';
+import { Home, Compass, MessageCircle, Menu, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { useSidebar } from './SidebarContext';
 
-const bottomTabs = [
-  { icon: Home, label: 'Home', path: '/', badgeKey: null },
-  { icon: Search, label: 'Discover', path: '/discover', badgeKey: null },
-  { icon: MessageCircle, label: 'Messages', path: '/messages', badgeKey: 'messages' as const },
-  { icon: Briefcase, label: 'Jobs', path: '/jobs', badgeKey: null },
-  { icon: User, label: 'Profile', path: '/profile', badgeKey: null },
-];
+const PRIMARY_TABS = [
+  { icon: Home, label: 'Home', path: '/dashboard', match: ['/dashboard'] },
+  { icon: Compass, label: 'Discover', path: '/discover', match: ['/discover', '/matches', '/search'] },
+  { icon: MessageCircle, label: 'Messages', path: '/messages', match: ['/messages'], badgeKey: 'messages' as const },
+  { icon: User, label: 'Profile', path: '/profile', match: ['/profile'] },
+] as const;
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { messages: unreadMessages } = useUnreadCounts();
+  const { mobileNavOpen, setMobileNavOpen } = useSidebar();
 
-  const badgeCount = (key: string | null): number => {
-    if (key === 'messages') return unreadMessages;
-    return 0;
-  };
+  const isAuthPage =
+    pathname?.startsWith('/login') ||
+    pathname?.startsWith('/register') ||
+    pathname?.startsWith('/forgot-password') ||
+    pathname?.startsWith('/reset-password') ||
+    pathname?.startsWith('/onboarding') ||
+    pathname?.startsWith('/auth');
+
+  if (isAuthPage) return null;
+
+  const isTabActive = (match: readonly string[]) =>
+    match.some((prefix) => pathname === prefix || pathname?.startsWith(`${prefix}/`));
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border/60 bg-card/95 px-2 py-2 backdrop-blur-md lg:hidden safe-bottom"
+      className="fixed bottom-0 left-0 right-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-1 pt-1 backdrop-blur-md lg:hidden safe-bottom"
       role="navigation"
+      aria-label="Primary mobile navigation"
     >
-      {bottomTabs.map((tab) => {
-        const isActive =
-          pathname === tab.path ||
-          (tab.path !== '/' && pathname?.startsWith(tab.path));
+      {PRIMARY_TABS.slice(0, 3).map((tab) => {
+        const isActive = isTabActive(tab.match);
         const Icon = tab.icon;
-        const badge = badgeCount(tab.badgeKey);
+        const badge = 'badgeKey' in tab && tab.badgeKey === 'messages' ? unreadMessages : 0;
         return (
           <OptimizedLink
             key={tab.path}
             href={tab.path}
+            aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-xs font-medium transition-colors',
-              isActive
-                ? 'text-primary'
-                : 'text-muted-foreground hover:text-foreground'
+              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+              isActive ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            <div className="relative">
-              <Icon
-                className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')}
-                aria-hidden
-              />
+            <span className="relative">
+              <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
               {badge > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}
-            </div>
+            </span>
+            <span>{tab.label}</span>
+          </OptimizedLink>
+        );
+      })}
+
+      <button
+        type="button"
+        onClick={() => setMobileNavOpen(true)}
+        aria-label="More destinations"
+        aria-expanded={mobileNavOpen}
+        className={cn(
+          'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+          mobileNavOpen ? 'text-primary' : 'text-muted-foreground',
+        )}
+      >
+        <Menu className={cn('h-5 w-5', mobileNavOpen && 'stroke-[2.5px]')} aria-hidden />
+        <span>More</span>
+      </button>
+
+      {PRIMARY_TABS.slice(3).map((tab) => {
+        const isActive = isTabActive(tab.match);
+        const Icon = tab.icon;
+        return (
+          <OptimizedLink
+            key={tab.path}
+            href={tab.path}
+            aria-current={isActive ? 'page' : undefined}
+            className={cn(
+              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+              isActive ? 'text-primary' : 'text-muted-foreground',
+            )}
+          >
+            <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
             <span>{tab.label}</span>
           </OptimizedLink>
         );

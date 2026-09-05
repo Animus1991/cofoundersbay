@@ -727,7 +727,7 @@ export default function FeedPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 hidden lg:block sticky top-6 self-start">
+          <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
             <TrendingTopics topics={trendingData?.topics} />
             <SuggestedConnections />
             

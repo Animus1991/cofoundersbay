@@ -7,6 +7,8 @@ type SidebarCtx = {
   mounted: boolean;
   toggle: () => void;
   setExpanded: (v: boolean) => void;
+  mobileNavOpen: boolean;
+  setMobileNavOpen: (open: boolean) => void;
 };
 
 const SidebarContext = createContext<SidebarCtx>({
@@ -14,6 +16,8 @@ const SidebarContext = createContext<SidebarCtx>({
   mounted: false,
   toggle: () => {},
   setExpanded: () => {},
+  mobileNavOpen: false,
+  setMobileNavOpen: () => {},
 });
 
 const KEY = 'cfb_sidebar';
@@ -22,6 +26,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   // Always start with true on both server and client to prevent hydration mismatch
   const [expanded, setExpandedState] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Only read localStorage after mount to prevent SSR/CSR mismatch
   useEffect(() => {
@@ -56,7 +61,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SidebarContext.Provider value={{ expanded, mounted, toggle, setExpanded }}>
+    <SidebarContext.Provider value={{ expanded, mounted, toggle, setExpanded, mobileNavOpen, setMobileNavOpen }}>
       {children}
     </SidebarContext.Provider>
   );

@@ -277,6 +277,25 @@ export default function ActivityPage() {
           })}
         </div>
 
+        <div className="grid grid-cols-2 gap-2 lg:hidden">
+          {[
+            { href: '/discover', label: 'Explore People', icon: Users },
+            { href: '/matches', label: 'View Matches', icon: TrendingUp },
+            { href: '/events', label: 'Browse Events', icon: Calendar },
+            { href: '/achievements', label: 'Achievements', icon: Award },
+          ].map((action) => {
+            const ActionIcon = action.icon;
+            return (
+              <Link key={action.href} href={action.href}>
+                <div className="flex min-h-11 items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2">
+                  <ActionIcon className="h-4 w-4 shrink-0 text-primary" />
+                  <span className="text-xs font-medium text-foreground">{action.label}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_280px]">
           {/* Main feed */}
           <div>

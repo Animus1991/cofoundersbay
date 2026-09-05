@@ -46,7 +46,9 @@ export function BulkActionBar({
             'fixed z-40 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5',
             'bg-popover border border-border rounded-full shadow-2xl',
             'ring-1 ring-primary/20',
-            position === 'bottom' ? 'bottom-6' : 'top-6',
+            position === 'bottom'
+              ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[calc(100vw-1.5rem)] flex-wrap justify-center lg:bottom-6'
+              : 'top-[calc(4.5rem+env(safe-area-inset-top))] lg:top-6',
             className,
           )}
         >

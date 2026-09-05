@@ -148,7 +148,7 @@ export function NotificationsBell({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="flex max-h-[520px] w-[380px] flex-col overflow-hidden p-0">
+      <DropdownMenuContent align="end" className="flex max-h-[min(70dvh,520px)] w-[min(380px,calc(100vw-1.5rem))] flex-col overflow-hidden p-0">
         <div className="flex flex-shrink-0 items-center justify-between px-4 py-3">
           <div>
             <span className="text-sm font-semibold text-foreground">Notifications</span>

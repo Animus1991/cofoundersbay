@@ -209,11 +209,13 @@
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
-    min-height: 100vh;
+    min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
     font-size: 14px;
     line-height: 1.55;
@@ -677,6 +679,27 @@
   }
   .hover-lift-sm:hover {
     @apply -translate-y-0.5; /* 2px lift - subtle, professional */
+  }
+
+  /* ── Safe areas + mobile ergonomics ── */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .overflow-touch {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
   }
 }
 
