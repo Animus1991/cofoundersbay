@@ -138,7 +138,7 @@ export function SideNav() {
         {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
+              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80 first:mt-1">
                 <BilingualText
                   en={section}
                   el={getNavSectionEl(section)}

@@ -1,14 +1,11 @@
 'use client';
 
 import { ReactNode, memo } from 'react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
 import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { resolvePageHeader } from '@/lib/page-registry';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
@@ -51,8 +48,6 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const { expanded, mounted } = useSidebar();
-  const user = useCurrentUser();
-  const isDemo = user?.email === 'demo@cofounderbay.com';
   const { primary: primaryLang } = useLanguagePreference();
   const skipLabel =
     primaryLang === 'el' ? commonEl('skip_to_content') : commonEn('skip_to_content');
@@ -70,38 +65,6 @@ export function AppShell({
 
       {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
       <MemoSideNav />
-
-      {/* Demo mode banner — full width, above content column */}
-      {isDemo && (
-        <div
-          className={cn(
-            'fixed top-0 right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
-            'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
-            'transition-[margin-left] duration-200 ease-out',
-            (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
-            'left-0 lg:left-auto',
-          )}
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" />
-            <span>
-              <BilingualText
-                en={commonEn('demo_mode_banner')}
-                el={commonEl('demo_mode_banner')}
-              />
-            </span>
-          </div>
-          <Link
-            href="/register"
-            className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-[12px] font-semibold hover:bg-amber-900/25 transition-colors"
-          >
-            <BilingualText
-              en={commonEn('create_free_account')}
-              el={commonEl('create_free_account')}
-            />
-          </Link>
-        </div>
-      )}
 
       {/* Main column — offset by sidebar width on lg+ */}
       <div

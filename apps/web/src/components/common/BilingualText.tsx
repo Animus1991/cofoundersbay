@@ -108,7 +108,7 @@ export function BilingualText({
 
           lang={resolved.secondaryLang ?? undefined}
 
-          className={cn('truncate text-[9px] font-normal text-muted-foreground/75', secondaryClassName)}
+          className={cn('truncate text-[9px] font-normal text-muted-foreground', secondaryClassName)}
 
         >
 
@@ -148,7 +148,7 @@ export function BilingualText({
 
           className={cn(
 
-            'truncate text-[10px] font-normal leading-tight text-muted-foreground/75',
+            'truncate text-[10px] font-normal leading-tight text-muted-foreground',
 
             secondaryClassName,
 

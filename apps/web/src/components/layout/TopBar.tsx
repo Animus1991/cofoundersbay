@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Eye, EyeOff, Keyboard, MoreHorizontal } from 'lucide-react';
+import Link from 'next/link';
+import { Eye, EyeOff, Keyboard, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
@@ -19,8 +21,55 @@ import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
+import { BilingualText } from '@/components/common/BilingualText';
+import { commonEn, commonEl } from '@/lib/i18n/strings-common';
+import { STATUS } from '@/lib/semantic-colors';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { cn } from '@/lib/utils';
+
+/**
+ * Small, inline indicator that this is the shared preview-demo account.
+ * Replaces a previous fixed-position full-width banner that covered the
+ * search bar and other top-bar controls, and whose secondary (Greek) text
+ * used BilingualText's default `text-muted-foreground` — calibrated for the
+ * app's normal card surfaces, not the raw amber background that banner used,
+ * so it rendered near-illegible. This uses the same WCAG-checked semantic
+ * status tokens the rest of the app already relies on for warning chips.
+ */
+function PreviewDemoBadge() {
+  const user = useCurrentUser();
+  if (user?.email !== 'demo@cofounderbay.com') return null;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            href="/register"
+            className={cn(
+              'hidden sm:inline-flex h-7 items-center gap-1 rounded-full border px-2 text-[11px] font-medium transition-colors',
+              STATUS.warning.chip,
+              'hover:brightness-95',
+            )}
+          >
+            <Sparkles className="h-3 w-3" />
+            Demo
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end" className="max-w-[220px]">
+          <p className="text-xs">
+            <BilingualText en={commonEn('demo_mode_banner')} el={commonEl('demo_mode_banner')} />
+          </p>
+          <p className="mt-1 text-xs font-medium text-status-warning underline underline-offset-2">
+            <BilingualText en={commonEn('create_free_account')} el={commonEl('create_free_account')} />
+          </p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 const CommandPalette = dynamic(
   () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
@@ -84,7 +133,8 @@ export function TopBar() {
 
         <div className="min-w-0 flex-1" />
 
-        <div className="flex shrink-0 items-center gap-0.5">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <PreviewDemoBadge />
           <Button
             variant="ghost"
             size="icon"
