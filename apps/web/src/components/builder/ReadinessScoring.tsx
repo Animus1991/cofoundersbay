@@ -262,11 +262,11 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'excellent': return 'text-green-600 bg-green-100';
-      case 'good': return 'text-blue-600 bg-blue-100';
-      case 'needs-work': return 'text-yellow-600 bg-yellow-100';
-      case 'critical': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'excellent': return 'text-status-success bg-status-success-bg';
+      case 'good': return 'text-status-info bg-status-info-bg';
+      case 'needs-work': return 'text-status-warning bg-status-warning-bg';
+      case 'critical': return 'text-status-danger bg-status-danger-bg';
+      default: return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -296,8 +296,8 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 rounded-lg">
-            <Target className="h-5 w-5 text-cyan-600" />
+          <div className="p-2 bg-status-info-bg rounded-lg">
+            <Target className="h-5 w-5 text-status-info" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Readiness Assessment</h2>
@@ -431,7 +431,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                 <ul className="space-y-2">
                   {data.blockers.map((blocker, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                      <AlertTriangle className="h-4 w-4 text-status-danger mt-0.5 shrink-0" />
                       {blocker}
                     </li>
                   ))}
@@ -452,7 +452,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                 <ul className="space-y-2">
                   {data.nextMilestones.map((milestone, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-status-success mt-0.5 shrink-0" />
                       {milestone}
                     </li>
                   ))}
@@ -524,7 +524,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                           "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5",
                           criterion.completed 
                             ? "bg-green-500 border-green-500" 
-                            : "border-gray-300"
+                            : "border-border"
                         )}>
                           {criterion.completed && (
                             <CheckCircle2 className="h-3 w-3 text-white" />
@@ -534,7 +534,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                           <div className="flex items-center justify-between">
                             <span className={cn(
                               "font-medium text-sm",
-                              criterion.completed && "text-green-600"
+                              criterion.completed && "text-status-success"
                             )}>
                               {criterion.name}
                             </span>

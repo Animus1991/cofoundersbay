@@ -33,15 +33,15 @@ const ACTION_ICONS: Record<string, React.ElementType> = {
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  create: 'bg-green-500/10 text-green-600 border-green-500/20',
-  update: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  delete: 'bg-red-500/10 text-red-600 border-red-500/20',
-  view: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
+  create: 'bg-status-success-bg text-status-success border-status-success-border',
+  update: 'bg-status-info-bg text-status-info border-status-info-border',
+  delete: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+  view: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
   login: 'bg-primary/10 text-primary-accessible border-primary/20',
   logout: 'bg-muted text-muted-foreground border-border',
-  ban: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  unban: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-  role_change: 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  ban: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  unban: 'bg-status-success-bg text-status-success border-status-success-border',
+  role_change: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
 const ENTITY_TYPES = ['all', 'user', 'tenant', 'program', 'event', 'group', 'job', 'automation', 'sso', 'report'];

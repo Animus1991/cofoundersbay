@@ -53,14 +53,14 @@ type ServiceProvider = {
 
 const CAT_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   All: { label: 'All Services', icon: Store, color: 'text-foreground' },
-  legal: { label: 'Legal', icon: Scale, color: 'text-blue-500' },
-  finance: { label: 'Finance', icon: Calculator, color: 'text-green-500' },
-  marketing: { label: 'Marketing', icon: Megaphone, color: 'text-orange-500' },
-  development: { label: 'Development', icon: Code2, color: 'text-purple-500' },
-  design: { label: 'Design', icon: Brush, color: 'text-pink-500' },
-  consulting: { label: 'Consulting', icon: BrainCircuit, color: 'text-amber-500' },
-  coaching: { label: 'Coaching', icon: GraduationCap, color: 'text-teal-500' },
-  other: { label: 'Other', icon: Globe, color: 'text-gray-500' },
+  legal: { label: 'Legal', icon: Scale, color: 'text-status-info' },
+  finance: { label: 'Finance', icon: Calculator, color: 'text-status-success' },
+  marketing: { label: 'Marketing', icon: Megaphone, color: 'text-status-warning' },
+  development: { label: 'Development', icon: Code2, color: 'text-status-accent' },
+  design: { label: 'Design', icon: Brush, color: 'text-status-accent' },
+  consulting: { label: 'Consulting', icon: BrainCircuit, color: 'text-status-warning' },
+  coaching: { label: 'Coaching', icon: GraduationCap, color: 'text-status-success' },
+  other: { label: 'Other', icon: Globe, color: 'text-muted-foreground' },
 };
 
 const CATEGORIES = Object.keys(CAT_CONFIG);
@@ -152,12 +152,12 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="font-semibold text-sm truncate">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />}
+                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-status-info shrink-0" />}
                 {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
               <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                <Star className="h-3 w-3 fill-status-warning text-amber-400" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
               </div>

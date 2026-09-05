@@ -220,10 +220,10 @@ export function CollaborationStarter({
   if (mode === 'banner') {
     return (
       <div className={cn(
-        'flex items-center gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/8 px-4 py-3',
+        'flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3',
         className,
       )}>
-        <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" />
+        <Sparkles className="h-4 w-4 shrink-0 text-status-success" />
         <p className="flex-1 text-sm text-foreground">
           <span className="font-medium">New connection:</span>{' '}
           {otherUser.displayName} accepted your request.

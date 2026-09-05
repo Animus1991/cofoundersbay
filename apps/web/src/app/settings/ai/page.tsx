@@ -217,9 +217,9 @@ export default function AISettingsPage() {
                 isAIAvailable ? 'bg-emerald-500/20' : 'bg-amber-500/20'
               )}>
                 {isAIAvailable ? (
-                  <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <Zap className="h-5 w-5 text-status-success dark:text-emerald-400" />
                 ) : (
-                  <Info className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <Info className="h-5 w-5 text-status-warning dark:text-amber-400" />
                 )}
               </div>
               <div>
@@ -525,7 +525,7 @@ export default function AISettingsPage() {
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                      <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                      <Bot className="h-4 w-4 text-status-accent " />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

@@ -46,10 +46,10 @@ type Inquiry = {
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
-    new: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Mail },
-    replied: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-    converted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
-    declined: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: XCircle },
+    new: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Mail },
+    replied: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock },
+    converted: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: CheckCircle },
+    declined: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: XCircle },
   };
 
   const config = statusConfig[inquiry.status];
@@ -200,9 +200,9 @@ export default function ProviderInquiriesPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary-accessible' },
-            { label: 'New', value: counts.new, icon: Mail, color: 'text-blue-600' },
-            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-emerald-600' },
-            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-amber-600' },
+            { label: 'New', value: counts.new, icon: Mail, color: 'text-status-info' },
+            { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-status-success' },
+            { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">

@@ -47,14 +47,14 @@ const NOTIFICATION_ICONS = {
 };
 
 const NOTIFICATION_COLORS = {
-  message: 'text-blue-500',
-  connection: 'text-green-500',
-  like: 'text-red-500',
-  comment: 'text-purple-500',
-  event: 'text-orange-500',
-  job: 'text-cyan-500',
-  achievement: 'text-yellow-500',
-  system: 'text-gray-500',
+  message: 'text-status-info',
+  connection: 'text-status-success',
+  like: 'text-status-danger',
+  comment: 'text-status-accent',
+  event: 'text-status-warning',
+  job: 'text-status-info',
+  achievement: 'text-status-warning',
+  system: 'text-muted-foreground',
 };
 
 function NotificationRow({

@@ -37,13 +37,13 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  connection: 'bg-blue-500/10 text-blue-500',
+  connection: 'bg-status-info-bg text-status-info',
   message: 'bg-primary/10 text-primary-accessible',
-  event: 'bg-purple-500/10 text-purple-500',
-  match: 'bg-emerald-500/10 text-emerald-500',
-  achievement: 'bg-amber-500/10 text-amber-500',
-  job: 'bg-orange-500/10 text-orange-500',
-  community: 'bg-pink-500/10 text-pink-500',
+  event: 'bg-status-accent-bg text-status-accent',
+  match: 'bg-status-success-bg text-status-success',
+  achievement: 'bg-status-warning-bg text-status-warning',
+  job: 'bg-status-warning-bg text-status-warning',
+  community: 'bg-status-accent-bg text-status-accent',
   system: 'bg-muted text-muted-foreground',
 };
 

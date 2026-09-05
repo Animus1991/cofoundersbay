@@ -80,7 +80,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                   <h3 className="font-semibold text-foreground group-hover:text-primary-accessible transition-colors">
                     {job.title}
                   </h3>
-                  {featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
+                  {featured && <Star className="h-3.5 w-3.5 text-status-warning fill-status-warning" />}
                 </div>
                 <p className="text-sm text-muted-foreground">{job.creator.displayName}</p>
               </div>
@@ -89,7 +89,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                   <Badge variant="secondary" className="text-xs">{job.role}</Badge>
                 )}
                 {job.isRemote && (
-                  <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                  <Badge variant="outline" className="text-xs border-status-success-border text-status-success bg-status-success-bg">
                     <Wifi className="mr-1 h-3 w-3" />Remote
                   </Badge>
                 )}
@@ -104,7 +104,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />Location not specified</span>
               )}
               <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Full-time</span>
-              <span className="flex items-center gap-1 text-emerald-600">
+              <span className="flex items-center gap-1 text-status-success">
                 <DollarSign className="h-3 w-3" />Equity available
               </span>
             </div>
@@ -281,9 +281,9 @@ export default function JobsPage() {
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Open Roles', value: jobs.length || '25+', icon: Briefcase, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Remote-First', value: remoteJobs.length || '12+', icon: Wifi, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Startups Hiring', value: new Set(jobs.map((j) => j.creator.displayName)).size || '8+', icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+          { label: 'Open Roles', value: jobs.length || '25+', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { label: 'Remote-First', value: remoteJobs.length || '12+', icon: Wifi, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { label: 'Startups Hiring', value: new Set(jobs.map((j) => j.creator.displayName)).size || '8+', icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;
           return (
@@ -408,7 +408,7 @@ export default function JobsPage() {
           {remoteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-emerald-500" />
+                <Wifi className="h-4 w-4 text-status-success" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Remote Opportunities</h2>
               </div>
               {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
@@ -418,7 +418,7 @@ export default function JobsPage() {
           {onsiteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-500" />
+                <MapPin className="h-4 w-4 text-status-info" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">On-site / Hybrid</h2>
               </div>
               {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}

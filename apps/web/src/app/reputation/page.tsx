@@ -60,7 +60,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Users,
     score: 85,
     maxScore: 100,
-    color: 'text-blue-500',
+    color: 'text-status-info',
     description: 'How complete and detailed your profile is',
     factors: [
       { name: 'Basic Info', value: 100, max: 100 },
@@ -75,7 +75,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: MessageCircle,
     score: 72,
     maxScore: 100,
-    color: 'text-emerald-500',
+    color: 'text-status-success',
     description: 'Your activity and contributions to the community',
     factors: [
       { name: 'Posts & Comments', value: 65, max: 100 },
@@ -90,7 +90,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Shield,
     score: 90,
     maxScore: 100,
-    color: 'text-purple-500',
+    color: 'text-status-accent',
     description: 'How reliable and trustworthy you are',
     factors: [
       { name: 'Response Rate', value: 95, max: 100 },
@@ -105,7 +105,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: ThumbsUp,
     score: 68,
     maxScore: 100,
-    color: 'text-amber-500',
+    color: 'text-status-warning',
     description: 'Endorsements and recommendations from others',
     factors: [
       { name: 'Skill Endorsements', value: 75, max: 100 },
@@ -120,7 +120,7 @@ const REPUTATION_CATEGORIES: ReputationCategory[] = [
     icon: Trophy,
     score: 55,
     maxScore: 100,
-    color: 'text-pink-500',
+    color: 'text-status-accent',
     description: 'Badges and milestones you have earned',
     factors: [
       { name: 'Badges Earned', value: 60, max: 100 },
@@ -137,7 +137,7 @@ const BADGES: Badge[] = [
     name: 'Verified Member',
     description: 'Completed identity verification',
     icon: CheckCircle,
-    color: 'text-emerald-500',
+    color: 'text-status-success',
     earnedAt: '2026-01-15',
   },
   {
@@ -145,7 +145,7 @@ const BADGES: Badge[] = [
     name: 'Early Adopter',
     description: 'Joined during beta phase',
     icon: Sparkles,
-    color: 'text-purple-500',
+    color: 'text-status-accent',
     earnedAt: '2026-01-01',
   },
   {
@@ -153,7 +153,7 @@ const BADGES: Badge[] = [
     name: 'Super Connector',
     description: 'Made 25+ successful connections',
     icon: Users,
-    color: 'text-blue-500',
+    color: 'text-status-info',
     earnedAt: '2026-03-10',
   },
   {
@@ -161,7 +161,7 @@ const BADGES: Badge[] = [
     name: 'Helpful Mentor',
     description: 'Completed 10+ mentoring sessions',
     icon: Award,
-    color: 'text-amber-500',
+    color: 'text-status-warning',
     progress: 70,
     requirement: '7/10 sessions',
   },
@@ -170,7 +170,7 @@ const BADGES: Badge[] = [
     name: 'Master Builder',
     description: 'Created 5 complete startup documents',
     icon: Briefcase,
-    color: 'text-cyan-500',
+    color: 'text-status-info',
     progress: 40,
     requirement: '2/5 documents',
   },
@@ -179,7 +179,7 @@ const BADGES: Badge[] = [
     name: 'Community Influencer',
     description: 'Posts received 100+ total likes',
     icon: Heart,
-    color: 'text-pink-500',
+    color: 'text-status-accent',
     progress: 85,
     requirement: '85/100 likes',
   },
@@ -234,10 +234,10 @@ function ScoreRing({ score, maxScore, size = 'lg' }: { score: number; maxScore: 
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   const getScoreColor = (pct: number) => {
-    if (pct >= 80) return 'text-emerald-500';
-    if (pct >= 60) return 'text-blue-500';
-    if (pct >= 40) return 'text-amber-500';
-    return 'text-red-500';
+    if (pct >= 80) return 'text-status-success';
+    if (pct >= 60) return 'text-status-info';
+    if (pct >= 40) return 'text-status-warning';
+    return 'text-status-danger';
   };
 
   const dimensions = size === 'lg' ? 'w-32 h-32' : 'w-20 h-20';
@@ -354,7 +354,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
           <div className="flex items-center gap-2">
             <h4 className="font-semibold">{badge.name}</h4>
             {isEarned && (
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <CheckCircle className="h-4 w-4 text-status-success" />
             )}
           </div>
           <p className="text-sm text-muted-foreground">{badge.description}</p>
@@ -394,13 +394,13 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
       <div
         className={cn(
           'rounded-full p-2',
-          isPositive ? 'bg-emerald-500/10' : 'bg-red-500/10'
+          isPositive ? 'bg-status-success-bg' : 'bg-status-danger-bg'
         )}
       >
         {isPositive ? (
-          <TrendingUp className="h-4 w-4 text-emerald-500" />
+          <TrendingUp className="h-4 w-4 text-status-success" />
         ) : (
-          <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
+          <TrendingUp className="h-4 w-4 text-status-danger rotate-180" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -413,8 +413,8 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
         variant="secondary"
         className={cn(
           isPositive
-            ? 'bg-emerald-500/10 text-emerald-500'
-            : 'bg-red-500/10 text-red-500'
+            ? 'bg-status-success-bg text-status-success'
+            : 'bg-status-danger-bg text-status-danger'
         )}
       >
         {isPositive ? '+' : ''}{event.points}
@@ -480,17 +480,17 @@ export default function ReputationPage() {
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Trophy className="h-4 w-4 text-amber-500" />
+                    <Trophy className="h-4 w-4 text-status-warning" />
                     <span className="text-sm font-medium">
                       {earnedBadges}/{totalBadges} badges
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    <TrendingUp className="h-4 w-4 text-status-success" />
                     <span className="text-sm font-medium">+15 this month</span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Users className="h-4 w-4 text-blue-500" />
+                    <Users className="h-4 w-4 text-status-info" />
                     <span className="text-sm font-medium">Top 20%</span>
                   </div>
                 </div>
@@ -560,9 +560,9 @@ export default function ReputationPage() {
           <CardContent className="pt-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
-                { icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },
-                { icon: ThumbsUp, color: 'text-purple-500', bg: 'bg-purple-500/10', title: 'Get endorsements', desc: 'Ask connections to endorse your skills', href: '/connections' },
+                { icon: Users, color: 'text-status-info', bg: 'bg-status-info-bg', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
+                { icon: MessageCircle, color: 'text-status-success', bg: 'bg-status-success-bg', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },
+                { icon: ThumbsUp, color: 'text-status-accent', bg: 'bg-status-accent-bg', title: 'Get endorsements', desc: 'Ask connections to endorse your skills', href: '/connections' },
               ].map((tip) => {
                 const TipIcon = tip.icon;
                 return (

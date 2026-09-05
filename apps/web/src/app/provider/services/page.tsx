@@ -73,7 +73,7 @@ function ServiceCard({ service }: { service: Service }) {
                 {service.deliveryTime}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground">
-                <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+                <Star className="h-4 w-4 fill-status-warning text-status-warning" />
                 {service.rating} ({service.reviews})
               </span>
             </div>
@@ -221,7 +221,7 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-status-success">
                 {services.filter((s) => s.isActive).length}
               </p>
             </CardContent>

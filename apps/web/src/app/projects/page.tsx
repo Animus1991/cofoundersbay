@@ -63,11 +63,11 @@ type Project = {
 };
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
-  idea: { label: 'Idea Stage', color: 'bg-violet-500/10 text-violet-600 border-violet-500/30', icon: Zap },
-  validating: { label: 'Validating', color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Target },
-  building: { label: 'Building', color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Rocket },
-  launched: { label: 'Launched', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', icon: TrendingUp },
-  scaling: { label: 'Scaling', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/30', icon: Briefcase },
+  idea: { label: 'Idea Stage', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Zap },
+  validating: { label: 'Validating', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Target },
+  building: { label: 'Building', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Rocket },
+  launched: { label: 'Launched', color: 'bg-status-success-bg text-status-success border-status-success-border', icon: TrendingUp },
+  scaling: { label: 'Scaling', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Briefcase },
 };
 
 const MOCK_PROJECTS: Project[] = [
@@ -154,7 +154,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
                   <StatusIcon className="h-3 w-3 mr-1" />
                   {statusConfig.label}
                 </Badge>
-                {project.isStarred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
+                {project.isStarred && <Star className="h-4 w-4 text-status-warning fill-status-warning" />}
               </div>
               <p className="text-sm text-muted-foreground line-clamp-1">{project.description}</p>
             </div>
@@ -206,7 +206,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
               <Link href={`/projects/${project.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
                 {project.name}
               </Link>
-              {project.isStarred && <Star className="h-4 w-4 text-amber-500 fill-amber-500" />}
+              {project.isStarred && <Star className="h-4 w-4 text-status-warning fill-status-warning" />}
             </div>
             <Badge variant="outline" className={cn('text-xs', statusConfig.color)}>
               <StatusIcon className="h-3 w-3 mr-1" />
@@ -370,10 +370,10 @@ export default function ProjectsPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Projects',  value: totalProjects,             icon: Layers,     color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Active / Building', value: buildingCount,           icon: Rocket,     color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
-            { label: 'Open Roles',      value: openRolesCount,            icon: UserPlus,   color: 'text-emerald-500',bg: 'bg-emerald-500/10'},
-            { label: 'Industries',      value: industries.length,         icon: BarChart3,  color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
+            { label: 'Total Projects',  value: totalProjects,             icon: Layers,     color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+            { label: 'Active / Building', value: buildingCount,           icon: Rocket,     color: 'text-status-info',   bg: 'bg-status-info-bg'   },
+            { label: 'Open Roles',      value: openRolesCount,            icon: UserPlus,   color: 'text-status-success',bg: 'bg-status-success-bg'},
+            { label: 'Industries',      value: industries.length,         icon: BarChart3,  color: 'text-status-warning',  bg: 'bg-status-warning-bg'  },
           ].map((s) => {
             const SIcon = s.icon;
             return (

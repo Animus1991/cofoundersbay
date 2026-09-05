@@ -89,11 +89,11 @@ export default function ApiStatusPage() {
   const getStatusIcon = (status: EndpointStatus['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-status-success" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-status-danger" />;
       case 'loading':
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="h-4 w-4 text-status-info animate-spin" />;
     }
   };
 
@@ -143,9 +143,9 @@ export default function ApiStatusPage() {
             </CardHeader>
             {endpoint.error && (
               <CardContent>
-                <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
-                  <code className="text-sm text-red-700 dark:text-red-400">
+                <div className="flex items-center gap-2 p-3 bg-status-danger-bg rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-status-danger" />
+                  <code className="text-sm text-status-danger ">
                     {endpoint.error}
                   </code>
                 </div>

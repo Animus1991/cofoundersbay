@@ -158,7 +158,7 @@ export default function AdminUserDetailPage() {
             <TabsContent value="moderation">
               <Card>
                 <CardContent className="flex items-center gap-3 p-6">
-                  <CheckCircle2 className="icon-lg text-green-600" />
+                  <CheckCircle2 className="icon-lg text-status-success" />
                   <div>
                     <p className="font-medium">Clean record</p>
                     <p className="text-sm text-muted-foreground">

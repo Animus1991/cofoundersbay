@@ -163,11 +163,11 @@ const MOCK_ACTIVITY: ActivityItem[] = [
 ];
 
 const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color: string }> = {
-  milestone: { label: 'Milestone', color: 'bg-green-500/10 text-green-600' },
-  fundraise: { label: 'Fundraise', color: 'bg-blue-500/10 text-blue-600' },
-  team: { label: 'Team', color: 'bg-purple-500/10 text-purple-600' },
-  deck: { label: 'Deck', color: 'bg-amber-500/10 text-amber-600' },
-  update: { label: 'Update', color: 'bg-gray-500/10 text-gray-600' },
+  milestone: { label: 'Milestone', color: 'bg-status-success-bg text-status-success' },
+  fundraise: { label: 'Fundraise', color: 'bg-status-info-bg text-status-info' },
+  team: { label: 'Team', color: 'bg-status-accent-bg text-status-accent' },
+  deck: { label: 'Deck', color: 'bg-status-warning-bg text-status-warning' },
+  update: { label: 'Update', color: 'bg-gray-500/10 text-muted-foreground' },
 };
 
 function WatchlistCard({ startup }: { startup: WatchedStartup }) {
@@ -256,7 +256,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                     {startup.progressChange !== 0 && (
                       <span className={cn(
                         'text-2xs flex items-center',
-                        startup.progressChange > 0 ? 'text-green-500' : 'text-red-500'
+                        startup.progressChange > 0 ? 'text-status-success' : 'text-status-danger'
                       )}>
                         {startup.progressChange > 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
                         {Math.abs(startup.progressChange)}%

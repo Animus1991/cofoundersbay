@@ -17,9 +17,9 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 const PRIORITY_STYLES: Record<NonNullable<NextAction['priority']>, string> = {
-  critical: 'border-l-4 border-l-rose-500 bg-rose-50 dark:bg-rose-950/30',
-  high:     'border-l-4 border-l-amber-500 bg-amber-50 dark:bg-amber-950/30',
-  medium:   'border-l-4 border-l-blue-500 bg-blue-50 dark:bg-blue-950/30',
+  critical: 'border-l-4 border-l-rose-500 bg-status-danger-bg ',
+  high:     'border-l-4 border-l-amber-500 bg-status-warning-bg ',
+  medium:   'border-l-4 border-l-blue-500 bg-status-info-bg ',
   low:      'border-l-4 border-l-muted bg-muted/30',
 };
 

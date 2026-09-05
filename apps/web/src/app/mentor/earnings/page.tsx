@@ -85,7 +85,7 @@ function StatCard({
             <p className="text-2xl font-bold tabular-nums">{value}</p>
             {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
             {trend && (
-              <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs flex items-center gap-1', trend.positive ? 'text-status-success' : 'text-status-danger')}>
                 {trend.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 {trend.positive ? '+' : ''}{trend.value}% vs last month
               </p>
@@ -179,7 +179,7 @@ export default function MentorEarningsPage() {
             label="Pending Payout"
             value={formatCurrency(pendingAmount)}
             sub="awaiting release"
-            iconColor="text-amber-500"
+            iconColor="text-status-warning"
           />
           <StatCard
             icon={BarChart3}
@@ -231,7 +231,7 @@ export default function MentorEarningsPage() {
                         variant={tx.status === 'paid' ? 'secondary' : 'outline'}
                         className={cn(
                           'text-xs shrink-0',
-                          tx.status === 'paid' ? 'text-green-600 bg-green-500/10' : 'text-amber-600 bg-amber-500/10'
+                          tx.status === 'paid' ? 'text-status-success bg-status-success-bg' : 'text-status-warning bg-status-warning-bg'
                         )}
                       >
                         {tx.status === 'paid' ? (

@@ -49,9 +49,9 @@ type Project = {
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   const statusColors: Record<string, string> = {
-    new: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    replied: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    converted: 'bg-green-500/10 text-green-600 border-green-500/20',
+    new: 'bg-status-info-bg text-status-info border-status-info-border',
+    replied: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    converted: 'bg-status-success-bg text-status-success border-status-success-border',
   };
 
   return (
@@ -82,9 +82,9 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
 
 function ProjectCard({ project }: { project: Project }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    on_hold: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    on_hold: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -221,8 +221,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <MessageSquare className="h-5 w-5 text-blue-600" />
+                <div className="p-2 rounded-lg bg-status-info-bg">
+                  <MessageSquare className="h-5 w-5 text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
@@ -234,8 +234,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <DollarSign className="h-5 w-5 text-green-600" />
+                <div className="p-2 rounded-lg bg-status-success-bg">
+                  <DollarSign className="h-5 w-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
@@ -247,8 +247,8 @@ export default function ProviderDashboardPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Star className="h-5 w-5 text-amber-600" />
+                <div className="p-2 rounded-lg bg-status-warning-bg">
+                  <Star className="h-5 w-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>
@@ -290,7 +290,7 @@ export default function ProviderDashboardPage() {
                     <span className="font-medium text-sm">{review.client}</span>
                     <div className="flex items-center gap-0.5">
                       {Array.from({ length: review.rating }).map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-amber-500 text-amber-500" />
+                        <Star key={i} className="h-3 w-3 fill-status-warning text-status-warning" />
                       ))}
                     </div>
                   </div>

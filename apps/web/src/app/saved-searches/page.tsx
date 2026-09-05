@@ -358,8 +358,8 @@ export default function SavedSearchesPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-500/10 p-2">
-                <Bell className="icon-md text-emerald-500" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <Bell className="icon-md text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">
@@ -371,8 +371,8 @@ export default function SavedSearchesPage() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-amber-500/10 p-2">
-                <Sparkles className="icon-md text-amber-500" />
+              <div className="rounded-lg bg-status-warning-bg p-2">
+                <Sparkles className="icon-md text-status-warning" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalNewResults}</p>

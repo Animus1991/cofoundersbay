@@ -95,8 +95,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Rocket className="h-5 w-5 text-blue-600" />
+                <div className="p-2 rounded-lg bg-status-info-bg">
+                  <Rocket className="h-5 w-5 text-status-info" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
@@ -108,8 +108,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Award className="h-5 w-5 text-purple-600" />
+                <div className="p-2 rounded-lg bg-status-accent-bg">
+                  <Award className="h-5 w-5 text-status-accent" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
@@ -121,8 +121,8 @@ export default function TenantAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <Calendar className="h-5 w-5 text-green-600" />
+                <div className="p-2 rounded-lg bg-status-success-bg">
+                  <Calendar className="h-5 w-5 text-status-success" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>
@@ -190,7 +190,7 @@ export default function TenantAnalyticsPage() {
                     <p className="text-sm text-muted-foreground">{metric.name}</p>
                     <div className="flex items-baseline gap-2 mt-1">
                       <span className="text-xl font-bold">{metric.value}</span>
-                      <span className="text-xs text-green-600">{metric.change}</span>
+                      <span className="text-xs text-status-success">{metric.change}</span>
                     </div>
                   </div>
                 ))}
@@ -220,7 +220,7 @@ export default function TenantAnalyticsPage() {
                         </div>
                       </div>
                       {index > 0 && (
-                        <span className="text-xs text-green-600 w-12">+{growth}%</span>
+                        <span className="text-xs text-status-success w-12">+{growth}%</span>
                       )}
                     </div>
                   );

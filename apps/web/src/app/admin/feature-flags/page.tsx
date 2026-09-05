@@ -41,18 +41,18 @@ type FeatureFlag = {
 };
 
 const STATUS_CONFIG: Record<FlagStatus, { label: string; color: string; icon: React.ElementType }> = {
-  enabled:    { label: 'Enabled',    color: 'bg-green-500/10 text-green-600 border-green-500/20',  icon: CheckCircle2 },
-  disabled:   { label: 'Disabled',   color: 'bg-gray-500/10 text-gray-500 border-gray-500/20',     icon: XCircle },
-  rollout:    { label: 'Rollout',    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',     icon: Percent },
-  experiment: { label: 'Experiment', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: FlaskConical },
+  enabled:    { label: 'Enabled',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 },
+  disabled:   { label: 'Disabled',   color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',     icon: XCircle },
+  rollout:    { label: 'Rollout',    color: 'bg-status-info-bg text-status-info border-status-info-border',     icon: Percent },
+  experiment: { label: 'Experiment', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: FlaskConical },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  ui:         'bg-sky-500/10 text-sky-600',
-  backend:    'bg-orange-500/10 text-orange-600',
-  experiment: 'bg-purple-500/10 text-purple-600',
-  infra:      'bg-red-500/10 text-red-600',
-  billing:    'bg-emerald-500/10 text-emerald-600',
+  ui:         'bg-status-info-bg text-status-info',
+  backend:    'bg-status-warning-bg text-status-warning',
+  experiment: 'bg-status-accent-bg text-status-accent',
+  infra:      'bg-status-danger-bg text-status-danger',
+  billing:    'bg-status-success-bg text-status-success',
 };
 
 const MOCK_FLAGS: FeatureFlag[] = [
@@ -226,9 +226,9 @@ export default function AdminFeatureFlagsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-green-600' },
-            { label: 'In Rollout', value: stats.rollout, icon: Percent, color: 'text-blue-600' },
-            { label: 'Experiments', value: stats.experiment, icon: FlaskConical, color: 'text-purple-600' },
+            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-status-success' },
+            { label: 'In Rollout', value: stats.rollout, icon: Percent, color: 'text-status-info' },
+            { label: 'Experiments', value: stats.experiment, icon: FlaskConical, color: 'text-status-accent' },
             { label: 'Disabled', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>

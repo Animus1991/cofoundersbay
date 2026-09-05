@@ -187,7 +187,7 @@ function ProfileCardInner({
                   {profile.displayName}
                 </Link>
                 {profile.isVerified && (
-                  <Badge variant="secondary" size="sm" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                  <Badge variant="secondary" size="sm" className="bg-status-success-bg text-status-success border-status-success-border">
                     Verified
                   </Badge>
                 )}
@@ -296,7 +296,7 @@ function ProfileCardInner({
                 onClick={handleBookmark}
                 className={cn(
                   'h-8 w-8',
-                  bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                  bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                 )}
               >
                 <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
@@ -381,7 +381,7 @@ function ProfileCardInner({
                   onClick={handleBookmark}
                   className={cn(
                     'h-8 w-8 flex-shrink-0',
-                    bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
+                    bookmarked ? 'text-status-warning ' : 'text-muted-foreground hover:text-status-warning '
                   )}
                 >
                   <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />

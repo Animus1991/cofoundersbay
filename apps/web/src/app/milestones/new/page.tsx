@@ -26,8 +26,8 @@ const CATEGORIES = [
 
 const PRIORITIES: { value: MilestonePriority; label: string; color: string }[] = [
   { value: 'low', label: 'Low', color: 'bg-muted text-muted-foreground' },
-  { value: 'medium', label: 'Medium', color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  { value: 'high', label: 'High', color: 'bg-red-500/15 text-red-600 dark:text-red-400' },
+  { value: 'medium', label: 'Medium', color: 'bg-status-warning-bg text-status-warning ' },
+  { value: 'high', label: 'High', color: 'bg-status-danger-bg text-status-danger ' },
 ];
 
 export default function NewMilestonePage() {

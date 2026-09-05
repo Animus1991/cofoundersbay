@@ -55,7 +55,7 @@ export function BadgesWidget() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-purple-500" />
+            <Award className="h-5 w-5 text-status-accent" />
             Badges
           </div>
           <div className="flex items-center gap-2">
@@ -120,13 +120,13 @@ function getRarityStyles(rarity: string): string {
 function getRarityIconColor(rarity: string): string {
   switch (rarity) {
     case 'legendary':
-      return 'text-yellow-500';
+      return 'text-status-warning';
     case 'epic':
-      return 'text-purple-500';
+      return 'text-status-accent';
     case 'rare':
-      return 'text-blue-500';
+      return 'text-status-info';
     case 'uncommon':
-      return 'text-green-500';
+      return 'text-status-success';
     default:
       return 'text-muted-foreground';
   }

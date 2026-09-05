@@ -60,7 +60,7 @@ export function VideoCall({ className }: VideoCallProps) {
               {participants.length} participant{participants.length !== 1 ? 's' : ''}
             </div>
             {isScreenSharing && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              <Badge variant="outline" className="bg-status-info-bg text-status-info border-status-info-border">
                 <Monitor className="h-3 w-3 mr-1" />
                 Sharing
               </Badge>
@@ -127,7 +127,7 @@ export function VideoCall({ className }: VideoCallProps) {
           )}
 
           {state === 'error' && (
-            <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-status-danger-bg flex items-center justify-center">
               <div className="text-center text-white">
                 <div className="text-red-300 mb-4">
                   <Phone className="h-12 w-12 mx-auto" />
@@ -188,8 +188,8 @@ export function VideoCall({ className }: VideoCallProps) {
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
-                    {participant.audio && <Mic className="h-3 w-3 text-green-500" />}
-                    {participant.video && <Video className="h-3 w-3 text-green-500" />}
+                    {participant.audio && <Mic className="h-3 w-3 text-status-success" />}
+                    {participant.video && <Video className="h-3 w-3 text-status-success" />}
                   </div>
                 </div>
               ))}

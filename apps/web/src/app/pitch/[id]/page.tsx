@@ -195,8 +195,8 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-          <Target className="h-6 w-6 text-red-600" />
+        <div className="p-2 rounded-lg bg-status-danger-bg ">
+          <Target className="h-6 w-6 text-status-danger" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -204,16 +204,16 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       <div className="space-y-4 mb-10">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <div className="mt-1 h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-red-600">{i + 1}</span>
+            <div className="mt-1 h-5 w-5 rounded-full bg-status-danger-bg flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-status-danger">{i + 1}</span>
             </div>
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
       </div>
       {c.stat && (
-        <div className="rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 inline-block">
-          <p className="text-4xl font-bold text-red-600">{c.stat}</p>
+        <div className="rounded-2xl bg-status-danger-bg border border-status-danger-border p-6 inline-block">
+          <p className="text-4xl font-bold text-status-danger">{c.stat}</p>
           <p className="text-muted-foreground mt-1">{c.statLabel}</p>
         </div>
       )}
@@ -226,8 +226,8 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Lightbulb className="h-6 w-6 text-green-600" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Lightbulb className="h-6 w-6 text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -235,7 +235,7 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       <div className="space-y-4">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-status-success mt-0.5 flex-shrink-0" />
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
@@ -249,8 +249,8 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-          <TrendingUp className="h-6 w-6 text-blue-600" />
+        <div className="p-2 rounded-lg bg-status-info-bg ">
+          <TrendingUp className="h-6 w-6 text-status-info" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -259,7 +259,7 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
           <div key={i} className="rounded-2xl border bg-card p-6">
             <p className="text-4xl font-bold text-foreground">{m.value}</p>
             <p className="text-muted-foreground mt-1">{m.label}</p>
-            <Badge className="mt-3 bg-green-100 text-green-800 border-green-200">{m.growth} YoY</Badge>
+            <Badge className="mt-3 bg-status-success-bg text-status-success border-status-success-border">{m.growth} YoY</Badge>
           </div>
         ))}
       </div>
@@ -272,8 +272,8 @@ function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-          <Globe className="h-6 w-6 text-purple-600" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <Globe className="h-6 w-6 text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -300,8 +300,8 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-          <DollarSign className="h-6 w-6 text-amber-600" />
+        <div className="p-2 rounded-lg bg-status-warning-bg ">
+          <DollarSign className="h-6 w-6 text-status-warning" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -328,8 +328,8 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
-          <Users className="h-6 w-6 text-teal-600" />
+        <div className="p-2 rounded-lg bg-status-success-bg ">
+          <Users className="h-6 w-6 text-status-success" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -356,8 +356,8 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-          <BarChart2 className="h-6 w-6 text-indigo-600" />
+        <div className="p-2 rounded-lg bg-status-accent-bg ">
+          <BarChart2 className="h-6 w-6 text-status-accent" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -626,7 +626,7 @@ export default function PitchDeckPage() {
                 </a>
               </Button>
               <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5" />}
+                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-status-success" /> : <Link2 className="h-3.5 w-3.5" />}
               </Button>
             </div>
           </div>
@@ -696,7 +696,7 @@ export default function PitchDeckPage() {
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+                  {copied ? <CheckCircle2 className="h-4 w-4 text-status-success" /> : <Link2 className="h-4 w-4" />}
                 </Button>
               </div>
             </div>

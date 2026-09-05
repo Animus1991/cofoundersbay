@@ -47,17 +47,17 @@ const badgeIcons = {
 };
 
 const tierColors = {
-  bronze: 'text-orange-700 dark:text-orange-400',
-  silver: 'text-gray-600 dark:text-gray-300',
-  gold: 'text-yellow-700 dark:text-yellow-400',
-  platinum: 'text-cyan-700 dark:text-cyan-300',
+  bronze: 'text-status-warning ',
+  silver: 'text-muted-foreground ',
+  gold: 'text-status-warning ',
+  platinum: 'text-status-info ',
 };
 
 const tierBgColors = {
-  bronze: 'bg-orange-100 dark:bg-orange-950',
-  silver: 'bg-gray-100 dark:bg-gray-800',
-  gold: 'bg-yellow-100 dark:bg-yellow-950',
-  platinum: 'bg-cyan-100 dark:bg-cyan-950',
+  bronze: 'bg-status-warning-bg ',
+  silver: 'bg-muted ',
+  gold: 'bg-status-warning-bg ',
+  platinum: 'bg-status-info-bg ',
 };
 
 function rarityToTier(rarity: string): BadgeItem['tier'] {
@@ -315,7 +315,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
                       {badge.tier === 'platinum' && <Crown className="h-4 w-4 text-cyan-400" />}
-                      {badge.tier === 'gold' && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                      {badge.tier === 'gold' && <Sparkles className="h-4 w-4 text-status-warning" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>
                   </CardHeader>

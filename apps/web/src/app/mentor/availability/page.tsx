@@ -348,8 +348,8 @@ export default function MentorAvailabilityPage() {
 
                 <div className="border-t border-border" />
 
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
-                  <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-3 rounded-lg bg-status-info-bg border border-status-info-border">
+                  <Info className="h-4 w-4 text-status-info mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground">
                     Your availability will be shown to mentees in their local timezone. 
                     Sessions are confirmed via email and appear in your upcoming sessions list.

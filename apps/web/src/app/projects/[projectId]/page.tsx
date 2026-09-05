@@ -29,11 +29,11 @@ import { cn } from '@/lib/utils';
 type ProjectStatus = 'idea' | 'validating' | 'building' | 'launched' | 'scaling';
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
-  idea: { label: 'Idea Stage', color: 'bg-violet-500/10 text-violet-600 border-violet-500/30', icon: Zap },
-  validating: { label: 'Validating', color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Target },
-  building: { label: 'Building', color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Rocket },
-  launched: { label: 'Launched', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', icon: TrendingUp },
-  scaling: { label: 'Scaling', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/30', icon: Briefcase },
+  idea: { label: 'Idea Stage', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Zap },
+  validating: { label: 'Validating', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Target },
+  building: { label: 'Building', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Rocket },
+  launched: { label: 'Launched', color: 'bg-status-success-bg text-status-success border-status-success-border', icon: TrendingUp },
+  scaling: { label: 'Scaling', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Briefcase },
 };
 
 const MOCK_PROJECT = {
@@ -112,7 +112,7 @@ export default function ProjectDetailPage() {
               size="icon"
               onClick={() => setIsStarred(!isStarred)}
             >
-              <Star className={cn('h-5 w-5', isStarred && 'fill-amber-500 text-amber-500')} />
+              <Star className={cn('h-5 w-5', isStarred && 'fill-status-warning text-status-warning')} />
             </Button>
             <Button variant="ghost" size="icon">
               <Share2 className="h-5 w-5" />
@@ -257,8 +257,8 @@ export default function ProjectDetailPage() {
                         <div key={milestone.id} className="flex items-start gap-4">
                           <div className={cn(
                             'mt-0.5 rounded-full p-1',
-                            milestone.status === 'completed' && 'bg-emerald-500/10 text-emerald-500',
-                            milestone.status === 'in_progress' && 'bg-blue-500/10 text-blue-500',
+                            milestone.status === 'completed' && 'bg-status-success-bg text-status-success',
+                            milestone.status === 'in_progress' && 'bg-status-info-bg text-status-info',
                             milestone.status === 'pending' && 'bg-muted text-muted-foreground'
                           )}>
                             {milestone.status === 'completed' ? (

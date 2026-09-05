@@ -35,14 +35,14 @@ const PLAN_ICONS: Record<string, React.ElementType> = {
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    void: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    paid: 'bg-status-success-bg text-status-success border-status-success-border',
+    open: 'bg-status-info-bg text-status-info border-status-info-border',
+    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    void: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   return (
-    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-gray-600')}>
+    <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-muted-foreground')}>
       {status}
     </Badge>
   );
@@ -146,14 +146,14 @@ export default function UserBillingPage() {
   const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
 
   const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    trialing: <Clock className="h-4 w-4 text-blue-600" />,
-    past_due: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    canceled: <XCircle className="h-4 w-4 text-gray-500" />,
-    incomplete: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    incomplete_expired: <XCircle className="h-4 w-4 text-gray-500" />,
+    active: <CheckCircle2 className="h-4 w-4 text-status-success" />,
+    trialing: <Clock className="h-4 w-4 text-status-info" />,
+    past_due: <AlertTriangle className="h-4 w-4 text-status-warning" />,
+    canceled: <XCircle className="h-4 w-4 text-muted-foreground" />,
+    incomplete: <AlertTriangle className="h-4 w-4 text-status-warning" />,
+    incomplete_expired: <XCircle className="h-4 w-4 text-muted-foreground" />,
     paused: <Clock className="h-4 w-4 text-muted-foreground" />,
-    unpaid: <AlertTriangle className="h-4 w-4 text-red-600" />,
+    unpaid: <AlertTriangle className="h-4 w-4 text-status-danger" />,
   };
   const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="h-4 w-4 text-muted-foreground" />;
 
@@ -221,7 +221,7 @@ export default function UserBillingPage() {
                 </div>
 
                 {sub.cancelAtPeriodEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
                     Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
                     Reactivate in the billing portal to continue.
@@ -229,14 +229,14 @@ export default function UserBillingPage() {
                 )}
 
                 {sub.status === 'trialing' && sub.trialEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-status-info-bg border border-status-info-border p-3 text-sm text-status-info">
                     <Clock className="h-4 w-4 shrink-0" />
                     Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
                   </div>
                 )}
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
                     Payment failed. Please update your payment method to avoid service interruption.
                   </div>
@@ -290,7 +290,7 @@ export default function UserBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-status-success shrink-0" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}

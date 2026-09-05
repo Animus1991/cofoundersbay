@@ -25,8 +25,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const STATUS_CONFIG: Record<InviteItem['status'], { label: string; color: string }> = {
-  pending:   { label: 'Pending',   color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  accepted:  { label: 'Accepted',  color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  pending:   { label: 'Pending',   color: 'bg-status-warning-bg text-status-warning ' },
+  accepted:  { label: 'Accepted',  color: 'bg-status-success-bg text-status-success ' },
   expired:   { label: 'Expired',   color: 'bg-muted text-muted-foreground' },
   cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground' },
 };
@@ -191,8 +191,8 @@ export default function InvitePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {!canInvite && (
-              <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/8 px-4 py-3">
-                <Trophy className="h-4 w-4 shrink-0 text-amber-500" />
+              <div className="flex items-center gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3">
+                <Trophy className="h-4 w-4 shrink-0 text-status-warning" />
                 <p className="text-sm text-foreground">
                   You&apos;ve used all your invites for now. They refresh periodically.
                 </p>
@@ -239,7 +239,7 @@ export default function InvitePage() {
               </Button>
 
               <Button variant="outline" className="gap-2" onClick={handleCopyLink}>
-                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}
+                {copied ? <Check className="h-4 w-4 text-status-success" /> : <Link2 className="h-4 w-4" />}
                 {copied ? 'Copied!' : 'Copy link'}
               </Button>
             </div>

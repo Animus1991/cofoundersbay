@@ -79,8 +79,8 @@ const MOCK_TOP_SERVICES = [
 
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
-  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-green-500" />;
-  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-red-500" />;
+  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-status-success" />;
+  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-status-danger" />;
   return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
 }
 
@@ -119,7 +119,7 @@ function MetricCard({
         <p className="text-2xl font-bold tabular-nums">{displayValue}{unit}</p>
         <div className={cn(
           'flex items-center gap-1 mt-1 text-xs',
-          trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
+          trend === 'up' ? 'text-status-success' : trend === 'down' ? 'text-status-danger' : 'text-muted-foreground'
         )}>
           <TrendIcon trend={trend} />
           <span>{trend !== 'neutral' ? `${Math.abs(change)}%` : 'No change'} vs last period</span>
@@ -220,7 +220,7 @@ export default function ProviderAnalyticsPage() {
                             style={{ height: `${(d.views / maxViews) * 140}px` }}
                           />
                           <div
-                            className="w-full bg-violet-500/70 min-h-[2px]"
+                            className="w-full bg-status-accent-bg min-h-[2px]"
                             style={{ height: `${(d.inquiries / 7) * 30}px` }}
                           />
                         </div>
@@ -230,7 +230,7 @@ export default function ProviderAnalyticsPage() {
                   </div>
                   <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/80 inline-block" />Profile Views</span>
-                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-500/70 inline-block" />Inquiries</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-status-accent-bg inline-block" />Inquiries</span>
                   </div>
                 </CardContent>
               </Card>
@@ -313,7 +313,7 @@ export default function ProviderAnalyticsPage() {
                       </div>
                       {svc.rating != null ? (
                         <div className="flex items-center gap-1 shrink-0">
-                          <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                          <Star className="h-3.5 w-3.5 text-amber-400 fill-status-warning" />
                           <span className="text-sm font-medium">{svc.rating}</span>
                         </div>
                       ) : (

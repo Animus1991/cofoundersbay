@@ -49,10 +49,10 @@ import {
 
 function branchStatusMeta(status: string) {
   switch (status) {
-    case 'open':        return { label: 'Open',      color: 'bg-blue-100 text-blue-700 border-blue-200',    icon: GitBranch };
-    case 'review':      return { label: 'In Review', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: Clock };
-    case 'merged':      return { label: 'Merged',    color: 'bg-green-100 text-green-700 border-green-200',  icon: CheckCircle2 };
-    case 'closed':      return { label: 'Closed',    color: 'bg-gray-100 text-gray-600 border-gray-200',     icon: XCircle };
+    case 'open':        return { label: 'Open',      color: 'bg-status-info-bg text-status-info border-status-info-border',    icon: GitBranch };
+    case 'review':      return { label: 'In Review', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Clock };
+    case 'merged':      return { label: 'Merged',    color: 'bg-status-success-bg text-status-success border-status-success-border',  icon: CheckCircle2 };
+    case 'closed':      return { label: 'Closed',    color: 'bg-muted text-muted-foreground border-border',     icon: XCircle };
     default:            return { label: status,      color: 'bg-muted text-muted-foreground border-border',   icon: GitBranch };
   }
 }

@@ -86,17 +86,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const reportTypeConfig: Record<AdminReportItem['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-amber-500/15 text-amber-700 border-amber-500/30 dark:text-amber-400' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/15 text-red-700 border-red-500/30 dark:text-red-400' },
-  fake: { label: 'Fake Profile', color: 'bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-400' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400' },
-  other: { label: 'Other', color: 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400' },
+  spam: { label: 'Spam', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  harassment: { label: 'Harassment', color: 'bg-status-danger-bg text-status-danger border-status-danger-border ' },
+  fake: { label: 'Fake Profile', color: 'bg-status-accent-bg text-status-accent border-status-accent-border ' },
+  inappropriate: { label: 'Inappropriate', color: 'bg-status-warning-bg text-status-warning border-status-warning-border ' },
+  other: { label: 'Other', color: 'bg-gray-500/15 text-foreground border-gray-500/30 ' },
 };
 
 const reportStatusConfig: Record<AdminReportItem['status'], { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'text-amber-600 dark:text-amber-400', icon: Clock },
-  reviewed: { label: 'Under Review', color: 'text-blue-600 dark:text-blue-400', icon: Eye },
-  resolved: { label: 'Resolved', color: 'text-emerald-600 dark:text-emerald-400', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'text-status-warning ', icon: Clock },
+  reviewed: { label: 'Under Review', color: 'text-status-info ', icon: Eye },
+  resolved: { label: 'Resolved', color: 'text-status-success ', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'text-muted-foreground', icon: XCircle },
 };
 
@@ -378,9 +378,9 @@ function UserRow({
             variant="outline"
             className={cn(
               'text-xs',
-              user.moderationStatus === 'active' ? 'text-emerald-400 border-emerald-500/30' :
-              user.moderationStatus === 'suspended' ? 'text-amber-400 border-amber-500/30' :
-              'text-red-400 border-red-500/30',
+              user.moderationStatus === 'active' ? 'text-emerald-400 border-status-success-border' :
+              user.moderationStatus === 'suspended' ? 'text-amber-400 border-status-warning-border' :
+              'text-red-400 border-status-danger-border',
             )}
           >
             {user.moderationStatus}
@@ -415,13 +415,13 @@ function UserRow({
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
-            <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
+            <DropdownMenuItem onClick={onSuspend} className="text-status-warning ">
               <AlertTriangle className="mr-2 icon-sm" />
               Suspend
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
               Reactivate
             </DropdownMenuItem>
@@ -433,7 +433,7 @@ function UserRow({
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
-            <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
+            <DropdownMenuItem onClick={onActivate} className="text-status-success ">
               <CheckCircle className="mr-2 icon-sm" />
               Unban
             </DropdownMenuItem>
@@ -852,7 +852,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={ev.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={ev.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
@@ -908,7 +908,7 @@ export default function AdminPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <Button
                           variant="ghost" size="sm"
-                          className={job.isFeatured ? 'text-amber-500' : 'text-muted-foreground'}
+                          className={job.isFeatured ? 'text-status-warning' : 'text-muted-foreground'}
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >

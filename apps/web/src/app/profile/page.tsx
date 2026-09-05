@@ -358,7 +358,7 @@ export default function ProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                   <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title={bilingualAria(profileEn('verified_member'), profileEl('verified_member'))}>
-                  <BadgeCheck className="icon-lg text-blue-500" />
+                  <BadgeCheck className="icon-lg text-status-info" />
                 </div>
               </div>
 
@@ -381,7 +381,7 @@ export default function ProfilePage() {
                   
                   <div className="flex items-center gap-3 shrink-0">
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
-                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">
+                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-status-success-bg text-status-success hover:bg-status-success-bg border-status-success-border">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                       <BilingualText en={profileEn('open_to_work')} el={profileEl('open_to_work')} />
                     </Badge>

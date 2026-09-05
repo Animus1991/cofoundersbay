@@ -81,7 +81,7 @@ export function AIMatchExplainer({
         size="sm"
         onClick={fetchExplanation}
         disabled={isLoading}
-        className="gap-1.5 text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:text-violet-400 dark:hover:bg-violet-900/20"
+        className="gap-1.5 text-status-accent hover:text-status-accent hover:bg-status-accent-bg "
       >
         {isLoading ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -98,7 +98,7 @@ export function AIMatchExplainer({
       )}
 
       {explanation && (
-        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-status-accent-border rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
           <button
             onClick={() => setExplanation(null)}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
@@ -111,7 +111,7 @@ export function AIMatchExplainer({
               <Users className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 pr-4">
-              <div className="text-xs font-medium text-violet-600 dark:text-violet-400 mb-1">
+              <div className="text-xs font-medium text-status-accent mb-1">
                 Match Analysis
               </div>
               <div className="text-sm leading-relaxed">

@@ -216,7 +216,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Check className="h-4 w-4 text-emerald-500" />
+            <Check className="h-4 w-4 text-status-success" />
             Strengths
           </CardTitle>
         </CardHeader>
@@ -224,7 +224,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                <Check className="h-4 w-4 text-status-success shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{s}</span>
               </li>
             ))}
@@ -236,7 +236,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Minus className="h-4 w-4 text-amber-500" />
+            <Minus className="h-4 w-4 text-status-warning" />
             Considerations
           </CardTitle>
         </CardHeader>
@@ -244,7 +244,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           <ul className="space-y-2">
             {user.potentialFrictions.map((f, i) => (
               <li key={i} className="flex items-start gap-2 text-sm">
-                <Minus className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                <Minus className="h-4 w-4 text-status-warning shrink-0 mt-0.5" />
                 <span className="text-muted-foreground">{f}</span>
               </li>
             ))}

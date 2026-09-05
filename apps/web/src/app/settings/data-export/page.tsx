@@ -133,8 +133,8 @@ function formatDate(dateStr: string): string {
 function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
   const statusConfig: Record<ExportStatus, { label: string; color: string; icon: React.ElementType }> = {
     idle: { label: 'Pending', color: 'text-muted-foreground', icon: Clock },
-    processing: { label: 'Processing', color: 'text-amber-500', icon: Loader2 },
-    ready: { label: 'Ready', color: 'text-emerald-500', icon: Check },
+    processing: { label: 'Processing', color: 'text-status-warning', icon: Loader2 },
+    ready: { label: 'Ready', color: 'text-status-success', icon: Check },
     expired: { label: 'Expired', color: 'text-destructive-accessible', icon: AlertTriangle },
   };
 
@@ -148,11 +148,11 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           <div className="flex items-start gap-3">
             <div className={cn(
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
-              exportReq.status === 'ready' ? 'bg-emerald-500/10' : 'bg-muted'
+              exportReq.status === 'ready' ? 'bg-status-success-bg' : 'bg-muted'
             )}>
               <Archive className={cn(
                 'h-5 w-5',
-                exportReq.status === 'ready' ? 'text-emerald-500' : 'text-muted-foreground'
+                exportReq.status === 'ready' ? 'text-status-success' : 'text-muted-foreground'
               )} />
             </div>
             <div>
@@ -205,7 +205,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
         )}
 
         {exportReq.expiresAt && exportReq.status === 'ready' && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
+          <p className="text-xs text-status-warning mt-3 flex items-center gap-1">
             <Clock className="h-3 w-3" />
             Download expires {formatDate(exportReq.expiresAt)}
           </p>
@@ -387,7 +387,7 @@ export default function DataExportPage() {
             </div>
 
             {hasActiveExport && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
+              <p className="text-xs text-status-warning mt-3 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
                 Please wait for the current export to complete before requesting a new one.
               </p>

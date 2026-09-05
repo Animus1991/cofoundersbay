@@ -660,7 +660,7 @@ export function NoChatSelected() {
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
           <MessageCircle className="h-10 w-10 text-primary-accessible" />
         </div>
-        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center border-2 border-background">
+        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-status-success-bg flex items-center justify-center border-2 border-background">
           <span className="text-emerald-400 text-xs font-bold">✓</span>
         </div>
       </div>

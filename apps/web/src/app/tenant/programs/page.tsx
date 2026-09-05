@@ -43,10 +43,10 @@ type Program = {
 
 function ProgramCard({ program }: { program: Program }) {
   const statusColors: Record<string, string> = {
-    draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    archived: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    archived: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -224,7 +224,7 @@ export default function TenantProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-status-success">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>

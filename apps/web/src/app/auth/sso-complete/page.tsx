@@ -69,11 +69,11 @@ export default function SSOCompletePage() {
 
         {status === 'success' && (
           <div className="space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 text-xs font-semibold uppercase tracking-wide text-green-600">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-status-success-bg text-xs font-semibold uppercase tracking-wide text-status-success">
               OK
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-green-600">Sign in successful!</h1>
+              <h1 className="text-xl font-semibold text-status-success">Sign in successful!</h1>
               <p className="text-muted-foreground mt-1">
                 Redirecting you now...
               </p>

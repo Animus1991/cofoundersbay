@@ -97,11 +97,11 @@ const DEMO_PROPOSALS: Proposal[] = [
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 const OPP_TYPE_DISPLAY: Record<OpportunityType, { label: string; className: string; icon: typeof Briefcase }> = {
-  cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
+  cofounder: { label: 'Co-founder', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Handshake },
   job: { label: 'Job', className: 'bg-primary/20 text-primary-accessible border-primary/20', icon: Building2 },
-  investment: { label: 'Investment', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/20 dark:text-emerald-400', icon: Coins },
-  partnership: { label: 'Partnership', className: 'bg-purple-500/20 text-purple-700 border-purple-500/20 dark:text-purple-400', icon: Users },
-  mentorship: { label: 'Mentorship', className: 'bg-amber-500/20 text-amber-700 border-amber-500/20 dark:text-amber-400', icon: Rocket },
+  investment: { label: 'Investment', className: 'bg-status-success-bg text-status-success border-status-success-border ', icon: Coins },
+  partnership: { label: 'Partnership', className: 'bg-status-accent-bg text-status-accent border-status-accent-border ', icon: Users },
+  mentorship: { label: 'Mentorship', className: 'bg-status-warning-bg text-status-warning border-status-warning-border ', icon: Rocket },
   other: { label: 'Other', className: 'bg-muted text-muted-foreground border-border/40', icon: FileText },
 };
 
@@ -133,7 +133,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                   {cfg.label}
                 </Badge>
                 {opportunity.isRemote && (
-                  <Badge variant="secondary" className="text-2xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs bg-status-success-bg text-status-success ">Remote</Badge>
                 )}
               </div>
             </div>
@@ -170,7 +170,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               'flex items-center gap-1',
               (() => {
                 const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
-                return daysLeft <= 3 ? 'text-red-500 font-medium' : 'text-amber-600 dark:text-amber-400';
+                return daysLeft <= 3 ? 'text-status-danger font-medium' : 'text-status-warning ';
               })()
             )}>
               <AlertCircle className="h-3 w-3" />
@@ -288,8 +288,8 @@ function ProposalCard({
   const isPending = proposal.status === 'pending';
   const PROPOSAL_STATUS: Record<string, { label: string; className: string }> = {
     pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
-    accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-    declined: { label: 'Declined', className: 'bg-destructive/20 text-red-700 dark:text-destructive-accessible' },
+    accepted: { label: 'Accepted', className: 'bg-status-success-bg text-status-success ' },
+    declined: { label: 'Declined', className: 'bg-destructive/20 text-status-danger dark:text-destructive-accessible' },
   };
   const statusCfg = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
 
@@ -544,10 +544,10 @@ export default function OpportunitiesPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Total Listings', value: opportunities.length || '50+', icon: Briefcase, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-            { label: 'Remote Roles', value: opportunities.filter((o) => o.isRemote).length || '20+', icon: Globe, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Co-founder', value: opportunities.filter((o) => o.type === 'cofounder').length || '15+', icon: Handshake, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Proposals', value: pendingProposals, icon: TrendingUp, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { label: 'Total Listings', value: opportunities.length || '50+', icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+            { label: 'Remote Roles', value: opportunities.filter((o) => o.isRemote).length || '20+', icon: Globe, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { label: 'Co-founder', value: opportunities.filter((o) => o.type === 'cofounder').length || '15+', icon: Handshake, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { label: 'Proposals', value: pendingProposals, icon: TrendingUp, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
           ].map((s) => {
             const SIcon = s.icon;
             return (
@@ -624,7 +624,7 @@ export default function OpportunitiesPage() {
                   className={cn(
                     'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                     remoteOnly
-                      ? 'border-emerald-500/60 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                      ? 'border-status-success-border bg-status-success-bg text-status-success '
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >

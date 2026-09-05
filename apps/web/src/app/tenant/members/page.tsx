@@ -64,9 +64,9 @@ type Member = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-green-500/10 text-green-600 border-green-500/20',
-  pending:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  suspended: 'bg-red-500/10 text-red-600 border-red-500/20',
+  active:    'bg-status-success-bg text-status-success border-status-success-border',
+  pending:   'bg-status-warning-bg text-status-warning border-status-warning-border',
+  suspended: 'bg-status-danger-bg text-status-danger border-status-danger-border',
 };
 
 function EngagementBar({ score }: { score: number }) {
@@ -132,7 +132,7 @@ function MemberCard({ member }: { member: Member }) {
                 <Activity className="icon-sm" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-2xs text-emerald-600 flex items-center gap-0.5">
+                <span className="text-2xs text-status-success flex items-center gap-0.5">
                   <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
                 </span>
               )}
@@ -187,7 +187,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             <div className="flex items-center gap-2">
               <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
-                {copied ? <CheckCircle2 className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
+                {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
@@ -253,9 +253,9 @@ export default function TenantMembersPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-accessible' },
-            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600' },
-            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600' },
+            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-status-success' },
+            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">

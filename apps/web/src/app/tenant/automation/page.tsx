@@ -51,24 +51,24 @@ const TRIGGER_LABELS: Record<string, string> = {
 };
 
 const TRIGGER_CATEGORY: Record<string, { label: string; color: string }> = {
-  user_signup: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  onboarding_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  profile_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  connection_not_answered: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  connection_accepted: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_not_viewed: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_generated: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  mentor_request_submitted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_request_accepted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_session_idle: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  community_join: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  community_inactive: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  subscription_trial_ending: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_failed_payment: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_canceled: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  user_inactive: { label: 'Engagement', color: 'bg-rose-500/10 text-rose-600' },
-  content_reported_threshold: { label: 'Moderation', color: 'bg-red-500/10 text-red-600' },
-  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-indigo-500/10 text-indigo-600' },
+  user_signup: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  onboarding_incomplete: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  profile_incomplete: { label: 'Onboarding', color: 'bg-status-info-bg text-status-info' },
+  connection_not_answered: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  connection_accepted: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  match_not_viewed: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  match_generated: { label: 'Matching', color: 'bg-status-accent-bg text-status-accent' },
+  mentor_request_submitted: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  mentor_request_accepted: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  mentor_session_idle: { label: 'Mentorship', color: 'bg-status-success-bg text-status-success' },
+  community_join: { label: 'Community', color: 'bg-status-success-bg text-status-success' },
+  community_inactive: { label: 'Community', color: 'bg-status-success-bg text-status-success' },
+  subscription_trial_ending: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_failed_payment: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  subscription_canceled: { label: 'Billing', color: 'bg-status-warning-bg text-status-warning' },
+  user_inactive: { label: 'Engagement', color: 'bg-status-danger-bg text-status-danger' },
+  content_reported_threshold: { label: 'Moderation', color: 'bg-status-danger-bg text-status-danger' },
+  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-status-accent-bg text-status-accent' },
 };
 
 // ── Config toggle panel ──────────────────────────────────────────────────────
@@ -190,16 +190,16 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               {TRIGGER_LABELS[rule.triggerType] ?? rule.triggerType}
             </Badge>
             {rule.status === 'active'
-              ? <Badge className="bg-emerald-100 text-emerald-700 text-xs">Active</Badge>
+              ? <Badge className="bg-status-success-bg text-status-success text-xs">Active</Badge>
               : rule.status === 'paused'
-              ? <Badge className="bg-amber-100 text-amber-700 text-xs">Paused</Badge>
+              ? <Badge className="bg-status-warning-bg text-status-warning text-xs">Paused</Badge>
               : <Badge variant="outline" className="text-xs">{rule.status}</Badge>}
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Zap className="h-3 w-3" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="h-3 w-3" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="h-3 w-3" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
               <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
@@ -218,7 +218,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
             </Button>
           ) : rule.status !== 'archived' ? (
             <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-emerald-600" />
+              <Zap className="h-3.5 w-3.5 text-status-success" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
@@ -280,9 +280,9 @@ export default function TenantAutomationPage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Active Rules', value: activeCount, color: 'text-emerald-600' },
-            { label: 'Total Runs', value: totalRuns, color: 'text-blue-600' },
-            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-amber-600' : 'text-muted-foreground' },
+            { label: 'Active Rules', value: activeCount, color: 'text-status-success' },
+            { label: 'Total Runs', value: totalRuns, color: 'text-status-info' },
+            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-status-warning' : 'text-muted-foreground' },
           ].map(s => (
             <Card key={s.label} className="border-border/60">
               <CardContent className="py-3 px-4">

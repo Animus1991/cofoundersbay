@@ -90,8 +90,8 @@ export function WriteEndorsementModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
-              <Star className="h-4 w-4 text-amber-500" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-status-warning-bg">
+              <Star className="h-4 w-4 text-status-warning" />
             </div>
             <div>
               <h2 className="font-semibold text-foreground">Write Endorsement</h2>

@@ -60,8 +60,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const STATUS_COLORS: Record<string, string> = {
-  requested: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30',
-  confirmed: 'bg-green-500/15 text-green-500 border-green-500/30',
+  requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  confirmed: 'bg-status-success-bg text-status-success border-status-success-border',
   completed: 'bg-primary/15 text-primary-accessible border-primary/30',
   cancelled: 'bg-destructive/15 text-destructive-accessible border-destructive/30',
   declined: 'bg-muted text-muted-foreground border-border',
@@ -106,9 +106,9 @@ function hitToMentor(hit: SearchHit): Mentor {
 }
 
 const AVAIL_CONFIG = {
-  available: { label: 'Available', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-500/10', dot: 'bg-emerald-500' },
-  busy:      { label: 'Busy',      color: 'text-red-500',                            bg: 'bg-red-500/10',     dot: 'bg-red-500'     },
-  limited:   { label: 'Limited',   color: 'text-amber-500',                          bg: 'bg-amber-500/10',   dot: 'bg-amber-500'   },
+  available: { label: 'Available', color: 'text-status-success ', bg: 'bg-status-success-bg', dot: 'bg-emerald-500' },
+  busy:      { label: 'Busy',      color: 'text-status-danger',                            bg: 'bg-status-danger-bg',     dot: 'bg-red-500'     },
+  limited:   { label: 'Limited',   color: 'text-status-warning',                          bg: 'bg-status-warning-bg',   dot: 'bg-amber-500'   },
 } as const;
 
 const PRICE_FILTERS = ['Any', 'Free', 'Paid'] as const;
@@ -159,7 +159,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
             <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-0.5">
-                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <Star className="h-3.5 w-3.5 fill-status-warning text-status-warning" />
                 <span className="font-medium text-foreground">{mentor.rating > 0 ? mentor.rating.toFixed(1) : 'New'}</span>
                 {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
               </span>
@@ -167,7 +167,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
                 <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{mentor.location}</span>
               )}
               {mentor.isRemote && (
-                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-blue-500" />Remote</span>
+                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-status-info" />Remote</span>
               )}
             </div>
           </div>
@@ -177,7 +177,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <div className={cn(
               'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
               matchPct >= 85 ? 'bg-primary/15 text-primary-accessible ring-primary/30'
-              : matchPct >= 70 ? 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/30'
+              : matchPct >= 70 ? 'bg-status-success-bg text-status-success ring-emerald-500/30'
               : 'bg-muted text-muted-foreground ring-border',
             )}>
               {matchPct}%
@@ -206,7 +206,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
                 <DollarSign className="h-3.5 w-3.5 text-primary-accessible" />{mentor.hourlyRate}/hr
               </span>
             ) : (
-              <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
+              <Badge variant="outline" className="text-2xs border-status-success-border text-status-success bg-status-success-bg">Free</Badge>
             )}
             <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
               {availCfg.label}
@@ -729,9 +729,9 @@ export default function MentoringPage() {
           {/* Stats bar */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Expert Mentors', value: filteredMentors.length || '50+', icon: GraduationCap, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-              { label: 'Avg Rating', value: '4.8★', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-              { label: 'Sessions Done', value: '1.2k+', icon: Users, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              { label: 'Expert Mentors', value: filteredMentors.length || '50+', icon: GraduationCap, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+              { label: 'Avg Rating', value: '4.8★', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+              { label: 'Sessions Done', value: '1.2k+', icon: Users, color: 'text-status-success', bg: 'bg-status-success-bg' },
             ].map((s) => {
               const SIcon = s.icon;
               return (

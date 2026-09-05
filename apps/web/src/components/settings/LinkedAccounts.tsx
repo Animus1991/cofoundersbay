@@ -179,7 +179,7 @@ export function LinkedAccounts() {
         ))}
 
         {!data?.hasPassword && (
-          <p className="text-xs text-muted-foreground mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+          <p className="text-xs text-muted-foreground mt-4 p-3 bg-status-warning-bg border border-status-warning-border rounded-lg">
             ⚠️ You don&apos;t have a password set. Set one in Security settings before unlinking your only connected account.
           </p>
         )}

@@ -73,15 +73,15 @@ const MODE_CONFIG: Record<ValidationMode, {
     label: 'One-Party Validation',
     description: 'You can save/validate your side of the conversation',
     icon: Shield,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning-bg',
   },
   two_party: {
     label: 'Two-Party Validation',
     description: 'Both parties agree to validated transcript',
     icon: ShieldCheck,
-    color: 'text-emerald-500',
-    bgColor: 'bg-emerald-500/10',
+    color: 'text-status-success',
+    bgColor: 'bg-status-success-bg',
   },
 };
 
@@ -247,7 +247,7 @@ export function ConversationValidationMenu({
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={copyHash}>
                 {copied ? (
-                  <Check className="mr-2 h-4 w-4 text-emerald-500" />
+                  <Check className="mr-2 h-4 w-4 text-status-success" />
                 ) : (
                   <Hash className="mr-2 h-4 w-4" />
                 )}
@@ -260,9 +260,9 @@ export function ConversationValidationMenu({
 
       {/* Pending acceptance banner */}
       {isPendingAcceptance && (
-        <div className="mx-4 mb-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+        <div className="mx-4 mb-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 shrink-0 text-amber-500 mt-0.5" />
+            <ShieldAlert className="h-5 w-5 shrink-0 text-status-warning mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">
                 {otherUserName} requested two-party validation
@@ -344,7 +344,7 @@ export function ConversationValidationMenu({
                         {modeConfig.description}
                       </p>
                       {mode === 'two_party' && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+                        <p className="text-xs text-status-warning mt-1 flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" />
                           Requires acceptance from {otherUserName}
                         </p>
@@ -459,7 +459,7 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
         onClick={copyHash}
       >
         {copied ? (
-          <Check className="h-3 w-3 text-emerald-500" />
+          <Check className="h-3 w-3 text-status-success" />
         ) : (
           <Copy className="h-3 w-3" />
         )}

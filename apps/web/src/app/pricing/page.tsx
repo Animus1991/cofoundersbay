@@ -68,7 +68,7 @@ const PLANS = [
     priceMonthly: 0,
     priceAnnual: 0,
     icon: Zap,
-    color: 'text-slate-500',
+    color: 'text-muted-foreground',
     bgColor: 'bg-slate-500/10',
     popular: false,
     cta: 'Get Started',
@@ -110,8 +110,8 @@ const PLANS = [
     priceMonthly: 99,
     priceAnnual: 899,
     icon: Users,
-    color: 'text-violet-500',
-    bgColor: 'bg-violet-500/10',
+    color: 'text-status-accent',
+    bgColor: 'bg-status-accent-bg',
     popular: false,
     cta: 'Start Free Trial',
     features: [
@@ -131,8 +131,8 @@ const PLANS = [
     priceMonthly: null,
     priceAnnual: null,
     icon: Building2,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-500/10',
+    color: 'text-status-warning',
+    bgColor: 'bg-status-warning-bg',
     popular: false,
     cta: 'Contact Sales',
     features: [
@@ -150,7 +150,7 @@ const PLANS = [
 
 function FeatureCheck({ value }: { value: boolean | string }) {
   if (value === true) {
-    return <Check className="h-4 w-4 text-green-500" />;
+    return <Check className="h-4 w-4 text-status-success" />;
   }
   if (value === false) {
     return <X className="h-4 w-4 text-muted-foreground/40" />;
@@ -225,7 +225,7 @@ export default function PricingPage() {
               Annual
             </span>
             {annual && (
-              <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600">
+              <Badge variant="secondary" className="ml-2 bg-status-success-bg text-status-success">
                 Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
               </Badge>
             )}
@@ -277,7 +277,7 @@ export default function PricingPage() {
                       </div>
                     )}
                     {!isEnterprise && !isFree && annual && savings > 0 && (
-                      <p className="mt-1 text-xs text-green-600 font-medium">{savings}% off vs monthly</p>
+                      <p className="mt-1 text-xs text-status-success font-medium">{savings}% off vs monthly</p>
                     )}
                     {!isEnterprise && !isFree && !annual && (
                       <p className="mt-1 text-xs text-muted-foreground">Save {savings}% with annual billing</p>
@@ -288,7 +288,7 @@ export default function PricingPage() {
                   <ul className="mb-6 flex-1 space-y-2.5">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-status-success" />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}

@@ -89,11 +89,11 @@ function SubRow({
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
   const statusColors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-    draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    void: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    paid: 'bg-status-success-bg text-status-success border-status-success-border',
+    open: 'bg-status-info-bg text-status-info border-status-info-border',
+    draft: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    void: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+    uncollectible: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
@@ -224,10 +224,10 @@ export default function AdminBillingPage() {
         {/* Revenue Metrics */}
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600' },
-            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-violet-600' },
-            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-amber-600' },
+            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-status-success' },
+            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-status-info' },
+            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-status-accent' },
+            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-status-warning' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4">
@@ -345,8 +345,8 @@ export default function AdminBillingPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium">{plan.displayName}</span>
                             <Badge variant="outline" className="text-xs capitalize">{plan.planType.replace('_', ' ')}</Badge>
-                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
-                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-slate-500">Private</Badge>}
+                            {!plan.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
+                            {!plan.isPublic && <Badge variant="outline" className="text-xs bg-slate-500/10 text-muted-foreground">Private</Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {formatCents(plan.priceMonthly)}/mo · {formatCents(plan.priceAnnual)}/yr
@@ -447,7 +447,7 @@ export default function AdminBillingPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-mono font-semibold">{coupon.code}</span>
-                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-gray-500">Inactive</Badge>}
+                            {!coupon.isActive && <Badge variant="outline" className="text-xs bg-gray-500/10 text-muted-foreground">Inactive</Badge>}
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·

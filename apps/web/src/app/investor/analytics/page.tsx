@@ -147,11 +147,11 @@ export default function InvestorAnalyticsPage() {
 
   const kpis = [
     { label: 'Deals Reviewed', value: '45', icon: Target, trend: +18, color: 'text-primary-accessible' },
-    { label: 'Invested', value: '9', icon: DollarSign, trend: +12, color: 'text-green-500' },
-    { label: 'Conversion Rate', value: '8.9%', icon: TrendingUp, trend: +2.1, color: 'text-blue-500' },
-    { label: 'Avg Time to Close', value: '6 wks', icon: Calendar, trend: -5, color: 'text-amber-500' },
-    { label: 'Total Deployed', value: '$580K', icon: BarChart3, trend: +24, color: 'text-purple-500' },
-    { label: 'Portfolio Value', value: '$790K', icon: LineChart, trend: +36, color: 'text-green-500' },
+    { label: 'Invested', value: '9', icon: DollarSign, trend: +12, color: 'text-status-success' },
+    { label: 'Conversion Rate', value: '8.9%', icon: TrendingUp, trend: +2.1, color: 'text-status-info' },
+    { label: 'Avg Time to Close', value: '6 wks', icon: Calendar, trend: -5, color: 'text-status-warning' },
+    { label: 'Total Deployed', value: '$580K', icon: BarChart3, trend: +24, color: 'text-status-accent' },
+    { label: 'Portfolio Value', value: '$790K', icon: LineChart, trend: +36, color: 'text-status-success' },
   ];
 
   return (
@@ -189,7 +189,7 @@ export default function InvestorAnalyticsPage() {
                     <div className="p-2 rounded-lg bg-primary/10">
                       <kpi.icon className="h-4 w-4 text-primary-accessible" />
                     </div>
-                    <span className={cn('text-xs flex items-center gap-0.5', kpi.trend > 0 ? 'text-green-500' : 'text-red-500')}>
+                    <span className={cn('text-xs flex items-center gap-0.5', kpi.trend > 0 ? 'text-status-success' : 'text-status-danger')}>
                       {kpi.trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                       {Math.abs(kpi.trend)}{kpi.label.includes('Rate') || kpi.label.includes('Time') ? 'pp' : '%'}
                     </span>
@@ -330,7 +330,7 @@ export default function InvestorAnalyticsPage() {
                       <p className="text-xs text-muted-foreground">Invested: {p.invested}</p>
                     </div>
                     <div className="text-right">
-                      <p className={cn('font-bold', p.isUp ? 'text-green-500' : 'text-red-500')}>{p.multiple}</p>
+                      <p className={cn('font-bold', p.isUp ? 'text-status-success' : 'text-status-danger')}>{p.multiple}</p>
                       <p className="text-xs text-muted-foreground">{p.current} current</p>
                     </div>
                   </div>
@@ -342,11 +342,11 @@ export default function InvestorAnalyticsPage() {
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Current Value</p>
-                    <p className="font-bold text-green-500">$790K</p>
+                    <p className="font-bold text-status-success">$790K</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-muted-foreground">Unrealised MOIC</p>
-                    <p className="font-bold text-green-500">1.36x</p>
+                    <p className="font-bold text-status-success">1.36x</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="w-full mt-2" asChild>

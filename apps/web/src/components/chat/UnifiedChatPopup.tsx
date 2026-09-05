@@ -175,7 +175,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-xs font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-status-accent-bg text-status-accent text-xs font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
       >
         <span>{getAgentIcon(currentAgent)}</span>
         <span>{current?.name || 'Assistant'}</span>
@@ -201,7 +201,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
                   <div className="text-xs text-muted-foreground line-clamp-1">{agent.description}</div>
                 </div>
                 {agent.id === currentAgent && (
-                  <ChevronRight className="h-4 w-4 text-violet-500 mt-0.5" />
+                  <ChevronRight className="h-4 w-4 text-status-accent mt-0.5" />
                 )}
               </button>
             ))}
@@ -694,7 +694,7 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('messages')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'messages' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'messages' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
             <MessageSquare className="h-3 w-3" />
@@ -709,7 +709,7 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('ai')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'ai' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
             <Bot className="h-3 w-3" />

@@ -133,10 +133,10 @@ const MOCK_USERS: ManagedUser[] = [
 ];
 
 const STATUS_STYLES: Record<UserStatus, string> = {
-  active: 'bg-green-500/10 text-green-700 border-green-500/20',
-  suspended: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  pending: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
-  banned: 'bg-red-500/10 text-red-700 border-red-500/20',
+  active: 'bg-status-success-bg text-status-success border-status-success-border',
+  suspended: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  banned: 'bg-status-danger-bg text-status-danger border-status-danger-border',
 };
 
 const ROLE_ICONS: Record<UserRole, React.ReactNode> = {
@@ -339,9 +339,9 @@ export default function AdminUserManagementPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Total users', value: stats.total, icon: Users },
-              { label: 'Active', value: stats.active, icon: CheckCircle2, className: 'text-green-600' },
-              { label: 'Pending', value: stats.pending, icon: Clock, className: 'text-yellow-600' },
-              { label: 'Suspended', value: stats.suspended, icon: Ban, className: 'text-red-600' },
+              { label: 'Active', value: stats.active, icon: CheckCircle2, className: 'text-status-success' },
+              { label: 'Pending', value: stats.pending, icon: Clock, className: 'text-status-warning' },
+              { label: 'Suspended', value: stats.suspended, icon: Ban, className: 'text-status-danger' },
             ].map(({ label, value, icon: Icon, className }) => (
               <Card key={label}>
                 <CardContent className="flex items-center justify-between p-4">

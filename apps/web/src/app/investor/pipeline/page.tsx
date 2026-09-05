@@ -61,7 +61,7 @@ function DealCard({ deal }: { deal: Deal }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm truncate">{deal.name}</span>
-            {deal.starred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
+            {deal.starred && <Star className="h-3 w-3 text-status-warning fill-status-warning" />}
           </div>
           <p className="text-xs text-muted-foreground">{deal.industry}</p>
         </div>
@@ -86,7 +86,7 @@ function DealCard({ deal }: { deal: Deal }) {
         <Badge variant="secondary" className="text-2xs">{deal.stage}</Badge>
         <span className="text-2xs text-muted-foreground">{deal.readinessScore}% ready</span>
         {deal.askAmount && (
-          <span className="text-2xs font-medium text-emerald-600 ml-auto">${(deal.askAmount / 1000).toFixed(0)}K</span>
+          <span className="text-2xs font-medium text-status-success ml-auto">${(deal.askAmount / 1000).toFixed(0)}K</span>
         )}
       </div>
       {deal.founderName && (
@@ -166,9 +166,9 @@ export default function InvestorPipelinePage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Deals', value: deals.length, icon: FolderKanban, color: 'text-primary-accessible' },
-            { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-emerald-600' },
-            { label: 'Avg Readiness', value: `${avgReadiness}%`, icon: Target, color: 'text-blue-600' },
-            { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-green-600' },
+            { label: 'Pipeline Value', value: `$${(totalPipelineValue / 1_000_000).toFixed(1)}M`, icon: DollarSign, color: 'text-status-success' },
+            { label: 'Avg Readiness', value: `${avgReadiness}%`, icon: Target, color: 'text-status-info' },
+            { label: 'Invested', value: deals.filter((d) => d.pipelineStage === 'invested').length, icon: TrendingUp, color: 'text-status-success' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">

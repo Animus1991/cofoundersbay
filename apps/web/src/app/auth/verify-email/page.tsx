@@ -123,10 +123,10 @@ export default function VerifyEmailPage() {
           {status === 'success' && (
             <>
               <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-success-bg">
+                  <CheckCircle2 className="h-8 w-8 text-status-success" />
                 </div>
-                <CardTitle className="text-emerald-600 dark:text-emerald-400">Email Verified!</CardTitle>
+                <CardTitle className="text-status-success ">Email Verified!</CardTitle>
                 <CardDescription>
                   {verifiedEmail ? (
                     <>Your email <strong className="text-foreground">{verifiedEmail}</strong> has been verified.</>
@@ -176,9 +176,9 @@ export default function VerifyEmailPage() {
                 <div className="pt-2">
                   <p className="text-sm font-medium text-foreground mb-3">Request a new verification link:</p>
                   {resendSent ? (
-                    <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                    <div className="rounded-lg border border-status-success-border bg-status-success-bg p-3 text-center">
+                      <CheckCircle2 className="h-5 w-5 text-status-success mx-auto mb-2" />
+                      <p className="text-sm text-status-success ">
                         Verification email sent! Check your inbox.
                       </p>
                     </div>
@@ -213,8 +213,8 @@ export default function VerifyEmailPage() {
           {status === 'no-token' && (
             <>
               <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10">
-                  <Mail className="h-8 w-8 text-amber-500" />
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-warning-bg">
+                  <Mail className="h-8 w-8 text-status-warning" />
                 </div>
                 <CardTitle>Verify Your Email</CardTitle>
                 <CardDescription>
@@ -223,9 +223,9 @@ export default function VerifyEmailPage() {
               </CardHeader>
               <CardContent className="pt-4 space-y-4">
                 {resendSent ? (
-                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
-                    <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
-                    <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
+                  <div className="rounded-lg border border-status-success-border bg-status-success-bg p-4 text-center">
+                    <CheckCircle2 className="h-6 w-6 text-status-success mx-auto mb-2" />
+                    <p className="text-sm font-medium text-status-success mb-1">
                       Verification email sent!
                     </p>
                     <p className="text-xs text-muted-foreground">

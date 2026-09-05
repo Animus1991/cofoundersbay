@@ -55,10 +55,10 @@ interface LearningPath {
 }
 
 const LEARNING_PATHS: LearningPath[] = [
-  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'from-violet-500/20 to-purple-500/20 border-violet-500/30', icon: Target },
-  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'from-emerald-500/20 to-teal-500/20 border-emerald-500/30', icon: TrendingUp },
-  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'from-amber-500/20 to-orange-500/20 border-amber-500/30', icon: BarChart3 },
-  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'from-blue-500/20 to-cyan-500/20 border-blue-500/30', icon: Users },
+  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'from-violet-500/20 to-purple-500/20 border-status-accent-border', icon: Target },
+  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'from-emerald-500/20 to-teal-500/20 border-status-success-border', icon: TrendingUp },
+  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'from-amber-500/20 to-orange-500/20 border-status-warning-border', icon: BarChart3 },
+  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'from-blue-500/20 to-cyan-500/20 border-status-info-border', icon: Users },
 ];
 
 const DEMO_RESOURCES: Resource[] = [
@@ -151,16 +151,16 @@ const DEMO_RESOURCES: Resource[] = [
 ];
 
 const TYPE_CONFIG = {
-  article: { label: 'Article', icon: FileText, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  video:   { label: 'Video',   icon: Video,    color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  course:  { label: 'Course',  icon: BookOpen, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  guide:   { label: 'Guide',   icon: Award,    color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  article: { label: 'Article', icon: FileText, color: 'text-status-info', bg: 'bg-status-info-bg' },
+  video:   { label: 'Video',   icon: Video,    color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+  course:  { label: 'Course',  icon: BookOpen, color: 'text-status-success', bg: 'bg-status-success-bg' },
+  guide:   { label: 'Guide',   icon: Award,    color: 'text-status-warning', bg: 'bg-status-warning-bg' },
 };
 
 const DIFFICULTY_CONFIG = {
-  beginner: { label: 'Beginner', color: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-  intermediate: { label: 'Intermediate', color: 'bg-amber-500/20 text-amber-700 dark:text-amber-400' },
-  advanced: { label: 'Advanced', color: 'bg-red-500/20 text-red-700 dark:text-red-400' },
+  beginner: { label: 'Beginner', color: 'bg-status-success-bg text-status-success ' },
+  intermediate: { label: 'Intermediate', color: 'bg-status-warning-bg text-status-warning ' },
+  advanced: { label: 'Advanced', color: 'bg-status-danger-bg text-status-danger ' },
 };
 
 function ResourceCard({ resource }: { resource: Resource }) {
@@ -222,7 +222,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
                 <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{resource.duration}</span>
               )}
               {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{resource.completedBy.toLocaleString()}</span>
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="h-3 w-3 text-status-success" />{resource.completedBy.toLocaleString()}</span>
               )}
             </div>
           </div>
@@ -375,10 +375,10 @@ export default function LearningPage() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Resources', value: totalResourceCount, icon: BookOpen, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-          { label: 'Courses', value: courseCount, icon: Play, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-          { label: 'Total Hours', value: `${totalHours}h`, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'In Progress', value: inProgressPaths.length, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+          { label: 'Resources', value: totalResourceCount, icon: BookOpen, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+          { label: 'Courses', value: courseCount, icon: Play, color: 'text-status-success', bg: 'bg-status-success-bg' },
+          { label: 'Total Hours', value: `${totalHours}h`, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+          { label: 'In Progress', value: inProgressPaths.length, icon: Flame, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
         ].map((s) => {
           const SIcon = s.icon;
           return (

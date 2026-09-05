@@ -157,18 +157,18 @@ const DEMO_COACHES: CoachProfile[] = [
 // ── Configs ───────────────────────────────────────────────────────────────────
 
 const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: ListChecks },
-  clarity:        { label: 'Clarity',        color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-teal-500/10 text-teal-600 border-teal-500/20', icon: Users },
-  execution:      { label: 'Execution',      color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Zap },
-  strategy:       { label: 'Strategy',       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: BrainCircuit },
+  accountability: { label: 'Accountability', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: ListChecks },
+  clarity:        { label: 'Clarity',        color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Lightbulb },
+  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Users },
+  execution:      { label: 'Execution',      color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: Zap },
+  strategy:       { label: 'Strategy',       color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: Target },
+  wellbeing:      { label: 'Wellbeing',      color: 'bg-status-success-bg text-status-success border-status-success-border', icon: BrainCircuit },
 };
 
 const STATUS_CONFIG: Record<SessionStatus, { label: string; color: string; icon: React.ElementType }> = {
-  scheduled:   { label: 'Scheduled',   color: 'bg-blue-500/10 text-blue-600',    icon: Calendar },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600',  icon: Clock },
-  completed:   { label: 'Completed',   color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle2 },
+  scheduled:   { label: 'Scheduled',   color: 'bg-status-info-bg text-status-info',    icon: Calendar },
+  in_progress: { label: 'In Progress', color: 'bg-status-warning-bg text-status-warning',  icon: Clock },
+  completed:   { label: 'Completed',   color: 'bg-status-success-bg text-status-success', icon: CheckCircle2 },
   cancelled:   { label: 'Cancelled',   color: 'bg-muted text-muted-foreground',  icon: XCircle },
 };
 
@@ -241,7 +241,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {session.rating && (
               <div className="mt-2 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-status-warning text-amber-400' : 'text-muted-foreground/30')} />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">Your rating</span>
               </div>
@@ -297,7 +297,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
               <ul className="space-y-1.5">
                 {session.actionItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-xs">
-                    <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/40')} />
+                    <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/40')} />
                     <span className={item.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{item.task}</span>
                   </li>
                 ))}
@@ -351,7 +351,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-sm fill-amber-400 text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
+              <Star className="icon-sm fill-status-warning text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" /> Responds {coach.responseTime}
@@ -394,9 +394,9 @@ export default function CoachingPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { labelEn: 'Total sessions', labelEl: 'Συνολικές συνεδρίες', value: sessions.length, icon: Calendar, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+            { labelEn: 'Upcoming', labelEl: 'Επερχόμενες', value: upcoming.length, icon: Clock, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { labelEn: 'Action items done', labelEl: 'Ολοκληρωμένες ενέργειες', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { labelEn: 'Avg rating', labelEl: 'Μέση βαθμολογία', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
           ].map(({ labelEn, labelEl, value, icon: Icon, color, bg }) => (
             <Card key={labelEn} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-3">
@@ -414,10 +414,10 @@ export default function CoachingPage() {
 
         {/* Upcoming session banner */}
         {upcoming.length > 0 && (
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
+          <div className="rounded-xl border border-status-info-border bg-status-info-bg p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1"><BilingualText en="Next Session" el="Επόμενη συνεδρία" compact /></p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-status-info mb-1"><BilingualText en="Next Session" el="Επόμενη συνεδρία" compact /></p>
                 <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   with {upcoming[0].coachName} ·{' '}
@@ -511,7 +511,7 @@ export default function CoachingPage() {
                 {sessions.flatMap((session) =>
                   (session.actionItems ?? []).map((item, idx) => (
                     <div key={`${session.id}-${idx}`} className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-muted/50 transition-colors">
-                      <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} />
+                      <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-status-success' : 'text-muted-foreground/30')} />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
                         <p className="text-2xs text-muted-foreground">From: {session.title}</p>
@@ -554,7 +554,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <ListChecks className="h-4 w-4 text-emerald-500" /> <BilingualText en="Execution Rate" el="Ποσοστό εκτέλεσης" compact />
+                    <ListChecks className="h-4 w-4 text-status-success" /> <BilingualText en="Execution Rate" el="Ποσοστό εκτέλεσης" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -565,7 +565,7 @@ export default function CoachingPage() {
                         <circle
                           cx="18" cy="18" r="15.5" fill="none" strokeWidth="3"
                           strokeDasharray={`${(completedActions / Math.max(totalActionItems.length, 1)) * 97.4} 97.4`}
-                          className="stroke-emerald-500" strokeLinecap="round"
+                          className="stroke-status-success" strokeLinecap="round"
                         />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -577,7 +577,7 @@ export default function CoachingPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground"><BilingualText en="Action completion" el="Ολοκλήρωση ενεργειών" compact /></p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-emerald-600 font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact /></p>
+                      <p className="text-xs text-status-success font-medium"><BilingualText en="Keep the momentum going!" el="Διατηρήστε τη δυναμική!" compact /></p>
                     </div>
                   </div>
                 </CardContent>
@@ -589,7 +589,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-amber-500" /> <BilingualText en="Key Insights" el="Βασικές αναλύσεις" compact />
+                    <Lightbulb className="h-4 w-4 text-status-warning" /> <BilingualText en="Key Insights" el="Βασικές αναλύσεις" compact />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

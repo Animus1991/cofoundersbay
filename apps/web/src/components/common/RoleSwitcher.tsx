@@ -22,28 +22,28 @@ import {
 
 // Role display configuration
 const ROLE_DISPLAY: Record<UserRoleType, { label: string; icon: React.ElementType; color: string }> = {
-  aspiring_founder: { label: 'Aspiring Founder', icon: Lightbulb, color: 'text-yellow-500' },
-  existing_founder: { label: 'Founder', icon: Briefcase, color: 'text-blue-500' },
-  cofounder_candidate: { label: 'Co-Founder Candidate', icon: Users, color: 'text-green-500' },
-  technical_talent: { label: 'Technical Talent', icon: Wrench, color: 'text-purple-500' },
-  business_operator: { label: 'Business Operator', icon: TrendingUp, color: 'text-orange-500' },
-  mentor: { label: 'Mentor', icon: GraduationCap, color: 'text-cyan-500' },
-  advisor: { label: 'Advisor', icon: Star, color: 'text-amber-500' },
-  coach: { label: 'Coach', icon: GraduationCap, color: 'text-teal-500' },
-  course_creator: { label: 'Course Creator', icon: GraduationCap, color: 'text-indigo-500' },
-  incubator_admin: { label: 'Incubator Admin', icon: Building2, color: 'text-rose-500' },
-  accelerator_admin: { label: 'Accelerator Admin', icon: Building2, color: 'text-pink-500' },
-  university_admin: { label: 'University Admin', icon: Building2, color: 'text-violet-500' },
-  venture_studio_admin: { label: 'Venture Studio Admin', icon: Building2, color: 'text-fuchsia-500' },
-  angel_investor: { label: 'Angel Investor', icon: TrendingUp, color: 'text-emerald-500' },
-  vc_scout: { label: 'VC Scout', icon: UserSearch, color: 'text-lime-500' },
-  vc_analyst: { label: 'VC Analyst', icon: TrendingUp, color: 'text-sky-500' },
-  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-blue-600' },
-  service_provider: { label: 'Service Provider', icon: Wrench, color: 'text-slate-500' },
-  legal_partner: { label: 'Legal Partner', icon: Scale, color: 'text-gray-600' },
-  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-green-600' },
-  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-orange-600' },
-  platform_admin: { label: 'Platform Admin', icon: Shield, color: 'text-red-500' },
+  aspiring_founder: { label: 'Aspiring Founder', icon: Lightbulb, color: 'text-status-warning' },
+  existing_founder: { label: 'Founder', icon: Briefcase, color: 'text-status-info' },
+  cofounder_candidate: { label: 'Co-Founder Candidate', icon: Users, color: 'text-status-success' },
+  technical_talent: { label: 'Technical Talent', icon: Wrench, color: 'text-status-accent' },
+  business_operator: { label: 'Business Operator', icon: TrendingUp, color: 'text-status-warning' },
+  mentor: { label: 'Mentor', icon: GraduationCap, color: 'text-status-info' },
+  advisor: { label: 'Advisor', icon: Star, color: 'text-status-warning' },
+  coach: { label: 'Coach', icon: GraduationCap, color: 'text-status-success' },
+  course_creator: { label: 'Course Creator', icon: GraduationCap, color: 'text-status-accent' },
+  incubator_admin: { label: 'Incubator Admin', icon: Building2, color: 'text-status-danger' },
+  accelerator_admin: { label: 'Accelerator Admin', icon: Building2, color: 'text-status-accent' },
+  university_admin: { label: 'University Admin', icon: Building2, color: 'text-status-accent' },
+  venture_studio_admin: { label: 'Venture Studio Admin', icon: Building2, color: 'text-status-accent' },
+  angel_investor: { label: 'Angel Investor', icon: TrendingUp, color: 'text-status-success' },
+  vc_scout: { label: 'VC Scout', icon: UserSearch, color: 'text-status-success' },
+  vc_analyst: { label: 'VC Analyst', icon: TrendingUp, color: 'text-status-info' },
+  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-status-info' },
+  service_provider: { label: 'Service Provider', icon: Wrench, color: 'text-muted-foreground' },
+  legal_partner: { label: 'Legal Partner', icon: Scale, color: 'text-muted-foreground' },
+  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-status-success' },
+  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-status-warning' },
+  platform_admin: { label: 'Platform Admin', icon: Shield, color: 'text-status-danger' },
 };
 
 interface RoleSwitcherProps {
@@ -123,7 +123,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                     <span className="flex-1 text-sm">{roleConfig?.label || role.roleType}</span>
                     {isActive && <Check className="h-4 w-4 text-primary-accessible" />}
                     {role.isVerified && (
-                      <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
+                      <span className="text-xs bg-status-success-bg text-status-success px-1.5 py-0.5 rounded">Verified</span>
                     )}
                   </button>
                 );
@@ -220,7 +220,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                   </div>
                   {isActive && <Check className="h-4 w-4 text-primary-accessible" />}
                   {role.isVerified && (
-                    <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
+                    <span className="text-xs bg-status-success-bg text-status-success px-1.5 py-0.5 rounded">Verified</span>
                   )}
                 </button>
               );

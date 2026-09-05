@@ -76,7 +76,7 @@ const PERSONAS: Array<{
     icon: Briefcase,
     role: 'Founder',
     color: 'text-indigo-400',
-    bg: 'bg-indigo-500/10 border-indigo-500/20',
+    bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Find your co-founder',
     bullets: [
       'Get matched with complementary skill sets',
@@ -88,7 +88,7 @@ const PERSONAS: Array<{
     icon: GraduationCap,
     role: 'Mentor',
     color: 'text-cyan-400',
-    bg: 'bg-cyan-500/10 border-cyan-500/20',
+    bg: 'bg-status-info-bg border-status-info-border',
     headline: 'Scale your impact',
     bullets: [
       'Set availability and get booked instantly',
@@ -100,7 +100,7 @@ const PERSONAS: Array<{
     icon: TrendingUp,
     role: 'Investor',
     color: 'text-orange-400',
-    bg: 'bg-orange-500/10 border-orange-500/20',
+    bg: 'bg-status-warning-bg border-status-warning-border',
     headline: 'Source deals smarter',
     bullets: [
       'Filter by stage, sector, and geography',
@@ -112,7 +112,7 @@ const PERSONAS: Array<{
     icon: Building2,
     role: 'Accelerator',
     color: 'text-purple-400',
-    bg: 'bg-purple-500/10 border-purple-500/20',
+    bg: 'bg-status-accent-bg border-status-accent-border',
     headline: 'Run your cohort',
     bullets: [
       'Organize events and office hours at scale',
@@ -128,14 +128,14 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: UserCheck,
     title: 'Build your profile',
     desc: 'Complete your guided onboarding. Define your role, expertise, startup stage, work style, and what you\'re looking for in a co-founder or collaborator.',
-    color: 'text-indigo-400 bg-indigo-500/10',
+    color: 'text-indigo-400 bg-status-accent-bg',
   },
   {
     step: 2,
     icon: Target,
     title: 'Get matched intelligently',
     desc: 'Our multi-dimension matching engine scores compatibility across skills, stage, industry, location, values, and goals — with full transparency on why each match appears.',
-    color: 'text-emerald-400 bg-emerald-500/10',
+    color: 'text-emerald-400 bg-status-success-bg',
   },
   {
     step: 3,
@@ -278,12 +278,12 @@ const PRICING_PLANS: Array<{
 ];
 
 const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
-  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-orange-500' },
-  { name: 'Techstars',       abbr: 'TS',  color: 'text-blue-500'   },
-  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-cyan-500'   },
-  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-green-500'  },
+  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-status-warning' },
+  { name: 'Techstars',       abbr: 'TS',  color: 'text-status-info'   },
+  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-status-info'   },
+  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-status-success'  },
   { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary-accessible' },
-  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-red-500'    },
+  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-status-danger'    },
 ];
 
 export function LandingHome() {
@@ -556,7 +556,7 @@ export function LandingHome() {
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="h-3.5 w-3.5 fill-status-warning text-amber-400" />
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs">{tag}</Badge>
@@ -618,7 +618,7 @@ export function LandingHome() {
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-status-success" />
                       {f}
                     </li>
                   ))}

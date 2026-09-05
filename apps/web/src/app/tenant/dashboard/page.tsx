@@ -256,10 +256,10 @@ export default function TenantDashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-blue-600' },
-            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-purple-600' },
-            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-emerald-600' },
-            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-amber-600' },
+            { label: 'Invite Members', icon: UserPlus, href: '/tenant/members', color: 'text-status-info' },
+            { label: 'Manage Programs', icon: Award, href: '/tenant/programs', color: 'text-status-accent' },
+            { label: 'View Analytics', icon: Activity, href: '/tenant/analytics', color: 'text-status-success' },
+            { label: 'Branding', icon: Building2, href: '/tenant/branding', color: 'text-status-warning' },
           ].map(({ label, icon: Icon, href, color }) => (
             <Button key={label} variant="outline" className="h-auto py-3 flex-col gap-1.5" asChild>
               <Link href={href}>

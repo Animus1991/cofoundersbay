@@ -279,11 +279,11 @@ export default function CohortDetailPage() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: any; className: string }> = {
-      active: { variant: 'default', className: 'bg-green-100 text-green-800 border-green-200' },
-      inactive: { variant: 'secondary', className: 'bg-gray-100 text-gray-800' },
-      pending: { variant: 'outline', className: 'bg-yellow-50 text-yellow-800 border-yellow-200' },
-      scheduled: { variant: 'outline', className: 'bg-blue-50 text-blue-800 border-blue-200' },
-      completed: { variant: 'default', className: 'bg-green-100 text-green-800 border-green-200' },
+      active: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
+      inactive: { variant: 'secondary', className: 'bg-muted text-foreground' },
+      pending: { variant: 'outline', className: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
+      scheduled: { variant: 'outline', className: 'bg-status-info-bg text-status-info border-status-info-border' },
+      completed: { variant: 'default', className: 'bg-status-success-bg text-status-success border-status-success-border' },
       cancelled: { variant: 'destructive', className: '' },
     };
 
@@ -297,9 +297,9 @@ export default function CohortDetailPage() {
 
   const getRoleBadge = (role: string) => {
     const colors: Record<string, string> = {
-      founder: 'bg-blue-100 text-blue-800 border-blue-200',
-      mentor: 'bg-purple-100 text-purple-800 border-purple-200',
-      investor: 'bg-amber-100 text-amber-800 border-amber-200',
+      founder: 'bg-status-info-bg text-status-info border-status-info-border',
+      mentor: 'bg-status-accent-bg text-status-accent border-status-accent-border',
+      investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
     };
 
     return (
@@ -409,7 +409,7 @@ export default function CohortDetailPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">67%</div>
-                  <TrendingUp className="icon-sm text-green-500" />
+                  <TrendingUp className="icon-sm text-status-success" />
                 </div>
                 <Progress value={67} className="mt-2" />
               </CardContent>
@@ -694,7 +694,7 @@ export default function CohortDetailPage() {
                 <CardContent>
                   <div className="flex items-center gap-1">
                     <div className="text-2xl font-bold">4.8</div>
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                    <Star className="icon-sm text-status-warning fill-status-warning" />
                   </div>
                 </CardContent>
               </Card>
@@ -752,7 +752,7 @@ export default function CohortDetailPage() {
                         <TableCell>
                           {session.rating ? (
                             <div className="flex items-center gap-1">
-                              <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                              <Star className="icon-sm text-status-warning fill-status-warning" />
                               <span>{session.rating}/5</span>
                             </div>
                           ) : (

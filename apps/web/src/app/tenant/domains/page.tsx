@@ -32,10 +32,10 @@ import { EmptyTenantDomains } from '@/components/common/EmptyStates';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -48,16 +48,16 @@ function CopyButton({ value }: { value: string }) {
   };
   return (
     <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-      {copied ? <CheckCircle2 className="icon-sm text-green-600" /> : <Copy className="icon-sm" />}
+      {copied ? <CheckCircle2 className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
     </button>
   );
 }
 
 function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
   return (
-    <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 space-y-4 text-sm">
+    <div className="mt-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-4 space-y-4 text-sm">
       <div className="flex items-start gap-2">
-        <Info className="icon-sm text-amber-600 mt-0.5 shrink-0" />
+        <Info className="icon-sm text-status-warning mt-0.5 shrink-0" />
         <div>
           <p className="font-semibold text-foreground">DNS Configuration Required</p>
           <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
@@ -210,10 +210,10 @@ function DomainRow({
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
               {domain.sslStatus === 'active' && (
-                <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs gap-1">
+                <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs gap-1">
                   <Shield className="h-2.5 w-2.5" />SSL
                 </Badge>
               )}
@@ -224,7 +224,7 @@ function DomainRow({
               </p>
             )}
             {domain.lastVerificationCheck && domain.verificationStatus === 'failed' && (
-              <p className="text-xs text-red-500">
+              <p className="text-xs text-status-danger">
                 Last check: {new Date(domain.lastVerificationCheck).toLocaleString()} — DNS record not found
               </p>
             )}
@@ -359,7 +359,7 @@ export default function TenantDomainsPage() {
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
               <p className="text-xs text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold mt-0.5 text-green-600">{activeDomains.length}</p>
+              <p className="text-2xl font-bold mt-0.5 text-status-success">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">

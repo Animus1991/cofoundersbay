@@ -44,7 +44,7 @@ export default function AllianceThemePage() {
               Join the premier network for startup founders, investors, and innovators
             </p>
             <div className="flex items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+              <Button size="lg" className="bg-white text-status-info hover:bg-status-info-bg">
                 Get Started
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
@@ -88,7 +88,7 @@ export default function AllianceThemePage() {
                 'flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all whitespace-nowrap',
                 activeTab === tab.id
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30'
-                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                  : 'bg-white text-muted-foreground hover:bg-muted '
               )}
             >
               <tab.icon className="h-4 w-4" />
@@ -104,17 +104,17 @@ export default function AllianceThemePage() {
                 <div className="h-48 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 relative">
                   <div className="absolute inset-0 bg-black/20"></div>
                   <div className="absolute top-4 right-4">
-                    <Badge className="bg-white/90 text-slate-900 hover:bg-white">Featured</Badge>
+                    <Badge className="bg-white/90 text-foreground hover:bg-white">Featured</Badge>
                   </div>
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4 mb-4">
-                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex-shrink-0 border-4 border-white dark:border-slate-800 -mt-12 relative z-10"></div>
+                    <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex-shrink-0 border-4 border-white -mt-12 relative z-10"></div>
                     <div className="flex-1 pt-2">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-bold">Sarah Johnson</h3>
                         <Badge variant="secondary" className="text-xs">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                          <Star className="h-3 w-3 mr-1 fill-status-warning text-yellow-400" />
                           Pro
                         </Badge>
                       </div>
@@ -126,7 +126,7 @@ export default function AllianceThemePage() {
                     </Button>
                   </div>
 
-                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
+                  <p className="text-sm text-muted-foreground mb-4">
                     Looking for technical co-founder to build next-gen AI platform. 10+ years in SaaS, 2 successful exits.
                   </p>
 
@@ -181,13 +181,13 @@ export default function AllianceThemePage() {
                   ].map((topic) => (
                     <div
                       key={topic.tag}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                     >
                       <div>
-                        <div className="font-semibold text-blue-600 dark:text-blue-400">{topic.tag}</div>
+                        <div className="font-semibold text-status-info ">{topic.tag}</div>
                         <div className="text-xs text-muted-foreground">{topic.count}</div>
                       </div>
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="h-4 w-4 text-status-success" />
                     </div>
                   ))}
                 </div>
@@ -201,7 +201,7 @@ export default function AllianceThemePage() {
                 <p className="text-sm text-blue-100 mb-4">
                   Unlock premium features and connect with top founders
                 </p>
-                <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
+                <Button className="w-full bg-white text-status-info hover:bg-status-info-bg">
                   Get Started
                 </Button>
               </CardContent>
@@ -218,7 +218,7 @@ export default function AllianceThemePage() {
                   ].map((event, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+                      className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                     >
                       <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
                         <Calendar className="h-6 w-6 text-white" />

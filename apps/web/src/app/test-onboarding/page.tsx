@@ -203,9 +203,9 @@ export default function TestOnboardingPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       {step.status === 'success' ? (
-                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        <CheckCircle className="h-6 w-6 text-status-success" />
                       ) : step.status === 'error' ? (
-                        <AlertCircle className="h-6 w-6 text-red-500" />
+                        <AlertCircle className="h-6 w-6 text-status-danger" />
                       ) : step.status === 'running' ? (
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
@@ -288,26 +288,26 @@ export default function TestOnboardingPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">{completedSteps}</div>
+                  <div className="text-2xl font-bold text-status-success">{completedSteps}</div>
                   <div className="text-sm text-muted-foreground">Tests Passed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-500">
+                  <div className="text-2xl font-bold text-status-danger">
                     {steps.filter(step => step.status === 'error').length}
                   </div>
                   <div className="text-sm text-muted-foreground">Tests Failed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-500">{Math.round(progress)}%</div>
+                  <div className="text-2xl font-bold text-status-info">{Math.round(progress)}%</div>
                   <div className="text-sm text-muted-foreground">Success Rate</div>
                 </div>
               </div>
               
               {progress === 100 && !hasErrors && (
                 <div className="mt-6 text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="text-green-700 dark:text-green-400 font-medium">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-success-bg rounded-lg">
+                    <CheckCircle className="h-5 w-5 text-status-success" />
+                    <span className="text-status-success font-medium">
                       All tests passed! Ready for production.
                     </span>
                   </div>
@@ -316,9 +316,9 @@ export default function TestOnboardingPage() {
               
               {hasErrors && (
                 <div className="mt-6 text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-950 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <span className="text-red-700 dark:text-red-400 font-medium">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-status-danger-bg rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-status-danger" />
+                    <span className="text-status-danger font-medium">
                       Some tests failed. Please check the errors above.
                     </span>
                   </div>

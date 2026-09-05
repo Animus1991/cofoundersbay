@@ -1167,13 +1167,13 @@ export default function ProfileEditPage() {
                 <p className="text-sm font-medium text-foreground">Missing items:</p>
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
-                    <li className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/10 p-2 rounded-md">
+                    <li className="flex items-center gap-2 text-sm text-status-success bg-status-success-bg p-2 rounded-md">
                       <CheckCircle2 className="h-4 w-4" /> Your profile is fully complete!
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
                       <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="h-4 w-4 text-amber-500" />
+                        <ShieldAlert className="h-4 w-4 text-status-warning" />
                         <span className="capitalize">{item.label}</span>
                       </li>
                     ))

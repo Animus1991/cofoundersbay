@@ -35,8 +35,8 @@ import {
 type RoleMappingRule = { claim: string; value: string; role: string };
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30">Optional</Badge>;
+  if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border">Required</Badge>;
+  if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border">Optional</Badge>;
   return <Badge variant="secondary">Disabled</Badge>;
 }
 
@@ -74,11 +74,11 @@ function ProviderCard({
               <h3 className="font-semibold">{provider.providerName}</h3>
               <Badge variant="secondary" size="sm" className="uppercase">{provider.providerType}</Badge>
               {isConfigured ? (
-                <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20">
+                <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border">
                   <CheckCircle className="mr-1 icon-sm" />Configured
                 </Badge>
               ) : (
-                <Badge variant="outline" size="sm" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                <Badge variant="outline" size="sm" className="bg-status-warning-bg text-status-warning border-status-warning-border">
                   <AlertCircle className="mr-1 icon-sm" />Needs configuration
                 </Badge>
               )}
@@ -87,7 +87,7 @@ function ProviderCard({
               <span className="text-xs text-muted-foreground">Callback URL:</span>
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono truncate max-w-xs">{callbackUrl}</code>
               <button onClick={copy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-                {copied ? <Check className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
+                {copied ? <Check className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
               </button>
             </div>
             {provider.oidcIssuerUrl && (
@@ -134,7 +134,7 @@ function DomainRow({
       </div>
       <div className="flex items-center gap-2">
         {mapping.isVerified ? (
-          <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+          <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
             <CheckCircle className="mr-1 h-3 w-3" />Verified
           </Badge>
         ) : (
@@ -355,9 +355,9 @@ export default function TenantSSOPage() {
 
         {/* Status Banner */}
         {ssoMode !== 'disabled' && activeProviderCount > 0 ? (
-          <Card className="border-green-500/30 bg-green-500/5">
+          <Card className="border-status-success-border bg-status-success-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <Shield className="h-5 w-5 text-green-500 shrink-0" />
+              <Shield className="h-5 w-5 text-status-success shrink-0" />
               <div>
                 <p className="text-sm font-medium">SSO is active</p>
                 <p className="text-xs text-muted-foreground">
@@ -368,9 +368,9 @@ export default function TenantSSOPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="border-amber-500/30 bg-amber-500/5">
+          <Card className="border-status-warning-border bg-status-warning-bg">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+              <AlertCircle className="h-5 w-5 text-status-warning shrink-0" />
               <div>
                 <p className="text-sm font-medium">SSO not configured</p>
                 <p className="text-xs text-muted-foreground">Add an identity provider and set SSO mode to enable org sign-on.</p>
@@ -613,7 +613,7 @@ export default function TenantSSOPage() {
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="icon-sm" />Saved</span>}
+              {saveOk && <span className="text-xs text-status-success flex items-center gap-1"><Check className="icon-sm" />Saved</span>}
               <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="gap-2">
                 <Check className="icon-sm" />
                 {saveMut.isPending ? 'Saving…' : 'Save Policy'}

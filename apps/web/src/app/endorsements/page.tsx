@@ -132,7 +132,7 @@ function EndorsementCard({
   return (
     <Card className={cn(
       'transition-all hover:border-primary/20',
-      !endorsement.isApproved && type === 'received' && 'border-amber-500/30 bg-amber-500/5',
+      !endorsement.isApproved && type === 'received' && 'border-status-warning-border bg-status-warning-bg',
     )}>
       <CardContent className="p-5">
         {/* Quote icon + pending badge */}
@@ -157,11 +157,11 @@ function EndorsementCard({
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
             {!endorsement.isApproved && type === 'received' && (
-              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
+              <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
                 <Clock className="icon-sm mr-1" />Pending
               </Badge>
             )}
-            {endorsement.isApproved && <BadgeCheck className="icon-sm text-blue-500" />}
+            {endorsement.isApproved && <BadgeCheck className="icon-sm text-status-info" />}
           </div>
         </div>
 
@@ -389,8 +389,8 @@ export default function EndorsementsPage() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary-accessible' },
-              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600' },
-              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600' },
+              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-status-success' },
+              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-status-warning' },
             ].map(s => (
               <Card key={s.label}>
                 <CardContent className="p-3 flex items-center gap-2">
@@ -422,7 +422,7 @@ export default function EndorsementsPage() {
 
             <TabsContent value="received" className="space-y-3 mt-4">
               {pendingCount > 0 && (
-                <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-400">
+                <div className="rounded-lg border border-status-warning-border bg-status-warning-bg p-3 text-sm text-status-warning ">
                   <strong>{pendingCount} pending endorsement{pendingCount > 1 ? 's' : ''}</strong> awaiting your approval
                 </div>
               )}

@@ -132,10 +132,10 @@ function SessionCard({ session }: { session: any }) {
 
 function RequestCard({ request }: { request: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
       <Avatar className="h-10 w-10">
         <AvatarImage src={request.avatarUrl} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600">
+        <AvatarFallback className="bg-status-warning-bg text-status-warning">
           {request.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -233,13 +233,13 @@ export default function MentorDashboard() {
 
         {/* Next Session Banner */}
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
-          <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-status-info-border bg-status-info-bg px-4 py-3">
             <div className="flex items-center gap-2">
-              <Video className="icon-sm text-blue-500" />
+              <Video className="icon-sm text-status-info" />
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
-              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-500/10 transition-colors">
+              <button className="rounded-md border border-status-info-border px-3 py-1 text-xs font-medium text-status-info hover:bg-status-info-bg transition-colors">
                 Join Now
               </button>
             </Link>
@@ -278,20 +278,20 @@ export default function MentorDashboard() {
         {showDemoData && (
           <div className="grid gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
-              <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
-                <DollarSign className="icon-md text-emerald-500 shrink-0" />
+              <div className="flex items-center gap-3 rounded-xl border border-status-success-border bg-status-success-bg px-4 py-3 transition-all hover:border-status-success-border cursor-pointer">
+                <DollarSign className="icon-md text-status-success shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
-                  <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
+                  <p className="text-lg font-bold text-status-success">{mentorStats.earningsThisMonth}</p>
                 </div>
               </div>
             </Link>
             <Link href="/mentor/reviews">
-              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
-                <Star className="icon-md text-amber-500 shrink-0" />
+              <div className="flex items-center gap-3 rounded-xl border border-status-warning-border bg-status-warning-bg px-4 py-3 transition-all hover:border-status-warning-border cursor-pointer">
+                <Star className="icon-md text-status-warning shrink-0" />
                 <div>
                   <p className="text-xs text-muted-foreground">Average rating</p>
-                  <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
+                  <p className="text-lg font-bold text-status-warning">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
                 </div>
               </div>
             </Link>
@@ -316,7 +316,7 @@ export default function MentorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" />
+                      <Zap className="icon-sm text-status-warning" />
                       Mentorship Requests ({pendingRequests.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
@@ -447,7 +447,7 @@ export default function MentorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                    <Star className="icon-sm text-status-warning fill-status-warning" />
                     <span className="text-sm font-medium">Top 10% Mentor</span>
                   </div>
                 </div>

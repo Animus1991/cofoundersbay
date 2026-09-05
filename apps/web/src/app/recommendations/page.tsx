@@ -59,10 +59,10 @@ const ROLE_ICON: Record<string, typeof Users> = {
 };
 
 const ROLE_COLOR: Record<string, string> = {
-  founder: 'bg-blue-50 text-blue-700 border-blue-200',
-  mentor: 'bg-cyan-50 text-cyan-700 border-cyan-200',
-  investor: 'bg-amber-50 text-amber-700 border-amber-200',
-  org: 'bg-purple-50 text-purple-700 border-purple-200',
+  founder: 'bg-status-info-bg text-status-info border-status-info-border',
+  mentor: 'bg-status-info-bg text-status-info border-status-info-border',
+  investor: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  org: 'bg-status-accent-bg text-status-accent border-status-accent-border',
 };
 
 function MatchScoreBadge({ score }: { score: number }) {
@@ -111,7 +111,7 @@ function BreakdownModal({
   explanation: MatchExplanationItem[];
   reasons: string[];
 }) {
-  const color = score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : 'text-amber-600';
+  const color = score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-info' : 'text-status-warning';
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
@@ -155,11 +155,11 @@ function BreakdownModal({
 
 // Rich feedback dropdown
 const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
-  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600' },
+  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-status-success' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },
   { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
-  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-red-500' },
+  { label: 'Decline', value: 'declined', icon: ThumbsDown, color: 'text-status-danger' },
 ];
 
 function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => void }) {
@@ -326,7 +326,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-blue-600"
+                    className="h-7 w-7 text-muted-foreground hover:text-status-info"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
@@ -336,7 +336,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600"
+                  className="h-7 w-7 text-muted-foreground hover:text-status-success"
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >

@@ -64,7 +64,7 @@ function StatCard({
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs', trend.positive ? 'text-status-success' : 'text-status-danger')}>
                 {trend.positive ? '+' : ''}{trend.value}% this month
               </p>
             )}
@@ -82,10 +82,10 @@ function StatCard({
 
 function StartupCard({ startup }: { startup: any }) {
   const stageColors: Record<string, string> = {
-    'pre-seed': 'bg-purple-500/10 text-purple-600 border-purple-500/20',
-    'seed': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    'series-a': 'bg-green-500/10 text-green-600 border-green-500/20',
-    'series-b': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    'pre-seed': 'bg-status-accent-bg text-status-accent border-status-accent-border',
+    'seed': 'bg-status-info-bg text-status-info border-status-info-border',
+    'series-a': 'bg-status-success-bg text-status-success border-status-success-border',
+    'series-b': 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   return (
@@ -124,11 +124,11 @@ function StartupCard({ startup }: { startup: any }) {
 
 function DealCard({ deal }: { deal: any }) {
   const statusColors: Record<string, string> = {
-    'reviewing': 'bg-blue-500/10 text-blue-600',
-    'due-diligence': 'bg-amber-500/10 text-amber-600',
-    'negotiating': 'bg-purple-500/10 text-purple-600',
-    'closed': 'bg-green-500/10 text-green-600',
-    'passed': 'bg-gray-500/10 text-gray-600',
+    'reviewing': 'bg-status-info-bg text-status-info',
+    'due-diligence': 'bg-status-warning-bg text-status-warning',
+    'negotiating': 'bg-status-accent-bg text-status-accent',
+    'closed': 'bg-status-success-bg text-status-success',
+    'passed': 'bg-gray-500/10 text-muted-foreground',
   };
 
   return (
@@ -166,7 +166,7 @@ function PortfolioItem({ company }: { company: any }) {
       <div className="text-right">
         <p className={cn(
           'text-sm font-semibold',
-          company.returnMultiple >= 1 ? 'text-green-500' : 'text-red-500'
+          company.returnMultiple >= 1 ? 'text-status-success' : 'text-status-danger'
         )}>
           {company.returnMultiple}x
         </p>

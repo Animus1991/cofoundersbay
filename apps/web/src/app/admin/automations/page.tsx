@@ -272,8 +272,8 @@ const TRIGGER_LABELS: Record<string, string> = {
 
 function statusBadge(status: string) {
   const map: Record<string, string> = {
-    active: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    paused: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    active: 'bg-status-success-bg text-status-success ',
+    paused: 'bg-status-warning-bg text-status-warning ',
     draft: 'bg-muted text-muted-foreground',
     archived: 'bg-muted text-muted-foreground/60 line-through',
   };
@@ -285,9 +285,9 @@ function statusBadge(status: string) {
 }
 
 function execStatusIcon(status: string) {
-  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
+  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />;
   if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive-accessible" />;
-  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
+  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-status-info animate-spin" />;
   if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
   return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
 }
@@ -307,9 +307,9 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
           {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-accessible mt-0.5 shrink-0" />}
-          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" />}
-          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" />}
-          <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
+          {log.level === 'warn' && <AlertTriangle className="icon-sm text-status-warning mt-0.5 shrink-0" />}
+          {log.level === 'info' && <CheckCircle2 className="icon-sm text-status-success mt-0.5 shrink-0" />}
+          <span className={log.level === 'error' ? 'text-destructive-accessible' : log.level === 'warn' ? 'text-status-warning' : 'text-muted-foreground'}>
             [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
         </div>
@@ -407,9 +407,9 @@ export default function AutomationsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600' },
-            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600' },
-            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600' },
+            { icon: Zap, label: 'Active', value: activeCount, color: 'text-status-success' },
+            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-status-info' },
+            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-status-warning' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
               <stat.icon className={`icon-md ${stat.color}`} />
@@ -469,7 +469,7 @@ export default function AutomationsPage() {
                       <span>Priority: {rule.priority}</span>
                       <span>Runs: {rule.executionCount}</span>
                       {rule.failureCount > 0 && (
-                        <span className="text-amber-600 font-medium">⚠ {rule.failureCount} failures</span>
+                        <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
                       )}
                       {rule.lastRunAt && (
                         <span>Last: {new Date(rule.lastRunAt).toLocaleDateString()}</span>
@@ -517,7 +517,7 @@ export default function AutomationsPage() {
                         title="Activate"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                        <Zap className="h-3.5 w-3.5 text-status-success" />
                       </Button>
                     ) : null}
                     <Button

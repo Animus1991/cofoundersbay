@@ -160,7 +160,7 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
     <div
       className={cn(
         'flex items-center gap-1.5 text-xs',
-        isOnline ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
+        isOnline ? 'text-status-success ' : 'text-status-warning ',
         className
       )}
     >

@@ -70,7 +70,7 @@ export function AIQuickAsk({
         onClick={() => setIsOpen(true)}
         className={cn('gap-1.5', className)}
       >
-        <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+        <Sparkles className="h-3.5 w-3.5 text-status-accent" />
         Ask AI
       </Button>
     );

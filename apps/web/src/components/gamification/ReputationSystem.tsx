@@ -313,11 +313,11 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           'flex h-10 w-10 items-center justify-center rounded-full',
-                          isEarned ? 'bg-green-100 dark:bg-green-950' : 'bg-red-100 dark:bg-red-950'
+                          isEarned ? 'bg-status-success-bg ' : 'bg-status-danger-bg '
                         )}>
                           <Icon className={cn(
                             'h-5 w-5',
-                            isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                            isEarned ? 'text-status-success ' : 'text-status-danger '
                           )} />
                         </div>
                         <div>
@@ -330,7 +330,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       </div>
                       <div className={cn(
                         'flex items-center gap-1 font-bold',
-                        isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        isEarned ? 'text-status-success ' : 'text-status-danger '
                       )}>
                         {isEarned ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
                         {Math.abs(activity.points)}

@@ -114,11 +114,11 @@ function SearchResultSkeleton() {
 
 function ResultCard({ result }: { result: SearchResult }) {
   const typeConfig: Record<string, { icon: React.ElementType; color: string }> = {
-    user: { icon: Users, color: 'text-blue-500' },
-    job: { icon: Briefcase, color: 'text-emerald-500' },
-    event: { icon: Calendar, color: 'text-purple-500' },
-    group: { icon: Building2, color: 'text-orange-500' },
-    opportunity: { icon: FileText, color: 'text-cyan-500' },
+    user: { icon: Users, color: 'text-status-info' },
+    job: { icon: Briefcase, color: 'text-status-success' },
+    event: { icon: Calendar, color: 'text-status-accent' },
+    group: { icon: Building2, color: 'text-status-warning' },
+    opportunity: { icon: FileText, color: 'text-status-info' },
   };
 
   const config = typeConfig[result.type] || typeConfig.user;
@@ -509,8 +509,8 @@ export default function SearchPage() {
               <Link href="/discover" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                      <Users className="h-5 w-5 text-blue-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-info-bg">
+                      <Users className="h-5 w-5 text-status-info" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -532,8 +532,8 @@ export default function SearchPage() {
               <Link href="/mentoring" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-                      <GraduationCap className="h-5 w-5 text-purple-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-accent-bg">
+                      <GraduationCap className="h-5 w-5 text-status-accent" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -555,8 +555,8 @@ export default function SearchPage() {
               <Link href="/jobs" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <Briefcase className="h-5 w-5 text-emerald-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-success-bg">
+                      <Briefcase className="h-5 w-5 text-status-success" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">
@@ -578,8 +578,8 @@ export default function SearchPage() {
               <Link href="/events" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-                      <Calendar className="h-5 w-5 text-orange-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-status-warning-bg">
+                      <Calendar className="h-5 w-5 text-status-warning" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary-accessible transition-colors">

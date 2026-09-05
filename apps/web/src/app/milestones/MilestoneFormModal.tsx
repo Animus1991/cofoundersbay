@@ -26,8 +26,8 @@ const STATUSES: { value: MilestoneStatus; label: string }[] = [
 
 const PRIORITIES: { value: MilestonePriority; label: string; color: string }[] = [
   { value: 'low', label: 'Low', color: 'text-muted-foreground' },
-  { value: 'medium', label: 'Medium', color: 'text-amber-500' },
-  { value: 'high', label: 'High', color: 'text-red-500' },
+  { value: 'medium', label: 'Medium', color: 'text-status-warning' },
+  { value: 'high', label: 'High', color: 'text-status-danger' },
 ];
 
 interface FormData {

@@ -61,17 +61,17 @@ interface UserStats {
 }
 
 const TIER_COLORS = {
-  bronze: 'text-orange-600',
-  silver: 'text-gray-400',
-  gold: 'text-yellow-500',
+  bronze: 'text-status-warning',
+  silver: 'text-muted-foreground',
+  gold: 'text-status-warning',
   platinum: 'text-cyan-400',
 };
 
 const TIER_BG = {
-  bronze: 'bg-orange-500/10',
+  bronze: 'bg-status-warning-bg',
   silver: 'bg-gray-400/10',
-  gold: 'bg-yellow-500/10',
-  platinum: 'bg-cyan-400/10',
+  gold: 'bg-status-warning-bg',
+  platinum: 'bg-status-info-bg',
 };
 
 const CATEGORY_ICONS = {
@@ -525,7 +525,7 @@ export default function AchievementsPage() {
     { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
   ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
 
-  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600' };
+  const RANK_COLORS: Record<number, string> = { 1: 'text-status-warning', 2: 'text-muted-foreground', 3: 'text-status-warning' };
 
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 
@@ -643,7 +643,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Trophy className="icon-sm text-yellow-500" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
+                          <Trophy className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('community_leaderboard')} el={achievementsEl('community_leaderboard')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-1 px-2">
@@ -682,7 +682,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Zap className="icon-sm text-amber-500" /> <BilingualText en={achievementsEn('recently_unlocked')} el={achievementsEl('recently_unlocked')} compact />
+                          <Zap className="icon-sm text-status-warning" /> <BilingualText en={achievementsEn('recently_unlocked')} el={achievementsEl('recently_unlocked')} compact />
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">

@@ -35,7 +35,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-blue-500" />
+          <Target className="h-5 w-5 text-status-info" />
           Workspace Scoring
         </CardTitle>
       </CardHeader>
@@ -45,7 +45,7 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-blue-500" />
+                <Target className="h-4 w-4 text-status-info" />
                 <span className="font-medium">Readiness Score</span>
               </div>
               <Badge variant={getScoreBadgeVariant(readiness.score)}>
@@ -70,10 +70,10 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* Team Momentum */}
         {momentum && (
-          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-green-200 dark:border-green-800">
+          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border border-status-success-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4 text-status-success" />
                 <span className="font-medium text-sm">Team Momentum</span>
               </div>
               <Badge variant="outline" className="gap-1">
@@ -100,10 +100,10 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* My Contribution */}
         {myContribution && (
-          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-purple-200 dark:border-purple-800">
+          <div className="space-y-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border border-status-accent-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-purple-600" />
+                <Users className="h-4 w-4 text-status-accent" />
                 <span className="font-medium text-sm">My Contribution</span>
               </div>
               <Badge variant="outline">
@@ -129,10 +129,10 @@ export function WorkspaceScoringWidget({ workspaceId }: WorkspaceScoringWidgetPr
 
         {/* Mentor Metrics */}
         {mentorMetrics && mentorMetrics.feedbackCount > 0 && (
-          <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-orange-200 dark:border-orange-800">
+          <div className="space-y-2 p-3 rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 border border-status-warning-border ">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-orange-600" />
+                <MessageSquare className="h-4 w-4 text-status-warning" />
                 <span className="font-medium text-sm">Mentor Loop</span>
               </div>
               <Badge variant="outline">
@@ -166,7 +166,7 @@ function ScoreDimension({ label, score }: { label: string; score: number }) {
       <span className="text-muted-foreground">{label}</span>
       <span className={cn(
         'font-medium',
-        score >= 70 ? 'text-green-600' : score >= 40 ? 'text-yellow-600' : 'text-red-600'
+        score >= 70 ? 'text-status-success' : score >= 40 ? 'text-status-warning' : 'text-status-danger'
       )}>
         {score}
       </span>

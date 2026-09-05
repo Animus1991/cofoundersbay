@@ -58,11 +58,11 @@ const notificationIcons: Record<NotificationType, React.ComponentType<{ classNam
 };
 
 const notificationColors: Record<NotificationType, string> = {
-  message: 'text-blue-400 bg-blue-400/10',
-  connection: 'text-emerald-400 bg-emerald-400/10',
-  match: 'text-pink-400 bg-pink-400/10',
-  event: 'text-purple-400 bg-purple-400/10',
-  system: 'text-amber-400 bg-amber-400/10',
+  message: 'text-blue-400 bg-status-info-bg',
+  connection: 'text-emerald-400 bg-status-success-bg',
+  match: 'text-pink-400 bg-status-accent-bg',
+  event: 'text-purple-400 bg-status-accent-bg',
+  system: 'text-amber-400 bg-status-warning-bg',
 };
 
 function formatTimestamp(date: Date): string {

@@ -55,11 +55,11 @@ type FeedComment = {
 };
 
 const POST_TYPE_CONFIG: Record<PostType, { icon: typeof Rocket; color: string; label: string }> = {
-  update: { icon: Sparkles, color: 'text-blue-500', label: 'Update' },
-  milestone: { icon: Target, color: 'text-emerald-500', label: 'Milestone' },
-  question: { icon: MessageCircle, color: 'text-amber-500', label: 'Question' },
-  announcement: { icon: TrendingUp, color: 'text-purple-500', label: 'Announcement' },
-  achievement: { icon: Award, color: 'text-pink-500', label: 'Achievement' },
+  update: { icon: Sparkles, color: 'text-status-info', label: 'Update' },
+  milestone: { icon: Target, color: 'text-status-success', label: 'Milestone' },
+  question: { icon: MessageCircle, color: 'text-status-warning', label: 'Question' },
+  announcement: { icon: TrendingUp, color: 'text-status-accent', label: 'Announcement' },
+  achievement: { icon: Award, color: 'text-status-accent', label: 'Achievement' },
 };
 
 const DEMO_POSTS: FeedPost[] = [
@@ -296,7 +296,7 @@ function PostCard({
                   {config.label}
                 </Badge>
                 {post.personalizationScore && (
-                  <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge variant="secondary" className="text-xs bg-status-info-bg text-status-info border-status-info-border">
                     <Sparkles className="h-3 w-3 mr-1" />
                     {Math.round(post.personalizationScore * 100)}% match
                   </Badge>
@@ -456,7 +456,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
-                  <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="secondary" className="text-xs bg-status-success-bg text-status-success border-green-200">
                     +{topic.growth}%
                   </Badge>
                 )}

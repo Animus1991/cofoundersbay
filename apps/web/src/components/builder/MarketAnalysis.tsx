@@ -249,8 +249,8 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-500/10 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-green-600" />
+          <div className="p-2 bg-status-success-bg rounded-lg">
+            <TrendingUp className="h-5 w-5 text-status-success" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Market Analysis</h2>
@@ -325,7 +325,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-blue-500" />
+                  <Globe className="h-5 w-5 text-status-info" />
                   TAM (Total Addressable Market)
                 </CardTitle>
               </CardHeader>
@@ -371,7 +371,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-green-500" />
+                  <Target className="h-5 w-5 text-status-success" />
                   SAM (Serviceable Addressable Market)
                 </CardTitle>
               </CardHeader>
@@ -417,7 +417,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-orange-500" />
+                  <Zap className="h-5 w-5 text-status-warning" />
                   SOM (Serviceable Obtainable Market)
                 </CardTitle>
               </CardHeader>
@@ -469,20 +469,20 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardContent>
                 <div className="flex items-end justify-center gap-8 h-48">
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-blue-500/20 border-2 border-blue-500 rounded-t-lg flex items-end justify-center" style={{ height: '160px' }}>
-                      <span className="text-lg font-bold text-blue-600 mb-2">{data.tam.value || '—'}</span>
+                    <div className="w-32 bg-status-info-bg border-2 border-blue-500 rounded-t-lg flex items-end justify-center" style={{ height: '160px' }}>
+                      <span className="text-lg font-bold text-status-info mb-2">{data.tam.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">TAM</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-green-500/20 border-2 border-green-500 rounded-t-lg flex items-end justify-center" style={{ height: '100px' }}>
-                      <span className="text-lg font-bold text-green-600 mb-2">{data.sam.value || '—'}</span>
+                    <div className="w-32 bg-status-success-bg border-2 border-green-500 rounded-t-lg flex items-end justify-center" style={{ height: '100px' }}>
+                      <span className="text-lg font-bold text-status-success mb-2">{data.sam.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SAM</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="w-32 bg-orange-500/20 border-2 border-orange-500 rounded-t-lg flex items-end justify-center" style={{ height: '40px' }}>
-                      <span className="text-lg font-bold text-orange-600 mb-2">{data.som.value || '—'}</span>
+                    <div className="w-32 bg-status-warning-bg border-2 border-orange-500 rounded-t-lg flex items-end justify-center" style={{ height: '40px' }}>
+                      <span className="text-lg font-bold text-status-warning mb-2">{data.som.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SOM</span>
                   </div>
@@ -764,7 +764,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               <CardContent className="space-y-3">
                 {data.differentiators.map((diff, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-status-success shrink-0" />
                     <Input
                       value={diff}
                       onChange={(e) => {

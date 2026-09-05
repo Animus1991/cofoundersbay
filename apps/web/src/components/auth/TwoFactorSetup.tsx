@@ -81,7 +81,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
   if (step === 'initial') {
     return (
       <div className="space-y-4">
-        <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-400">
+        <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-4 text-sm text-status-warning ">
           <AlertTriangle className="h-5 w-5 shrink-0" />
           <div>
             <p className="font-medium">Secure your account</p>
@@ -169,7 +169,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
   if (step === 'backup') {
     return (
       <div className="space-y-6">
-        <div className="flex items-start gap-3 rounded-lg bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-400">
+        <div className="flex items-start gap-3 rounded-lg bg-status-success-bg p-4 text-sm text-status-success ">
           <Shield className="h-5 w-5 shrink-0" />
           <div>
             <p className="font-medium">2FA Enabled Successfully</p>
@@ -207,7 +207,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             </div>
           </div>
 
-          <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
+          <div className="flex items-start gap-2 rounded-lg bg-status-warning-bg p-3 text-xs text-status-warning ">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             <p>
               Save these backup codes in a secure location. They can be used to access your account

@@ -68,8 +68,8 @@ const SKILL_PILLS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return 'text-emerald-600';
-  if (score >= 50) return 'text-amber-600';
+  if (score >= 80) return 'text-status-success';
+  if (score >= 50) return 'text-status-warning';
   return 'text-muted-foreground';
 }
 
@@ -151,7 +151,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                 </div>
               )}
               {isOnline && (
-                <span className="flex items-center gap-1 text-emerald-600">
+                <span className="flex items-center gap-1 text-status-success">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Online
                 </span>
@@ -394,10 +394,10 @@ export function MembersPageClient() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-violet-500',  bg: 'bg-violet-500/10'  },
-              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-blue-500',   bg: 'bg-blue-500/10'   },
-              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-amber-500',  bg: 'bg-amber-500/10'  },
+              { label: 'Total Members',  value: total || '1,200+', icon: Users,     color: 'text-status-accent',  bg: 'bg-status-accent-bg'  },
+              { label: 'Online Now',     value: Math.round((total || 120) * 0.08) || '40+', icon: Activity, color: 'text-status-success', bg: 'bg-status-success-bg' },
+              { label: 'New This Week',  value: Math.round((total || 120) * 0.05) || '20+', icon: TrendingUp, color: 'text-status-info',   bg: 'bg-status-info-bg'   },
+              { label: 'Top Contributors', value: Math.round((total || 120) * 0.1) || '15+', icon: Award,   color: 'text-status-warning',  bg: 'bg-status-warning-bg'  },
             ].map((s) => {
               const SIcon = s.icon;
               return (

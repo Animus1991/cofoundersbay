@@ -243,9 +243,9 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       case 'draft':
         return <Badge variant="secondary">Draft</Badge>;
       case 'in-progress':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">In Progress</Badge>;
+        return <Badge variant="outline" className="text-status-warning border-yellow-600">In Progress</Badge>;
       case 'completed':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Completed</Badge>;
+        return <Badge variant="outline" className="text-status-success border-green-600">Completed</Badge>;
       case 'submitted':
         return <Badge className="bg-green-600">Submitted</Badge>;
     }
@@ -256,8 +256,8 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-500/10 rounded-lg">
-            <FileText className="h-5 w-5 text-orange-600" />
+          <div className="p-2 bg-status-warning-bg rounded-lg">
+            <FileText className="h-5 w-5 text-status-warning" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Application Generator</h2>
@@ -365,7 +365,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
                     </span>
                     <span>
                       {question.question}
-                      {question.required && <span className="text-red-500 ml-1">*</span>}
+                      {question.required && <span className="text-status-danger ml-1">*</span>}
                     </span>
                   </Label>
                   <div className="flex items-center gap-2">
@@ -376,7 +376,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
                         onClick={() => copyToClipboard(question.answer, question.id)}
                       >
                         {copiedId === question.id ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="h-4 w-4 text-status-success" />
                         ) : (
                           <Copy className="h-4 w-4" />
                         )}

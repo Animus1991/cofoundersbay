@@ -71,9 +71,9 @@ const MOCK_INVESTMENTS: Investment[] = [
 
 function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    exited: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    written_off: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    exited: 'bg-status-info-bg text-status-info border-status-info-border',
+    written_off: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
   };
 
   const isPositive = investment.returnPct >= 0;
@@ -129,7 +129,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Return</p>
-                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-green-600' : 'text-red-600')}>
+                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-status-success' : 'text-status-danger')}>
                   {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                   {isPositive ? '+' : ''}{investment.returnPct}%
                 </p>
@@ -193,8 +193,8 @@ export default function InvestorPortfolioPage() {
           {[
             { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
             { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-accessible' },
-            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600' },
-            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600' },
+            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-status-success' },
+            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-status-info' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">

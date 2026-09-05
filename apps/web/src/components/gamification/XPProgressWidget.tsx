@@ -32,7 +32,7 @@ export function XPProgressWidget() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-yellow-500" />
+          <Zap className="h-5 w-5 text-status-warning" />
           Progress & XP
         </CardTitle>
       </CardHeader>
@@ -70,9 +70,9 @@ export function XPProgressWidget() {
 
         {/* Streak */}
         {streak && (
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border border-orange-200 dark:border-orange-800">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border border-status-warning-border ">
             <div className="flex items-center gap-3">
-              <Flame className="h-6 w-6 text-orange-500" />
+              <Flame className="h-6 w-6 text-status-warning" />
               <div>
                 <div className="font-semibold text-sm">
                   {streak.currentStreak} Day Streak
@@ -106,7 +106,7 @@ export function XPProgressWidget() {
                   <span className="text-muted-foreground">
                     {formatEventType(event.eventType)}
                   </span>
-                  <span className="font-medium text-yellow-600 dark:text-yellow-500">
+                  <span className="font-medium text-status-warning ">
                     +{event.xpAmount} XP
                   </span>
                 </div>

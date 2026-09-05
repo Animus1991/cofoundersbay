@@ -232,7 +232,7 @@ export default function PublicProfilePage() {
                     </div>
 
                     {isAvailable && (
-                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                      <Badge className="bg-status-success-bg text-status-success border-status-success-border">
                         <Zap className="h-3 w-3 mr-1" />
                         Open to Opportunities
                       </Badge>
@@ -355,7 +355,7 @@ export default function PublicProfilePage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="h-5 w-5 text-amber-500" />
+                    <Star className="h-5 w-5 text-status-warning" />
                     Endorsements
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
@@ -449,7 +449,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Award className="h-5 w-5 text-amber-500" />
+                    <Award className="h-5 w-5 text-status-warning" />
                     Achievements
                   </CardTitle>
                 </CardHeader>
@@ -457,7 +457,7 @@ export default function PublicProfilePage() {
                   <ul className="space-y-2">
                     {achievements.map((achievement, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
-                        <Award className="h-4 w-4 text-amber-500 shrink-0" />
+                        <Award className="h-4 w-4 text-status-warning shrink-0" />
                         <span className="text-muted-foreground">{achievement}</span>
                       </li>
                     ))}

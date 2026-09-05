@@ -255,8 +255,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-500/10 rounded-lg">
-            <DollarSign className="h-5 w-5 text-emerald-600" />
+          <div className="p-2 bg-status-success-bg rounded-lg">
+            <DollarSign className="h-5 w-5 text-status-success" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Financial Planning</h2>
@@ -295,10 +295,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <TrendingDown className="h-4 w-4 text-status-danger" />
               <span className="text-sm text-muted-foreground">Monthly Burn</span>
             </div>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold text-status-danger">
               {formatCurrency(data.burnRate > 0 ? data.burnRate : totalMonthlyOperating - totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -306,10 +306,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <PiggyBank className="h-4 w-4 text-blue-500" />
+              <PiggyBank className="h-4 w-4 text-status-info" />
               <span className="text-sm text-muted-foreground">Runway</span>
             </div>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-status-info">
               {data.runway > 0 ? `${data.runway} months` : 'N/A'}
             </div>
           </CardContent>
@@ -317,10 +317,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-status-success" />
               <span className="text-sm text-muted-foreground">Monthly Revenue</span>
             </div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-status-success">
               {formatCurrency(totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -328,13 +328,13 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="h-4 w-4 text-purple-500" />
+              <Calculator className="h-4 w-4 text-status-accent" />
               <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
             </div>
             <div className={cn(
               "text-2xl font-bold",
-              data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-              data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+              data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
+              data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
             )}>
               {data.unitEconomics.ltvCacRatio.toFixed(1)}x
             </div>
@@ -571,7 +571,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               
               <div className="pt-3 border-t flex justify-between">
                 <span className="font-medium">Total Monthly Revenue</span>
-                <span className="font-bold text-green-600">{formatCurrency(totalMonthlyRevenue)}</span>
+                <span className="font-bold text-status-success">{formatCurrency(totalMonthlyRevenue)}</span>
               </div>
             </CardContent>
           </Card>
@@ -675,8 +675,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(
                     "text-3xl font-bold mb-2",
-                    data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-                    data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+                    data.unitEconomics.ltvCacRatio >= 3 ? "text-status-success" :
+                    data.unitEconomics.ltvCacRatio >= 1 ? "text-status-warning" : "text-status-danger"
                   )}>
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
@@ -687,7 +687,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-blue-600">
+                  <div className="text-3xl font-bold mb-2 text-status-info">
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
                   <div className="text-sm text-muted-foreground">Payback Period</div>
@@ -696,7 +696,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-purple-600">
+                  <div className="text-3xl font-bold mb-2 text-status-accent">
                     {data.unitEconomics.grossMargin}%
                   </div>
                   <div className="text-sm text-muted-foreground">Gross Margin</div>
@@ -790,10 +790,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <TabsContent value="scenarios" className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Conservative */}
-            <Card className="border-yellow-500/50">
+            <Card className="border-status-warning-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="h-5 w-5 text-status-warning" />
                   Conservative
                 </CardTitle>
               </CardHeader>
@@ -834,7 +834,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m)}
                     </span>
@@ -844,10 +844,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </Card>
 
             {/* Realistic */}
-            <Card className="border-blue-500/50">
+            <Card className="border-status-info-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-500" />
+                  <Target className="h-5 w-5 text-status-info" />
                   Realistic
                 </CardTitle>
               </CardHeader>
@@ -888,7 +888,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m)}
                     </span>
@@ -898,10 +898,10 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </Card>
 
             {/* Aggressive */}
-            <Card className="border-green-500/50">
+            <Card className="border-status-success-border">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <TrendingUp className="h-5 w-5 text-status-success" />
                   Aggressive
                 </CardTitle>
               </CardHeader>
@@ -942,7 +942,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-status-success" : "text-status-danger"
                     )}>
                       {formatCurrency(data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m)}
                     </span>

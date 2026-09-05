@@ -42,15 +42,15 @@ import { usePollingGuards } from '@/hooks/usePollingGuards';
 function proposalStatusMeta(status: string) {
   switch (status) {
     case 'open':
-      return { label: 'Open', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock };
+      return { label: 'Open', color: 'bg-status-info-bg text-status-info border-status-info-border', icon: Clock };
     case 'approved':
-      return { label: 'Approved', color: 'bg-green-100 text-green-700 border-green-200', icon: CheckCircle2 };
+      return { label: 'Approved', color: 'bg-status-success-bg text-status-success border-status-success-border', icon: CheckCircle2 };
     case 'changes_requested':
-      return { label: 'Changes Needed', color: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: AlertCircle };
+      return { label: 'Changes Needed', color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: AlertCircle };
     case 'merged':
-      return { label: 'Accepted & Applied', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: CheckCircle2 };
+      return { label: 'Accepted & Applied', color: 'bg-status-accent-bg text-status-accent border-status-accent-border', icon: CheckCircle2 };
     case 'closed':
-      return { label: 'Closed', color: 'bg-gray-100 text-gray-600 border-gray-200', icon: XCircle };
+      return { label: 'Closed', color: 'bg-muted text-muted-foreground border-border', icon: XCircle };
     default:
       return { label: status, color: 'bg-muted text-muted-foreground border-border', icon: ClipboardCheck };
   }
@@ -244,7 +244,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
               <ClipboardCheck className="h-4 w-4 text-primary-accessible" />
               Change Proposals
               {openCount > 0 && (
-                <Badge variant="secondary" className="ml-1 bg-orange-100 text-orange-700">
+                <Badge variant="secondary" className="ml-1 bg-status-warning-bg text-status-warning">
                   {openCount} pending
                 </Badge>
               )}
@@ -307,7 +307,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                     className={cn(
                       'p-4 rounded-lg border transition-colors',
                       isPending
-                        ? 'border-orange-200 bg-orange-50/40 dark:bg-orange-950/10 dark:border-orange-900/40'
+                        ? 'border-status-warning-border bg-status-warning-bg '
                         : 'border-border/60 bg-card',
                     )}
                   >
@@ -355,7 +355,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 h-7 text-xs border-green-200 text-green-700 hover:bg-green-50"
+                          className="flex-1 h-7 text-xs border-status-success-border text-status-success hover:bg-status-success-bg"
                           onClick={() =>
                             setDecisionState({ proposal, decision: 'approved' })
                           }
@@ -366,7 +366,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                         <Button
                           size="sm"
                           variant="outline"
-                          className="flex-1 h-7 text-xs border-yellow-200 text-yellow-700 hover:bg-yellow-50"
+                          className="flex-1 h-7 text-xs border-status-warning-border text-status-warning hover:bg-status-warning-bg"
                           onClick={() =>
                             setDecisionState({ proposal, decision: 'changes_requested' })
                           }
@@ -377,7 +377,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 w-7 p-0 text-xs border-red-200 text-red-600 hover:bg-red-50"
+                          className="h-7 w-7 p-0 text-xs border-status-danger-border text-status-danger hover:bg-status-danger-bg"
                           onClick={() =>
                             setDecisionState({ proposal, decision: 'closed' })
                           }

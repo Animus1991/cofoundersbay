@@ -522,22 +522,22 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
-            <Users className="h-8 w-8 text-blue-600 mb-2 mx-auto" />
+          <div className="p-4 rounded-lg bg-status-info-bg dark:bg-blue-950">
+            <Users className="h-8 w-8 text-status-info mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Smart Matching</h3>
             <p className="text-sm text-muted-foreground">
               AI-powered connections based on skills and goals
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950">
-            <Shield className="h-8 w-8 text-green-600 mb-2 mx-auto" />
+          <div className="p-4 rounded-lg bg-status-success-bg dark:bg-green-950">
+            <Shield className="h-8 w-8 text-status-success mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Verified Profiles</h3>
             <p className="text-sm text-muted-foreground">
               Trust and quality through verification system
             </p>
           </div>
-          <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950">
-            <Zap className="h-8 w-8 text-purple-600 mb-2 mx-auto" />
+          <div className="p-4 rounded-lg bg-status-accent-bg dark:bg-purple-950">
+            <Zap className="h-8 w-8 text-status-accent mb-2 mx-auto" />
             <h3 className="font-semibold mb-1">Real-time Chat</h3>
             <p className="text-sm text-muted-foreground">
               Instant communication with potential partners
@@ -549,19 +549,19 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
           <h3 className="font-semibold">What you'll get:</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-status-success" />
               <span className="text-sm">Personalized match recommendations</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-status-success" />
               <span className="text-sm">Access to exclusive events</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-status-success" />
               <span className="text-sm">Mentorship opportunities</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-status-success" />
               <span className="text-sm">Investor connections</span>
             </div>
           </div>
@@ -948,7 +948,7 @@ function ReviewStep({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Star className="h-6 w-6 text-yellow-500" />
+          <Star className="h-6 w-6 text-status-warning" />
           Review & Launch
         </CardTitle>
         <p className="text-muted-foreground">
@@ -1140,7 +1140,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Heart className="h-5 w-5 text-rose-500" />
+          <Heart className="h-5 w-5 text-status-danger" />
           Values & Work Style
         </CardTitle>
         <p className="text-muted-foreground">Help us find people who match your working rhythm and values</p>
@@ -1148,7 +1148,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
       <CardContent className="space-y-8">
         {/* Availability */}
         <div>
-          <label className="block text-sm font-medium mb-3">Availability <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-3">Availability <span className="text-status-danger">*</span></label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {AVAILABILITY_OPTIONS.map(opt => (
               <button
@@ -1170,7 +1170,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
 
         {/* Work Style */}
         <div>
-          <label className="block text-sm font-medium mb-1">Work Style <span className="text-red-500">*</span></label>
+          <label className="block text-sm font-medium mb-1">Work Style <span className="text-status-danger">*</span></label>
           <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {WORK_STYLES.map(ws => (
@@ -1224,7 +1224,7 @@ function ValuesStep({ data, setData }: { data: OnboardingData; setData: (d: Onbo
             })}
           </div>
           {data.values.coreValues.length >= 5 && (
-            <p className="text-xs text-amber-500 mt-2">Maximum 5 values selected</p>
+            <p className="text-xs text-status-warning mt-2">Maximum 5 values selected</p>
           )}
         </div>
       </CardContent>

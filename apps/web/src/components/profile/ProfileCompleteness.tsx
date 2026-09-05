@@ -120,8 +120,8 @@ export function ProfileCompleteness({
   );
 
   const getStatusColor = (pct: number) => {
-    if (pct >= 80) return 'text-emerald-500';
-    if (pct >= 50) return 'text-amber-500';
+    if (pct >= 80) return 'text-status-success';
+    if (pct >= 50) return 'text-status-warning';
     return 'text-destructive-accessible';
   };
 
@@ -173,10 +173,10 @@ export function ProfileCompleteness({
         <Progress value={percentage} className="h-2" />
 
         {percentage >= 100 ? (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+          <div className="flex items-center gap-2 rounded-lg border border-status-success-border bg-status-success-bg p-3">
+            <CheckCircle2 className="h-5 w-5 text-status-success shrink-0" />
             <div>
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+              <p className="text-sm font-medium text-status-success ">
                 Profile Complete!
               </p>
               <p className="text-xs text-muted-foreground">
@@ -187,10 +187,10 @@ export function ProfileCompleteness({
         ) : (
           <>
             {percentage < 50 && (
-              <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-2 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
+                <AlertCircle className="h-5 w-5 text-status-warning shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                  <p className="text-sm font-medium text-status-warning ">
                     Complete your profile
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -253,8 +253,8 @@ export function ProfileCompletenessIndicator({ profile }: { profile: ProfileData
   const { percentage } = useMemo(() => calculateProfileCompleteness(profile), [profile]);
 
   const getColor = (pct: number) => {
-    if (pct >= 80) return 'stroke-emerald-500';
-    if (pct >= 50) return 'stroke-amber-500';
+    if (pct >= 80) return 'stroke-status-success';
+    if (pct >= 50) return 'stroke-status-warning';
     return 'stroke-destructive';
   };
 

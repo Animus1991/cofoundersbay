@@ -219,8 +219,8 @@ export function ReportBlockModal({
                 onClick={() => setStep('report')}
                 className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
-                  <Flag className="h-5 w-5 text-amber-500" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-status-warning-bg">
+                  <Flag className="h-5 w-5 text-status-warning" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Report user</p>
@@ -252,7 +252,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Flag className="h-5 w-5 text-amber-500" />
+                <Flag className="h-5 w-5 text-status-warning" />
                 Report {userName}
               </DialogTitle>
               <DialogDescription>

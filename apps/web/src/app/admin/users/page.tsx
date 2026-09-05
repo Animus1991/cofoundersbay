@@ -52,10 +52,10 @@ type User = {
 
 function UserRow({ user }: { user: User }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
-    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" /> },
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: null },
-    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="icon-sm" /> },
+    active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: <CheckCircle2 className="icon-sm" /> },
+    suspended: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: <AlertTriangle className="icon-sm" /> },
+    pending: { color: 'bg-gray-500/10 text-muted-foreground border-gray-500/20', icon: null },
+    banned: { color: 'bg-status-danger-bg text-status-danger border-status-danger-border', icon: <Ban className="icon-sm" /> },
   };
 
   const config = statusConfig[user.status];
@@ -112,13 +112,13 @@ function UserRow({ user }: { user: User }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.status === 'active' && (
-            <DropdownMenuItem className="text-amber-600">
+            <DropdownMenuItem className="text-status-warning">
               <AlertTriangle className="mr-2 icon-sm" />
               Suspend User
             </DropdownMenuItem>
           )}
           {user.status === 'suspended' && (
-            <DropdownMenuItem className="text-green-600">
+            <DropdownMenuItem className="text-status-success">
               <CheckCircle2 className="mr-2 icon-sm" />
               Reactivate User
             </DropdownMenuItem>
@@ -235,19 +235,19 @@ export default function AdminUsersPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">{statusCounts.active}</p>
+              <p className="text-xl font-bold text-status-success">{statusCounts.active}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-gray-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-muted-foreground">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Suspended</p>
-              <p className="text-xl font-bold text-amber-600">{statusCounts.suspended}</p>
+              <p className="text-xl font-bold text-status-warning">{statusCounts.suspended}</p>
             </CardContent>
           </Card>
         </div>

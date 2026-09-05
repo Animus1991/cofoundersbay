@@ -53,10 +53,10 @@ interface SharedDocument {
 
 function PermissionBadge({ permission }: { permission: string }) {
   const meta = {
-    view:    { label: 'View Only',  color: 'text-gray-600 bg-gray-50 border-gray-200',    icon: Eye },
-    comment: { label: 'Can Comment',color: 'text-blue-600 bg-blue-50 border-blue-200',   icon: MessageSquare },
-    suggest: { label: 'Can Suggest',color: 'text-purple-600 bg-purple-50 border-purple-200', icon: Edit3 },
-    edit:    { label: 'Can Edit',   color: 'text-green-600 bg-green-50 border-green-200', icon: Edit3 },
+    view:    { label: 'View Only',  color: 'text-muted-foreground bg-muted border-border',    icon: Eye },
+    comment: { label: 'Can Comment',color: 'text-status-info bg-status-info-bg border-status-info-border',   icon: MessageSquare },
+    suggest: { label: 'Can Suggest',color: 'text-status-accent bg-status-accent-bg border-status-accent-border', icon: Edit3 },
+    edit:    { label: 'Can Edit',   color: 'text-status-success bg-status-success-bg border-status-success-border', icon: Edit3 },
   }[permission] ?? { label: permission, color: 'bg-muted', icon: Eye };
 
   const Icon = meta.icon;
@@ -356,9 +356,9 @@ export default function SharePage() {
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
-                        'text-green-600': document.status === 'approved',
-                        'text-blue-600': document.status === 'review',
-                        'text-yellow-600': document.status === 'in_progress',
+                        'text-status-success': document.status === 'approved',
+                        'text-status-info': document.status === 'review',
+                        'text-status-warning': document.status === 'in_progress',
                       })}
                     >
                       {document.status.replace('_', ' ')}

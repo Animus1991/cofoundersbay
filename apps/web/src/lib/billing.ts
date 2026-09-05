@@ -155,12 +155,12 @@ export function annualSavingsPct(monthlyPriceCents: number, annualPriceCents: nu
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-  active: 'bg-green-500/10 text-green-700 border-green-500/20',
-  trialing: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
-  past_due: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
-  canceled: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  unpaid: 'bg-red-500/10 text-red-700 border-red-500/20',
-  incomplete: 'bg-orange-500/10 text-orange-700 border-orange-500/20',
-  incomplete_expired: 'bg-red-500/10 text-red-700 border-red-500/20',
-  paused: 'bg-slate-500/10 text-slate-600 border-slate-500/20',
+  active: 'bg-status-success-bg text-status-success border-status-success-border',
+  trialing: 'bg-status-info-bg text-status-info border-status-info-border',
+  past_due: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  canceled: 'bg-gray-500/10 text-muted-foreground border-gray-500/20',
+  unpaid: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+  incomplete: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+  incomplete_expired: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+  paused: 'bg-slate-500/10 text-muted-foreground border-slate-500/20',
 };

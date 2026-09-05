@@ -148,8 +148,8 @@ export default function TenantBillingPage() {
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 shrink-0">
-                    <Building2 className="h-6 w-6 text-violet-500" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-status-accent-bg shrink-0">
+                    <Building2 className="h-6 w-6 text-status-accent" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -177,7 +177,7 @@ export default function TenantBillingPage() {
                 </div>
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-status-danger-bg border border-status-danger-border p-3 text-sm text-status-danger">
                     <AlertTriangle className="h-4 w-4 shrink-0" />
                     Payment overdue. Update your payment method to avoid service interruption.
                   </div>
@@ -233,9 +233,9 @@ export default function TenantBillingPage() {
                     variant="outline"
                     className={cn(
                       'text-xs',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500/10 text-red-700 border-red-500/20' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500/10 text-amber-700 border-amber-500/20' :
-                      'bg-green-500/10 text-green-700 border-green-500/20',
+                      (seatPct ?? 0) >= 90 ? 'bg-status-danger-bg text-status-danger border-status-danger-border' :
+                      (seatPct ?? 0) >= 70 ? 'bg-status-warning-bg text-status-warning border-status-warning-border' :
+                      'bg-status-success-bg text-status-success border-status-success-border',
                     )}
                   >
                     {seatPct}% used
@@ -258,7 +258,7 @@ export default function TenantBillingPage() {
               )}
 
               {seatLimit && seatUsage >= seatLimit && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
+                <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
                 </div>
@@ -305,7 +305,7 @@ export default function TenantBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-status-success shrink-0" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}

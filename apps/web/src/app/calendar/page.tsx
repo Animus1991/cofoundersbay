@@ -52,11 +52,11 @@ interface CalendarEvent {
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<EventType, { label: string; color: string; icon: React.ElementType; bg: string }> = {
-  milestone:  { label: 'Milestone',  color: 'text-amber-600',   icon: Flag,           bg: 'bg-amber-500/10 border-amber-500/20' },
-  session:    { label: 'Session',    color: 'text-blue-600',    icon: Video,          bg: 'bg-blue-500/10 border-blue-500/20' },
-  event:      { label: 'Event',      color: 'text-purple-600',  icon: CalendarDays,   bg: 'bg-purple-500/10 border-purple-500/20' },
-  deadline:   { label: 'Deadline',   color: 'text-red-600',     icon: Clock,          bg: 'bg-red-500/10 border-red-500/20' },
-  meeting:    { label: 'Meeting',    color: 'text-emerald-600', icon: Users,          bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  milestone:  { label: 'Milestone',  color: 'text-status-warning',   icon: Flag,           bg: 'bg-status-warning-bg border-status-warning-border' },
+  session:    { label: 'Session',    color: 'text-status-info',    icon: Video,          bg: 'bg-status-info-bg border-status-info-border' },
+  event:      { label: 'Event',      color: 'text-status-accent',  icon: CalendarDays,   bg: 'bg-status-accent-bg border-status-accent-border' },
+  deadline:   { label: 'Deadline',   color: 'text-status-danger',     icon: Clock,          bg: 'bg-status-danger-bg border-status-danger-border' },
+  meeting:    { label: 'Meeting',    color: 'text-status-success', icon: Users,          bg: 'bg-status-success-bg border-status-success-border' },
 };
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -275,9 +275,9 @@ export default function CalendarPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { labelEn: 'This Month', labelEl: 'Αυτόν τον μήνα', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-accessible' },
-            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-red-600' },
-            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-blue-600' },
-            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
+            { labelEn: 'Deadlines', labelEl: 'Προθεσμίες', value: deadlineCount, icon: Clock, color: 'text-status-danger' },
+            { labelEn: 'Sessions', labelEl: 'Συνεδρίες', value: sessionCount, icon: Video, color: 'text-status-info' },
+            { labelEn: 'Milestones', labelEl: 'Ορόσημα', value: milestoneCount, icon: Flag, color: 'text-status-warning' },
           ].map(({ labelEn, labelEl, value, icon: Icon, color }) => (
             <Card key={labelEn}>
               <CardContent className="p-3 flex items-center gap-3">

@@ -150,7 +150,7 @@ export default function MentorProfilePage() {
                   <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-400" /> 4.9 (12 reviews)</span>
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {sessionDuration} min sessions</span>
                   <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {hoursPerWeek}h/week</span>
-                  <span className={cn('flex items-center gap-1', isFree ? 'text-green-500' : '')}>
+                  <span className={cn('flex items-center gap-1', isFree ? 'text-status-success' : '')}>
                     <DollarSign className="h-3 w-3" />
                     {isFree ? 'Free' : `$${hourlyRate}/hr`}
                   </span>

@@ -40,10 +40,10 @@ import {
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-status-success-bg text-status-success border-status-success-border gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border gap-1"><Clock className="icon-sm" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border gap-1"><XCircle className="icon-sm" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-muted-foreground border-border gap-1"><XCircle className="icon-sm" />Expired</Badge>;
   }
 }
 
@@ -146,9 +146,9 @@ function DomainRow({
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-status-success-bg text-status-success border-status-success-border text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
-              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs">SSL</Badge>}
+              {domain.sslStatus === 'active' && <Badge className="bg-status-info-bg text-status-info border-status-info-border text-xs">SSL</Badge>}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground mt-0.5">

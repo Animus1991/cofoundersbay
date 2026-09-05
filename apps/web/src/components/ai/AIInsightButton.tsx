@@ -88,7 +88,7 @@ export function AIInsightButton({
           disabled={isLoading}
           className={cn(
             'flex items-center justify-center rounded-full p-1.5 transition-colors',
-            'text-violet-500 hover:bg-violet-100 dark:hover:bg-violet-900/30',
+            'text-status-accent hover:bg-status-accent-bg ',
             isLoading && 'opacity-50 cursor-wait',
             className
           )}
@@ -132,13 +132,13 @@ export function AIInsightButton({
         disabled={isLoading}
         className={cn(
           'gap-1.5',
-          response && 'bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-800'
+          response && 'bg-status-accent-bg border-status-accent-border '
         )}
       >
         {isLoading ? (
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
         ) : (
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          <Sparkles className="h-3.5 w-3.5 text-status-accent" />
         )}
         {label}
         {response && (
@@ -153,7 +153,7 @@ export function AIInsightButton({
       )}
 
       {response && isExpanded && (
-        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-lg p-3 animate-in fade-in slide-in-from-top-2">
+        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-status-accent-border rounded-lg p-3 animate-in fade-in slide-in-from-top-2">
           <button
             onClick={clearResponse}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"

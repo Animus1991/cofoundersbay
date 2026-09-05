@@ -50,15 +50,15 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
   if (isEnabled) {
     return (
       <>
-        <div className="flex items-start gap-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="flex items-start gap-4 rounded-lg border border-status-success-border bg-status-success-bg p-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-status-success-bg">
+            <ShieldCheck className="h-5 w-5 text-status-success " />
           </div>
           <div className="flex-1">
-            <h4 className="font-medium text-emerald-700 dark:text-emerald-400">
+            <h4 className="font-medium text-status-success ">
               Two-factor authentication is enabled
             </h4>
-            <p className="mt-1 text-sm text-emerald-600/80 dark:text-emerald-400/80">
+            <p className="mt-1 text-sm text-status-success ">
               Your account is protected with an additional layer of security.
             </p>
           </div>
@@ -82,7 +82,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
+              <div className="flex items-start gap-3 rounded-lg bg-status-warning-bg p-3 text-sm text-status-warning ">
                 <AlertTriangle className="h-5 w-5 shrink-0" />
                 <p>
                   Disabling 2FA will make your account less secure. You&apos;ll only need your

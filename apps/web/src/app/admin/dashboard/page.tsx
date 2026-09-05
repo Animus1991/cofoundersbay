@@ -197,22 +197,22 @@ export default function AdminDashboardPage() {
   const getAlertIcon = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'error':
-        return <XCircle className="icon-sm text-red-500" />;
+        return <XCircle className="icon-sm text-status-danger" />;
       case 'warning':
-        return <AlertTriangle className="icon-sm text-yellow-500" />;
+        return <AlertTriangle className="icon-sm text-status-warning" />;
       case 'info':
-        return <CheckCircle className="icon-sm text-blue-500" />;
+        return <CheckCircle className="icon-sm text-status-info" />;
     }
   };
 
   const getAlertColor = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'error':
-        return 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950';
+        return 'border-status-danger-border bg-status-danger-bg ';
       case 'warning':
-        return 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-950';
+        return 'border-status-warning-border bg-status-warning-bg ';
       case 'info':
-        return 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950';
+        return 'border-status-info-border bg-status-info-bg ';
     }
   };
 

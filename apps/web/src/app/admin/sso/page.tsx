@@ -36,8 +36,8 @@ import {
 } from '@/lib/api';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">SSO Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30">SSO Optional</Badge>;
+  if (mode === 'required') return <Badge className="bg-status-success-bg text-status-success border-status-success-border">SSO Required</Badge>;
+  if (mode === 'optional') return <Badge className="bg-status-info-bg text-status-info border-status-info-border">SSO Optional</Badge>;
   return <Badge variant="secondary">SSO Disabled</Badge>;
 }
 
@@ -69,9 +69,9 @@ export default function SSOAdminPage() {
       <div className="grid gap-4 lg:grid-cols-4 mb-6">
         {[
           { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-accessible' },
-          { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-blue-500' },
-          { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-violet-500' },
-          { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-green-500' },
+          { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-status-info' },
+          { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-status-accent' },
+          { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-status-success' },
         ].map(({ label, value, icon: Icon, color }) => (
           <Card key={label}>
             <CardHeader className="pb-2">
@@ -205,7 +205,7 @@ function SSOEventRow({ event }: { event: SSOAuthEvent }) {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
       {isSuccess
-        ? <ShieldCheck className="icon-sm text-green-500 shrink-0" />
+        ? <ShieldCheck className="icon-sm text-status-success shrink-0" />
         : <ShieldOff className="icon-sm text-destructive-accessible shrink-0" />}
       <div className="flex-1 min-w-0">
         <span className="font-medium">{event.eventType}</span>
@@ -611,7 +611,7 @@ function SSOConfigPanel({
                         <Globe className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
-                          ? <span className="text-xs text-green-600">✓ Verified</span>
+                          ? <span className="text-xs text-status-success">✓ Verified</span>
                           : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-accessible hover:underline">Mark verified</button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>

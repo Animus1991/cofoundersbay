@@ -44,12 +44,12 @@ interface Activity {
 }
 
 const ACTIVITY_CONFIG = {
-  post: { icon: MessageSquare, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  connection: { icon: UserPlus, color: 'text-green-500', bg: 'bg-green-500/10' },
-  opportunity: { icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  event: { icon: Calendar, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-  achievement: { icon: Award, color: 'text-yellow-500', bg: 'bg-yellow-500/10' },
-  milestone: { icon: Rocket, color: 'text-pink-500', bg: 'bg-pink-500/10' },
+  post: { icon: MessageSquare, color: 'text-status-info', bg: 'bg-status-info-bg' },
+  connection: { icon: UserPlus, color: 'text-status-success', bg: 'bg-status-success-bg' },
+  opportunity: { icon: Briefcase, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
+  event: { icon: Calendar, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  achievement: { icon: Award, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+  milestone: { icon: Rocket, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
 };
 
 export function ActivityFeed() {
@@ -207,7 +207,7 @@ export function ActivityFeed() {
                       onClick={() => handleLike(activity.id)}
                       className={cn(
                         'flex-1',
-                        activity.isLiked && 'text-red-500'
+                        activity.isLiked && 'text-status-danger'
                       )}
                     >
                       <Heart className={cn('h-4 w-4 mr-2', activity.isLiked && 'fill-current')} />

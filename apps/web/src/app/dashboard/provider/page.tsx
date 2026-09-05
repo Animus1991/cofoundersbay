@@ -64,7 +64,7 @@ function StatCard({
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
             {trend && (
-              <p className={cn('text-xs', trend.positive ? 'text-green-500' : 'text-red-500')}>
+              <p className={cn('text-xs', trend.positive ? 'text-status-success' : 'text-status-danger')}>
                 {trend.positive ? '+' : ''}{trend.value}% this month
               </p>
             )}
@@ -108,10 +108,10 @@ function ServiceCard({ service }: { service: any }) {
 
 function ProjectCard({ project }: { project: any }) {
   const statusColors: Record<string, string> = {
-    'active': 'bg-green-500/10 text-green-600',
-    'pending': 'bg-amber-500/10 text-amber-600',
-    'completed': 'bg-blue-500/10 text-blue-600',
-    'cancelled': 'bg-red-500/10 text-red-600',
+    'active': 'bg-status-success-bg text-status-success',
+    'pending': 'bg-status-warning-bg text-status-warning',
+    'completed': 'bg-status-info-bg text-status-info',
+    'cancelled': 'bg-status-danger-bg text-status-danger',
   };
 
   return (
@@ -138,10 +138,10 @@ function ProjectCard({ project }: { project: any }) {
 
 function InquiryCard({ inquiry }: { inquiry: any }) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+    <div className="flex items-start gap-3 rounded-lg border border-status-warning-border bg-status-warning-bg p-3">
       <Avatar className="h-10 w-10">
         <AvatarImage src={inquiry.avatarUrl} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600">
+        <AvatarFallback className="bg-status-warning-bg text-status-warning">
           {inquiry.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -180,7 +180,7 @@ function ReviewCard({ review }: { review: any }) {
                 key={i}
                 className={cn(
                   'icon-sm',
-                  i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
+                  i < review.rating ? 'text-status-warning fill-status-warning' : 'text-muted-foreground'
                 )}
               />
             ))}
@@ -314,7 +314,7 @@ export default function ProviderDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" />
+                      <Zap className="icon-sm text-status-warning" />
                       New Inquiries ({pendingInquiries.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
@@ -466,7 +466,7 @@ export default function ProviderDashboard() {
                   <Progress value={95} className="h-2" />
                 </div>
                 <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-green-600">
+                  <div className="flex items-center gap-2 text-sm text-status-success">
                     <CheckCircle className="icon-sm" />
                     <span>Top Rated Provider</span>
                   </div>

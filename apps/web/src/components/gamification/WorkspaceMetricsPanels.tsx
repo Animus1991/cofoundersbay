@@ -48,10 +48,10 @@ const DIMENSION_CONFIG: Array<{
 ];
 
 function scoreColor(score: number): string {
-  if (score >= 75) return 'text-emerald-600 dark:text-emerald-400';
-  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
-  if (score >= 25) return 'text-orange-600 dark:text-orange-400';
-  return 'text-rose-600 dark:text-rose-400';
+  if (score >= 75) return 'text-status-success ';
+  if (score >= 50) return 'text-status-warning ';
+  if (score >= 25) return 'text-status-warning ';
+  return 'text-status-danger ';
 }
 
 function scoreBarColor(score: number): string {
@@ -120,7 +120,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         </div>
         <Progress value={data.score} className="h-2 mt-1" />
         {isGated && (
-          <p className="text-2xs text-amber-600 dark:text-amber-400 mt-1">
+          <p className="text-2xs text-status-warning mt-1">
             Bottleneck suppression active (×{data.bottleneckFactor.toFixed(2)}) — strengthen critical dimensions
           </p>
         )}
@@ -205,7 +205,7 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
 
   const bd = data.breakdown;
   const momentumLevel = bd.momentumLevel ?? (data.score >= 75 ? 'High-Velocity' : data.score >= 55 ? 'Strong' : data.score >= 35 ? 'Steady' : data.score >= 15 ? 'Low' : 'Stalled');
-  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-emerald-600 dark:text-emerald-400' : momentumLevel === 'Steady' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+  const momentumColor = momentumLevel === 'High-Velocity' || momentumLevel === 'Strong' ? 'text-status-success ' : momentumLevel === 'Steady' ? 'text-status-warning ' : 'text-status-danger ';
 
   const componentBars = [
     { label: 'Velocity',           value: bd.velocityScore             ?? 0 },
@@ -220,7 +220,7 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Zap className="h-4 w-4 text-amber-500" />
+            <Zap className="h-4 w-4 text-status-warning" />
             Team Momentum
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Users className="h-4 w-4 text-blue-500" />
+          <Users className="h-4 w-4 text-status-info" />
           Contributions
         </CardTitle>
       </CardHeader>
@@ -322,7 +322,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                   <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
                   <span title="Feedback applied">·{bd.feedbackApplied}FA</span>
                   {recentActivity > 0 && (
-                    <span title="Recent activity (14d)" className="text-emerald-600 dark:text-emerald-400">·{recentActivity}↑</span>
+                    <span title="Recent activity (14d)" className="text-status-success ">·{recentActivity}↑</span>
                   )}
                   <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
                     {c.score}
@@ -379,7 +379,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-violet-500" />
+            <MessageSquare className="h-4 w-4 text-status-accent" />
             Mentor Feedback Loop
           </CardTitle>
           <Badge variant={scoreBadgeVariant(data.improvementScore)} className="tabular-nums">
@@ -423,7 +423,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         </div>
 
         {(data.unresolvedFeedback ?? 0) > 0 && (
-          <p className="text-2xs text-amber-600 dark:text-amber-400">
+          <p className="text-2xs text-status-warning ">
             {data.unresolvedFeedback} unresolved feedback item{data.unresolvedFeedback !== 1 ? 's' : ''} — consider applying
           </p>
         )}

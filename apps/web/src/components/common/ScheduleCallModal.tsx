@@ -359,8 +359,8 @@ export function ScheduleCallModal({
 
         {step === 'confirm' && selectedDate && selectedTime && (
           <div className="text-center py-6 space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 mx-auto">
-              <Check className="h-8 w-8 text-emerald-500" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-status-success-bg mx-auto">
+              <Check className="h-8 w-8 text-status-success" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>

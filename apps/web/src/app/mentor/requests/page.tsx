@@ -45,9 +45,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    accepted: 'bg-green-500/10 text-green-600 border-green-500/20',
-    declined: 'bg-red-500/10 text-red-600 border-red-500/20',
+    pending: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    accepted: 'bg-status-success-bg text-status-success border-status-success-border',
+    declined: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
   const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', {
@@ -59,7 +59,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
   return (
     <Card className={cn(
       'transition-all',
-      request.status === 'pending' && 'border-amber-500/30'
+      request.status === 'pending' && 'border-status-warning-border'
     )}>
       <CardContent className="p-4">
         <div className="flex gap-4">
@@ -246,8 +246,8 @@ export default function MentorRequestsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-amber-500/10 p-2">
-                <Clock className="h-5 w-5 text-amber-500" />
+              <div className="rounded-lg bg-status-warning-bg p-2">
+                <Clock className="h-5 w-5 text-status-warning" />
               </div>
               <div>
                 <p className="text-xl font-bold">{pendingRequests.length}</p>
@@ -257,8 +257,8 @@ export default function MentorRequestsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <CheckCircle2 className="h-5 w-5 text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">{acceptedRequests.length}</p>
@@ -268,8 +268,8 @@ export default function MentorRequestsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-red-500/10 p-2">
-                <XCircle className="h-5 w-5 text-red-500" />
+              <div className="rounded-lg bg-status-danger-bg p-2">
+                <XCircle className="h-5 w-5 text-status-danger" />
               </div>
               <div>
                 <p className="text-xl font-bold">{declinedRequests.length}</p>

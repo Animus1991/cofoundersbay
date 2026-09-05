@@ -49,7 +49,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     minReferrals: 0,
     rewardMultiplier: 1,
     perks: ['€10 credit per referral'],
-    color: 'text-slate-500',
+    color: 'text-muted-foreground',
   },
   {
     name: 'Connector',
@@ -57,7 +57,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     minReferrals: 5,
     rewardMultiplier: 1.5,
     perks: ['€15 credit per referral', 'Priority support'],
-    color: 'text-blue-500',
+    color: 'text-status-info',
   },
   {
     name: 'Ambassador',
@@ -65,7 +65,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     minReferrals: 15,
     rewardMultiplier: 2,
     perks: ['€20 credit per referral', 'Priority support', 'Exclusive events'],
-    color: 'text-amber-500',
+    color: 'text-status-warning',
   },
   {
     name: 'Champion',
@@ -73,16 +73,16 @@ const REFERRAL_TIERS: ReferralTier[] = [
     minReferrals: 30,
     rewardMultiplier: 2.5,
     perks: ['€25 credit per referral', 'Priority support', 'Exclusive events', 'Featured profile'],
-    color: 'text-purple-500',
+    color: 'text-status-accent',
   },
 ];
 
 const STATUS_CONFIG: Record<ReferralStatus, { label: string; color: string; icon: typeof Clock }> = {
-  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-500', icon: Clock },
-  signed_up: { label: 'Signed Up', color: 'bg-blue-500/10 text-blue-500', icon: CheckCircle },
-  active: { label: 'Active', color: 'bg-emerald-500/10 text-emerald-500', icon: Users },
-  rewarded: { label: 'Rewarded', color: 'bg-purple-500/10 text-purple-500', icon: Gift },
-  expired: { label: 'Expired', color: 'bg-slate-500/10 text-slate-500', icon: XCircle },
+  pending: { label: 'Pending', color: 'bg-status-warning-bg text-status-warning', icon: Clock },
+  signed_up: { label: 'Signed Up', color: 'bg-status-info-bg text-status-info', icon: CheckCircle },
+  active: { label: 'Active', color: 'bg-status-success-bg text-status-success', icon: Users },
+  rewarded: { label: 'Rewarded', color: 'bg-status-accent-bg text-status-accent', icon: Gift },
+  expired: { label: 'Expired', color: 'bg-slate-500/10 text-muted-foreground', icon: XCircle },
 };
 
 const DEMO_REFERRALS: Referral[] = [
@@ -236,7 +236,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
           <ul className="space-y-1">
             {currentTier.perks.map((perk) => (
               <li key={perk} className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-emerald-500" />
+                <CheckCircle className="h-3 w-3 text-status-success" />
                 {perk}
               </li>
             ))}
@@ -275,7 +275,7 @@ function ReferralCard({ referral }: { referral: Referral }) {
 
       <div className="flex items-center gap-3">
         {referral.rewardAmount && (
-          <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500">
+          <Badge variant="secondary" className="bg-status-success-bg text-status-success">
             +€{referral.rewardAmount}
           </Badge>
         )}
@@ -298,8 +298,8 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-blue-500/10 p-2">
-            <Users className="h-5 w-5 text-blue-500" />
+          <div className="rounded-lg bg-status-info-bg p-2">
+            <Users className="h-5 w-5 text-status-info" />
           </div>
           <div>
             <p className="text-xl font-bold">{totalInvited}</p>
@@ -309,8 +309,8 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       </Card>
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-emerald-500/10 p-2">
-            <CheckCircle className="h-5 w-5 text-emerald-500" />
+          <div className="rounded-lg bg-status-success-bg p-2">
+            <CheckCircle className="h-5 w-5 text-status-success" />
           </div>
           <div>
             <p className="text-xl font-bold">{signedUp}</p>
@@ -320,8 +320,8 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       </Card>
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-purple-500/10 p-2">
-            <Gift className="h-5 w-5 text-purple-500" />
+          <div className="rounded-lg bg-status-accent-bg p-2">
+            <Gift className="h-5 w-5 text-status-accent" />
           </div>
           <div>
             <p className="text-xl font-bold">{rewarded}</p>
@@ -331,8 +331,8 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       </Card>
       <Card className="p-4">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-amber-500/10 p-2">
-            <TrendingUp className="h-5 w-5 text-amber-500" />
+          <div className="rounded-lg bg-status-warning-bg p-2">
+            <TrendingUp className="h-5 w-5 text-status-warning" />
           </div>
           <div>
             <p className="text-xl font-bold">€{totalEarned}</p>

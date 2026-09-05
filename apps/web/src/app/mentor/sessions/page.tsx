@@ -30,10 +30,10 @@ import {
 
 function SessionCard({ session }: { session: MentorshipSessionItem }) {
   const statusColors: Record<string, string> = {
-    scheduled: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    completed: 'bg-green-500/10 text-green-600 border-green-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 border-red-500/20',
-    no_show: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    scheduled: 'bg-status-info-bg text-status-info border-status-info-border',
+    completed: 'bg-status-success-bg text-status-success border-status-success-border',
+    cancelled: 'bg-status-danger-bg text-status-danger border-status-danger-border',
+    no_show: 'bg-status-warning-bg text-status-warning border-status-warning-border',
   };
 
   const meetingIcons: Record<string, React.ElementType> = {
@@ -209,8 +209,8 @@ export default function MentorSessionsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2">
-                <Calendar className="h-5 w-5 text-blue-500" />
+              <div className="rounded-lg bg-status-info-bg p-2">
+                <Calendar className="h-5 w-5 text-status-info" />
               </div>
               <div>
                 <p className="text-xl font-bold">{upcomingSessions.length}</p>
@@ -220,8 +220,8 @@ export default function MentorSessionsPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <CheckCircle2 className="h-5 w-5 text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">

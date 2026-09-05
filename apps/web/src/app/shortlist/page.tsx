@@ -44,9 +44,9 @@ const ROLE_TABS: { value: RoleFilter; label: string; icon: React.ElementType }[]
 ];
 
 const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { label: string; color: string }> = {
-  hot:          { label: '🔥 Hot lead',    color: 'bg-red-500/10 text-red-600 border-red-500/20' },
-  follow_up:    { label: '⏰ Follow up',   color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  contacted:    { label: '✅ Contacted',   color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
+  hot:          { label: '🔥 Hot lead',    color: 'bg-status-danger-bg text-status-danger border-status-danger-border' },
+  follow_up:    { label: '⏰ Follow up',   color: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
+  contacted:    { label: '✅ Contacted',   color: 'bg-status-success-bg text-status-success border-status-success-border' },
   not_relevant: { label: '⛔ Not relevant', color: 'bg-muted text-muted-foreground' },
 };
 
@@ -153,8 +153,8 @@ function ShortlistCard({
                 {/* Match score badge */}
                 <span className={cn(
                   'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold border',
-                  matchScore >= 85 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                    : matchScore >= 70 ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                  matchScore >= 85 ? 'bg-status-success-bg text-status-success border-status-success-border'
+                    : matchScore >= 70 ? 'bg-status-info-bg text-status-info border-status-info-border'
                     : 'bg-muted text-muted-foreground border-border',
                 )}>
                   <Sparkles className="h-2.5 w-2.5" />
@@ -354,9 +354,9 @@ export default function ShortlistPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+            { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <Card key={label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">

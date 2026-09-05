@@ -79,7 +79,7 @@ function ActionItem({
   const colors = {
     default: 'bg-secondary/60 text-foreground hover:bg-secondary',
     primary: 'bg-primary/10 text-primary-accessible hover:bg-primary/20 border-primary/20',
-    warning: 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20',
+    warning: 'bg-status-warning-bg text-status-warning hover:bg-status-warning-bg border-status-warning-border',
   };
 
   return (
@@ -143,7 +143,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
     >
       <Avatar className="h-9 w-9 shrink-0">
         <AvatarImage src={mentor.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-sm font-semibold">
+        <AvatarFallback className="bg-status-success-bg text-status-success text-sm font-semibold">
           {mentor.displayName?.[0]?.toUpperCase() ?? 'M'}
         </AvatarFallback>
       </Avatar>
@@ -152,7 +152,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
         <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
       </div>
       {mentor.isFree ? (
-        <span className="shrink-0 text-2xs font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
+        <span className="shrink-0 text-2xs font-medium text-status-success bg-status-success-bg px-1.5 py-0.5 rounded">Free</span>
       ) : mentor.hourlyRate ? (
         <span className="shrink-0 text-2xs text-muted-foreground">${mentor.hourlyRate}/h</span>
       ) : null}
@@ -195,7 +195,7 @@ function ActivityRow({
       <div
         className={cn(
           'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-          item.type === 'connection' ? 'bg-blue-500/10 text-blue-500' : 'bg-primary/10 text-primary-accessible'
+          item.type === 'connection' ? 'bg-status-info-bg text-status-info' : 'bg-primary/10 text-primary-accessible'
         )}
       >
         {item.type === 'connection' ? (
@@ -426,7 +426,7 @@ export function DashboardHome() {
                   )}
                   {totalActions === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
-                      <CheckCircle className="h-8 w-8 text-emerald-500" />
+                      <CheckCircle className="h-8 w-8 text-status-success" />
                       <p className="text-sm text-muted-foreground">All caught up!</p>
                     </div>
                   )}
@@ -462,7 +462,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-rose-500" />
+                    <Heart className="h-4 w-4 text-status-danger" />
                     Top Matches
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
@@ -510,7 +510,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-emerald-500" />
+                      <GraduationCap className="h-4 w-4 text-status-success" />
                       Mentor Suggestions
                     </h2>
                     <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
@@ -532,7 +532,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-500" />
+                      <Users className="h-4 w-4 text-status-info" />
                       My Communities
                     </h2>
                     <Link href="/groups" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
@@ -554,7 +554,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
+                      <Calendar className="h-4 w-4 text-status-accent" />
                       Upcoming Events
                     </h2>
                     <Link href="/events" className="text-xs text-primary-accessible hover:underline">
@@ -613,7 +613,7 @@ export function DashboardHome() {
             <Card>
               <CardContent className="p-4">
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                  <TrendingUp className="h-4 w-4 text-status-success" />
                   Ecosystem Pulse
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -631,7 +631,7 @@ export function DashboardHome() {
                   </div>
                 </div>
                 {statsData?.trendPercent !== undefined && statsData.trendPercent > 0 && (
-                  <p className="mt-3 text-center text-xs text-emerald-500">
+                  <p className="mt-3 text-center text-xs text-status-success">
                     ↑ {statsData.trendPercent}% growth this month
                   </p>
                 )}
@@ -665,12 +665,12 @@ export function DashboardHome() {
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">In Progress</span>
-                        <span className="font-medium text-amber-600">{milestoneSummary.counts.in_progress ?? 0}</span>
+                        <span className="font-medium text-status-warning">{milestoneSummary.counts.in_progress ?? 0}</span>
                       </div>
                       {milestoneSummary.overdue > 0 && (
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Overdue</span>
-                          <span className="font-medium text-red-600">{milestoneSummary.overdue}</span>
+                          <span className="font-medium text-status-danger">{milestoneSummary.overdue}</span>
                         </div>
                       )}
                     </div>
@@ -691,7 +691,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-amber-500" />
+                      <Flag className="h-4 w-4 text-status-warning" />
                       Active Milestones
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">View all</Link>

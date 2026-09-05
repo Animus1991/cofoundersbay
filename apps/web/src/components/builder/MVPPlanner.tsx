@@ -292,9 +292,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
   const getComplexityColor = (complexity: Feature['complexity']) => {
     switch (complexity) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'high': return 'text-red-600';
+      case 'low': return 'text-status-success';
+      case 'medium': return 'text-status-warning';
+      case 'high': return 'text-status-danger';
     }
   };
 
@@ -303,8 +303,8 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500/10 rounded-lg">
-            <Rocket className="h-5 w-5 text-purple-600" />
+          <div className="p-2 bg-status-accent-bg rounded-lg">
+            <Rocket className="h-5 w-5 text-status-accent" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">MVP Planner</h2>
@@ -416,7 +416,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               <CardContent className="space-y-3">
                 {data.successCriteria.map((criteria, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-status-success shrink-0" />
                     <Input
                       value={criteria}
                       onChange={(e) => {
@@ -724,14 +724,14 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <AlertTriangle className="h-5 w-5 text-status-warning" />
                 Risk Assessment
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.risks.map((risk, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-status-warning shrink-0" />
                   <Input
                     value={risk}
                     onChange={(e) => {

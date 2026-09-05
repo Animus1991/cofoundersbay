@@ -514,12 +514,12 @@ export default function DataRoomPage() {
                             </TableCell>
                             <TableCell>
                               {document.isPublic ? (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <Badge variant="outline" className="bg-status-success-bg text-status-success border-status-success-border">
                                   <Unlock className="h-3 w-3 mr-1" />
                                   Public
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                                <Badge variant="outline" className="bg-status-warning-bg text-status-warning border-status-warning-border">
                                   <Lock className="h-3 w-3 mr-1" />
                                   Private
                                 </Badge>
@@ -611,11 +611,11 @@ export default function DataRoomPage() {
                               </p>
                               <div className="flex items-center gap-2 mt-3">
                                 {document.isPublic ? (
-                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                  <Badge variant="outline" className="text-xs bg-status-success-bg text-status-success border-status-success-border">
                                     Public
                                   </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                  <Badge variant="outline" className="text-xs bg-status-warning-bg text-status-warning border-status-warning-border">
                                     Private
                                   </Badge>
                                 )}
@@ -679,10 +679,10 @@ export default function DataRoomPage() {
                           variant="outline"
                           className={cn(
                             investor.accessLevel === 'admin'
-                              ? 'bg-purple-50 text-purple-700 border-purple-200'
+                              ? 'bg-status-accent-bg text-status-accent border-status-accent-border'
                               : investor.accessLevel === 'download'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
-                              : 'bg-gray-50 text-gray-700 border-gray-200'
+                              ? 'bg-status-info-bg text-status-info border-status-info-border'
+                              : 'bg-muted text-foreground border-border'
                           )}
                         >
                           {investor.accessLevel.charAt(0).toUpperCase() + investor.accessLevel.slice(1)}
@@ -760,10 +760,10 @@ export default function DataRoomPage() {
                           variant="outline"
                           className={cn(
                             log.action === 'download'
-                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              ? 'bg-status-info-bg text-status-info border-status-info-border'
                               : log.action === 'view'
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : 'bg-gray-50 text-gray-700 border-gray-200'
+                              ? 'bg-status-success-bg text-status-success border-status-success-border'
+                              : 'bg-muted text-foreground border-border'
                           )}
                         >
                           {log.action.charAt(0).toUpperCase() + log.action.slice(1)}

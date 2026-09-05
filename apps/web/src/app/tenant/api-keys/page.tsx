@@ -56,9 +56,9 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex items-center gap-2">
             <p className="font-medium">{apiKey.name}</p>
             {apiKey.isActive ? (
-              <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="mr-1 icon-sm" />Active</Badge>
+              <Badge variant="outline" size="sm" className="bg-status-success-bg text-status-success border-status-success-border"><CheckCircle className="mr-1 icon-sm" />Active</Badge>
             ) : (
-              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-gray-500">Inactive</Badge>
+              <Badge variant="outline" size="sm" className="bg-gray-500/10 text-muted-foreground">Inactive</Badge>
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
@@ -76,7 +76,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Clock className="icon-sm" />Created {apiKey.createdAt}</span>
             {apiKey.lastUsed && <span>Last used {apiKey.lastUsed}</span>}
-            {apiKey.expiresAt && <span className="text-amber-600">Expires {apiKey.expiresAt}</span>}
+            {apiKey.expiresAt && <span className="text-status-warning">Expires {apiKey.expiresAt}</span>}
           </div>
         </div>
         <DropdownMenu>
@@ -107,9 +107,9 @@ export default function TenantApiKeysPage() {
       actions={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Create API Key</Button>}
     >
       <div className="space-y-5">
-        <Card className="border-amber-500/20 bg-amber-500/5">
+        <Card className="border-status-warning-border bg-status-warning-bg">
           <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="h-5 w-5 text-amber-500 shrink-0" />
+            <Shield className="h-5 w-5 text-status-warning shrink-0" />
             <p className="text-sm">API keys grant full access to your tenant's resources. Store them securely and never share them publicly.</p>
           </CardContent>
         </Card>

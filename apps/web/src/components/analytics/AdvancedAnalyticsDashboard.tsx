@@ -184,8 +184,8 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-xl font-bold">{metric.value}</div>
               <p className={cn(
                 "text-xs flex items-center gap-1 mt-1",
-                metric.trend === 'up' ? 'text-green-600' : 
-                metric.trend === 'down' ? 'text-red-600' : 
+                metric.trend === 'up' ? 'text-status-success' : 
+                metric.trend === 'down' ? 'text-status-danger' : 
                 'text-muted-foreground'
               )}>
                 <TrendingUp className={cn(

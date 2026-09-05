@@ -219,13 +219,13 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 function ProposalStatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'approved':
-      return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />;
+      return <CheckCircle2 className="h-3.5 w-3.5 text-status-success" />;
     case 'changes_requested':
-      return <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />;
+      return <AlertCircle className="h-3.5 w-3.5 text-status-warning" />;
     case 'closed':
-      return <XCircle className="h-3.5 w-3.5 text-gray-400" />;
+      return <XCircle className="h-3.5 w-3.5 text-muted-foreground" />;
     default:
-      return <Clock className="h-3.5 w-3.5 text-blue-500" />;
+      return <Clock className="h-3.5 w-3.5 text-status-info" />;
   }
 }
 
@@ -330,7 +330,7 @@ export function CollabToolbar({
               {openProposals.length > 0 && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-4 px-1.5 text-2xs bg-orange-100 text-orange-700 border-orange-200"
+                  className="ml-1 h-4 px-1.5 text-2xs bg-status-warning-bg text-status-warning border-status-warning-border"
                 >
                   {openProposals.length}
                 </Badge>

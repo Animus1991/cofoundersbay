@@ -26,15 +26,15 @@ function MetricDiff({
   return (
     <div className="flex items-center gap-3 text-sm">
       <div className="w-1/3">
-        <p className="text-xs text-gray-400">{labelA}</p>
-        <p className="font-medium text-gray-800">{valA.toFixed(1)}{unit}</p>
+        <p className="text-xs text-muted-foreground">{labelA}</p>
+        <p className="font-medium text-foreground">{valA.toFixed(1)}{unit}</p>
       </div>
       <div className="w-1/3">
-        <p className="text-xs text-gray-400">{labelB}</p>
-        <p className="font-medium text-gray-800">{valB.toFixed(1)}{unit}</p>
+        <p className="text-xs text-muted-foreground">{labelB}</p>
+        <p className="font-medium text-foreground">{valB.toFixed(1)}{unit}</p>
       </div>
       <div className="w-1/3 text-right">
-        <p className="text-xs text-gray-400">Δ</p>
+        <p className="text-xs text-muted-foreground">Δ</p>
         <p className={`font-semibold ${diff >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
           {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{unit}
           {' '}
@@ -88,12 +88,12 @@ function ExperimentCard({
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+    <div className="border border-border rounded-xl overflow-hidden bg-white">
       <div className="px-5 py-4 flex items-center justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-900">{exp.name}</span>
-            <span className="font-mono text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{exp.key}</span>
+            <span className="font-semibold text-foreground">{exp.name}</span>
+            <span className="font-mono text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{exp.key}</span>
             <span
               className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                 exp.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
@@ -103,9 +103,9 @@ function ExperimentCard({
             </span>
           </div>
           {exp.description && (
-            <p className="text-sm text-gray-500 mt-0.5 truncate">{exp.description}</p>
+            <p className="text-sm text-muted-foreground mt-0.5 truncate">{exp.description}</p>
           )}
-          <div className="flex items-center gap-4 mt-1.5 text-xs text-gray-400">
+          <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
             <span>Split {Math.round(exp.splitRatio * 100)}% B</span>
             <span>A: {exp.variantACounts} users · B: {exp.variantBCounts} users</span>
             {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString()}</span>}
@@ -129,21 +129,21 @@ function ExperimentCard({
               setExpanded(!expanded);
               if (!expanded && !metrics) await loadMetrics();
             }}
-            className="text-xs flex items-center gap-1 text-gray-400 hover:text-gray-600 px-2"
+            className="text-xs flex items-center gap-1 text-muted-foreground hover:text-muted-foreground px-2"
           >
             <BarChart2 className="w-3.5 h-3.5" />
             {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
-          <button onClick={del} className="text-gray-300 hover:text-rose-500">
+          <button onClick={del} className="text-muted-foreground hover:text-status-danger">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
+        <div className="border-t border-border px-5 py-4 bg-muted">
           {metricsLoading ? (
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RefreshCw className="w-4 h-4 animate-spin" /> Loading metrics…
             </div>
           ) : metrics ? (
@@ -166,14 +166,14 @@ function ExperimentCard({
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-gray-400 mb-1 font-medium uppercase tracking-wide">Variant A Config</p>
-                  <pre className="bg-white border border-gray-200 rounded p-2 text-xs overflow-auto max-h-28 font-mono">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Variant A Config</p>
+                  <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
                     {JSON.stringify(exp.variantA, null, 2)}
                   </pre>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 mb-1 font-medium uppercase tracking-wide">Variant B Config</p>
-                  <pre className="bg-white border border-gray-200 rounded p-2 text-xs overflow-auto max-h-28 font-mono">
+                  <p className="text-xs text-muted-foreground mb-1 font-medium uppercase tracking-wide">Variant B Config</p>
+                  <pre className="bg-white border border-border rounded p-2 text-xs overflow-auto max-h-28 font-mono">
                     {JSON.stringify(exp.variantB, null, 2)}
                   </pre>
                 </div>
@@ -182,7 +182,7 @@ function ExperimentCard({
           ) : (
             <button
               onClick={loadMetrics}
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-status-accent hover:underline"
             >
               Load metrics
             </button>
@@ -233,7 +233,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">New Experiment</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">New Experiment</h3>
         <div className="space-y-3">
           {[
             { label: 'Name', key: 'name', placeholder: 'e.g. Higher XP for artifacts' },
@@ -241,30 +241,30 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
             { label: 'Description', key: 'description', placeholder: 'Optional context…' },
           ].map(({ label, key, placeholder }) => (
             <div key={key}>
-              <label className="block text-xs text-gray-500 mb-1">{label}</label>
+              <label className="block text-xs text-muted-foreground mb-1">{label}</label>
               <input
                 value={(form as Record<string, string>)[key]}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
               />
             </div>
           ))}
           <div className="grid grid-cols-2 gap-3">
             {[{ label: 'Variant A (control)', key: 'variantA' }, { label: 'Variant B (treatment)', key: 'variantB' }].map(({ label, key }) => (
               <div key={key}>
-                <label className="block text-xs text-gray-500 mb-1">{label}</label>
+                <label className="block text-xs text-muted-foreground mb-1">{label}</label>
                 <textarea
                   value={(form as Record<string, string>)[key]}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   rows={4}
-                  className="w-full text-xs font-mono border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                  className="w-full text-xs font-mono border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
                 />
               </div>
             ))}
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Split Ratio (% assigned to B): {Math.round(parseFloat(form.splitRatio) * 100)}%</label>
+            <label className="block text-xs text-muted-foreground mb-1">Split Ratio (% assigned to B): {Math.round(parseFloat(form.splitRatio) * 100)}%</label>
             <input
               type="range" min="0.1" max="0.9" step="0.05"
               value={form.splitRatio}
@@ -272,12 +272,12 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
               className="w-full accent-indigo-600"
             />
           </div>
-          {error && <p className="text-sm text-rose-600">{error}</p>}
+          {error && <p className="text-sm text-status-danger">{error}</p>}
         </div>
         <div className="flex gap-3 mt-5">
           <button
             onClick={onClose}
-            className="flex-1 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+            className="flex-1 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:bg-muted"
           >
             Cancel
           </button>
@@ -352,19 +352,19 @@ function ConfigEditor() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
           >
             <option value="">All categories</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button onClick={load} className="text-gray-400 hover:text-indigo-600">
+          <button onClick={load} className="text-muted-foreground hover:text-status-accent">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
         <button
           onClick={() => void seed()}
           disabled={seedLoading}
-          className="text-xs flex items-center gap-1.5 border border-dashed border-indigo-300 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
+          className="text-xs flex items-center gap-1.5 border border-dashed border-status-accent-border text-status-accent px-3 py-1.5 rounded-lg hover:bg-status-accent-bg"
         >
           <Settings className="w-3.5 h-3.5" />
           {seedLoading ? 'Seeding…' : 'Seed Defaults'}
@@ -372,30 +372,30 @@ function ConfigEditor() {
       </div>
 
       {loading && configs.length === 0 ? (
-        <div className="flex items-center justify-center h-32 text-gray-400">
+        <div className="flex items-center justify-center h-32 text-muted-foreground">
           <RefreshCw className="w-4 h-4 animate-spin mr-2" /> Loading…
         </div>
       ) : configs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-32 text-gray-400">
+        <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
           <Settings className="w-8 h-8 mb-2 opacity-30" />
           <p className="text-sm">No config keys found. Seed defaults to get started.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {configs.map((cfg) => (
-            <div key={cfg.key} className="border border-gray-200 rounded-xl p-4 bg-white">
+            <div key={cfg.key} className="border border-border rounded-xl p-4 bg-white">
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-mono text-sm text-gray-800">{cfg.key}</span>
+                    <span className="font-mono text-sm text-foreground">{cfg.key}</span>
                     {cfg.category && (
-                      <span className="text-xs bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded">
+                      <span className="text-xs bg-status-accent-bg text-status-accent px-1.5 py-0.5 rounded">
                         {cfg.category}
                       </span>
                     )}
                   </div>
                   {cfg.description && (
-                    <p className="text-xs text-gray-400 mb-2">{cfg.description}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{cfg.description}</p>
                   )}
                   <textarea
                     value={editValues[cfg.key] ?? ''}
@@ -403,19 +403,19 @@ function ConfigEditor() {
                       setEditValues((v) => ({ ...v, [cfg.key]: e.target.value }))
                     }
                     rows={2}
-                    className="w-full text-xs font-mono border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                    className="w-full text-xs font-mono border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
                   />
                 </div>
                 <button
                   disabled={saving === cfg.key}
                   onClick={() => void save(cfg)}
-                  className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 disabled:opacity-50"
+                  className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-status-accent-bg text-status-accent rounded-lg hover:bg-status-accent-bg disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
                   {saving === cfg.key ? 'Saving…' : 'Save'}
                 </button>
               </div>
-              <p className="text-xs text-gray-300 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Updated {new Date(cfg.updatedAt).toLocaleString()}
               </p>
             </div>
@@ -452,15 +452,15 @@ export function ExperimentationPanel() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Experimentation & Tuning</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h2 className="text-xl font-semibold text-foreground">Experimentation & Tuning</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">
             A/B experiments with sticky variant assignment + live config weight tuning.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-muted rounded-lg p-1 w-fit">
         {([
           { key: 'experiments', label: 'Experiments', icon: FlaskConical },
           { key: 'config', label: 'System Config', icon: Settings },
@@ -482,11 +482,11 @@ export function ExperimentationPanel() {
       {tab === 'experiments' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">{experiments.length} experiment{experiments.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-muted-foreground">{experiments.length} experiment{experiments.length !== 1 ? 's' : ''}</p>
             <div className="flex gap-2">
               <button
                 onClick={loadExperiments}
-                className="text-gray-400 hover:text-indigo-600"
+                className="text-muted-foreground hover:text-status-accent"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
@@ -500,16 +500,16 @@ export function ExperimentationPanel() {
           </div>
 
           {loading && experiments.length === 0 ? (
-            <div className="flex items-center justify-center h-32 text-gray-400">
+            <div className="flex items-center justify-center h-32 text-muted-foreground">
               <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading…
             </div>
           ) : experiments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground border-2 border-dashed border-border rounded-xl">
               <FlaskConical className="w-10 h-10 mb-2 opacity-30" />
               <p className="text-sm">No experiments yet. Create one to start A/B testing.</p>
               <button
                 onClick={() => setShowCreate(true)}
-                className="mt-3 text-sm text-indigo-600 hover:underline"
+                className="mt-3 text-sm text-status-accent hover:underline"
               >
                 + Create first experiment
               </button>

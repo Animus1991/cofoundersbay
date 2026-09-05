@@ -37,10 +37,10 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    paused: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 border-red-500/20',
+    active: 'bg-status-success-bg text-status-success border-status-success-border',
+    paused: 'bg-status-warning-bg text-status-warning border-status-warning-border',
+    completed: 'bg-status-info-bg text-status-info border-status-info-border',
+    cancelled: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
   const nextSessionFormatted = relationship.nextSessionAt
@@ -214,8 +214,8 @@ export default function MenteesPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2">
-                <Target className="h-5 w-5 text-green-500" />
+              <div className="rounded-lg bg-status-success-bg p-2">
+                <Target className="h-5 w-5 text-status-success" />
               </div>
               <div>
                 <p className="text-xl font-bold">{completedRelationships.length}</p>
@@ -225,8 +225,8 @@ export default function MenteesPage() {
           </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
+              <div className="rounded-lg bg-status-info-bg p-2">
+                <TrendingUp className="h-5 w-5 text-status-info" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalSessions}</p>

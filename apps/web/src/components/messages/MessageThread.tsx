@@ -241,7 +241,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                   {isOwn && (
                     <>
                       {message.readAt ? (
-                        <CheckCheck className="h-3 w-3 text-blue-500" />
+                        <CheckCheck className="h-3 w-3 text-status-info" />
                       ) : (
                         <Check className="h-3 w-3" />
                       )}

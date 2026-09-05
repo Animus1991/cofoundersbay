@@ -45,9 +45,9 @@ type Project = {
 
 function ProjectCard({ project }: { project: Project }) {
   const statusConfig: Record<string, { color: string; icon: React.ElementType }> = {
-    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: Clock },
-    completed: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: CheckCircle },
-    on_hold: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: AlertCircle },
+    active: { color: 'bg-status-success-bg text-status-success border-status-success-border', icon: Clock },
+    completed: { color: 'bg-status-info-bg text-status-info border-status-info-border', icon: CheckCircle },
+    on_hold: { color: 'bg-status-warning-bg text-status-warning border-status-warning-border', icon: AlertCircle },
   };
 
   const config = statusConfig[project.status];

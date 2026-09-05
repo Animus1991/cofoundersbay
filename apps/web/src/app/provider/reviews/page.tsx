@@ -53,7 +53,7 @@ function ReviewCard({ review }: { review: Review }) {
                         className={cn(
                           'h-4 w-4',
                           i < review.rating
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
                         )}
                       />
@@ -193,7 +193,7 @@ export default function ProviderReviewsPage() {
                         className={cn(
                           'h-4 w-4',
                           i < Math.round(avgRating)
-                            ? 'fill-amber-500 text-amber-500'
+                            ? 'fill-status-warning text-status-warning'
                             : 'text-muted-foreground/30'
                         )}
                       />
@@ -207,7 +207,7 @@ export default function ProviderReviewsPage() {
                   {ratingDistribution.map((dist) => (
                     <div key={dist.rating} className="flex items-center gap-2">
                       <span className="text-xs w-3">{dist.rating}</span>
-                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      <Star className="h-3 w-3 fill-status-warning text-status-warning" />
                       <Progress value={dist.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">
                         {dist.count}
@@ -227,7 +227,7 @@ export default function ProviderReviewsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-                  <p className="text-xl font-bold text-amber-600">
+                  <p className="text-xl font-bold text-status-warning">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>

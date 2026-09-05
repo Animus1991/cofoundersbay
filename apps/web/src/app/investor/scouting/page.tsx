@@ -132,7 +132,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               <span className="flex items-center gap-1"><Users className="h-3 w-3" />{startup.teamSize} founders</span>
               <span className="flex items-center gap-1 font-medium text-primary-accessible"><DollarSign className="h-3 w-3" />Raising {startup.raisingAmount}</span>
               {startup.revenue !== 'Pre-revenue' && (
-                <span className="flex items-center gap-1 text-green-600"><TrendingUp className="h-3 w-3" />{startup.revenue}</span>
+                <span className="flex items-center gap-1 text-status-success"><TrendingUp className="h-3 w-3" />{startup.revenue}</span>
               )}
             </div>
 
@@ -146,7 +146,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match Score</p>
-                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-green-500' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
+                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-status-success' : startup.matchScore >= 70 ? 'text-primary-accessible' : 'text-muted-foreground')}>
                   {startup.matchScore}%
                 </p>
               </div>
@@ -315,7 +315,7 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
-            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-orange-500">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
+            {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-status-warning">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary-accessible hover:underline flex items-center gap-1">
             <GanttChart className="h-3.5 w-3.5" />View Pipeline

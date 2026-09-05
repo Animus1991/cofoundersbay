@@ -184,7 +184,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
 export function EmptyMessages({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <MessageCircle className="h-8 w-8 text-cyan-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No conversations</h3>
@@ -309,7 +309,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
 export function EmptyMarketplace({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-pink-500/10">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
         <ShoppingBag className="h-8 w-8 text-pink-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No services listed</h3>
@@ -327,7 +327,7 @@ export function EmptyMarketplace({ className }: EmptyStateProps) {
 export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-info-bg">
         <Users className="h-8 w-8 text-cyan-400" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No sessions booked</h3>

@@ -23,16 +23,16 @@ import { cn } from '@/lib/utils';
 type ActivityType = 'all' | 'connection' | 'message' | 'match' | 'milestone' | 'achievement' | 'system' | 'event' | 'endorsement';
 
 const TYPE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg: string; label: string }> = {
-  connection:  { icon: UserCheck,     color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Connections' },
-  message:     { icon: MessageCircle, color: 'text-blue-500',    bg: 'bg-blue-500/10',    label: 'Messages'    },
-  match:       { icon: TrendingUp,    color: 'text-violet-500',  bg: 'bg-violet-500/10',  label: 'Matches'     },
-  milestone:   { icon: Flag,          color: 'text-amber-500',   bg: 'bg-amber-500/10',   label: 'Milestones'  },
-  achievement: { icon: Award,         color: 'text-yellow-500',  bg: 'bg-yellow-500/10',  label: 'Achievements'},
-  event:       { icon: Calendar,      color: 'text-pink-500',    bg: 'bg-pink-500/10',    label: 'Events'      },
-  endorsement: { icon: Star,          color: 'text-orange-500',  bg: 'bg-orange-500/10',  label: 'Endorsements'},
-  job:         { icon: Briefcase,     color: 'text-teal-500',    bg: 'bg-teal-500/10',    label: 'Jobs'        },
+  connection:  { icon: UserCheck,     color: 'text-status-success', bg: 'bg-status-success-bg', label: 'Connections' },
+  message:     { icon: MessageCircle, color: 'text-status-info',    bg: 'bg-status-info-bg',    label: 'Messages'    },
+  match:       { icon: TrendingUp,    color: 'text-status-accent',  bg: 'bg-status-accent-bg',  label: 'Matches'     },
+  milestone:   { icon: Flag,          color: 'text-status-warning',   bg: 'bg-status-warning-bg',   label: 'Milestones'  },
+  achievement: { icon: Award,         color: 'text-status-warning',  bg: 'bg-status-warning-bg',  label: 'Achievements'},
+  event:       { icon: Calendar,      color: 'text-status-accent',    bg: 'bg-status-accent-bg',    label: 'Events'      },
+  endorsement: { icon: Star,          color: 'text-status-warning',  bg: 'bg-status-warning-bg',  label: 'Endorsements'},
+  job:         { icon: Briefcase,     color: 'text-status-success',    bg: 'bg-status-success-bg',    label: 'Jobs'        },
   system:      { icon: Bell,          color: 'text-muted-foreground', bg: 'bg-muted',     label: 'System'      },
-  invite:      { icon: Gift,          color: 'text-purple-500',  bg: 'bg-purple-500/10',  label: 'Invites'     },
+  invite:      { icon: Gift,          color: 'text-status-accent',  bg: 'bg-status-accent-bg',  label: 'Invites'     },
 };
 
 const NOTIF_ICONS: Record<string, React.ElementType> = Object.fromEntries(
@@ -255,10 +255,10 @@ export default function ActivityPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Today's Activity", value: todayCount, icon: Zap, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Unread Notifications', value: unreadCount, icon: Bell, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'New Connections', value: connectionCount, icon: UserCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-            { label: 'New Matches', value: matchCount, icon: TrendingUp, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+            { label: "Today's Activity", value: todayCount, icon: Zap, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+            { label: 'Unread Notifications', value: unreadCount, icon: Bell, color: 'text-status-info', bg: 'bg-status-info-bg' },
+            { label: 'New Connections', value: connectionCount, icon: UserCheck, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { label: 'New Matches', value: matchCount, icon: TrendingUp, color: 'text-status-accent', bg: 'bg-status-accent-bg' },
           ].map((stat) => {
             const Icon = stat.icon;
             return (
@@ -439,7 +439,7 @@ export default function ActivityPage() {
                   ) : notifications.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-12 text-center">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                        <CheckCircle2 className="h-5 w-5 text-status-success" />
                       </div>
                       <p className="text-sm font-medium text-foreground">All caught up!</p>
                       <p className="text-xs text-muted-foreground">No notifications right now.</p>
@@ -491,10 +491,10 @@ export default function ActivityPage() {
               </CardHeader>
               <CardContent className="grid gap-2 pb-4">
                 {[
-                  { href: '/discover', label: 'Explore People', icon: Users, color: 'text-violet-500' },
-                  { href: '/matches', label: 'View Matches', icon: TrendingUp, color: 'text-emerald-500' },
-                  { href: '/events', label: 'Browse Events', icon: Calendar, color: 'text-pink-500' },
-                  { href: '/achievements', label: 'Achievements', icon: Award, color: 'text-yellow-500' },
+                  { href: '/discover', label: 'Explore People', icon: Users, color: 'text-status-accent' },
+                  { href: '/matches', label: 'View Matches', icon: TrendingUp, color: 'text-status-success' },
+                  { href: '/events', label: 'Browse Events', icon: Calendar, color: 'text-status-accent' },
+                  { href: '/achievements', label: 'Achievements', icon: Award, color: 'text-status-warning' },
                 ].map((a) => {
                   const AIcon = a.icon;
                   return (

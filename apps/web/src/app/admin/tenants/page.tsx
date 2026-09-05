@@ -70,11 +70,11 @@ export default function TenantsAdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>;
+        return <Badge className="bg-status-success-bg text-status-success border-status-success-border">Active</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Pending</Badge>;
+        return <Badge className="bg-status-warning-bg text-status-warning border-status-warning-border">Pending</Badge>;
       case 'suspended':
-        return <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Suspended</Badge>;
+        return <Badge className="bg-status-danger-bg text-status-danger border-status-danger-border">Suspended</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -111,7 +111,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Check className="icon-md text-green-500" />
+              <Check className="icon-md text-status-success" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.status === 'active').length || 0}
               </span>
@@ -125,7 +125,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Palette className="icon-md text-purple-500" />
+              <Palette className="icon-md text-status-accent" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.logoUrl).length || 0}
               </span>
@@ -678,11 +678,11 @@ function TenantEditor({
                   </a>
                 </Button>
                 {b?.isBrandingActive ? (
-                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-orange-600 border-orange-300 hover:bg-orange-50">
+                  <Button variant="outline" size="sm" onClick={() => unpublishMut.mutate()} className="gap-2 text-status-warning border-status-warning-border hover:bg-status-warning-bg">
                     Unpublish Branding
                   </Button>
                 ) : (
-                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
+                  <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-status-success border-status-success-border hover:bg-status-success-bg">
                     <Check className="h-4 w-4" />
                     Publish Branding
                   </Button>

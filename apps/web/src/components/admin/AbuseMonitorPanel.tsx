@@ -8,10 +8,10 @@ import {
 } from '@/lib/api';
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-700',
-  reviewed: 'bg-blue-100 text-blue-700',
-  actioned: 'bg-rose-100 text-rose-700',
-  dismissed: 'bg-gray-100 text-gray-500',
+  pending: 'bg-status-warning-bg text-status-warning',
+  reviewed: 'bg-status-info-bg text-status-info',
+  actioned: 'bg-status-danger-bg text-status-danger',
+  dismissed: 'bg-muted text-muted-foreground',
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -29,10 +29,10 @@ function SeverityBar({ v }: { v: number }) {
   const color = pct >= 70 ? 'bg-rose-500' : pct >= 40 ? 'bg-amber-400' : 'bg-green-400';
   return (
     <div className="flex items-center gap-2">
-      <div className="w-20 bg-gray-100 rounded-full h-1.5">
+      <div className="w-20 bg-muted rounded-full h-1.5">
         <div className={`${color} h-1.5 rounded-full`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs tabular-nums text-gray-500">{pct}%</span>
+      <span className="text-xs tabular-nums text-muted-foreground">{pct}%</span>
     </div>
   );
 }
@@ -79,10 +79,10 @@ export function AbuseMonitorPanel() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Abuse Monitor</h2>
-          <p className="text-sm text-gray-500 mt-0.5">Review and action detected anti-gaming signals.</p>
+          <h2 className="text-xl font-semibold text-foreground">Abuse Monitor</h2>
+          <p className="text-sm text-muted-foreground mt-0.5">Review and action detected anti-gaming signals.</p>
         </div>
-        <button onClick={load} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600">
+        <button onClick={load} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-status-accent">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </button>
       </div>
@@ -91,13 +91,13 @@ export function AbuseMonitorPanel() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Flags', value: stats.totalFlags, color: 'text-gray-800' },
-            { label: 'Pending', value: stats.pendingFlags, color: 'text-amber-600' },
-            { label: 'Actioned', value: stats.actionedFlags, color: 'text-rose-600' },
-            { label: 'Dismissed', value: stats.dismissedFlags, color: 'text-gray-400' },
+            { label: 'Total Flags', value: stats.totalFlags, color: 'text-foreground' },
+            { label: 'Pending', value: stats.pendingFlags, color: 'text-status-warning' },
+            { label: 'Actioned', value: stats.actionedFlags, color: 'text-status-danger' },
+            { label: 'Dismissed', value: stats.dismissedFlags, color: 'text-muted-foreground' },
           ].map((s) => (
-            <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-400">{s.label}</p>
+            <div key={s.label} className="bg-white border border-border rounded-xl p-4">
+              <p className="text-xs text-muted-foreground">{s.label}</p>
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
             </div>
           ))}
@@ -109,7 +109,7 @@ export function AbuseMonitorPanel() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
         >
           <option value="">All statuses</option>
           {['pending', 'reviewed', 'actioned', 'dismissed'].map((s) => (
@@ -119,7 +119,7 @@ export function AbuseMonitorPanel() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          className="text-sm border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
         >
           <option value="">All types</option>
           {Object.entries(TYPE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -127,47 +127,47 @@ export function AbuseMonitorPanel() {
       </div>
 
       {/* Flags table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-500" /> {total} flag{total !== 1 ? 's' : ''}
+      <div className="bg-white border border-border rounded-xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-status-warning" /> {total} flag{total !== 1 ? 's' : ''}
           </span>
         </div>
         {loading ? (
-          <div className="flex items-center justify-center h-32 text-gray-400">
+          <div className="flex items-center justify-center h-32 text-muted-foreground">
             <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading…
           </div>
         ) : flags.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 text-gray-400">
+          <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             <Shield className="w-8 h-8 mb-2 opacity-30" />
             <p className="text-sm">No flags found.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-50">
             {flags.map((f) => (
-              <div key={f.id} className="px-5 py-3.5 hover:bg-gray-50">
+              <div key={f.id} className="px-5 py-3.5 hover:bg-muted">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap text-sm">
-                      <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
                         {TYPE_LABELS[f.type] ?? f.type}
                       </span>
                       <span className={`text-xs px-1.5 py-0.5 rounded ${STATUS_STYLE[f.status] ?? ''}`}>
                         {f.status}
                       </span>
                       {f.actionTaken && (
-                        <span className="text-xs text-gray-400">→ {f.actionTaken}</span>
+                        <span className="text-xs text-muted-foreground">→ {f.actionTaken}</span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-700 mt-0.5">
+                    <p className="text-sm text-foreground mt-0.5">
                       <span className="font-medium">{f.displayName ?? f.email}</span>
-                      <span className="text-gray-400 text-xs ml-1">({f.userId.slice(0, 8)}…)</span>
+                      <span className="text-muted-foreground text-xs ml-1">({f.userId.slice(0, 8)}…)</span>
                     </p>
-                    {f.description && <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>}
+                    {f.description && <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>}
                     <div className="mt-1">
                       <SeverityBar v={f.severity} />
                     </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {new Date(f.createdAt).toLocaleString()}
                     </p>
                   </div>
@@ -175,12 +175,12 @@ export function AbuseMonitorPanel() {
                     <div className="relative">
                       <button
                         onClick={() => setOpenAction(openAction === f.id ? null : f.id)}
-                        className="flex items-center gap-1 text-xs border border-gray-200 rounded-lg px-2.5 py-1.5 hover:bg-gray-100"
+                        className="flex items-center gap-1 text-xs border border-border rounded-lg px-2.5 py-1.5 hover:bg-muted"
                       >
                         Action <ChevronDown className="w-3 h-3" />
                       </button>
                       {openAction === f.id && (
-                        <div className="absolute right-0 top-8 z-10 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[170px] py-1">
+                        <div className="absolute right-0 top-8 z-10 bg-white border border-border rounded-lg shadow-lg min-w-[170px] py-1">
                           {[
                             { action: 'warning', label: 'Send Warning', icon: AlertTriangle },
                             { action: 'reduced_xp', label: 'Reduce XP', icon: XCircle },
@@ -191,16 +191,16 @@ export function AbuseMonitorPanel() {
                               key={action}
                               disabled={actionLoading === f.id}
                               onClick={() => void resolve(f.id, action, action === 'safe' ? 'dismissed' : 'actioned')}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 text-left"
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-left"
                             >
-                              <Icon className="w-3.5 h-3.5 text-gray-400" /> {label}
+                              <Icon className="w-3.5 h-3.5 text-muted-foreground" /> {label}
                             </button>
                           ))}
-                          <div className="border-t border-gray-100 mt-1 pt-1">
+                          <div className="border-t border-border mt-1 pt-1">
                             <button
                               disabled={actionLoading === f.id}
                               onClick={() => void resolve(f.id, 'safe', 'dismissed')}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 text-gray-400 text-left"
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted text-muted-foreground text-left"
                             >
                               <XCircle className="w-3.5 h-3.5" /> Dismiss
                             </button>
@@ -217,17 +217,17 @@ export function AbuseMonitorPanel() {
       </div>
 
       {stats && stats.topOffenders.length > 0 && (
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Top Offenders</h3>
+        <div className="bg-white border border-border rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Top Offenders</h3>
           <div className="space-y-2">
             {stats.topOffenders.slice(0, 10).map((o) => (
               <div key={o.userId} className="flex items-center justify-between text-sm">
                 <div>
-                  <span className="font-medium text-gray-800">{o.displayName ?? o.email}</span>
-                  <span className="text-xs text-gray-400 ml-2 font-mono">{o.userId.slice(0, 8)}…</span>
+                  <span className="font-medium text-foreground">{o.displayName ?? o.email}</span>
+                  <span className="text-xs text-muted-foreground ml-2 font-mono">{o.userId.slice(0, 8)}…</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-500">{o.flagCount} flags</span>
+                  <span className="text-xs text-muted-foreground">{o.flagCount} flags</span>
                   <SeverityBar v={o.maxSeverity} />
                 </div>
               </div>
