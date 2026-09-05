@@ -481,17 +481,17 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Zap className="icon-sm text-amber-500" />
                     XP Progress
-                    {xpData.streak.currentStreak > 0 && (
+                    {(xpData.streak?.currentStreak ?? 0) > 0 && (
                       <span className="ml-auto text-xs font-normal text-orange-500">
-                        🔥 {xpData.streak.currentStreak}-day streak
+                        🔥 {xpData.streak?.currentStreak}-day streak
                       </span>
                     )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-foreground">Level {xpData.level} — {xpData.levelLabel}</span>
-                    <span className="text-muted-foreground tabular-nums">{xpData.totalXp.toLocaleString()} XP</span>
+                    <span className="font-semibold text-foreground">Level {xpData.level ?? 1} — {xpData.levelLabel ?? 'Member'}</span>
+                    <span className="text-muted-foreground tabular-nums">{(xpData.totalXp ?? 0).toLocaleString()} XP</span>
                   </div>
                   <Progress value={xpData.levelProgress * 100} className="h-2" />
                   <p className="text-xs text-muted-foreground">

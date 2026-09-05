@@ -257,8 +257,10 @@ function PostCard({
 
   // Track view when component mounts
   useEffect(() => {
-    if (onView) onView();
-  }, [onView]);
+    onView?.();
+    // Record a view once per post, not whenever the parent callback identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post.id]);
 
   const initials = post.author.displayName
     .split(' ')

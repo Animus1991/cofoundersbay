@@ -630,6 +630,35 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true, available: false, agents: [], models: [], conversations: [], messages: [] };
   }
 
+  if (pathname === '/api/gamification/users/me/xp' || pathname.endsWith('/xp')) {
+    return {
+      userId: ME_ID,
+      totalXp: 420,
+      level: 3,
+      levelLabel: 'Builder',
+      xpToNextLevel: 80,
+      levelProgress: 0.68,
+      recentEvents: [],
+      streak: { currentStreak: 4, longestStreak: 7, lastActiveAt: NOW },
+    };
+  }
+  if (pathname === '/api/gamification/users/me/badges' || pathname.endsWith('/badges')) {
+    return [
+      {
+        id: 'badge-early',
+        key: 'early-adopter',
+        name: 'Early adopter',
+        description: 'Joined the preview',
+        category: 'special',
+        rarity: 'common',
+        awardedAt: NOW,
+      },
+    ];
+  }
+  if (pathname === '/api/analytics/achievements') {
+    return null;
+  }
+
   if (method !== 'GET') {
     return { ok: true, success: true, ...body, id: 'preview-mutation' };
   }
