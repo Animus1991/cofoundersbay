@@ -11,6 +11,7 @@ import {
   adminGetExperimentMetrics, adminListConfigs, adminUpsertConfig, adminSeedDefaultConfigs,
   ExperimentRecord, ExperimentMetrics, SystemConfigRecord,
 } from '@/lib/api';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -59,6 +60,7 @@ function ExperimentCard({
   const [metrics, setMetrics] = useState<ExperimentMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [actLoading, setActLoading] = useState(false);
+  const confirm = useConfirm();
 
   const loadMetrics = async () => {
     setMetricsLoading(true);
@@ -82,7 +84,7 @@ function ExperimentCard({
   };
 
   const del = async () => {
-    if (!confirm(`Delete experiment "${exp.name}"?`)) return;
+    if (!(await confirm(deleteConfirmCopy({ en: 'experiment', el: 'πειράματος' }, exp.name)))) return;
     await adminDeleteExperiment(exp.id);
     onRefresh();
   };

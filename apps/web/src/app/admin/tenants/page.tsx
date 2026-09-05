@@ -19,10 +19,20 @@ import {
   type TenantItem, type TenantBranding,
 } from '@/lib/api';
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import { analytics } from '@/lib/analytics';
+
+const TENANT_DELETE_DESCRIPTION = (
+  <BilingualText
+    en="All their members, programs and data are removed permanently. This cannot be undone."
+    el="Όλα τα μέλη, προγράμματα και δεδομένα τους αφαιρούνται οριστικά. Δεν μπορεί να αναιρεθεί."
+  />
+);
 
 export default function TenantsAdminPage() {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -59,7 +69,12 @@ export default function TenantsAdminPage() {
       label: 'Delete',
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
-        if (!confirm(`Delete ${ids.length} tenant(s)? This cannot be undone.`)) return;
+        const ok = await confirm({
+          title: <BilingualText en={`Delete ${ids.length} tenants?`} el={`Διαγραφή ${ids.length} tenants;`} />,
+          description: TENANT_DELETE_DESCRIPTION,
+          confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+        });
+        if (!ok) return;
         await Promise.all(ids.map(id => deleteTenant(id)));
         queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
         void analytics.track('tenant_bulk_delete', { count: ids.length });
@@ -245,6 +260,7 @@ function TenantEditor({
   onSave: () => void;
 }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const isNew = !tenant;
   const [activeTab, setActiveTab] = useState('general');
   const [previewMode, setPreviewMode] = useState(false);
@@ -692,7 +708,13 @@ function TenantEditor({
           </div>
           <div className="flex gap-2">
             {tenant && (
-              <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
+              <Button variant="ghost" size="sm" className="gap-2 text-destructive-accessible hover:text-destructive-accessible" onClick={async () => {
+                if (await confirm({
+                  title: <BilingualText en={`Delete tenant “${tenant.name}”?`} el={`Διαγραφή tenant “${tenant.name}”;`} />,
+                  description: TENANT_DELETE_DESCRIPTION,
+                  confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+                })) deleteMut.mutate();
+              }}>
                 <Trash2 className="icon-sm" />
                 Delete
               </Button>

@@ -16,6 +16,8 @@ import {
 } from '@/lib/api';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -142,9 +144,24 @@ function DomainRow({
   onRefresh: () => void;
 }) {
   const { success: toastSuccess, error: toastError } = useToast();
+  const confirm = useConfirm();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
   const [loadingDns, setLoadingDns] = useState(false);
+
+  const handleRemove = async () => {
+    const ok = await confirm({
+      title: <BilingualText en={`Remove domain “${domain.domainName}”?`} el={`Αφαίρεση domain “${domain.domainName}”;`} />,
+      description: (
+        <BilingualText
+          en="Sign-in and links on this domain will stop working for your members."
+          el="Η σύνδεση και οι σύνδεσμοι σε αυτό το domain θα σταματήσουν να λειτουργούν για τα μέλη σας."
+        />
+      ),
+      confirmLabel: <BilingualText en="Remove" el="Αφαίρεση" compact />,
+    });
+    if (ok) remove.mutate();
+  };
 
   const verify = useMutation({
     mutationFn: () => verifyTenantDomain(tenantId, domain.id),
@@ -276,7 +293,7 @@ function DomainRow({
           </Button>
           <Button
             size="sm" variant="ghost"
-            onClick={() => { if (confirm(`Remove ${domain.domainName}?`)) remove.mutate(); }}
+            onClick={() => void handleRemove()}
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive-accessible hover:text-destructive-accessible"
           >

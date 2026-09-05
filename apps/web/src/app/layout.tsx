@@ -47,6 +47,7 @@ import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
+import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 
 export const metadata: Metadata = {
   title: {
@@ -121,6 +122,7 @@ export default function RootLayout({
                 <NetworkProvider>
                   <ApiHealthProbe />
                   <ToastProvider>
+                   <ConfirmProvider>
                     <PopupChatProvider>
                       <MessagingProvider>
                         <DemoDataProvider>
@@ -136,6 +138,7 @@ export default function RootLayout({
                         </DemoDataProvider>
                       </MessagingProvider>
                     </PopupChatProvider>
+                   </ConfirmProvider>
                   </ToastProvider>
                 </NetworkProvider>
               </SidebarProvider>

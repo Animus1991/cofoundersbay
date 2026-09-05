@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import {
   Zap, Play, Pause, Trash2, RefreshCw, ChevronRight,
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
@@ -321,6 +322,7 @@ function LogPanel({ executionId }: { executionId: string }) {
 export default function AutomationsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
   const { apiAvailable, pollInterval } = usePollingGuards();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
   const [selectedExecution, setSelectedExecution] = useState<string | null>(null);
@@ -525,8 +527,8 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
                       title="Delete"
-                      onClick={() => {
-                        if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
+                      onClick={async () => {
+                        if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) deleteMutation.mutate(rule.id);
                       }}
                     >
                       <Trash2 className="icon-sm" />

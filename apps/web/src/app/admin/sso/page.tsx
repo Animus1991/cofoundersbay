@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   Building2, Shield, Plus, Check, X, AlertTriangle,
   Key, Activity, ChevronRight, RefreshCw, Trash2,
@@ -226,7 +228,20 @@ function SSOConfigPanel({
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
+  const confirm = useConfirm();
   const [saveError, setSaveError] = useState('');
+
+  const confirmDeleteProvider = (p: IdentityProviderItem) =>
+    confirm({
+      title: <BilingualText en={`Delete SSO provider “${p.providerName}”?`} el={`Διαγραφή παρόχου SSO “${p.providerName}”;`} />,
+      description: (
+        <BilingualText
+          en="Members who sign in through this provider will lose that sign-in method. This cannot be undone."
+          el="Τα μέλη που συνδέονται μέσω αυτού του παρόχου θα χάσουν αυτή τη μέθοδο σύνδεσης. Δεν μπορεί να αναιρεθεί."
+        />
+      ),
+      confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+    });
 
   const { data: existingConfig, isLoading: configLoading } = useQuery({
     queryKey: ['admin', 'sso', 'config', tenantId],
@@ -418,7 +433,7 @@ function SSOConfigPanel({
                       <button type="button" onClick={() => toggleActive(p)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                         {p.isActive ? 'Disable' : 'Enable'}
                       </button>
-                      <button type="button" onClick={() => { if (confirm(`Delete "${p.providerName}"?`)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
+                      <button type="button" onClick={async () => { if (await confirmDeleteProvider(p)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive-accessible hover:opacity-70">
                         <Trash2 className="icon-sm" />
                       </button>
                     </div>

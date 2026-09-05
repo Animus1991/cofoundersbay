@@ -14,6 +14,7 @@ import {
 } from '@/lib/api';
 import { useTenant } from '@/components/providers/TenantContext';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -153,6 +154,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
 
 function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tenantId: string; onRefresh: () => void }) {
   const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
 
   const setStatus = useMutation({
     mutationFn: (status: 'active' | 'paused') => setAutomationRuleStatus(rule.id, status),
@@ -225,7 +227,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
             <Button
               variant="ghost" size="icon"
               className="h-8 w-8 text-destructive-accessible hover:text-destructive-accessible"
-              onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}
+              onClick={async () => { if (await confirm(deleteConfirmCopy({ en: 'automation rule', el: 'κανόνα αυτοματισμού' }, rule.name))) remove.mutate(); }}
               disabled={remove.isPending}
             >
               <Trash2 className="icon-sm" />

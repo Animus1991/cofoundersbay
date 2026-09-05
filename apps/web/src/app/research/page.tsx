@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   listResearchBoards,
   createResearchBoard,
@@ -68,6 +70,7 @@ export default function ResearchBoardsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const confirm = useConfirm();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -143,13 +146,25 @@ export default function ResearchBoardsPage() {
     updateMutation.mutate({ boardId: board.id, data: { isPinned: !board.isPinned } });
   };
 
-  const handleArchive = (board: ResearchBoard) => {
+  const handleArchive = async (board: ResearchBoard) => {
+    const ok = await confirm({
+      title: <BilingualText en={`Archive board “${board.title}”?`} el={`Αρχειοθέτηση πίνακα “${board.title}”;`} />,
+      description: (
+        <BilingualText
+          en="It moves out of your active boards. You can restore it later."
+          el="Μεταφέρεται εκτός των ενεργών πινάκων. Μπορείτε να τον επαναφέρετε αργότερα."
+        />
+      ),
+      confirmLabel: <BilingualText en="Archive" el="Αρχειοθέτηση" compact />,
+      variant: 'default',
+    });
+    if (!ok) return;
     updateMutation.mutate({ boardId: board.id, data: { isArchived: true } });
     success('Board archived', `"${board.title}" has been archived`);
   };
 
-  const handleDelete = (board: ResearchBoard) => {
-    if (confirm(`Delete "${board.title}"? This cannot be undone.`)) {
+  const handleDelete = async (board: ResearchBoard) => {
+    if (await confirm(deleteConfirmCopy({ en: 'board', el: 'πίνακα' }, board.title))) {
       deleteMutation.mutate(board.id);
     }
   };

@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
+import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -297,6 +298,7 @@ export default function MilestonesPage() {
   const qc = useQueryClient();
   const { primary } = useLanguagePreference();
   const { isAuthenticated, isChecking } = useAuthenticatedSession();
+  const confirm = useConfirm();
   const [statusFilter, setStatusFilter] = useState<MilestoneStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -368,12 +370,12 @@ export default function MilestonesPage() {
   );
 
   const handleDelete = useCallback(
-    (id: string) => {
-      if (window.confirm('Delete this milestone? This cannot be undone.')) {
+    async (id: string) => {
+      if (await confirm(deleteConfirmCopy({ en: 'milestone', el: 'ορόσημου' }))) {
         deleteMut.mutate(id);
       }
     },
-    [deleteMut],
+    [deleteMut, confirm],
   );
 
   const statusCounts = (summaryData as any)?.counts ?? {};

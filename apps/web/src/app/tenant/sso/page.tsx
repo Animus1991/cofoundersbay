@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTenant } from '@/components/providers/TenantContext';
+import { useConfirm } from '@/components/ui/confirm-dialog';
+import { BilingualText } from '@/components/common/BilingualText';
 import {
   listSSOProviders,
   createSSOProvider,
@@ -52,7 +54,22 @@ function ProviderCard({
   callbackBase: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const confirm = useConfirm();
   const callbackUrl = `${callbackBase}/api/sso/callback/${provider.id}`;
+
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: <BilingualText en={`Delete SSO provider “${provider.providerName}”?`} el={`Διαγραφή παρόχου SSO “${provider.providerName}”;`} />,
+      description: (
+        <BilingualText
+          en="Members who sign in through this provider will lose that sign-in method. This cannot be undone."
+          el="Τα μέλη που συνδέονται μέσω αυτού του παρόχου θα χάσουν αυτή τη μέθοδο σύνδεσης. Δεν μπορεί να αναιρεθεί."
+        />
+      ),
+      confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+    });
+    if (ok) onDelete(provider.id);
+  };
 
   const copy = () => {
     navigator.clipboard.writeText(callbackUrl);
@@ -100,7 +117,7 @@ function ProviderCard({
           <div className="flex items-center gap-3 shrink-0">
             <Switch checked={provider.isActive} onCheckedChange={() => onToggle(provider)} />
             <button
-              onClick={() => { if (confirm(`Delete "${provider.providerName}"?`)) onDelete(provider.id); }}
+              onClick={() => void handleDelete()}
               className="text-muted-foreground hover:text-destructive-accessible transition-colors"
             >
               <Trash2 className="icon-sm" />
