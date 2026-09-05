@@ -12,6 +12,7 @@ import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
+import { RoleProvider } from '@/contexts/RoleContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
 import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
@@ -81,6 +82,7 @@ export default function RootLayout({
           <QueryProvider>
             <LanguagePreferenceProvider>
             <TenantProvider>
+            <RoleProvider>
               <SidebarProvider>
                 <ServiceWorkerRegistration />
                 <NetworkProvider>
@@ -104,6 +106,7 @@ export default function RootLayout({
                   </ToastProvider>
                 </NetworkProvider>
               </SidebarProvider>
+            </RoleProvider>
             </TenantProvider>
             </LanguagePreferenceProvider>
           </QueryProvider>
