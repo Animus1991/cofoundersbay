@@ -75,9 +75,19 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
       'Σχεδιασμός και παρακολούθηση ορόσημων του startup με ημερομηνίες και υπεύθυνους.',
     section: 'Εργασία',
   },
+  '/milestones/new': {
+    title: 'Νέο ορόσημο',
+    description: 'Ορίστε ένα ορόσημο — τι σημαίνει «ολοκληρώθηκε», ποιος το αναλαμβάνει και πότε λήγει.',
+    section: 'Εργασία',
+  },
   '/projects': {
     title: 'Έργα',
     description: 'Διαχείριση παράλληλων έργων και πρωτοβουλιών του startup.',
+    section: 'Εργασία',
+  },
+  '/projects/create': {
+    title: 'Δημιουργία έργου',
+    description: 'Ονομάστε το έργο και ορίστε τον στόχο του πριν προσκαλέσετε συνεργάτες.',
     section: 'Εργασία',
   },
   '/fundraising': {
@@ -392,6 +402,66 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
       'Πλατφορμικοί διακόπτες συντήρησης, εγγραφής και email.',
     section: 'Διαχείριση',
   },
+  '/admin/dashboard': {
+    title: 'Πίνακας διαχείρισης',
+    description: 'Υγεία πλατφόρμας, ειδοποιήσεις και γρήγορες ενέργειες.',
+    section: 'Διαχείριση',
+  },
+  '/admin/audit-log': {
+    title: 'Αρχείο ελέγχου',
+    description: 'Αμετάβλητο ιστορικό διαχειριστικών ενεργειών — ποιος άλλαξε τι και πότε.',
+    section: 'Διαχείριση',
+  },
+  '/admin/automations': {
+    title: 'Κανόνες αυτοματισμού',
+    description: 'Κανόνες ενεργοποίησης-ενέργειας που εκτελούνται χωρίς χειροκίνητο έλεγχο.',
+    section: 'Διαχείριση',
+  },
+  '/admin/billing': {
+    title: 'Διαχείριση χρεώσεων',
+    description: 'Έσοδα πλατφόρμας, τιμολόγια και καταστάσεις συνδρομών σε όλους τους λογαριασμούς.',
+    section: 'Διαχείριση',
+  },
+  '/admin/communities': {
+    title: 'Κοινότητες',
+    description: 'Όλες οι κοινότητες της πλατφόρμας, με μέλη και επίπεδα δραστηριότητας.',
+    section: 'Διαχείριση',
+  },
+  '/admin/domains': {
+    title: 'Διαχείριση domain',
+    description: 'Επαλήθευση και δρομολόγηση προσαρμοσμένων domain για χώρους tenant.',
+    section: 'Διαχείριση',
+  },
+  '/admin/feature-flags': {
+    title: 'Feature flags',
+    description: 'Ενεργοποίηση ή απενεργοποίηση λειτουργιών ανά περιβάλλον χωρίς deploy.',
+    section: 'Διαχείριση',
+  },
+  '/admin/programs': {
+    title: 'Προγράμματα',
+    description: 'Επιταχυντές και cohorts σε όλη την πλατφόρμα — έγκριση, παύση ή έλεγχος.',
+    section: 'Διαχείριση',
+  },
+  '/admin/reports': {
+    title: 'Αναφορές & εποπτεία',
+    description: 'Αναφορές χρηστών που περιμένουν απόφαση εποπτείας.',
+    section: 'Διαχείριση',
+  },
+  '/admin/sso': {
+    title: 'Ρύθμιση SSO',
+    description: 'Πάροχοι ταυτότητας, endpoints ACS και δοκιμαστική σύνδεση για εταιρικούς tenants.',
+    section: 'Διαχείριση',
+  },
+  '/admin/taxonomy': {
+    title: 'Διαχείριση ταξινομίας',
+    description: 'Λεξιλόγια δεξιοτήτων, κλάδων και σταδίων που διαβάζουν η αντιστοίχιση και η αναζήτηση.',
+    section: 'Διαχείριση',
+  },
+  '/admin/tenants': {
+    title: 'Διαχείριση tenants',
+    description: 'Δημιουργία, αναστολή και έλεγχος χώρων εργασίας tenant.',
+    section: 'Διαχείριση',
+  },
 
   // ── Account ──
   '/profile': {
@@ -410,6 +480,26 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     title: 'Ρυθμίσεις',
     description:
       'Διαχείριση τιμολόγησης, ειδοποιήσεων, ενσωματώσεων και ιδιωτικότητας.',
+    section: 'Λογαριασμός',
+  },
+  '/settings/ai': {
+    title: 'Βοηθός AI',
+    description: 'Επιλέξτε το μοντέλο και τον προεπιλεγμένο πράκτορα που απαντούν στις ερωτήσεις σας.',
+    section: 'Λογαριασμός',
+  },
+  '/settings/billing': {
+    title: 'Πλάνο & χρεώσεις',
+    description: 'Το τρέχον πλάνο σας, τι περιλαμβάνει και πού αποστέλλονται τα τιμολόγια.',
+    section: 'Λογαριασμός',
+  },
+  '/settings/notifications': {
+    title: 'Προτιμήσεις ειδοποιήσεων',
+    description: 'Επιλέξτε ποια γεγονότα σας φτάνουν με email και πόσο συχνά.',
+    section: 'Λογαριασμός',
+  },
+  '/settings/data-export': {
+    title: 'Εξαγωγή δεδομένων',
+    description: 'Κατεβάστε αντίγραφο του προφίλ, των μηνυμάτων και της δραστηριότητάς σας.',
     section: 'Λογαριασμός',
   },
   '/notifications': {
@@ -447,6 +537,11 @@ export const PAGE_META_EL: Record<string, PageMetaEl> = {
     title: 'Εκδηλώσεις',
     description:
       'Εργαστήρια, demo days, meetups και διαδικτυακές συνεδρίες — RSVP και προσθήκη στο ημερολόγιο.',
+    section: 'Πόροι',
+  },
+  '/events/create': {
+    title: 'Δημιουργία εκδήλωσης',
+    description: 'Δημοσιεύστε εργαστήριο, demo day ή meetup για να δηλώσει συμμετοχή η κοινότητα.',
     section: 'Πόροι',
   },
   '/learning': {
@@ -541,6 +636,22 @@ export const PAGE_META_EL_PATTERNS: Array<{
       description:
         'Δημοσιεύσεις, μέλη και εκδηλώσεις αυτής της ομάδας.',
       section: 'Κοινότητα',
+    },
+  },
+  {
+    pattern: /^\/projects\/(?!create$)[^/]+$/,
+    meta: {
+      title: 'Έργο',
+      description: 'Επισκόπηση, ορόσημα και ενημερώσεις αυτού του έργου.',
+      section: 'Εργασία',
+    },
+  },
+  {
+    pattern: /^\/org\/cohorts\/[^/]+$/,
+    meta: {
+      title: 'Cohort',
+      description: 'Συμμετέχοντες, κάλυψη mentor και πρόσφατες αντιστοιχίσεις αυτού του cohort.',
+      section: 'Εργασία',
     },
   },
 ];

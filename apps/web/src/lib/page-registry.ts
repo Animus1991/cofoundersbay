@@ -42,7 +42,11 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/builder/applications', title: 'Program applications', description: 'Track accelerator and grant applications in one place.', section: 'Work', status: 'complete' },
   { path: '/research', title: 'Research boards', description: 'Visual canvases for market, product, and competitive research.', section: 'Work', status: 'complete' },
   { path: '/milestones', title: 'Milestones', description: 'Plan and track startup milestones with due dates and owners.', helpId: 'milestones', helpTitle: 'Milestones', section: 'Work', status: 'complete' },
+  // Creation routes need their own line: inheriting the list page told the user
+  // they were "tracking" milestones on the form that creates one.
+  { path: '/milestones/new', title: 'New milestone', description: 'Define one milestone — what done looks like, who owns it, and when it is due.', section: 'Work', status: 'complete' },
   { path: '/projects', title: 'Projects', description: 'Manage side projects and startup initiatives.', section: 'Work', status: 'complete' },
+  { path: '/projects/create', title: 'Create project', description: 'Name the project and set its goal before inviting collaborators.', section: 'Work', status: 'complete' },
   { path: '/fundraising', title: 'Fundraising', description: 'Track your round, manage investor pipeline, and organize your data room.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', section: 'Work', audience: ['founder'], status: 'complete' },
 
   // ── Discovery ──
@@ -108,11 +112,33 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/admin/community-management', title: 'Community management', description: 'Inspect community health, growth, and flagged content.', helpId: 'admin-community-management', helpTitle: 'Community management', section: 'Admin', status: 'complete' },
   { path: '/admin/mentorship-management', title: 'Mentorship management', description: 'Approve mentors, review credentials, and monitor session quality.', helpId: 'admin-mentorship', helpTitle: 'Mentorship management', section: 'Admin', status: 'complete' },
   { path: '/admin/system-settings', title: 'System settings', description: 'Platform-wide toggles for maintenance, registration, and email.', helpId: 'admin-system-settings', helpTitle: 'System settings', section: 'Admin', status: 'complete' },
+  // Without their own entry these fell through to `/admin` and each announced
+  // itself as "Admin dashboard — platform-wide health", which is a different
+  // page. Titles here match the heading each route already renders.
+  { path: '/admin/dashboard', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', section: 'Admin', audience: ['platform_admin'], status: 'complete' },
+  { path: '/admin/audit-log', title: 'Audit log', description: 'Immutable record of administrative actions — who changed what, and when.', section: 'Admin', status: 'complete' },
+  { path: '/admin/automations', title: 'Automation rules', description: 'Trigger-and-action rules that run without manual review.', section: 'Admin', status: 'complete' },
+  { path: '/admin/billing', title: 'Billing administration', description: 'Platform revenue, invoices, and subscription states across all accounts.', section: 'Admin', status: 'complete' },
+  { path: '/admin/communities', title: 'Communities', description: 'Every community on the platform, with membership and activity levels.', section: 'Admin', status: 'complete' },
+  { path: '/admin/domains', title: 'Domain management', description: 'Verify and route custom domains for tenant workspaces.', section: 'Admin', status: 'complete' },
+  { path: '/admin/feature-flags', title: 'Feature flags', description: 'Roll features out or back per environment without a deploy.', section: 'Admin', status: 'complete' },
+  { path: '/admin/programs', title: 'Programs', description: 'Accelerators and cohorts platform-wide — approve, pause, or audit.', section: 'Admin', status: 'complete' },
+  { path: '/admin/reports', title: 'Reports & moderation', description: 'User-submitted reports awaiting a moderation decision.', section: 'Admin', status: 'complete' },
+  { path: '/admin/sso', title: 'SSO configuration', description: 'Identity providers, ACS endpoints, and test sign-in for enterprise tenants.', section: 'Admin', status: 'complete' },
+  { path: '/admin/taxonomy', title: 'Taxonomy management', description: 'Skills, industries, and stage vocabularies that matching and search read from.', section: 'Admin', status: 'complete' },
+  { path: '/admin/tenants', title: 'Tenant management', description: 'Provision, suspend, and inspect tenant workspaces.', section: 'Admin', status: 'complete' },
 
   // ── Account ──
   { path: '/profile', title: 'My Profile', description: 'This is exactly how others see you. Keep skills, headline, and bio current \u2014 it powers matches and search.', section: 'Account', status: 'complete' },
   { path: '/profile/edit', title: 'Edit profile', description: 'Update photo, bio, skills, and visibility settings. Changes save automatically as you type.', section: 'Account', status: 'partial' },
   { path: '/settings', title: 'Settings', description: 'Manage billing, notifications, integrations, and privacy.', helpId: 'settings', helpTitle: 'Settings overview', section: 'Account', priority: 'high', status: 'complete' },
+  // Each settings sub-page previously inherited the hub's "Manage billing,
+  // notifications, integrations, and privacy" line, so all four described the
+  // same four things instead of the one the user actually opened.
+  { path: '/settings/ai', title: 'AI assistant', description: 'Choose the model and default agent that answer your questions across the platform.', section: 'Account', status: 'complete' },
+  { path: '/settings/billing', title: 'Plan & billing', description: 'Your current plan, what it includes, and where invoices are sent.', section: 'Account', status: 'complete' },
+  { path: '/settings/notifications', title: 'Notification preferences', description: 'Pick which events reach you by email and how often digests arrive.', section: 'Account', status: 'complete' },
+  { path: '/settings/data-export', title: 'Data export', description: 'Download a copy of your profile, messages, and activity.', section: 'Account', status: 'complete' },
   { path: '/notifications', title: 'Notifications', description: 'Activity alerts — matches, messages, and program updates.', section: 'Account', status: 'complete' },
   { path: '/achievements', title: 'Achievements', description: 'Badges and XP earned from platform activity.', section: 'Account', status: 'complete' },
   { path: '/help', title: 'Help & support', description: 'Guides, FAQs, and contact options.', section: 'Resources', status: 'complete' },
@@ -121,6 +147,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/jobs', title: 'Jobs & roles', description: 'Equity, full-time, and contract roles posted by startups on the platform.', section: 'Resources', status: 'complete' },
   { path: '/opportunities', title: 'Opportunities', description: 'Co-founder calls, paid gigs, equity roles, and short-term collaborations in one feed.', section: 'Resources', status: 'complete' },
   { path: '/events', title: 'Events', description: 'Workshops, demo days, meetups, and online sessions \u2014 RSVP and add to calendar.', section: 'Resources', status: 'complete' },
+  { path: '/events/create', title: 'Create event', description: 'Publish a workshop, demo day, or meetup for the community to RSVP to.', section: 'Resources', status: 'complete' },
   { path: '/learning', title: 'Learning hub', description: 'Curated courses, founder guides, and templates aligned with your readiness gaps.', section: 'Resources', status: 'complete' },
   { path: '/groups', title: 'Communities', description: 'Industry, stage, and interest-based groups. Join to participate; create your own anytime.', section: 'Community', status: 'complete' },
   { path: '/posts', title: 'Feed', description: 'Updates from your network, communities, and people you follow.', section: 'Community', status: 'complete' },
@@ -179,6 +206,26 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
       title: 'Community',
       description: 'Posts, members, and events for this group.',
       section: 'Community',
+      status: 'complete',
+    },
+  },
+  // `/projects/create` is matched exactly above, so this pattern only ever sees
+  // a real project id.
+  {
+    pattern: /^\/projects\/(?!create$)[^/]+$/,
+    meta: {
+      title: 'Project',
+      description: 'Overview, milestones, and updates for this project.',
+      section: 'Work',
+      status: 'complete',
+    },
+  },
+  {
+    pattern: /^\/org\/cohorts\/[^/]+$/,
+    meta: {
+      title: 'Cohort',
+      description: 'Participants, mentor coverage, and recent matches for this cohort.',
+      section: 'Work',
       status: 'complete',
     },
   },
