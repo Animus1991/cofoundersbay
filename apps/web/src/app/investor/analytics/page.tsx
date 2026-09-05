@@ -239,7 +239,7 @@ export default function InvestorAnalyticsPage() {
                         <div className="h-6 bg-muted rounded overflow-hidden">
                           <div className={cn('h-full rounded flex items-center justify-end pr-2', stage.color)}
                             style={{ width: `${pct}%`, opacity: 0.8 }}>
-                            {pct > 15 && <span className="text-[10px] text-white font-medium">{stage.count}</span>}
+                            {pct > 15 && <span className="text-2xs text-white font-medium">{stage.count}</span>}
                           </div>
                         </div>
                       </div>

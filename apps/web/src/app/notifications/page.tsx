@@ -160,11 +160,11 @@ const NotificationRow = memo(function NotificationRow({
             <p className={cn('text-sm leading-snug truncate', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
               {item.title}
             </p>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 shrink-0 capitalize">
+            <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4 shrink-0 capitalize">
               {typeLabel}
             </Badge>
           </div>
-          <span className="shrink-0 text-[11px] text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
+          <span className="shrink-0 text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
         </div>
         {item.body && (
           <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>
@@ -334,7 +334,7 @@ export default function NotificationsPage() {
                   <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
                     <BilingualText en={t.labelEn} el={t.labelEl} compact />
                     {catCounts[t.value] ? (
-                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary-accessible">
+                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-2xs font-bold text-primary-accessible">
                         {catCounts[t.value]}
                       </span>
                     ) : null}
@@ -379,7 +379,7 @@ export default function NotificationsPage() {
               <Filter className="h-3.5 w-3.5" />
               <BilingualText en={notificationsEn('unread')} el={notificationsEl('unread')} compact />
               {unreadCount > 0 && (
-                <Badge className="h-4 min-w-[1rem] px-1 text-[10px]" variant="default">{unreadCount}</Badge>
+                <Badge className="h-4 min-w-[1rem] px-1 text-2xs" variant="default">{unreadCount}</Badge>
               )}
             </button>
             {unreadCount > 0 && (
@@ -441,7 +441,7 @@ export default function NotificationsPage() {
             grouped.map(({ label, items }) => (
               <div key={label}>
                 <div className="px-4 py-2 border-b border-border/40 bg-muted/30">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
                 </div>
                 {items.map((item) => (
                   <NotificationRow

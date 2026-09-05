@@ -208,7 +208,7 @@ export default function TenantDashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Member Growth</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
+                <Badge variant="secondary" className="text-2xs">6 months</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -220,7 +220,7 @@ export default function TenantDashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Program Engagement</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">Active programs</Badge>
+                <Badge variant="secondary" className="text-2xs">Active programs</Badge>
               </div>
             </CardHeader>
             <CardContent>

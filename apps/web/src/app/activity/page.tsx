@@ -99,8 +99,8 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
         {item.author && <p className="text-xs text-muted-foreground mt-0.5">by {item.author}</p>}
         <div className="mt-1 flex items-center gap-2">
           <Clock className="h-3 w-3 text-muted-foreground/60" />
-          <span className="text-[11px] text-muted-foreground">{item.timeAgo}</span>
-          <Badge variant="outline" className="h-4 px-1.5 text-[10px] capitalize">{item.type}</Badge>
+          <span className="text-2xs text-muted-foreground">{item.timeAgo}</span>
+          <Badge variant="outline" className="h-4 px-1.5 text-2xs capitalize">{item.type}</Badge>
         </div>
       </div>
       {item.href && (
@@ -140,8 +140,8 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         {item.body && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>}
         <div className="mt-1 flex items-center gap-2">
           <Clock className="h-3 w-3 text-muted-foreground/60" />
-          <span className="text-[11px] text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
-          {isUnread && <Badge className="h-4 px-1.5 text-[10px]">New</Badge>}
+          <span className="text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
+          {isUnread && <Badge className="h-4 px-1.5 text-2xs">New</Badge>}
         </div>
       </div>
       {item.link && (
@@ -160,7 +160,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
 function DateGroupHeader({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 border-b border-border/40 bg-muted/30 px-4 py-2">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -269,7 +269,7 @@ export default function ActivityPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xl font-bold text-foreground leading-none">{stat.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{stat.label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground truncate">{stat.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -305,19 +305,19 @@ export default function ActivityPage() {
                   <TabsTrigger value="network" className="gap-1.5 text-xs">
                     <Sparkles className="h-3.5 w-3.5" /> Network
                     {activityItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{activityItems.length}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{activityItems.length}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="notifications" className="gap-1.5 text-xs">
                     <Bell className="h-3.5 w-3.5" /> Notifications
                     {unreadCount > 0 && (
-                      <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{unreadCount}</Badge>
+                      <Badge className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{unreadCount}</Badge>
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="events" className="gap-1.5 text-xs">
                     <Calendar className="h-3.5 w-3.5" /> Events
                     {eventItems.length > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-[10px]">{eventItems.length}</Badge>
+                      <Badge variant="secondary" className="ml-1 h-4 min-w-[1rem] px-1 text-2xs">{eventItems.length}</Badge>
                     )}
                   </TabsTrigger>
                 </TabsList>
@@ -356,7 +356,7 @@ export default function ActivityPage() {
                         <FIcon className="h-3 w-3" />
                         {f.label}
                         {f.value !== 'all' && (
-                          <span className={cn('ml-0.5 rounded-full px-1 text-[10px]', isActive ? 'bg-white/20' : 'bg-muted')}>
+                          <span className={cn('ml-0.5 rounded-full px-1 text-2xs', isActive ? 'bg-white/20' : 'bg-muted')}>
                             {activityItems.filter((i) => i.type === f.value).length}
                           </span>
                         )}

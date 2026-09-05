@@ -128,12 +128,12 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                 {opportunity.company && (
                   <span className="text-sm text-muted-foreground">{opportunity.company}</span>
                 )}
-                <Badge variant="outline" className={cn('text-[10px] px-1.5', cfg.className)}>
+                <Badge variant="outline" className={cn('text-2xs px-1.5', cfg.className)}>
                   <cfg.icon className="mr-1 h-3 w-3" />
                   {cfg.label}
                 </Badge>
                 {opportunity.isRemote && (
-                  <Badge variant="secondary" className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
                 )}
               </div>
             </div>
@@ -151,7 +151,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         {opportunity.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opportunity.tags.map((tag: string) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[11px] text-secondary-foreground">
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -229,12 +229,12 @@ function JobCard({ job }: { job: JobPostingView }) {
               <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-[10px] px-1.5 bg-primary/20 text-primary-accessible border-primary/20">
+                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary-accessible border-primary/20">
                   <Building2 className="mr-1 h-3 w-3" />
                   Job
                 </Badge>
                 {job.isRemote && (
-                  <Badge variant="secondary" className="text-[10px]">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs">Remote</Badge>
                 )}
               </div>
             </div>
@@ -558,7 +558,7 @@ export default function OpportunitiesPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -582,7 +582,7 @@ export default function OpportunitiesPage() {
               <Icon className="h-4 w-4" />
               {label}
               {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary-accessible">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-accessible">
                   {badge}
                 </span>
               )}

@@ -160,7 +160,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             {/* Contribution score */}
             <div className="w-full mb-3">
-              <div className="flex items-center justify-between text-[10px] mb-1">
+              <div className="flex items-center justify-between text-2xs mb-1">
                 <span className="text-muted-foreground">Contribution</span>
                 <span className={cn('font-semibold', scoreColor(contribScore))}>{contribScore}</span>
               </div>
@@ -408,7 +408,7 @@ export function MembersPageClient() {
                     </div>
                     <div>
                       <p className="text-base font-bold leading-none text-foreground">{s.value}</p>
-                      <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
+                      <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -452,7 +452,7 @@ export function MembersPageClient() {
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-accessible transition-colors line-clamp-1">{member.displayName}</Link>
-                    <p className="text-[11px] text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
+                    <p className="text-2xs text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
                   <BadgeCheck className="h-4 w-4 text-primary-accessible shrink-0" />
                 </div>

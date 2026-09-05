@@ -74,7 +74,7 @@ function GroupCard({
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize border', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize border', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -90,7 +90,7 @@ function GroupCard({
             <Users className="h-10 w-10 text-white/20" />
           </div>
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize border', typeColor.chip)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize border', typeColor.chip)}>
               {groupType}
             </span>
           </div>
@@ -112,7 +112,7 @@ function GroupCard({
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {group.category && (
-                  <Badge variant="secondary" className="text-[10px]">{group.category}</Badge>
+                  <Badge variant="secondary" className="text-2xs">{group.category}</Badge>
                 )}
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   {group.privacy === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
@@ -131,7 +131,7 @@ function GroupCard({
         {group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {group.tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -306,7 +306,7 @@ export default function GroupsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground truncate"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground truncate"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -321,7 +321,7 @@ export default function GroupsPage() {
             <TabsTrigger value="my-groups">
               <BilingualText en="My Communities" el="Οι κοινότητές μου" compact />
               {myGroups.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary-accessible">
+                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-2xs text-primary-accessible">
                   {myGroups.length}
                 </span>
               )}
@@ -440,7 +440,7 @@ export default function GroupsPage() {
                 <p className="text-xs font-semibold text-foreground">
                   🔥 Trending: <span className={STATUS.warning.text}>{trendingGroup.name}</span>
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
+                <p className="text-2xs text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
               </div>
               <button
                 onClick={() => {/* navigate */}}

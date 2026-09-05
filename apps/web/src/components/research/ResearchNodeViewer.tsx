@@ -419,13 +419,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
           )}
           <div className="flex items-center gap-2 flex-none">
             {!saved && isEditable && (
-              <span className="text-[11px] text-muted-foreground">Unsaved</span>
+              <span className="text-2xs text-muted-foreground">Unsaved</span>
             )}
             {isEditable && (
               <button
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
                 {isSaving ? 'Saving…' : 'Save'}
               </button>
@@ -440,17 +440,17 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               </button>
             )}
             {node.upload?.sizeBytes && (
-              <span className="text-[10px] text-muted-foreground/70 tabular-nums">{fmtSize(node.upload.sizeBytes)}</span>
+              <span className="text-2xs text-muted-foreground/70 tabular-nums">{fmtSize(node.upload.sizeBytes)}</span>
             )}
             {isEditable && wordCount > 0 && (
-              <span className="text-[10px] text-muted-foreground/50 tabular-nums">{wordCount} word{wordCount !== 1 ? 's' : ''}</span>
+              <span className="text-2xs text-muted-foreground/50 tabular-nums">{wordCount} word{wordCount !== 1 ? 's' : ''}</span>
             )}
           </div>
         </div>
 
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (
-          <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-[12px]">
+          <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
             <Link2 className="w-3.5 h-3.5 text-primary-accessible shrink-0" />
             {node.builderDocumentId ? (
               <>
@@ -475,7 +475,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   value={linkInputValue}
                   onChange={(e) => setLinkInputValue(e.target.value)}
                   placeholder="Paste Builder Document ID…"
-                  className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/60 text-[12px]"
+                  className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground/60 text-xs"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && linkInputValue.trim()) {
                       onUpdate({ builderDocumentId: linkInputValue.trim() });
@@ -494,7 +494,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                     }
                     setShowLinkInput(false);
                   }}
-                  className="h-5 px-2 rounded bg-primary text-primary-foreground text-[11px] font-medium hover:bg-primary/90"
+                  className="h-5 px-2 rounded bg-primary text-primary-foreground text-2xs font-medium hover:bg-primary/90"
                 >
                   Link
                 </button>
@@ -508,7 +508,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {!node.builderDocumentId && !showLinkInput && (
           <button
             onClick={() => setShowLinkInput(true)}
-            className="flex-none flex items-center gap-1.5 px-4 py-1 border-b border-transparent hover:border-border bg-transparent hover:bg-muted/40 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-full text-left"
+            className="flex-none flex items-center gap-1.5 px-4 py-1 border-b border-transparent hover:border-border bg-transparent hover:bg-muted/40 text-2xs text-muted-foreground hover:text-foreground transition-colors w-full text-left"
           >
             <Link2 className="w-3 h-3" /> Link to Builder document…
           </button>
@@ -518,11 +518,11 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {isTask && (
           <div className="flex-none flex items-center gap-3 px-4 py-2 border-b border-border bg-secondary/30 flex-wrap">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground font-medium">Status</span>
+              <span className="text-2xs text-muted-foreground font-medium">Status</span>
               <select
                 value={taskMeta.status}
                 onChange={(e) => updateTaskMeta({ status: e.target.value })}
-                className="text-[12px] bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
+                className="text-xs bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -531,11 +531,11 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               </select>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground font-medium">Priority</span>
+              <span className="text-2xs text-muted-foreground font-medium">Priority</span>
               <select
                 value={taskMeta.priority}
                 onChange={(e) => updateTaskMeta({ priority: e.target.value })}
-                className="text-[12px] bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
+                className="text-xs bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -544,12 +544,12 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               </select>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-muted-foreground font-medium">Due date</span>
+              <span className="text-2xs text-muted-foreground font-medium">Due date</span>
               <input
                 type="date"
                 value={taskMeta.dueDate}
                 onChange={(e) => updateTaskMeta({ dueDate: e.target.value })}
-                className="text-[12px] bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
+                className="text-xs bg-background border border-border rounded px-2 py-0.5 outline-none cursor-pointer"
               />
             </div>
           </div>
@@ -559,8 +559,8 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {isChecklist && (
           <div className="flex-none px-4 py-3 border-b border-border max-h-[50vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[12px] font-semibold text-foreground">Items</span>
-              <span className="text-[11px] text-muted-foreground">{doneCount}/{checklistItems.length} completed</span>
+              <span className="text-xs font-semibold text-foreground">Items</span>
+              <span className="text-2xs text-muted-foreground">{doneCount}/{checklistItems.length} completed</span>
             </div>
             <div className="space-y-1">
               {checklistItems.map((item, idx) => (
@@ -604,7 +604,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             </div>
             <button
               onClick={addChecklistItem}
-              className="mt-2 flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+              className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <Plus className="w-3.5 h-3.5" /> Add item
             </button>
@@ -626,14 +626,14 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   className="rounded-lg border-2 p-2.5"
                   style={{ borderColor: `${color}40`, background: `${color}08` }}
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color }}>
+                  <div className="text-2xs font-bold uppercase tracking-widest mb-1.5" style={{ color }}>
                     {label}
                   </div>
                   <textarea
                     value={swot[key]}
                     onChange={(e) => setSwot((prev) => ({ ...prev, [key]: e.target.value }))}
                     onBlur={() => saveSwot(swot)}
-                    className="w-full bg-transparent outline-none text-[12px] leading-relaxed resize-none min-h-[72px] text-foreground/80"
+                    className="w-full bg-transparent outline-none text-xs leading-relaxed resize-none min-h-[72px] text-foreground/80"
                     placeholder={`Enter ${label.toLowerCase()}…`}
                   />
                 </div>
@@ -654,7 +654,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 >
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[12px] text-muted-foreground min-w-[44px] text-center">
+                <span className="text-xs text-muted-foreground min-w-[44px] text-center">
                   {Math.round(imgZoom * 100)}%
                 </span>
                 <button
@@ -728,7 +728,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               {canDownload && (
                 <button
                   onClick={handleDownload}
-                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" /> Download
                 </button>

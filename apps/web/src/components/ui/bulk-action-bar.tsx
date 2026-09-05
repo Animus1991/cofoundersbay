@@ -54,7 +54,7 @@ export function BulkActionBar({
         >
           {/* Count + clear */}
           <div className="flex items-center gap-2 pr-3 border-r border-border/60">
-            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+            <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-primary text-primary-foreground text-2xs font-bold">
               {count}
             </span>
             <span className="text-sm font-medium text-foreground whitespace-nowrap">

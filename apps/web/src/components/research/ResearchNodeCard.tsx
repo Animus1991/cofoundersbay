@@ -555,7 +555,7 @@ export function ResearchNodeCard({
         <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-1.5">
             <Spline className="w-3.5 h-3.5" style={{ color: '#EC4899' }} />
-            <span className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
+            <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-accessible">
@@ -667,21 +667,21 @@ export function ResearchNodeCard({
               }}
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              className="w-full bg-transparent outline-none resize-none text-[12px] leading-relaxed"
+              className="w-full bg-transparent outline-none resize-none text-xs leading-relaxed"
               style={{ color: stickyColor.text, minHeight: '60px' }}
               autoFocus
               placeholder="Write something…"
             />
           ) : (
             <p
-              className="text-[12px] leading-relaxed whitespace-pre-wrap cursor-text min-h-[40px]"
+              className="text-xs leading-relaxed whitespace-pre-wrap cursor-text min-h-[40px]"
               style={{ color: stickyColor.text }}
             >
               {node.content ? stripHtml(node.content) : <span className="opacity-40 italic">Double-click to edit…</span>}
             </p>
           )}
           {node.title && (
-            <p className="text-[10px] font-semibold mt-2 uppercase tracking-wide opacity-60" style={{ color: stickyColor.text }}>
+            <p className="text-2xs font-semibold mt-2 uppercase tracking-wide opacity-60" style={{ color: stickyColor.text }}>
               {node.title}
             </p>
           )}
@@ -732,7 +732,7 @@ export function ResearchNodeCard({
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon className="w-4 h-4 shrink-0" style={{ color: nodeColor }} />
           <span
-            className="text-[10px] font-semibold uppercase tracking-wide"
+            className="text-2xs font-semibold uppercase tracking-wide"
             style={{ color: nodeColor }}
           >
             {typeLabel}
@@ -755,21 +755,21 @@ export function ResearchNodeCard({
             >
               <button
                 onClick={() => { onDoubleClick(); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 <BookOpen className="w-3.5 h-3.5 text-muted-foreground" /> Open
               </button>
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-accessible hover:bg-primary/10 w-full text-left transition-colors"
                 >
                   <Rocket className="w-3.5 h-3.5" /> Open in Builder
                 </button>
               )}
               <button
                 onClick={() => { onUpdate({ locked: !node.locked }); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.locked
                   ? <><Unlock className="w-3.5 h-3.5 text-muted-foreground" /> Unlock</>
@@ -778,7 +778,7 @@ export function ResearchNodeCard({
               </button>
               <button
                 onClick={() => { onUpdate({ collapsed: !node.collapsed }); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 {node.collapsed
                   ? <><Eye className="w-3.5 h-3.5 text-muted-foreground" /> Expand</>
@@ -787,14 +787,14 @@ export function ResearchNodeCard({
               </button>
               <button
                 onClick={() => { setShowColorPicker(true); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
               >
                 <Palette className="w-3.5 h-3.5 text-muted-foreground" /> Color
               </button>
               {onCommentClick && (
                 <button
                   onClick={() => { onCommentClick(); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-foreground hover:bg-secondary w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-secondary w-full text-left transition-colors"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-muted-foreground" /> Comments
                 </button>
@@ -802,7 +802,7 @@ export function ResearchNodeCard({
               <div className="my-1 border-t border-border/60" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-[12px] text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-accessible hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
                 <Trash2 className="w-3.5 h-3.5" /> Delete
@@ -858,16 +858,16 @@ export function ResearchNodeCard({
                 {items.slice(0, 4).map((item) => (
                   <div key={item.id} className="flex items-center gap-1.5">
                     <div className={cn('w-3 h-3 rounded border shrink-0', item.checked ? 'bg-primary border-primary' : 'border-muted-foreground/40')} />
-                    <span className={cn('text-[11px] truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
+                    <span className={cn('text-2xs truncate', item.checked ? 'line-through text-muted-foreground/50' : 'text-foreground/70')}>
                       {item.text || 'Untitled item'}
                     </span>
                   </div>
                 ))}
-                {items.length > 4 && <p className="text-[10px] text-muted-foreground/50">+{items.length - 4} more</p>}
+                {items.length > 4 && <p className="text-2xs text-muted-foreground/50">+{items.length - 4} more</p>}
                 {items.length > 0 && (
-                  <p className="text-[10px] text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
+                  <p className="text-2xs text-muted-foreground/50 mt-1">{done}/{items.length} done</p>
                 )}
-                {items.length === 0 && <p className="text-[11px] text-muted-foreground/50 italic">Empty checklist</p>}
+                {items.length === 0 && <p className="text-2xs text-muted-foreground/50 italic">Empty checklist</p>}
               </div>
             );
           })()}
@@ -882,20 +882,20 @@ export function ResearchNodeCard({
             const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600' };
             return (
               <div className="flex flex-wrap gap-1 items-center">
-                <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
+                <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>
                   {status.replace('_', ' ')}
                 </span>
-                <span className={cn('text-[10px] font-semibold', PRIORITY_COLORS[priority] || PRIORITY_COLORS['medium'])}>
+                <span className={cn('text-2xs font-semibold', PRIORITY_COLORS[priority] || PRIORITY_COLORS['medium'])}>
                   ● {priority}
                 </span>
-                {dueDate && <span className="text-[10px] text-muted-foreground">Due {dueDate}</span>}
+                {dueDate && <span className="text-2xs text-muted-foreground">Due {dueDate}</span>}
               </div>
             );
           })()}
 
           {/* Note/document content preview */}
           {contentPreview && !isImage && !isDoc && !isChecklist && !isTask && effectiveType !== 'link' && effectiveType !== 'reference' && node.type !== 'link' && node.type !== 'reference' && (
-            <p className="text-[11px] text-foreground/70 leading-relaxed line-clamp-4 whitespace-pre-wrap">
+            <p className="text-2xs text-foreground/70 leading-relaxed line-clamp-4 whitespace-pre-wrap">
               {contentPreview}
             </p>
           )}
@@ -905,11 +905,11 @@ export function ResearchNodeCard({
             <div className="flex items-center gap-2 py-2 px-2 rounded-lg bg-secondary mb-1.5">
               <Icon className="w-6 h-6 opacity-70 shrink-0" style={{ color: nodeColor }} />
               <div className="min-w-0">
-                <p className="text-[11px] text-muted-foreground truncate">
+                <p className="text-2xs text-muted-foreground truncate">
                   {node.upload?.mimeType ?? 'Document'}
                 </p>
                 {node.upload?.sizeBytes && (
-                  <p className="text-[10px] text-muted-foreground/60">{fmtSize(node.upload.sizeBytes)}</p>
+                  <p className="text-2xs text-muted-foreground/60">{fmtSize(node.upload.sizeBytes)}</p>
                 )}
               </div>
             </div>
@@ -917,14 +917,14 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-[11px] text-primary-accessible truncate underline">{node.url}</p>
+            <p className="text-2xs text-primary-accessible truncate underline">{node.url}</p>
           )}
 
           {/* Reference preview */}
           {(effectiveType === 'reference' || node.type === 'reference') && (
             <div className="flex items-center gap-2 py-1.5 px-2 rounded-lg bg-secondary">
               <Users className="w-5 h-5 text-muted-foreground shrink-0" />
-              <span className="text-[11px] text-muted-foreground truncate">Entity reference</span>
+              <span className="text-2xs text-muted-foreground truncate">Entity reference</span>
             </div>
           )}
 
@@ -934,13 +934,13 @@ export function ResearchNodeCard({
               {node.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}
-                  className="text-[9px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground"
+                  className="text-2xs px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground"
                 >
                   {tag}
                 </span>
               ))}
               {node.tags.length > 3 && (
-                <span className="text-[9px] text-muted-foreground">+{node.tags.length - 3}</span>
+                <span className="text-2xs text-muted-foreground">+{node.tags.length - 3}</span>
               )}
             </div>
           )}
@@ -953,7 +953,7 @@ export function ResearchNodeCard({
               title="Linked to a Builder document — click to open Builder"
             >
               <Rocket className="w-2.5 h-2.5 text-primary-accessible" />
-              <span className="text-[9px] font-medium text-primary-accessible">Linked to Builder</span>
+              <span className="text-2xs font-medium text-primary-accessible">Linked to Builder</span>
             </div>
           )}
 
@@ -974,12 +974,12 @@ export function ResearchNodeCard({
               }}
               onClick={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
-              className="mt-2 w-full text-[12px] font-medium text-foreground leading-snug bg-transparent border-b border-primary outline-none px-0 py-0.5"
+              className="mt-2 w-full text-xs font-medium text-foreground leading-snug bg-transparent border-b border-primary outline-none px-0 py-0.5"
               autoFocus
             />
           ) : (
             <p
-              className="mt-2 text-[12px] font-medium text-foreground leading-snug line-clamp-2 cursor-text"
+              className="mt-2 text-xs font-medium text-foreground leading-snug line-clamp-2 cursor-text"
               onDoubleClick={(e) => {
                 if (node.locked) return;
                 e.stopPropagation();
@@ -997,7 +997,7 @@ export function ResearchNodeCard({
       {node.collapsed && (
         <div className="px-2.5 pb-2 flex items-center gap-1.5">
           <Minimize2 className="w-3 h-3 text-muted-foreground" />
-          <span className="text-[11px] text-muted-foreground truncate">
+          <span className="text-2xs text-muted-foreground truncate">
             {node.title || 'Untitled'}
           </span>
         </div>

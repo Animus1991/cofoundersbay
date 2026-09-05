@@ -335,11 +335,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                             <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{member.headline}</p>
                           )}
                           <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge variant="outline" className="text-[10px] h-5">
+                            <Badge variant="outline" className="text-2xs h-5">
                               {member.cohortName}
                             </Badge>
                             {member.location && (
-                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <span className="flex items-center gap-1 text-2xs text-muted-foreground">
                                 <MapPin className="h-2.5 w-2.5" />
                                 {member.location}
                               </span>

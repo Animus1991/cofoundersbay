@@ -150,7 +150,7 @@ function ResultCard({ result }: { result: SearchResult }) {
                 <h3 className="font-medium text-foreground group-hover:text-primary-accessible transition-colors truncate">
                   {result.title}
                 </h3>
-                <Badge variant="secondary" className="text-[10px] shrink-0">
+                <Badge variant="secondary" className="text-2xs shrink-0">
                   <BilingualText
                     en={resultTypeEn(result.type as SearchResultTypeKey)}
                     el={resultTypeEl(result.type as SearchResultTypeKey)}
@@ -192,12 +192,12 @@ function ResultCard({ result }: { result: SearchResult }) {
               {result.tags && result.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {result.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-[10px] h-5">
+                    <Badge key={tag} variant="outline" className="text-2xs h-5">
                       {tag}
                     </Badge>
                   ))}
                   {result.tags.length > 3 && (
-                    <Badge variant="outline" className="text-[10px] h-5">
+                    <Badge variant="outline" className="text-2xs h-5">
                       +{result.tags.length - 3}
                     </Badge>
                   )}
@@ -356,7 +356,7 @@ export default function SearchPage() {
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               {!query && (
-                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">
+                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground font-mono">
                   <Command className="h-2.5 w-2.5" />K
                 </kbd>
               )}
@@ -385,7 +385,7 @@ export default function SearchPage() {
                     setRecentSearches([]);
                     try { localStorage.removeItem(RECENT_SEARCHES_KEY); } catch {}
                   }}
-                  className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <BilingualText en={searchEn('clear')} el={searchEl('clear')} />
                 </button>
@@ -440,7 +440,7 @@ export default function SearchPage() {
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
                           variant={isActive ? 'secondary' : 'outline'}
-                          className="ml-1 h-4 px-1 text-[10px]"
+                          className="ml-1 h-4 px-1 text-2xs"
                         >
                           {count}
                         </Badge>

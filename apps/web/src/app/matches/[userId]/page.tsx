@@ -23,7 +23,7 @@ import {
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+    <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {label}
     </p>
@@ -39,7 +39,7 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
         <span className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {item.label}
         </span>
-        <span className="text-[10px] font-semibold tabular-nums text-foreground"
+        <span className="text-2xs font-semibold tabular-nums text-foreground"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {item.score}%
         </span>
@@ -84,7 +84,7 @@ function TraitChip({ item }: { item: MatchVsStrength }) {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border bg-card">
       <span style={{ color: '#4ADE80', fontSize: 10 }}>■</span>
-      <span className="text-[11px] font-medium text-foreground"
+      <span className="text-2xs font-medium text-foreground"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}>
         {item.label}
       </span>
@@ -376,7 +376,7 @@ export default function MatchDetailPage() {
                 <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
                   {sourceProfile.displayName}
                 </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
+                <span className="text-2xs text-muted-foreground capitalize"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {sourceProfile.role}
                 </span>
@@ -400,12 +400,12 @@ export default function MatchDetailPage() {
                 <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
                   {targetProfile.displayName}
                 </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
+                <span className="text-2xs text-muted-foreground capitalize"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {targetProfile.role}
                 </span>
                 <Link href={`/profiles/${targetProfile.id}`}
-                  className="flex items-center gap-0.5 text-[10px] mt-0.5 transition-colors"
+                  className="flex items-center gap-0.5 text-2xs mt-0.5 transition-colors"
                   style={{ color: '#22D3EE' }}>
                   <ExternalLink className="h-2.5 w-2.5" />
                   View profile
@@ -416,7 +416,7 @@ export default function MatchDetailPage() {
 
           {/* Confidence indicator */}
           <div className="flex flex-col items-center gap-1.5 mt-4">
-            <span className="text-[10px] text-muted-foreground"
+            <span className="text-2xs text-muted-foreground"
               style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {overall.confidence}% CONFIDENCE
             </span>

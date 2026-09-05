@@ -97,7 +97,7 @@ export function ThemeSwitcher() {
               {idx === 3 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                     Custom Themes
                   </DropdownMenuLabel>
                 </>
@@ -116,7 +116,7 @@ export function ThemeSwitcher() {
                 </div>
                 <div className="flex flex-col gap-0">
                   <span className="text-sm font-medium leading-tight">{theme.label}</span>
-                  <span className="text-[11px] text-muted-foreground leading-tight">{theme.description}</span>
+                  <span className="text-2xs text-muted-foreground leading-tight">{theme.description}</span>
                 </div>
                 {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary-accessible shrink-0" />}
               </DropdownMenuItem>

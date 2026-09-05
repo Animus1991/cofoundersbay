@@ -9,9 +9,6 @@ import { useSidebar } from './SidebarContext';
 import { resolvePageHeader } from '@/lib/page-registry';
 import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
-import { bilingualAria } from '@/lib/i18n/format';
-import { commonEn, commonEl } from '@/lib/i18n/strings-common';
-import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
 
@@ -48,20 +45,10 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const { expanded, mounted } = useSidebar();
-  const { primary: primaryLang } = useLanguagePreference();
-  const skipLabel =
-    primaryLang === 'el' ? commonEl('skip_to_content') : commonEn('skip_to_content');
 
   return (
     <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
-      {/* Skip link — first focusable element; lets keyboard users bypass nav (WCAG 2.4.1) */}
-      <a
-        href="#main-content"
-        className="skip-to-content"
-        aria-label={bilingualAria(commonEn('skip_to_content'), commonEl('skip_to_content'))}
-      >
-        {skipLabel}
-      </a>
+      {/* Skip link lives once in app/layout.tsx so it is never duplicated in the tab order. */}
 
       {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
       <MemoSideNav />

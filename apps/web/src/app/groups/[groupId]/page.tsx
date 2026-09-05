@@ -171,11 +171,11 @@ function PostCard({
             <div key={c.id} className="flex items-start gap-2.5">
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={c.author.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-[10px]">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                 <span className="text-xs font-semibold">{c.author.displayName}</span>
-                <span className="ml-2 text-[10px] text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
+                <span className="ml-2 text-2xs text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
                 <p className="mt-0.5 text-xs text-foreground/90">{c.content}</p>
               </div>
             </div>
@@ -508,7 +508,7 @@ export default function GroupDetailPage() {
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible text-[10px] font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible text-2xs font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -530,12 +530,12 @@ export default function GroupDetailPage() {
                       <div key={m.userId} className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 shrink-0">
                           <AvatarImage src={m.user?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-[10px]">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                          <AvatarFallback className="text-2xs">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-[10px] text-primary-accessible capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary-accessible capitalize">{m.role}</p>
                           )}
                         </div>
                       </div>
@@ -576,7 +576,7 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-[10px] text-primary-accessible capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary-accessible capitalize font-medium">{m.role}</span>
                     )}
                   </div>
                 </div>

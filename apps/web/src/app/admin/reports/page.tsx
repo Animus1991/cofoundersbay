@@ -124,7 +124,7 @@ function ReportCard({ report }: { report: Report }) {
               <span className="flex items-center gap-1">
                 <Avatar className="icon-sm">
                   <AvatarImage src={report.reporterAvatar} />
-                  <AvatarFallback className="text-[8px]">{report.reporterName[0]}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{report.reporterName[0]}</AvatarFallback>
                 </Avatar>
                 {report.reporterName}
               </span>

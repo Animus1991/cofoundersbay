@@ -93,12 +93,12 @@ function ScoreBadge({ score }: { score: number }) {
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className="absolute text-[11px] font-black tabular-nums"
+        <span className="absolute text-2xs font-black tabular-nums"
           style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
           {score}%
         </span>
       </div>
-      <span className="text-[8px] font-bold tracking-wider"
+      <span className="text-2xs font-bold tracking-wider"
         style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
         {label}
       </span>

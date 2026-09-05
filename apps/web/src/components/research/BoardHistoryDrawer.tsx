@@ -350,7 +350,7 @@ export function BoardHistoryDrawer({
                                 <div className="flex items-center gap-1">
                                   <Avatar className="h-3.5 w-3.5">
                                     <AvatarImage src={snap.createdBy.avatarUrl} />
-                                    <AvatarFallback className="text-[8px]">
+                                    <AvatarFallback className="text-2xs">
                                       {snap.createdBy.displayName.charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>

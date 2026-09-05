@@ -468,14 +468,14 @@ export default function ProgramsPage() {
                 return (
                   <div key={p.id} className="shrink-0 rounded-xl border border-border/60 bg-card p-3 w-56 hover:border-primary/30 transition-colors cursor-pointer" onClick={() => setApplyTarget(p)}>
                     <p className="text-xs font-semibold text-foreground line-clamp-1">{p.title}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
+                    <p className="text-2xs text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
                     <div className="mt-2 flex items-center justify-between">
                       {d !== null && d >= 0 ? (
-                        <span className={cn('text-[10px] font-medium', d <= 3 ? cn(STATUS.danger.icon) : cn(STATUS.warning.icon))}>
+                        <span className={cn('text-2xs font-medium', d <= 3 ? cn(STATUS.danger.icon) : cn(STATUS.warning.icon))}>
                           {d === 0 ? 'Today!' : `${d}d left`}
                         </span>
                       ) : <span />}
-                      <Badge variant="outline" className={cn('text-[9px] px-1.5 capitalize border', STATUS[PROGRAM_STATUS_TONE[p.status] ?? 'neutral'].chip)}>{p.status}</Badge>
+                      <Badge variant="outline" className={cn('text-2xs px-1.5 capitalize border', STATUS[PROGRAM_STATUS_TONE[p.status] ?? 'neutral'].chip)}>{p.status}</Badge>
                     </div>
                   </div>
                 );

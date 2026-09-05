@@ -135,22 +135,22 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
           <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
           <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
           <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
           <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}
@@ -194,7 +194,7 @@ function DiffDetailDialog({
               </p>
               {diff.added.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-emerald-50 border border-emerald-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -208,7 +208,7 @@ function DiffDetailDialog({
               </p>
               {diff.removed.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-red-50 border border-red-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate line-through text-muted-foreground">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -223,11 +223,11 @@ function DiffDetailDialog({
               {diff.modified.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-amber-50 border border-amber-100 space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                    <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                     <span className="text-xs font-medium truncate">{n.title ?? '(untitled)'}</span>
                   </div>
                   {n.changes.map((c, i) => (
-                    <div key={i} className="text-[10px] text-muted-foreground pl-2">
+                    <div key={i} className="text-2xs text-muted-foreground pl-2">
                       <span className="font-medium capitalize">{c.field}:</span>{' '}
                       <span className="line-through">{String(c.before ?? '–').slice(0, 30)}</span>
                       {' → '}
@@ -247,7 +247,7 @@ function DiffDetailDialog({
               {diff.moved.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-blue-50 border border-blue-100">
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     ({Math.round(n.before.posX)}, {Math.round(n.before.posY)}) → ({Math.round(n.after.posX)}, {Math.round(n.after.posY)})
                   </div>
                 </div>
@@ -261,12 +261,12 @@ function DiffDetailDialog({
                 <ArrowRight className="h-3 w-3" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
                   + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
                   − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
@@ -449,7 +449,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                             <div className="flex items-center gap-1">
                               <Avatar className="h-3.5 w-3.5">
                                 <AvatarImage src={snap.createdBy.avatarUrl} />
-                                <AvatarFallback className="text-[8px]">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-2xs">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
                               </Avatar>
                               <span className="text-xs text-muted-foreground">{snap.createdBy.displayName}</span>
                             </div>
@@ -624,7 +624,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium truncate">{v.label ?? 'Version'}</p>
                   {v.branchName && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                    <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0">
                       <GitBranch className="h-2.5 w-2.5 mr-0.5" />{v.branchName}
                     </Badge>
                   )}
@@ -795,8 +795,8 @@ function BranchesTab({ boardId }: { boardId: string }) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">{b.name}</p>
-                {b.isDefault && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">default</Badge>}
-                <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4', branchStatusColor(b.status))}>
+                {b.isDefault && <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>}
+                <Badge variant="outline" className={cn('text-2xs px-1.5 py-0 h-4', branchStatusColor(b.status))}>
                   {b.status}
                 </Badge>
               </div>

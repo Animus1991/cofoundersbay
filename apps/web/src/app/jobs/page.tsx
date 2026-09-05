@@ -121,10 +121,10 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
           <div className="flex flex-wrap gap-1.5">
             {['React', 'TypeScript', 'Node.js'].slice(0, 3).map((skill) => (
-              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{skill}</span>
+              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">{skill}</span>
             ))}
           </div>
-          <span className="text-[11px] text-muted-foreground">Posted today</span>
+          <span className="text-2xs text-muted-foreground">Posted today</span>
         </div>
       </CardContent>
     </Card>
@@ -294,7 +294,7 @@ export default function JobsPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>

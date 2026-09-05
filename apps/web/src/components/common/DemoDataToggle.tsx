@@ -30,7 +30,7 @@ export function DemoDataToggle({ className }: { className?: string }) {
             size="sm"
             onClick={toggleDemoData}
             className={cn(
-              'h-7 gap-1 px-2 text-[11px] font-medium text-muted-foreground',
+              'h-7 gap-1 px-2 text-2xs font-medium text-muted-foreground',
               showDemoData
                 ? 'bg-transparent hover:bg-secondary/60'
                 : 'border-dashed hover:text-foreground hover:border-solid',
@@ -55,7 +55,7 @@ export function DemoDataToggle({ className }: { className?: string }) {
           <p className="text-xs font-medium mb-1">
             {showDemoData ? 'Sample Data: ON' : 'Sample Data: OFF'}
           </p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             {showDemoData
               ? 'Sample data is on. Changes are not saved. Click to hide sample data.'
               : 'Click to show sample data across all pages'}

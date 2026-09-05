@@ -214,7 +214,7 @@ function MilestoneCard({
                     style={{ width: `${item.progress}%` }}
                   />
                 </div>
-                <span className="min-w-[2.5rem] text-right text-[11px] tabular-nums text-muted-foreground">
+                <span className="min-w-[2.5rem] text-right text-2xs tabular-nums text-muted-foreground">
                   {item.progress}%
                 </span>
               </div>
@@ -224,18 +224,18 @@ function MilestoneCard({
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={cn('h-5 gap-1 rounded-full px-2 text-[10px] font-medium border', statusColors.chip)}
+                className={cn('h-5 gap-1 rounded-full px-2 text-2xs font-medium border', statusColors.chip)}
               >
                 {status.label}
               </Badge>
 
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                 <span className={cn('h-1.5 w-1.5 rounded-full', PRIORITY_DOT[priority.tone])} />
                 {priority.label}
               </div>
 
               {item.category && (
-                <span className="rounded-full border border-border/50 px-2 py-0.5 text-[10px] text-muted-foreground">
+                <span className="rounded-full border border-border/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {CATEGORY_LABELS[item.category] ?? item.category}
                 </span>
               )}
@@ -243,7 +243,7 @@ function MilestoneCard({
               {item.dueDate && (
                 <div
                   className={cn(
-                    'flex items-center gap-1 text-[11px]',
+                    'flex items-center gap-1 text-2xs',
                     overdue ? cn('font-medium', STATUS.danger.icon) : dueSoon ? cn('font-medium', STATUS.warning.icon) : 'text-muted-foreground',
                   )}
                 >
@@ -253,7 +253,7 @@ function MilestoneCard({
               )}
 
               {item.collaborator && (
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                   <Users className="h-3 w-3" />
                   {item.collaborator.displayName}
                 </div>
@@ -285,7 +285,7 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
         <div key={s.label} className="rounded-xl border border-border/60 bg-card/70 px-4 py-3 text-center">
           <s.icon className={cn('mx-auto mb-1 h-4 w-4', colors.icon)} />
           <p className={cn('text-xl font-semibold tabular-nums', colors.icon)}>{s.value}</p>
-          <p className="text-[11px] text-muted-foreground">{s.label}</p>
+          <p className="text-2xs text-muted-foreground">{s.label}</p>
         </div>
       );})}
     </div>
@@ -430,7 +430,7 @@ export default function MilestonesPage() {
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
                 className={cn(
-                  'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
+                  'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                   categoryFilter === cat
                     ? 'border-primary/40 bg-primary/10 text-primary-accessible'
                     : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
@@ -460,7 +460,7 @@ export default function MilestonesPage() {
                 <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
-                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px]',
+                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
                     statusFilter === tab.value ? 'bg-primary/20 text-primary-accessible' : 'bg-muted text-muted-foreground',
                   )}>
                     {tab.count}

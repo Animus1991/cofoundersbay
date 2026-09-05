@@ -307,7 +307,7 @@ export function CollabToolbar({
               <GitBranch className="h-3.5 w-3.5 mr-1.5" />
               <span className="text-xs hidden sm:inline">Variants</span>
               {openBranches.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[9px] text-primary-foreground flex items-center justify-center font-medium">
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-2xs text-primary-foreground flex items-center justify-center font-medium">
                   {openBranches.length}
                 </span>
               )}
@@ -330,7 +330,7 @@ export function CollabToolbar({
               {openProposals.length > 0 && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-4 px-1.5 text-[10px] bg-orange-100 text-orange-700 border-orange-200"
+                  className="ml-1 h-4 px-1.5 text-2xs bg-orange-100 text-orange-700 border-orange-200"
                 >
                   {openProposals.length}
                 </Badge>

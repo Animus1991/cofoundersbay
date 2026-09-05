@@ -153,7 +153,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="font-semibold text-sm truncate">{provider.providerName}</p>
                 {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />}
-                {featured && <Badge className="text-[10px] bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
+                {featured && <Badge className="text-2xs bg-primary/10 text-primary-accessible border-primary/20 border">Featured</Badge>}
               </div>
               <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
@@ -180,10 +180,10 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         {/* Specialties */}
         <div className="flex flex-wrap gap-1">
           {provider.specialties.slice(0, 3).map(s => (
-            <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+            <Badge key={s} variant="secondary" className="text-2xs">{s}</Badge>
           ))}
           {provider.specialties.length > 3 && (
-            <Badge variant="secondary" className="text-[10px]">+{provider.specialties.length - 3}</Badge>
+            <Badge variant="secondary" className="text-2xs">+{provider.specialties.length - 3}</Badge>
           )}
         </div>
 
@@ -235,7 +235,7 @@ function StatsBar() {
             <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
             <div>
               <p className="text-xs font-bold">{s.value}</p>
-              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+              <p className="text-2xs text-muted-foreground">{s.label}</p>
             </div>
           </CardContent>
         </Card>

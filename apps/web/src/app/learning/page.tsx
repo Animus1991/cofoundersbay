@@ -181,14 +181,14 @@ function ResourceCard({ resource }: { resource: Resource }) {
               {resource.title}
             </h3>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
+              <Badge variant="outline" className={cn('text-2xs h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
                 {typeConfig.label}
               </Badge>
-              <Badge variant="secondary" className={cn('text-[10px] h-4 px-1.5', difficultyConfig.color)}>
+              <Badge variant="secondary" className={cn('text-2xs h-4 px-1.5', difficultyConfig.color)}>
                 {difficultyConfig.label}
               </Badge>
               {resource.isFeatured && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary-accessible">
+                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-accessible">
                   Featured
                 </Badge>
               )}
@@ -209,7 +209,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
         {resource.tags && resource.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {resource.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{tag}</span>
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">{tag}</span>
             ))}
           </div>
         )}
@@ -217,7 +217,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
         <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-auto">
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
               {resource.duration && (
                 <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{resource.duration}</span>
               )}
@@ -248,17 +248,17 @@ function LearningPathCard({ path }: { path: LearningPath }) {
           <Icon className="h-4.5 w-4.5 text-foreground" />
         </div>
         {path.progress > 0 && (
-          <Badge variant="secondary" className="text-[10px] bg-background/60">{path.progress}% done</Badge>
+          <Badge variant="secondary" className="text-2xs bg-background/60">{path.progress}% done</Badge>
         )}
       </div>
       <h3 className="font-semibold text-sm text-foreground mb-1">{path.title}</h3>
-      <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
+      <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
+      <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
         <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{path.steps} modules</span>
         <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary-accessible">
+      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-accessible">
         {path.progress > 0 ? 'Continue path' : 'Start path'}
         <ChevronRight className="h-3 w-3" />
       </div>
@@ -389,7 +389,7 @@ export default function LearningPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -423,7 +423,7 @@ export default function LearningPage() {
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recommended for you
             </h2>
-            <Badge variant="secondary" className="text-[10px] capitalize">{userRole}</Badge>
+            <Badge variant="secondary" className="text-2xs capitalize">{userRole}</Badge>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (

@@ -100,9 +100,9 @@ function ConversationItem({
             )}>
               {conversation.recipientName}
             </span>
-            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-[9px] leading-tight" />
+            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-2xs leading-tight" />
           </div>
-          <span className="text-[11px] text-muted-foreground flex-shrink-0 tabular-nums">
+          <span className="text-2xs text-muted-foreground flex-shrink-0 tabular-nums">
             {formatTime(conversation.lastMessageTime)}
           </span>
         </div>
@@ -114,7 +114,7 @@ function ConversationItem({
             {conversation.lastMessage || <span className="italic">No messages yet</span>}
           </p>
           {conversation.unreadCount > 0 && (
-            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground flex-shrink-0">
+            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground flex-shrink-0">
               {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
             </span>
           )}

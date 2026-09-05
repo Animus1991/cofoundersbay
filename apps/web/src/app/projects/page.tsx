@@ -384,7 +384,7 @@ export default function ProjectsPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground truncate">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>

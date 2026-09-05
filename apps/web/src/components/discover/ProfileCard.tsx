@@ -74,7 +74,7 @@ function ProfileCompletenessBar({ score }: { score: number }) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-[10px] text-muted-foreground font-medium">{score}%</span>
+      <span className="text-2xs text-muted-foreground font-medium">{score}%</span>
     </div>
   );
 }

@@ -237,10 +237,10 @@ function MessageBubble({
         </div>
 
         <div className={cn('flex items-center gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
-          <span className="text-[10px] text-muted-foreground">{formatTime(message.timestamp)}</span>
+          <span className="text-2xs text-muted-foreground">{formatTime(message.timestamp)}</span>
           {isOwn && (
             <span className="text-muted-foreground">
-              {message.status === 'sending' && <span className="text-[10px]" title="Sending">•</span>}
+              {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
               {message.status === 'sent' && <Check className="h-3 w-3" />}
               {message.status === 'delivered' && <CheckCheck className="h-3 w-3" />}
               {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary-accessible" />}

@@ -139,12 +139,12 @@ export function ResearchGroupFrame({
             }}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 text-[12px] font-bold bg-transparent outline-none border-b-2 px-0 py-0"
+            className="flex-1 min-w-0 text-xs font-bold bg-transparent outline-none border-b-2 px-0 py-0"
             style={{ color: group.color, borderColor: group.color }}
           />
         ) : (
           <span
-            className="flex-1 min-w-0 text-[12px] font-bold uppercase tracking-wider truncate cursor-text"
+            className="flex-1 min-w-0 text-xs font-bold uppercase tracking-wider truncate cursor-text"
             style={{ color: group.color }}
             onDoubleClick={(e) => {
               if (group.locked) return;
@@ -227,7 +227,7 @@ export function ResearchGroupFrame({
       {/* Collapsed body hint */}
       {group.collapsed && (
         <div className="px-3 pb-2">
-          <span className="text-[10px] text-muted-foreground italic">Group collapsed — nodes still visible</span>
+          <span className="text-2xs text-muted-foreground italic">Group collapsed — nodes still visible</span>
         </div>
       )}
 

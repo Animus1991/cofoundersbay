@@ -340,7 +340,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                     <div className="flex items-center gap-2 mb-3">
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={proposal.createdBy.avatarUrl} />
-                        <AvatarFallback className="text-[9px]">
+                        <AvatarFallback className="text-2xs">
                           {(proposal.createdBy.displayName ?? 'U').charAt(0)}
                         </AvatarFallback>
                       </Avatar>

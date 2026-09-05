@@ -36,7 +36,7 @@ export default function AuthError({
             </p>
           </div>
           {process.env.NODE_ENV !== 'production' && error?.message && (
-            <pre className="rounded-lg bg-muted p-3 text-left text-[11px] text-muted-foreground overflow-auto max-h-32">
+            <pre className="rounded-lg bg-muted p-3 text-left text-2xs text-muted-foreground overflow-auto max-h-32">
               {error.message}
             </pre>
           )}

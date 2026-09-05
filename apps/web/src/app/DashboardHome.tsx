@@ -129,7 +129,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <span className="text-xs font-bold tabular-nums" style={{ color: tierColor }}>
           {score}%
         </span>
-        <span className="text-[10px] text-muted-foreground">match</span>
+        <span className="text-2xs text-muted-foreground">match</span>
       </div>
     </Link>
   );
@@ -152,9 +152,9 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
         <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
       </div>
       {mentor.isFree ? (
-        <span className="shrink-0 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
+        <span className="shrink-0 text-2xs font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
       ) : mentor.hourlyRate ? (
-        <span className="shrink-0 text-[10px] text-muted-foreground">${mentor.hourlyRate}/h</span>
+        <span className="shrink-0 text-2xs text-muted-foreground">${mentor.hourlyRate}/h</span>
       ) : null}
     </Link>
   );
@@ -208,7 +208,7 @@ function ActivityRow({
         <p className="truncate text-sm text-foreground">{item.title}</p>
         {item.author && <p className="text-xs text-muted-foreground">{item.author}</p>}
       </div>
-      <span className="shrink-0 text-[11px] text-muted-foreground">{item.timeAgo}</span>
+      <span className="shrink-0 text-2xs text-muted-foreground">{item.timeAgo}</span>
     </Link>
   );
 }
@@ -621,13 +621,13 @@ export function DashboardHome() {
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.activeProfiles?.toLocaleString() ?? '—'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Active Members</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Active Members</p>
                   </div>
                   <div className="rounded-lg bg-secondary/40 p-3 text-center">
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.matchesThisWeek ?? '—'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Matches/Week</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Matches/Week</p>
                   </div>
                 </div>
                 {statsData?.trendPercent !== undefined && statsData.trendPercent > 0 && (
@@ -704,7 +704,7 @@ export function DashboardHome() {
                         <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-red-500' : m.priority === 'medium' ? 'bg-amber-500' : 'bg-muted-foreground')} />
                         <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
                         {m.dueDate && (
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <span className="shrink-0 text-2xs text-muted-foreground">
                             {new Date(m.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
                           </span>
                         )}

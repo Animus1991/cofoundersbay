@@ -48,14 +48,14 @@ export function MobileBottomNav() {
             href={tab.path}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-2xs font-medium tap-target',
               isActive ? 'text-primary-accessible' : 'text-muted-foreground',
             )}
           >
             <span className="relative">
               <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
               {badge > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}
@@ -71,7 +71,7 @@ export function MobileBottomNav() {
         aria-label="More destinations"
         aria-expanded={mobileNavOpen}
         className={cn(
-          'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+          'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-2xs font-medium tap-target',
           mobileNavOpen ? 'text-primary-accessible' : 'text-muted-foreground',
         )}
       >
@@ -88,7 +88,7 @@ export function MobileBottomNav() {
             href={tab.path}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
+              'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-2xs font-medium tap-target',
               isActive ? 'text-primary-accessible' : 'text-muted-foreground',
             )}
           >

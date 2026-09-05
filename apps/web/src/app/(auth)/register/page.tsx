@@ -221,7 +221,7 @@ export default function RegisterPage() {
                       }`}
                     >
                       <span
-                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
+                        className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold ${
                           active ? 'bg-primary/15 text-primary-accessible' : 'bg-background text-muted-foreground'
                         }`}
                       >

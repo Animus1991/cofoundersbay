@@ -233,26 +233,26 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium shrink-0', STATUS[status.tone].chip)}>
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium shrink-0', STATUS[status.tone].chip)}>
                 <StatusIcon className="h-3 w-3" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS[type.tone].chip)}>
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[type.tone].chip)}>
                 <TypeIcon className="h-3 w-3" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <span className="text-2xs text-muted-foreground flex items-center gap-1">
                   <DollarSign className="h-3 w-3" /> €{review.agreedFee}
                 </span>
               )}
               {!review.isPaid && (
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5">Free</Badge>
+                <Badge variant="outline" className="text-2xs h-4 px-1.5">Free</Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className={cn('text-[11px] flex items-center gap-1', STATUS.warning.icon)}>
+                <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
                   <Clock className="h-3 w-3" />
                   Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
@@ -298,7 +298,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               {review.strengthsJson || review.improvementsJson ? (
                 <button
                   onClick={() => setExpanded((v) => !v)}
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
                   {expanded ? 'Collapse' : 'See feedback'}
                   <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
@@ -315,11 +315,11 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
               <div className="space-y-1.5">
                 {Object.entries(review.scoresByArea).map(([area, score]) => (
                   <div key={area} className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground capitalize w-24 shrink-0">{area}</span>
+                    <span className="text-2xs text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
                     <span className={cn('text-xs font-semibold w-8 text-right', scoreTenPointClass(score))}>
                       {score}/10
@@ -333,7 +333,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className={cn('text-[11px] font-semibold uppercase tracking-wider mb-2', STATUS.success.icon)}>✅ Strengths</p>
+              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.success.icon)}>✅ Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -348,7 +348,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className={cn('text-[11px] font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
+              <p className={cn('text-2xs font-semibold uppercase tracking-wider mb-2', STATUS.warning.icon)}>⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -380,10 +380,10 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary-accessible border-primary/20">Verified</Badge>
                 )}
                 {expert.badges?.map((b) => (
-                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-[10px]">{b}</Badge>
+                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-2xs">{b}</Badge>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{expert.title}</p>
@@ -399,14 +399,14 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS[cfg.tone].chip)}>
+                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS[cfg.tone].chip)}>
                   {cfg.label}
                 </span>
               );
             })}
           </div>
 
-          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Star className={cn('h-3 w-3 fill-current', STATUS.warning.icon)} /> {expert.rating} ({expert.completedReviews} reviews)
             </span>
@@ -474,7 +474,7 @@ export default function ExpertReviewsPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>

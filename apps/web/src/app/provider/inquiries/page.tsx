@@ -209,7 +209,7 @@ export default function ProviderInquiriesPage() {
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>

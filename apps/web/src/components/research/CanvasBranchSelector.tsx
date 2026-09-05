@@ -73,7 +73,7 @@ export function CanvasBranchSelector({
           <div className="flex items-center gap-2">
             <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-sm">main</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">default</Badge>
+            <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>
           </div>
           {!activeBranchId && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}
         </DropdownMenuItem>
@@ -81,7 +81,7 @@ export function CanvasBranchSelector({
         {branches.filter((b) => !b.isDefault).length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground font-normal uppercase tracking-wide px-2">
+            <DropdownMenuLabel className="text-2xs text-muted-foreground font-normal uppercase tracking-wide px-2">
               Branches
             </DropdownMenuLabel>
             {branches
@@ -103,7 +103,7 @@ export function CanvasBranchSelector({
                     )}
                     <span className="text-sm truncate">{b.name}</span>
                     {b.status === 'merged' && (
-                      <Badge variant="outline" className="text-[10px] px-1 py-0 h-3.5 shrink-0 text-violet-600 border-violet-200">merged</Badge>
+                      <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0 text-status-accent border-status-accent-border">merged</Badge>
                     )}
                   </div>
                   {activeBranchId === b.id && <Check className="h-3.5 w-3.5 text-primary-accessible shrink-0" />}

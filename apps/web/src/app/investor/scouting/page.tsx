@@ -88,8 +88,8 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-accessible transition-colors">
                     {startup.name}
                   </Link>
-                  {startup.isHot && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">🔥 HOT</Badge>}
-                  {startup.isFeatured && <Badge className="text-[10px] h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30">Featured</Badge>}
+                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 px-1.5">🔥 HOT</Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-accessible border-primary/30">Featured</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
@@ -120,10 +120,10 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             </div>
 
             <div className="flex flex-wrap gap-1.5 mt-2">
-              <Badge variant="outline" className="text-[10px] h-4 px-1.5">{startup.stage}</Badge>
-              <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{startup.businessModel}</Badge>
+              <Badge variant="outline" className="text-2xs h-4 px-1.5">{startup.stage}</Badge>
+              <Badge variant="secondary" className="text-2xs h-4 px-1.5">{startup.businessModel}</Badge>
               {startup.tags.slice(0, 2).map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] h-4 px-1.5">{tag}</Badge>
+                <Badge key={tag} variant="secondary" className="text-2xs h-4 px-1.5">{tag}</Badge>
               ))}
             </div>
 

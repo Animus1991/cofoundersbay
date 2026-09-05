@@ -342,7 +342,7 @@ export function EventCard({
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary-accessible text-[10px]">
+                  <AvatarFallback className="bg-primary/20 text-primary-accessible text-2xs">
                     {event.hostName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

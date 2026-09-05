@@ -287,13 +287,13 @@ function SessionCard({ session }: { session: CoachingSession }) {
           )}
           {session.keyInsights && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Key Insights</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Key Insights</p>
               <p className="text-xs text-foreground/80 italic">"{session.keyInsights}"</p>
             </div>
           )}
           {session.actionItems && session.actionItems.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Action Items</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Action Items</p>
               <ul className="space-y-1.5">
                 {session.actionItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-xs">
@@ -514,10 +514,10 @@ export default function CoachingPage() {
                       <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
-                        <p className="text-[11px] text-muted-foreground">From: {session.title}</p>
+                        <p className="text-2xs text-muted-foreground">From: {session.title}</p>
                       </div>
                       {!item.done && (
-                        <Badge variant="outline" className="shrink-0 text-[10px]"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
+                        <Badge variant="outline" className="shrink-0 text-2xs"><BilingualText en="Pending" el="Εκκρεμεί" compact /></Badge>
                       )}
                     </div>
                   ))
@@ -542,7 +542,7 @@ export default function CoachingPage() {
                     const cfg = SESSION_TYPE_CONFIG[type];
                     return (
                       <div key={type} className="flex items-center gap-2">
-                        <span className={cn('rounded-full border px-2 py-0.5 text-[10px] w-32', cfg.color)}>{cfg.label}</span>
+                        <span className={cn('rounded-full border px-2 py-0.5 text-2xs w-32', cfg.color)}>{cfg.label}</span>
                         <Progress value={(count / sessions.length) * 100} className="flex-1 h-1.5" />
                         <span className="text-xs text-muted-foreground w-4">{count}</span>
                       </div>
@@ -596,7 +596,7 @@ export default function CoachingPage() {
                   {sessions.filter((s) => s.keyInsights).map((s) => (
                     <div key={s.id} className="rounded-lg bg-muted/50 px-3 py-2 border-l-2 border-amber-400">
                       <p className="text-xs text-foreground/80 italic">"{s.keyInsights}"</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">— {s.title}</p>
+                      <p className="text-2xs text-muted-foreground mt-1">— {s.title}</p>
                     </div>
                   ))}
                 </CardContent>

@@ -1,6 +1,35 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
+import { Inter, Commissioner } from 'next/font/google';
 import './globals.css';
+
+/*
+ * Brand typography.
+ *
+ * Both families are self-hosted by next/font (no runtime request to Google,
+ * no layout shift, size-adjusted fallback). Both cover Greek — a hard
+ * requirement for a bilingual UI: the previous display fonts (Space Grotesk,
+ * Sora) have no Greek glyphs, so mixed-language headings would have fallen
+ * back mid-string. Until now none of the fonts were actually loaded and the
+ * whole product rendered in the OS default.
+ *
+ *  - Inter        body / UI text: neutral, excellent Greek, tabular figures
+ *  - Commissioner display: a humanist grotesque by Kostas Bartsokas with
+ *                 Greek designed in, not bolted on. Distinct from Inter at
+ *                 heading sizes without being ornamental.
+ */
+const inter = Inter({
+  subsets: ['latin', 'latin-ext', 'greek', 'greek-ext'],
+  display: 'swap',
+  variable: '--font-inter',
+});
+
+const commissioner = Commissioner({
+  subsets: ['latin', 'latin-ext', 'greek'],
+  weight: ['500', '600', '700'],
+  display: 'swap',
+  variable: '--font-display-brand',
+});
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
@@ -68,15 +97,19 @@ export default function RootLayout({
       lang="en"
       data-bilingual="en-el"
       data-scroll-behavior="smooth"
-      className="scroll-smooth"
+      className={`scroll-smooth ${inter.variable} ${commissioner.variable}`}
       suppressHydrationWarning
     >
       <body
         suppressHydrationWarning
         className="bg-background text-foreground font-sans antialiased"
       >
+        {/* Single skip link for the whole app (WCAG 2.4.1). AppShell used to render
+            a second one, so keyboard users hit the same link twice. */}
         <a href="#main-content" className="skip-to-content">
-          Skip to main content
+          <span lang="en">Skip to main content</span>
+          <span aria-hidden="true"> · </span>
+          <span lang="el">Μετάβαση στο κύριο περιεχόμενο</span>
         </a>
         <ErrorBoundary>
           <QueryProvider>

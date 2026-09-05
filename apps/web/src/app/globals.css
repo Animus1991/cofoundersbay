@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Font fallbacks ──
+   The real values are injected on <html> by next/font (app/layout.tsx) via a
+   generated class. This rule uses the `html` type selector on purpose: at
+   specificity (0,0,1) it can never beat that class, so it only applies when the
+   layout is not mounted (isolated component rendering, tests). Without a
+   definition, `var(--font-inter)` would be invalid-at-computed-value-time and the
+   entire font-family declaration — including its system-ui fallback — would be
+   discarded. */
+html {
+  --font-inter: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display-brand: var(--font-inter);
+}
+
 @layer base {
   :root {
-    /* ── Font family CSS variables (set here since next/font/google is not used) ── */
-    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-sora: 'Sora', system-ui, sans-serif;
-    --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
-
     /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
     --background:       220 16% 96%;
     --foreground:       220 26% 9%;
@@ -51,7 +59,9 @@
     --border:           220 13% 90%;
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
-    --radius:           8px;
+    /* Base radius. All Tailwind rounded-* steps derive from this (tailwind.config.ts):
+       sm 4 · DEFAULT 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 24. */
+    --radius:           10px;
 
     /* Typography scale — refined for readability */
     --font-size-xs:     0.75rem;    /* 12px */

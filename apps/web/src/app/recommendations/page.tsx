@@ -500,7 +500,7 @@ export default function RecommendationsPage() {
                             {m.profile?.displayName?.[0] ?? '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] font-bold px-1 rounded-full">
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-2xs font-bold px-1 rounded-full">
                           {m.score}%
                         </div>
                       </div>
@@ -576,7 +576,7 @@ export default function RecommendationsPage() {
               <BookmarkPlus className="h-3.5 w-3.5" />
               <BilingualText en="Saved" el="Αποθηκευμένα" compact />
               {savedIds.size > 0 && (
-                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                   {savedIds.size}
                 </span>
               )}

@@ -240,7 +240,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
 
             {/* Meta row */}
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-              <Badge variant="outline" className="text-[10px]">{startup.stage}</Badge>
+              <Badge variant="outline" className="text-2xs">{startup.stage}</Badge>
               <span className="flex items-center gap-1"><Users className="h-3 w-3" />{startup.teamSize}</span>
               <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{startup.location}</span>
               <span className="flex items-center gap-1 text-primary-accessible font-medium">{startup.raisingAmount}</span>
@@ -255,7 +255,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                     <span className="font-medium">{startup.readinessScore}%</span>
                     {startup.progressChange !== 0 && (
                       <span className={cn(
-                        'text-[10px] flex items-center',
+                        'text-2xs flex items-center',
                         startup.progressChange > 0 ? 'text-green-500' : 'text-red-500'
                       )}>
                         {startup.progressChange > 0 ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}

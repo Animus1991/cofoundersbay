@@ -73,7 +73,7 @@ function EngagementBar({ score }: { score: number }) {
   const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
   return (
     <div className="space-y-0.5">
-      <div className="flex justify-between text-[10px] text-muted-foreground">
+      <div className="flex justify-between text-2xs text-muted-foreground">
         <span>Engagement</span>
         <span className="tabular-nums">{score}%</span>
       </div>
@@ -103,7 +103,7 @@ function MemberCard({ member }: { member: Member }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm">{member.name}</span>
-                  <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5', STATUS_COLORS[member.status])}>
+                  <Badge variant="outline" className={cn('text-2xs h-4 px-1.5', STATUS_COLORS[member.status])}>
                     {member.status}
                   </Badge>
                 </div>
@@ -132,7 +132,7 @@ function MemberCard({ member }: { member: Member }) {
                 <Activity className="icon-sm" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
+                <span className="text-2xs text-emerald-600 flex items-center gap-0.5">
                   <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
                 </span>
               )}
@@ -185,7 +185,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Or share invite link</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
+              <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
                 {copied ? <CheckCircle2 className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
                 {copied ? 'Copied' : 'Copy'}

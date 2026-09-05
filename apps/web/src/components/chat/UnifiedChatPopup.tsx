@@ -121,7 +121,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
           )}>
             {conv.recipientName}
           </span>
-          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+          <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
             {formatRelativeTime(conv.lastMessageTime)}
           </span>
         </div>
@@ -133,7 +133,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             {conv.lastMessage || <span className="italic">No messages yet</span>}
           </p>
           {conv.unreadCount > 0 && (
-            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shrink-0">
+            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground shrink-0">
               {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
             </span>
           )}
@@ -239,7 +239,7 @@ function AIMessageBubble({ message }: { message: AIMessage }) {
           </div>
         )}
         {message.model && !message.isStreaming && (
-          <div className="text-[10px] text-muted-foreground mt-1 opacity-60">{message.model}</div>
+          <div className="text-2xs text-muted-foreground mt-1 opacity-60">{message.model}</div>
         )}
       </div>
     </div>
@@ -649,7 +649,7 @@ export function UnifiedChatPopup() {
           <Bot className="h-4 w-4 text-white" />
           <span className="text-sm font-medium text-white">Chat</span>
           {(totalMsgUnread > 0 || aiMessages.length > 0) && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold text-white">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
               {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
             </span>
           )}
@@ -700,7 +700,7 @@ export function UnifiedChatPopup() {
             <MessageSquare className="h-3 w-3" />
             Messages
             {totalMsgUnread > 0 && (
-              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-1">
+              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
               </span>
             )}
@@ -792,7 +792,7 @@ export function UnifiedChatPopup() {
                 {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-2">
+            <p className="text-2xs text-muted-foreground text-center mt-2">
               {isAIAvailable ? <>Powered by local AI • Your data stays private</> : <>AI running in limited mode</>}
             </p>
           </form>
@@ -814,7 +814,7 @@ export function UnifiedChatPopup() {
               <div className="relative shrink-0">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                  <AvatarFallback className="text-[10px] font-semibold bg-primary/15 text-primary-accessible">
+                  <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary-accessible">
                     {selected.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -824,7 +824,7 @@ export function UnifiedChatPopup() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">{selected.recipientName}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight">{selected.isOnline ? 'Online' : 'Offline'}</p>
+                <p className="text-2xs text-muted-foreground leading-tight">{selected.isOnline ? 'Online' : 'Offline'}</p>
               </div>
               <button
                 onClick={handleExpandToFullPage}
@@ -866,7 +866,7 @@ export function UnifiedChatPopup() {
                         <React.Fragment key={msg.id}>
                           {showTime && (
                             <div className="text-center py-1">
-                              <span className="text-[10px] text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
+                              <span className="text-2xs text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
                                 {formatTime(msg.timestamp)}
                               </span>
                             </div>
@@ -875,7 +875,7 @@ export function UnifiedChatPopup() {
                             {!isMe && (
                               <Avatar className="h-6 w-6 shrink-0 mb-0.5">
                                 <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                                <AvatarFallback className="text-[9px] bg-primary/15 text-primary-accessible">
+                                <AvatarFallback className="text-2xs bg-primary/15 text-primary-accessible">
                                   {selected.recipientName[0]?.toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>

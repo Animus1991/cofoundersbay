@@ -40,7 +40,7 @@ function CommentBubble({
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-[10px] font-semibold text-primary-accessible">
+          <span className="text-2xs font-semibold text-primary-accessible">
             {(comment.authorName ?? 'U')[0].toUpperCase()}
           </span>
         )}

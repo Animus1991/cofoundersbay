@@ -416,7 +416,7 @@ export function LandingHome() {
                   <div className={`flex h-20 w-20 items-center justify-center rounded-2xl ${color} ring-4 ring-background`}>
                     <Icon className="h-9 w-9" />
                   </div>
-                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow">
+                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground shadow">
                     {step}
                   </span>
                 </div>

@@ -76,7 +76,7 @@ function VersionCard({
             {v.versionLabel ?? `v${v.version}`}
           </span>
           {current && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/40 text-primary-accessible">
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-accessible">
               Current
             </Badge>
           )}
@@ -95,7 +95,7 @@ function VersionCard({
             <span className="flex items-center gap-1">
               <Avatar className="h-3.5 w-3.5">
                 <AvatarImage src={v.changedBy.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-[8px]">
+                <AvatarFallback className="text-2xs">
                   {(v.changedBy.displayName ?? 'U').charAt(0)}
                 </AvatarFallback>
               </Avatar>

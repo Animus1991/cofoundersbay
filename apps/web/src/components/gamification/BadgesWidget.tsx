@@ -91,7 +91,7 @@ export function BadgesWidget() {
               <div className="text-xs font-medium text-center line-clamp-2">
                 {badge.name}
               </div>
-              <div className="text-[10px] text-muted-foreground mt-1 capitalize">
+              <div className="text-2xs text-muted-foreground mt-1 capitalize">
                 {badge.rarity}
               </div>
             </div>

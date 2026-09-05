@@ -138,7 +138,7 @@ function EventChip({ event }: { event: CalendarEvent }) {
           )}
         </div>
       </div>
-      <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{cfg.label}</Badge>
+      <Badge variant="secondary" className="text-2xs h-4 shrink-0">{cfg.label}</Badge>
     </Wrapper>
   );
 }
@@ -377,7 +377,7 @@ export default function CalendarPage() {
                         </span>
                         <div className={cn('h-2 w-2 rounded-full shrink-0', TYPE_CONFIG[e.type].color.replace('text-', 'bg-'))} />
                         <span className="truncate flex-1">{e.title}</span>
-                        <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{TYPE_CONFIG[e.type].label}</Badge>
+                        <Badge variant="secondary" className="text-2xs h-4 shrink-0">{TYPE_CONFIG[e.type].label}</Badge>
                       </div>
                     ))}
                   </div>

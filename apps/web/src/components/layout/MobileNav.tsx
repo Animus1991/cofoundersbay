@@ -103,7 +103,7 @@ export function MobileNav() {
         <nav className="flex-1 overflow-y-auto overscroll-contain px-2 py-3" aria-label="Mobile navigation">
           {sections.map(({ section, links }) => (
             <div key={section} className="mb-3">
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              <p className="px-3 pb-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                 {section}
               </p>
               <ul className="space-y-0.5">
@@ -125,7 +125,7 @@ export function MobileNav() {
                         <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary-accessible')} />
                         <span className="truncate">{label}</span>
                         {badge > 0 && (
-                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                          <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                             {badge > 99 ? '99+' : badge}
                           </span>
                         )}

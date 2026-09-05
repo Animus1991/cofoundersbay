@@ -661,7 +661,7 @@ export default function ProfilePage() {
                     <Icon className={`h-4 w-4 ${color}`} />
                   </div>
                   <span className="text-lg font-bold text-foreground leading-none">{value}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                  <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
                     <BilingualText en={labelEn} el={labelEl} compact />
                   </span>
                 </div>

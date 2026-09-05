@@ -58,7 +58,7 @@ function CalendarMonth({
     <div className="p-3 min-w-[240px]">
       <div className="grid grid-cols-7 mb-1">
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
-          <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
+          <div key={d} className="text-center text-2xs font-medium text-muted-foreground py-1">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">

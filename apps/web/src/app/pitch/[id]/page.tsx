@@ -510,7 +510,7 @@ export default function PitchDeckPage() {
                   : 'border-border bg-card',
               )}
             >
-              <div className="text-[10px] text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
               <div className="font-medium truncate">{slide.title}</div>
             </button>
           ))}
@@ -529,7 +529,7 @@ export default function PitchDeckPage() {
                   : 'border-border bg-card'
               )}
             >
-              <div className="text-[10px] text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
               <div className="font-medium truncate">{slide.title}</div>
             </button>
           ))}

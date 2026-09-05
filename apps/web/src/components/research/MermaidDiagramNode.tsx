@@ -90,7 +90,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           <button
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(false); }}
             className={cn(
-              'flex items-center gap-1 px-2 py-0.5 rounded text-[11px] transition-colors',
+              'flex items-center gap-1 px-2 py-0.5 rounded text-2xs transition-colors',
               !showCode ? 'bg-primary/15 text-primary-accessible' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Preview diagram"
@@ -101,7 +101,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           <button
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
             className={cn(
-              'flex items-center gap-1 px-2 py-0.5 rounded text-[11px] transition-colors',
+              'flex items-center gap-1 px-2 py-0.5 rounded text-2xs transition-colors',
               showCode ? 'bg-primary/15 text-primary-accessible' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Edit Mermaid code"
@@ -112,7 +112,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           <div className="flex-1" />
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleCopy(); }}
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-muted-foreground hover:text-foreground transition-colors"
             title="Copy Mermaid code"
           >
             {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
@@ -128,11 +128,11 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onChange={(e) => setDraft(e.target.value)}
             onMouseDown={(e) => e.stopPropagation()}
             placeholder={`graph TD\n  A[Start] --> B{Decision}\n  B -->|Yes| C[End]\n  B -->|No| A`}
-            className="flex-1 min-h-[120px] resize-none rounded-lg bg-secondary/60 border border-border/60 p-2 text-[12px] font-mono text-foreground outline-none focus:ring-1 focus:ring-primary/50"
+            className="flex-1 min-h-[120px] resize-none rounded-lg bg-secondary/60 border border-border/60 p-2 text-xs font-mono text-foreground outline-none focus:ring-1 focus:ring-primary/50"
           />
           <button
             onMouseDown={(e) => { e.stopPropagation(); handleApply(); }}
-            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-[12px] font-medium hover:bg-primary/90 transition-colors self-end"
+            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors self-end"
           >
             Apply &amp; Render
           </button>
@@ -145,18 +145,18 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           {loading && (
             <div className="flex flex-col items-center gap-2 text-muted-foreground">
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span className="text-[11px]">Rendering…</span>
+              <span className="text-2xs">Rendering…</span>
             </div>
           )}
           {!loading && error && (
             <div className="flex flex-col items-center gap-2 text-destructive-accessible p-3 text-center">
               <AlertTriangle className="w-5 h-5" />
-              <p className="text-[11px] font-medium">Syntax error</p>
-              <p className="text-[10px] text-muted-foreground max-w-[200px] leading-relaxed">{error}</p>
+              <p className="text-2xs font-medium">Syntax error</p>
+              <p className="text-2xs text-muted-foreground max-w-[200px] leading-relaxed">{error}</p>
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="mt-1 px-2 py-0.5 bg-secondary rounded text-[11px] text-foreground hover:bg-secondary/80"
+                  className="mt-1 px-2 py-0.5 bg-secondary rounded text-2xs text-foreground hover:bg-secondary/80"
                 >
                   Edit Code
                 </button>
@@ -174,11 +174,11 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
           {!loading && !error && !svg && (
             <div className="flex flex-col items-center gap-2 text-muted-foreground/50 p-4 text-center">
               <Code className="w-8 h-8 opacity-30" />
-              <p className="text-[11px]">No diagram yet</p>
+              <p className="text-2xs">No diagram yet</p>
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="px-2 py-1 bg-primary/10 text-primary-accessible rounded text-[11px] hover:bg-primary/20"
+                  className="px-2 py-1 bg-primary/10 text-primary-accessible rounded text-2xs hover:bg-primary/20"
                 >
                   Write Mermaid code
                 </button>

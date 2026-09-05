@@ -49,7 +49,7 @@ function PreviewDemoBadge() {
           <Link
             href="/register"
             className={cn(
-              'hidden sm:inline-flex h-7 items-center gap-1 rounded-full border px-2 text-[11px] font-medium transition-colors',
+              'hidden sm:inline-flex h-7 items-center gap-1 rounded-full border px-2 text-2xs font-medium transition-colors',
               STATUS.warning.chip,
               'hover:brightness-95',
             )}

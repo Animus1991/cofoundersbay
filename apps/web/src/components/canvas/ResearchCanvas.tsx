@@ -218,9 +218,9 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
           <ToolBtn cmd="underline" title="Underline"><Underline className="w-3.5 h-3.5" /></ToolBtn>
           <ToolBtn cmd="strikeThrough" title="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-[11px] font-bold">H1</span></ToolBtn>
-          <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-[11px] font-bold">H2</span></ToolBtn>
-          <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-[11px]">P</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="h2" title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="h3" title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
+          <ToolBtn cmd="formatBlock" val="p" title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
           <ToolBtn cmd="insertUnorderedList" title="Bullet list"><List className="w-3.5 h-3.5" /></ToolBtn>
           <ToolBtn cmd="insertOrderedList" title="Numbered list"><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
@@ -327,14 +327,14 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             />
             <div className="flex items-center gap-2 flex-none">
               {!saved && (
-                <span className="text-[11px] text-amber-500 flex items-center gap-1">
+                <span className="text-2xs text-amber-500 flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" /> Unsaved
                 </span>
               )}
               {(isText || isDoc) && (
                 <button
                   onClick={handleSave}
-                  className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                  className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
                 >
                   <Save className="w-3.5 h-3.5" /> Save
                 </button>
@@ -363,7 +363,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             {tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-accessible text-[11px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-accessible text-2xs font-medium"
               >
                 <Tag className="w-3 h-3" />
                 {tag}
@@ -381,7 +381,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") addTag(); }}
                 placeholder="Add tag..."
-                className="h-6 px-2 rounded bg-secondary text-[11px] outline-none placeholder:text-muted-foreground min-w-[80px]"
+                className="h-6 px-2 rounded bg-secondary text-2xs outline-none placeholder:text-muted-foreground min-w-[80px]"
               />
               <button
                 onClick={addTag}
@@ -402,7 +402,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-[12px] text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
+                <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
                 <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
                   className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomIn className="w-3.5 h-3.5" />
@@ -446,7 +446,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               <p className="text-sm">Preview not available for this file type.</p>
               {node.url && (
                 <a href={node.url} download={node.title}
-                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
+                  className="h-8 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5">
                   <Download className="w-3.5 h-3.5" /> Download
                 </a>
               )}
@@ -456,7 +456,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
 
         {/* Footer with metadata */}
         <div className="flex-none px-4 py-2 border-t border-border bg-card/50 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between text-2xs text-muted-foreground">
             <span>
               {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString()}`}
             </span>
@@ -1212,7 +1212,7 @@ export default function ResearchCanvas() {
               <div className="flex-none px-3 py-2 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {nodeIcon(node.type, node.colorKey, "w-4 h-4 flex-none")}
-                  <span className="text-[13px] font-medium text-foreground truncate">
+                  <span className="text-sm font-medium text-foreground truncate">
                     {node.title}
                   </span>
                 </div>
@@ -1223,14 +1223,14 @@ export default function ResearchCanvas() {
                 </div>
               </div>
 
-              <div className="flex-1 p-3 overflow-hidden text-[12px] text-muted-foreground leading-relaxed">
+              <div className="flex-1 p-3 overflow-hidden text-xs text-muted-foreground leading-relaxed">
                 {node.type === "image" && node.url && (
                   <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" />
                 )}
                 {node.type === "pdf" && (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
                     <FileType className={cn("w-10 h-10", colorConf.icon)} />
-                    <span className="text-[11px]">PDF Document</span>
+                    <span className="text-2xs">PDF Document</span>
                   </div>
                 )}
                 {(node.type === "note" || node.type === "text" || node.type === "document") && (
@@ -1244,12 +1244,12 @@ export default function ResearchCanvas() {
               {node.tags && node.tags.length > 0 && (
                 <div className="flex-none px-3 py-1.5 border-t border-border/50 bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
                   {node.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary-accessible">
+                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-accessible">
                       {tag}
                     </span>
                   ))}
                   {node.tags.length > 3 && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] text-muted-foreground">
+                    <span className="px-1.5 py-0.5 rounded text-2xs text-muted-foreground">
                       +{node.tags.length - 3}
                     </span>
                   )}

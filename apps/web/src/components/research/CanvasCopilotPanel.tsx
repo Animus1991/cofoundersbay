@@ -146,14 +146,14 @@ function MermaidGenTab({
 
       {/* Diagram type */}
       <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</label>
+        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Diagram Type</label>
         <div className="grid grid-cols-2 gap-1">
           {MERMAID_TYPES.map((mt) => (
             <button
               key={mt.value}
               onClick={() => setMermaidType(mt.value)}
               className={cn(
-                'text-[10px] px-2 py-1.5 rounded-lg border transition-colors text-left',
+                'text-2xs px-2 py-1.5 rounded-lg border transition-colors text-left',
                 mermaidType === mt.value
                   ? 'border-pink-400/50 bg-pink-400/10 text-pink-400 font-medium'
                   : 'border-border/50 text-muted-foreground hover:border-border',
@@ -167,7 +167,7 @@ function MermaidGenTab({
 
       {/* Prompt */}
       <div className="space-y-1">
-        <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
+        <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Describe Your Diagram</label>
         <textarea
           rows={4}
           value={mermaidPrompt}
@@ -192,13 +192,13 @@ function MermaidGenTab({
       {generatedCode && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Generated Code</label>
-            <button onClick={handleCopy} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Generated Code</label>
+            <button onClick={handleCopy} className="text-2xs text-muted-foreground hover:text-foreground flex items-center gap-1">
               {copied ? <Check className="w-2.5 h-2.5 text-emerald-400" /> : <Copy className="w-2.5 h-2.5" />}
               {copied ? 'Copied' : 'Copy'}
             </button>
           </div>
-          <pre className="text-[10px] bg-muted/40 border border-border/50 rounded-lg p-2.5 overflow-x-auto text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-48">
+          <pre className="text-2xs bg-muted/40 border border-border/50 rounded-lg p-2.5 overflow-x-auto text-foreground/80 leading-relaxed whitespace-pre-wrap max-h-48">
             {generatedCode}
           </pre>
           <button
@@ -366,7 +366,7 @@ export function CanvasCopilotPanel({
         <div className="flex items-center gap-2 min-w-0">
           <Brain className="w-4 h-4 text-violet-400 shrink-0" />
           <span className="text-sm font-semibold truncate">Canvas Copilot</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 font-medium">BETA</span>
+          <span className="text-2xs px-1.5 py-0.5 rounded-full bg-violet-500/10 text-violet-400 font-medium">BETA</span>
         </div>
         <button onClick={onClose} className="p-1 rounded hover:bg-muted transition-colors shrink-0">
           <X className="w-3.5 h-3.5 text-muted-foreground" />
@@ -402,7 +402,7 @@ export function CanvasCopilotPanel({
         <div className="flex flex-col flex-1 min-h-0">
           {/* Agent selector */}
           <div className="px-3 pt-2.5 pb-2 border-b border-border/50 shrink-0">
-            <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide font-medium">Specialist Agent</p>
+            <p className="text-2xs text-muted-foreground mb-1.5 uppercase tracking-wide font-medium">Specialist Agent</p>
             <div className="grid grid-cols-5 gap-1">
               {agents.map((agent) => {
                 const meta = AGENT_META[agent.id] ?? AGENT_META['canvas-strategy'];
@@ -413,7 +413,7 @@ export function CanvasCopilotPanel({
                     onClick={() => { setActiveAgentId(agent.id); setChatHistory([]); }}
                     title={agent.description}
                     className={cn(
-                      'flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-[10px] font-medium transition-all',
+                      'flex flex-col items-center gap-0.5 p-1.5 rounded-lg border text-2xs font-medium transition-all',
                       activeAgentId === agent.id
                         ? cn('border-2', meta.accent, meta.color)
                         : 'border-border/50 text-muted-foreground hover:border-border hover:text-foreground',
@@ -425,15 +425,15 @@ export function CanvasCopilotPanel({
                 );
               })}
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1.5 leading-tight">{activeAgent.description}</p>
+            <p className="text-2xs text-muted-foreground mt-1.5 leading-tight">{activeAgent.description}</p>
           </div>
 
           {/* Scope toggle */}
           <div className="flex items-center justify-between px-3 py-1.5 bg-muted/20 border-b border-border/40 shrink-0">
-            <span className="text-[10px] text-muted-foreground">Scope: <span className="text-foreground font-medium">{scopeLabel}</span></span>
+            <span className="text-2xs text-muted-foreground">Scope: <span className="text-foreground font-medium">{scopeLabel}</span></span>
             <button
               onClick={() => setScopeAll((v) => !v)}
-              className={cn('text-[10px] px-2 py-0.5 rounded border transition-colors', scopeAll ? 'border-violet-400/50 text-violet-400 bg-violet-400/5' : 'border-border/50 text-muted-foreground hover:border-border')}
+              className={cn('text-2xs px-2 py-0.5 rounded border transition-colors', scopeAll ? 'border-violet-400/50 text-violet-400 bg-violet-400/5' : 'border-border/50 text-muted-foreground hover:border-border')}
             >
               {scopeAll ? 'Selected only' : 'All nodes'}
             </button>
@@ -443,7 +443,7 @@ export function CanvasCopilotPanel({
           <div ref={chatScrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3 min-h-0">
             {chatHistory.length === 0 && (
               <div className="space-y-1.5">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Suggested</p>
+                <p className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Suggested</p>
                 {activeAgent.suggestedQuestions.map((q, i) => (
                   <button
                     key={i}
@@ -488,7 +488,7 @@ export function CanvasCopilotPanel({
           {/* Input */}
           <div className="px-3 pb-3 pt-2 border-t border-border/40 shrink-0">
             {chatHistory.length > 0 && (
-              <button onClick={() => setChatHistory([])} className="text-[10px] text-muted-foreground hover:text-foreground mb-1.5 flex items-center gap-1">
+              <button onClick={() => setChatHistory([])} className="text-2xs text-muted-foreground hover:text-foreground mb-1.5 flex items-center gap-1">
                 <RefreshCw className="w-2.5 h-2.5" /> New conversation
               </button>
             )}
@@ -551,7 +551,7 @@ export function CanvasCopilotPanel({
 
           {/* Workspace ID */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Builder Workspace ID</label>
             <input
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
@@ -562,7 +562,7 @@ export function CanvasCopilotPanel({
 
           {/* Document type */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Type</label>
             <select
               value={exportDocType}
               onChange={(e) => setExportDocType(e.target.value)}
@@ -576,7 +576,7 @@ export function CanvasCopilotPanel({
 
           {/* Title */}
           <div className="space-y-1">
-            <label className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
+            <label className="text-2xs text-muted-foreground uppercase tracking-wide font-medium">Document Title (optional)</label>
             <input
               value={exportTitle}
               onChange={(e) => setExportTitle(e.target.value)}
@@ -643,17 +643,17 @@ export function CanvasCopilotPanel({
               <div key={doc.id} className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-border/50 hover:border-border transition-colors">
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{doc.title}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{doc.workspaceName} · {doc.type.replace(/_/g, ' ')}</p>
+                  <p className="text-2xs text-muted-foreground truncate">{doc.workspaceName} · {doc.type.replace(/_/g, ' ')}</p>
                 </div>
                 {doc.alreadyLinked ? (
-                  <span className="shrink-0 text-[10px] text-emerald-400 flex items-center gap-1">
+                  <span className="shrink-0 text-2xs text-emerald-400 flex items-center gap-1">
                     <Check className="w-3 h-3" /> Linked
                   </span>
                 ) : (
                   <button
                     onClick={() => importMutation.mutate(doc.id)}
                     disabled={importMutation.isPending}
-                    className="shrink-0 text-[10px] px-2 py-1 rounded border border-blue-400/40 text-blue-400 hover:bg-blue-400/10 transition-colors disabled:opacity-40"
+                    className="shrink-0 text-2xs px-2 py-1 rounded border border-blue-400/40 text-blue-400 hover:bg-blue-400/10 transition-colors disabled:opacity-40"
                   >
                     {importMutation.isPending && importMutation.variables === doc.id
                       ? <Loader2 className="w-2.5 h-2.5 animate-spin" />

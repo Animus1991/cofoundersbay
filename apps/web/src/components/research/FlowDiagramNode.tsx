@@ -165,7 +165,7 @@ export function FlowDiagramNode({
         }}
       >
         <GitBranch className="w-3.5 h-3.5 shrink-0" style={{ color: '#6366F1' }} />
-        <span className="text-[10px] font-bold uppercase tracking-wide flex-1" style={{ color: '#6366F1' }}>
+        <span className="text-2xs font-bold uppercase tracking-wide flex-1" style={{ color: '#6366F1' }}>
           Flow Diagram
         </span>
         {!readOnly && (
@@ -174,7 +174,7 @@ export function FlowDiagramNode({
             <div className="relative">
               <button
                 onMouseDown={(e) => { e.stopPropagation(); setShowPalette((v) => !v); }}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible text-[10px] font-medium transition-colors"
+                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 hover:bg-primary/20 text-primary-accessible text-2xs font-medium transition-colors"
                 title="Add node"
               >
                 <Plus className="w-3 h-3" />
@@ -186,7 +186,7 @@ export function FlowDiagramNode({
                     <button
                       key={`${p.type}-${p.label}`}
                       onMouseDown={(e) => { e.stopPropagation(); addNode(p.type, p.label); }}
-                      className="w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-secondary text-left text-[11px] transition-colors"
+                      className="w-full flex items-center gap-1.5 px-2 py-1 rounded hover:bg-secondary text-left text-2xs transition-colors"
                     >
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
                       {p.label}

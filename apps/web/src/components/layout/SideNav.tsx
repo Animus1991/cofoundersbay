@@ -198,7 +198,7 @@ export function SideNav() {
                           aria-hidden="true"
                         />
                         {badge > 0 && !expanded && (
-                          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold leading-none text-primary-foreground">
+                          <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card">
                             {badge > 9 ? '9+' : badge}
                           </span>
                         )}
@@ -210,7 +210,7 @@ export function SideNav() {
                           <BilingualText en={label} el={labelEl} stacked className="min-w-0 flex-1" />
                           {badge > 0 && (
                             <span
-                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"
+                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground"
                               aria-label={`${badge} unread`}
                             >
                               {badge > 99 ? '99+' : badge}

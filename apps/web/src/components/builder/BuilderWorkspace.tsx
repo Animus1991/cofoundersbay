@@ -432,7 +432,7 @@ export function BuilderWorkspace() {
               {collaborators.slice(0, 4).map(c => (
                 <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                   <AvatarImage src={c.user.avatarUrl} />
-                  <AvatarFallback className="text-[9px]">{(c.user.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{(c.user.displayName ?? 'U').charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
             </div>

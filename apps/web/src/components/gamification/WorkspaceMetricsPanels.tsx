@@ -120,7 +120,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
         </div>
         <Progress value={data.score} className="h-2 mt-1" />
         {isGated && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">
+          <p className="text-2xs text-amber-600 dark:text-amber-400 mt-1">
             Bottleneck suppression active (×{data.bottleneckFactor.toFixed(2)}) — strengthen critical dimensions
           </p>
         )}
@@ -136,20 +136,20 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
                   <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                   <span className="text-xs font-medium truncate">{label}</span>
                   {detail?.weight && (
-                    <span className="text-[9px] text-muted-foreground hidden md:block">
+                    <span className="text-2xs text-muted-foreground hidden md:block">
                       ×{(detail.weight * 100).toFixed(0)}%
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {detail?.detail && (
-                    <span className="text-[10px] text-muted-foreground hidden sm:block max-w-[140px] truncate">
+                    <span className="text-2xs text-muted-foreground hidden sm:block max-w-[140px] truncate">
                       {detail.detail}
                     </span>
                   )}
                   <Badge
                     variant={scoreBadgeVariant(score)}
-                    className="text-[10px] px-1.5 py-0 h-4 tabular-nums"
+                    className="text-2xs px-1.5 py-0 h-4 tabular-nums"
                   >
                     {score}%
                   </Badge>
@@ -165,7 +165,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
           );
         })}
         {compact && (
-          <p className="text-[10px] text-muted-foreground pt-1">
+          <p className="text-2xs text-muted-foreground pt-1">
             Showing top 4 dimensions · Full view in Readiness tab
           </p>
         )}
@@ -237,19 +237,19 @@ export function TeamMomentumPanel({ workspaceId }: MomentumPanelProps) {
         <div className="grid grid-cols-2 gap-2 text-center">
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-lg font-bold tabular-nums">{data.velocity.toFixed(2)}</p>
-            <p className="text-[10px] text-muted-foreground">actions/day (14d)</p>
+            <p className="text-2xs text-muted-foreground">actions/day (14d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-lg font-bold tabular-nums">{bd.activeContributors}</p>
-            <p className="text-[10px] text-muted-foreground">contributors</p>
+            <p className="text-2xs text-muted-foreground">contributors</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-lg font-bold tabular-nums">{bd.meaningful7d ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground">actions (7d)</p>
+            <p className="text-2xs text-muted-foreground">actions (7d)</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-lg font-bold tabular-nums">{bd.feedbackLoopsCompleted}</p>
-            <p className="text-[10px] text-muted-foreground">feedback loops</p>
+            <p className="text-2xs text-muted-foreground">feedback loops</p>
           </div>
         </div>
         <div className="space-y-1.5">
@@ -318,13 +318,13 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                   <span className="text-xs text-muted-foreground w-4 shrink-0">#{idx + 1}</span>
                   <span className="text-xs font-medium truncate">{c.userId.slice(0, 8)}…</span>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1.5 shrink-0 text-2xs text-muted-foreground">
                   <span title="Artifacts created/improved">{bd.artifactsCreated}C·{bd.artifactsImproved}I</span>
                   <span title="Feedback applied">·{bd.feedbackApplied}FA</span>
                   {recentActivity > 0 && (
                     <span title="Recent activity (14d)" className="text-emerald-600 dark:text-emerald-400">·{recentActivity}↑</span>
                   )}
-                  <Badge variant={scoreBadgeVariant(c.score)} className="text-[10px] px-1.5 py-0 h-4 ml-1">
+                  <Badge variant={scoreBadgeVariant(c.score)} className="text-2xs px-1.5 py-0 h-4 ml-1">
                     {c.score}
                   </Badge>
                 </div>
@@ -336,7 +336,7 @@ export function ContributionPanel({ workspaceId }: ContributionPanelProps) {
                 />
               </div>
               {c.rawScore > 0 && idx === 0 && (
-                <p className="text-[9px] text-muted-foreground">{c.explain}</p>
+                <p className="text-2xs text-muted-foreground">{c.explain}</p>
               )}
             </div>
           );
@@ -391,15 +391,15 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{data.feedbackCount}</p>
-            <p className="text-[10px] text-muted-foreground">received</p>
+            <p className="text-2xs text-muted-foreground">received</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{data.appliedFeedbackCount}</p>
-            <p className="text-[10px] text-muted-foreground">applied</p>
+            <p className="text-2xs text-muted-foreground">applied</p>
           </div>
           <div className="rounded-lg bg-muted/40 p-2">
             <p className="text-base font-bold">{Math.round(data.appliedFeedbackRate * 100)}%</p>
-            <p className="text-[10px] text-muted-foreground">apply rate</p>
+            <p className="text-2xs text-muted-foreground">apply rate</p>
           </div>
         </div>
 
@@ -423,18 +423,18 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         </div>
 
         {(data.unresolvedFeedback ?? 0) > 0 && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+          <p className="text-2xs text-amber-600 dark:text-amber-400">
             {data.unresolvedFeedback} unresolved feedback item{data.unresolvedFeedback !== 1 ? 's' : ''} — consider applying
           </p>
         )}
 
         {data.avgResponseTimeHrs > 0 && (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Avg. response time: <span className="font-medium">{data.avgResponseTimeHrs.toFixed(1)}h</span>
           </p>
         )}
         {data.lastFeedbackAt && (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
           </p>
         )}

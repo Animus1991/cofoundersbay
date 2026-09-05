@@ -232,7 +232,7 @@ function MatchListRow({
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <Badge variant="outline" className={cn('text-[10px] h-5 border', colors.chip)}>
+                  <Badge variant="outline" className={cn('text-2xs h-5 border', colors.chip)}>
                     {tier.charAt(0).toUpperCase() + tier.slice(1)} · {score}%
                   </Badge>
                   {hit.location && (
@@ -246,14 +246,14 @@ function MatchListRow({
               {/* Score text */}
               <div className="text-right shrink-0">
                 <p className={cn('text-lg font-black tabular-nums leading-none', colors.icon)}>{score}%</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">match</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">match</p>
               </div>
             </div>
 
             {/* Skills + reasons */}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -266,7 +266,7 @@ function MatchListRow({
             {matchReasons.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {matchReasons.slice(0, 3).map((r, i) => (
-                  <span key={i} className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <span key={i} className="flex items-center gap-1 text-2xs text-muted-foreground">
                     <Zap className={cn('h-2.5 w-2.5 shrink-0', colors.icon)} />
                     {r.text}
                   </span>
@@ -362,7 +362,7 @@ function MatchPreviewPanel({
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
               <p className={cn('text-2xl font-extrabold tabular-nums', colors.icon)}>{score}%</p>
-              <p className={cn('text-[10px] font-bold tracking-wider uppercase mt-0.5', colors.icon)}>
+              <p className={cn('text-2xs font-bold tracking-wider uppercase mt-0.5', colors.icon)}>
                 {tier.charAt(0).toUpperCase() + tier.slice(1)}
               </p>
             </div>
@@ -385,7 +385,7 @@ function MatchPreviewPanel({
           {/* Skills */}
           {(hit.skillNames ?? []).length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
               </div>
@@ -395,7 +395,7 @@ function MatchPreviewPanel({
           {/* Match reasons */}
           {matchReasons.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
               <div className="space-y-1.5">
                 {matchReasons.map((r, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
@@ -703,7 +703,7 @@ export default function MatchesPage() {
                   </div>
                   <div>
                     <p className={cn('text-xl font-black tabular-nums leading-none', statColors.icon)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="mt-0.5 text-2xs text-muted-foreground">
                       <BilingualText en={labelEn} el={labelEl} compact />
                     </p>
                   </div>
@@ -769,7 +769,7 @@ export default function MatchesPage() {
               {/* Tier filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
                     <BilingualText en={matchesEn('match_tier')} el={matchesEl('match_tier')} compact />
                   </p>
                   {TIER_TABS.map(tab => {
@@ -789,7 +789,7 @@ export default function MatchesPage() {
                             secondaryClassName={isActive ? 'text-primary-foreground' : undefined}
                           />
                         </span>
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                        <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
                           isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                           {counts[tab.key]}
                         </span>
@@ -802,7 +802,7 @@ export default function MatchesPage() {
               {/* Role filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
                     <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
                   </p>
                   {ROLE_TABS.map(({ key, labelEn, labelEl, icon: Icon }) => {
@@ -824,7 +824,7 @@ export default function MatchesPage() {
               {/* Location */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">
                     <BilingualText en={matchesEn('location')} el={matchesEl('location')} compact />
                   </p>
                   <div className="relative">
@@ -844,7 +844,7 @@ export default function MatchesPage() {
               {/* Availability */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
                     <BilingualText en={matchesEn('availability')} el={matchesEl('availability')} compact />
                   </p>
                   {AVAIL_OPTIONS.map(({ key, labelEn, labelEl }) => {
@@ -869,7 +869,7 @@ export default function MatchesPage() {
               {/* Sort */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
                     <BilingualText en={matchesEn('sort_by')} el={matchesEl('sort_by')} compact />
                   </p>
                   {([
@@ -926,7 +926,7 @@ export default function MatchesPage() {
                 <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
                   <div className="grid gap-3 grid-cols-2">
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
                         <BilingualText en={matchesEn('tier')} el={matchesEl('tier')} compact />
                       </label>
                       <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
@@ -935,7 +935,7 @@ export default function MatchesPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">
                         <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
                       </label>
                       <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
@@ -944,7 +944,7 @@ export default function MatchesPage() {
                       </select>
                     </div>
                     <div className="col-span-2">
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
                       <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
                         placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
                     </div>
@@ -976,7 +976,7 @@ export default function MatchesPage() {
                     title="Select mode">
                     <CheckSquare className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Select</span>
-                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>}
+                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
@@ -995,7 +995,7 @@ export default function MatchesPage() {
                         className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
+                        {mode === 'grid3' && <span className="text-2xs ml-0.5 font-bold">3</span>}
                       </button>
                     ))}
                   </div>

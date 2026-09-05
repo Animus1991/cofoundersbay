@@ -165,7 +165,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   <h3 className="font-semibold truncate">{investor.displayName}</h3>
                   {investor.isVerified && <BadgeCheck className={cn('h-4 w-4 shrink-0', STATUS.info.icon)} />}
                   {investor.isActivelyScouting && (
-                    <Badge className={cn('text-[10px] border', STATUS.success.chip)}>
+                    <Badge className={cn('text-2xs border', STATUS.success.chip)}>
                       <Zap className="h-2.5 w-2.5 mr-1" />Actively Scouting
                     </Badge>
                   )}
@@ -194,14 +194,14 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stages */}
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {investor.stages.map(s => (
-                <Badge key={s} variant="outline" className={cn('text-[10px] border', STATUS[STAGE_TONE[s] ?? 'neutral'].chip)}>
+                <Badge key={s} variant="outline" className={cn('text-2xs border', STATUS[STAGE_TONE[s] ?? 'neutral'].chip)}>
                   {s.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </Badge>
               ))}
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-2xs">
                 <DollarSign className="h-2.5 w-2.5 mr-0.5" />{formatCheckSize(investor.checkSizeMin, investor.checkSizeMax)}
               </Badge>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-2xs">
                 <Globe className="h-2.5 w-2.5 mr-0.5" />{investor.geographies.slice(0, 2).join(', ')}
               </Badge>
             </div>
@@ -283,7 +283,7 @@ export default function InvestorsPage() {
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-2">
                 <s.icon className="h-4 w-4 text-primary-accessible shrink-0" />
-                <div><p className="text-xs font-bold">{s.value}</p><p className="text-[10px] text-muted-foreground">{s.label}</p></div>
+                <div><p className="text-xs font-bold">{s.value}</p><p className="text-2xs text-muted-foreground">{s.label}</p></div>
               </CardContent>
             </Card>
           ))}

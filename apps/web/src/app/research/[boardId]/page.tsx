@@ -1228,7 +1228,7 @@ export default function ResearchBoardPage() {
               <Layers className="h-5 w-5 text-primary-accessible shrink-0" />
               <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
             </Link>
-            <span className="text-[11px] text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
+            <span className="text-2xs text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
               {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
             </span>
             <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1" />
@@ -1261,7 +1261,7 @@ export default function ResearchBoardPage() {
               {NODE_CATEGORIES.map((cat, ci) => (
                 <div key={cat.category}>
                   {ci > 0 && <DropdownMenuSeparator />}
-                  <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {cat.category}
                   </div>
                   {cat.items.map((item) => {
@@ -1357,7 +1357,7 @@ export default function ResearchBoardPage() {
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title="Zoom out">
               <ZoomOut className="h-3.5 w-3.5" />
             </Button>
-            <span className="text-[11px] text-muted-foreground w-10 text-center tabular-nums select-none">
+            <span className="text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
               {Math.round(zoom * 100)}%
             </span>
             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title="Zoom in">
@@ -1523,7 +1523,7 @@ export default function ResearchBoardPage() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {/* Auto Layout */}
-              <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Auto Layout
               </div>
               {([
@@ -1808,7 +1808,7 @@ export default function ResearchBoardPage() {
 
         {/* Bottom status bar */}
         <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
-          <span className="text-[10px] text-muted-foreground/70 tabular-nums">
+          <span className="text-2xs text-muted-foreground/70 tabular-nums">
             {Math.round(zoom * 100)}% · {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
             {board.connectors.length > 0 && ` · ${board.connectors.length} connection${board.connectors.length !== 1 ? 's' : ''}`}
             {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} selected`}
@@ -1816,7 +1816,7 @@ export default function ResearchBoardPage() {
             {groups.length > 0 && ` · ${groups.length} group${groups.length !== 1 ? 's' : ''}`}
             {snapToGrid && ' · ⊞ Snap'}
           </span>
-          <span className="text-[10px] text-muted-foreground/50 tabular-nums">
+          <span className="text-2xs text-muted-foreground/50 tabular-nums">
             {history.length > 0 && `History: ${historyIndex + 1}/${history.length} · `}
             Scroll to zoom · Drag to pan · ? for shortcuts
           </span>
@@ -2084,7 +2084,7 @@ export default function ResearchBoardPage() {
                   <span className="text-sm text-muted-foreground">{s.desc}</span>
                   <div className="flex items-center gap-1">
                     {s.keys.map((k, j) => (
-                      <kbd key={j} className="px-2 py-1 text-[11px] font-mono bg-secondary border border-border rounded">
+                      <kbd key={j} className="px-2 py-1 text-2xs font-mono bg-secondary border border-border rounded">
                         {k}
                       </kbd>
                     ))}

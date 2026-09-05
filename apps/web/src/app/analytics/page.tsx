@@ -211,7 +211,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
         <div className="flex items-center gap-2 mb-3">
           <Zap className="h-4 w-4 text-primary-accessible" />
           <span className="text-sm font-semibold">Network Velocity</span>
-          <Badge variant="secondary" className="text-[10px] ml-auto">vs prev period</Badge>
+          <Badge variant="secondary" className="text-2xs ml-auto">vs prev period</Badge>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => {
@@ -229,7 +229,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                 )}>
                   {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
                 </p>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
+                <p className="text-2xs text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
               </div>
             );
           })}
@@ -460,7 +460,7 @@ export default function AnalyticsPage() {
                           </div>
                           <Badge
                             variant={metric.changeType === 'increase' ? 'default' : metric.changeType === 'decrease' ? 'destructive' : 'secondary'}
-                            className="gap-1 text-[10px]"
+                            className="gap-1 text-2xs"
                           >
                             {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <Minus className="h-2.5 w-2.5" />}
                             {Math.abs(metric.change)}%

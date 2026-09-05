@@ -278,7 +278,7 @@ export function MilestoneFormModal({
               onChange={(e) => set('collaboratorId', e.target.value)}
               placeholder="Optional — paste a co-founder's user ID"
             />
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               Both of you will be able to view and update this milestone.
             </p>
           </div>

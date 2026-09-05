@@ -152,7 +152,7 @@ function ShortlistCard({
                 </Link>
                 {/* Match score badge */}
                 <span className={cn(
-                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold border',
+                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold border',
                   matchScore >= 85 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                     : matchScore >= 70 ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                     : 'bg-muted text-muted-foreground border-border',
@@ -161,7 +161,7 @@ function ShortlistCard({
                   {matchScore}% match
                 </span>
                 {statusLabel && (
-                  <span className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS_CONFIG[statusLabel].color)}>
+                  <span className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
                     {STATUS_CONFIG[statusLabel].label}
                   </span>
                 )}
@@ -169,13 +169,13 @@ function ShortlistCard({
               {profile?.headline && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{profile.headline}</p>}
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 {profile?.role && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                     <Briefcase className="h-3 w-3" />
                     <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
                   </div>
                 )}
                 {profile?.location && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     {profile.location}
                   </div>
@@ -204,23 +204,23 @@ function ShortlistCard({
           {profile?.skills && profile.skills.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
               {profile.skills.slice(0, 5).map((s) => (
-                <Badge key={s} variant="secondary" className="h-5 rounded-full px-2 text-[10px] font-normal">{s}</Badge>
+                <Badge key={s} variant="secondary" className="h-5 rounded-full px-2 text-2xs font-normal">{s}</Badge>
               ))}
               {profile.skills.length > 5 && (
-                <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">+{profile.skills.length - 5}</Badge>
+                <Badge variant="outline" className="h-5 rounded-full px-2 text-2xs">+{profile.skills.length - 5}</Badge>
               )}
             </div>
           )}
 
           {/* Status label picker */}
           <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] text-muted-foreground font-medium">Label:</span>
+            <span className="text-2xs text-muted-foreground font-medium">Label:</span>
             {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => setStatusLabel(statusLabel === key ? null : key)}
                 className={cn(
-                  'rounded-full border px-2 py-0.5 text-[10px] transition-all',
+                  'rounded-full border px-2 py-0.5 text-2xs transition-all',
                   statusLabel === key ? cfg.color : 'border-border/60 text-muted-foreground hover:border-border',
                 )}
               >
@@ -242,13 +242,13 @@ function ShortlistCard({
 
           {/* Footer */}
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+            <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" />
               Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             <div className="flex items-center gap-1.5">
               <Link href={`/matches/compare?ids=${item.userId}`}>
-                <Button variant="ghost" size="sm" className="h-6 gap-1 text-[11px] px-2 text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground">
                   <GitMerge className="h-3 w-3" /> Compare
                 </Button>
               </Link>
@@ -365,7 +365,7 @@ export default function ShortlistPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -424,7 +424,7 @@ export default function ShortlistPage() {
                   <Icon className="h-3 w-3" />
                   {label}
                   {roleCounts[value] !== undefined && (
-                    <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-[10px] font-semibold">
+                    <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-2xs font-semibold">
                       {roleCounts[value]}
                     </span>
                   )}

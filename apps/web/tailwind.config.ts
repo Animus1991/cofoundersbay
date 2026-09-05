@@ -86,10 +86,19 @@ const config: Config = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
+      // One token, one scale. Every step derives from --radius (globals.css) so a
+      // theme can soften or sharpen the whole product by changing a single value,
+      // and nested surfaces stay concentric: card 14 > row 10 > control 8 > item 4,
+      // i.e. each inner radius ≈ outer radius minus the padding between them.
+      // Previously xl/2xl were Tailwind's fixed defaults and ignored the token.
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        sm: 'calc(var(--radius) - 6px)',       //  4px  menu items, tiny chips
+        DEFAULT: 'calc(var(--radius) - 4px)',  //  6px  small inline elements
+        md: 'calc(var(--radius) - 2px)',       //  8px  buttons, inputs, selects
+        lg: 'var(--radius)',                   // 10px  tab lists, list rows, tiles
+        xl: 'calc(var(--radius) + 4px)',       // 14px  cards, dialogs, toasts
+        '2xl': 'calc(var(--radius) + 8px)',    // 18px  sheets, hero surfaces
+        '3xl': 'calc(var(--radius) + 14px)',   // 24px  marketing blocks
       },
       keyframes: {
         'fade-in': {
@@ -180,9 +189,19 @@ const config: Config = {
         'glass-sheen':
           'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
       },
+      // Hard legibility floor. Nothing in the product is set below 11px; this is the
+      // same floor .bilingual-secondary uses. Replaces ~550 arbitrary text-[Npx]
+      // values (8px–13px) that were scattered through the codebase.
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11px — counters, badges, micro-labels
+      },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-space-grotesk)', 'var(--font-sora)', 'system-ui', 'sans-serif'],
+        // Outer var = per-tenant override written by TenantContext.applyBrandingFonts;
+        // inner var = self-hosted brand font injected by next/font in app/layout.tsx.
+        // The tenant vars were previously written but never read, so custom
+        // tenant fonts silently had no effect.
+        sans: ['var(--font-sans, var(--font-inter))', 'system-ui', 'sans-serif'],
+        display: ['var(--font-heading, var(--font-display-brand))', 'var(--font-inter)', 'system-ui', 'sans-serif'],
       },
     },
   },

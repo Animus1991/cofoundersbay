@@ -108,7 +108,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                     <Progress value={cohort.avgReadiness} className="h-1.5" />
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-[11px]">
+                <div className="flex items-center gap-3 text-2xs">
                   {cohort.mentorCoverage != null && (
                     <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>
                       <CheckCircle2 className="icon-sm" /> {cohort.mentorCoverage}% mentor coverage
@@ -217,7 +217,7 @@ export default function OrgCohortsPage() {
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', STATUS[tone].icon)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>

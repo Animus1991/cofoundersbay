@@ -365,7 +365,7 @@ export default function HelpPage() {
             )}
           >
             All Topics
-            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-[10px]', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
+            <Badge variant="secondary" className={cn('ml-0.5 h-4 px-1.5 text-2xs', selectedCategory === null && 'bg-primary-foreground/20 text-primary-foreground')}>
               {faqCategories.reduce((sum, c) => sum + c.faqs.length, 0)}
             </Badge>
           </button>
@@ -427,7 +427,7 @@ export default function HelpPage() {
                       <CardTitle className="text-sm font-semibold">{category.title}</CardTitle>
                       <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">
+                    <Badge variant="outline" className="text-2xs shrink-0">
                       {category.faqs.length} FAQ{category.faqs.length !== 1 ? 's' : ''}
                     </Badge>
                   </div>

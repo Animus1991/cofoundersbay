@@ -147,7 +147,7 @@ export function NotificationsBell({ className }: { className?: string }) {
         >
           <Bell className={cn('h-5 w-5', hasNew && 'animate-pulse')} />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground ring-2 ring-background">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground ring-2 ring-background">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
@@ -159,7 +159,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           <div>
             <span className="text-sm font-semibold text-foreground">Notifications</span>
             {unread > 0 && (
-              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary-accessible">
+              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-accessible">
                 {unread} new
               </span>
             )}
@@ -238,7 +238,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                   >
                     {notification.title}
                   </p>
-                  <span className="mt-0.5 shrink-0 text-[10px] text-muted-foreground">
+                  <span className="mt-0.5 shrink-0 text-2xs text-muted-foreground">
                     {formatRelativeTime(notification.createdAt)}
                   </span>
                 </div>

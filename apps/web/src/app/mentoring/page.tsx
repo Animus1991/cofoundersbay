@@ -151,7 +151,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               </Link>
               {mentor.isVerified && <BadgeCheck className="h-4 w-4 text-primary-accessible shrink-0" />}
               {mentor.isFeatured && (
-                <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0.5">
+                <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
                   <TrendingUp className="h-2.5 w-2.5" />Featured
                 </Badge>
               )}
@@ -182,7 +182,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             )}>
               {matchPct}%
             </div>
-            <span className="text-[9px] text-muted-foreground">match</span>
+            <span className="text-2xs text-muted-foreground">match</span>
           </div>
         </div>
 
@@ -191,10 +191,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         {/* Expertise tags */}
         <div className="flex flex-wrap gap-1">
           {mentor.expertise.slice(0, 4).map((skill) => (
-            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{skill}</span>
+            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">{skill}</span>
           ))}
           {mentor.expertise.length > 4 && (
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">+{mentor.expertise.length - 4}</span>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">+{mentor.expertise.length - 4}</span>
           )}
         </div>
 
@@ -206,9 +206,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
                 <DollarSign className="h-3.5 w-3.5 text-primary-accessible" />{mentor.hourlyRate}/hr
               </span>
             ) : (
-              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
+              <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
             )}
-            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', availCfg.bg, availCfg.color)}>
+            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
               {availCfg.label}
             </span>
           </div>
@@ -742,7 +742,7 @@ export default function MentoringPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                      <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>

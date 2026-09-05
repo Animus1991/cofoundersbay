@@ -196,7 +196,7 @@ export function ActivityTimeline({
                           {activity.user && (
                             <Avatar className="h-5 w-5 shrink-0">
                               <AvatarImage src={activity.user.avatarUrl} />
-                              <AvatarFallback className="text-[9px]">
+                              <AvatarFallback className="text-2xs">
                                 {(activity.user.displayName ?? 'U').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
@@ -216,7 +216,7 @@ export function ActivityTimeline({
                       {activity.entityType && (
                         <Badge
                           variant="secondary"
-                          className="text-[10px] h-4 px-1.5 mt-1.5 capitalize"
+                          className="text-2xs h-4 px-1.5 mt-1.5 capitalize"
                         >
                           {activity.entityType}
                         </Badge>
