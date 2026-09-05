@@ -360,6 +360,17 @@ function kitchenSink() {
       { id: 'growth', name: 'Growth', slug: 'growth', category: 'business' },
       { id: 'typescript', name: 'TypeScript', slug: 'typescript', category: 'engineering' },
     ],
+    agents: [
+      {
+        id: 'general',
+        name: 'General assistant',
+        description: 'Preview AI helper',
+        suggestedQuestions: ['How do I find a cofounder?', 'What should I do next?'],
+      },
+    ],
+    models: [],
+    available: false,
+    default: 'general',
   };
 }
 
@@ -595,6 +606,28 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
 
   if (pathname === '/api/shortlist' || pathname.includes('shortlist')) {
     return { ids: ['user-marcus'] };
+  }
+
+  if (pathname === '/api/ai/health') {
+    return { available: false, models: [] };
+  }
+  if (pathname === '/api/ai/agents') {
+    return {
+      agents: [
+        {
+          id: 'general',
+          name: 'General assistant',
+          description: 'Preview AI helper',
+          suggestedQuestions: ['How do I find a cofounder?', 'What should I do next?'],
+        },
+      ],
+    };
+  }
+  if (pathname === '/api/ai/models') {
+    return { models: [], default: 'general' };
+  }
+  if (pathname.startsWith('/api/ai/')) {
+    return { ok: true, available: false, agents: [], models: [], conversations: [], messages: [] };
   }
 
   if (method !== 'GET') {
