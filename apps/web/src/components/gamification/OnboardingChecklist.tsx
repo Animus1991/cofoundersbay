@@ -28,6 +28,18 @@ export interface OnboardingStep {
 }
 
 const STORAGE_KEY = 'cfb_onboarding_dismissed_v1';
+const DISMISSAL_EVENT = 'cfb:onboarding-dismissed';
+let dismissedSnapshot = false;
+let unsavedDismissal = false;
+
+function readDismissal() {
+  try {
+    if (!unsavedDismissal) dismissedSnapshot = window.localStorage.getItem(STORAGE_KEY) === 'true';
+  } catch {
+    return dismissedSnapshot;
+  }
+  return dismissedSnapshot;
+}
 
 /**
  * Whether the user has dismissed the checklist.
@@ -40,7 +52,25 @@ export function useOnboardingChecklistDismissed(): boolean | undefined {
   const [dismissed, setDismissed] = useState<boolean | undefined>(undefined);
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    setDismissed(localStorage.getItem(STORAGE_KEY) === 'true');
+    const onDismissal = () => setDismissed(dismissedSnapshot);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY && event.key !== null) return;
+      try {
+        if (event.storageArea && event.storageArea !== window.localStorage) return;
+      } catch {
+        return;
+      }
+      dismissedSnapshot = event.newValue === 'true';
+      unsavedDismissal = false;
+      setDismissed(dismissedSnapshot);
+    };
+    window.addEventListener(DISMISSAL_EVENT, onDismissal);
+    window.addEventListener('storage', onStorage);
+    setDismissed(readDismissal());
+    return () => {
+      window.removeEventListener(DISMISSAL_EVENT, onDismissal);
+      window.removeEventListener('storage', onStorage);
+    };
   }, []);
   return dismissed;
 }
@@ -57,25 +87,26 @@ interface OnboardingChecklistProps {
 
 export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingChecklistProps) {
   const completedCount = steps.filter((s) => s.done).length;
-  const pct           = Math.round((completedCount / steps.length) * 100);
+  const pct           = steps.length ? Math.round((completedCount / steps.length) * 100) : 0;
   const allDone       = completedCount === steps.length;
 
-  const [dismissed, setDismissed] = useState(false);
-  const [expanded,  setExpanded]  = useState(true);
+  const dismissed = useOnboardingChecklistDismissed();
+  const [expandedChoice, setExpandedChoice] = useState<boolean | undefined>(undefined);
+  const expanded = expandedChoice ?? !(autoCollapse && pct > 50);
   const listId = useId();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (localStorage.getItem(STORAGE_KEY) === 'true') setDismissed(true);
-    if (autoCollapse && pct > 50) setExpanded(false);
-  }, [autoCollapse, pct]);
-
   const handleDismiss = () => {
-    setDismissed(true);
-    localStorage.setItem(STORAGE_KEY, 'true');
+    dismissedSnapshot = true;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, 'true');
+      unsavedDismissal = false;
+    } catch {
+      unsavedDismissal = true;
+    }
+    window.dispatchEvent(new Event(DISMISSAL_EVENT));
   };
 
-  if (dismissed || allDone) return null;
+  if (dismissed !== false || allDone) return null;
 
   const nextStep = steps.find((s) => !s.done);
   const dismissLabel = bilingualAria('Dismiss the getting-started checklist', 'Απόρριψη λίστας πρώτων βημάτων');
@@ -90,7 +121,7 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
           <button
             type="button"
             className="flex min-w-0 items-center gap-2 rounded-md text-left"
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => setExpandedChoice(!expanded)}
             aria-expanded={expanded}
             aria-controls={listId}
           >
@@ -134,57 +165,80 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
         />
       </CardHeader>
 
-      {expanded && (
-        <CardContent id={listId} className="space-y-1.5 pb-3 pt-0">
-          {steps.map((step) => (
-            <div
-              key={step.id}
-              className={cn(
-                'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
-                step.done
-                  ? 'opacity-60'
-                  : 'border border-border/40 bg-background/60 hover:border-primary/30 hover:bg-primary/5',
-              )}
-            >
-              <div className="mt-0.5 shrink-0">
-                {step.done
-                  ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-label={bilingualAria('Done', 'Έγινε')} />
-                  : <Circle className="icon-sm text-muted-foreground/40" aria-hidden="true" />
-                }
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className={cn('text-xs font-medium', step.done ? 'text-muted-foreground line-through' : 'text-foreground')}>
-                  <BilingualText en={step.label} el={step.labelEl} stacked />
-                </p>
-                {!step.done && (
-                  <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
-                    <BilingualText en={step.description} el={step.descriptionEl} stacked />
-                  </p>
-                )}
-              </div>
+      <CardContent id={listId} hidden={!expanded} className="space-y-1.5 pb-3 pt-0">
+        {steps.map((step) => (
+          <div
+            key={step.id}
+            className={cn(
+              'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 rounded-lg px-3 py-2.5 transition-colors sm:grid-cols-[auto_minmax(0,1fr)_auto]',
+              step.done
+                ? 'opacity-60'
+                : 'border border-border/40 bg-background/60 hover:border-primary/30 hover:bg-primary/5',
+            )}
+          >
+            <div className="mt-0.5 shrink-0">
+              {step.done
+                ? <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} aria-label={bilingualAria('Done', 'Έγινε')} />
+                : <Circle className="icon-sm text-muted-foreground/40" aria-hidden="true" />
+              }
+            </div>
+            <div className="min-w-0">
+              <p className={cn('text-xs font-medium', step.done ? 'text-muted-foreground line-through' : 'text-foreground')}>
+                <BilingualText
+                  en={step.label}
+                  el={step.labelEl}
+                  stacked
+                  primaryClassName="whitespace-normal break-words"
+                  secondaryClassName="whitespace-normal break-words"
+                />
+              </p>
               {!step.done && (
-                <Link href={step.href} className="shrink-0">
-                  <Button variant="ghost" size="sm" className="gap-1 text-primary-accessible hover:bg-primary/10">
-                    <BilingualText en={step.cta} el={step.ctaEl} compact />
-                    <ChevronRight className="icon-sm" aria-hidden="true" />
-                  </Button>
-                </Link>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  <BilingualText
+                    en={step.description}
+                    el={step.descriptionEl}
+                    stacked
+                    primaryClassName="whitespace-normal break-words"
+                    secondaryClassName="whitespace-normal break-words"
+                  />
+                </p>
               )}
             </div>
-          ))}
+            {!step.done && (
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="col-start-2 h-auto min-h-8 min-w-0 max-w-full justify-self-start gap-1 whitespace-normal py-1.5 text-left text-primary-accessible hover:bg-primary/10 sm:col-start-auto"
+              >
+                <Link href={step.href}>
+                  <BilingualText
+                    en={step.cta}
+                    el={step.ctaEl}
+                    stacked
+                    primaryClassName="whitespace-normal break-words"
+                    secondaryClassName="whitespace-normal break-words"
+                  />
+                  <ChevronRight className="icon-sm" aria-hidden="true" />
+                </Link>
+              </Button>
+            )}
+          </div>
+        ))}
 
-          {nextStep?.identitySignal && (
-            <p className="px-1 pt-1 text-xs italic text-muted-foreground">
-              <span aria-hidden="true">✦ </span>
-              <BilingualText
-                en={`Next: ${nextStep.identitySignal}`}
-                el={nextStep.identitySignalEl ? `Επόμενο: ${nextStep.identitySignalEl}` : undefined}
-                stacked
-              />
-            </p>
-          )}
-        </CardContent>
-      )}
+        {nextStep?.identitySignal && (
+          <p className="px-1 pt-1 text-xs italic text-muted-foreground">
+            <span aria-hidden="true">✦ </span>
+            <BilingualText
+              en={`Next: ${nextStep.identitySignal}`}
+              el={nextStep.identitySignalEl ? `Επόμενο: ${nextStep.identitySignalEl}` : undefined}
+              stacked
+              primaryClassName="whitespace-normal break-words"
+              secondaryClassName="whitespace-normal break-words"
+            />
+          </p>
+        )}
+      </CardContent>
     </Card>
   );
 }

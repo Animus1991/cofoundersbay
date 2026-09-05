@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { bilingualAria } from "@/lib/i18n/format";
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -180,7 +181,7 @@ interface RichTextEditorProps {
   readOnly?: boolean;
 }
 
-function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
+export function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -189,10 +190,30 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
     }
   }, []);
 
-  const exec = (command: string, val?: string) => {
+  const exec = (command: string, val?: string, range?: Range) => {
     editorRef.current?.focus();
+    if (range) {
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
     document.execCommand(command, false, val);
     if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const insertLink = () => {
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : undefined;
+    const savedRange = range && editorRef.current?.contains(range.commonAncestorContainer) ? range : undefined;
+    const url = window.prompt("Enter URL")?.trim();
+    if (!url) return;
+    try {
+      const protocol = new URL(url, document.baseURI).protocol;
+      if (protocol === "javascript:" || protocol === "data:") return;
+    } catch {
+      return;
+    }
+    exec("createLink", url, savedRange);
   };
 
   const ToolBtn = ({ cmd, val, title, children }: { cmd: string; val?: string; title: string; children: React.ReactNode }) => (
@@ -229,9 +250,16 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
           <ToolBtn cmd="justifyCenter" title="Align center"><AlignCenter className="icon-sm" /></ToolBtn>
           <ToolBtn cmd="justifyRight" title="Align right"><AlignRight className="icon-sm" /></ToolBtn>
           <div className="w-px h-5 bg-border mx-1 self-center" />
-          <ToolBtn cmd="createLink" val={prompt("Enter URL") || undefined} title="Insert link">
+          <button
+            type="button"
+            title="Insert link"
+            aria-label={bilingualAria("Insert link", "Εισαγωγή συνδέσμου")}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertLink}
+            className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+          >
             <Link2 className="icon-sm" />
-          </ToolBtn>
+          </button>
         </div>
       )}
       <div

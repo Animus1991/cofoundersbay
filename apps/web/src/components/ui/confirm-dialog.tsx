@@ -22,6 +22,7 @@ export interface ConfirmDialogProps {
   variant?: 'default' | 'destructive';
   loading?: boolean;
   onConfirm: () => void | Promise<void>;
+  onCloseAutoFocus?: React.ComponentPropsWithoutRef<typeof DialogContent>['onCloseAutoFocus'];
 }
 
 export function ConfirmDialog({
@@ -34,16 +35,33 @@ export function ConfirmDialog({
   variant = 'destructive',
   loading = false,
   onConfirm,
+  onCloseAutoFocus,
 }: ConfirmDialogProps) {
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!loading) onOpenChange(nextOpen); }}>
+      <DialogContent
+        className="max-w-md"
+        hideClose={loading}
+        aria-busy={loading}
+        {...(!description && { 'aria-describedby': undefined })}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (variant === 'destructive' ? cancelRef : confirmRef).current?.focus();
+        }}
+        onCloseAutoFocus={onCloseAutoFocus}
+        onEscapeKeyDown={(event) => { if (loading) event.preventDefault(); }}
+        onInteractOutside={(event) => { if (loading) event.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter>
           <Button
+            ref={cancelRef}
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
@@ -52,13 +70,13 @@ export function ConfirmDialog({
             {cancelLabel ?? <BilingualText en="Cancel" el="Άκυρο" compact />}
           </Button>
           <Button
+            ref={confirmRef}
             type="button"
             variant={variant}
             loading={loading}
             onClick={() => void onConfirm()}
-            autoFocus={variant !== 'destructive'}
           >
-            {confirmLabel ?? <BilingualText en="Confirm" el="Επιβεβαίωση" compact />}
+            {confirmLabel ?? <BilingualText en="Confirm" el="Επιβεβαίωση" compact secondaryClassName={variant === 'destructive' ? 'text-destructive-foreground' : 'text-primary-foreground'} />}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -90,16 +108,40 @@ type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
 
 const ConfirmContext = React.createContext<ConfirmFn | null>(null);
 
-export function ConfirmProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<(ConfirmOptions & { resolve: (v: boolean) => void }) | null>(null);
+type ConfirmRequest = ConfirmOptions & {
+  resolve: (value: boolean) => void;
+  returnFocus: HTMLElement | null;
+};
 
-  const confirm = React.useCallback<ConfirmFn>((options) => {
-    return new Promise<boolean>((resolve) => setState({ ...options, resolve }));
+export function ConfirmProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = React.useState<ConfirmRequest | null>(null);
+  const requests = React.useRef<ConfirmRequest[]>([]);
+  const mounted = React.useRef(true);
+
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      requests.current.splice(0).forEach((request) => request.resolve(false));
+    };
   }, []);
 
-  const close = (value: boolean) => {
-    state?.resolve(value);
-    setState(null);
+  const confirm = React.useCallback<ConfirmFn>((options) => {
+    if (!mounted.current) return Promise.resolve(false);
+    const returnFocus = requests.current[0]?.returnFocus ??
+      (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    return new Promise<boolean>((resolve) => {
+      const request = { ...options, resolve, returnFocus };
+      requests.current.push(request);
+      if (requests.current.length === 1) setState(request);
+    });
+  }, []);
+
+  const close = (request: ConfirmRequest, value: boolean) => {
+    if (requests.current[0] !== request) return;
+    requests.current.shift();
+    setState(requests.current[0] ?? null);
+    request.resolve(value);
   };
 
   return (
@@ -108,13 +150,19 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
       {state && (
         <ConfirmDialog
           open
-          onOpenChange={(open) => { if (!open) close(false); }}
+          onOpenChange={(open) => { if (!open) close(state, false); }}
           title={state.title}
           description={state.description}
           confirmLabel={state.confirmLabel}
           cancelLabel={state.cancelLabel}
           variant={state.variant ?? 'destructive'}
-          onConfirm={() => close(true)}
+          onConfirm={() => close(state, true)}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (requests.current.length === 0 && state.returnFocus?.isConnected) {
+              state.returnFocus.focus();
+            }
+          }}
         />
       )}
     </ConfirmContext.Provider>
@@ -156,7 +204,7 @@ export function deleteConfirmCopy(what: { en: string; el: string }, name?: strin
         el="Αφαιρείται οριστικά για όλους όσοι έχουν πρόσβαση. Δεν μπορεί να αναιρεθεί."
       />
     ),
-    confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact />,
+    confirmLabel: <BilingualText en="Delete" el="Διαγραφή" compact secondaryClassName="text-destructive-foreground" />,
     variant: 'destructive',
   };
 }

@@ -65,11 +65,11 @@ export function DemoDataToggle({ className }: { className?: string }) {
           <p className="text-2xs text-muted-foreground">
             <BilingualText
               en={showDemoData
-                ? 'Pages are filled with example content so you can explore. Nothing here is saved.'
-                : 'Pages show only your real data. Turn on to fill them with examples.'}
+                ? 'Shows examples where supported. This display setting does not disable saving or account actions.'
+                : 'Hides examples where supported. Your account actions remain available.'}
               el={showDemoData
-                ? 'Οι σελίδες γεμίζουν με παραδείγματα για εξερεύνηση. Τίποτα δεν αποθηκεύεται.'
-                : 'Οι σελίδες δείχνουν μόνο τα πραγματικά σας δεδομένα. Ενεργοποιήστε για παραδείγματα.'}
+                ? 'Εμφανίζει παραδείγματα όπου υποστηρίζεται. Η ρύθμιση προβολής δεν απενεργοποιεί την αποθήκευση ή τις ενέργειες λογαριασμού.'
+                : 'Κρύβει παραδείγματα όπου υποστηρίζεται. Οι ενέργειες λογαριασμού παραμένουν διαθέσιμες.'}
             />
           </p>
         </TooltipContent>

@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
@@ -52,8 +53,8 @@ const DialogContent = React.forwardRef<
       {children}
       {!hideClose && (
         <DialogPrimitive.Close
-          className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
-          aria-label="Close dialog"
+          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
+          aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}
         >
           <X className="icon-sm" />
           <span className="sr-only">Close</span>
