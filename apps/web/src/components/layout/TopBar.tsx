@@ -23,6 +23,7 @@ import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
 import { BilingualText } from '@/components/common/BilingualText';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
+import { bilingualAria } from '@/lib/i18n/format';
 import { STATUS } from '@/lib/semantic-colors';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -54,8 +55,8 @@ function PreviewDemoBadge() {
               'hover:brightness-95',
             )}
           >
-            <Sparkles className="icon-sm" />
-            Demo
+            <Sparkles className="icon-sm" aria-hidden="true" />
+            <BilingualText en="Demo account" el="Δοκιμαστικός λογαριασμός" compact />
           </Link>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end" className="max-w-[220px]">
@@ -86,20 +87,24 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
           variant="ghost"
           size="icon"
           className="h-9 w-9 shrink-0 md:hidden"
-          aria-label="More tools"
+          aria-label={bilingualAria('More tools', 'Περισσότερα εργαλεία')}
         >
           <MoreHorizontal className="icon-sm" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem onClick={onCommand}>
-          <Keyboard className="mr-2 icon-sm" />
-          Command palette
+          <Keyboard className="mr-2 icon-sm" aria-hidden="true" />
+          <BilingualText en="Command palette" el="Παλέτα εντολών" compact />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
-          {showDemoData ? <Eye className="mr-2 icon-sm" /> : <EyeOff className="mr-2 icon-sm" />}
-          {showDemoData ? 'Hide sample data' : 'Show sample data'}
+          {showDemoData ? <Eye className="mr-2 icon-sm" aria-hidden="true" /> : <EyeOff className="mr-2 icon-sm" aria-hidden="true" />}
+          <BilingualText
+            en={showDemoData ? 'Hide sample data' : 'Show sample data'}
+            el={showDemoData ? 'Απόκρυψη δείγματος δεδομένων' : 'Εμφάνιση δείγματος δεδομένων'}
+            compact
+          />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -140,8 +145,8 @@ export function TopBar() {
             size="icon"
             className="hidden h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:flex"
             onClick={() => setCommandOpen(true)}
-            aria-label="Command palette"
-            title="Command palette (Ctrl+K)"
+            aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
+            title={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
           >
             <Keyboard className="icon-sm" />
           </Button>
