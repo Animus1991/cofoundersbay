@@ -5,6 +5,8 @@ import { createContext, useContext, useCallback, useState, useEffect } from 'rea
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -48,7 +50,7 @@ export function useToast() {
   return context;
 }
 
-const toastIcons: Record<ToastType, React.ComponentType<{ className?: string }>> = {
+const toastIcons: Record<ToastType, typeof CheckCircle> = {
   success: CheckCircle,
   error: AlertCircle,
   warning: AlertTriangle,
@@ -64,42 +66,83 @@ const toastStyles: Record<ToastType, string> = {
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
   const Icon = toastIcons[toast.type];
+  const { primary } = useLanguagePreference();
+  const urgent = toast.type === 'error' || toast.type === 'warning';
+  const dismissLabel = primary === 'el'
+    ? bilingualAria('Κλείσιμο ειδοποίησης', 'Dismiss notification')
+    : bilingualAria('Dismiss notification', 'Κλείσιμο ειδοποίησης');
+  const remove = React.useRef(onRemove);
+  remove.current = onRemove;
+  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const started = React.useRef(0);
+  const remaining = React.useRef(0);
+  const timed = React.useRef(false);
+  const paused = React.useRef({ hover: false, focus: false });
+
+  const stopTimer = useCallback(() => {
+    if (timer.current === null) return;
+    clearTimeout(timer.current);
+    timer.current = null;
+    remaining.current = Math.max(0, remaining.current - (Date.now() - started.current));
+  }, []);
+
+  const startTimer = useCallback(() => {
+    const { hover, focus } = paused.current;
+    if (!timed.current || timer.current !== null || hover || focus) return;
+    started.current = Date.now();
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      remove.current();
+    }, remaining.current);
+  }, []);
 
   useEffect(() => {
-    const duration = toast.duration ?? 5000;
-    if (duration > 0) {
-      const timer = setTimeout(onRemove, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [toast.duration, onRemove]);
+    remaining.current = toast.duration ?? 5000;
+    timed.current = remaining.current > 0;
+    startTimer();
+    return stopTimer;
+  }, [toast.duration, startTimer, stopTimer]);
 
   return (
     <div
+      onMouseEnter={() => { paused.current.hover = true; stopTimer(); }}
+      onMouseLeave={() => { paused.current.hover = false; startTimer(); }}
+      onFocusCapture={() => { paused.current.focus = true; stopTimer(); }}
+      onBlurCapture={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        paused.current.focus = false;
+        startTimer();
+      }}
       className={cn(
-        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right',
+        'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border p-4 shadow-lg backdrop-blur-xl animate-slide-in-right motion-reduce:animate-none',
         toastStyles[toast.type]
       )}
     >
-      <Icon className="icon-md flex-shrink-0 mt-0.5" />
-      <div className="flex-1 space-y-1">
-        <p className="text-sm font-semibold text-foreground">{toast.title}</p>
-        {toast.description && (
-          <p className="text-sm text-muted-foreground">{toast.description}</p>
-        )}
+      <Icon className="icon-md flex-shrink-0 mt-0.5" aria-hidden="true" />
+      <div className="min-w-0 flex-1 space-y-1">
+        <div role={urgent ? 'alert' : 'status'} aria-live={urgent ? 'assertive' : 'polite'} aria-atomic="true" className="space-y-1 break-words">
+          <p className="text-sm font-semibold text-foreground">{toast.title}</p>
+          {toast.description && (
+            <p className="text-sm text-muted-foreground">{toast.description}</p>
+          )}
+        </div>
         {toast.action && (
           <button
+            type="button"
             onClick={toast.action.onClick}
-            className="mt-2 text-sm font-medium underline-offset-2 hover:underline"
+            className="mt-2 rounded-md text-sm font-medium underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {toast.action.label}
           </button>
         )}
       </div>
       <button
+        type="button"
+        aria-label={dismissLabel}
         onClick={onRemove}
-        className="rounded-md p-1 opacity-70 hover:opacity-100 transition-opacity"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md hover:bg-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <X className="icon-sm" />
+        <X className="icon-sm" aria-hidden="true" />
       </button>
     </div>
   );

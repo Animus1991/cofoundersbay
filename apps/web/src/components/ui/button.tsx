@@ -15,7 +15,7 @@ const buttonVariants = cva(
         ghost:
           'text-foreground/70 hover:text-foreground hover:bg-secondary/50',
         outline:
-          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-glow',
+          'border border-border bg-transparent text-foreground hover:bg-secondary/50 hover:border-border/80 shadow-sm',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         link:
@@ -59,11 +59,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     if (asChild) {
+      const inactive = disabled || loading;
       return (
         <Slot
-          className={cn(buttonVariants({ variant, size, className }))}
-          ref={ref}
           {...props}
+          className={cn(buttonVariants({ variant, size, className }), inactive && 'pointer-events-none opacity-50')}
+          ref={ref}
+          aria-disabled={inactive || props['aria-disabled']}
+          aria-busy={loading || props['aria-busy']}
+          tabIndex={inactive ? -1 : props.tabIndex}
+          onClickCapture={(event) => {
+            if (inactive) { event.preventDefault(); event.stopPropagation(); }
+            else props.onClickCapture?.(event as React.MouseEvent<HTMLButtonElement>);
+          }}
+          onKeyDownCapture={(event) => {
+            if (inactive && ['Enter', ' '].includes(event.key)) { event.preventDefault(); event.stopPropagation(); }
+            else props.onKeyDownCapture?.(event as React.KeyboardEvent<HTMLButtonElement>);
+          }}
         >
           {children}
         </Slot>

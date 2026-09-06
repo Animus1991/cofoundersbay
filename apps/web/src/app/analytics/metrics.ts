@@ -4,8 +4,8 @@ import type { StatusTone } from '@/lib/semantic-colors';
 
 export interface AnalyticsMetric {
   label: string;
-  value: number;
-  change: number;
+  value: number | null;
+  change: number | null;
   changeType: 'increase' | 'decrease' | 'neutral';
   icon: typeof TrendingUp;
   tone: StatusTone;
@@ -36,12 +36,12 @@ export const METRIC_TONE: Record<string, StatusTone> = {
  * Lives outside `page.tsx` so it can be unit-tested — the App Router only allows
  * a fixed set of named exports from a page module.
  */
-export function metricsToDisplay(m?: Partial<UserMetrics> | null): AnalyticsMetric[] {
-  const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
-    v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
+export function metricsToDisplay(m?: Partial<{ [K in keyof UserMetrics]: number | null }> | null): AnalyticsMetric[] {
+  const changeType = (v: number | null): 'increase' | 'decrease' | 'neutral' =>
+    v === null ? 'neutral' : v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
   // Guards against null/NaN/strings as well as undefined — a JSON payload can
   // carry any of them, and NaN would render as "NaN" in the tile.
-  const num = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
   const tile = (
     label: string,

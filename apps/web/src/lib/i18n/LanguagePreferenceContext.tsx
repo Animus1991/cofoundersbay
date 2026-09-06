@@ -61,6 +61,7 @@ export function LanguagePreferenceProvider({ children }: { children: ReactNode }
 
   useEffect(() => {
     if (!mounted) return;
+    document.documentElement.lang = primary;
     document.documentElement.dataset.primaryLang = primary;
     document.documentElement.dataset.languageDisplay = displayMode;
   }, [primary, displayMode, mounted]);

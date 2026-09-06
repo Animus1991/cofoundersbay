@@ -44,7 +44,7 @@ interface Achievement {
   points: number;
   progress: number;
   total: number;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: Date;
   rarity: number;
 }
@@ -271,7 +271,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 <CheckCircle2 className="icon-sm text-white" />
               </div>
             )}
-            {!achievement.unlocked && achievement.progress === 0 && (
+            {achievement.unlocked === false && achievement.progress === 0 && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
                 <Lock className="icon-sm text-muted-foreground" />
               </div>
@@ -291,7 +291,8 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </Badge>
             </div>
 
-            {!achievement.unlocked && (
+            {achievement.unlocked === null && <p className="mb-3 text-xs text-muted-foreground"><BilingualText en="Eligibility not yet verified" el="Η επιλεξιμότητα δεν έχει ακόμη επαληθευτεί" compact /></p>}
+            {achievement.unlocked === false && (
               <div className="space-y-1.5 mb-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span><BilingualText en="Progress" el="Πρόοδος" compact /></span>

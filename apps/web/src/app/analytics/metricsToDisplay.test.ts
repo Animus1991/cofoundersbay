@@ -28,7 +28,7 @@ describe('metricsToDisplay', () => {
   it('renders all six tiles when the payload is missing entirely', () => {
     const tiles = metricsToDisplay(undefined);
     expect(tiles.map((t) => t.label)).toEqual(LABELS);
-    expect(tiles.every((t) => t.value === 0 && t.change === 0)).toBe(true);
+    expect(tiles.every((t) => t.value === null && t.change === null)).toBe(true);
     expect(tiles.every((t) => t.changeType === 'neutral')).toBe(true);
   });
 
@@ -37,14 +37,14 @@ describe('metricsToDisplay', () => {
     expect(metricsToDisplay(null)).toHaveLength(6);
   });
 
-  it('keeps the fields the server did send and zero-fills the rest', () => {
+  it('keeps the fields the server did send and marks the rest unavailable', () => {
     const tiles = metricsToDisplay({ profileViews: 248, profileViewsChange: 12 });
     const views = tiles.find((t) => t.label === 'Profile Views')!;
     const messages = tiles.find((t) => t.label === 'Messages Sent')!;
     expect(views.value).toBe(248);
     expect(views.change).toBe(12);
     expect(views.changeType).toBe('increase');
-    expect(messages.value).toBe(0);
+    expect(messages.value).toBeNull();
     expect(messages.changeType).toBe('neutral');
   });
 
@@ -57,7 +57,7 @@ describe('metricsToDisplay', () => {
     expect(flat!.changeType).toBe('neutral');
   });
 
-  it('coerces non-finite and non-numeric JSON values to 0', () => {
+  it('marks non-finite and non-numeric JSON values unavailable', () => {
     // A payload can legally carry these; NaN in particular would render as "NaN".
     const tiles = metricsToDisplay({
       profileViews: NaN,
@@ -65,10 +65,10 @@ describe('metricsToDisplay', () => {
       messagesSent: '63',
       engagementRate: Infinity,
     } as never);
-    expect(tiles.find((t) => t.label === 'Profile Views')!.value).toBe(0);
-    expect(tiles.find((t) => t.label === 'New Connections')!.value).toBe(0);
-    expect(tiles.find((t) => t.label === 'Messages Sent')!.value).toBe(0);
-    expect(tiles.find((t) => t.label === 'Engagement Rate')!.value).toBe(0);
+    expect(tiles.find((t) => t.label === 'Profile Views')!.value).toBeNull();
+    expect(tiles.find((t) => t.label === 'New Connections')!.value).toBeNull();
+    expect(tiles.find((t) => t.label === 'Messages Sent')!.value).toBeNull();
+    expect(tiles.find((t) => t.label === 'Engagement Rate')!.value).toBeNull();
   });
 
   it('assigns every tile a tone, so none renders unstyled', () => {

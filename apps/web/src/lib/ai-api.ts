@@ -1,5 +1,4 @@
-import { apiRequest } from './api';
-import { getApiOrigin } from './api-origin';
+import { ApiError, apiFetch, apiRequest, withApiAbort } from './api';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -80,80 +79,167 @@ export async function getAIAgents(): Promise<{ agents: AgentConfig[] }> {
   return apiRequest<{ agents: AgentConfig[] }>('/api/ai/agents');
 }
 
-export async function sendAIChat(request: ChatRequest): Promise<ChatResponse> {
+export async function sendAIChat(request: ChatRequest, signal?: AbortSignal): Promise<ChatResponse> {
   return apiRequest<ChatResponse>('/api/ai/chat', {
     method: 'POST',
     body: JSON.stringify(request),
+    signal,
   });
+}
+
+export interface AIStreamEvent {
+  chunk?: string;
+  done: boolean;
+  model?: string;
+  fallback?: boolean;
+}
+
+export class AIStreamError extends Error {
+  constructor(message: string, public code: string) {
+    super(message);
+    this.name = 'AIStreamError';
+  }
+}
+
+export function isAIStreamUnsupported(error: unknown): boolean {
+  return error instanceof ApiError && [405, 501].includes(error.status);
 }
 
 export async function* streamAIChat(
   request: ChatRequest,
   signal?: AbortSignal,
-): AsyncGenerator<{ chunk?: string; done: boolean; model?: string; fallback?: boolean }> {
-  const baseUrl = `${getApiOrigin() || ''}/api`.replace(/\/\/api$/, '/api');
-
+): AsyncGenerator<AIStreamEvent> {
   // 30s timeout for the initial connection — matches api.ts circuit breaker intent
   const timeoutController = new AbortController();
-  const timeoutId = setTimeout(() => timeoutController.abort(), 30_000);
+  const timedOut = () => timeoutController.abort(new DOMException('AI stream timed out', 'TimeoutError'));
+  let timeoutId = setTimeout(timedOut, 30_000);
 
   // Merge user abort signal with our timeout signal
-  const handleUserAbort = () => timeoutController.abort();
-  signal?.addEventListener('abort', handleUserAbort);
+  const handleUserAbort = () => timeoutController.abort(new DOMException('AI request cancelled', 'AbortError'));
+  signal?.addEventListener('abort', handleUserAbort, { once: true });
+  if (signal?.aborted) handleUserAbort();
 
-  let response: Response;
+  let response: Response | undefined;
+  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
-    response = await fetch(`${baseUrl}/ai/chat/stream`, {
+    timeoutController.signal.throwIfAborted();
+    response = await apiFetch('/api/ai/chat/stream', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { Accept: 'text/event-stream' },
       body: JSON.stringify(request),
-      credentials: 'include',
       signal: timeoutController.signal,
-    });
-  } catch (err) {
+    }, { fetcher: (url, init) => fetch(url, init) });
     clearTimeout(timeoutId);
-    signal?.removeEventListener('abort', handleUserAbort);
+    timeoutController.signal.throwIfAborted();
+
+    if (response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() !== 'text/event-stream') {
+      throw new AIStreamError('Expected an AI event stream', 'AI_STREAM_INVALID');
+    }
+    reader = response.body?.getReader();
+    if (!reader) throw new AIStreamError('No AI stream response body', 'AI_STREAM_INVALID');
+
+    const decoder = new TextDecoder('utf-8', { fatal: true });
+    let buffer = '';
+    let dataLines: string[] = [];
+    let eventType = '';
+    let frameSize = 0;
+
+    const parseEvent = (): AIStreamEvent | undefined => {
+      const eventName = eventType;
+      eventType = '';
+      frameSize = 0;
+      if (!dataLines.length) {
+        if (eventName === 'error') throw new AIStreamError('AI stream failed', 'AI_STREAM_ERROR');
+        return undefined;
+      }
+      const text = dataLines.join('\n');
+      dataLines = [];
+      let data: AIStreamEvent & { error?: string | { message?: string }; message?: string };
+      try {
+        data = JSON.parse(text);
+      } catch {
+        // Skip malformed data
+        throw new AIStreamError('Malformed AI stream event', 'AI_STREAM_INVALID');
+      }
+      if (data && (eventName === 'error' || data.error)) {
+        const message = typeof data.error === 'string' ? data.error : data.error?.message;
+        throw new AIStreamError(message || data.message || 'AI stream failed', 'AI_STREAM_ERROR');
+      }
+      if (!data || typeof data !== 'object' || typeof data.done !== 'boolean' ||
+        (data.chunk !== undefined && typeof data.chunk !== 'string') ||
+        (data.model !== undefined && typeof data.model !== 'string') ||
+        (data.fallback !== undefined && typeof data.fallback !== 'boolean')) {
+        throw new AIStreamError('Invalid AI stream event', 'AI_STREAM_INVALID');
+      }
+      return data;
+    };
+
+    const consumeLine = (line: string): AIStreamEvent | undefined => {
+      if (line === '') return parseEvent();
+      if (line.startsWith(':')) return undefined;
+      const colon = line.indexOf(':');
+      const field = colon < 0 ? line : line.slice(0, colon);
+      const value = colon < 0 ? '' : line.slice(colon + 1).replace(/^ /, '');
+      if (field === 'data') {
+        dataLines.push(value);
+        frameSize += value.length;
+        if (frameSize > 1_048_576) throw new AIStreamError('AI stream event too large', 'AI_STREAM_INVALID');
+      } else if (field === 'event') {
+        eventType = value;
+      }
+      return undefined;
+    };
+
+    while (true) {
+      timeoutController.signal.throwIfAborted();
+      timeoutId = setTimeout(timedOut, 30_000);
+      const { done, value } = await withApiAbort(reader.read(), timeoutController.signal);
+      clearTimeout(timeoutId);
+      timeoutController.signal.throwIfAborted();
+      buffer += done ? decoder.decode() : decoder.decode(value, { stream: true });
+
+      let separator: RegExpExecArray | null;
+      while ((separator = /\r\n|\r|\n/.exec(buffer))) {
+        if (!done && separator[0] === '\r' && separator.index === buffer.length - 1) break;
+        const line = buffer.slice(0, separator.index);
+        buffer = buffer.slice(separator.index + separator[0].length);
+        const data = consumeLine(line);
+        if (data) {
+          timeoutController.signal.throwIfAborted();
+          yield data;
+          if (data.done) return;
+        }
+      }
+      if (buffer.length > 1_048_576) throw new AIStreamError('AI stream event too large', 'AI_STREAM_INVALID');
+      if (done) {
+        if (buffer) consumeLine(buffer);
+        const data = parseEvent();
+        if (data) {
+          yield data;
+          if (data.done) return;
+        }
+        throw new AIStreamError('AI stream ended before completion', 'AI_STREAM_INCOMPLETE');
+      }
+    }
+  } catch (err) {
     // Notify circuit breaker — only for real network errors, not user aborts
     if (
       typeof window !== 'undefined' &&
-      !(err instanceof DOMException && err.name === 'AbortError')
+      !timeoutController.signal.aborted &&
+      err instanceof TypeError
     ) {
       window.dispatchEvent(new Event('cfb:api-offline'));
     }
+    if (timeoutController.signal.aborted) throw timeoutController.signal.reason;
     throw err;
-  }
-
-  clearTimeout(timeoutId);
-  signal?.removeEventListener('abort', handleUserAbort);
-
-  if (!response.ok) {
-    throw new Error(`AI stream error: ${response.status}`);
-  }
-
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('No response body');
-
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const data = JSON.parse(line.slice(6));
-          yield data;
-          if (data.done) return;
-        } catch {
-          // Skip malformed data
-        }
-      }
+  } finally {
+    clearTimeout(timeoutId);
+    signal?.removeEventListener('abort', handleUserAbort);
+    try {
+      if (reader) await reader.cancel().catch(() => {});
+      else await response?.body?.cancel().catch(() => {});
+    } finally {
+      reader?.releaseLock();
     }
   }
 }

@@ -12,6 +12,7 @@ import {
   getAIHealth,
   createAIConversation,
   AIConversation,
+  isAIStreamUnsupported,
 } from '@/lib/ai-api';
 
 export interface AIMessage {
@@ -20,6 +21,7 @@ export interface AIMessage {
   content: string;
   timestamp: Date;
   model?: string;
+  fallback?: boolean;
   isStreaming?: boolean;
 }
 
@@ -90,14 +92,19 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   }, [hasSession, mounted, conversationId, currentAgent, options.autoCreateConversation]);
 
   const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim() || isStreaming) return;
+    if (!content.trim() || abortControllerRef.current) return;
 
+    // Cancel any existing request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const isCurrent = () => abortControllerRef.current === controller && !controller.signal.aborted;
     setError(null);
     lastUserMessageRef.current = content;
 
     // Add user message immediately
+    const turnId = crypto.randomUUID();
     const userMessage: AIMessage = {
-      id: `user-${Date.now()}`,
+      id: `user-${turnId}`,
       role: 'user',
       content: content.trim(),
       timestamp: new Date(),
@@ -105,7 +112,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setMessages((prev) => [...prev, userMessage]);
 
     // Create placeholder for assistant response
-    const assistantMessageId = `assistant-${Date.now()}`;
+    const assistantMessageId = `assistant-${turnId}`;
     const assistantMessage: AIMessage = {
       id: assistantMessageId,
       role: 'assistant',
@@ -117,94 +124,68 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setIsStreaming(true);
 
     // Build history from messages
-    const history: ChatMessage[] = messages.slice(-8).map((m) => ({
+    const history: ChatMessage[] = conversationId ? [] : messages.slice(-8).map((m) => ({
       role: m.role,
       content: m.content,
     }));
+    const request = { message: content.trim(), agentId: currentAgent, conversationId: conversationId || undefined, history };
+    let fullContent = '';
+    let finalModel = '';
+    let fallback = false;
+    let receivedEvent = false;
 
     try {
-      // Cancel any existing request
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = new AbortController();
-
-      let fullContent = '';
-      let finalModel = '';
-
       // Try streaming first
       try {
-        for await (const data of streamAIChat(
-          {
-            message: content,
-            agentId: currentAgent,
-            conversationId: conversationId || undefined,
-            history,
-          },
-          abortControllerRef.current.signal,
-        )) {
-          if (data.chunk) {
-            fullContent += data.chunk;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantMessageId
-                  ? { ...m, content: fullContent }
-                  : m
-              )
-            );
+        for await (const data of streamAIChat(request, controller.signal)) {
+          if (!isCurrent()) return;
+          receivedEvent = true;
+          if (data.fallback) {
+            fullContent = data.chunk ?? '';
+            fallback = true;
+            finalModel = data.model || 'fallback';
+          } else {
+            fullContent += data.chunk ?? '';
+            finalModel = data.model || finalModel;
           }
-          if (data.done) {
-            finalModel = data.model || '';
-            break;
-          }
+          setMessages((prev) => prev.map((message) => message.id === assistantMessageId
+            ? { ...message, content: fullContent, model: finalModel, fallback } : message));
+          if (data.done) break;
         }
-      } catch (streamError: any) {
+      } catch (streamError) {
         // If streaming fails, fall back to non-streaming
-        if (streamError.name !== 'AbortError') {
-          const response = await sendAIChat({
-            message: content,
-            agentId: currentAgent,
-            conversationId: conversationId || undefined,
-            history,
-          });
-          fullContent = response.message;
-          finalModel = response.model;
-        } else {
-          throw streamError;
-        }
+        if (!isCurrent() || receivedEvent || !isAIStreamUnsupported(streamError)) throw streamError;
+        const response = await sendAIChat(request, controller.signal);
+        fullContent = response.message;
+        finalModel = response.model;
+        fallback = response.fallback ?? false;
       }
 
+      if (!isCurrent()) return;
       // Finalize message
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantMessageId
-            ? { ...m, content: fullContent, model: finalModel, isStreaming: false }
-            : m
-        )
-      );
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
+      setMessages((prev) => prev.map((message) => message.id === assistantMessageId
+        ? { ...message, content: fullContent, model: finalModel, fallback, isStreaming: false } : message));
+    } catch (err) {
+      if (!isCurrent()) return;
+      const requestError = err instanceof Error || err instanceof DOMException ? err : null;
+      if (requestError?.name === 'AbortError') {
         // Remove the empty assistant message on abort
-        setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId));
+        setMessages((prev) => prev.filter((message) => message.id !== assistantMessageId));
         return;
       }
 
-      setError(err.message || 'Failed to get AI response');
+      setError(requestError?.message || 'Failed to get AI response');
       // Update assistant message with error
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantMessageId
-            ? { 
-                ...m, 
-                content: 'Sorry, I encountered an error. Please try again.',
-                isStreaming: false,
-              }
-            : m
-        )
-      );
+      setMessages((prev) => prev.map((message) => message.id === assistantMessageId
+        ? { ...message, content: fullContent || 'Sorry, I encountered an error. Please try again.', model: finalModel, fallback, isStreaming: false }
+        : message));
     } finally {
-      setIsStreaming(false);
-      abortControllerRef.current = null;
+      if (abortControllerRef.current === controller) {
+        setIsStreaming(false);
+        abortControllerRef.current = null;
+      }
     }
-  }, [messages, currentAgent, conversationId, isStreaming]);
+  }, [messages, currentAgent, conversationId]);
 
   const setAgent = useCallback((agentId: string) => {
     setCurrentAgent(agentId);
@@ -214,6 +195,9 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   const clearMessages = useCallback(() => {
     abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    lastUserMessageRef.current = null;
+    setIsStreaming(false);
     setMessages([]);
     setError(null);
     setConversationId(null);

@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
     ref={ref}
     className={cn(
       'fixed inset-0 z-50 bg-black/50 backdrop-blur-sm',
-      'data-[state=open]:animate-in data-[state=closed]:animate-out',
+      'data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none',
       'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
       className,
     )}
@@ -40,7 +40,7 @@ const DialogContent = React.forwardRef<
         'fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg translate-x-[-50%] translate-y-[-50%]',
         'max-h-[min(92dvh,720px)] overflow-y-auto overscroll-contain',
         'rounded-xl border border-border/60 bg-card p-5 sm:p-6 text-card-foreground shadow-modal',
-        'data-[state=open]:animate-in data-[state=closed]:animate-out',
+        'data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
         'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
@@ -56,7 +56,7 @@ const DialogContent = React.forwardRef<
           className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
           aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}
         >
-          <X className="icon-sm" />
+          <X className="icon-sm" aria-hidden="true" />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       )}
@@ -66,7 +66,7 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col gap-1.5 pr-8', className)} {...props} />
+  <div className={cn('flex min-w-0 flex-col gap-1.5 pr-10', className)} {...props} />
 );
 DialogHeader.displayName = 'DialogHeader';
 
@@ -84,7 +84,7 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn('text-lg font-semibold leading-tight tracking-tight', className)}
+    className={cn('text-balance break-words text-lg font-semibold leading-snug tracking-tight', className)}
     {...props}
   />
 ));

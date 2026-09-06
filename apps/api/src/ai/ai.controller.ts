@@ -1,5 +1,5 @@
 import { Controller, Post, Body, UseGuards, Get, Param, Delete, Res, HttpStatus, NotFoundException } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AIService } from './ai.service';
@@ -10,6 +10,7 @@ import { AIRateLimitGuard } from './guards/ai-rate-limit.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { AIAgentType } from '@prisma/client';
 import { ChatRequestDto, CreateConversationDto } from './dto/chat.dto';
+import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { getAgent, listAgents } from './agents/base-agent';
 
 @Controller('ai')
@@ -263,10 +264,12 @@ export class AIController {
   // ─────────────────────────────────────────────────────────────
 
   @Post('jobs')
+  @UseGuards(AIRateLimitGuard)
   async enqueueJob(
     @CurrentUser() user: { id: string },
-    @Body() body: Omit<AIJobData, 'userId'>,
+    @Body() body: EnqueueJobDto,
   ) {
+    const startMs = Date.now();
     const jobId = await this.jobQueue.enqueueJob({ ...body, userId: user.id } as AIJobData);
     if (!jobId) {
       return {
@@ -274,12 +277,21 @@ export class AIController {
         message: 'Job queue is unavailable (Redis not configured). Use synchronous /ai/chat instead.',
       };
     }
+    await this.logUsage({
+      userId: user.id,
+      agentId: body.agentId ?? (body.type === 'analyze-profile' ? 'matching' : 'general'),
+      endpoint: '/ai/jobs',
+      responseTimeMs: Date.now() - startMs,
+      model: body.model ?? this.ollama.getDefaultModel(),
+      success: true,
+      isFallback: false,
+    });
     return { queued: true, jobId };
   }
 
   @Get('jobs/:id')
-  async getJobStatus(@Param('id') id: string) {
-    const status = await this.jobQueue.getJobStatus(id);
+  async getJobStatus(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    const status = await this.jobQueue.getJobStatus(id, user.id);
     if (!status) throw new NotFoundException(`AI job ${id} not found`);
     return status;
   }

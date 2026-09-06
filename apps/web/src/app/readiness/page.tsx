@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -45,6 +45,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusChipClasses, type StatusTone } from '@/lib/semantic-colors';
 import { assessReadiness, updateReadinessCriterion, type ReadinessOverall } from '@/lib/api';
+import { isPreviewDemo } from '@/lib/preview-demo';
 
 const RadarFallback = () => <Skeleton className="h-[280px] w-full rounded-lg" />;
 const LineFallback = () => <Skeleton className="h-[200px] w-full rounded-lg" />;
@@ -74,7 +75,7 @@ const DIMENSION_META: Record<string, {
 };
 
 // Static fallback criteria when backend is unavailable
-const FALLBACK_CRITERIA: Record<string, { id: string; name: string; completed: boolean; weight: number }[]> = {
+const DEMO_CRITERIA: Record<string, { id: string; name: string; completed: boolean; weight: number }[]> = {
   team:      [
     { id: 't1', name: 'Co-founder identified',           completed: true,  weight: 30 },
     { id: 't2', name: 'Complementary skills covered',    completed: true,  weight: 25 },
@@ -119,7 +120,7 @@ const FALLBACK_CRITERIA: Record<string, { id: string; name: string; completed: b
   ],
 };
 
-const FALLBACK_RECOMMENDATIONS: Record<string, string[]> = {
+const DEMO_RECOMMENDATIONS: Record<string, string[]> = {
   team:      ['Add an advisor with proven domain expertise to strengthen your credibility.'],
   market:    ['Complete a competitive landscape analysis and conduct 10+ structured customer interviews.'],
   product:   ['Create a detailed product roadmap covering the next 6 months with clear milestones.'],
@@ -188,16 +189,54 @@ function readinessSignalText(pct: number): string {
   return STATUS.danger.text;
 }
 
-function buildDimensions(apiData?: ReadinessOverall): DimData[] {
-  return Object.entries(DIMENSION_META).map(([key, meta]) => {
-    const apiDim = apiData?.dimensions.find((d) => d.dimension === key);
-    const criteria = apiDim?.criteria ?? FALLBACK_CRITERIA[key] ?? [];
-    const score   = apiDim?.score    ?? criteria.filter((c) => c.completed).reduce((s, c) => s + c.weight, 0);
-    const maxScore = apiDim?.maxScore ?? 100;
-    const recommendations = apiDim?.recommendations ?? FALLBACK_RECOMMENDATIONS[key] ?? [];
-    return { key, ...meta, score, maxScore, criteria, recommendations };
-  });
+type AssessmentData = Omit<ReadinessOverall, 'dimensions'> & {
+  dimensions: Pick<ReadinessOverall['dimensions'][number], 'dimension' | 'score' | 'maxScore' | 'criteria' | 'recommendations'>[];
+};
+
+function buildDimensions(apiData: AssessmentData): DimData[] {
+  return apiData.dimensions.map(({ dimension, score, maxScore, criteria, recommendations }) => ({
+    key: dimension, ...DIMENSION_META[dimension], score, maxScore, criteria, recommendations,
+  }));
 }
+
+function isAssessmentData(value: unknown): value is AssessmentData {
+  if (!value || typeof value !== 'object') return false;
+  const assessment = value as AssessmentData;
+  const validScore = (score: unknown, max: number) => typeof score === 'number' && Number.isFinite(score) && score >= 0 && score <= max;
+  return typeof assessment.overallMax === 'number' && Number.isFinite(assessment.overallMax) && assessment.overallMax > 0
+    && validScore(assessment.overallScore, assessment.overallMax)
+    && validScore(assessment.acceleratorReadiness, 100) && validScore(assessment.investorReadiness, 100)
+    && (assessment.lastAssessedAt === null || (typeof assessment.lastAssessedAt === 'string' && Number.isFinite(Date.parse(assessment.lastAssessedAt))))
+    && Array.isArray(assessment.dimensions) && assessment.dimensions.length > 0
+    && assessment.dimensions.every((d) => d && Object.prototype.hasOwnProperty.call(DIMENSION_META, d.dimension)
+      && typeof d.maxScore === 'number' && Number.isFinite(d.maxScore) && d.maxScore > 0 && validScore(d.score, d.maxScore)
+      && Array.isArray(d.criteria) && d.criteria.every((c) => c && typeof c.id === 'string' && typeof c.name === 'string'
+        && typeof c.completed === 'boolean' && validScore(c.weight, 100))
+      && Array.isArray(d.recommendations) && d.recommendations.every((r) => typeof r === 'string'))
+    && new Set(assessment.dimensions.map((d) => d.dimension)).size === assessment.dimensions.length;
+}
+
+function buildDemoAssessment(): AssessmentData {
+  const dimensions = Object.entries(DEMO_CRITERIA).map(([dimension, criteria]) => ({
+    dimension, criteria, maxScore: 100,
+    score: criteria.reduce((sum, criterion) => sum + (criterion.completed ? criterion.weight : 0), 0),
+    recommendations: DEMO_RECOMMENDATIONS[dimension],
+  }));
+  const weightedScore = (audience: 'acceleratorWeight' | 'investorWeight') => Math.round(
+    dimensions.reduce((sum, d) => sum + (d.score / d.maxScore) * DIMENSION_META[d.dimension][audience], 0),
+  );
+  return {
+    dimensions, overallScore: Math.round(dimensions.reduce((sum, d) => sum + d.score, 0) / dimensions.length),
+    overallMax: 100, lastAssessedAt: null,
+    acceleratorReadiness: weightedScore('acceleratorWeight'), investorReadiness: weightedScore('investorWeight'),
+  };
+}
+
+const DEMO_ASSESSMENT = buildDemoAssessment();
+DEMO_HISTORY[DEMO_HISTORY.length - 1] = {
+  week: 'W7', score: DEMO_ASSESSMENT.overallScore,
+  accel: DEMO_ASSESSMENT.acceleratorReadiness, invest: DEMO_ASSESSMENT.investorReadiness,
+};
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 function ScoreRing({ score, size = 128 }: { score: number; size?: number }) {
@@ -381,58 +420,70 @@ function ReadinessSkeleton() {
 export default function ReadinessPage() {
   const { error: toastError } = useToast();
   const qc = useQueryClient();
-  const [workspaceId] = useState<string | null>(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('cfb_default_workspace') : null,
-  );
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [mode, setMode] = useState<'live' | 'demo' | null>(null);
+  const isDemo = mode === 'demo';
 
-  const { data, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ['readiness', workspaceId],
-    queryFn: () => workspaceId
-      ? assessReadiness({ workspaceId })
-      : Promise.resolve<{ assessment: ReadinessOverall }>({
-          assessment: { overallScore: 65, overallMax: 100, dimensions: [], lastAssessedAt: null, acceleratorReadiness: 58, investorReadiness: 52 },
-        }),
+  useEffect(() => {
+    try {
+      setWorkspaceId(localStorage.getItem('cfb_default_workspace')?.trim() || null);
+    } catch {
+      setWorkspaceId(null);
+    }
+    setMode(isPreviewDemo() ? 'demo' : 'live');
+  }, []);
+
+  const { data, isLoading, isError, refetch, isRefetching } = useQuery({
+    queryKey: ['readiness', workspaceId, 'canonical'],
+    enabled: mode === 'live' && !!workspaceId,
+    queryFn: async () => {
+      if (!workspaceId || isDemo) throw new Error('A live workspace is required');
+      const response = await assessReadiness({ workspaceId });
+      if (!isAssessmentData(response?.assessment)) throw new Error('Readiness assessment is unavailable');
+      return response.assessment;
+    },
+    retry: false,
     staleTime: 5 * 60 * 1000,
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ dimKey, criterionId, completed }: { dimKey: string; criterionId: string; completed: boolean }) =>
-      updateReadinessCriterion(workspaceId!, { dimension: dimKey, criterionId, completed: !completed }),
+    mutationFn: ({ dimKey, criterionId, completed }: { dimKey: string; criterionId: string; completed: boolean }) => {
+      if (!workspaceId || mode !== 'live' || !data || isError) throw new Error('A live assessment is required');
+      return updateReadinessCriterion(workspaceId, { dimension: dimKey, criterionId, completed: !completed });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['readiness', workspaceId] }),
     onError: () => toastError('Failed to update criterion'),
   });
 
   const handleToggle = useCallback((dimKey: string, cId: string, current: boolean) => {
+    if (!workspaceId || mode !== 'live' || !data || isError || toggleMutation.isPending) return;
     toggleMutation.mutate({ dimKey, criterionId: cId, completed: current });
-  }, [toggleMutation]);
+  }, [workspaceId, mode, data, isError, toggleMutation]);
 
-  const apiData = data?.assessment;
-  const dimensions = buildDimensions(apiData);
-
-  const overallScore  = apiData?.overallScore  ?? Math.round(dimensions.reduce((s, d) => s + (d.score / d.maxScore) * 100, 0) / dimensions.length);
-  const accelScore    = apiData?.acceleratorReadiness ?? Math.round(dimensions.reduce((s, d) => s + (d.score / d.maxScore) * d.acceleratorWeight, 0) / 100 * 100);
-  const investScore   = apiData?.investorReadiness    ?? Math.round(dimensions.reduce((s, d) => s + (d.score / d.maxScore) * d.investorWeight, 0) / 100 * 100);
-  const overallStatus = scoreToStatus(overallScore);
-  const overallColors = scoreColors(overallStatus);
-  const weakDims      = dimensions.filter((d) => scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'critical' || scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'needs-work');
+  const apiData = isDemo ? DEMO_ASSESSMENT : data;
 
   const reassessAction = (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => refetch()}
-      disabled={isLoading || isRefetching}
-    >
-      {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
-      <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
-    </Button>
+    <div className="flex flex-wrap gap-2">
+      <Button variant="outline" size="sm" disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
+        <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? 'Πραγματική ετοιμότητα' : 'Προβολή επίδειξης'} compact />
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => { if (workspaceId && mode === 'live') void refetch(); }}
+        disabled={!workspaceId || mode !== 'live' || isLoading || isRefetching || toggleMutation.isPending}
+      >
+        {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" /> : <RefreshCw className="icon-sm mr-1.5" />}
+        <BilingualText en={readinessEn('reassess')} el={readinessEl('reassess')} compact />
+      </Button>
+    </div>
   );
 
   const readinessDescription = apiData?.lastAssessedAt
-    ? `Assess across 6 dimensions · Last assessed ${new Date(apiData.lastAssessedAt).toLocaleDateString()}`
+    ? `Last saved assessment ${new Date(apiData.lastAssessedAt).toLocaleDateString()} · Reassess reloads saved scores.`
     : 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.';
 
-  if (isLoading) {
+  if (!mode || (!isDemo && isLoading)) {
     return (
       <AppShell
         title={readinessEn('page_title')}
@@ -445,6 +496,36 @@ export default function ReadinessPage() {
     );
   }
 
+  if (!isDemo && !workspaceId) {
+    return (
+      <AppShell title={readinessEn('page_title')} description={readinessDescription} actions={reassessAction} showHelp>
+        <Card><CardContent className="space-y-4 p-6">
+          <p><BilingualText en="Create or select a workspace to assess readiness." el="Δημιουργήστε ή επιλέξτε χώρο εργασίας για να αξιολογήσετε την ετοιμότητα." /></p>
+          <Button asChild><Link href="/builder"><BilingualText en="Open Startup Builder" el="Άνοιγμα Startup Builder" /></Link></Button>
+        </CardContent></Card>
+      </AppShell>
+    );
+  }
+
+  if (isError && !isDemo || !apiData) {
+    return (
+      <AppShell title={readinessEn('page_title')} description={readinessDescription} actions={reassessAction} showHelp>
+        <Card><CardContent className="space-y-4 p-6">
+          <p role="alert"><BilingualText en="Readiness is unavailable. Your saved data has not been replaced with sample scores." el="Η ετοιμότητα δεν είναι διαθέσιμη. Τα αποθηκευμένα δεδομένα σας δεν αντικαταστάθηκαν με ενδεικτικές βαθμολογίες." /></p>
+          <Button onClick={() => void refetch()} disabled={isRefetching}><BilingualText en="Retry" el="Επανάληψη" /></Button>
+        </CardContent></Card>
+      </AppShell>
+    );
+  }
+
+  const dimensions = buildDimensions(apiData);
+  const overallScore = Math.round(apiData.overallScore / apiData.overallMax * 100);
+  const accelScore = apiData.acceleratorReadiness;
+  const investScore = apiData.investorReadiness;
+  const overallStatus = scoreToStatus(overallScore);
+  const overallColors = scoreColors(overallStatus);
+  const weakDims = dimensions.filter((dimension) => dimension.score / dimension.maxScore < 0.6);
+
   return (
     <AppShell
       title={readinessEn('page_title')}
@@ -453,6 +534,7 @@ export default function ReadinessPage() {
       showHelp
     >
       <div className="space-y-6">
+        {isDemo && <p role="status" className="rounded-lg border border-status-info-border bg-status-info-bg p-4 text-sm text-status-info"><BilingualText en="Demo showcase — simulated scores and history. Changes are disabled." el="Επίδειξη — ενδεικτικές βαθμολογίες και ιστορικό. Οι αλλαγές είναι απενεργοποιημένες." /></p>}
 
         {/* Overall Score + Readiness Benchmarks */}
         <div className="grid gap-4 lg:grid-cols-3">
@@ -582,6 +664,7 @@ export default function ReadinessPage() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground mb-2"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact /></p>
+                {isDemo ? <>
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className={cn('text-xs flex items-center gap-0.5 mb-1', TREND.up)}>
@@ -597,6 +680,7 @@ export default function ReadinessPage() {
                     />
                   ))}
                 </div>
+                </> : <p className="text-sm text-muted-foreground"><BilingualText en="Readiness history is not available yet." el="Το ιστορικό ετοιμότητας δεν είναι ακόμη διαθέσιμο." /></p>}
               </CardContent>
             </Card>
           </div>
@@ -628,7 +712,7 @@ export default function ReadinessPage() {
                 <DimensionCard
                   key={dim.key}
                   dim={dim}
-                  workspaceId={workspaceId}
+                  workspaceId={isDemo ? null : workspaceId}
                   onToggle={handleToggle}
                   isMutating={toggleMutation.isPending}
                 />
@@ -783,7 +867,7 @@ export default function ReadinessPage() {
           </TabsContent>
 
           <TabsContent value="history" className="mt-4">
-            <div className="space-y-4">
+            {isDemo ? <div className="space-y-4">
               <ScoreHistoryChart history={DEMO_HISTORY} />
               <Card>
                 <CardHeader className="pb-3">
@@ -816,7 +900,7 @@ export default function ReadinessPage() {
                   ))}
                 </CardContent>
               </Card>
-            </div>
+            </div> : <Card><CardContent className="p-6 text-sm text-muted-foreground"><BilingualText en="Historical assessments are not available. The current score reflects saved criteria, not a simulated trend." el="Οι ιστορικές αξιολογήσεις δεν είναι διαθέσιμες. Η τρέχουσα βαθμολογία βασίζεται σε αποθηκευμένα κριτήρια, όχι σε προσομοίωση τάσης." /></CardContent></Card>}
           </TabsContent>
         </Tabs>
 

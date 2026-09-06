@@ -271,17 +271,29 @@ async function fetchWithNetworkRetry(url: string, init: RequestInit): Promise<Re
   throw new ApiNetworkError('Unable to reach the API server.');
 }
 
-export async function apiRequest<T>(
-  path: string,
-  init?: RequestInit,
-  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
-): Promise<T> {
-  if (isPreviewDemoSession()) {
-    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
-  }
+export function withApiAbort<T>(operation: Promise<T>, signal?: AbortSignal | null): Promise<T> {
+  if (!signal) return operation;
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => {
+      signal.removeEventListener('abort', onAbort);
+      reject(signal.reason ?? new DOMException('Request cancelled', 'AbortError'));
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+    operation.then(
+      (value) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener('abort', onAbort);
+        reject(error);
+      },
+    );
+    if (signal.aborted) onAbort();
+  });
+}
 
-  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
-
+function authenticatedRequestInit(init?: RequestInit): RequestInit {
   const headers = new Headers(init?.headers ?? {});
   const isForm = typeof FormData !== 'undefined' && init?.body instanceof FormData;
   if (!headers.has('Content-Type') && !isForm) headers.set('Content-Type', 'application/json');
@@ -293,27 +305,48 @@ export async function apiRequest<T>(
     if (csrf) headers.set('x-csrf-token', csrf);
   }
 
-  const doFetch = opts?.skipNetworkRetry
-    ? (u: string, i: RequestInit) => fetchWithTimeout(u, i)
-    : fetchWithNetworkRetry;
+  return { ...init, headers, credentials: 'include' };
+}
 
-  const res = await doFetch(url, { ...init, headers, credentials: 'include' });
+export async function apiFetch(
+  path: string,
+  init?: RequestInit,
+  opts?: {
+    retryOn401?: boolean;
+    skipNetworkRetry?: boolean;
+    fetcher?: (url: string, init: RequestInit) => Promise<Response>;
+  },
+): Promise<Response> {
+  const url = `${getApiBase()}${path.startsWith('/') ? path : `/${path}`}`;
+  const doFetch = opts?.fetcher ?? (opts?.skipNetworkRetry ? fetchWithTimeout : fetchWithNetworkRetry);
+  const request = () => {
+    init?.signal?.throwIfAborted();
+    return withApiAbort(doFetch(url, authenticatedRequestInit(init)), init?.signal);
+  };
+  const checkResponse = async (res: Response) => {
+    if (!res.ok) {
+      const errorInfo = await withApiAbort(safeReadErrorMessage(res), init?.signal);
+      throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+    }
+    return res;
+  };
+
+  const res = await request();
   if (res.status === 401 && (opts?.retryOn401 ?? true)) {
+    let refreshed = false;
     try {
+      await withApiAbort(res.body?.cancel().catch(() => {}) ?? Promise.resolve(), init?.signal);
+      init?.signal?.throwIfAborted();
       refreshInFlight ??= refreshAccessToken().finally(() => {
         refreshInFlight = null;
       });
-      await refreshInFlight;
+      await withApiAbort(refreshInFlight, init?.signal);
+      refreshed = true;
 
       // Retry with new cookie (set by refresh response)
-      const retryRes = await doFetch(url, { ...init, headers, credentials: 'include' });
-      if (!retryRes.ok) {
-        const errorInfo = await safeReadErrorMessage(retryRes);
-        throw new ApiError(retryRes.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
-      }
-      return (await readJsonIfAny<T>(retryRes)) as T;
+      return await checkResponse(await request());
     } catch (e) {
-      if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
+      if (e instanceof ApiError && (e.status === 401 || (!refreshed && [400, 403].includes(e.status)))) {
         clearLegacyTokens();
         clearSessionIndicators();
         broadcastLogout();
@@ -322,11 +355,21 @@ export async function apiRequest<T>(
     }
   }
 
-  if (!res.ok) {
-    const errorInfo = await safeReadErrorMessage(res);
-    throw new ApiError(res.status, errorInfo.message, errorInfo.code, errorInfo.details, errorInfo.requestId);
+  return checkResponse(res);
+}
+
+export async function apiRequest<T>(
+  path: string,
+  init?: RequestInit,
+  opts?: { retryOn401?: boolean; skipNetworkRetry?: boolean },
+): Promise<T> {
+  init?.signal?.throwIfAborted();
+  if (isPreviewDemoSession()) {
+    return resolvePreviewApi(path.startsWith('/') ? path : `/${path}`, init) as T;
   }
-  return (await readJsonIfAny<T>(res)) as T;
+
+  const res = await apiFetch(path, init, opts);
+  return withApiAbort(readJsonIfAny<T>(res), init?.signal);
 }
 
 export async function register(body: { email: string; password: string; role?: string }) {
@@ -1244,31 +1287,31 @@ export async function getGraphMe(): Promise<GraphMeResponse> {
 
 export interface UserMetrics {
   profileViews: number;
-  profileViewsChange: number;
+  profileViewsChange: number | null;
   newConnections: number;
-  newConnectionsChange: number;
+  newConnectionsChange: number | null;
   messagesSent: number;
-  messagesSentChange: number;
-  engagementRate: number;
-  engagementRateChange: number;
-  searchAppearances: number;
-  searchAppearancesChange: number;
-  activityScore: number;
-  activityScoreChange: number;
+  messagesSentChange: number | null;
+  engagementRate: number | null;
+  engagementRateChange: number | null;
+  searchAppearances: number | null;
+  searchAppearancesChange: number | null;
+  activityScore: number | null;
+  activityScoreChange: number | null;
 }
 
 export interface AnalyticsProfileView {
   date: string;
   views: number;
-  uniqueVisitors: number;
+  uniqueVisitors: number | null;
 }
 
 export interface AnalyticsEngagement {
   connections: number;
   messages: number;
-  likes: number;
-  comments: number;
-  shares: number;
+  likes: number | null;
+  comments: number | null;
+  shares: number | null;
 }
 
 export interface AnalyticsTopContent {
@@ -1285,22 +1328,22 @@ export interface AnalyticsAchievement {
   title: string;
   description: string;
   icon: string;
-  unlocked: boolean;
+  unlocked: boolean | null;
   unlockedAt?: string;
 }
 
 export interface WeeklySummary {
-  mostActiveDay: string;
-  peakHour: string;
-  avgResponseTime: string;
-  totalInteractions: number;
+  mostActiveDay: string | null;
+  peakHour: string | null;
+  avgResponseTime: string | null;
+  totalInteractions: number | null;
 }
 
 export interface AnalyticsOverview {
   metrics: UserMetrics;
   profileViews: AnalyticsProfileView[];
   engagement: AnalyticsEngagement;
-  topContent: AnalyticsTopContent[];
+  topContent: AnalyticsTopContent[] | null;
   weeklySummary: WeeklySummary;
 }
 
@@ -1328,7 +1371,7 @@ export async function getAnalyticsEngagement(period = '7d'): Promise<AnalyticsEn
   return apiRequest(`/api/analytics/engagement?period=${period}`);
 }
 
-export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[]> {
+export async function getAnalyticsTopContent(limit = 10): Promise<AnalyticsTopContent[] | null> {
   return apiRequest(`/api/analytics/top-content?limit=${limit}`);
 }
 

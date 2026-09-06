@@ -199,6 +199,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      vitest:
+        specifier: 4.0.18
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(jiti@2.6.1)(jsdom@26.1.0)(terser@5.46.1)(tsx@4.21.0)
 
   apps/web:
     dependencies:
@@ -12589,7 +12592,7 @@ snapshots:
 
   estree-walker@3.0.3:
     dependencies:
-      '@types/estree': 1.0.8
+      '@types/estree': 1.0.9
 
   esutils@2.0.3: {}
 

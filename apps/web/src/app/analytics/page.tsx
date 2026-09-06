@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 
 const ProfileViewsChart = dynamic(
@@ -77,6 +78,12 @@ interface TopContent {
   date: string;
 }
 
+function metricValue(metric: AnalyticsMetric) {
+  if (metric.value === null) return '—';
+  return metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
+    ? `${metric.value}%` : metric.value.toLocaleString();
+}
+
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
   const Icon = metric.icon;
   const colors = STATUS[metric.tone];
@@ -88,7 +95,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
       : Minus;
 
   return (
-    <Card className="card-interactive hover-lift">
+    <Card className="border-border/60">
       <CardContent className="p-5">
         <div className="flex items-start justify-between mb-3">
           <div className={cn('p-2.5 rounded-lg', colors.bg, colors.icon)}>
@@ -105,13 +112,11 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
             className="gap-1"
           >
             <ChangeIcon className="icon-sm" />
-            {Math.abs(metric.change)}%
+            {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </Badge>
         </div>
         <h3 className="text-xl font-bold mb-1">
-          {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
-            ? `${metric.value}%`
-            : metric.value.toLocaleString()}
+          {metricValue(metric)}
         </h3>
         <p className="text-sm text-muted-foreground">{metric.label}</p>
       </CardContent>
@@ -139,15 +144,15 @@ function Sparkline({ values, color = 'hsl(var(--status-accent-fg))' }: { values:
 
 // Profile Funnel
 function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
-  const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? 0;
-  const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? 0;
-  const messages = metrics.find((m) => m.label === 'Messages Sent')?.value ?? 0;
+  const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? null;
+  const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? null;
   const stages = [
-    { label: 'Profile Views', value: views, pct: 100, bar: 'bg-status-accent' },
-    { label: 'Connection Requests', value: Math.round(views * 0.12), pct: views ? Math.round((connections / views) * 100 * 12) : 0, bar: 'bg-status-info' },
-    { label: 'Accepted Connections', value: connections, pct: views ? Math.round((connections / views) * 100) : 0, bar: 'bg-status-success' },
-    { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, bar: 'bg-status-warning' },
+    { label: 'Profile Views', value: views, bar: 'bg-status-accent' },
+    { label: 'Connection Requests', value: null, bar: 'bg-status-info' },
+    { label: 'Accepted Connections', value: connections, bar: 'bg-status-success' },
+    { label: 'Conversations Started', value: null, bar: 'bg-status-warning' },
   ];
+  const maximum = Math.max(1, ...stages.map((stage) => stage.value ?? 0));
   return (
     <Card>
       <CardHeader>
@@ -156,14 +161,15 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        <p className="text-xs text-muted-foreground"><BilingualText en="Recorded counts, not attributed conversion rates. A dash means this metric is unavailable." el="Καταγεγραμμένα πλήθη, όχι τεκμηριωμένα ποσοστά μετατροπής. Η παύλα δηλώνει μη διαθέσιμη μέτρηση." /></p>
         {stages.map((s) => (
           <div key={s.label} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">{s.label}</span>
-              <span className="font-semibold text-foreground">{s.value.toLocaleString()}</span>
+              <span className="font-semibold text-foreground">{s.value === null ? '—' : s.value.toLocaleString()}</span>
             </div>
             <div className="h-2 bg-secondary/40 rounded-full overflow-hidden">
-              <div className={cn('h-full rounded-full transition-all duration-700', s.bar)} style={{ width: `${Math.min(s.pct, 100)}%` }} />
+              <div className={cn('h-full rounded-full transition-all duration-700', s.bar)} style={{ width: `${(s.value ?? 0) / maximum * 100}%` }} />
             </div>
           </div>
         ))}
@@ -203,7 +209,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                   : item.changeType === 'decrease' ? TREND.down
                   : TREND.flat
                 )}>
-                  {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
+                  {item.change === null ? '—' : `${item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}${Math.abs(item.change)}%`}
                 </p>
                 <p className="text-2xs text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
               </div>
@@ -334,7 +340,7 @@ export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'engagement' | 'growth'>('overview');
   const [period, setPeriod] = useState('7d');
 
-  const { data: overview, isLoading, isError, refetch } = useQuery({
+  const { data: overview, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['analytics', 'overview', period],
     queryFn: () => getAnalyticsOverview(period, 5),
     staleTime: 60_000,
@@ -344,7 +350,7 @@ export default function AnalyticsPage() {
   // Note the guard is on the field, not just the container: an unhandled preview
   // route answers with a truthy object that has no `metrics`, which is exactly
   // how `overview ? …` used to pass and then crash one line later.
-  const metrics = overview?.metrics ? metricsToDisplay(overview.metrics) : [];
+  const metrics = metricsToDisplay(overview?.metrics);
   const profileViews = overview?.profileViews;
   const engagement = overview?.engagement;
   const topContent = overview?.topContent;
@@ -370,9 +376,11 @@ export default function AnalyticsPage() {
           {(['7d', '14d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}
+              type="button"
+              aria-pressed={period === p}
               onClick={() => setPeriod(p)}
               className={cn(
-                'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
+                'min-h-8 rounded-md px-3 py-1 text-xs font-medium border transition-colors focus-ring',
                 period === p
                   ? 'border-primary bg-primary/20 text-primary-accessible'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
@@ -382,7 +390,7 @@ export default function AnalyticsPage() {
             </button>
           ))}
         </div>
-        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
+        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()} loading={isFetching}>
           <Activity className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
         </Button>
       </div>
@@ -413,6 +421,7 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
+              <p className="text-xs text-muted-foreground"><BilingualText en={isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'} el={isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'} /></p>
               {/* Network velocity + funnel side-by-side */}
               {metrics.length > 0 && (
                 <div className="grid gap-4 lg:grid-cols-3">
@@ -428,10 +437,11 @@ export default function AnalyticsPage() {
               {/* Metric cards with sparklines */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {metrics.map((metric) => {
-                  const sparkValues = demoSparklines[metric.label] ?? [];
+                  const sparkValues = isPreviewDemo() ? demoSparklines[metric.label] ?? []
+                    : metric.label === 'Profile Views' ? (profileViews ?? []).map((point) => point.views) : [];
                   const colors = STATUS[metric.tone];
                   return (
-                    <Card key={metric.label} className="card-interactive hover-lift relative overflow-hidden">
+                    <Card key={metric.label} className="border-border/60 relative overflow-hidden">
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between mb-2">
                           <div className={cn('p-2 rounded-lg', colors.bg, colors.icon)}>
@@ -442,13 +452,11 @@ export default function AnalyticsPage() {
                             className="gap-1 text-2xs"
                           >
                             {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <Minus className="h-2.5 w-2.5" />}
-                            {Math.abs(metric.change)}%
+                            {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
                           </Badge>
                         </div>
                         <h3 className="text-xl font-bold mb-0.5">
-                          {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
-                            ? `${metric.value}%`
-                            : metric.value.toLocaleString()}
+                          {metricValue(metric)}
                         </h3>
                         <p className="text-xs text-muted-foreground">{metric.label}</p>
                         {sparkValues.length > 0 && (
@@ -486,7 +494,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">Total Interactions</p>
-                        <p className="text-lg font-semibold">{weeklySummary.totalInteractions ?? 0}</p>
+                        <p className="text-lg font-semibold">{weeklySummary.totalInteractions ?? '—'}</p>
                       </div>
                     </div>
                   </CardContent>
