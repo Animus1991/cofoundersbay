@@ -32,7 +32,7 @@ export function XPProgressWidget() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="icon-md text-status-warning" />
+          <Zap className="icon-md text-primary-accessible" />
           Progress & XP
         </CardTitle>
       </CardHeader>
@@ -41,7 +41,7 @@ export function XPProgressWidget() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-bold text-lg">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary-accessible font-bold text-lg">
                 {xp.level}
               </div>
               <div>
@@ -70,7 +70,7 @@ export function XPProgressWidget() {
 
         {/* Streak */}
         {streak && (
-          <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950/20 dark:to-red-950/20 border border-status-warning-border ">
+          <div className="flex items-center justify-between p-3 rounded-xl bg-status-warning-bg border border-status-warning-border">
             <div className="flex items-center gap-3">
               <Flame className="icon-lg text-status-warning" />
               <div>

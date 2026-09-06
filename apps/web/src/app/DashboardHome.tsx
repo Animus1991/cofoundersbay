@@ -4,27 +4,8 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
-  Calendar,
   CheckCircle,
   ChevronRight,
-  Flag,
-  Heart,
-  MessageCircle,
-  Sparkles,
-  TrendingUp,
-  UserPlus,
-  Users,
-  Zap,
-  Gauge,
-  Rocket,
-  GraduationCap,
-  Briefcase,
-  BarChart3,
-  BookOpen,
-  Target,
-  Activity,
-  Star,
-  Building2,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -55,23 +36,28 @@ import {
   type MentorProfileItem,
 } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, NavIcon, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 
-function getTimeBasedGreeting(): string {
+function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  if (hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
+  if (hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
+  return { en: dashboardEn('good_evening'), el: dashboardEl('good_evening') };
 }
 
 function ActionItem({
-  icon: Icon,
+  glyph,
   label,
+  labelEl,
   count,
   href,
   variant = 'default',
 }: {
-  icon: React.ElementType;
+  glyph: CfbGlyphName;
   label: string;
+  labelEl: string;
   count: number;
   href: string;
   variant?: 'default' | 'primary' | 'warning';
@@ -91,8 +77,10 @@ function ActionItem({
       )}
     >
       <div className="flex items-center gap-2.5">
-        <Icon className="icon-sm" />
-        <span className="text-sm font-medium">{label}</span>
+        <CfbGlyph name={glyph} className="icon-sm" />
+        <span className="text-sm font-medium">
+          <BilingualText en={label} el={labelEl} compact />
+        </span>
       </div>
       <div className="flex items-center gap-2">
         <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums">
@@ -129,7 +117,9 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <span className="text-xs font-bold tabular-nums" style={{ color: tierColor }}>
           {score}%
         </span>
-        <span className="text-2xs text-muted-foreground">match</span>
+        <span className="text-2xs text-muted-foreground">
+          <BilingualText en={dashboardEn('match_short')} el={dashboardEl('match_short')} compact />
+        </span>
       </div>
     </Link>
   );
@@ -170,12 +160,14 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
         ) : (
-          <Building2 className="icon-sm text-primary-accessible" />
+          <CfbGlyph name="community" className="icon-sm text-primary-accessible" />
         )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground group-hover:text-primary-accessible transition-colors">{group.name}</p>
-        <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
+        <p className="text-xs text-muted-foreground">
+          {group.memberCount} <BilingualText en={dashboardEn('members')} el={dashboardEl('members')} compact />
+        </p>
       </div>
       <ChevronRight className="icon-sm shrink-0 opacity-40" />
     </Link>
@@ -194,14 +186,14 @@ function ActivityRow({
     >
       <div
         className={cn(
-          'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
+          'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg',
           item.type === 'connection' ? 'bg-status-info-bg text-status-info' : 'bg-primary/10 text-primary-accessible'
         )}
       >
         {item.type === 'connection' ? (
-          <UserPlus className="icon-sm" />
+          <CfbGlyph name="people" className="icon-sm" />
         ) : (
-          <MessageCircle className="icon-sm" />
+          <CfbGlyph name="messages" className="icon-sm" />
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -336,7 +328,9 @@ export function DashboardHome() {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <div className="text-sm text-muted-foreground">Preparing your workspace...</div>
+          <div className="text-sm text-muted-foreground">
+            <BilingualText en={dashboardEn('preparing_workspace')} el={dashboardEl('preparing_workspace')} />
+          </div>
         </div>
       </AppShell>
     );
@@ -348,31 +342,35 @@ export function DashboardHome() {
         {/* Context Bar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              {greeting}, {displayName}
-            </h1>
+            <p className="text-lg font-semibold tracking-tight text-foreground">
+              <BilingualText en={greeting.en} el={greeting.el} compact />, {displayName}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {totalActions > 0 ? (
                 <>
-                  <span className="font-medium text-foreground">{totalActions} action{totalActions > 1 ? 's' : ''}</span>{' '}
-                  need your attention
+                  <span className="font-medium text-foreground">{totalActions}</span>{' '}
+                  <BilingualText
+                    en={`action${totalActions > 1 ? 's' : ''} need your attention`}
+                    el={totalActions === 1 ? 'ενέργεια χρειάζεται την προσοχή σας' : 'ενέργειες χρειάζονται την προσοχή σας'}
+                    compact
+                  />
                 </>
               ) : (
-                "You're all caught up. Explore new matches or continue your research."
+                <BilingualText en={dashboardEn('all_caught_up_explore')} el={dashboardEl('all_caught_up_explore')} />
               )}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Link href="/matches">
               <Button variant="outline" size="sm" className="gap-2">
-                <Heart className="icon-sm" />
-                View Matches
+                <CfbGlyph name="matches" className="icon-sm" />
+                <BilingualText en={dashboardEn('view_matches')} el={dashboardEl('view_matches')} compact />
               </Button>
             </Link>
             <Link href="/discover">
               <Button size="sm" className="gap-2">
-                <Sparkles className="icon-sm" />
-                Explore
+                <CfbGlyph name="discover" className="icon-sm" />
+                <BilingualText en={dashboardEn('explore')} el={dashboardEl('explore')} compact />
               </Button>
             </Link>
           </div>
@@ -387,8 +385,8 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Zap className="icon-sm text-primary-accessible" />
-                    Priority Actions
+                    <CfbGlyph name="spark" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('next_actions')} el={dashboardEl('next_actions')} compact />
                   </h2>
                   {totalActions > 0 && (
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-accessible">
@@ -399,8 +397,9 @@ export function DashboardHome() {
                 <div className="space-y-2">
                   {pendingCount > 0 && (
                     <ActionItem
-                      icon={UserPlus}
-                      label="Connection requests"
+                      glyph="people"
+                      label={dashboardEn('connection_requests')}
+                      labelEl={dashboardEl('connection_requests')}
                       count={pendingCount}
                       href="/connections"
                       variant="primary"
@@ -408,8 +407,9 @@ export function DashboardHome() {
                   )}
                   {unreadMessages > 0 && (
                     <ActionItem
-                      icon={MessageCircle}
-                      label="Unread messages"
+                      glyph="messages"
+                      label={dashboardEn('unread_messages')}
+                      labelEl={dashboardEl('unread_messages')}
                       count={unreadMessages}
                       href="/messages"
                       variant="default"
@@ -417,8 +417,9 @@ export function DashboardHome() {
                   )}
                   {activeMilestones > 0 && (
                     <ActionItem
-                      icon={Flag}
-                      label="Active milestones"
+                      glyph="flag"
+                      label={dashboardEn('active_milestones')}
+                      labelEl={dashboardEl('active_milestones')}
                       count={activeMilestones}
                       href="/milestones"
                       variant="warning"
@@ -427,7 +428,9 @@ export function DashboardHome() {
                   {totalActions === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
                       <CheckCircle className="icon-xl text-status-success" />
-                      <p className="text-sm text-muted-foreground">All caught up!</p>
+                      <p className="text-sm text-muted-foreground">
+                        <BilingualText en={dashboardEn('all_caught_up')} el={dashboardEl('all_caught_up')} />
+                      </p>
                     </div>
                   )}
                 </div>
@@ -438,9 +441,12 @@ export function DashboardHome() {
             <Card>
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
+                  <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
+                    <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} compact />
+                  </h2>
                   <Link href="/activity" className="text-xs text-primary-accessible hover:underline">
-                    View all
+                    <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
                   </Link>
                 </div>
                 {recentActivity.length > 0 ? (
@@ -450,7 +456,9 @@ export function DashboardHome() {
                     ))}
                   </div>
                 ) : (
-                  <p className="py-4 text-center text-sm text-muted-foreground">No recent activity</p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">
+                    <BilingualText en={dashboardEn('no_recent_activity')} el={dashboardEl('no_recent_activity')} />
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -462,11 +470,11 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Heart className="icon-sm text-status-danger" />
-                    Top Matches
+                    <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} compact />
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                    See all <ArrowRight className="icon-sm" />
+                    <BilingualText en={dashboardEn('see_all')} el={dashboardEl('see_all')} compact /> <ArrowRight className="icon-sm" />
                   </Link>
                 </div>
                 {matchesLoading ? (
@@ -489,14 +497,18 @@ export function DashboardHome() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3 py-8 text-center">
-                    <Users className="h-10 w-10 text-muted-foreground/30" />
+                    <CfbGlyph name="people" className="icon-xl text-muted-foreground/40" />
                     <div>
-                      <p className="text-sm font-medium text-foreground">No matches yet</p>
-                      <p className="text-xs text-muted-foreground">Complete your profile to get matched</p>
+                      <p className="text-sm font-medium text-foreground">
+                        <BilingualText en={dashboardEn('no_matches_yet')} el={dashboardEl('no_matches_yet')} />
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        <BilingualText en={dashboardEn('complete_profile_for_matches')} el={dashboardEl('complete_profile_for_matches')} />
+                      </p>
                     </div>
                     <Link href="/profile/edit">
                       <Button variant="outline" size="sm">
-                        Complete Profile
+                        <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
                       </Button>
                     </Link>
                   </div>
@@ -510,11 +522,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <GraduationCap className="icon-sm text-status-success" />
-                      Mentor Suggestions
+                      <CfbGlyph name="mentor" className="icon-sm text-status-success" />
+                      <BilingualText en={dashboardEn('mentor_suggestions')} el={dashboardEl('mentor_suggestions')} compact />
                     </h2>
                     <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                      Browse all <ArrowRight className="icon-sm" />
+                      <BilingualText en={dashboardEn('browse_all')} el={dashboardEl('browse_all')} compact /> <ArrowRight className="icon-sm" />
                     </Link>
                   </div>
                   <div className="space-y-2">
@@ -532,11 +544,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Users className="icon-sm text-status-info" />
-                      My Communities
+                      <CfbGlyph name="community" className="icon-sm text-status-info" />
+                      <BilingualText en={dashboardEn('my_communities')} el={dashboardEl('my_communities')} compact />
                     </h2>
                     <Link href="/groups" className="flex items-center gap-1 text-xs text-primary-accessible hover:underline">
-                      All groups <ArrowRight className="icon-sm" />
+                      <BilingualText en={dashboardEn('all_groups')} el={dashboardEl('all_groups')} compact /> <ArrowRight className="icon-sm" />
                     </Link>
                   </div>
                   <div className="space-y-1">
@@ -554,11 +566,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="icon-sm text-status-accent" />
-                      Upcoming Events
+                      <CfbGlyph name="calendar" className="icon-sm text-status-accent" />
+                      <BilingualText en={dashboardEn('upcoming_events')} el={dashboardEl('upcoming_events')} compact />
                     </h2>
                     <Link href="/events" className="text-xs text-primary-accessible hover:underline">
-                      View all
+                      <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
                     </Link>
                   </div>
                   <div className="space-y-2">
@@ -589,11 +601,15 @@ export function DashboardHome() {
             {profileCompletion < 100 && (
               <Card>
                 <CardContent className="p-4">
-                  <h2 className="mb-3 text-sm font-semibold text-foreground">Your Progress</h2>
+                  <h2 className="mb-3 text-sm font-semibold text-foreground">
+                    <BilingualText en={dashboardEn('your_progress')} el={dashboardEl('your_progress')} compact />
+                  </h2>
                   <div className="space-y-3">
                     <div>
                       <div className="mb-1.5 flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Profile completion</span>
+                        <span className="text-muted-foreground">
+                          <BilingualText en={dashboardEn('profile_completion')} el={dashboardEl('profile_completion')} compact />
+                        </span>
                         <span className="font-semibold text-foreground">{profileCompletion}%</span>
                       </div>
                       <Progress value={profileCompletion} className="h-2" />
@@ -613,21 +629,25 @@ export function DashboardHome() {
             <Card>
               <CardContent className="p-4">
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="icon-sm text-status-success" />
-                  Ecosystem Pulse
+                  <CfbGlyph name="chart" className="icon-sm text-status-success" />
+                  <BilingualText en="Ecosystem pulse" el="Σφυγμός οικοσυστήματος" compact />
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-secondary/40 p-3 text-center">
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.activeProfiles?.toLocaleString() ?? '—'}
                     </p>
-                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Active Members</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">
+                      <BilingualText en="Active members" el="Ενεργά μέλη" compact />
+                    </p>
                   </div>
                   <div className="rounded-lg bg-secondary/40 p-3 text-center">
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.matchesThisWeek ?? '—'}
                     </p>
-                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Matches/Week</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">
+                      <BilingualText en="Matches/week" el="Ταιριάσματα/εβδ." compact />
+                    </p>
                   </div>
                 </div>
                 {statsData?.trendPercent !== undefined && statsData.trendPercent > 0 && (
@@ -644,8 +664,8 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Gauge className="icon-sm text-primary-accessible" />
-                      Milestone Progress
+                      <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
+                      <BilingualText en="Milestone progress" el="Πρόοδος οροσήμων" compact />
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">Details</Link>
                   </div>
@@ -677,8 +697,8 @@ export function DashboardHome() {
                   </div>
                   <Link href="/readiness">
                     <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
-                      <Target className="icon-sm" />
-                      View Readiness
+                      <CfbGlyph name="chart" className="icon-sm" />
+                      <BilingualText en="View readiness" el="Δείτε την ετοιμότητα" compact />
                     </Button>
                   </Link>
                 </CardContent>
@@ -691,17 +711,19 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Flag className="icon-sm text-status-warning" />
-                      Active Milestones
+                      <CfbGlyph name="flag" className="icon-sm text-status-warning" />
+                      <BilingualText en={dashboardEn('active_milestones')} el={dashboardEl('active_milestones')} compact />
                     </h2>
-                    <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">View all</Link>
+                    <Link href="/milestones" className="text-xs text-primary-accessible hover:underline">
+                      <BilingualText en={dashboardEn('view_all_milestones')} el={dashboardEl('view_all_milestones')} compact />
+                    </Link>
                   </div>
                   <div className="space-y-2">
                     {activeMilestonesList.map((m: { id: string; title: string; priority: string; dueDate?: string | null }) => (
                       <Link key={m.id} href="/milestones"
                         className="flex items-center gap-2 rounded-lg bg-secondary/40 px-3 py-2 transition-colors hover:bg-secondary"
                       >
-                        <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-red-500' : m.priority === 'medium' ? 'bg-amber-500' : 'bg-muted-foreground')} />
+                        <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-status-danger' : m.priority === 'medium' ? 'bg-status-warning' : 'bg-muted-foreground')} />
                         <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
                         {m.dueDate && (
                           <span className="shrink-0 text-2xs text-muted-foreground">
@@ -718,23 +740,25 @@ export function DashboardHome() {
             {/* Quick Links */}
             <Card>
               <CardContent className="p-4">
-                <h2 className="mb-3 text-sm font-semibold text-foreground">Quick Links</h2>
+                <h2 className="mb-3 text-sm font-semibold text-foreground">
+                  <BilingualText en={dashboardEn('quick_links')} el={dashboardEl('quick_links')} compact />
+                </h2>
                 <div className="space-y-1">
                   {[
-                    { href: '/builder', label: 'Startup Builder', icon: Rocket },
-                    { href: '/mentoring', label: 'Find a Mentor', icon: GraduationCap },
-                    { href: '/opportunities', label: 'Opportunities', icon: Briefcase },
-                    { href: '/groups', label: 'Communities', icon: Building2 },
-                    { href: '/learning', label: 'Learning Hub', icon: BookOpen },
-                    { href: '/analytics', label: 'My Analytics', icon: BarChart3 },
+                    { href: '/builder', label: dashboardEn('startup_builder'), labelEl: dashboardEl('startup_builder') },
+                    { href: '/mentoring', label: dashboardEn('find_a_mentor'), labelEl: dashboardEl('find_a_mentor') },
+                    { href: '/opportunities', label: dashboardEn('opportunities'), labelEl: dashboardEl('opportunities') },
+                    { href: '/groups', label: dashboardEn('community'), labelEl: dashboardEl('community') },
+                    { href: '/learning', label: dashboardEn('learning_hub'), labelEl: dashboardEl('learning_hub') },
+                    { href: '/analytics', label: dashboardEn('my_analytics'), labelEl: dashboardEl('my_analytics') },
                   ].map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}
                       className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
                     >
-                      <link.icon className="h-4 w-4" />
-                      {link.label}
+                      <NavIcon href={link.href} className="icon-sm" />
+                      <BilingualText en={link.label} el={link.labelEl} compact />
                     </Link>
                   ))}
                 </div>

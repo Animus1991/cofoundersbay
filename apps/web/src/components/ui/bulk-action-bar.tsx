@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
+import { bilingualAria } from '@/lib/i18n/format';
 
 export interface BulkAction {
   id: string;
@@ -44,7 +45,7 @@ export function BulkActionBar({
           transition={{ duration: 0.18, ease: 'easeOut' }}
           className={cn(
             'fixed z-40 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2.5',
-            'bg-popover border border-border rounded-full shadow-2xl',
+            'bg-popover border border-border rounded-xl shadow-2xl',
             'ring-1 ring-primary/20',
             position === 'bottom'
               ? 'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] max-w-[calc(100vw-1.5rem)] flex-wrap justify-center lg:bottom-6'
@@ -64,7 +65,8 @@ export function BulkActionBar({
               type="button"
               onClick={onClearSelection}
               className="p-0.5 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              title="Clear selection"
+              title={bilingualAria('Clear selection', 'Εκκαθάριση επιλογής')}
+              aria-label={bilingualAria('Clear selection', 'Εκκαθάριση επιλογής')}
             >
               <X className="icon-sm" />
             </button>

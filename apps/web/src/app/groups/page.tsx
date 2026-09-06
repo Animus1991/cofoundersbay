@@ -38,13 +38,13 @@ const TYPE_FILTERS = [
   { value: 'learning', label: 'Learning', icon: BookOpen },
 ];
 
-const COVER_GRADIENTS = [
-  'from-violet-500/30 to-indigo-500/20',
-  'from-emerald-500/30 to-teal-500/20',
-  'from-orange-500/30 to-amber-500/20',
-  'from-pink-500/30 to-rose-500/20',
-  'from-blue-500/30 to-cyan-500/20',
-  'from-purple-500/30 to-fuchsia-500/20',
+const COVER_TONES = [
+  'bg-primary/12',
+  'bg-status-success-bg',
+  'bg-status-warning-bg',
+  'bg-status-info-bg',
+  'bg-status-accent-bg',
+  'bg-status-neutral-bg',
 ];
 
 function GroupCard({
@@ -59,7 +59,7 @@ function GroupCard({
   index?: number;
 }) {
   const router = useRouter();
-  const gradientClass = COVER_GRADIENTS[index % COVER_GRADIENTS.length];
+  const coverTone = COVER_TONES[index % COVER_TONES.length];
   const groupType = (group.category?.toLowerCase() ?? 'industry') as string;
   const typeColor = categoryChip(groupType);
   return (
@@ -85,9 +85,9 @@ function GroupCard({
           )}
         </div>
       ) : (
-        <div className={cn('h-28 w-full rounded-t-xl bg-gradient-to-br relative', gradientClass)}>
+        <div className={cn('h-28 w-full rounded-t-xl relative', coverTone)}>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Users className="h-10 w-10 text-white/20" />
+            <Users className="h-10 w-10 text-foreground/15" />
           </div>
           <div className="absolute top-2 left-2">
             <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize border', typeColor.chip)}>
@@ -99,7 +99,7 @@ function GroupCard({
       <CardContent className="p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary-accessible">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible">
               {group.avatarUrl ? (
                 <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" />
               ) : (

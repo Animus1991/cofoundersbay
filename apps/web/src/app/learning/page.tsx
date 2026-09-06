@@ -55,10 +55,10 @@ interface LearningPath {
 }
 
 const LEARNING_PATHS: LearningPath[] = [
-  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'from-violet-500/20 to-purple-500/20 border-status-accent-border', icon: Target },
-  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'from-emerald-500/20 to-teal-500/20 border-status-success-border', icon: TrendingUp },
-  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'from-amber-500/20 to-orange-500/20 border-status-warning-border', icon: BarChart3 },
-  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'from-blue-500/20 to-cyan-500/20 border-status-info-border', icon: Users },
+  { id: 'lp1', title: 'Founder Fast Track', description: 'Go from idea to funded startup in structured steps', steps: 8, duration: '12 hours', level: 'beginner', progress: 0, color: 'bg-status-accent-bg border-status-accent-border', icon: Target },
+  { id: 'lp2', title: 'Fundraising Mastery', description: 'Seed to Series A — pitching, term sheets, VC psychology', steps: 6, duration: '9 hours', level: 'intermediate', progress: 33, color: 'bg-status-success-bg border-status-success-border', icon: TrendingUp },
+  { id: 'lp3', title: 'Growth Playbook', description: 'Proven frameworks for user acquisition and retention', steps: 5, duration: '7 hours', level: 'intermediate', progress: 60, color: 'bg-status-warning-bg border-status-warning-border', icon: BarChart3 },
+  { id: 'lp4', title: 'Team & Culture Builder', description: 'Hire, retain, and lead high-performance startup teams', steps: 4, duration: '5 hours', level: 'advanced', progress: 0, color: 'bg-status-info-bg border-status-info-border', icon: Users },
 ];
 
 const DEMO_RESOURCES: Resource[] = [
@@ -242,7 +242,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
 function LearningPathCard({ path }: { path: LearningPath }) {
   const Icon = path.icon;
   return (
-    <div className={cn('relative rounded-xl border bg-gradient-to-br p-4 transition-all hover:shadow-md cursor-pointer', path.color)}>
+    <div className={cn('relative rounded-xl border p-4 transition-all hover:shadow-md cursor-pointer', path.color)}>
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>
           <Icon className="h-4.5 w-4.5 text-foreground" />
