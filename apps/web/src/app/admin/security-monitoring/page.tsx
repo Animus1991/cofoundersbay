@@ -52,6 +52,7 @@ export default function SecurityMonitoringPage() {
     <AppShell
       title="Security monitoring"
       description="Authentication anomalies, API abuse signals, and SSO events in real time."
+      showHelp
     >
       <HelpCallout id="admin-security" title="Security events">
         <p>

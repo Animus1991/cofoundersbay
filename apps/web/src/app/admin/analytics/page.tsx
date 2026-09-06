@@ -36,6 +36,7 @@ export default function AdminAnalyticsPage() {
     <AppShell
       title="Global analytics"
       description="Platform growth, engagement, and role distribution — export for board or investor updates."
+      showHelp
       actions={
         <div className="flex gap-2">
           <Select value={range} onValueChange={setRange}>

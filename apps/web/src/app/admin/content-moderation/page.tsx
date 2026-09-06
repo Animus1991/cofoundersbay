@@ -47,6 +47,7 @@ export default function ContentModerationPage() {
     <AppShell
       title="Content moderation"
       description="Review flagged posts, profiles, and messages. Resolve or dismiss with one action."
+      showHelp
     >
       <HelpCallout id="admin-content-moderation" title="Moderation queue">
         <p>

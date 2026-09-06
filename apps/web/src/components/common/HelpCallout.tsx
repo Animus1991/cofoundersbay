@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 
 /**
  * Contextual help block. Each page passes a unique `id` so dismissed state
@@ -80,10 +81,11 @@ export function HelpCallout({
         <button
           type="button"
           onClick={() => persist(false)}
-          aria-label="Dismiss help"
+          aria-label={bilingualAria('Dismiss help', 'Απόρριψη βοήθειας')}
           className="rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
-          <X className="icon-sm" />
+          {/* Decorative: the button already carries its name via aria-label. */}
+          <X className="icon-sm" aria-hidden="true" />
         </button>
       </div>
       <div className="space-y-2 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">

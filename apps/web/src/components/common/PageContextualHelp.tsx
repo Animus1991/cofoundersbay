@@ -186,6 +186,32 @@ const HELP_CONTENT: Record<string, ReactNode> = {
       </p>
     </>
   ),
+  messages: (
+    <>
+      <p>
+        <strong>Chats</strong> are open conversations with people you are already connected to.{' '}
+        <strong>Intro requests</strong> are first messages from someone outside your network — accepting one
+        starts a chat, declining it does not notify them.
+      </p>
+      <p>
+        Nobody can message you directly until you connect or accept their intro, so an empty Chats tab usually
+        means there are requests waiting next door.
+      </p>
+    </>
+  ),
+  'admin-overview': (
+    <>
+      <p>
+        This is the platform-wide console: pending <strong>reports</strong>, user and cohort management, events
+        and job postings, and the role distribution chart. Counts here cover every tenant, not one community.
+      </p>
+      <p>
+        Each card links to the specialised screen — <a href="/admin/user-management">User management</a> for bulk
+        actions and filters, <a href="/admin/content-moderation">Content moderation</a> for the report queue, and{' '}
+        <a href="/admin/security-monitoring">Security monitoring</a> for auth anomalies.
+      </p>
+    </>
+  ),
   'admin-system-settings': (
     <>
       <p>

@@ -18,6 +18,7 @@ export default function MentorshipManagementPage() {
     <AppShell
       title="Mentorship management"
       description="Approve mentor applications, monitor session quality, and spot inactive mentors."
+      showHelp
     >
       <HelpCallout id="admin-mentorship" title="Mentorship oversight">
         <p>

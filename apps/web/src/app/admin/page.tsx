@@ -605,6 +605,7 @@ export default function AdminPage() {
     <AppShell
       title="Admin Dashboard"
       description="Manage users, moderate content, and monitor platform health"
+      showHelp
       actions={
         <Button
           variant="secondary"

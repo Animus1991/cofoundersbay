@@ -24,6 +24,7 @@ export default function CommunityManagementPage() {
     <AppShell
       title="Community management"
       description="Overview of groups — member counts, activity, and communities pending review."
+      showHelp
     >
       <HelpCallout id="admin-community-management" title="Managing communities">
         <p>

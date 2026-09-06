@@ -521,6 +521,7 @@ export default function MessagesPage() {
 
   return (
     <AppShell
+      showHelp
       actions={
         <Button variant="outline" size="sm" className="gap-2">
           <MessageSquare className="icon-sm" />

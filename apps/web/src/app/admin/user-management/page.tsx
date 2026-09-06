@@ -248,6 +248,7 @@ export default function AdminUserManagementPage() {
     <AppShell
       title="User Management"
       description="Search, filter, verify, and moderate platform accounts. Bulk actions apply to selected rows."
+      showHelp
       actions={
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setUsers(MOCK_USERS)}>

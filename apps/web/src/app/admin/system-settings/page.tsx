@@ -25,6 +25,7 @@ export default function SystemSettingsPage() {
     <AppShell
       title="System settings"
       description="Global platform switches — maintenance mode, signups, support contact, and defaults."
+      showHelp
       actions={
         <Button size="sm" onClick={save}>
           <Save className="icon-sm mr-1.5" /> Save changes

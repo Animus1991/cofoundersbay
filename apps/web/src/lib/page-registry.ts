@@ -57,7 +57,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/search', title: 'Search', description: 'Find people, jobs, events, programs, and posts. Use filters in the result tabs to narrow by type.', section: 'Explore', status: 'complete' },
   { path: '/connections', title: 'Connections', description: 'Manage pending requests and active professional relationships.', helpId: 'connections', helpTitle: 'Connections', section: 'Network', status: 'complete' },
   { path: '/shortlist', title: 'Saved profiles', description: 'Profiles you bookmarked for later outreach.', section: 'Network', status: 'complete' },
-  { path: '/messages', title: 'Messages', description: 'Direct conversations and intro requests with your network.', section: 'Communicate', priority: 'critical', status: 'complete' },
+  { path: '/messages', title: 'Messages', description: 'Direct conversations and intro requests with your network.', helpId: 'messages', helpTitle: 'Chats vs intro requests', section: 'Communicate', priority: 'critical', status: 'complete' },
   { path: '/calendar', title: 'Calendar', description: 'Sessions, calls, and events in one timeline.', section: 'Communicate', status: 'complete' },
 
   // ── Mentor ──
@@ -103,7 +103,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/tenant/settings', title: 'Tenant Settings', description: 'General workspace settings: membership policy, notifications, and email preferences.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
 
   // ── Platform admin ──
-  { path: '/admin', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
+  { path: '/admin', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', helpId: 'admin-overview', helpTitle: 'What this console covers', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
   { path: '/admin/users', title: 'Users', description: 'Search and moderate platform accounts.', section: 'Admin', status: 'complete' },
   { path: '/admin/user-management', title: 'User management', description: 'Advanced filters, bulk actions, and verification controls.', helpId: 'admin-user-management', helpTitle: 'User management', section: 'Admin', status: 'complete' },
   { path: '/admin/analytics', title: 'Global analytics', description: 'Growth, engagement, and financial platform metrics.', helpId: 'admin-analytics', helpTitle: 'Reading the analytics', section: 'Admin', status: 'complete' },
