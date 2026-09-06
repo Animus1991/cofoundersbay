@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { NavIcon, glyphForMode } from '@/components/icons/CfbGlyph';
 
 interface ModeSwitcherProps {
   currentMode: SidebarMode;
@@ -54,7 +55,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
               aria-pressed={isActive}
               aria-label={aria}
             >
-              <Icon className="icon-sm shrink-0" aria-hidden="true" />
+              <NavIcon name={glyphForMode(mode.id)} fallback={Icon} className="icon-sm shrink-0" />
               {expanded && (
                 <BilingualText
                   en={mode.shortLabel}

@@ -22,6 +22,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { Logo, LogoIcon } from '@/components/brand/Logo';
+import { NavIcon } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRole } from '@/contexts/RoleContext';
@@ -190,12 +191,13 @@ export function SideNav() {
 
                       {/* Icon + badge (collapsed) */}
                       <span className="relative flex-shrink-0">
-                        <Icon
+                        <NavIcon
+                          href={href}
+                          fallback={Icon}
                           className={cn(
                             'icon-sm',
                             active ? 'text-primary-accessible' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
-                          aria-hidden="true"
                         />
                         {badge > 0 && !expanded && (
                           <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground ring-2 ring-card">

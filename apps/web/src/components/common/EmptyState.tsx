@@ -68,8 +68,8 @@ export function EmptyState({
 
   return (
     <div className={cn('relative overflow-hidden rounded-xl border border-border/60 bg-card text-center shadow-sm', sizeClasses[size], className)}>
-      {/* Decorative background blobs */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-20">
+      {/* Quiet identity wash — no animated decoration */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-10">
         <div className="absolute -top-12 left-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
         <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
       </div>

@@ -88,17 +88,16 @@ const config: Config = {
       },
       // One token, one scale. Every step derives from --radius (globals.css) so a
       // theme can soften or sharpen the whole product by changing a single value,
-      // and nested surfaces stay concentric: card 14 > row 10 > control 8 > item 4,
+      // and nested surfaces stay concentric: card 16 > row 12 > control 10 > item 6,
       // i.e. each inner radius ≈ outer radius minus the padding between them.
-      // Previously xl/2xl were Tailwind's fixed defaults and ignored the token.
       borderRadius: {
-        sm: 'calc(var(--radius) - 6px)',       //  4px  menu items, tiny chips
-        DEFAULT: 'calc(var(--radius) - 4px)',  //  6px  small inline elements
-        md: 'calc(var(--radius) - 2px)',       //  8px  buttons, inputs, selects
-        lg: 'var(--radius)',                   // 10px  tab lists, list rows, tiles
-        xl: 'calc(var(--radius) + 4px)',       // 14px  cards, dialogs, toasts
-        '2xl': 'calc(var(--radius) + 8px)',    // 18px  sheets, hero surfaces
-        '3xl': 'calc(var(--radius) + 14px)',   // 24px  marketing blocks
+        sm: 'calc(var(--radius) - 6px)',       //  6px  menu items, tiny chips
+        DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  small inline elements
+        md: 'calc(var(--radius) - 2px)',       // 10px  buttons, inputs, selects
+        lg: 'var(--radius)',                   // 12px  tab lists, list rows, tiles
+        xl: 'calc(var(--radius) + 4px)',       // 16px  cards, dialogs, toasts
+        '2xl': 'calc(var(--radius) + 8px)',    // 20px  sheets, hero surfaces
+        '3xl': 'calc(var(--radius) + 14px)',   // 26px  marketing blocks
       },
       keyframes: {
         'fade-in': {

@@ -103,7 +103,7 @@ export function AIInsightButton({
 
         {response && isExpanded && (
           <div className="absolute top-full right-0 mt-2 w-72 bg-popover border border-border rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-2">
-            <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-gradient-to-r from-violet-500/10 to-purple-500/10">
+            <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-status-accent-bg">
               <span className="text-xs font-medium flex items-center gap-1.5">
                 <span>{getAgentIcon(agentId)}</span>
                 AI Insight
@@ -153,7 +153,7 @@ export function AIInsightButton({
       )}
 
       {response && isExpanded && (
-        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-status-accent-border rounded-lg p-3 animate-in fade-in slide-in-from-top-2">
+        <div className="relative rounded-xl border border-status-accent-border bg-status-accent-bg p-3 animate-in fade-in slide-in-from-top-2">
           <button
             onClick={clearResponse}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"

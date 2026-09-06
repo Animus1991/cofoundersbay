@@ -4,8 +4,9 @@ import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, MessageCircle, Menu, User } from 'lucide-react';
+import { Home, Compass, MessageCircle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CfbGlyph, NavIcon } from '@/components/icons/CfbGlyph';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { useSidebar } from './SidebarContext';
 
@@ -52,7 +53,7 @@ export function MobileBottomNav() {
         className={cn(tabClasses, isActive ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground')}
       >
         <span className="relative">
-          <Icon className="icon-md" strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
+          <NavIcon href={tab.path} fallback={Icon} className="icon-md" />
           {badge > 0 && (
             <span aria-hidden="true" className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
               {badge > 99 ? '99+' : badge}
@@ -81,7 +82,7 @@ export function MobileBottomNav() {
         aria-controls={mobileNavOpen ? mobileNavId : undefined}
         className={cn(tabClasses, mobileNavOpen ? 'bg-primary/10 text-primary-accessible' : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground')}
       >
-        <Menu className="icon-md" strokeWidth={mobileNavOpen ? 2.5 : 2} aria-hidden="true" />
+        <CfbGlyph name="more" className="icon-md" />
         <TabLabel en="More" el="Μενού" />
       </button>
       {PRIMARY_TABS.slice(3).map(renderTab)}

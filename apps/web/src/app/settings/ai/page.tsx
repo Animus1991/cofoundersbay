@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import {
-  Bot,
   Sparkles,
   Sliders,
   MessageSquare,
@@ -33,7 +32,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, type AgentConfig } from '@/lib/ai-api';
-import { cn } from '@/lib/utils';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 type AIPreferences = {
   preferredModel: string;
@@ -189,8 +188,8 @@ export default function AISettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
-                  <Bot className="icon-md text-white" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <CfbGlyph name="spark" className="icon-md" />
                 </div>
                 AI Assistant Settings
               </h1>
@@ -208,24 +207,24 @@ export default function AISettingsPage() {
         {/* AI Status Banner */}
         <Card className={cn(
           'mb-6 border-2',
-          isAIAvailable ? 'border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20' : 'border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20'
+          isAIAvailable ? 'border-status-success-border bg-status-success-bg' : 'border-status-warning-border bg-status-warning-bg'
         )}>
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
               <div className={cn(
                 'flex h-10 w-10 items-center justify-center rounded-full',
-                isAIAvailable ? 'bg-emerald-500/20' : 'bg-amber-500/20'
+                isAIAvailable ? 'bg-status-success-bg' : 'bg-status-warning-bg'
               )}>
                 {isAIAvailable ? (
-                  <Zap className="icon-md text-status-success dark:text-emerald-400" />
+                  <Zap className="icon-md text-status-success" />
                 ) : (
-                  <Info className="icon-md text-status-warning dark:text-amber-400" />
+                  <Info className="icon-md text-status-warning" />
                 )}
               </div>
               <div>
                 <p className={cn(
                   'font-medium',
-                  isAIAvailable ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'
+                  isAIAvailable ? 'text-status-success' : 'text-status-warning'
                 )}>
                   {isAIAvailable ? 'AI Assistant is Online' : 'AI Assistant is Offline'}
                 </p>
@@ -244,7 +243,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="icon-md text-violet-500" />
+                <Sparkles className="icon-md text-primary-accessible" />
                 Model Configuration
               </CardTitle>
               <CardDescription>
@@ -440,7 +439,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sliders className="icon-md text-emerald-500" />
+                <Sliders className="icon-md text-status-success" />
                 Features
               </CardTitle>
               <CardDescription>
@@ -472,7 +471,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="icon-md text-amber-500" />
+                <Shield className="icon-md text-status-warning" />
                 Privacy & Data
               </CardTitle>
               <CardDescription>
@@ -503,7 +502,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="icon-md text-purple-500" />
+                <CfbGlyph name="spark" className="icon-md text-primary-accessible" />
                 Available AI Agents
               </CardTitle>
               <CardDescription>
@@ -524,8 +523,8 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                      <Bot className="icon-sm text-status-accent " />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+                      <CfbGlyph name="spark" className="icon-sm" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

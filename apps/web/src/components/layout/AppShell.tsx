@@ -11,6 +11,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
+import { CfbGlyphWell } from '@/components/icons/CfbGlyph';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -81,17 +82,20 @@ export function AppShell({
             <div className="space-y-5">
               {(pageTitle || pageDescription || actions) && (
                 <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
-                  <div>
-                    {pageTitle && (
-                      <h1 className="text-lg font-semibold tracking-tight text-foreground">
-                        <BilingualText en={pageTitle} el={pageTitleEl} />
-                      </h1>
-                    )}
-                    {pageDescription && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">
-                        <BilingualText en={pageDescription} el={pageDescriptionEl} />
-                      </p>
-                    )}
+                  <div className="flex min-w-0 items-start gap-3">
+                    <CfbGlyphWell href={pathname} size="md" />
+                    <div className="min-w-0">
+                      {pageTitle && (
+                        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                          <BilingualText en={pageTitle} el={pageTitleEl} />
+                        </h1>
+                      )}
+                      {pageDescription && (
+                        <p className="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
+                          <BilingualText en={pageDescription} el={pageDescriptionEl} />
+                        </p>
+                      )}
+                    </div>
                   </div>
                   {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
                 </section>

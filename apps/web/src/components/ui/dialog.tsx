@@ -57,7 +57,6 @@ const DialogContent = React.forwardRef<
           aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}
         >
           <X className="icon-sm" aria-hidden="true" />
-          <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>

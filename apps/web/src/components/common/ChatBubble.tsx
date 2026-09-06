@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { MessageCircle, X, GripVertical } from 'lucide-react';
+import { X, GripVertical } from 'lucide-react';
 import { useMessagingUnreadCount } from '@/contexts/MessagingContext';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
 import { useDraggable } from '@/hooks/useDraggable';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { LogoIcon } from '@/components/brand/Logo';
 
 /**
  * Floating chat bubble shown on all pages except /messages.
@@ -122,7 +123,7 @@ export function ChatBubble() {
           )}
           style={{ width: '52px', height: '52px' }}
         >
-          <MessageCircle className="icon-lg" fill="currentColor" fillOpacity={0.2} aria-hidden="true" />
+          <LogoIcon size={22} mono className="text-primary-foreground" />
           {unreadMessages > 0 && (
             <span
               aria-hidden="true"

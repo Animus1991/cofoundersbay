@@ -98,7 +98,7 @@ export function AIMatchExplainer({
       )}
 
       {explanation && (
-        <div className="relative bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-status-accent-border rounded-lg p-4 animate-in fade-in slide-in-from-top-2">
+        <div className="relative rounded-xl border border-status-accent-border bg-status-accent-bg p-4 animate-in fade-in slide-in-from-top-2">
           <button
             onClick={() => setExplanation(null)}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
@@ -107,8 +107,8 @@ export function AIMatchExplainer({
           </button>
           
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600">
-              <Users className="icon-sm text-white" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Users className="icon-sm" />
             </div>
             <div className="flex-1 pr-4">
               <div className="text-xs font-medium text-status-accent mb-1">

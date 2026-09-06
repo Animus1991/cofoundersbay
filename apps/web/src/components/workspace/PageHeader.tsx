@@ -1,13 +1,14 @@
-'use client';
-
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 interface PageHeaderProps {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   actions?: ReactNode;
   icon?: ReactNode;
+  glyph?: CfbGlyphName;
+  href?: string;
   className?: string;
 }
 
@@ -16,32 +17,36 @@ export function PageHeader({
   description,
   actions,
   icon,
+  glyph,
+  href,
   className,
 }: PageHeaderProps) {
+  const mark = icon ?? ((glyph || href) ? <CfbGlyphWell name={glyph} href={href} size="md" /> : null);
+
   return (
     <div className={cn(
-      'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between',
+      'flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between',
       className
     )}>
-      <div className="flex items-center gap-3">
-        {icon && (
+      <div className="flex min-w-0 items-start gap-3">
+        {mark && (
           <div className="flex-shrink-0">
-            {icon}
+            {mark}
           </div>
         )}
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
             {title}
           </h1>
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 max-w-prose text-sm leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}
         </div>
       </div>
       {actions && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {actions}
         </div>
       )}

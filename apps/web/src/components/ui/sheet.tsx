@@ -5,6 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
@@ -59,9 +60,11 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="icon-sm" />
-        <span className="sr-only">Close</span>
+      <DialogPrimitive.Close
+        className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-colors hover:bg-secondary hover:text-foreground hover:opacity-100 focus-ring disabled:pointer-events-none"
+        aria-label={bilingualAria('Close panel', 'Κλείσιμο πλαισίου')}
+      >
+        <X className="icon-sm" aria-hidden="true" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </SheetPortal>

@@ -18,6 +18,7 @@ import { bilingualAria } from '@/lib/i18n/format';
 import { getNavLabelEl, getNavSectionEl } from '@/lib/i18n/strings-nav';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { NavIcon } from '@/components/icons/CfbGlyph';
 import { useStoredUser } from '@/hooks/useStoredUser';
 
 export function MobileNav() {
@@ -155,7 +156,7 @@ export function MobileNav() {
                               : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                           )}
                         >
-                          <Icon className="icon-sm shrink-0" aria-hidden="true" />
+                          <NavIcon href={href} fallback={Icon} className="icon-sm shrink-0" />
                           <BilingualText en={label} el={getNavLabelEl(href)} stacked className="min-w-0 flex-1" primaryClassName="whitespace-normal break-words" secondaryClassName="whitespace-normal break-words" />
                           {badge > 0 && (
                             <>

@@ -5,7 +5,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/useSession';
 import {
   MessageSquare,
-  Bot,
   X,
   ChevronDown,
   Send,
@@ -37,6 +36,9 @@ import {
 } from '@/lib/api';
 import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagingSocket';
 import type { Conversation } from '@/components/messaging/ConversationList';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 type TabType = 'messages' | 'ai';
 
@@ -175,7 +177,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-status-accent-bg text-status-accent text-xs font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-status-accent-bg text-status-accent text-xs font-medium hover:bg-status-accent-bg/80 transition-colors"
       >
         <span>{getAgentIcon(currentAgent)}</span>
         <span>{current?.name || 'Assistant'}</span>
@@ -218,9 +220,9 @@ function AIMessageBubble({ message }: { message: AIMessage }) {
     <div className={cn('flex gap-2', isUser && 'flex-row-reverse')}>
       <div className={cn(
         'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs',
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-violet-500 to-purple-600 text-white'
+        isUser ? 'bg-primary text-primary-foreground' : 'bg-primary/15 text-primary-accessible'
       )}>
-        {isUser ? '👤' : '🤖'}
+        {isUser ? <CfbGlyph name="profile" className="icon-sm" /> : <CfbGlyph name="spark" className="icon-sm" />}
       </div>
       <div className={cn(
         'flex-1 rounded-2xl px-3 py-2 max-w-[85%] text-sm',
@@ -634,8 +636,8 @@ export function UnifiedChatPopup() {
         <div
           {...dragHandleProps}
           className={cn(
-            'flex items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-purple-500 text-white/80 shadow-md cursor-grab',
-            'hover:from-violet-500 hover:to-purple-600 transition-all',
+            'flex items-center justify-center rounded-full bg-primary text-primary-foreground/80 shadow-md cursor-grab',
+            'hover:bg-primary/90 transition-all',
             isDragging && 'scale-95 opacity-80 cursor-grabbing'
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
@@ -643,11 +645,13 @@ export function UnifiedChatPopup() {
           <GripVertical className="icon-sm" />
         </div>
         <div
-          className="flex items-center gap-2 cursor-pointer rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5 hover:shadow-xl transition-all"
+          className="flex items-center gap-2 cursor-pointer rounded-full bg-primary shadow-lg px-4 py-2.5 hover:bg-primary/90 hover:shadow-xl transition-all"
           onClick={restore}
         >
-          <Bot className="icon-sm text-white" />
-          <span className="text-sm font-medium text-white">Chat</span>
+          <CfbGlyph name="spark" className="icon-sm text-primary-foreground" />
+          <span className="text-sm font-medium text-primary-foreground">
+            <BilingualText en="Chat" el="Συνομιλία" compact />
+          </span>
           {(totalMsgUnread > 0 || aiMessages.length > 0) && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
               {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
@@ -677,7 +681,7 @@ export function UnifiedChatPopup() {
       }}
     >
       {/* ── Header ── */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-gradient-to-r from-violet-500 to-purple-600 shrink-0">
+      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-primary shrink-0">
         <div
           {...dragHandleProps}
           className={cn(
@@ -698,7 +702,7 @@ export function UnifiedChatPopup() {
             )}
           >
             <MessageSquare className="icon-sm" />
-            Messages
+            <BilingualText en="Messages" el="Μηνύματα" compact />
             {totalMsgUnread > 0 && (
               <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
@@ -712,18 +716,18 @@ export function UnifiedChatPopup() {
               activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <Bot className="icon-sm" />
-            AI Assistant
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en="AI Assistant" el="Βοηθός AI" compact />
             {!isAIAvailable && (
-              <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" title="Limited mode" />
+              <span className="h-1.5 w-1.5 rounded-full bg-status-warning" title={bilingualAria('Limited mode', 'Περιορισμένη λειτουργία')} />
             )}
           </button>
         </div>
 
-        <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
+        <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')} title={bilingualAria('Minimise chat', 'Ελαχιστοποίηση συνομιλίας')}>
           <ChevronDown className="icon-sm text-white" />
         </button>
-        <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
+        <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors" aria-label={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')} title={bilingualAria('Close chat', 'Κλείσιμο συνομιλίας')}>
           <X className="icon-sm text-white" />
         </button>
       </div>
@@ -736,10 +740,10 @@ export function UnifiedChatPopup() {
             <div className="flex items-center gap-1">
               {aiMessages.length > 0 && (
                 <>
-                  <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Retry last message">
+                  <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title={bilingualAria('Retry last message', 'Επανάληψη τελευταίου μηνύματος')} aria-label={bilingualAria('Retry last message', 'Επανάληψη τελευταίου μηνύματος')}>
                     <RefreshCw className="icon-sm text-muted-foreground" />
                   </button>
-                  <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear conversation">
+                  <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title={bilingualAria('Clear conversation', 'Εκκαθάριση συνομιλίας')} aria-label={bilingualAria('Clear conversation', 'Εκκαθάριση συνομιλίας')}>
                     <Trash2 className="icon-sm text-muted-foreground" />
                   </button>
                 </>
@@ -751,8 +755,8 @@ export function UnifiedChatPopup() {
             {aiMessages.length === 0 ? (
               <div className="space-y-4">
                 <div className="flex gap-2">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-white text-xs">
-                    {getAgentIcon(currentAgent)}
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible">
+                    <CfbGlyph name="spark" className="icon-sm" />
                   </div>
                   <div className="flex-1 rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2">
                     <p className="text-sm">
@@ -779,21 +783,23 @@ export function UnifiedChatPopup() {
                 ref={aiInputRef}
                 value={aiInput}
                 onChange={(e) => setAiInput(e.target.value)}
-                placeholder="Ask me anything..."
-                className="flex-1 h-10 rounded-full bg-muted/50 border-0 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
+                placeholder="Ask me anything... / Ρωτήστε με οτιδήποτε..."
+                className="flex-1 h-10 rounded-full bg-muted/50 border-0 px-4 text-sm focus-visible:ring-1 focus-visible:ring-ring"
                 disabled={isStreaming}
               />
               <Button
                 type="submit"
                 size="icon"
                 disabled={!aiInput.trim() || isStreaming}
-                className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+                className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90"
               >
                 {isStreaming ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
               </Button>
             </div>
             <p className="text-2xs text-muted-foreground text-center mt-2">
-              {isAIAvailable ? <>Powered by local AI • Your data stays private</> : <>AI running in limited mode</>}
+              {isAIAvailable
+                ? <BilingualText en="Powered by local AI · Your data stays private" el="Τοπικό AI · Τα δεδομένα μένουν ιδιωτικά" compact />
+                : <BilingualText en="AI running in limited mode" el="Το AI λειτουργεί σε περιορισμένη λειτουργία" compact />}
             </p>
           </form>
         </>

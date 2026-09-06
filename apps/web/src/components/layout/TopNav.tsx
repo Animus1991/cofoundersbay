@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Compass, MessageCircle, Keyboard } from 'lucide-react';
+import { Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
@@ -12,6 +12,7 @@ import { CommandPalette, useCommandPalette } from '@/components/common/CommandPa
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { Logo } from '@/components/brand/Logo';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 export function TopNav() {
   const [ready, setReady] = useState(false);
@@ -45,13 +46,13 @@ export function TopNav() {
           </Button>
           <OptimizedLink href="/discover">
             <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
-              <Compass className="icon-sm" />
+              <CfbGlyph name="discover" className="icon-sm" />
               Discover
             </Button>
           </OptimizedLink>
           <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
             <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true">
-              <MessageCircle className="icon-sm" aria-hidden="true" />
+              <CfbGlyph name="messages" className="icon-sm" />
               {unreadMessages > 0 && (
                 <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}

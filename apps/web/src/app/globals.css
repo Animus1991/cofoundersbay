@@ -60,8 +60,8 @@ html {
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
     /* Base radius. All Tailwind rounded-* steps derive from this (tailwind.config.ts):
-       sm 4 · DEFAULT 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 24. */
-    --radius:           10px;
+       sm 6 · DEFAULT 8 · md 10 · lg 12 · xl 16 · 2xl 20 · 3xl 26. */
+    --radius:           12px;
 
     /* Typography scale — refined for readability */
     --font-size-xs:     0.75rem;    /* 12px */
@@ -295,9 +295,9 @@ html {
     @apply bg-background text-foreground antialiased;
     min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.55;
-    letter-spacing: -0.012em;
+    letter-spacing: -0.011em;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -829,6 +829,14 @@ html {
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
   .icon-xl { @apply h-8 w-8; }  /* 32px - hero sections, large CTAs */
+
+  /* Quiet wells for original glyphs — identity without decoration. */
+  .icon-well {
+    @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary-accessible;
+  }
+  .icon-well-sm {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible;
+  }
 
   /* ── Bilingual secondary text ──
      The secondary language must read as subordinate to the primary without
