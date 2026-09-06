@@ -13,6 +13,8 @@ export type PageMeta = {
   /** Optional contextual help (HTML-free markdown-ish strings in JSX at call site) */
   helpId?: string;
   helpTitle?: string;
+  /** Greek help heading — additive, same contract as `titleEl`. */
+  helpTitleEl?: string;
   /** Primary user action label for empty states */
   primaryAction?: string;
   /** Breadcrumb parent */
@@ -32,32 +34,32 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/pricing', title: 'Pricing', description: 'Plans for founders, mentors, organizations, and enterprises.', section: 'Public', status: 'complete' },
   { path: '/login', title: 'Sign in', description: 'Access your workspace with email, Google, LinkedIn, or SSO.', section: 'Auth', priority: 'critical', status: 'complete' },
   { path: '/register', title: 'Create account', description: 'Join as founder, mentor, investor, or organization.', section: 'Auth', priority: 'critical', status: 'complete' },
-  { path: '/onboarding', title: 'Welcome to CoFounderBay', description: 'A 3-minute setup so matching, search, and recommendations actually work for you.', helpId: 'onboarding', helpTitle: 'Why we ask these questions', section: 'Auth', priority: 'critical', status: 'complete' },
+  { path: '/onboarding', title: 'Welcome to CoFounderBay', description: 'A 3-minute setup so matching, search, and recommendations actually work for you.', helpId: 'onboarding', helpTitle: 'Why we ask these questions', helpTitleEl: 'Γιατί ρωτάμε αυτά', section: 'Auth', priority: 'critical', status: 'complete' },
 
   // ── Founder work ──
-  { path: '/dashboard/founder', title: 'Founder dashboard', description: 'Your startup command center — readiness, matches, and next actions.', helpId: 'dashboard-founder', helpTitle: 'Founder dashboard', section: 'Work', audience: ['founder'], priority: 'critical', status: 'complete' },
-  { path: '/readiness', title: 'Readiness Score', description: 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.', helpId: 'readiness', helpTitle: 'How the readiness score works', section: 'Work', audience: ['founder'], status: 'complete' },
-  { path: '/builder', title: 'Startup Builder', description: 'Structure idea, team, market, traction, and pitch \u2014 all in one workspace.', helpId: 'builder', helpTitle: 'Using the Startup Builder', section: 'Work', priority: 'critical', status: 'complete' },
+  { path: '/dashboard/founder', title: 'Founder dashboard', description: 'Your startup command center — readiness, matches, and next actions.', helpId: 'dashboard-founder', helpTitle: 'Founder dashboard', helpTitleEl: 'Ο πίνακας του ιδρυτή', section: 'Work', audience: ['founder'], priority: 'critical', status: 'complete' },
+  { path: '/readiness', title: 'Readiness Score', description: 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.', helpId: 'readiness', helpTitle: 'How the readiness score works', helpTitleEl: 'Πώς υπολογίζεται η ετοιμότητα', section: 'Work', audience: ['founder'], status: 'complete' },
+  { path: '/builder', title: 'Startup Builder', description: 'Structure idea, team, market, traction, and pitch \u2014 all in one workspace.', helpId: 'builder', helpTitle: 'Using the Startup Builder', helpTitleEl: 'Πώς δουλεύει ο Startup Builder', section: 'Work', priority: 'critical', status: 'complete' },
   { path: '/builder/pitch-deck', title: 'Pitch deck', description: 'Draft and refine slide content tied to your builder data.', section: 'Work', status: 'complete' },
   { path: '/builder/applications', title: 'Program applications', description: 'Track accelerator and grant applications in one place.', section: 'Work', status: 'complete' },
   { path: '/research', title: 'Research boards', description: 'Visual canvases for market, product, and competitive research.', section: 'Work', status: 'complete' },
-  { path: '/milestones', title: 'Milestones', description: 'Plan and track startup milestones with due dates and owners.', helpId: 'milestones', helpTitle: 'Milestones', section: 'Work', status: 'complete' },
+  { path: '/milestones', title: 'Milestones', description: 'Plan and track startup milestones with due dates and owners.', helpId: 'milestones', helpTitle: 'Milestones', helpTitleEl: 'Ορόσημα', section: 'Work', status: 'complete' },
   // Creation routes need their own line: inheriting the list page told the user
   // they were "tracking" milestones on the form that creates one.
   { path: '/milestones/new', title: 'New milestone', description: 'Define one milestone — what done looks like, who owns it, and when it is due.', section: 'Work', status: 'complete' },
   { path: '/projects', title: 'Projects', description: 'Manage side projects and startup initiatives.', section: 'Work', status: 'complete' },
   { path: '/projects/create', title: 'Create project', description: 'Name the project and set its goal before inviting collaborators.', section: 'Work', status: 'complete' },
-  { path: '/fundraising', title: 'Fundraising', description: 'Track your round, manage investor pipeline, and organize your data room.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', section: 'Work', audience: ['founder'], status: 'complete' },
+  { path: '/fundraising', title: 'Fundraising', description: 'Track your round, manage investor pipeline, and organize your data room.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', helpTitleEl: 'Ο γύρος χρηματοδότησης εδώ', section: 'Work', audience: ['founder'], status: 'complete' },
 
   // ── Discovery ──
-  { path: '/matches', title: 'Matches', description: 'AI-ranked co-founder and team matches based on your profile compatibility.', helpId: 'matches', helpTitle: 'How matching works', section: 'Explore', priority: 'critical', status: 'complete' },
+  { path: '/matches', title: 'Matches', description: 'AI-ranked co-founder and team matches based on your profile compatibility.', helpId: 'matches', helpTitle: 'How matching works', helpTitleEl: 'Πώς γίνεται η αντιστοίχιση', section: 'Explore', priority: 'critical', status: 'complete' },
   { path: '/matches/compare', title: 'Compare profiles', description: 'Side-by-side comparison of skills, stage, and fit.', section: 'Explore', status: 'partial' },
-  { path: '/discover', title: 'Explore', description: 'Discover founders, mentors, investors, and team members with filters for role, skills, and location.', helpId: 'discover', helpTitle: 'How discovery works', section: 'Explore', status: 'complete' },
+  { path: '/discover', title: 'Explore', description: 'Discover founders, mentors, investors, and team members with filters for role, skills, and location.', helpId: 'discover', helpTitle: 'How discovery works', helpTitleEl: 'Πώς λειτουργεί η εξερεύνηση', section: 'Explore', status: 'complete' },
   { path: '/recommendations', title: 'For you', description: 'Personalized suggestions based on your profile and activity.', section: 'Explore', status: 'complete' },
   { path: '/search', title: 'Search', description: 'Find people, jobs, events, programs, and posts. Use filters in the result tabs to narrow by type.', section: 'Explore', status: 'complete' },
-  { path: '/connections', title: 'Connections', description: 'Manage pending requests and active professional relationships.', helpId: 'connections', helpTitle: 'Connections', section: 'Network', status: 'complete' },
+  { path: '/connections', title: 'Connections', description: 'Manage pending requests and active professional relationships.', helpId: 'connections', helpTitle: 'Connections', helpTitleEl: 'Συνδέσεις', section: 'Network', status: 'complete' },
   { path: '/shortlist', title: 'Saved profiles', description: 'Profiles you bookmarked for later outreach.', section: 'Network', status: 'complete' },
-  { path: '/messages', title: 'Messages', description: 'Direct conversations and intro requests with your network.', helpId: 'messages', helpTitle: 'Chats vs intro requests', section: 'Communicate', priority: 'critical', status: 'complete' },
+  { path: '/messages', title: 'Messages', description: 'Direct conversations and intro requests with your network.', helpId: 'messages', helpTitle: 'Chats vs intro requests', helpTitleEl: 'Συνομιλίες και αιτήματα γνωριμίας', section: 'Communicate', priority: 'critical', status: 'complete' },
   { path: '/calendar', title: 'Calendar', description: 'Sessions, calls, and events in one timeline.', section: 'Communicate', status: 'complete' },
 
   // ── Mentor ──
@@ -90,7 +92,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
 
   // ── Tenant admin ──
   { path: '/tenant/dashboard', title: 'Tenant dashboard', description: 'White-label community overview and key metrics.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
-  { path: '/tenant/branding', title: 'Branding', description: 'Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant.', helpId: 'tenant-branding', helpTitle: 'Tenant branding', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
+  { path: '/tenant/branding', title: 'Branding', description: 'Customize colors, logos, fonts, and landing page copy. Work in draft, then publish to apply across your tenant.', helpId: 'tenant-branding', helpTitle: 'Tenant branding', helpTitleEl: 'Επωνυμία tenant', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/sso', title: 'SSO / Authentication', description: 'Configure SAML, OIDC, or Google Workspace SSO. Optional rules map IdP claims to roles.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/domains', title: 'Domain Management', description: 'Add a subdomain or connect a custom domain. SSL is provisioned automatically once DNS verifies.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
   { path: '/tenant/members', title: 'Tenant Members', description: 'Invite, role, and remove members for your workspace.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
@@ -103,15 +105,15 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/tenant/settings', title: 'Tenant Settings', description: 'General workspace settings: membership policy, notifications, and email preferences.', section: 'Tenant', audience: ['tenant_admin'], status: 'complete' },
 
   // ── Platform admin ──
-  { path: '/admin', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', helpId: 'admin-overview', helpTitle: 'What this console covers', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
+  { path: '/admin', title: 'Admin dashboard', description: 'Platform-wide health, alerts, and quick actions.', helpId: 'admin-overview', helpTitle: 'What this console covers', helpTitleEl: 'Τι καλύπτει αυτή η κονσόλα', section: 'Admin', audience: ['platform_admin'], priority: 'critical', status: 'complete' },
   { path: '/admin/users', title: 'Users', description: 'Search and moderate platform accounts.', section: 'Admin', status: 'complete' },
-  { path: '/admin/user-management', title: 'User management', description: 'Advanced filters, bulk actions, and verification controls.', helpId: 'admin-user-management', helpTitle: 'User management', section: 'Admin', status: 'complete' },
-  { path: '/admin/analytics', title: 'Global analytics', description: 'Growth, engagement, and financial platform metrics.', helpId: 'admin-analytics', helpTitle: 'Reading the analytics', section: 'Admin', status: 'complete' },
-  { path: '/admin/content-moderation', title: 'Content moderation', description: 'Review flagged posts, profiles, and media.', helpId: 'admin-content-moderation', helpTitle: 'Moderation queue', section: 'Admin', status: 'complete' },
-  { path: '/admin/security-monitoring', title: 'Security monitoring', description: 'Auth events, anomalies, and audit trails.', helpId: 'admin-security', helpTitle: 'Security monitoring', section: 'Admin', status: 'complete' },
-  { path: '/admin/community-management', title: 'Community management', description: 'Inspect community health, growth, and flagged content.', helpId: 'admin-community-management', helpTitle: 'Community management', section: 'Admin', status: 'complete' },
-  { path: '/admin/mentorship-management', title: 'Mentorship management', description: 'Approve mentors, review credentials, and monitor session quality.', helpId: 'admin-mentorship', helpTitle: 'Mentorship management', section: 'Admin', status: 'complete' },
-  { path: '/admin/system-settings', title: 'System settings', description: 'Platform-wide toggles for maintenance, registration, and email.', helpId: 'admin-system-settings', helpTitle: 'System settings', section: 'Admin', status: 'complete' },
+  { path: '/admin/user-management', title: 'User management', description: 'Advanced filters, bulk actions, and verification controls.', helpId: 'admin-user-management', helpTitle: 'User management', helpTitleEl: 'Διαχείριση χρηστών', section: 'Admin', status: 'complete' },
+  { path: '/admin/analytics', title: 'Global analytics', description: 'Growth, engagement, and financial platform metrics.', helpId: 'admin-analytics', helpTitle: 'Reading the analytics', helpTitleEl: 'Πώς διαβάζονται τα αναλυτικά', section: 'Admin', status: 'complete' },
+  { path: '/admin/content-moderation', title: 'Content moderation', description: 'Review flagged posts, profiles, and media.', helpId: 'admin-content-moderation', helpTitle: 'Moderation queue', helpTitleEl: 'Ουρά εποπτείας', section: 'Admin', status: 'complete' },
+  { path: '/admin/security-monitoring', title: 'Security monitoring', description: 'Auth events, anomalies, and audit trails.', helpId: 'admin-security', helpTitle: 'Security monitoring', helpTitleEl: 'Παρακολούθηση ασφάλειας', section: 'Admin', status: 'complete' },
+  { path: '/admin/community-management', title: 'Community management', description: 'Inspect community health, growth, and flagged content.', helpId: 'admin-community-management', helpTitle: 'Community management', helpTitleEl: 'Διαχείριση κοινοτήτων', section: 'Admin', status: 'complete' },
+  { path: '/admin/mentorship-management', title: 'Mentorship management', description: 'Approve mentors, review credentials, and monitor session quality.', helpId: 'admin-mentorship', helpTitle: 'Mentorship management', helpTitleEl: 'Διαχείριση mentorship', section: 'Admin', status: 'complete' },
+  { path: '/admin/system-settings', title: 'System settings', description: 'Platform-wide toggles for maintenance, registration, and email.', helpId: 'admin-system-settings', helpTitle: 'System settings', helpTitleEl: 'Ρυθμίσεις συστήματος', section: 'Admin', status: 'complete' },
   // Without their own entry these fell through to `/admin` and each announced
   // itself as "Admin dashboard — platform-wide health", which is a different
   // page. Titles here match the heading each route already renders.
@@ -131,7 +133,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   // ── Account ──
   { path: '/profile', title: 'My Profile', description: 'This is exactly how others see you. Keep skills, headline, and bio current \u2014 it powers matches and search.', section: 'Account', status: 'complete' },
   { path: '/profile/edit', title: 'Edit profile', description: 'Update photo, bio, skills, and visibility settings. Changes save automatically as you type.', section: 'Account', status: 'partial' },
-  { path: '/settings', title: 'Settings', description: 'Manage billing, notifications, integrations, and privacy.', helpId: 'settings', helpTitle: 'Settings overview', section: 'Account', priority: 'high', status: 'complete' },
+  { path: '/settings', title: 'Settings', description: 'Manage billing, notifications, integrations, and privacy.', helpId: 'settings', helpTitle: 'Settings overview', helpTitleEl: 'Επισκόπηση ρυθμίσεων', section: 'Account', priority: 'high', status: 'complete' },
   // Each settings sub-page previously inherited the hub's "Manage billing,
   // notifications, integrations, and privacy" line, so all four described the
   // same four things instead of the one the user actually opened.

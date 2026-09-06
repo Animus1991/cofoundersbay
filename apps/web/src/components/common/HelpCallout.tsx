@@ -4,14 +4,21 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
+import { BilingualText } from '@/components/common/BilingualText';
 
 /**
  * Contextual help block. Each page passes a unique `id` so dismissed state
  * is remembered per page in localStorage. Users can reopen via the pill button.
+ *
+ * The heading is bilingual like the rest of the chrome, but the body is not:
+ * `children` arrives already resolved to one language. Two paragraphs rendered
+ * as `English · Ελληνικά` would read as one long run-on — the inline pairing
+ * that works for a label does not scale to prose.
  */
 export function HelpCallout({
   id,
   title,
+  titleEl,
   children,
   badge,
   defaultOpen = true,
@@ -19,6 +26,8 @@ export function HelpCallout({
 }: {
   id: string;
   title: string;
+  /** Greek heading; falls back to the English one when absent. */
+  titleEl?: string;
   children: ReactNode;
   badge?: string;
   defaultOpen?: boolean;
@@ -52,7 +61,7 @@ export function HelpCallout({
         )}
       >
         <HelpCircle className="icon-sm" aria-hidden="true" />
-        {title}
+        <BilingualText en={title} el={titleEl} compact />
       </button>
     );
   }
@@ -60,7 +69,7 @@ export function HelpCallout({
   return (
     <div
       role="note"
-      aria-label={title}
+      aria-label={bilingualAria(title, titleEl)}
       className={cn(
         'rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-transparent p-4 text-sm leading-relaxed shadow-sm',
         className,
@@ -71,7 +80,7 @@ export function HelpCallout({
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
             <HelpCircle className="icon-sm" aria-hidden="true" />
           </span>
-          <span>{title}</span>
+          <BilingualText en={title} el={titleEl} />
           {badge && (
             <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-accessible">
               {badge}
