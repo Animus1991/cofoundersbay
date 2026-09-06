@@ -32,6 +32,13 @@ const GLOBALS =
 const CHAIN =
   /(?<![?.\w])([A-Za-z_$][\w$]*)\.([A-Za-z_$][\w$]*)\.([A-Za-z_$][\w$]*)\s*(?:\?\?|\|\|)/g;
 
+/**
+ * A test that proves a guard works has to evaluate the unguarded form too, or it
+ * is asserting against a straw man. Such a line carries this marker so the sweep
+ * skips it — per line, so the rest of the file is still covered.
+ */
+const OPT_OUT = 'unguarded-by-design';
+
 function walk(dir: string): string[] {
   const out: string[] = [];
   for (const name of readdirSync(dir)) {
@@ -49,10 +56,12 @@ describe('optional-chain coverage', () => {
     for (const file of walk(ROOT)) {
       // This file documents the pattern it forbids, so it must not scan itself.
       if (file.endsWith('optionalChainCoverage.test.ts')) continue;
-      const src = readFileSync(file, 'utf8');
-      for (const match of src.match(CHAIN) ?? []) {
-        if (GLOBALS.test(match) || SAFE_RECEIVER.test(match)) continue;
-        offenders.push(`${file.replace(/\\/g, '/')}: ${match.trim()}`);
+      for (const line of readFileSync(file, 'utf8').split('\n')) {
+        if (line.includes(OPT_OUT)) continue;
+        for (const match of line.match(CHAIN) ?? []) {
+          if (GLOBALS.test(match) || SAFE_RECEIVER.test(match)) continue;
+          offenders.push(`${file.replace(/\\/g, '/')}: ${match.trim()}`);
+        }
       }
     }
 

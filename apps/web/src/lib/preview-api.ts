@@ -708,6 +708,18 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/analytics/achievements') {
     return null;
   }
+  // Mirrors MilestoneSummary. Without it this fell to `kitchenSink()`, which
+  // carries `milestones: []` but no `counts`, so the summary bar on /milestones
+  // and the founder dashboard read a field that was never there.
+  if (pathname === '/api/milestones/summary') {
+    return {
+      counts: { todo: 3, in_progress: 2, blocked: 1, completed: 6, cancelled: 0 },
+      total: 12,
+      overdue: 1,
+      dueSoon: 2,
+      completionRate: 50,
+    };
+  }
   if (pathname === '/api/analytics/overview') {
     return PREVIEW_ANALYTICS_OVERVIEW;
   }
