@@ -67,7 +67,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
         <div className="flex items-start gap-4">
           {/* Company avatar */}
           <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
-            <AvatarImage src={job.creator.avatarUrl ?? undefined} />
+            <AvatarImage src={job.creator?.avatarUrl ?? undefined} />
             <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold text-sm">
               {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
             </AvatarFallback>

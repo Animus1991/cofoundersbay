@@ -109,7 +109,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                 className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
               >
                 <Building2 className="icon-sm" />
-                {sso.provider.loginButtonText || 'Sign in with Organization SSO'}
+                {sso.provider?.loginButtonText || 'Sign in with Organization SSO'}
               </Button>
             )}
 
@@ -189,7 +189,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
                   <Building2 className="icon-sm" />
-                  {sso.provider.loginButtonText || 'SSO Login'}
+                  {sso.provider?.loginButtonText || 'SSO Login'}
                 </Button>
               )}
               <Link href={b?.ctaUrl || '/register'}>

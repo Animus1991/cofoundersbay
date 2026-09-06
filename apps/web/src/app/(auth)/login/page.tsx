@@ -165,7 +165,7 @@ function LoginPageContent() {
                   {ssoDiscovery.provider.logoUrl && (
                     <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" />
                   )}
-                  {ssoDiscovery.provider.loginButtonText || 'Continue with SSO'}
+                  {ssoDiscovery.provider?.loginButtonText || 'Continue with SSO'}
                 </Button>
                 {ssoDiscovery.ssoRequired && !ssoDiscovery.allowPasswordLogin ? (
                   <p className="text-xs text-muted-foreground text-center">

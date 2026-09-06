@@ -33,7 +33,7 @@ function toEventData(item: EventItem): EventData {
     meetingUrl: item.meetingUrl ?? undefined,
     coverImage: item.coverImageUrl ?? undefined,
     hostName: item.host.displayName,
-    hostAvatar: item.host.avatarUrl ?? undefined,
+    hostAvatar: item.host?.avatarUrl ?? undefined,
     hostRole: item.host.role,
     attendeesCount: item.attendeesCount,
     maxAttendees: item.capacity ?? undefined,

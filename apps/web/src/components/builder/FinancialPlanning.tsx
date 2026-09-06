@@ -603,7 +603,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <Label>Customer Acquisition Cost (CAC)</Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.cac || ''}
+                    value={data.unitEconomics?.cac || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, cac: Number(e.target.value) }
@@ -618,7 +618,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <Label>Payback Period (months)</Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.paybackPeriod || ''}
+                    value={data.unitEconomics?.paybackPeriod || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, paybackPeriod: Number(e.target.value) }
@@ -638,7 +638,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <Label>Lifetime Value (LTV)</Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.ltv || ''}
+                    value={data.unitEconomics?.ltv || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, ltv: Number(e.target.value) }
@@ -653,7 +653,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   <Label>Gross Margin (%)</Label>
                   <Input
                     type="number"
-                    value={data.unitEconomics.grossMargin || ''}
+                    value={data.unitEconomics?.grossMargin || ''}
                     onChange={(e) => setData(prev => ({
                       ...prev,
                       unitEconomics: { ...prev.unitEconomics, grossMargin: Number(e.target.value) }

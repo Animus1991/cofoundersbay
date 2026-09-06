@@ -404,7 +404,7 @@ export default function ConnectionsPage() {
                 key={c.id}
                 connection={c}
                 isPending={respondMutation.isPending}
-                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester.headline ?? null } })}
+                onAccept={() => respondMutation.mutate({ id: c.id, status: 'accepted', otherUserId: c.requesterId, acceptedUserInfo: { id: c.requester.id, displayName: c.requester.displayName, avatarUrl: c.requester.avatarUrl, role: c.requester.role, headline: c.requester?.headline ?? null } })}
                 onDecline={() => respondMutation.mutate({ id: c.id, status: 'declined' })}
               />
             ))

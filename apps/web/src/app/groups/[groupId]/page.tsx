@@ -87,7 +87,7 @@ function PostCard({
 
       <div className="flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
-          <AvatarImage src={post.author.avatarUrl ?? undefined} />
+          <AvatarImage src={post.author?.avatarUrl ?? undefined} />
           <AvatarFallback className="text-xs">{post.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
@@ -170,7 +170,7 @@ function PostCard({
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
               <Avatar className="h-7 w-7 shrink-0">
-                <AvatarImage src={c.author.avatarUrl ?? undefined} />
+                <AvatarImage src={c.author?.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-2xs">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">

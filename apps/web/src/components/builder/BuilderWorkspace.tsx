@@ -432,7 +432,7 @@ export function BuilderWorkspace() {
               {collaborators.slice(0, 4).map(c => (
                 <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                   <AvatarImage src={c.user.avatarUrl} />
-                  <AvatarFallback className="text-2xs">{(c.user.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{(c.user?.displayName ?? 'U').charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
             </div>
@@ -714,12 +714,12 @@ export function BuilderWorkspace() {
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarImage src={collab.user.avatarUrl} />
                             <AvatarFallback className="text-xs">
-                              {(collab.user.displayName ?? 'U').charAt(0)}
+                              {(collab.user?.displayName ?? 'U').charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
                             <div className="text-sm font-medium truncate">
-                              {collab.user.displayName ?? collab.user.email}
+                              {collab.user?.displayName ?? collab.user.email}
                             </div>
                             <div className="text-xs text-muted-foreground truncate">{collab.user.email}</div>
                           </div>

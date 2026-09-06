@@ -276,7 +276,7 @@ function ReportCard({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
-                  {report.reported.name || report.reported.email}
+                  {report.reported?.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
                 <Badge variant="outline" className={cn('text-xs', typeConf.color)}>
@@ -284,7 +284,7 @@ function ReportCard({
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground mt-0.5">
-                Reported by {report.reporter.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
+                Reported by {report.reporter?.name || report.reporter.email} · {formatTimeAgo(report.createdAt)}
               </p>
             </div>
           </div>

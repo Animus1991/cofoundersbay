@@ -272,8 +272,8 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
   if (!summary) return null;
   const stats = [
     { label: 'Total', value: summary.total, icon: Target, tone: 'neutral' as const },
-    { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, tone: 'info' as const },
-    { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, tone: 'success' as const },
+    { label: 'In Progress', value: summary.counts?.in_progress ?? 0, icon: Clock, tone: 'info' as const },
+    { label: 'Completed', value: summary.counts?.completed ?? 0, icon: CheckCircle2, tone: 'success' as const },
     { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, tone: 'danger' as const },
     { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, tone: 'accent' as const },
   ];

@@ -94,9 +94,9 @@ function VersionCard({
           {v.changedBy ? (
             <span className="flex items-center gap-1">
               <Avatar className="h-3.5 w-3.5">
-                <AvatarImage src={v.changedBy.avatarUrl ?? undefined} />
+                <AvatarImage src={v.changedBy?.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-2xs">
-                  {(v.changedBy.displayName ?? 'U').charAt(0)}
+                  {(v.changedBy?.displayName ?? 'U').charAt(0)}
                 </AvatarFallback>
               </Avatar>
               {v.changedBy.displayName}

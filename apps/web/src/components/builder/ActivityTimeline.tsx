@@ -197,7 +197,7 @@ export function ActivityTimeline({
                             <Avatar className="h-5 w-5 shrink-0">
                               <AvatarImage src={activity.user.avatarUrl} />
                               <AvatarFallback className="text-2xs">
-                                {(activity.user.displayName ?? 'U').charAt(0)}
+                                {(activity.user?.displayName ?? 'U').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                           )}

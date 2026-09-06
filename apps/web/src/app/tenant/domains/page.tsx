@@ -87,7 +87,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
                 <td className="px-3 py-2 font-mono break-all max-w-[200px]">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="truncate">{instructions.verification.value}</span>
-                    <CopyButton value={instructions.verification.value ?? ''} />
+                    <CopyButton value={instructions.verification?.value ?? ''} />
                   </div>
                 </td>
                 <td className="px-3 py-2 font-mono">{instructions.verification.ttl}</td>

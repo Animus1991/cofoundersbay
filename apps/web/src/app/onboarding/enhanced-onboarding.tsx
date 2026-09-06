@@ -1089,7 +1089,7 @@ function ReviewStep({
             </div>
             <div className="flex justify-between">
               <span>Commitment:</span>
-              <span>{data.preferences.commitment || 'Not set'}</span>
+              <span>{data.preferences?.commitment || 'Not set'}</span>
             </div>
             <div className="flex justify-between">
               <span>Notifications:</span>

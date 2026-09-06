@@ -51,7 +51,7 @@ function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
       )}
       <div className="flex items-center gap-3 mt-4">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={endorsement.fromUser.avatarUrl ?? undefined} />
+          <AvatarImage src={endorsement.fromUser?.avatarUrl ?? undefined} />
           <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm">
             {endorsement.fromUser.displayName[0]}
           </AvatarFallback>

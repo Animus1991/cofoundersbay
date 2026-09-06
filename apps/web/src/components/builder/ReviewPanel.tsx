@@ -341,7 +341,7 @@ export function ReviewPanel({ open, onClose, documentId, workspaceId, readonly =
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={proposal.createdBy.avatarUrl} />
                         <AvatarFallback className="text-2xs">
-                          {(proposal.createdBy.displayName ?? 'U').charAt(0)}
+                          {(proposal.createdBy?.displayName ?? 'U').charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-xs text-muted-foreground">

@@ -213,9 +213,9 @@ export function ConversationalOnboarding() {
     try {
       await createProfile({
         displayName: form.current.displayName,
-        headline: form.current.headline || undefined,
-        bio: form.current.bio || undefined,
-        location: form.current.location || undefined,
+        headline: form.current?.headline || undefined,
+        bio: form.current?.bio || undefined,
+        location: form.current?.location || undefined,
         role: form.current.role,
         skillIds: form.current.skillIds.length ? form.current.skillIds : undefined,
       });

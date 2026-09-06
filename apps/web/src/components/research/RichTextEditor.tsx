@@ -37,7 +37,7 @@ export function RichTextEditor({
   const handleInput = useCallback(() => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML;
-      const textContent = editorRef.current.textContent || '';
+      const textContent = editorRef.current?.textContent || '';
       setIsEmpty(!textContent.trim());
       onChange(html);
     }

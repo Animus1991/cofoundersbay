@@ -381,7 +381,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = node.upload.originalName || 'download';
+      a.download = node.upload?.originalName || 'download';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

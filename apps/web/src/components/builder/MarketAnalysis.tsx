@@ -461,7 +461,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
           </div>
 
           {/* Market Size Visualization */}
-          {(data.tam.value || data.sam.value || data.som.value) && (
+          {(data.tam?.value || data.sam?.value || data.som.value) && (
             <Card>
               <CardHeader>
                 <CardTitle>Market Size Overview</CardTitle>
@@ -470,19 +470,19 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div className="flex items-end justify-center gap-8 h-48">
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-status-info-bg border-2 border-blue-500 rounded-t-lg flex items-end justify-center" style={{ height: '160px' }}>
-                      <span className="text-lg font-bold text-status-info mb-2">{data.tam.value || '—'}</span>
+                      <span className="text-lg font-bold text-status-info mb-2">{data.tam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">TAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-status-success-bg border-2 border-green-500 rounded-t-lg flex items-end justify-center" style={{ height: '100px' }}>
-                      <span className="text-lg font-bold text-status-success mb-2">{data.sam.value || '—'}</span>
+                      <span className="text-lg font-bold text-status-success mb-2">{data.sam?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-status-warning-bg border-2 border-orange-500 rounded-t-lg flex items-end justify-center" style={{ height: '40px' }}>
-                      <span className="text-lg font-bold text-status-warning mb-2">{data.som.value || '—'}</span>
+                      <span className="text-lg font-bold text-status-warning mb-2">{data.som?.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SOM</span>
                   </div>

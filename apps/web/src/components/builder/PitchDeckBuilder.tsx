@@ -84,7 +84,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
 
   useEffect(() => {
     const filledSlides = data.slides.filter(s => s.content.trim().length > 0).length;
-    const totalSlides = data.slides.length || 1;
+    const totalSlides = data.slides?.length || 1;
     setCompletionPercentage((filledSlides / totalSlides) * 100);
   }, [data.slides]);
 

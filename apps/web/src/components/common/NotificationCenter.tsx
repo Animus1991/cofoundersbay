@@ -101,7 +101,7 @@ function NotificationItem({
     >
       {notification.actor ? (
         <Avatar className="h-10 w-10 flex-shrink-0">
-          <AvatarImage src={notification.actor.avatarUrl || undefined} />
+          <AvatarImage src={notification.actor?.avatarUrl || undefined} />
           <AvatarFallback className="bg-primary/20 text-primary-accessible text-sm">
             {notification.actor.name[0]?.toUpperCase()}
           </AvatarFallback>

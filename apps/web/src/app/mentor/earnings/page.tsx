@@ -214,7 +214,7 @@ export default function MentorEarningsPage() {
                   {transactions.map(tx => (
                     <div key={tx.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/30 transition-colors">
                       <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage src={tx.mentee.avatarUrl ?? undefined} />
+                        <AvatarImage src={tx.mentee?.avatarUrl ?? undefined} />
                         <AvatarFallback className="bg-primary/10 text-primary-accessible text-xs font-semibold">
                           {tx.mentee.name[0]}
                         </AvatarFallback>

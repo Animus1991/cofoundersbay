@@ -65,7 +65,7 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button onClick={() => copy(instructions.verification?.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />

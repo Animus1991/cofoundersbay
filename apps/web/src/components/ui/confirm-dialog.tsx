@@ -188,7 +188,7 @@ function toText(node: React.ReactNode): string {
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (Array.isArray(node)) return node.map(toText).join('');
   if (React.isValidElement<{ en?: string; children?: React.ReactNode }>(node)) {
-    return node.props.en ?? toText(node.props.children);
+    return node.props?.en ?? toText(node.props.children);
   }
   return '';
 }

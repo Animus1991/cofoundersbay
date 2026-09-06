@@ -665,7 +665,7 @@ export function DashboardHome() {
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">In Progress</span>
-                        <span className="font-medium text-status-warning">{milestoneSummary.counts.in_progress ?? 0}</span>
+                        <span className="font-medium text-status-warning">{milestoneSummary.counts?.in_progress ?? 0}</span>
                       </div>
                       {milestoneSummary.overdue > 0 && (
                         <div className="flex justify-between text-xs">
