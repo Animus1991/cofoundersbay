@@ -115,7 +115,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             className="flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-muted-foreground hover:text-foreground transition-colors"
             title="Copy Mermaid code"
           >
-            {copied ? <Check className="icon-sm text-emerald-500" /> : <Copy className="icon-sm" />}
+            {copied ? <Check className="icon-sm text-status-success" /> : <Copy className="icon-sm" />}
           </button>
         </div>
       )}

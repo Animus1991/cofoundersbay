@@ -52,7 +52,7 @@ export function CanvasBranchSelector({
           size="sm"
           className={cn('h-8 gap-1.5 px-2.5 text-xs font-medium', className)}
         >
-          <GitBranch className="icon-sm text-violet-500" />
+          <GitBranch className="icon-sm text-status-accent" />
           <span className="max-w-[100px] truncate">{label}</span>
           {isLoading && <Loader2 className="icon-sm animate-spin ml-0.5" />}
           {!isLoading && <ChevronDown className="icon-sm opacity-50 ml-0.5" />}
@@ -99,7 +99,7 @@ export function CanvasBranchSelector({
                     {b.status === 'archived' ? (
                       <Archive className="icon-sm text-muted-foreground shrink-0" />
                     ) : (
-                      <GitBranch className="icon-sm text-violet-500 shrink-0" />
+                      <GitBranch className="icon-sm text-status-accent shrink-0" />
                     )}
                     <span className="text-sm truncate">{b.name}</span>
                     {b.status === 'merged' && (

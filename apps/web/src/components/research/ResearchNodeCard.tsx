@@ -643,7 +643,7 @@ export function ResearchNodeCard({
             </button>
             <button
               onClick={handleDelete}
-              className="w-4 h-4 flex items-center justify-center rounded hover:bg-red-200/50"
+              className="w-4 h-4 flex items-center justify-center rounded hover:bg-status-danger/20"
             >
               <X className="w-2.5 h-2.5 text-destructive-accessible" />
             </button>
@@ -878,8 +878,11 @@ export function ResearchNodeCard({
             const status = (meta?.status as string) || 'todo';
             const priority = (meta?.priority as string) || 'medium';
             const dueDate = meta?.dueDate as string | undefined;
-            const STATUS_COLORS: Record<string, string> = { todo: 'bg-slate-100 text-slate-600', in_progress: 'bg-blue-100 text-blue-700', done: 'bg-green-100 text-green-700', blocked: 'bg-red-100 text-red-700' };
-            const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600' };
+            const STATUS_COLORS: Record<string, string> = { todo: 'bg-status-neutral-bg text-status-neutral', in_progress: 'bg-status-info-bg text-status-info', done: 'bg-status-success-bg text-status-success', blocked: 'bg-status-danger-bg text-status-danger' };
+            // Four steps must stay visually distinct: amber and orange would both map to
+            // `warning`, collapsing medium into high. Opacity separates them without
+            // leaving the warm ramp the original intended.
+            const PRIORITY_COLORS: Record<string, string> = { low: 'text-status-neutral', medium: 'text-status-warning/70', high: 'text-status-warning', urgent: 'text-status-danger' };
             return (
               <div className="flex flex-wrap gap-1 items-center">
                 <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>

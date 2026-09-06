@@ -96,9 +96,9 @@ function timeAgo(iso: string) {
 
 function triggerMeta(type: string) {
   switch (type) {
-    case 'checkpoint': return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-green-600 bg-green-50 border-green-200' };
-    case 'autosave':   return { label: 'Autosave',   icon: Zap,         color: 'text-blue-500 bg-blue-50 border-blue-200' };
-    default:           return { label: 'Manual',     icon: Camera,      color: 'text-purple-600 bg-purple-50 border-purple-200' };
+    case 'checkpoint': return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-status-success bg-status-success-bg border-status-success-border' };
+    case 'autosave':   return { label: 'Autosave',   icon: Zap,         color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    default:           return { label: 'Manual',     icon: Camera,      color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
   }
 }
 

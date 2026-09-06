@@ -50,7 +50,7 @@ function nodeTypeIcon(type: string, cls = 'w-3.5 h-3.5') {
 
 function ConfidenceBadge({ confidence }: { confidence: number }) {
   const pct = Math.round(confidence * 100);
-  const color = pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-muted-foreground';
+  const color = pct >= 80 ? 'text-status-success' : pct >= 60 ? 'text-status-warning' : 'text-muted-foreground';
   return <span className={cn('text-2xs font-medium', color)}>{pct}%</span>;
 }
 
@@ -227,8 +227,8 @@ export function AIAnalysisPanel({
     <div className="w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
-        <div className="w-6 h-6 rounded-lg bg-purple-400/15 flex items-center justify-center">
-          <Sparkles className="icon-sm text-purple-400" />
+        <div className="w-6 h-6 rounded-lg bg-status-accent/15 flex items-center justify-center">
+          <Sparkles className="icon-sm text-status-accent" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-foreground">AI Research Assistant</p>
@@ -250,7 +250,7 @@ export function AIAnalysisPanel({
               className={cn(
                 'flex-1 flex flex-col items-center gap-0.5 py-2 text-2xs font-medium transition-colors border-b-2',
                 tab === t.id
-                  ? 'border-purple-400 text-purple-400 bg-purple-400/5'
+                  ? 'border-status-accent text-status-accent bg-status-accent/5'
                   : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/50'
               )}
             >
@@ -288,7 +288,7 @@ export function AIAnalysisPanel({
                 value={extractText}
                 onChange={(e) => setExtractText(e.target.value)}
                 placeholder="Paste research text, abstract, paper excerpt, or notes here…"
-                className="w-full bg-secondary/50 rounded-xl px-3 py-2.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-purple-400/50 transition-colors resize-none leading-relaxed"
+                className="w-full bg-secondary/50 rounded-xl px-3 py-2.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors resize-none leading-relaxed"
                 rows={6}
               />
 
@@ -297,7 +297,7 @@ export function AIAnalysisPanel({
                 <button
                   onClick={handleExtract}
                   disabled={loading || extractText.trim().length < 20}
-                  className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-status-accent/15 text-status-accent hover:bg-status-accent/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="icon-sm animate-spin" /> : <Sparkles className="icon-sm" />}
                   Extract Nodes
@@ -309,7 +309,7 @@ export function AIAnalysisPanel({
                   <div className="flex items-center justify-between">
                     <p className="text-2xs font-semibold text-foreground">{extractedSuggestions.length} suggestions</p>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => setExtractedSuggestions((p) => p.map((n) => ({ ...n, accepted: true })))} className="text-2xs text-purple-400 hover:text-purple-300 transition-colors">Select all</button>
+                      <button onClick={() => setExtractedSuggestions((p) => p.map((n) => ({ ...n, accepted: true })))} className="text-2xs text-status-accent hover:text-status-accent transition-colors">Select all</button>
                       <span className="text-muted-foreground">·</span>
                       <button onClick={() => setExtractedSuggestions([])} className="text-2xs text-muted-foreground hover:text-foreground transition-colors">Clear</button>
                     </div>
@@ -325,8 +325,8 @@ export function AIAnalysisPanel({
                         className={cn(
                           'rounded-xl border p-2.5 cursor-pointer transition-all',
                           isRejected ? 'opacity-40 border-border bg-card' :
-                          isAccepted ? 'border-purple-400/50 bg-purple-400/5' :
-                          'border-border bg-card hover:border-purple-400/30'
+                          isAccepted ? 'border-status-accent/50 bg-status-accent/5' :
+                          'border-border bg-card hover:border-status-accent/30'
                         )}
                       >
                         <div className="flex items-start gap-2">
@@ -340,7 +340,7 @@ export function AIAnalysisPanel({
                                 <ConfidenceBadge confidence={s.confidence} />
                                 <div className={cn(
                                   'w-4 h-4 rounded flex items-center justify-center border transition-colors',
-                                  isAccepted ? 'bg-purple-400 border-purple-400' : 'border-border'
+                                  isAccepted ? 'bg-status-accent border-status-accent' : 'border-border'
                                 )}>
                                   {isAccepted && <Check className="w-2.5 h-2.5 text-white" />}
                                 </div>
@@ -349,7 +349,7 @@ export function AIAnalysisPanel({
                             <span className="text-2xs font-bold uppercase tracking-wide text-muted-foreground">{s.type}</span>
                             {s.content && <p className="text-2xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">{s.content}</p>}
                             {s.rationale && (
-                              <p className="text-2xs text-purple-400/70 mt-1 italic leading-relaxed">
+                              <p className="text-2xs text-status-accent/70 mt-1 italic leading-relaxed">
                                 <Info className="w-2.5 h-2.5 inline mr-0.5" />{s.rationale}
                               </p>
                             )}
@@ -361,7 +361,7 @@ export function AIAnalysisPanel({
 
                   <button
                     onClick={commitExtracted}
-                    className="w-full h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                    className="w-full h-8 rounded-xl bg-status-accent/15 text-status-accent hover:bg-status-accent/25 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                   >
                     <Plus className="icon-sm" />
                     Add {extractedSuggestions.filter((s) => s.accepted !== false).length} nodes to canvas
@@ -401,7 +401,7 @@ export function AIAnalysisPanel({
               <button
                 onClick={handleSuggestConnections}
                 disabled={loading || selectedNodes.length < 2}
-                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-status-accent/15 text-status-accent hover:bg-status-accent/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="icon-sm animate-spin" /> : <GitBranch className="icon-sm" />}
                 Analyze {selectedNodes.length > 0 ? `${selectedNodes.length} nodes` : 'selected nodes'}
@@ -424,20 +424,20 @@ export function AIAnalysisPanel({
                         className={cn(
                           'rounded-xl border p-2.5 cursor-pointer transition-all',
                           isRejected ? 'opacity-40 border-border bg-card' :
-                          isAccepted ? 'border-emerald-400/40 bg-emerald-400/5' :
-                          'border-border bg-card hover:border-emerald-400/30'
+                          isAccepted ? 'border-status-success/40 bg-status-success/5' :
+                          'border-border bg-card hover:border-status-success/30'
                         )}
                       >
                         <div className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-emerald-400" />
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-status-success" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1">
-                              <p className="text-2xs font-bold uppercase tracking-wide text-emerald-400">{c.connType}</p>
+                              <p className="text-2xs font-bold uppercase tracking-wide text-status-success">{c.connType}</p>
                               <div className="flex items-center gap-1 shrink-0">
                                 <ConfidenceBadge confidence={c.confidence} />
                                 <div className={cn(
                                   'w-4 h-4 rounded flex items-center justify-center border transition-colors',
-                                  isAccepted ? 'bg-emerald-400 border-emerald-400' : 'border-border'
+                                  isAccepted ? 'bg-status-success border-status-success' : 'border-border'
                                 )}>
                                   {isAccepted && <Check className="w-2.5 h-2.5 text-white" />}
                                 </div>
@@ -489,34 +489,34 @@ export function AIAnalysisPanel({
               <button
                 onClick={handleSynthesize}
                 disabled={loading || selectedNodes.length < 2}
-                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-1.5 h-8 rounded-xl bg-status-accent/15 text-status-accent hover:bg-status-accent/25 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? <Loader2 className="icon-sm animate-spin" /> : <Layers className="icon-sm" />}
                 Synthesize {selectedNodes.length > 0 ? `${selectedNodes.length} nodes` : ''}
               </button>
 
               {synthResult && (
-                <div className="rounded-xl border border-emerald-400/40 bg-emerald-400/5 p-3 space-y-2">
+                <div className="rounded-xl border border-status-success/40 bg-status-success/5 p-3 space-y-2">
                   <div className="flex items-center gap-1.5">
-                    <Lightbulb className="icon-sm text-emerald-400" />
-                    <p className="text-2xs font-semibold text-emerald-400">Synthesis Result</p>
+                    <Lightbulb className="icon-sm text-status-success" />
+                    <p className="text-2xs font-semibold text-status-success">Synthesis Result</p>
                   </div>
                   <input
                     value={synthResult.title}
                     onChange={(e) => setSynthResult((prev) => prev ? { ...prev, title: e.target.value } : null)}
-                    className="w-full bg-secondary/50 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-foreground outline-none border border-border focus:border-emerald-400/50 transition-colors"
+                    className="w-full bg-secondary/50 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-foreground outline-none border border-border focus:border-status-success/50 transition-colors"
                   />
                   <textarea
                     value={synthResult.content}
                     onChange={(e) => setSynthResult((prev) => prev ? { ...prev, content: e.target.value } : null)}
-                    className="w-full bg-secondary/50 rounded-lg px-2.5 py-2 text-2xs text-foreground outline-none border border-border focus:border-emerald-400/50 transition-colors resize-none leading-relaxed"
+                    className="w-full bg-secondary/50 rounded-lg px-2.5 py-2 text-2xs text-foreground outline-none border border-border focus:border-status-success/50 transition-colors resize-none leading-relaxed"
                     rows={4}
                   />
                   <p className="text-2xs text-muted-foreground italic">
                     <Info className="w-2.5 h-2.5 inline mr-0.5" />{synthResult.rationale}
                   </p>
                   <div className="flex items-center gap-2">
-                    <button onClick={commitSynthesis} className="flex-1 h-7 rounded-lg bg-emerald-400/15 text-emerald-400 hover:bg-emerald-400/25 text-2xs font-semibold transition-colors flex items-center justify-center gap-1">
+                    <button onClick={commitSynthesis} className="flex-1 h-7 rounded-lg bg-status-success/15 text-status-success hover:bg-status-success/25 text-2xs font-semibold transition-colors flex items-center justify-center gap-1">
                       <Plus className="icon-sm" /> Add to canvas
                     </button>
                     <button onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
@@ -544,7 +544,7 @@ export function AIAnalysisPanel({
                   value={questionFocus}
                   onChange={(e) => setQuestionFocus(e.target.value)}
                   placeholder="e.g. methodology gaps, theoretical tensions…"
-                  className="mt-1 w-full bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground outline-none border border-border focus:border-purple-400/50 transition-colors"
+                  className="mt-1 w-full bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground outline-none border border-border focus:border-status-accent/50 transition-colors"
                 />
               </div>
 
@@ -553,7 +553,7 @@ export function AIAnalysisPanel({
                 <button
                   onClick={handleGenerateQuestions}
                   disabled={loading || nodes.length === 0}
-                  className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1.5 h-7 px-3 rounded-lg bg-status-accent/15 text-status-accent hover:bg-status-accent/25 text-2xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="icon-sm animate-spin" /> : <RefreshCw className="icon-sm" />}
                   Generate
@@ -564,19 +564,19 @@ export function AIAnalysisPanel({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-2xs font-semibold text-foreground">{questionSuggestions.length} questions</p>
-                    <button onClick={addAllQuestions} className="text-2xs text-purple-400 hover:text-purple-300 transition-colors">Add all</button>
+                    <button onClick={addAllQuestions} className="text-2xs text-status-accent hover:text-status-accent transition-colors">Add all</button>
                   </div>
                   {questionSuggestions.map((q) => (
                     <div key={q.id} className="rounded-xl border border-border bg-card p-2.5 space-y-1.5">
                       <div className="flex items-start gap-1.5">
-                        <HelpCircle className="icon-sm text-purple-400 shrink-0 mt-0.5" />
+                        <HelpCircle className="icon-sm text-status-accent shrink-0 mt-0.5" />
                         <p className="text-2xs font-medium text-foreground leading-snug flex-1">{q.title}</p>
                         <ConfidenceBadge confidence={q.confidence} />
                       </div>
                       {q.rationale && <p className="text-2xs text-muted-foreground leading-relaxed">{q.rationale}</p>}
                       <button
                         onClick={() => addQuestionToCanvas(q)}
-                        className="flex items-center gap-1 text-2xs text-purple-400 hover:text-purple-300 transition-colors"
+                        className="flex items-center gap-1 text-2xs text-status-accent hover:text-status-accent transition-colors"
                       >
                         <Plus className="icon-sm" /> Add to canvas
                       </button>
@@ -618,11 +618,11 @@ export function AIAnalysisPanel({
                   </div>
                 )}
                 {chatHistory.map((msg, i) => (
-                  <div key={i} className={cn('rounded-xl p-2.5', msg.role === 'user' ? 'bg-secondary ml-4' : 'bg-purple-400/5 border border-purple-400/20')}>
+                  <div key={i} className={cn('rounded-xl p-2.5', msg.role === 'user' ? 'bg-secondary ml-4' : 'bg-status-accent/5 border border-status-accent/20')}>
                     {msg.role === 'assistant' && (
                       <div className="flex items-center gap-1 mb-1">
-                        <Sparkles className="icon-sm text-purple-400" />
-                        <span className="text-2xs font-bold text-purple-400 uppercase tracking-wide">AI Assistant</span>
+                        <Sparkles className="icon-sm text-status-accent" />
+                        <span className="text-2xs font-bold text-status-accent uppercase tracking-wide">AI Assistant</span>
                       </div>
                     )}
                     <p className="text-2xs text-foreground leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -637,9 +637,9 @@ export function AIAnalysisPanel({
                   </div>
                 ))}
                 {loading && tab === 'chat' && (
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-400/5 border border-purple-400/20">
-                    <Loader2 className="icon-sm text-purple-400 animate-spin" />
-                    <span className="text-2xs text-purple-400">Thinking…</span>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-status-accent/5 border border-status-accent/20">
+                    <Loader2 className="icon-sm text-status-accent animate-spin" />
+                    <span className="text-2xs text-status-accent">Thinking…</span>
                   </div>
                 )}
               </div>
@@ -652,12 +652,12 @@ export function AIAnalysisPanel({
                   onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChat(); } }}
                   placeholder="Ask about your research…"
                   disabled={loading}
-                  className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-purple-400/50 transition-colors disabled:opacity-50"
+                  className="flex-1 bg-secondary/50 rounded-lg px-2.5 py-1.5 text-2xs text-foreground placeholder:text-muted-foreground/50 outline-none border border-border focus:border-status-accent/50 transition-colors disabled:opacity-50"
                 />
                 <button
                   onClick={handleChat}
                   disabled={loading || !chatInput.trim()}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-status-accent/15 text-status-accent hover:bg-status-accent/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="icon-sm animate-spin" /> : <ChevronRight className="icon-sm" />}
                 </button>

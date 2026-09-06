@@ -72,7 +72,7 @@ function CommentBubble({
           {!comment.resolved && (
             <button
               onClick={() => onResolve(comment.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-green-500 transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-status-success transition-colors"
               title="Mark as resolved"
             >
               <Check className="icon-sm" />

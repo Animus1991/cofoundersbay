@@ -92,9 +92,9 @@ function timeAgo(iso: string): string {
 
 function typeColor(type: string) {
   switch (type) {
-    case 'suggestion': return 'bg-purple-500';
-    case 'question':   return 'bg-blue-500';
-    case 'resolved':   return 'bg-green-500';
+    case 'suggestion': return 'bg-status-accent';
+    case 'question':   return 'bg-status-info';
+    case 'resolved':   return 'bg-status-success';
     default:           return 'bg-primary';
   }
 }
@@ -115,7 +115,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
   const [submittingReply, setSubmittingReply] = useState(false);
 
   const replies = comment.replies ?? [];
-  const pinBg = comment.resolved ? 'bg-green-500' : typeColor(comment.commentType);
+  const pinBg = comment.resolved ? 'bg-status-success' : typeColor(comment.commentType);
 
   const handleReply = async () => {
     if (!replyBody.trim()) return;
@@ -188,9 +188,9 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Badge
                 variant="outline"
                 className={cn('text-2xs px-1 py-0 mt-0.5 capitalize', {
-                  'border-purple-300 text-purple-600': comment.commentType === 'suggestion',
-                  'border-blue-300 text-blue-600': comment.commentType === 'question',
-                  'border-green-300 text-green-600': comment.resolved,
+                  'border-status-accent-border text-status-accent': comment.commentType === 'suggestion',
+                  'border-status-info-border text-status-info': comment.commentType === 'question',
+                  'border-status-success-border text-status-success': comment.resolved,
                 })}
               >
                 {comment.resolved ? 'resolved' : comment.commentType}
@@ -267,7 +267,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-2xs text-green-600 border-green-200 hover:bg-green-50"
+                className="w-full h-7 text-2xs text-status-success border-status-success-border hover:bg-status-success-bg"
                 onClick={() => { onResolve(comment.id); setOpen(false); }}
               >
                 <CheckCircle2 className="icon-sm mr-1.5" />

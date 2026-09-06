@@ -198,7 +198,7 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={copyShareLink}>
           {copied ? (
-            <Check className="icon-sm mr-2 text-green-500" />
+            <Check className="icon-sm mr-2 text-status-success" />
           ) : (
             <Copy className="icon-sm mr-2" />
           )}

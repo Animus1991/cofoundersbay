@@ -109,20 +109,20 @@ function timeAgo(iso: string) {
 
 function triggerMeta(type: string) {
   switch (type) {
-    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-green-600 bg-green-50 border-green-200' };
-    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-blue-500 bg-blue-50 border-blue-200' };
-    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-orange-600 bg-orange-50 border-orange-200' };
-    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-violet-600 bg-violet-50 border-violet-200' };
-    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-teal-600 bg-teal-50 border-teal-200' };
-    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-amber-600 bg-amber-50 border-amber-200' };
-    default:              return { label: 'Manual',     icon: Camera,       color: 'text-purple-600 bg-purple-50 border-purple-200' };
+    case 'checkpoint':    return { label: 'Checkpoint', icon: CheckCircle2, color: 'text-status-success bg-status-success-bg border-status-success-border' };
+    case 'autosave':      return { label: 'Autosave',   icon: Zap,          color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'restore':       return { label: 'Restore',    icon: RotateCcw,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    case 'branch_create': return { label: 'Fork',       icon: GitBranch,    color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
+    case 'post_merge':    return { label: 'Merge',      icon: GitBranch,    color: 'text-status-info bg-status-info-bg border-status-info-border' };
+    case 'pre_merge':     return { label: 'Pre-merge',  icon: GitBranch,    color: 'text-status-warning bg-status-warning-bg border-status-warning-border' };
+    default:              return { label: 'Manual',     icon: Camera,       color: 'text-status-accent bg-status-accent-bg border-status-accent-border' };
   }
 }
 
 function branchStatusColor(status: string) {
   switch (status) {
-    case 'active':   return 'bg-emerald-500/15 text-emerald-700 border-emerald-200';
-    case 'merged':   return 'bg-violet-500/15 text-violet-700 border-violet-200';
+    case 'active':   return 'bg-status-success/15 text-status-success border-status-success-border';
+    case 'merged':   return 'bg-status-accent/15 text-status-accent border-status-accent-border';
     case 'archived': return 'bg-muted text-muted-foreground border-border';
     default:         return 'bg-muted text-muted-foreground border-border';
   }
@@ -135,22 +135,22 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-success-bg text-status-success border border-status-success-border">
           <Plus className="h-2.5 w-2.5" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-danger-bg text-status-danger border border-status-danger-border">
           <Minus className="h-2.5 w-2.5" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-warning-bg text-status-warning border border-status-warning-border">
           <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-status-info-bg text-status-info border border-status-info-border">
           <Move className="h-2.5 w-2.5" />{diff.moved.length}
         </span>
       )}
@@ -189,11 +189,11 @@ function DiffDetailDialog({
 
           {diff.added.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-status-success uppercase tracking-wide flex items-center gap-1">
                 <Plus className="icon-sm" /> Added ({diff.added.length})
               </p>
               {diff.added.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-emerald-50 border border-emerald-100">
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-success-bg border border-status-success-border">
                   <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                 </div>
@@ -203,11 +203,11 @@ function DiffDetailDialog({
 
           {diff.removed.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-red-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-status-danger uppercase tracking-wide flex items-center gap-1">
                 <Minus className="icon-sm" /> Removed ({diff.removed.length})
               </p>
               {diff.removed.map((n) => (
-                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-red-50 border border-red-100">
+                <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-status-danger-bg border border-status-danger-border">
                   <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate line-through text-muted-foreground">{n.title ?? '(untitled)'}</span>
                 </div>
@@ -217,11 +217,11 @@ function DiffDetailDialog({
 
           {diff.modified.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-status-warning uppercase tracking-wide flex items-center gap-1">
                 <Edit2 className="icon-sm" /> Modified ({diff.modified.length})
               </p>
               {diff.modified.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-amber-50 border border-amber-100 space-y-0.5">
+                <div key={n.id} className="p-1.5 rounded bg-status-warning-bg border border-status-warning-border space-y-0.5">
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                     <span className="text-xs font-medium truncate">{n.title ?? '(untitled)'}</span>
@@ -241,11 +241,11 @@ function DiffDetailDialog({
 
           {diff.moved.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-status-info uppercase tracking-wide flex items-center gap-1">
                 <Move className="icon-sm" /> Moved ({diff.moved.length})
               </p>
               {diff.moved.map((n) => (
-                <div key={n.id} className="p-1.5 rounded bg-blue-50 border border-blue-100">
+                <div key={n.id} className="p-1.5 rounded bg-status-info-bg border border-status-info-border">
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                   <div className="text-2xs text-muted-foreground">
                     ({Math.round(n.before.posX)}, {Math.round(n.before.posY)}) → ({Math.round(n.after.posX)}, {Math.round(n.after.posY)})
@@ -261,12 +261,12 @@ function DiffDetailDialog({
                 <ArrowRight className="icon-sm" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
-                <div key={e.id} className="text-2xs p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-success-bg border border-status-success-border text-status-success">
                   + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
-                <div key={e.id} className="text-2xs p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-status-danger-bg border border-status-danger-border text-status-danger">
                   − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
@@ -298,7 +298,7 @@ function RestoreConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="icon-sm text-amber-500" />
+            <AlertTriangle className="icon-sm text-status-warning" />
             Restore canvas?
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -461,7 +461,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
                         <Eye className="icon-sm" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(snap)}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(snap)}>
                         <RotateCcw className="icon-sm" />
                       </Button>
                     </div>
@@ -651,7 +651,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                     <Eye className="icon-sm" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(v)}>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-status-warning hover:text-status-warning" title="Restore" onClick={() => setRestoreTarget(v)}>
                   <RotateCcw className="icon-sm" />
                 </Button>
               </div>
@@ -789,7 +789,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
           </div>
         ) : branches.map((b) => (
           <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
-            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-violet-50 border-violet-200 text-violet-600">
+            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-status-accent-bg border-status-accent-border text-status-accent">
               <GitBranch className="icon-sm" />
             </div>
             <div className="flex-1 min-w-0">

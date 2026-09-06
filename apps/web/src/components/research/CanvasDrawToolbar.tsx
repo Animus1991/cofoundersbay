@@ -130,7 +130,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
             className={cn(
               'w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-100',
               'hover:bg-secondary active:scale-95',
-              libraryOpen ? 'bg-violet-500/15 ring-1 ring-violet-400/50 text-violet-500' : 'text-muted-foreground',
+              libraryOpen ? 'bg-status-accent/15 ring-1 ring-status-accent/50 text-status-accent' : 'text-muted-foreground',
             )}
           >
             <Library className="icon-sm" />

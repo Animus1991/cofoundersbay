@@ -201,7 +201,7 @@ export function PdfAnnotationViewer({
             className={cn(
               'w-7 h-7 flex items-center justify-center rounded-lg transition-colors',
               annotationMode === 'highlight'
-                ? 'bg-amber-400/20 text-amber-500'
+                ? 'bg-status-warning/20 text-status-warning'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
             title="Highlight mode"
@@ -213,7 +213,7 @@ export function PdfAnnotationViewer({
             className={cn(
               'w-7 h-7 flex items-center justify-center rounded-lg transition-colors',
               annotationMode === 'note'
-                ? 'bg-blue-400/20 text-blue-500'
+                ? 'bg-status-info/20 text-status-info'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
             title="Add note"
@@ -285,7 +285,7 @@ export function PdfAnnotationViewer({
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/95 border border-border shadow-lg">
               {annotationMode === 'highlight'
                 ? <Highlighter className="icon-sm" style={{ color: activeColor }} />
-                : <MessageSquare className="icon-sm text-blue-500" />
+                : <MessageSquare className="icon-sm text-status-info" />
               }
               <span className="text-2xs font-medium text-foreground">
                 {annotationMode === 'highlight' ? 'Click and drag to highlight' : 'Click to add note'}
