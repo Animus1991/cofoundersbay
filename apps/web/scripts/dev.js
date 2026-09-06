@@ -6,10 +6,22 @@ const { spawn } = require('child_process');
 const { ensureSupportedNode } = require('../../../scripts/ensure-supported-node.cjs');
 const { ensureStrictLocalPort } = require('../../../scripts/strict-local-port.cjs');
 
+// Node 17+ returns DNS results in resolver order rather than IPv4-first, so on
+// Windows `localhost` resolves to ::1 before 127.0.0.1. Nothing in this stack
+// listens on ::1, so every such connection stalls until it falls back to IPv4 —
+// measured at ~210ms per request against ~1ms for a direct IPv4 connect. The
+// dev proxy makes one upstream call per API request, so that tax lands on every
+// data fetch the app performs.
+require('node:dns').setDefaultResultOrder('ipv4first');
+
 const WEB_PORT = 3000;
 const WEB_HOST = '127.0.0.1';
+// Advertised origin: stays `localhost` because OAuth providers whitelist it and
+// cookies are scoped to it. Only the proxy's upstream target changes below.
 const WEB_ORIGIN_HOST = 'localhost';
-const API_ORIGIN = 'http://localhost:3001';
+// Proxy upstream. The API binds 127.0.0.1 only, so naming it explicitly skips
+// the ::1 attempt entirely instead of relying on the fallback.
+const API_ORIGIN = 'http://127.0.0.1:3001';
 
 ensureSupportedNode('web-dev');
 
