@@ -450,7 +450,7 @@ export default function ReadinessPage() {
   const weakDims      = dimensions.filter((d) => scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'critical' || scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'needs-work');
   const askPrompt = `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.label} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0] ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`;
 
-  if (isLoading) {
+  if (Boolean(workspaceId) && isLoading) {
     return <AppShell><div className="min-w-0 space-y-6 overflow-x-clip py-6"><ReadinessSkeleton /></div></AppShell>;
   }
 
