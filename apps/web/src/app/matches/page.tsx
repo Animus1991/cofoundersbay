@@ -681,7 +681,14 @@ export default function MatchesPage() {
                   </div>
                   <div className="min-w-0">
                     <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', color)}>{value}</p>
-                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{label}</p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
+                      {label === 'Excellent ≥80%' ? (
+                        <>
+                          <span className="sm:hidden">Excellent</span>
+                          <span className="hidden sm:inline">{label}</span>
+                        </>
+                      ) : label}
+                    </p>
                   </div>
                 </CardContent>
               </Card>

@@ -53,10 +53,10 @@ const ROLE_FILTERS: { value: RoleFilter; label: string; short: string; icon: Rea
 ];
 
 const PLATFORM_STATS = [
-  { label: 'Active Founders',  value: '1,200+', icon: Rocket      },
-  { label: 'Expert Mentors',   value: '180+',   icon: GraduationCap },
-  { label: 'Successful Matches', value: '450+', icon: Star        },
-  { label: 'Communities',      value: '25+',    icon: Users       },
+  { label: 'Active Founders',  short: 'Founders',  value: '1,200+', icon: Rocket         },
+  { label: 'Expert Mentors',   short: 'Mentors',   value: '180+',   icon: GraduationCap  },
+  { label: 'Successful Matches', short: 'Matches', value: '450+',   icon: Star           },
+  { label: 'Communities',      short: 'Communities', value: '25+',  icon: Users          },
 ];
 
 type MatchReasonType = 'skills' | 'location' | 'stage' | 'industry' | 'availability' | 'values';
@@ -242,7 +242,10 @@ export default function DiscoverPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate sm:text-xs">{s.label}</p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
+                      <span className="sm:hidden">{s.short}</span>
+                      <span className="hidden sm:inline">{s.label}</span>
+                    </p>
                   </div>
                 </CardContent>
               </Card>
