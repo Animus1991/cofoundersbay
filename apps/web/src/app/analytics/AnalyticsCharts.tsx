@@ -26,11 +26,11 @@ const DEMO_AREA_DATA = [
 ];
 
 const DEMO_BAR_DATA = [
-  { name: 'Connections', value: 18 },
-  { name: 'Messages',    value: 34 },
-  { name: 'Likes',       value: 12 },
-  { name: 'Comments',    value: 8  },
-  { name: 'Shares',      value: 5  },
+  { name: 'Conn.', value: 18 },
+  { name: 'Msgs',    value: 34 },
+  { name: 'Likes',   value: 12 },
+  { name: 'Cmts',    value: 8  },
+  { name: 'Shares',  value: 5  },
 ];
 
 const PIE_COLORS = ['#8b5cf6', '#22d3ee', '#4ade80', '#fb923c', '#f87171'];
@@ -55,18 +55,18 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <BarChart3 className="h-4 w-4" />Profile Views Trend
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+            <BarChart3 className="h-4 w-4 shrink-0" />Profile Views Trend
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+          <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs">
             <Download className="h-3 w-3" />Export
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={200}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -79,7 +79,7 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
             <XAxis dataKey="date" tick={{ fontSize: 11 }} className="text-muted-foreground" />
-            <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
+            <YAxis width={28} tick={{ fontSize: 11 }} className="text-muted-foreground" />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Area type="monotone" dataKey="views"  stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorViews)"  name="Views" />
             <Area type="monotone" dataKey="unique" stroke="#22d3ee"             strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
@@ -92,11 +92,11 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
 
 export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
   const barData = [
-    { name: 'Connections', value: engagement?.connections ?? DEMO_BAR_DATA[0].value },
-    { name: 'Messages',    value: engagement?.messages    ?? DEMO_BAR_DATA[1].value },
-    { name: 'Likes',       value: engagement?.likes       ?? DEMO_BAR_DATA[2].value },
-    { name: 'Comments',    value: engagement?.comments    ?? DEMO_BAR_DATA[3].value },
-    { name: 'Shares',      value: engagement?.shares      ?? DEMO_BAR_DATA[4].value },
+    { name: 'Conn.', value: engagement?.connections ?? DEMO_BAR_DATA[0].value },
+    { name: 'Msgs',    value: engagement?.messages    ?? DEMO_BAR_DATA[1].value },
+    { name: 'Likes',   value: engagement?.likes       ?? DEMO_BAR_DATA[2].value },
+    { name: 'Cmts',    value: engagement?.comments    ?? DEMO_BAR_DATA[3].value },
+    { name: 'Shares',  value: engagement?.shares      ?? DEMO_BAR_DATA[4].value },
   ];
   const pieData = barData.map((d) => ({ name: d.name, value: d.value }));
 
@@ -110,10 +110,10 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={barData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+            <BarChart data={barData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} />
+              <YAxis width={28} tick={{ fontSize: 10 }} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {barData.map((_, i) => (

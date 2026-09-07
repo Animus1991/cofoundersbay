@@ -13,7 +13,6 @@ import {
 } from '@/lib/api';
 import {
   TrendingUp,
-  Users,
   Eye,
   MessageCircle,
   Heart,
@@ -23,13 +22,11 @@ import {
   Target,
   Activity,
   BarChart3,
-  PieChart,
   ArrowUp,
   ArrowDown,
   Minus,
   Zap,
   Network,
-  Download,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -98,6 +95,12 @@ function metricsToDisplay(m?: UserMetrics | null): AnalyticsMetric[] {
   ];
 }
 
+const VELOCITY_SHORT: Record<string, string> = {
+  'Profile Views': 'Views',
+  'New Connections': 'Connects',
+  'Messages Sent': 'Messages',
+};
+
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
   const Icon = metric.icon;
   const ChangeIcon =
@@ -108,11 +111,11 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
       : Minus;
 
   return (
-    <Card className="card-interactive hover-lift">
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between mb-3">
-          <div className={cn('p-2.5 rounded-lg bg-secondary/40', metric.color)}>
-            <Icon className="h-5 w-5" />
+    <Card className="min-w-0 card-interactive hover-lift">
+      <CardContent className="p-3">
+        <div className="mb-2 flex items-start justify-between gap-2">
+          <div className={cn('rounded-lg bg-secondary/40 p-2', metric.color)}>
+            <Icon className="h-4 w-4" />
           </div>
           <Badge
             variant={
@@ -122,18 +125,18 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
                 ? 'destructive'
                 : 'secondary'
             }
-            className="gap-1"
+            className="gap-1 text-[10px]"
           >
             <ChangeIcon className="h-3 w-3" />
             {Math.abs(metric.change)}%
           </Badge>
         </div>
-        <h3 className="text-xl font-bold mb-1">
+        <h3 className="mb-0.5 text-xl font-bold">
           {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
             ? `${metric.value}%`
             : metric.value.toLocaleString()}
         </h3>
-        <p className="text-sm text-muted-foreground">{metric.label}</p>
+        <p className="text-xs leading-snug text-muted-foreground">{metric.label}</p>
       </CardContent>
     </Card>
   );
@@ -169,13 +172,13 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, color: 'bg-amber-500' },
   ];
   return (
-    <Card>
-      <CardHeader>
+    <Card className="min-w-0">
+      <CardHeader className="p-3 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <Network className="h-4 w-4" />Profile Funnel
+          <Network className="h-4 w-4 shrink-0" />Profile Funnel
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-3 p-3 pt-0 sm:p-6 sm:pt-0">
         {stages.map((s) => (
           <div key={s.label} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
@@ -202,19 +205,19 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     color: m.color,
   }));
   return (
-    <Card className="border-primary/20 bg-primary/[0.02]">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold">Network Velocity</span>
-          <Badge variant="secondary" className="text-[10px] ml-auto">vs prev period</Badge>
+    <Card className="min-w-0 border-primary/20 bg-primary/[0.02]">
+      <CardContent className="p-3 sm:p-4">
+        <div className="mb-3 flex min-w-0 items-center gap-2">
+          <Zap className="h-4 w-4 shrink-0 text-primary" />
+          <span className="min-w-0 truncate text-sm font-semibold">Network Velocity</span>
+          <Badge variant="secondary" className="ml-auto shrink-0 text-[10px]">vs prev</Badge>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
           {items.map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="text-center">
-                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1 bg-secondary/60', item.color)}>
+              <div key={item.label} className="min-w-0 text-center">
+                <div className={cn('mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-secondary/60', item.color)}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <p className={cn('text-xs font-bold',
@@ -224,7 +227,10 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                 )}>
                   {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
                 </p>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
+                <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">
+                  <span className="sm:hidden">{VELOCITY_SHORT[item.label] ?? item.label}</span>
+                  <span className="hidden sm:inline">{item.label}</span>
+                </p>
               </div>
             );
           })}
@@ -236,14 +242,14 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
 
 function TopContentList({ content }: { content: TopContent[] }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+    <Card className="min-w-0">
+      <CardHeader className="p-3 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <TrendingUp className="h-5 w-5 shrink-0" />
           Top Performing Content
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
         <div className="space-y-3">
           {content.map((item, index) => (
             <div
@@ -253,15 +259,15 @@ function TopContentList({ content }: { content: TopContent[] }) {
               <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/20 text-primary font-semibold text-sm shrink-0">
                 {index + 1}
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm mb-1 line-clamp-1">{item.title}</h4>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="min-w-0 flex-1">
+                <h4 className="mb-1 line-clamp-2 text-sm font-medium">{item.title}</h4>
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
+                    <Eye className="h-3 w-3 shrink-0" />
                     {item.views.toLocaleString()} views
                   </span>
                   <span className="flex items-center gap-1">
-                    <Heart className="h-3 w-3" />
+                    <Heart className="h-3 w-3 shrink-0" />
                     {item.engagement} engagements
                   </span>
                   <span>{new Date(item.date).toLocaleDateString()}</span>
@@ -334,13 +340,13 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
 function AnalyticsSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-5">
-              <Skeleton className="h-10 w-10 mb-3" />
-              <Skeleton className="h-8 w-24 mb-2" />
-              <Skeleton className="h-4 w-32" />
+          <Card key={i} className="min-w-0">
+            <CardContent className="p-3">
+              <Skeleton className="mb-3 h-8 w-8" />
+              <Skeleton className="mb-2 h-6 w-16" />
+              <Skeleton className="h-3 w-24" />
             </CardContent>
           </Card>
         ))}
@@ -373,6 +379,15 @@ export default function AnalyticsPage() {
   const topContent = overview?.topContent;
   const weeklySummary = overview?.weeklySummary;
 
+  const viewsMetric = metrics.find((m) => m.label === 'Profile Views');
+  const connMetric = metrics.find((m) => m.label === 'New Connections');
+  const msgMetric = metrics.find((m) => m.label === 'Messages Sent');
+  const engMetric = metrics.find((m) => m.label === 'Engagement Rate');
+  const periodLabel = period === '7d' ? '7 days' : period === '14d' ? '14 days' : period === '30d' ? '30 days' : '90 days';
+  const askPrompt = waiting
+    ? 'Summarize my profile analytics and tell me the next action on Discover, Messages, or my profile.'
+    : `Analytics last ${periodLabel}: ${viewsMetric?.value ?? 0} profile views (${viewsMetric?.change ?? 0}%), ${connMetric?.value ?? 0} new connections, ${msgMetric?.value ?? 0} messages sent, ${engMetric?.value ?? 0}% engagement. What should I do next on Discover, Messages, or my profile to grow this?`;
+
   // Demo sparkline seeds (replaced by real data when available)
   const demoSparklines: Record<string, number[]> = {
     'Profile Views': [12, 19, 8, 24, 18, 31, 27],
@@ -387,15 +402,17 @@ export default function AnalyticsPage() {
     <AppShell
       title="Analytics"
       description="Track your profile performance and network growth"
+      askAi={askPrompt}
+      contentClassName="overflow-x-clip"
     >
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 flex-wrap gap-2">
+      <div className="min-w-0 space-y-4 overflow-x-clip">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
           {(['7d', '14d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={cn(
-                'rounded-full px-3 py-1 text-xs font-medium border transition-colors',
+                'min-h-10 rounded-full px-3 text-xs font-medium border transition-colors',
                 period === p
                   ? 'border-primary bg-primary/20 text-primary'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
@@ -404,24 +421,24 @@ export default function AnalyticsPage() {
               {p === '7d' ? '7 days' : p === '14d' ? '14 days' : p === '30d' ? '30 days' : '90 days'}
             </button>
           ))}
-        </div>
-        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
+        <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs" onClick={() => refetch()}>
           <Activity className="h-3.5 w-3.5" />Refresh
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid w-full max-w-md grid-cols-3">
-          <TabsTrigger value="overview" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
+        <TabsList className="grid h-auto w-full grid-cols-3">
+          <TabsTrigger value="overview" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+            <BarChart3 className="h-4 w-4 shrink-0" />
             Overview
           </TabsTrigger>
-          <TabsTrigger value="engagement" className="gap-2">
-            <Activity className="h-4 w-4" />
-            Engagement
+          <TabsTrigger value="engagement" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+            <Activity className="h-4 w-4 shrink-0" />
+            <span className="sm:hidden">Engage</span>
+            <span className="hidden sm:inline">Engagement</span>
           </TabsTrigger>
-          <TabsTrigger value="growth" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+          <TabsTrigger value="growth" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+            <TrendingUp className="h-4 w-4 shrink-0" />
             Growth
           </TabsTrigger>
         </TabsList>
@@ -438,25 +455,25 @@ export default function AnalyticsPage() {
             <>
               {/* Network velocity + funnel side-by-side */}
               {metrics.length > 0 && (
-                <div className="grid gap-4 lg:grid-cols-3">
-                  <div className="lg:col-span-1">
+                <div className="grid min-w-0 gap-3 lg:grid-cols-3">
+                  <div className="min-w-0 lg:col-span-1">
                     <NetworkVelocity metrics={metrics} />
                   </div>
-                  <div className="lg:col-span-2">
+                  <div className="min-w-0 lg:col-span-2">
                     <ProfileFunnel metrics={metrics} />
                   </div>
                 </div>
               )}
 
               {/* Metric cards with sparklines */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                 {metrics.map((metric) => {
                   const sparkValues = demoSparklines[metric.label] ?? [];
                   return (
-                    <Card key={metric.label} className="card-interactive hover-lift relative overflow-hidden">
-                      <CardContent className="p-5">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className={cn('p-2 rounded-lg bg-secondary/40', metric.color)}>
+                    <Card key={metric.label} className="card-interactive hover-lift relative min-w-0 overflow-hidden">
+                      <CardContent className="p-3">
+                        <div className="mb-2 flex items-start justify-between gap-2">
+                          <div className={cn('rounded-lg bg-secondary/40 p-2', metric.color)}>
                             <metric.icon className="h-4 w-4" />
                           </div>
                           <Badge
@@ -467,14 +484,14 @@ export default function AnalyticsPage() {
                             {Math.abs(metric.change)}%
                           </Badge>
                         </div>
-                        <h3 className="text-xl font-bold mb-0.5">
+                        <h3 className="mb-0.5 text-xl font-bold">
                           {metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
                             ? `${metric.value}%`
                             : metric.value.toLocaleString()}
                         </h3>
-                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <p className="text-xs leading-snug text-muted-foreground">{metric.label}</p>
                         {sparkValues.length > 0 && (
-                          <div className="absolute bottom-3 right-3 opacity-50">
+                          <div className="mt-2 opacity-60">
                             <Sparkline values={sparkValues} />
                           </div>
                         )}
@@ -485,30 +502,30 @@ export default function AnalyticsPage() {
               </div>
 
               {weeklySummary && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
+                <Card className="min-w-0">
+                  <CardHeader className="p-3 sm:p-6">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <Calendar className="h-5 w-5 shrink-0" />
                       Weekly Summary
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-4 sm:grid-cols-4">
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">Most Active Day</p>
-                        <p className="text-lg font-semibold">{weeklySummary.mostActiveDay || '—'}</p>
+                  <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-xs text-muted-foreground">Most Active Day</p>
+                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.mostActiveDay || '—'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">Peak Hour</p>
-                        <p className="text-lg font-semibold">{weeklySummary.peakHour || '—'}</p>
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-xs text-muted-foreground">Peak Hour</p>
+                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.peakHour || '—'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">Avg. Response Time</p>
-                        <p className="text-lg font-semibold">{weeklySummary.avgResponseTime || '—'}</p>
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-xs text-muted-foreground">Avg. Response Time</p>
+                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.avgResponseTime || '—'}</p>
                       </div>
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">Total Interactions</p>
-                        <p className="text-lg font-semibold">{weeklySummary.totalInteractions ?? 0}</p>
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-xs text-muted-foreground">Total Interactions</p>
+                        <p className="text-base font-semibold sm:text-lg">{weeklySummary.totalInteractions ?? 0}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -528,13 +545,13 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid min-w-0 gap-4 lg:grid-cols-2">
                 <EngagementBreakdown engagement={engagement} />
                 {topContent && topContent.length > 0 ? (
                   <TopContentList content={topContent} />
                 ) : (
-                  <Card>
-                    <CardContent className="py-16 text-center text-sm text-muted-foreground">
+                  <Card className="min-w-0">
+                    <CardContent className="py-12 text-center text-sm text-muted-foreground">
                       No engagement data available yet.
                     </CardContent>
                   </Card>
@@ -563,7 +580,7 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
                 {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
                 ))}
@@ -572,6 +589,7 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
       </Tabs>
+      </div>
     </AppShell>
   );
 }
