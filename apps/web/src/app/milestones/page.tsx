@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Flag, Plus, CheckCircle2, Clock, AlertTriangle, XCircle,
@@ -287,6 +287,11 @@ export default function MilestonesPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const queryKey = ['milestones', statusFilter, priorityFilter];
 
@@ -299,13 +304,17 @@ export default function MilestonesPage() {
         limit: 100,
       }),
     staleTime: 30_000,
+    enabled: mounted,
   });
 
   const { data: summaryData } = useQuery({
     queryKey: ['milestones', 'summary'],
     queryFn: getMilestoneSummary,
     staleTime: 60_000,
+    enabled: mounted,
   });
+
+  const waiting = !mounted || isLoading;
 
   const allMilestones = data?.milestones ?? [];
   const milestones = allMilestones.filter((m) => {
@@ -378,7 +387,7 @@ export default function MilestonesPage() {
     >
       <div className="space-y-6">
         {/* Summary strip */}
-        {isLoading ? (
+        {waiting ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-20 rounded-xl" />
@@ -488,7 +497,7 @@ export default function MilestonesPage() {
             <p className="text-sm text-muted-foreground">Failed to load milestones.</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </div>
-        ) : isLoading ? (
+        ) : waiting ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <MilestoneSkeleton key={i} />)}
           </div>
