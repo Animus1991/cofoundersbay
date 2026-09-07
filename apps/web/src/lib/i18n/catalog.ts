@@ -305,6 +305,14 @@ const el: Record<string, string> = {
   Overdue: 'Εκπρόθεσμα',
   'View Readiness': 'Δες ετοιμότητα',
   'Active Milestones': 'Ενεργά ορόσημα',
+  'Responsive founders build stronger networks.': 'Οι ιδρυτές που απαντούν χτίζουν δυνατότερο δίκτυο.',
+  "Your profile is your startup's first impression.": 'Το προφίλ είναι η πρώτη εντύπωση του startup σου.',
+  'Evidence-first founders de-risk faster.': 'Οι ιδρυτές με στοιχεία μειώνουν το ρίσκο γρηγορότερα.',
+  'Artifacts make your thinking fundable.': 'Τα artifacts κάνουν τη σκέψη σου fundable.',
+  'Most successful startups are built by teams, not solo founders.': 'Τα επιτυχημένα startups χτίζονται από ομάδες, όχι από έναν.',
+  'Upgrade to Premium to unlock advanced features.': 'Αναβάθμισε σε Premium για περισσότερες δυνατότητες.',
+  'Premium is active.': 'Το Premium είναι ενεργό.',
+  'Loading billing…': 'Φόρτωση χρέωσης…',
 };
 
 const es: Record<string, string> = {

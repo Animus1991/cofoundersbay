@@ -112,7 +112,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
             <p className="text-sm font-semibold leading-snug text-foreground">{t(action.label, action.vars)}</p>
             <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{t(action.description)}</p>
             {action.identitySignal && (
-              <p className={cn('mt-1 text-xs italic', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
+              <p className={cn('mt-1 text-xs italic', ac.icon, 'opacity-70')}>{t(action.identitySignal)}</p>
             )}
             <Link href={action.href} className="mt-2 inline-flex sm:hidden">
               <Button

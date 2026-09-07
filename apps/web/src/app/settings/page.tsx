@@ -130,6 +130,7 @@ function LanguageCard() {
 }
 
 function PrivacyCard() {
+  const { t } = useI18n();
   const [flags, setFlags] = useState<Record<string, boolean>>({
     publicProfile: true, showLocation: true, searchable: true, showActivity: false,
   });
@@ -138,7 +139,7 @@ function PrivacyCard() {
       <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          Privacy & Visibility
+          {t('Privacy & Visibility')}
         </CardTitle>
         <CardDescription>Control who can see your profile and activity.</CardDescription>
       </CardHeader>
@@ -165,6 +166,7 @@ function PrivacyCard() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
+  const { t } = useI18n();
 
   const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
@@ -289,7 +291,7 @@ export default function SettingsPage() {
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-primary" />
-                  Billing
+                  {t('Billing')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -313,7 +315,7 @@ export default function SettingsPage() {
                 ) : (
                   <div className="rounded-xl border border-border/60 bg-card/60 p-4 text-sm">
                     <p className="font-medium text-foreground">
-                      {isPremium ? 'Premium is active.' : 'Upgrade to Premium to unlock advanced features.'}
+                      {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
                     </p>
                     <p className="mt-1 text-muted-foreground">
                       Mentor booking payments, file attachments, and advanced discovery filters.
