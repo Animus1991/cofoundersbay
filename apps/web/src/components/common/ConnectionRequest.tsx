@@ -82,7 +82,7 @@ export function ConnectionRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-lg overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Send className="h-5 w-5 text-primary" />
@@ -125,7 +125,7 @@ export function ConnectionRequestDialog({
               <button
                 key={i}
                 onClick={() => applySuggestion(suggestion)}
-                className="text-xs px-3 py-1.5 rounded-full bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors truncate max-w-[200px]"
+                className="max-w-full truncate rounded-full bg-secondary/60 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground sm:max-w-[200px]"
               >
                 {suggestion.substring(0, 40)}...
               </button>
@@ -142,7 +142,7 @@ export function ConnectionRequestDialog({
               setMessage(e.target.value);
               setError(null);
             }}
-            rows={5}
+            rows={4}
             className={cn(
               'resize-none',
               error && 'border-destructive focus-visible:ring-destructive'
@@ -182,10 +182,10 @@ export function ConnectionRequestDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" className="min-h-10" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSend} disabled={!isValid || sending}>
+          <Button className="min-h-10" onClick={handleSend} disabled={!isValid || sending}>
             {sending ? 'Sending...' : 'Send Request'}
           </Button>
         </DialogFooter>

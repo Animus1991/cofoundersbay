@@ -13,6 +13,7 @@ import {
   DollarSign,
   Users,
   Sparkles,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -217,40 +218,41 @@ export function SearchFilters({
   return (
     <div className="space-y-4">
       {/* Main search bar */}
-      <div className="flex gap-3">
-        <div className="relative flex-1">
-          <Input
-            type="text"
-            placeholder="Search by name, skills, industry..."
-            value={filters.q}
-            onChange={(e) => updateFilter('q', e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSearch()}
-            className="pr-10"
-          />
-          {filters.q && (
-            <button
-              onClick={() => updateFilter('q', '')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+      <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:gap-3">
+        <div className="flex min-w-0 flex-1 gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Input
+              type="text"
+              placeholder="Name, skills, industry..."
+              value={filters.q}
+              onChange={(e) => updateFilter('q', e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+              className="min-h-10 pr-10"
+            />
+            {filters.q && (
+              <button
+                onClick={() => updateFilter('q', '')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
 
-        {/* Filter button for mobile */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="gap-2 relative">
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Filters</span>
-              {activeFiltersCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="relative min-h-10 shrink-0 gap-2 px-3">
+                <Filter className="h-4 w-4" />
+                <span className="hidden sm:inline">Filters</span>
+                {activeFiltersCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center p-0 text-[10px]">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full overflow-y-auto pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:max-w-md">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
                 <Filter className="h-5 w-5 text-primary" />
@@ -434,18 +436,20 @@ export function SearchFilters({
               </AccordionItem>
             </Accordion>
 
-            <SheetFooter className="mt-6 flex gap-2">
-              <Button variant="ghost" onClick={clearFilters} className="flex-1">
+            <SheetFooter className="mt-6 flex flex-col gap-2 sm:flex-row">
+              <Button variant="ghost" onClick={clearFilters} className="min-h-10 flex-1">
                 Clear all
               </Button>
-              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="flex-1">
+              <Button onClick={() => { onSearch(); setIsOpen(false); }} className="min-h-10 flex-1">
                 Apply filters
               </Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
+        </div>
 
-        <Button onClick={onSearch} disabled={loading}>
+        <Button onClick={onSearch} disabled={loading} className="min-h-10 w-full gap-2 sm:w-auto">
+          <Search className="h-4 w-4 sm:hidden" />
           {loading ? 'Searching...' : 'Search'}
         </Button>
       </div>
@@ -458,6 +462,7 @@ export function SearchFilters({
             key={r.value}
             variant={filters.role.includes(r.value) ? 'default' : 'outline'}
             size="sm"
+            className="min-h-10"
             onClick={() => {
               if (filters.role.includes(r.value)) {
                 updateFilter('role', filters.role.filter((x) => x !== r.value));

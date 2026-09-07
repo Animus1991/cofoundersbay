@@ -59,7 +59,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-primary" />
@@ -255,28 +255,28 @@ function MatchListRow({
         </div>
 
         {/* Actions */}
-        <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
               title="Pass">
               <X className="h-3.5 w-3.5" />
             </button>
             <button onClick={onSave}
-              className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? 'text-amber-400' : 'border border-border/60 text-muted-foreground hover:text-amber-400')}
+              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? 'text-amber-400' : 'border border-border/60 text-muted-foreground hover:text-amber-400')}
               title={isSaved ? 'Saved' : 'Save to shortlist'}>
               {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
             </button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
+              className="flex min-h-10 items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary">
               <BarChart3 className="h-3.5 w-3.5" /> Breakdown
             </button>
-            <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
+            <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
               <MessageCircle className="h-3.5 w-3.5" /> Message
             </Button>
-            <Button size="sm" onClick={onConnect} className="h-8 gap-1.5 text-xs px-3">
+            <Button size="sm" onClick={onConnect} className="h-10 gap-1.5 px-3 text-xs">
               <Heart className="h-3.5 w-3.5" /> Connect
             </Button>
           </div>
@@ -311,16 +311,16 @@ function MatchPreviewPanel({
       <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-[360px] z-50 border-l border-border/60 bg-card shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border/60 bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
             <Avatar className="h-16 w-16 rounded-2xl border-2 border-border/60">
@@ -598,18 +598,24 @@ export default function MatchesPage() {
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
 
+  const askAi = hasToken && visible.length > 0
+    ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
+    : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
+
   return (
     <AppShell
       title="Matches"
       description="AI-ranked co-founder and team matches based on your profile compatibility"
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="sm" className="min-h-10 gap-1.5" onClick={() => void refetch()}>
             <RefreshCw className="h-4 w-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Link href="/discover">
-            <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="min-h-10 gap-2">
               Explore
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
@@ -617,7 +623,7 @@ export default function MatchesPage() {
         </div>
       }
     >
-      <div className="space-y-4 pb-10">
+      <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
 
         {/* ── Not authenticated ── */}
         {!hasToken && (
@@ -661,21 +667,21 @@ export default function MatchesPage() {
 
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
               { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',   icon: Star },
               { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
               { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600',  bg: 'bg-violet-500/10',  icon: Award },
             ].map(({ label, value, color, bg, icon: Icon }) => (
-              <Card key={label} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', bg)}>
+              <Card key={label} className="min-w-0 shadow-sm border-border/50">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', bg)}>
                     <Icon className={cn('h-4 w-4', color)} />
                   </div>
-                  <div>
-                    <p className={cn('text-xl font-black tabular-nums leading-none', color)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <div className="min-w-0">
+                    <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', color)}>{value}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -685,21 +691,21 @@ export default function MatchesPage() {
 
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
-          <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-green-500/10 p-2 shrink-0">
+          <div className="flex flex-col gap-3 rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 animate-in fade-in slide-in-from-top-1 duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 items-start gap-3 sm:items-center">
+              <div className="shrink-0 rounded-lg bg-green-500/10 p-2">
                 <Award className="h-5 w-5 text-green-600" />
               </div>
-              <div>
-                <p className="font-semibold text-sm text-foreground">
-                  🎯 {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Top score: {topScore}% · These profiles are highly compatible — reach out now
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
                   <RotateCcw className="h-3.5 w-3.5" /> Undo
@@ -859,7 +865,7 @@ export default function MatchesPage() {
               {/* Mobile: scrollable tier chips + filters toggle */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
-                  className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                  className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                     showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
                   <SlidersHorizontal className="h-3 w-3" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
@@ -868,7 +874,7 @@ export default function MatchesPage() {
                   const isActive = activeFilter === tab.key;
                   return (
                     <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
-                      className={cn('flex items-center gap-1 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                      className={cn('flex min-h-10 shrink-0 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                         isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
                       {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
                       {tab.label}
@@ -884,21 +890,21 @@ export default function MatchesPage() {
                     <div>
                       <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
                       <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {TIER_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
                       <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {ROLE_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
                       </select>
                     </div>
                     <div className="col-span-2">
                       <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
                       <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                        placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
+                        placeholder="City or country..." className="h-10 w-full rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
                     </div>
                   </div>
                   {hasActiveFilters && (
@@ -911,8 +917,8 @@ export default function MatchesPage() {
               )}
 
               {/* Results toolbar */}
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground min-w-0">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <p className="min-w-0 text-xs text-muted-foreground">
                   {filtered.length > 0 && (
                     <span>
                       <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
@@ -920,10 +926,10 @@ export default function MatchesPage() {
                     </span>
                   )}
                 </p>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <button
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
-                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
+                    className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
                     <CheckSquare className="h-3.5 w-3.5" />
@@ -932,22 +938,24 @@ export default function MatchesPage() {
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
-                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
-                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
+                    className={cn('flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}
+                    aria-label="Search matches">
                     <Search className="h-3.5 w-3.5" />
                   </button>
 
-                  <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
+                  <div className="flex items-center gap-1 rounded-lg border border-border/60 p-0.5">
                     {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true },
-                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false },
-                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean }[]).map(({ mode, icon: Icon, title, small }) => (
+                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false, mobile: true },
+                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
+                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
+                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
+                        className={cn('h-9 items-center justify-center rounded-md px-2 transition-all',
+                          mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
+                        {mode === 'grid3' && <span className="ml-0.5 text-[9px] font-bold">3</span>}
                       </button>
                     ))}
                   </div>
@@ -966,7 +974,7 @@ export default function MatchesPage() {
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
-                    placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
+                    placeholder="Search by name, headline, or skill..." className="min-h-10 pl-9 text-sm" autoFocus />
                   {nameSearch && (
                     <button onClick={() => setNameSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
@@ -1104,7 +1112,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"

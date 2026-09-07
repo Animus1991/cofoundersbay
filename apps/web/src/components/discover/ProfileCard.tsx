@@ -278,24 +278,22 @@ function ProfileCardInner({
           )}
 
           {/* Actions */}
-          <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
-            <div className="flex items-center gap-2">
-              <Button onClick={onConnect} size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Connect
-              </Button>
-              <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Message
-              </Button>
-            </div>
+        <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4">
+            <Button onClick={onConnect} size="sm" className="min-h-10 flex-1 gap-2">
+              <UserPlus className="h-4 w-4" />
+              Connect
+            </Button>
+            <Button onClick={onMessage} size="sm" variant="secondary" className="min-h-10 flex-1 gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Message
+            </Button>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
                 className={cn(
-                  'h-8 w-8',
+                  'h-10 w-10',
                   bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
                 )}
               >
@@ -303,7 +301,7 @@ function ProfileCardInner({
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-10 w-10">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -427,12 +425,12 @@ function ProfileCardInner({
         )}
 
         {/* Actions */}
-        <div className="mt-4 flex items-center gap-2">
-          <Button onClick={onConnect} size="sm" variant="secondary" className="flex-1 gap-1.5">
+        <div className="mt-4 flex min-w-0 items-center gap-2">
+          <Button onClick={onConnect} size="sm" variant="secondary" className="min-h-10 flex-1 gap-1.5">
             <UserPlus className="h-3.5 w-3.5" />
             Connect
           </Button>
-          <Button onClick={onMessage} size="sm" variant="ghost" className="gap-1.5">
+          <Button onClick={onMessage} size="sm" variant="ghost" className="min-h-10 min-w-10 gap-1.5" aria-label="Message">
             <MessageCircle className="h-3.5 w-3.5" />
           </Button>
         </div>

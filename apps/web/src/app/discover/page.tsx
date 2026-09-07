@@ -43,13 +43,13 @@ const ConnectionRequestDialog = dynamic(() => import('@/components/common/Connec
 type ViewMode = 'grid' | 'list' | 'match';
 type RoleFilter = 'all' | 'founder' | 'cofounder' | 'mentor' | 'investor' | 'service_provider';
 
-const ROLE_FILTERS: { value: RoleFilter; label: string; icon: React.ElementType; color: string }[] = [
-  { value: 'all',              label: 'All',             icon: Users,       color: 'text-foreground' },
-  { value: 'founder',         label: 'Founders',        icon: Rocket,      color: 'text-violet-500' },
-  { value: 'cofounder',       label: 'Co-founders',     icon: Users,       color: 'text-blue-500'   },
-  { value: 'mentor',          label: 'Mentors',         icon: GraduationCap, color: 'text-emerald-500' },
-  { value: 'investor',        label: 'Investors',       icon: DollarSign,  color: 'text-amber-500'  },
-  { value: 'service_provider',label: 'Service Providers', icon: Briefcase, color: 'text-pink-500'   },
+const ROLE_FILTERS: { value: RoleFilter; label: string; short: string; icon: React.ElementType; color: string }[] = [
+  { value: 'all',              label: 'All',               short: 'All',       icon: Users,          color: 'text-foreground' },
+  { value: 'founder',          label: 'Founders',          short: 'Founders',  icon: Rocket,         color: 'text-violet-500' },
+  { value: 'cofounder',        label: 'Co-founders',       short: 'Co-founders', icon: Users,         color: 'text-blue-500'   },
+  { value: 'mentor',           label: 'Mentors',           short: 'Mentors',   icon: GraduationCap,  color: 'text-emerald-500' },
+  { value: 'investor',         label: 'Investors',         short: 'Investors', icon: DollarSign,     color: 'text-amber-500'  },
+  { value: 'service_provider', label: 'Service Providers', short: 'Services',  icon: Briefcase,      color: 'text-pink-500'   },
 ];
 
 const PLATFORM_STATS = [
@@ -210,34 +210,39 @@ export default function DiscoverPage() {
     h.role?.toLowerCase() === roleFilter
   );
 
+  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${filteredHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
+
   return (
     <AppShell
       title="Explore"
       description="Discover founders, mentors, investors, and team members"
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
         <Link href="/matches">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="min-h-10 gap-2">
             <TrendingUp className="icon-sm" />
-            View Matches
+            <span className="sm:hidden">Matches</span>
+            <span className="hidden sm:inline">View Matches</span>
           </Button>
         </Link>
       }
     >
-      <div className="space-y-5 pb-10">
+      <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {PLATFORM_STATS.map((s) => {
             const SIcon = s.icon;
             return (
-              <Card key={s.label} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
-                <CardContent className="flex items-center gap-3 p-3">
+              <Card key={s.label} className="min-w-0 shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <SIcon className="icon-sm text-primary" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{s.label}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground truncate sm:text-xs">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -247,19 +252,21 @@ export default function DiscoverPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <TabsList>
-              <TabsTrigger value="search" className="gap-2">
-                <Users className="icon-sm" />
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <TabsList className="h-auto min-h-10 w-full min-w-0 sm:w-auto">
+              <TabsTrigger value="search" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Users className="icon-sm hidden sm:block" />
                 Search
               </TabsTrigger>
-              <TabsTrigger value="suggestions" className="gap-2">
-                <Sparkles className="icon-sm" />
-                For You
+              <TabsTrigger value="suggestions" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Sparkles className="icon-sm hidden sm:block" />
+                <span className="sm:hidden">For you</span>
+                <span className="hidden sm:inline">For You</span>
               </TabsTrigger>
-              <TabsTrigger value="matches" className="gap-2">
-                <TrendingUp className="icon-sm" />
-                Top Matches
+              <TabsTrigger value="matches" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <TrendingUp className="icon-sm hidden sm:block" />
+                <span className="sm:hidden">Matches</span>
+                <span className="hidden sm:inline">Top Matches</span>
               </TabsTrigger>
             </TabsList>
 
@@ -268,16 +275,18 @@ export default function DiscoverPage() {
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
             >
               <LayoutGrid className="icon-sm" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('list')}
+              aria-label="List view"
             >
               <List className="icon-sm" />
             </Button>
@@ -286,8 +295,8 @@ export default function DiscoverPage() {
 
         {/* Role filter chips - shown for search & suggestions tabs */}
         {activeTab !== 'matches' && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <div className="flex min-w-0 items-center gap-2 overflow-x-auto pt-1 scrollbar-hide -mx-1 px-1">
+            <Filter className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             {ROLE_FILTERS.map((rf) => {
               const RIcon = rf.icon;
               const isActive = roleFilter === rf.value;
@@ -296,14 +305,15 @@ export default function DiscoverPage() {
                   key={rf.value}
                   onClick={() => setRoleFilter(rf.value)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-all',
                     isActive
                       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                       : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
                   )}
                 >
                   <RIcon className={cn('icon-sm', isActive ? 'text-primary-foreground' : rf.color)} />
-                  {rf.label}
+                  <span className="sm:hidden">{rf.short}</span>
+                  <span className="hidden sm:inline">{rf.label}</span>
                 </button>
               );
             })}
@@ -344,15 +354,15 @@ export default function DiscoverPage() {
           {/* Featured strip when no query */}
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-violet-500/5 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <BadgeCheck className="icon-sm text-primary" />
+              <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
+                <BadgeCheck className="icon-sm shrink-0 text-primary" />
                 <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
-                <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">— Top matches based on your profile</span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profile/${h.userId}`}
-                    className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>
@@ -422,16 +432,14 @@ export default function DiscoverPage() {
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="icon-md text-primary" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Sparkles className="icon-md shrink-0 text-primary" />
                 Suggested for you
               </h2>
               <p className="text-sm text-muted-foreground">
                 Based on your profile and preferences
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (
@@ -490,16 +498,14 @@ export default function DiscoverPage() {
 
         {/* Top Matches Tab */}
         <TabsContent value="matches" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="icon-md text-primary" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <TrendingUp className="icon-md shrink-0 text-primary" />
                 Your Top Matches
               </h2>
               <p className="text-sm text-muted-foreground">
                 People with the highest compatibility
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (

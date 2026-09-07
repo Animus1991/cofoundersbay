@@ -242,11 +242,11 @@ function MatchCardInner({
         <div className="mt-4 border-t border-border/50" />
 
         {/* Action buttons */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {onPass && (
             <button
               onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
             >
               <X className="h-4 w-4" />
             </button>
@@ -254,7 +254,7 @@ function MatchCardInner({
           {onLike && (
             <button
               onClick={onLike}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-pink-500 hover:border-pink-400/40 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-pink-400/40 hover:text-pink-500"
             >
               <Heart className="h-4 w-4" />
             </button>
@@ -262,21 +262,19 @@ function MatchCardInner({
           <button
             onClick={handleBookmark}
             className={cn(
-              'h-8 w-8 flex items-center justify-center rounded-full transition-colors',
+              'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
               bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
             )}
           >
             <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
           </button>
 
-          <div className="flex-1" />
-
-          {/* Compatibility breakdown / analysis */}
+          <div className="flex min-w-0 flex-1 basis-full flex-wrap items-center justify-end gap-1.5 sm:basis-auto">
           {onBreakdown ? (
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 h-8 text-xs font-medium px-2.5"
+              className="h-10 gap-1.5 px-2.5 text-xs font-medium"
               style={{ borderColor: `${color}40`, color }}
               onClick={onBreakdown}
             >
@@ -285,7 +283,7 @@ function MatchCardInner({
             </Button>
           ) : (
             <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
+              <Button size="sm" variant="outline" className="h-10 gap-1.5 px-2.5 text-xs font-medium"
                 style={{ borderColor: `${color}40`, color }}>
                 <TrendingUp className="h-3.5 w-3.5" />
                 Compatibility
@@ -294,11 +292,12 @@ function MatchCardInner({
           )}
 
           {onMessage && (
-            <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">
+            <Button onClick={onMessage} size="sm" className="h-10 gap-1.5 px-2.5 text-xs">
               <MessageCircle className="h-3.5 w-3.5" />
               Message
             </Button>
           )}
+          </div>
         </div>
       </CardContent>
     </Card>
