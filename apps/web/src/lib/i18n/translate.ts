@@ -15,7 +15,8 @@ const extraLoaders: Record<Exclude<AppLocale, 'en'>, () => Promise<{ default: Re
 };
 
 export async function ensureExtraCatalog(locale: AppLocale): Promise<void> {
-  if (locale === 'en' || extraCache[locale]) return;
+  if (locale === 'en') return;
+  if (extraCache[locale]) return;
   const mod = await extraLoaders[locale]();
   extraCache[locale] = mod.default as Record<string, string>;
 }

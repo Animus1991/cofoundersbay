@@ -45,6 +45,7 @@ import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { useI18n } from '@/components/common/I18nProvider';
 import type { BuilderDocument, BuilderCollaborator } from '@/lib/builder-api';
 
 const MOBILE_DIALOG =
@@ -284,6 +285,7 @@ export function BuilderWorkspace() {
   } = useBuilder();
 
   const { success, error: toastError } = useToast();
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState('overview');
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [showCreateDocDialog, setShowCreateDocDialog] = useState(false);
@@ -409,7 +411,7 @@ export function BuilderWorkspace() {
               {completedDocs}
             </div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5 sm:text-xs">Completed</div>
-            <div className="text-[11px] text-muted-foreground mt-1">{inProgressDocs} in progress</div>
+            <div className="text-[11px] text-muted-foreground mt-1">{t('{count} in progress', { count: inProgressDocs })}</div>
           </CardContent>
         </Card>
 
