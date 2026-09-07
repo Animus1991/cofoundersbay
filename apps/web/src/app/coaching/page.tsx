@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import {
@@ -66,7 +66,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'execution',
     status: 'scheduled',
     title: 'Q1 OKR Review & Sprint Planning',
-    scheduledAt: '2026-03-25T10:00:00Z',
+    scheduledAt: '2026-09-16T10:00:00.000Z',
     durationMinutes: 60,
     meetingUrl: 'https://meet.example.com/coaching-001',
     agenda: 'Review Q1 OKR progress, identify blockers, plan Q2 sprint priorities',
@@ -83,7 +83,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'clarity',
     status: 'completed',
     title: 'Vision Alignment Session',
-    scheduledAt: '2026-03-18T14:00:00Z',
+    scheduledAt: '2026-09-02T14:00:00.000Z',
     durationMinutes: 45,
     keyInsights: 'Core tension identified: growth velocity vs. team culture. Decision: prioritize culture first for 60 days.',
     actionItems: [
@@ -100,7 +100,7 @@ const DEMO_SESSIONS: CoachingSession[] = [
     sessionType: 'accountability',
     status: 'completed',
     title: 'Weekly Accountability Check-in',
-    scheduledAt: '2026-03-11T10:00:00Z',
+    scheduledAt: '2026-08-26T10:00:00.000Z',
     durationMinutes: 30,
     actionItems: [
       { task: 'Launch waitlist page', done: true },
@@ -152,6 +152,28 @@ const DEMO_COACHES: CoachProfile[] = [
     isVerified: false,
   },
 ];
+
+/** Locale dates after mount so SSR (UTC) and the browser timezone do not mismatch. */
+function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }) {
+  const [label, setLabel] = useState('—');
+
+  useEffect(() => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) {
+      setLabel('—');
+      return;
+    }
+    if (variant === 'banner') {
+      const day = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+      const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      setLabel(`${day} at ${time}`);
+      return;
+    }
+    setLabel(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
+  }, [iso, variant]);
+
+  return <span>{label}</span>;
+}
 
 // ── Configs ───────────────────────────────────────────────────────────────────
 
@@ -210,7 +232,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Clock className="icon-sm" />
-                {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                <LocalWhen iso={session.scheduledAt} variant="card" />
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="icon-sm" />
@@ -419,9 +441,7 @@ export default function CoachingPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">Next Session</p>
                 <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  with {upcoming[0].coachName} ·{' '}
-                  {new Date(upcoming[0].scheduledAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}{' '}
-                  at {new Date(upcoming[0].scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  with {upcoming[0].coachName} · <LocalWhen iso={upcoming[0].scheduledAt} variant="banner" />
                 </p>
               </div>
               {upcoming[0].meetingUrl && (
