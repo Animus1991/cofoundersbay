@@ -89,37 +89,57 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-xl border px-4 py-3 transition-all',
+        'relative rounded-xl border px-4 py-3 pr-10 transition-all sm:pr-4',
         ac.border,
         ac.bg,
         className,
       )}
     >
-      <Sparkles className={cn('h-4 w-4 shrink-0', ac.icon)} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">{action.label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{action.description}</p>
-        {action.identitySignal && (
-          <p className={cn('text-xs italic mt-1', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        <Link href={action.href}>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn('h-7 gap-1 text-xs font-semibold px-2.5', ac.cta)}
+      <button
+        onClick={handleDismiss}
+        className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
+        title="Dismiss"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 gap-3">
+          <Sparkles className={cn('mt-0.5 h-4 w-4 shrink-0', ac.icon)} />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold leading-snug text-foreground">{action.label}</p>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{action.description}</p>
+            {action.identitySignal && (
+              <p className={cn('mt-1 text-xs italic', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
+            )}
+            <Link href={action.href} className="mt-2 inline-flex sm:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn('h-8 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
+              >
+                {action.cta} <ArrowRight className="h-3 w-3" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+        <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+          <Link href={action.href}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn('h-7 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
+            >
+              {action.cta} <ArrowRight className="h-3 w-3" />
+            </Button>
+          </Link>
+          <button
+            onClick={handleDismiss}
+            className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+            title="Dismiss"
           >
-            {action.cta} <ArrowRight className="h-3 w-3" />
-          </Button>
-        </Link>
-        <button
-          onClick={handleDismiss}
-          className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          title="Dismiss"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

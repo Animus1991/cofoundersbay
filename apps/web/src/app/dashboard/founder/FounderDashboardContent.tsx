@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import {
-  ArrowRight, Briefcase, Calendar, CheckCircle, ChevronRight,
+  ArrowRight, Briefcase, Calendar, ChevronRight,
   FileText, Flag, Lightbulb, MessageCircle, Rocket, Sparkles,
   Target, TrendingUp, UserPlus, Users, Zap, DollarSign, Eye,
-  Award, BrainCircuit, GraduationCap, BarChart3, Clock,
-  BookOpen, Store, Globe, Shield, Gauge, Activity, Star,
+  Award, BrainCircuit, GraduationCap, BarChart3,
+  BookOpen, Store, Globe, Shield, Gauge, Activity,
   CheckCircle2, Circle, AlertCircle,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -44,14 +44,33 @@ function getTimeBasedGreeting(): string {
   return 'Good evening';
 }
 
+/** Calendar date N days from today at noon, so demo due-dates stay in the future. */
+function isoDaysFromNow(days: number): string {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 // ── Demo data ─────────────────────────────────────────────────────────────────
 
-const DEMO_MILESTONES = [
-  { id: '1', title: 'Complete MVP v1', status: 'in_progress', progress: 65, dueDate: '2026-04-15', priority: 'high' },
-  { id: '2', title: 'First 100 active users', status: 'in_progress', progress: 23, dueDate: '2026-05-01', priority: 'high' },
-  { id: '3', title: 'Seed funding round', status: 'pending', progress: 10, dueDate: '2026-06-30', priority: 'medium' },
-  { id: '4', title: 'Build founding team', status: 'pending', progress: 0, dueDate: '2026-04-30', priority: 'high' },
-];
+type DemoMilestone = {
+  id: string;
+  title: string;
+  status: 'in_progress' | 'pending' | 'completed';
+  progress: number;
+  dueDate: string;
+  priority: 'high' | 'medium' | 'low';
+};
+
+function getDemoMilestones(): DemoMilestone[] {
+  return [
+    { id: '1', title: 'Complete MVP v1', status: 'in_progress', progress: 65, dueDate: isoDaysFromNow(21), priority: 'high' },
+    { id: '2', title: 'First 100 active users', status: 'in_progress', progress: 23, dueDate: isoDaysFromNow(36), priority: 'high' },
+    { id: '3', title: 'Seed funding round', status: 'pending', progress: 10, dueDate: isoDaysFromNow(90), priority: 'medium' },
+    { id: '4', title: 'Build founding team', status: 'pending', progress: 0, dueDate: isoDaysFromNow(45), priority: 'high' },
+  ];
+}
 
 const DEMO_ACTIVITY = [
   { id: '1', type: 'match', text: 'New 87% match — Nikos Papadakis, CTO', time: '2h ago', icon: Sparkles, color: 'text-primary' },
@@ -88,12 +107,14 @@ const EVENT_CONFIG: Record<EventType, { color: string; bg: string }> = {
   pitch: { color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
 };
 
-const DEMO_EVENTS = [
-  { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, date: '2026-03-26', time: '14:00', daysLeft: 2 },
-  { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, date: '2026-03-28', time: '23:59', daysLeft: 4 },
-  { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, date: '2026-04-02', time: '18:00', daysLeft: 9 },
-  { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, date: '2026-04-10', time: '10:00', daysLeft: 17 },
-];
+function getDemoEvents() {
+  return [
+    { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, date: isoDaysFromNow(2), time: '14:00', daysLeft: 2 },
+    { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, date: isoDaysFromNow(4), time: '23:59', daysLeft: 4 },
+    { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, date: isoDaysFromNow(9), time: '18:00', daysLeft: 9 },
+    { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, date: isoDaysFromNow(17), time: '10:00', daysLeft: 17 },
+  ];
+}
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -104,26 +125,54 @@ function StatCard({
   trend?: { value: number; positive: boolean }; href?: string; accent?: string;
 }) {
   const content = (
-    <Card className="relative overflow-hidden transition-all hover:shadow-md cursor-pointer">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold tabular-nums">{value}</p>
+    <Card className="relative h-full overflow-hidden transition-all hover:shadow-md cursor-pointer">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 space-y-1">
+            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
+            <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
-              <p className={cn('text-xs font-medium', trend.positive ? 'text-emerald-500' : 'text-red-500')}>
+              <p className={cn('text-[11px] font-medium sm:text-xs', trend.positive ? 'text-emerald-500' : 'text-red-500')}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}% this week
               </p>
             )}
           </div>
-          <div className={cn('rounded-lg p-2', accent ?? 'bg-primary/10')}>
-            <Icon className={cn('icon-md', accent ? 'text-white' : 'text-primary')} />
+          <div className={cn('shrink-0 rounded-lg p-1.5 sm:p-2', accent ?? 'bg-primary/10')}>
+            <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', accent ? 'text-white' : 'text-primary')} />
           </div>
         </div>
       </CardContent>
     </Card>
   );
   return href ? <Link href={href}>{content}</Link> : content;
+}
+
+function CardLinkHeader({
+  icon: Icon,
+  title,
+  href,
+  linkLabel,
+  iconClassName,
+}: {
+  icon: React.ElementType;
+  title: string;
+  href: string;
+  linkLabel: string;
+  iconClassName?: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <CardTitle className="flex min-w-0 items-center gap-2 text-base">
+        <Icon className={cn('icon-sm shrink-0', iconClassName)} />
+        <span className="truncate">{title}</span>
+      </CardTitle>
+      <Link href={href} className="shrink-0">
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs sm:text-sm">
+          {linkLabel} <ArrowRight className="ml-1 icon-sm" />
+        </Button>
+      </Link>
+    </div>
+  );
 }
 
 function MatchPreviewCard({ match }: { match: SearchHit }) {
@@ -141,17 +190,17 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <p className="truncate text-sm font-medium">{match.displayName}</p>
         <p className="truncate text-xs text-muted-foreground">{match.headline}</p>
       </div>
-      <div className="flex items-center gap-1.5">
-        <span className={cn('text-sm font-bold tabular-nums flex items-center gap-0.5', scoreColor)}>
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className={cn('flex items-center gap-0.5 text-sm font-bold tabular-nums', scoreColor)}>
           <Sparkles className="icon-sm" />{score}%
         </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        <ChevronRight className="hidden h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:block" />
       </div>
     </Link>
   );
 }
 
-function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
+function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   const isComplete = milestone.status === 'completed';
   const isOverdue = milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
   return (
@@ -228,6 +277,8 @@ export default function FounderDashboardContent() {
   const profilePct = profile?.hasCompletedOnboarding ? 100 : 52;
   const avgReadiness = vrs?.overall ?? 0;
   const fundingPct = Math.round((FUNDRAISING_DEMO.raisedAmount / FUNDRAISING_DEMO.targetAmount) * 100);
+  const demoMilestones = getDemoMilestones();
+  const demoEvents = getDemoEvents();
 
   const onboardingSteps = buildOnboardingSteps({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
@@ -253,7 +304,7 @@ export default function FounderDashboardContent() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -266,24 +317,24 @@ export default function FounderDashboardContent() {
       <div className="py-6 space-y-6">
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {getTimeBasedGreeting()}, {displayName} 👋
             </h1>
-            <p className="text-muted-foreground text-sm mt-0.5">
+            <p className="mt-1 text-sm leading-snug text-muted-foreground">
               Your startup command center — track progress, find team, and close your round.
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <AIInsightButton
               prompt="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
             />
-            <Badge variant="outline" className="gap-1.5">
+            <Badge variant="outline" className="h-8 gap-1.5">
               <Rocket className="icon-sm" /> Founder
             </Badge>
             <Link href="/readiness">
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="h-8 gap-1.5">
                 <Gauge className="icon-sm" />
                 Readiness: {avgReadiness}%
               </Button>
@@ -299,11 +350,11 @@ export default function FounderDashboardContent() {
         }
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard icon={Users} label="Profile Views (7d)" value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
           <StatCard icon={Sparkles} label="New Matches" value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
           <StatCard icon={MessageCircle} label="Unread Messages" value={unreadMessages} href="/messages" />
-          <StatCard icon={Target} label="Milestone Progress" value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard icon={Target} label="Milestone Progress" value={`${demoMilestones.filter(m => m.progress === 100).length}/${demoMilestones.length}`} href="/milestones" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -317,19 +368,16 @@ export default function FounderDashboardContent() {
             {vrs && (
               <Card>
                 <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <Gauge className="icon-sm text-primary" /> Startup Readiness
-                    </CardTitle>
-                    <Link href="/readiness">
-                      <Button variant="ghost" size="sm">
-                        Full report <ArrowRight className="ml-1 icon-sm" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <CardLinkHeader
+                    icon={Gauge}
+                    title="Startup Readiness"
+                    href="/readiness"
+                    linkLabel="Full report"
+                    iconClassName="text-primary"
+                  />
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center gap-6 mb-4">
+                  <div className="mb-4 flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-6">
                     <div className="relative h-20 w-20 shrink-0">
                       <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90">
                         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
@@ -338,19 +386,19 @@ export default function FounderDashboardContent() {
                           className={cn(avgReadiness >= 70 ? 'stroke-emerald-500' : avgReadiness >= 50 ? 'stroke-amber-500' : 'stroke-red-500')}
                           strokeLinecap="round" />
                       </svg>
-                      <div className="absolute inset-0 flex items-center justify-center flex-col">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-sm font-bold text-foreground">{avgReadiness}%</span>
                         <span className="text-xs text-muted-foreground">Ready</span>
                       </div>
                     </div>
-                    <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-2">
+                    <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
                       {vrs.dimensions.slice(0, 6).map((dim) => {
                         const cfg = READINESS_DIM_ICONS[dim.key] ?? { icon: Activity, color: 'text-muted-foreground' };
                         return (
-                          <div key={dim.key}>
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="text-xs text-muted-foreground truncate">{dim.label}</span>
-                              <span className={cn('text-xs font-semibold', cfg.color)}>{dim.score}%</span>
+                          <div key={dim.key} className="min-w-0">
+                            <div className="mb-0.5 flex items-center justify-between gap-2">
+                              <span className="min-w-0 truncate text-xs text-muted-foreground">{dim.label}</span>
+                              <span className={cn('shrink-0 text-xs font-semibold tabular-nums', cfg.color)}>{dim.score}%</span>
                             </div>
                             <Progress value={dim.score} className="h-1" />
                           </div>
@@ -358,7 +406,7 @@ export default function FounderDashboardContent() {
                       })}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href="/builder" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
                         <FileText className="icon-sm" /> Open Builder
@@ -377,42 +425,40 @@ export default function FounderDashboardContent() {
             {/* Fundraising widget */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <DollarSign className="icon-sm text-emerald-500" /> Fundraising
-                  </CardTitle>
-                  <Link href="/fundraising">
-                    <Button variant="ghost" size="sm">
-                      Open tracker <ArrowRight className="ml-1 icon-sm" />
-                    </Button>
-                  </Link>
-                </div>
+                <CardLinkHeader
+                  icon={DollarSign}
+                  title="Fundraising"
+                  href="/fundraising"
+                  linkLabel="Open tracker"
+                  iconClassName="text-emerald-500"
+                />
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <div>
+                  <p className="text-[11px] text-muted-foreground">Sample pipeline — live tracker is on Fundraising.</p>
+                  <div className="flex items-end justify-between gap-3">
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">{FUNDRAISING_DEMO.roundName}</p>
                       <p className="text-xl font-bold text-foreground">
                         {FUNDRAISING_DEMO.currency}{(FUNDRAISING_DEMO.raisedAmount / 1000).toFixed(0)}K
-                        <span className="text-sm font-normal text-muted-foreground ml-1">
+                        <span className="ml-1 text-sm font-normal text-muted-foreground">
                           / {FUNDRAISING_DEMO.currency}{(FUNDRAISING_DEMO.targetAmount / 1000).toFixed(0)}K
                         </span>
                       </p>
                     </div>
                     <span className={cn(
-                      'text-sm font-bold',
+                      'shrink-0 text-sm font-bold',
                       fundingPct >= 75 ? 'text-emerald-500' : fundingPct >= 40 ? 'text-amber-500' : 'text-muted-foreground'
                     )}>
                       {fundingPct}%
                     </span>
                   </div>
                   <Progress value={fundingPct} className="h-2.5" />
-                  <div className="flex gap-4 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Users className="icon-sm" /> {FUNDRAISING_DEMO.leadCount} leads tracked</span>
                     <span className="flex items-center gap-1"><CheckCircle2 className="icon-sm text-emerald-500" /> {FUNDRAISING_DEMO.committedCount} committed</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href="/fundraising" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
                         <TrendingUp className="icon-sm" /> Manage Pipeline
@@ -431,14 +477,13 @@ export default function FounderDashboardContent() {
             {/* Top Matches */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" /> Top Matches for You
-                  </CardTitle>
-                  <Link href="/matches">
-                    <Button variant="ghost" size="sm">View all <ArrowRight className="ml-1 icon-sm" /></Button>
-                  </Link>
-                </div>
+                <CardLinkHeader
+                  icon={Sparkles}
+                  title="Top Matches for You"
+                  href="/matches"
+                  linkLabel="View all"
+                  iconClassName="text-primary"
+                />
               </CardHeader>
               <CardContent className="space-y-2">
                 {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
@@ -460,17 +505,17 @@ export default function FounderDashboardContent() {
             {/* Milestones */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm text-primary" /> Milestones
-                  </CardTitle>
-                  <Link href="/milestones">
-                    <Button variant="ghost" size="sm">Manage <ArrowRight className="ml-1 icon-sm" /></Button>
-                  </Link>
-                </div>
+                <CardLinkHeader
+                  icon={Flag}
+                  title="Milestones"
+                  href="/milestones"
+                  linkLabel="Manage"
+                  iconClassName="text-primary"
+                />
               </CardHeader>
               <CardContent className="space-y-4">
-                {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
+                <p className="text-[11px] text-muted-foreground">Sample timeline — manage live items on Milestones.</p>
+                {demoMilestones.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               </CardContent>
             </Card>
           </div>
@@ -485,7 +530,7 @@ export default function FounderDashboardContent() {
             {xpData && (
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                  <CardTitle className="flex flex-wrap items-center gap-2 text-sm">
                     <Zap className="icon-sm text-amber-500" />
                     XP Progress
                     {(xpData.streak?.currentStreak ?? 0) > 0 && (
@@ -552,6 +597,7 @@ export default function FounderDashboardContent() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
                   {[
+                    { href: '/ai', icon: Sparkles, label: 'Ask AI', color: 'text-violet-500' },
                     { href: '/discover', icon: Users, label: 'Find Co-founders', color: 'text-primary' },
                     { href: '/mentoring', icon: GraduationCap, label: 'Find Mentors', color: 'text-blue-500' },
                     { href: '/coaching', icon: BrainCircuit, label: 'Coaching', color: 'text-purple-500' },
@@ -561,7 +607,7 @@ export default function FounderDashboardContent() {
                     { href: '/marketplace', icon: Store, label: 'Services', color: 'text-orange-500' },
                     { href: '/analytics', icon: BarChart3, label: 'Analytics', color: 'text-indigo-500' },
                   ].map(({ href, icon: Icon, label, color }) => (
-                    <Link key={href} href={href} className="flex flex-col items-center gap-1.5 rounded-lg border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border">
+                    <Link key={href} href={href} className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-card p-3 text-center transition-all hover:border-border hover:bg-muted/50">
                       <Icon className={cn('icon-md', color)} />
                       <span className="text-xs font-medium text-foreground leading-tight">{label}</span>
                     </Link>
@@ -573,12 +619,12 @@ export default function FounderDashboardContent() {
             {/* Recent Activity */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
                     <Activity className="icon-sm text-muted-foreground" /> Recent Activity
                   </CardTitle>
                   <Link href="/activity">
-                    <Button variant="ghost" size="sm">All</Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">All</Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -603,18 +649,18 @@ export default function FounderDashboardContent() {
             {/* Upcoming Events */}
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm flex items-center gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
                     <Calendar className="icon-sm" /> Upcoming
                   </CardTitle>
                   <Link href="/events">
-                    <Button variant="ghost" size="sm">View all</Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">View all</Button>
                   </Link>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {showDemoData ? (
-                  DEMO_EVENTS.slice(0, 3).map((event) => {
+                  demoEvents.slice(0, 3).map((event) => {
                     const cfg = EVENT_CONFIG[event.type];
                     const isUrgent = event.daysLeft <= 3;
                     return (
@@ -630,7 +676,7 @@ export default function FounderDashboardContent() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             <span className="text-xs text-muted-foreground">
                               {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {event.time}
                             </span>

@@ -59,9 +59,9 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
   return (
     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-violet-500/5 shadow-sm">
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-2">
           <button
-            className="flex items-center gap-2 text-left"
+            className="flex min-w-0 items-center gap-2 text-left"
             onClick={() => setExpanded((v) => !v)}
           >
             <div className="rounded-lg bg-primary/10 p-1.5">
@@ -97,29 +97,31 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             <div
               key={step.id}
               className={cn(
-                'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                'flex flex-col gap-2 rounded-lg px-3 py-2.5 transition-colors sm:flex-row sm:items-start sm:gap-3',
                 step.done
                   ? 'opacity-50'
                   : 'bg-background/60 border border-border/40 hover:border-primary/30 hover:bg-primary/5',
               )}
             >
-              <div className="mt-0.5 shrink-0">
-                {step.done
-                  ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  : <Circle className="h-4 w-4 text-muted-foreground/40" />
-                }
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={cn('text-xs font-medium', step.done ? 'line-through text-muted-foreground' : 'text-foreground')}>
-                  {step.label}
-                </p>
-                {!step.done && (
-                  <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{step.description}</p>
-                )}
+              <div className="flex min-w-0 flex-1 items-start gap-3">
+                <div className="mt-0.5 shrink-0">
+                  {step.done
+                    ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    : <Circle className="h-4 w-4 text-muted-foreground/40" />
+                  }
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={cn('text-xs font-medium', step.done ? 'line-through text-muted-foreground' : 'text-foreground')}>
+                    {step.label}
+                  </p>
+                  {!step.done && (
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{step.description}</p>
+                  )}
+                </div>
               </div>
               {!step.done && (
-                <Link href={step.href} className="shrink-0">
-                  <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary px-2 hover:bg-primary/10">
+                <Link href={step.href} className="shrink-0 self-start pl-7 sm:pl-0">
+                  <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs text-primary hover:bg-primary/10 sm:h-6">
                     {step.cta} <ChevronRight className="h-3 w-3" />
                   </Button>
                 </Link>

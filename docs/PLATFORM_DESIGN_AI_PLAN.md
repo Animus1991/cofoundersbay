@@ -180,3 +180,24 @@ AI είναι παράλληλη ράγα: κάθε βήμα έχει Ask AI ή 
 - Δεν υλοποιούμε Feed, calendar API, ή builder tools.
 - Δεν κάνουμε αυτόνομα DMs.
 - Δεν σπάμε το skip-link / preview cookies / Cloudflare `/demo` path.
+
+---
+
+## 11. Υλοποίηση ανά σελίδα (mobile-first, ξεκινώντας από Overview)
+
+Κάθε σελίδα ελέγχεται στο ίδιο πλαίσιο με το §1, **στο πραγματικό viewport κινητού (~390px)** και με ανοιχτό virtual keyboard όπου υπάρχει search. Δεν ξαναγράφουμε όλες τις διαδρομές σε έναν κύκλο.
+
+| Σειρά | Επιφάνεια | Κριτήρια αποδοχής (mobile) | Κατάσταση |
+|---|---|---|---|
+| **1. Overview** `/dashboard/founder` | Greeting + Ask AI χωρίς οριζόντιο overflow· stats 2×2· banners χωρίς truncate· VRS bars = score όχι weight· demo dates στο μέλλον· command palette πάνω από το πληκτρολόγιο | Αυτός ο κύκλος |
+| 2. Discover / Matches | Κάρτες, φίλτρα, shortlist, Ask AI | Επόμενο |
+| 3. Messages | Thread list + composer + safe-area | Επόμενο |
+| 4. Profile / Settings | Φόρμες, tabs, save | Επόμενο |
+| 5. AI `/ai` | Full-page copilot, confirm, tools | Επόμενο |
+| 6. Work (research, builder, milestones, fundraising) | Honest sample + Ask AI | Επόμενο |
+| 7. Explore (events, programs, marketplace) | Ίδιο chrome | Επόμενο |
+| 8. Modals / command palette | Keyboard inset, tap targets ≥44px, χωρίς desktop-only kbd σε touch | Palette σε αυτόν τον κύκλο |
+
+**Ευρήματα Overview από live κινητό (Σεπ 2026):** chips δίπλα στο greeting έσπρωχναν τον τίτλο· «1 connection request wait...» κόβονταν· 4 stat cards σε μία στήλη· `Team (1%)` δίπλα σε bar 50% (το `1%` ήταν **weight**, όχι score)· Startup Readiness bars overflow· milestones/events με due dates Απρ–Μαρ 2026 άρα όλα overdue· command palette κομμένο από Gboard και shortcuts `G H` άσχετα σε touch.
+
+**Διορθώσεις αυτού του κύκλου:** stacked header, wrap chips, 2-col stats, banner CTA κάτω από το copy, απόκρυψη VRS weight, stacked readiness gauge, relative demo dates, Ask AI στο Quick Actions, palette pinned στο top με scroll και footer «Tap a result to go». Το κόκκινο «1 Issue» πάνω στο Discover είναι το Next.js **dev error overlay**, όχι προϊόν· δεν το κρύβουμε με CSS.
