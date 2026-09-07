@@ -203,10 +203,10 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   if (wantsShortlist) {
     const args: Record<string, string> = {};
     if (person) args.name = person;
-    add('shortlist_add', args);
     if (person && !tools.some((t) => t.name === 'search_people')) {
       add('search_people', { q: person });
     }
+    add('shortlist_add', args);
   }
 
   if (wantsConnect) {

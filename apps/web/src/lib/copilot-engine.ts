@@ -138,6 +138,44 @@ export async function runCopilotTurn(
   let people: SearchHit[] = [];
   let matches: SearchHit[] = [];
 
+  const applyShortlist = async (name?: string) => {
+    const pool = people.length ? people : matches;
+    const target = findPerson(pool, name || detectPersonName(userMessage));
+    if (!target) return false;
+    try {
+      await saveToShortlist(target.userId);
+      sections.push(`Saved **${target.displayName}** to your shortlist. You can undo that from Saved Profiles.`);
+      citations.push({
+        type: 'person',
+        id: target.userId,
+        label: target.displayName,
+        href: personHref(target),
+      });
+      actions.push({
+        id: newId('shortlist'),
+        tool: 'shortlist_add',
+        title: `Saved ${target.displayName}`,
+        description: 'Already written through the Shortlist API. Open Saved Profiles to remove.',
+        confirmLabel: 'Open shortlist',
+        payload: { userId: target.userId, displayName: target.displayName },
+        status: 'done',
+        href: '/shortlist',
+      });
+    } catch {
+      actions.push({
+        id: newId('shortlist'),
+        tool: 'shortlist_add',
+        title: `Save ${target.displayName} to shortlist`,
+        description: 'Could not save automatically. Confirm to retry via the same Shortlist API.',
+        confirmLabel: 'Save',
+        payload: { userId: target.userId, displayName: target.displayName },
+        status: 'pending',
+        href: '/shortlist',
+      });
+    }
+    return true;
+  };
+
   for (const tool of planned) {
     if (tool.name === 'get_graph') {
       graph = await fetchGraph();
@@ -240,41 +278,8 @@ export async function runCopilotTurn(
     }
 
     if (tool.name === 'shortlist_add') {
-      const pool = people.length ? people : matches;
-      const target = findPerson(pool, tool.args.name || detectPersonName(userMessage));
-      if (target) {
-        try {
-          await saveToShortlist(target.userId);
-          sections.push(`Saved **${target.displayName}** to your shortlist. You can undo that from Saved Profiles.`);
-          citations.push({
-            type: 'person',
-            id: target.userId,
-            label: target.displayName,
-            href: personHref(target),
-          });
-          actions.push({
-            id: newId('shortlist'),
-            tool: 'shortlist_add',
-            title: `Saved ${target.displayName}`,
-            description: 'Already written through the Shortlist API. Open Saved Profiles to remove.',
-            confirmLabel: 'Open shortlist',
-            payload: { userId: target.userId, displayName: target.displayName },
-            status: 'done',
-            href: '/shortlist',
-          });
-        } catch {
-          actions.push({
-            id: newId('shortlist'),
-            tool: 'shortlist_add',
-            title: `Save ${target.displayName} to shortlist`,
-            description: 'Could not save automatically. Confirm to retry via the same Shortlist API.',
-            confirmLabel: 'Save',
-            payload: { userId: target.userId, displayName: target.displayName },
-            status: 'pending',
-            href: '/shortlist',
-          });
-        }
-      } else {
+      const ok = await applyShortlist(tool.args.name);
+      if (!ok && !planned.some((t) => t.name === 'search_people' || t.name === 'get_recommendations')) {
         sections.push('Name someone from Matches or Search and I will save them to your shortlist.');
       }
     }
@@ -357,6 +362,13 @@ export async function runCopilotTurn(
         status: 'pending',
         href: personHref(p),
       });
+    }
+  }
+
+  if (planned.some((t) => t.name === 'shortlist_add') && !actions.some((a) => a.tool === 'shortlist_add')) {
+    const ok = await applyShortlist(detectPersonName(userMessage));
+    if (!ok) {
+      sections.push('Name someone from Matches or Search and I will save them to your shortlist.');
     }
   }
 
