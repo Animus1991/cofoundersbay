@@ -257,7 +257,6 @@ export function PitchDeckBuilder({ onSave, initialData, workspaceName, ideaCore,
             <option value="grant">Grant Application</option>
             <option value="competition">Competition Deck</option>
           </select>
-          <AIInsightButton className="min-h-10" prompt={copilotPrompt} />
           <Button 
             variant="outline" 
             size="sm" 
