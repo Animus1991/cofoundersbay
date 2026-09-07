@@ -165,11 +165,13 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
   const views = metrics.find((m) => m.label === 'Profile Views')?.value ?? 0;
   const connections = metrics.find((m) => m.label === 'New Connections')?.value ?? 0;
   const messages = metrics.find((m) => m.label === 'Messages Sent')?.value ?? 0;
+  const requests = Math.round(views * 0.12);
+  const max = Math.max(views, requests, connections, messages, 1);
   const stages = [
-    { label: 'Profile Views', value: views, pct: 100, color: 'bg-violet-500' },
-    { label: 'Connection Requests', value: Math.round(views * 0.12), pct: views ? Math.round((connections / views) * 100 * 12) : 0, color: 'bg-blue-500' },
-    { label: 'Accepted Connections', value: connections, pct: views ? Math.round((connections / views) * 100) : 0, color: 'bg-emerald-500' },
-    { label: 'Conversations Started', value: messages, pct: connections ? Math.round((messages / connections) * 100) : 0, color: 'bg-amber-500' },
+    { label: 'Profile Views', value: views, pct: (views / max) * 100, color: 'bg-violet-500' },
+    { label: 'Connection Requests', value: requests, pct: (requests / max) * 100, color: 'bg-blue-500' },
+    { label: 'Accepted Connections', value: connections, pct: (connections / max) * 100, color: 'bg-emerald-500' },
+    { label: 'Conversations Started', value: messages, pct: (messages / max) * 100, color: 'bg-amber-500' },
   ];
   return (
     <Card className="min-w-0">
@@ -407,18 +409,24 @@ export default function AnalyticsPage() {
     >
       <div className="min-w-0 space-y-4 overflow-x-clip">
       <div className="flex min-w-0 flex-wrap items-center gap-2">
-          {(['7d', '14d', '30d', '90d'] as const).map((p) => (
+          {([
+            { id: '7d' as const, short: '7d', long: '7 days' },
+            { id: '14d' as const, short: '14d', long: '14 days' },
+            { id: '30d' as const, short: '30d', long: '30 days' },
+            { id: '90d' as const, short: '90d', long: '90 days' },
+          ]).map((p) => (
             <button
-              key={p}
-              onClick={() => setPeriod(p)}
+              key={p.id}
+              onClick={() => setPeriod(p.id)}
               className={cn(
                 'min-h-10 rounded-full px-3 text-xs font-medium border transition-colors',
-                period === p
+                period === p.id
                   ? 'border-primary bg-primary/20 text-primary'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
               )}
             >
-              {p === '7d' ? '7 days' : p === '14d' ? '14 days' : p === '30d' ? '30 days' : '90 days'}
+              <span className="sm:hidden">{p.short}</span>
+              <span className="hidden sm:inline">{p.long}</span>
             </button>
           ))}
         <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs" onClick={() => refetch()}>
