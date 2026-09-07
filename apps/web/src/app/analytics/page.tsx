@@ -78,16 +78,23 @@ interface TopContent {
   date: string;
 }
 
-function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
+function metricsToDisplay(m?: UserMetrics | null): AnalyticsMetric[] {
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
   const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
     v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
+  const profileViewsChange = num(m?.profileViewsChange);
+  const newConnectionsChange = num(m?.newConnectionsChange);
+  const messagesSentChange = num(m?.messagesSentChange);
+  const engagementRateChange = num(m?.engagementRateChange);
+  const searchAppearancesChange = num(m?.searchAppearancesChange);
+  const activityScoreChange = num(m?.activityScoreChange);
   return [
-    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, color: 'text-blue-500' },
-    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, color: 'text-green-500' },
-    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, color: 'text-purple-500' },
-    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, color: 'text-red-500' },
-    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, color: 'text-orange-500' },
-    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, color: 'text-cyan-500' },
+    { label: 'Profile Views', value: num(m?.profileViews), change: profileViewsChange, changeType: changeType(profileViewsChange), icon: Eye, color: 'text-blue-500' },
+    { label: 'New Connections', value: num(m?.newConnections), change: newConnectionsChange, changeType: changeType(newConnectionsChange), icon: UserPlus, color: 'text-green-500' },
+    { label: 'Messages Sent', value: num(m?.messagesSent), change: messagesSentChange, changeType: changeType(messagesSentChange), icon: MessageCircle, color: 'text-purple-500' },
+    { label: 'Engagement Rate', value: num(m?.engagementRate), change: engagementRateChange, changeType: changeType(engagementRateChange), icon: Heart, color: 'text-red-500' },
+    { label: 'Search Appearances', value: num(m?.searchAppearances), change: searchAppearancesChange, changeType: changeType(searchAppearancesChange), icon: Target, color: 'text-orange-500' },
+    { label: 'Activity Score', value: num(m?.activityScore), change: activityScoreChange, changeType: changeType(activityScoreChange), icon: Activity, color: 'text-cyan-500' },
   ];
 }
 
@@ -353,7 +360,7 @@ export default function AnalyticsPage() {
     retry: 1,
   });
 
-  const metrics = overview ? metricsToDisplay(overview.metrics) : [];
+  const metrics = metricsToDisplay(overview?.metrics);
   const profileViews = overview?.profileViews;
   const engagement = overview?.engagement;
   const topContent = overview?.topContent;
@@ -374,8 +381,8 @@ export default function AnalyticsPage() {
       title="Analytics"
       description="Track your profile performance and network growth"
     >
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap gap-2">
           {(['7d', '14d', '30d', '90d'] as const).map((p) => (
             <button
               key={p}

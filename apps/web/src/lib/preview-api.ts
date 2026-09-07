@@ -816,6 +816,47 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/analytics/achievements') {
     return null;
   }
+  if (pathname === '/api/analytics/overview' || pathname === '/api/analytics/metrics') {
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date('2026-09-04T12:00:00.000Z');
+      d.setUTCDate(d.getUTCDate() - (6 - i));
+      return {
+        date: d.toISOString().slice(0, 10),
+        views: [12, 19, 8, 24, 18, 31, 27][i] ?? 12,
+        uniqueVisitors: [8, 14, 6, 18, 13, 22, 20][i] ?? 8,
+      };
+    });
+    const metrics = {
+      profileViews: 48,
+      profileViewsChange: 12,
+      newConnections: 7,
+      newConnectionsChange: 3,
+      messagesSent: 18,
+      messagesSentChange: 8,
+      engagementRate: 58,
+      engagementRateChange: 4,
+      searchAppearances: 55,
+      searchAppearancesChange: 6,
+      activityScore: 72,
+      activityScoreChange: 5,
+    };
+    if (pathname === '/api/analytics/metrics') return metrics;
+    return {
+      metrics,
+      profileViews: days,
+      engagement: { connections: 18, messages: 34, likes: 12, comments: 8, shares: 5 },
+      topContent: [
+        { id: 'tc-1', type: 'profile', title: 'Your founder profile', views: 48, engagement: 12, date: NOW },
+        { id: 'tc-2', type: 'post', title: 'Looking for a technical cofounder', views: 31, engagement: 9, date: NOW },
+      ],
+      weeklySummary: {
+        mostActiveDay: 'Saturday',
+        peakHour: '10:00',
+        avgResponseTime: '2h',
+        totalInteractions: 64,
+      },
+    };
+  }
 
   if (method !== 'GET') {
     return { ok: true, success: true, ...body, id: 'preview-mutation' };

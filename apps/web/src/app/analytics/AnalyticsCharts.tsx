@@ -66,7 +66,7 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
