@@ -35,6 +35,7 @@ import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
+import { cn } from '@/lib/utils';
 
 type AIPreferences = {
   preferredModel: string;
