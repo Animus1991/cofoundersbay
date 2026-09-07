@@ -132,19 +132,19 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-primary/10 rounded-lg">
             <Lightbulb className="h-5 w-5 text-primary" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">Idea Core</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-snug text-muted-foreground">
               Define the fundamental problem, solution, and market opportunity
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-500" />
             {completionPercentage.toFixed(0)}% Complete
@@ -152,6 +152,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -162,7 +163,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
             )}
             AI Assist
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>

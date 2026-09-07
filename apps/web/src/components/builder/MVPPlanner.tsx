@@ -301,19 +301,19 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-purple-500/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-purple-500/10 rounded-lg">
             <Rocket className="h-5 w-5 text-purple-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">MVP Planner</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-snug text-muted-foreground">
               Define scope, prioritize features, and plan your launch
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-purple-500" />
             {completionPercentage.toFixed(0)}% Complete
@@ -321,6 +321,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -331,7 +332,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             )}
             AI Generate
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>

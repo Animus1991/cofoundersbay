@@ -13,6 +13,128 @@ const PREVIEW_AI_CONVERSATIONS: Array<{
   updatedAt: string;
 }> = [];
 
+const PREVIEW_BUILDER_WS_ID = 'preview-ws-harbor';
+
+type PreviewBuilderDoc = {
+  id: string;
+  workspaceId: string;
+  type: string;
+  title: string;
+  description?: string;
+  content: Record<string, unknown>;
+  status: 'draft' | 'in_progress' | 'review' | 'approved' | 'archived';
+  completionPercent: number;
+  aiGenerated: boolean;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+let previewBuilderDocs: PreviewBuilderDoc[] = [
+  {
+    id: 'preview-doc-idea',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'idea_core',
+    title: 'Idea Core',
+    description: 'Problem, audience, and unique value — sample for preview.',
+    content: {
+      problemStatement: 'Founders waste weeks stitching matching, messaging, and fundraising tools.',
+      targetAudience: 'Early-stage founders looking for a complementary cofounder',
+      solution: 'One workspace that matches people and turns the idea into artifacts.',
+      uniqueValue: 'Graph + readiness + builder in the same product',
+    },
+    status: 'in_progress',
+    completionPercent: 35,
+    aiGenerated: false,
+    version: 2,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-doc-bmc',
+    workspaceId: PREVIEW_BUILDER_WS_ID,
+    type: 'business_model_canvas',
+    title: 'Business Model Canvas',
+    description: 'Draft canvas — sample for preview.',
+    content: {
+      valueProposition: 'Faster path from idea to a shareable plan',
+    },
+    status: 'draft',
+    completionPercent: 12,
+    aiGenerated: false,
+    version: 1,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+];
+
+const PREVIEW_BUILDER_COLLABORATORS = [
+  {
+    id: 'preview-collab-owner',
+    userId: ME_ID,
+    role: 'owner',
+    isActive: true,
+    invitedAt: NOW,
+    acceptedAt: NOW,
+    user: {
+      id: ME_ID,
+      displayName: 'Alex Demo',
+      email: 'demo@cofounderbay.com',
+    },
+  },
+];
+
+const PREVIEW_BUILDER_READINESS = {
+  workspaceId: PREVIEW_BUILDER_WS_ID,
+  overallScore: 42,
+  overallStatus: 'needs-work',
+  readinessLevel: 'early',
+  dimensions: [
+    { dimension: 'team', score: 48, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Complete cofounder search on Discover'] },
+    { dimension: 'market', score: 36, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Run 5 customer interviews'] },
+    { dimension: 'product', score: 40, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Scope an MVP in Planner'] },
+    { dimension: 'business', score: 28, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Fill the Business Model Canvas'] },
+    { dimension: 'funding', score: 22, maxScore: 100, status: 'critical', criteria: [], recommendations: ['Start a 10-slide pitch deck'] },
+    { dimension: 'execution', score: 50, maxScore: 100, status: 'needs-work', criteria: [], recommendations: ['Set the next 30-day milestone'] },
+  ],
+  blockers: [
+    'No customer interviews logged yet',
+    'Business model still a draft',
+  ],
+  nextMilestones: [
+    'Finish Idea Core problem and unique value',
+    'Draft BMC value proposition and channels',
+    'Book 5 discovery interviews',
+  ],
+  assessedAt: NOW,
+};
+
+function previewBuilderWorkspace() {
+  return {
+    id: PREVIEW_BUILDER_WS_ID,
+    name: 'Harbor',
+    slug: 'harbor',
+    description: 'Sample workspace — preview demo, not live founder data.',
+    status: 'active',
+    visibility: 'private',
+    startupName: 'Harbor',
+    industry: 'SaaS',
+    stage: 'pre-seed',
+    targetMarket: 'Early-stage founders',
+    createdAt: NOW,
+    updatedAt: NOW,
+    owner: {
+      id: ME_ID,
+      displayName: 'Alex Demo',
+    },
+    documentCount: previewBuilderDocs.length,
+    collaboratorCount: PREVIEW_BUILDER_COLLABORATORS.length,
+    overallReadiness: PREVIEW_BUILDER_READINESS.overallScore,
+    documents: previewBuilderDocs,
+    collaborators: PREVIEW_BUILDER_COLLABORATORS,
+  };
+}
+
 const PEOPLE = [
   {
     id: 'hit-elena',
@@ -816,6 +938,97 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   if (pathname === '/api/analytics/achievements') {
     return null;
   }
+  if (pathname === '/api/builder/workspaces') {
+    if (method === 'POST') return previewBuilderWorkspace();
+    const ws = previewBuilderWorkspace();
+    return {
+      data: [ws],
+      meta: { total: 1, page: 1, limit: 20, totalPages: 1, hasMore: false },
+    };
+  }
+  const builderWsMatch = pathname.match(/^\/api\/builder\/workspaces\/([^/]+)$/);
+  if (builderWsMatch) {
+    return previewBuilderWorkspace();
+  }
+  const builderActivityMatch = pathname.match(/^\/api\/builder\/workspaces\/([^/]+)\/activity$/);
+  if (builderActivityMatch) {
+    return {
+      activities: [
+        {
+          id: 'preview-act-1',
+          workspaceId: PREVIEW_BUILDER_WS_ID,
+          action: 'document.updated',
+          entityType: 'document',
+          entityId: 'preview-doc-idea',
+          metadata: { title: 'Idea Core' },
+          createdAt: NOW,
+          user: { id: ME_ID, displayName: 'Alex Demo' },
+        },
+        {
+          id: 'preview-act-2',
+          workspaceId: PREVIEW_BUILDER_WS_ID,
+          action: 'workspace.created',
+          entityType: 'workspace',
+          entityId: PREVIEW_BUILDER_WS_ID,
+          createdAt: NOW,
+          user: { id: ME_ID, displayName: 'Alex Demo' },
+        },
+      ],
+    };
+  }
+  const builderCollabMatch = pathname.match(/^\/api\/builder\/workspaces\/([^/]+)\/collaborators$/);
+  if (builderCollabMatch) {
+    if (method === 'POST') {
+      const role = typeof body.role === 'string' ? body.role : 'viewer';
+      const userId = typeof body.userId === 'string' ? body.userId : 'preview-guest';
+      return {
+        id: `preview-collab-${Date.now()}`,
+        userId,
+        role,
+        isActive: true,
+        invitedAt: new Date().toISOString(),
+        user: {
+          id: userId,
+          displayName: userId,
+          email: `${userId}@example.com`,
+        },
+      };
+    }
+    return PREVIEW_BUILDER_COLLABORATORS;
+  }
+  if (pathname === '/api/builder/readiness/assess' && method === 'POST') {
+    return PREVIEW_BUILDER_READINESS;
+  }
+  if (pathname === '/api/builder/documents' && method === 'POST') {
+    const type = typeof body.type === 'string' ? body.type : 'custom';
+    const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'Untitled';
+    const doc: PreviewBuilderDoc = {
+      id: `preview-doc-${Date.now()}`,
+      workspaceId: PREVIEW_BUILDER_WS_ID,
+      type,
+      title,
+      content: {},
+      status: 'draft',
+      completionPercent: 0,
+      aiGenerated: false,
+      version: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    previewBuilderDocs = [doc, ...previewBuilderDocs];
+    return doc;
+  }
+  const builderDocMatch = pathname.match(/^\/api\/builder\/documents\/([^/]+)$/);
+  if (builderDocMatch) {
+    const found = previewBuilderDocs.find((d) => d.id === builderDocMatch[1]);
+    if ((method === 'PUT' || method === 'PATCH') && found) {
+      const next = { ...found, ...body, updatedAt: new Date().toISOString() } as PreviewBuilderDoc;
+      previewBuilderDocs = previewBuilderDocs.map((d) => (d.id === found.id ? next : d));
+      return next;
+    }
+    return found ?? previewBuilderDocs[0];
+  }
+
   if (pathname === '/api/analytics/overview' || pathname === '/api/analytics/metrics') {
     const days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date('2026-09-04T12:00:00.000Z');

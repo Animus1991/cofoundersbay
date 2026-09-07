@@ -44,7 +44,11 @@ import { cn } from '@/lib/utils';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import type { BuilderDocument, BuilderCollaborator } from '@/lib/builder-api';
+
+const MOBILE_DIALOG =
+  'max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0';
 
 // ── Document type metadata ─────────────────────────────────────────────────
 
@@ -149,7 +153,7 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className={MOBILE_DIALOG}>
         <DialogHeader>
           <DialogTitle>Invite Collaborator</DialogTitle>
           <DialogDescription>Add a team member, mentor, or advisor to this workspace.</DialogDescription>
@@ -162,12 +166,13 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
               placeholder="Enter user ID..."
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
+              className="min-h-11"
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="invite-role">Role</Label>
             <Select value={role} onValueChange={setRole}>
-              <SelectTrigger id="invite-role">
+              <SelectTrigger id="invite-role" className="min-h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -179,8 +184,8 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading || !userId.trim()}>
+          <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={onClose}>Cancel</Button>
+          <Button className="min-h-11 w-full sm:w-auto" onClick={handleSubmit} disabled={loading || !userId.trim()}>
             {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
             Send Invite
           </Button>
@@ -218,7 +223,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className={MOBILE_DIALOG}>
         <DialogHeader>
           <DialogTitle>Create Document</DialogTitle>
           <DialogDescription>Add a new startup artifact to this workspace.</DialogDescription>
@@ -227,7 +232,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
           <div className="space-y-1.5">
             <Label>Document Type</Label>
             <Select value={docType} onValueChange={setDocType}>
-              <SelectTrigger>
+              <SelectTrigger className="min-h-11">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -245,12 +250,13 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              className="min-h-11"
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
+          <Button variant="outline" className="min-h-11 w-full sm:w-auto" onClick={onClose}>Cancel</Button>
+          <Button className="min-h-11 w-full sm:w-auto" onClick={handleSubmit} disabled={loading || !title.trim()}>
             {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
             Create
           </Button>
@@ -351,10 +357,10 @@ export function BuilderWorkspace() {
   if (isLoadingWorkspaces) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
+            <Card key={i} className="min-w-0">
+              <CardContent className="p-3">
                 <Skeleton className="h-7 w-12 mb-2" />
                 <Skeleton className="h-3 w-20" />
               </CardContent>
@@ -376,40 +382,42 @@ export function BuilderWorkspace() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6 overflow-x-clip">
       {/* ── Stats Bar ──────────────────────────────────────────────────── */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-foreground">{overallCompletion}%</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completion</div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardContent className="p-3 text-center">
+            <div className="text-xl font-bold text-foreground sm:text-2xl">{overallCompletion}%</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5 sm:text-xs">Completion</div>
             <Progress value={overallCompletion} className="h-1.5 mt-2" />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className={cn('text-2xl font-bold', dimensionColor(overallReadiness))}>
-              {assessingReadiness ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : `${overallReadiness}%`}
+        <Card className="min-w-0">
+          <CardContent className="p-3 text-center">
+            <div className={cn('text-xl font-bold sm:text-2xl', dimensionColor(overallReadiness))}>
+              {assessingReadiness ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : `${overallReadiness}%`}
             </div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Readiness</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5 sm:text-xs">Readiness</div>
             <Progress value={overallReadiness} className="h-1.5 mt-2" />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{completedDocs}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completed</div>
-            <div className="text-xs text-muted-foreground mt-1.5">{inProgressDocs} in progress</div>
+        <Card className="min-w-0">
+          <CardContent className="p-3 text-center">
+            <div className={cn('text-xl font-bold sm:text-2xl', completedDocs > 0 ? 'text-green-600' : 'text-foreground')}>
+              {completedDocs}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5 sm:text-xs">Completed</div>
+            <div className="text-[11px] text-muted-foreground mt-1">{inProgressDocs} in progress</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary">{collaborators.length}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Collaborators</div>
-            <div className="flex justify-center mt-2 -space-x-1.5">
+        <Card className="min-w-0">
+          <CardContent className="p-3 text-center">
+            <div className="text-xl font-bold text-primary sm:text-2xl">{collaborators.length}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5 sm:text-xs">Collaborators</div>
+            <div className="flex justify-center mt-2 -space-x-1.5 min-h-5">
               {collaborators.slice(0, 4).map(c => (
                 <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                   <AvatarImage src={c.user.avatarUrl} />
@@ -423,30 +431,30 @@ export function BuilderWorkspace() {
 
       {/* ── Tabs ──────────────────────────────────────────────────────────── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="documents">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="h-auto w-full justify-start overflow-x-auto sm:w-auto">
+            <TabsTrigger value="overview" className="min-h-10">Overview</TabsTrigger>
+            <TabsTrigger value="documents" className="min-h-10">
               Documents
               {documents.length > 0 && (
                 <Badge variant="secondary" className="ml-1.5 text-xs h-4 px-1.5">{documents.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="collaboration">
+            <TabsTrigger value="collaboration" className="min-h-10">
               Team
               {collaborators.length > 0 && (
                 <Badge variant="secondary" className="ml-1.5 text-xs h-4 px-1.5">{collaborators.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="readiness">Readiness</TabsTrigger>
+            <TabsTrigger value="readiness" className="min-h-10">Readiness</TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" className="min-h-10" onClick={() => setShowInviteDialog(true)}>
               <UserPlus className="h-3.5 w-3.5 mr-1.5" />
               Invite
             </Button>
-            <Button size="sm" onClick={() => setShowCreateDocDialog(true)}>
+            <Button size="sm" className="min-h-10" onClick={() => setShowCreateDocDialog(true)}>
               <Plus className="h-3.5 w-3.5 mr-1.5" />
               New Document
             </Button>
@@ -457,7 +465,7 @@ export function BuilderWorkspace() {
         <TabsContent value="overview" className="space-y-6 mt-4">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Progress card */}
-            <Card>
+            <Card className="min-w-0">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Rocket className="h-4 w-4" />
@@ -493,9 +501,13 @@ export function BuilderWorkspace() {
             </Card>
 
             {/* Quick Actions card */}
-            <Card>
-              <CardHeader>
+            <Card className="min-w-0">
+              <CardHeader className="flex flex-col gap-2 space-y-0 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base">Quick Actions</CardTitle>
+                <AIInsightButton
+                  className="h-8 w-full sm:w-auto"
+                  prompt={`Startup Builder is ${overallCompletion}% complete and ${overallReadiness}% ready. Documents: ${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}. Recommend the next artifact (Idea Core, BMC, interviews, pitch, MVP, financials) and draft the first section.`}
+                />
               </CardHeader>
               <CardContent className="space-y-2">
                 {DEFAULT_DOC_TYPES.map(type => {
@@ -505,7 +517,7 @@ export function BuilderWorkspace() {
                   return (
                     <Button
                       key={type}
-                      className="w-full justify-between"
+                      className="h-auto min-h-11 w-full justify-between px-3 py-2"
                       variant="outline"
                       onClick={() => {
                         if (existing) {
@@ -515,14 +527,14 @@ export function BuilderWorkspace() {
                         }
                       }}
                     >
-                      <span className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        {existing ? `Edit ${meta?.label}` : `Start ${meta?.label}`}
+                      <span className="flex min-w-0 items-center gap-2 text-left">
+                        <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate">{existing ? `Edit ${meta?.label}` : `Start ${meta?.label}`}</span>
                       </span>
                       {existing ? (
                         <Badge
                           variant="secondary"
-                          className={cn('text-xs', {
+                          className={cn('shrink-0 text-xs', {
                             'bg-green-100 text-green-700': existing.status === 'approved',
                             'bg-blue-100 text-blue-700': existing.status === 'review',
                             'bg-yellow-100 text-yellow-700': existing.status === 'in_progress',
@@ -531,7 +543,7 @@ export function BuilderWorkspace() {
                           {existing.completionPercent}%
                         </Badge>
                       ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       )}
                     </Button>
                   );
@@ -596,7 +608,7 @@ export function BuilderWorkspace() {
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
                 <p className="text-muted-foreground mb-4">No documents yet. Create your first startup artifact.</p>
-                <Button onClick={() => setShowCreateDocDialog(true)}>
+                <Button onClick={() => setShowCreateDocDialog(true)} className="min-h-11">
                   <Plus className="h-4 w-4 mr-2" />
                   Create First Document
                 </Button>
@@ -667,12 +679,12 @@ export function BuilderWorkspace() {
         <TabsContent value="collaboration" className="space-y-4 mt-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   Team Members
                 </CardTitle>
-                <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
+                <Button size="sm" variant="outline" className="min-h-10 w-full sm:w-auto" onClick={() => setShowInviteDialog(true)}>
                   <UserPlus className="h-3.5 w-3.5 mr-1.5" />
                   Invite
                 </Button>
@@ -783,9 +795,9 @@ export function BuilderWorkspace() {
 
         {/* ── Readiness Tab ─────────────────────────────────────────────── */}
         <TabsContent value="readiness" className="space-y-4 mt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-sm leading-snug text-muted-foreground">
                 {readinessAssessment
                   ? `Overall readiness: ${readinessAssessment.readinessLevel} — ${overallReadiness}%`
                   : 'Run an assessment to see your startup readiness scores'}
@@ -794,6 +806,7 @@ export function BuilderWorkspace() {
             <Button
               size="sm"
               variant="outline"
+              className="min-h-10 w-full shrink-0 sm:w-auto"
               onClick={handleReassess}
               disabled={assessingReadiness}
             >

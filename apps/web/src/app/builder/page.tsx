@@ -19,6 +19,7 @@ import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { 
   Lightbulb, 
   Target, 
@@ -89,15 +90,15 @@ function BuilderPageContent() {
   };
 
   const BUILDER_TABS = [
-    { id: 'overview', label: 'Overview', icon: Rocket },
-    { id: 'idea-core', label: 'Idea Core', icon: Lightbulb },
-    { id: 'bmc', label: 'Business Model', icon: Target },
-    { id: 'market', label: 'Market', icon: TrendingUp },
-    { id: 'pitch-deck', label: 'Pitch Deck', icon: Presentation },
-    { id: 'mvp', label: 'MVP', icon: Code },
-    { id: 'financials', label: 'Financials', icon: DollarSign },
-    { id: 'readiness', label: 'Readiness', icon: Award },
-    { id: 'applications', label: 'Applications', icon: CheckCircle2 },
+    { id: 'overview', label: 'Overview', shortLabel: 'Overview', icon: Rocket },
+    { id: 'idea-core', label: 'Idea Core', shortLabel: 'Idea', icon: Lightbulb },
+    { id: 'bmc', label: 'Business Model', shortLabel: 'Model', icon: Target },
+    { id: 'market', label: 'Market', shortLabel: 'Market', icon: TrendingUp },
+    { id: 'pitch-deck', label: 'Pitch Deck', shortLabel: 'Pitch', icon: Presentation },
+    { id: 'mvp', label: 'MVP', shortLabel: 'MVP', icon: Code },
+    { id: 'financials', label: 'Financials', shortLabel: 'Finance', icon: DollarSign },
+    { id: 'readiness', label: 'Readiness', shortLabel: 'Ready', icon: Award },
+    { id: 'applications', label: 'Applications', shortLabel: 'Apps', icon: CheckCircle2 },
   ];
 
   // Get document content by type
@@ -118,13 +119,15 @@ function BuilderPageContent() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6 overflow-x-clip">
         {/* Error Alert */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" />
-            <p className="text-sm text-destructive">{error}</p>
-            <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
+          <div className="flex flex-col gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <AlertCircle className="icon-md shrink-0 text-destructive" />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
               Dismiss
             </Button>
           </div>
@@ -135,45 +138,51 @@ function BuilderPageContent() {
 
         {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
-          <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-            <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                Your artifacts are ready for expert review
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Get actionable feedback from a domain expert — investors, mentors, or industry specialists.
-              </p>
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 sm:flex-row sm:items-start">
+            <div className="flex min-w-0 items-start gap-3">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  Your artifacts are ready for expert review
+                </p>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  Get actionable feedback from a domain expert — investors, mentors, or industry specialists.
+                </p>
+              </div>
+              <button
+                onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
+                className="shrink-0 rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+                title="Dismiss"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
-            <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10">
+            <a href="/expert-reviews" className="shrink-0 sm:self-center">
+              <Button variant="ghost" size="sm" className="h-9 w-full gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10 sm:w-auto">
                 Get review <ArrowRight className="h-3 w-3" />
               </Button>
             </a>
-            <button
-              onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
-              className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
-              title="Dismiss"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
           </div>
         )}
 
         {/* Context Bar */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="flex items-start gap-3 text-2xl font-semibold tracking-tight text-foreground">
+              <div className="shrink-0 rounded-lg bg-primary/10 p-2">
                 <Rocket className="icon-lg text-primary" />
               </div>
-              {workspace?.name || 'Startup Builder'}
+              <span className="min-w-0 break-words">{workspace?.name || 'Startup Builder'}</span>
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm leading-snug text-muted-foreground">
               {workspace?.description || 'Transform your idea into a validated startup plan with AI assistance'}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <AIInsightButton
+              className="h-9"
+              prompt={`Startup Builder workspace "${workspace?.name ?? 'my venture'}": ${documents.length} artifacts (${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}). Recommend the next document — Idea Core, Business Model, interviews, pitch, MVP, or financials — and draft the first section.`}
+            />
             {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
@@ -216,18 +225,19 @@ function BuilderPageContent() {
 
         {/* Main Builder Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto snap-x snap-mandatory scrollbar-hide">
             {BUILDER_TABS.map(tab => {
               const Icon = tab.icon;
               return (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
-                  className="flex min-h-10 shrink-0 items-center gap-1.5 text-xs"
+                  className="flex min-h-10 shrink-0 snap-start items-center gap-1.5 text-xs"
                   title={tab.label}
                 >
                   <Icon className="icon-sm" />
-                  <span>{tab.label}</span>
+                  <span className="sm:hidden">{tab.shortLabel}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </TabsTrigger>
               );
             })}

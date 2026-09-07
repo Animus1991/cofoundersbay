@@ -253,19 +253,19 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-emerald-500/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-emerald-500/10 rounded-lg">
             <DollarSign className="h-5 w-5 text-emerald-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">Financial Planning</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-snug text-muted-foreground">
               Revenue models, cost projections, and funding requirements
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
             {completionPercentage.toFixed(0)}% Complete
@@ -273,6 +273,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -283,7 +284,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             )}
             AI Generate
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
@@ -291,14 +292,14 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       </div>
 
       {/* Key Metrics Dashboard */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardContent className="p-3">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-red-500" />
-              <span className="text-sm text-muted-foreground">Monthly Burn</span>
+              <TrendingDown className="h-4 w-4 shrink-0 text-red-500" />
+              <span className="text-xs text-muted-foreground leading-snug">Monthly Burn</span>
             </div>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-xl font-bold text-red-600 sm:text-2xl">
               {formatCurrency(data.burnRate > 0 ? data.burnRate : totalMonthlyOperating - totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -508,7 +509,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.revenueStreams.map((stream, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
                       <Label>Name</Label>
                       <Input
@@ -721,7 +722,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.fundingRounds.map((round, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
                       <Label>Stage</Label>
                       <Input

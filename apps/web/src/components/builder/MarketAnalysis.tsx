@@ -247,19 +247,19 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-500/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-green-500/10 rounded-lg">
             <TrendingUp className="h-5 w-5 text-green-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">Market Analysis</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-snug text-muted-foreground">
               Comprehensive market sizing, competitive landscape, and positioning
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-green-500" />
             {completionPercentage.toFixed(0)}% Complete
@@ -267,6 +267,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -277,7 +278,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
             )}
             AI Generate
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>

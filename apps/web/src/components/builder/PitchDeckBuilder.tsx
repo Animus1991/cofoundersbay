@@ -209,8 +209,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
   return (
     <div className="space-y-6">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Badge variant="outline" className="gap-1">
             <div className="w-2 h-2 rounded-full bg-indigo-500" />
             {data.slides.length} slides
@@ -218,7 +217,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
           <select
             value={data.deckType}
             onChange={(e) => setData(prev => ({ ...prev, deckType: e.target.value as PitchDeckData['deckType'] }))}
-            className="px-3 py-1.5 border rounded-md text-sm"
+            className="min-h-10 max-w-full px-3 py-1.5 border rounded-md text-sm"
           >
             <option value="investor">Investor Deck</option>
             <option value="accelerator">Accelerator Deck</option>
@@ -229,6 +228,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -239,15 +239,14 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
             )}
             AI Generate
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="min-h-10">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save
           </Button>
-        </div>
       </div>
 
       {/* Progress */}

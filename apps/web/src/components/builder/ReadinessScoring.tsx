@@ -294,19 +294,20 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-cyan-500/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-cyan-500/10 rounded-lg">
             <Target className="h-5 w-5 text-cyan-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">Readiness Assessment</h2>
-            <p className="text-sm text-muted-foreground">
-              Evaluate your startup's readiness across key dimensions
+            <p className="text-sm leading-snug text-muted-foreground">
+              Evaluate your startup&apos;s readiness across key dimensions
             </p>
           </div>
         </div>
         <Button 
+          className="min-h-10 w-full sm:w-auto"
           onClick={analyzeReadiness}
           disabled={isAnalyzing}
         >

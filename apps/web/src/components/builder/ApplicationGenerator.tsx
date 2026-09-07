@@ -254,22 +254,23 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-orange-500/10 rounded-lg">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="shrink-0 p-2 bg-orange-500/10 rounded-lg">
             <FileText className="h-5 w-5 text-orange-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h2 className="text-xl font-semibold">Application Generator</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm leading-snug text-muted-foreground">
               Generate applications for accelerators, grants, and competitions
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <Button 
             variant="outline" 
             size="sm" 
+            className="min-h-10"
             onClick={generateWithAI}
             disabled={isGenerating}
           >
@@ -280,7 +281,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
             )}
             AI Generate
           </Button>
-          <Button size="sm" onClick={handleSave}>
+          <Button size="sm" className="min-h-10" onClick={handleSave}>
             <Save className="h-4 w-4 mr-2" />
             Save All
           </Button>
@@ -288,7 +289,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       </div>
 
       {/* Application Selector */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {applications.map(app => {
           const Icon = app.icon;
           const completion = calculateCompletion(app);
