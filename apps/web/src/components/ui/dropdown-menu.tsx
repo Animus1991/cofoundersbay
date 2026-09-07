@@ -19,7 +19,7 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       collisionPadding={12}
       className={cn(
-        'z-50 min-w-[180px] max-w-[calc(100vw-1.5rem)] rounded-md border border-border/60 bg-popover p-1 text-popover-foreground shadow-glow-sm backdrop-blur',
+        'z-[70] min-w-[180px] max-h-[min(70dvh,calc(100svh-4.5rem))] max-w-[calc(100vw-1.5rem)] overflow-y-auto overscroll-contain rounded-md border border-border/60 bg-popover p-1 text-popover-foreground shadow-glow-sm backdrop-blur',
         className,
       )}
       {...props}

@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, User, Settings } from 'lucide-react';
+import { LanguagePanel } from '@/components/common/LanguageSwitcher';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
@@ -102,6 +103,10 @@ export function MobileNav() {
         )}
 
         <ModeSwitcher currentMode={mode} onModeChange={setMode} expanded />
+
+        <div className="border-b border-border/60 px-3 py-3">
+          <LanguagePanel />
+        </div>
 
         <nav className="flex-1 overflow-y-auto overscroll-contain px-2 py-3" aria-label="Mobile navigation">
           {sections.map(({ section, links }) => (

@@ -33,7 +33,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
-import { cn } from '@/lib/utils';
+import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { applyLocale } from '@/lib/locale';
 
 type AIPreferences = {
   preferredModel: string;
@@ -76,18 +77,6 @@ const RESPONSE_STYLES = [
   { value: 'detailed', label: 'Detailed', desc: 'Comprehensive explanations' },
   { value: 'casual', label: 'Casual', desc: 'Friendly, conversational tone' },
   { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
-];
-
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'el', label: 'Greek (Ελληνικά)' },
-  { value: 'es', label: 'Spanish (Español)' },
-  { value: 'fr', label: 'French (Français)' },
-  { value: 'de', label: 'German (Deutsch)' },
-  { value: 'it', label: 'Italian (Italiano)' },
-  { value: 'pt', label: 'Portuguese (Português)' },
-  { value: 'zh', label: 'Chinese (中文)' },
-  { value: 'ja', label: 'Japanese (日本語)' },
 ];
 
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -431,21 +420,16 @@ export default function AISettingsPage() {
                   <Languages className="h-4 w-4 text-muted-foreground" />
                   Response Language
                 </Label>
-                <Select
+                <p className="text-sm text-muted-foreground">
+                  Tap a language. The same setting is in the header globe and in Settings.
+                </p>
+                <LanguageChipGrid
                   value={prefs.responseLanguage}
-                  onValueChange={(v) => updatePref('responseLanguage', v)}
-                >
-                  <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => {
+                    updatePref('responseLanguage', v);
+                    applyLocale(v);
+                  }}
+                />
               </div>
 
               {/* Use Emoji */}

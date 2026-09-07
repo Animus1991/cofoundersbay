@@ -15,6 +15,7 @@ import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
+import { LocaleSync } from '@/components/common/LocaleSync';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
 
 export const metadata: Metadata = {
@@ -85,6 +86,7 @@ export default function RootLayout({
                           <DemoDataProvider>
                             <RoleTheme>
                               <PreviewSessionGuard />
+                              <LocaleSync />
                               <OfflineBanner />
                               {children}
                               <GlobalFloatingUi />

@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { Eye, EyeOff, Keyboard, MoreHorizontal } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Eye, EyeOff, Globe, Keyboard, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
@@ -28,6 +29,7 @@ const CommandPalette = dynamic(
 
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
+  const router = useRouter();
 
   return (
     <DropdownMenu>
@@ -41,10 +43,14 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" side="bottom" className="w-56">
         <DropdownMenuItem onClick={onCommand}>
           <Keyboard className="mr-2 h-4 w-4" />
           Command palette
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings#language')}>
+          <Globe className="mr-2 h-4 w-4" />
+          Language
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
@@ -98,6 +104,7 @@ export function TopBar() {
             <DemoDataToggle />
           </div>
           <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
+          <LanguageSwitcher />
           <ThemeSwitcher />
           <NotificationsBell className="h-9 w-9" />
           {ready && <UserMenu />}

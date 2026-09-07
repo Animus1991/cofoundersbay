@@ -37,7 +37,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
-import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
 
 type NotifPrefs = {
   messages: boolean;
@@ -83,6 +84,45 @@ const PRIVACY_ITEMS = [
   { id: 'searchable',     icon: Lock,     label: 'Appear in search',     desc: 'Show up in member search and recommendations' },
   { id: 'showActivity',   icon: Activity, label: 'Show recent activity', desc: 'Visible to connections on your profile' },
 ] as const;
+
+function LanguageCard() {
+  const { success } = useToast();
+  const [locale, setLocale] = useState('en');
+
+  useEffect(() => {
+    setLocale(getStoredLocale());
+    const onChange = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (APP_LOCALES.some((l) => l.value === next)) setLocale(next);
+    };
+    window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+  }, []);
+
+  return (
+    <Card id="language" className="scroll-mt-16 shadow-sm border-border/50">
+      <CardHeader className="border-b border-border/50">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
+          Language
+        </CardTitle>
+        <CardDescription>
+          Tap a language. This sets AI replies and the page language. Full UI translation is not wired yet — the menus stay in English.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <LanguageChipGrid
+          value={locale}
+          onChange={(next) => {
+            setLocale(next);
+            applyLocale(next);
+            success('Language saved', next === 'el' ? 'AI replies will use Greek.' : `AI replies will use ${next.toUpperCase()}.`);
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
+}
 
 function PrivacyCard() {
   const [flags, setFlags] = useState<Record<string, boolean>>({
@@ -237,6 +277,7 @@ export default function SettingsPage() {
 
       {hasToken && (
         <div className="space-y-6 pb-10">
+          <LanguageCard />
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Billing */}
             <Card className="shadow-sm border-border/50">
