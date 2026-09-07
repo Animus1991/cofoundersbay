@@ -189,8 +189,9 @@ AI είναι παράλληλη ράγα: κάθε βήμα έχει Ask AI ή 
 
 | Σειρά | Επιφάνεια | Κριτήρια αποδοχής (mobile) | Κατάσταση |
 |---|---|---|---|
-| **1. Overview** `/dashboard/founder` | Greeting + Ask AI χωρίς οριζόντιο overflow· stats 2×2· banners χωρίς truncate· VRS bars = score όχι weight· demo dates στο μέλλον· command palette πάνω από το πληκτρολόγιο | Αυτός ο κύκλος |
-| 2. Discover / Matches | Κάρτες, φίλτρα, shortlist, Ask AI | Επόμενο |
+| **1. Overview** `/dashboard/founder` | Greeting + Ask AI χωρίς οριζόντιο overflow· stats 2×2· banners χωρίς truncate· VRS bars = score όχι weight· demo dates στο μέλλον· command palette πάνω από το πληκτρολόγιο | Ολοκληρώθηκε |
+| **2. Readiness** `/readiness` | Header stack + Ask AI· radar ticks χωρίς clip («Funding» όχι «ng Readiness»)· tabs χωρίς κομμένο History· criteria wrap + tap ≥44px· info tap αντί hover tooltip | Αυτός ο κύκλος |
+| 3. Discover / Matches | Κάρτες, φίλτρα, shortlist, Ask AI | Επόμενο |
 | 3. Messages | Thread list + composer + safe-area | Επόμενο |
 | 4. Profile / Settings | Φόρμες, tabs, save | Επόμενο |
 | 5. AI `/ai` | Full-page copilot, confirm, tools | Επόμενο |

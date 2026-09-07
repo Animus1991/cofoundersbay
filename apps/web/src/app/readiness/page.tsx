@@ -51,10 +51,10 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { assessReadiness, updateReadinessCriterion, type ReadinessOverall } from '@/lib/api';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 // ── Static dimension metadata ─────────────────────────────────────────────────
 const DIMENSION_META: Record<string, {
@@ -161,6 +161,15 @@ function scoreToStatus(pct: number): 'excellent' | 'good' | 'needs-work' | 'crit
   return 'critical';
 }
 
+const RADAR_TICK_LABEL: Record<string, string> = {
+  Team: 'Team',
+  Market: 'Market',
+  Product: 'Product',
+  'Business Model': 'Business',
+  'Funding Readiness': 'Funding',
+  Execution: 'Execution',
+};
+
 const STATUS_COLORS = {
   excellent:   { bg: 'bg-green-500/10',  text: 'text-green-600',  border: 'border-green-500/20',  bar: 'bg-green-500'  },
   good:        { bg: 'bg-blue-500/10',   text: 'text-blue-600',   border: 'border-blue-500/20',   bar: 'bg-blue-500'   },
@@ -209,65 +218,76 @@ function DimensionCard({
   isMutating: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
   const pct = Math.round((dim.score / dim.maxScore) * 100);
   const status = scoreToStatus(pct);
   const colors = STATUS_COLORS[status];
   const done = dim.criteria.filter((c) => c.completed).length;
   const Icon = dim.icon;
+  const recPrompt = dim.recommendations[0]
+    ? `Help me improve ${dim.label} readiness (${pct}%). Next step: ${dim.recommendations[0]}`
+    : `Help me improve ${dim.label} readiness (${pct}%). What should I do next?`;
 
   return (
-    <Card className="transition-all hover:shadow-md">
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4">
+    <Card className="min-w-0 transition-all hover:shadow-md">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start gap-3 sm:gap-4">
           <div className={cn('rounded-lg p-2.5 flex-shrink-0', colors.bg)}>
             <Icon className={cn('h-5 w-5', colors.text)} />
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <h3 className="font-semibold text-sm">{dim.label}</h3>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-muted-foreground/50 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-[220px] text-xs">{dim.description}</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-1">
+                <h3 className="text-sm font-semibold">{dim.label}</h3>
+                <button
+                  type="button"
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground/70 hover:bg-secondary/70 hover:text-foreground"
+                  aria-expanded={showInfo}
+                  aria-label={`About ${dim.label}`}
+                  onClick={() => setShowInfo((v) => !v)}
+                >
+                  <Info className="h-4 w-4" />
+                </button>
               </div>
               <Badge variant="outline" className={cn('text-xs capitalize', colors.bg, colors.text, colors.border)}>
                 {status.replace('-', ' ')}
               </Badge>
             </div>
+            {showInfo && (
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{dim.description}</p>
+            )}
 
-            <div className="flex items-center gap-3 mt-3">
-              <Progress value={pct} className="flex-1 h-1.5" />
-              <span className="text-sm font-semibold tabular-nums w-9 text-right">{pct}%</span>
+            <div className="mt-3 flex items-center gap-3">
+              <Progress value={pct} className="h-1.5 min-w-0 flex-1" />
+              <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5">{done}/{dim.criteria.length} criteria completed</p>
+            <p className="mt-1.5 text-xs text-muted-foreground">{done}/{dim.criteria.length} criteria completed</p>
 
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-3 space-y-1">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
                   disabled={!workspaceId || isMutating}
                   onClick={() => workspaceId && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
-                    'w-full flex items-center gap-2 text-sm rounded-md px-1.5 py-1 transition-colors text-left',
-                    workspaceId ? 'hover:bg-secondary/60 cursor-pointer' : 'cursor-default',
+                    'flex min-h-11 w-full items-start gap-2 rounded-md px-1.5 py-2 text-left text-sm transition-colors',
+                    workspaceId ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
                   {c.completed
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    : <AlertCircle className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />}
-                  <span className={cn('truncate', c.completed && 'text-muted-foreground line-through')}>{c.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{c.weight}%</span>
+                    ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                    : <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50" />}
+                  <span className={cn('min-w-0 flex-1 leading-snug', c.completed && 'text-muted-foreground line-through')}>
+                    {c.name}
+                  </span>
+                  <span className="shrink-0 pt-0.5 text-xs tabular-nums text-muted-foreground">{c.weight}%</span>
                 </button>
               ))}
               {dim.criteria.length > 3 && (
                 <button
+                  type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="text-xs text-primary/70 hover:text-primary pl-6 transition-colors"
+                  className="min-h-10 px-1.5 text-sm text-primary hover:underline"
                 >
                   {expanded ? 'Show less' : `+${dim.criteria.length - 3} more`}
                 </button>
@@ -275,12 +295,13 @@ function DimensionCard({
             </div>
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border/60">
-                <p className="text-xs font-medium flex items-center gap-1.5 mb-1">
+              <div className="mt-3 space-y-2 rounded-lg border border-border/60 bg-secondary/50 p-3">
+                <p className="mb-1 flex items-center gap-1.5 text-xs font-medium">
                   <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
                   Recommendation
                 </p>
-                <p className="text-xs text-muted-foreground">{dim.recommendations[0]}</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{dim.recommendations[0]}</p>
+                <AIInsightButton prompt={recPrompt} className="h-8" />
               </div>
             )}
           </div>
@@ -306,19 +327,24 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={280}>
-          <RadarChart data={data} margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="62%" margin={{ top: 12, right: 8, bottom: 12, left: 8 }}>
             <PolarGrid className="stroke-border/40" />
-            <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
+            <PolarAngleAxis
+              dataKey="dimension"
+              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+              tickFormatter={(value: string) => RADAR_TICK_LABEL[value] ?? value}
+            />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} tickCount={4} />
             <Radar name="Your Score" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} strokeWidth={2} />
             <Radar name="Benchmark" dataKey="benchmark" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 2" />
             <RechartsTooltip
               contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               formatter={(val: number, name: string) => [`${val}%`, name]}
+              labelFormatter={(label) => String(label)}
             />
           </RadarChart>
         </ResponsiveContainer>
-        <div className="flex items-center justify-center gap-4 mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" />Your Score</span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-slate-400/40" />Benchmark (65%)</span>
         </div>
@@ -331,19 +357,19 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="flex items-center gap-2 text-sm">
             <History className="h-4 w-4 text-primary" />
             Score Progression (7 weeks)
           </CardTitle>
-          <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
+          <button type="button" className="inline-flex min-h-8 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground">
             <Download className="h-3.5 w-3.5" />Export
           </button>
         </div>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={history} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+          <LineChart data={history} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
             <XAxis dataKey="week" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
@@ -356,7 +382,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
             <Line type="monotone" dataKey="invest" stroke="#22c55e" strokeWidth={2} dot={{ r: 2.5 }} name="Investor" strokeDasharray="4 2" />
           </LineChart>
         </ResponsiveContainer>
-        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground justify-center">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" />Overall</span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-violet-500" />Accelerator</span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-green-500" />Investor</span>
@@ -421,6 +447,7 @@ export default function ReadinessPage() {
   const overallStatus = scoreToStatus(overallScore);
   const overallColors = STATUS_COLORS[overallStatus];
   const weakDims      = dimensions.filter((d) => scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'critical' || scoreToStatus(Math.round((d.score / d.maxScore) * 100)) === 'needs-work');
+  const askPrompt = `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.label} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0] ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`;
 
   if (isLoading) {
     return <AppShell><div className="py-6"><ReadinessSkeleton /></div></AppShell>;
@@ -428,28 +455,34 @@ export default function ReadinessPage() {
 
   return (
     <AppShell>
-      <div className="py-6 space-y-6">
+      <div className="min-w-0 space-y-6 overflow-x-clip py-6">
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Startup Readiness Score</h1>
-            <p className="text-muted-foreground text-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Startup Readiness Score</h1>
+            <p className="mt-1 text-sm leading-snug text-muted-foreground">
               Assess your startup&apos;s readiness across 6 key dimensions
               {apiData?.lastAssessedAt && (
                 <span className="ml-2 text-muted-foreground/60">· Last assessed {new Date(apiData.lastAssessedAt).toLocaleDateString()}</span>
               )}
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-            {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
-            Reassess
-          </Button>
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <AIInsightButton
+              className="h-9"
+              prompt={askPrompt}
+            />
+            <Button variant="outline" size="sm" className="h-9" onClick={() => refetch()} disabled={isRefetching}>
+              {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+              Reassess
+            </Button>
+          </div>
         </div>
 
         {/* Overall Score + Readiness Benchmarks */}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-3">
           {/* Main score ring */}
-          <Card className="lg:col-span-1 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+          <Card className="min-w-0 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 lg:col-span-1">
             <CardContent className="p-4 flex flex-col items-center text-center gap-3">
               <div className="relative">
                 <ScoreRing score={overallScore} size={140} />
@@ -476,95 +509,101 @@ export default function ReadinessPage() {
           </Card>
 
           {/* Accelerator readiness */}
-          <Card>
-            <CardContent className="p-5 flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg p-2 bg-violet-500/10">
+          <Card className="min-w-0">
+            <CardContent className="flex flex-col gap-3 p-5">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="rounded-lg bg-violet-500/10 p-2">
                   <Building2 className="h-4 w-4 text-violet-600" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm">Accelerator Readiness</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">Accelerator Readiness</p>
                   <p className="text-xs text-muted-foreground">Program & cohort applications</p>
                 </div>
               </div>
-              <div className="flex items-end gap-3">
+              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
                 <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Ready to apply</span>
+                  ? <span className="mb-1 flex items-center gap-1 text-xs text-green-600"><TrendingUp className="h-3 w-3" /> Ready to apply</span>
                   : accelScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Almost ready</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Not ready yet</span>
+                  ? <span className="mb-1 flex items-center gap-1 text-xs text-amber-600"><Minus className="h-3 w-3" /> Almost ready</span>
+                  : <span className="mb-1 flex items-center gap-1 text-xs text-red-600"><TrendingDown className="h-3 w-3" /> Not ready yet</span>
                 }
               </div>
               <Progress value={accelScore} className="h-2" />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Most accelerators expect 65–75%+ readiness. Focus on team, market, and product dimensions.
               </p>
-              <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" />Browse Programs</Link>
+              <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
+                <Link href="/programs"><Zap className="mr-1.5 h-3.5 w-3.5" />Browse Programs</Link>
               </Button>
             </CardContent>
           </Card>
 
           {/* Investor readiness */}
-          <Card>
-            <CardContent className="p-5 flex flex-col gap-3">
-              <div className="flex items-center gap-2">
-                <div className="rounded-lg p-2 bg-emerald-500/10">
+          <Card className="min-w-0">
+            <CardContent className="flex flex-col gap-3 p-5">
+              <div className="flex min-w-0 items-center gap-2">
+                <div className="rounded-lg bg-emerald-500/10 p-2">
                   <DollarSign className="h-4 w-4 text-emerald-600" />
                 </div>
-                <div>
-                  <p className="font-semibold text-sm">Investor Readiness</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">Investor Readiness</p>
                   <p className="text-xs text-muted-foreground">Seed & pre-seed fundraising</p>
                 </div>
               </div>
-              <div className="flex items-end gap-3">
+              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
                 <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Fundable signal</span>
+                  ? <span className="mb-1 flex items-center gap-1 text-xs text-green-600"><TrendingUp className="h-3 w-3" /> Fundable signal</span>
                   : investScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Building traction</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Pre-investment stage</span>
+                  ? <span className="mb-1 flex items-center gap-1 text-xs text-amber-600"><Minus className="h-3 w-3" /> Building traction</span>
+                  : <span className="mb-1 flex items-center gap-1 text-xs text-red-600"><TrendingDown className="h-3 w-3" /> Pre-investment stage</span>
                 }
               </div>
               <Progress value={investScore} className="h-2" />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Investors weight team (30%) and market (25%) most heavily. Build strong validation first.
               </p>
-              <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" />Find Investors</Link>
+              <Button size="sm" variant="outline" asChild className="mt-auto min-h-10">
+                <Link href="/investors"><Star className="mr-1.5 h-3.5 w-3.5" />Find Investors</Link>
               </Button>
             </CardContent>
           </Card>
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid gap-4 lg:grid-cols-5">
-          <div className="lg:col-span-3">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-5">
+          <div className="min-w-0 lg:col-span-3">
             <ReadinessRadarChart dimensions={dimensions} />
           </div>
-          <div className="lg:col-span-2 space-y-3">
+          <div className="min-w-0 space-y-3 lg:col-span-2">
             {/* AI Insight Panel */}
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <BrainCircuit className="h-4 w-4 text-primary" />
-                  AI Insight
-                </CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="flex items-center gap-2 text-sm">
+                    <BrainCircuit className="h-4 w-4 text-primary" />
+                    AI Insight
+                  </CardTitle>
+                  <AIInsightButton
+                    className="h-8"
+                    prompt={`${askPrompt} Draft a 7-day plan.`}
+                  />
+                </div>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {weakDims.slice(0, 3).map((d) => (
-                  <div key={d.key} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-card border border-border/60">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
-                    <div className="min-w-0">
+                  <div key={d.key} className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-card p-2.5">
+                    <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-foreground">{d.label} — {Math.round((d.score / d.maxScore) * 100)}%</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{d.recommendations[0]}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{d.recommendations[0]}</p>
                     </div>
                   </div>
                 ))}
                 {weakDims.length === 0 && (
                   <div className="flex items-center gap-2 p-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
                     <p className="text-xs text-muted-foreground">All dimensions look strong. Keep up the momentum!</p>
                   </div>
                 )}
@@ -595,27 +634,33 @@ export default function ReadinessPage() {
         </div>
 
         {/* Tabs: Dimensions / Priority Actions / Benchmarks / History */}
-        <Tabs defaultValue="dimensions">
-          <TabsList>
-            <TabsTrigger value="dimensions">All Dimensions</TabsTrigger>
-            <TabsTrigger value="actions">Priority Actions</TabsTrigger>
-            <TabsTrigger value="benchmarks">Benchmarks</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+        <Tabs defaultValue="dimensions" className="min-w-0">
+          <TabsList className="flex w-full justify-start">
+            <TabsTrigger value="dimensions" className="px-2.5 text-xs sm:px-3 sm:text-sm">
+              <span className="sm:hidden">Dimensions</span>
+              <span className="hidden sm:inline">All Dimensions</span>
+            </TabsTrigger>
+            <TabsTrigger value="actions" className="px-2.5 text-xs sm:px-3 sm:text-sm">
+              <span className="sm:hidden">Actions</span>
+              <span className="hidden sm:inline">Priority Actions</span>
+            </TabsTrigger>
+            <TabsTrigger value="benchmarks" className="px-2.5 text-xs sm:px-3 sm:text-sm">Benchmarks</TabsTrigger>
+            <TabsTrigger value="history" className="px-2.5 text-xs sm:px-3 sm:text-sm">History</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dimensions" className="mt-4">
             {!workspaceId && (
-              <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                <div>
+              <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div className="min-w-0">
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-400">No workspace connected</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
                     Create a workspace in the <Link href="/builder" className="underline hover:no-underline">Startup Builder</Link> to track and update your readiness criteria.
                   </p>
                 </div>
               </div>
             )}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid min-w-0 gap-4 md:grid-cols-2">
               {dimensions.map((dim) => (
                 <DimensionCard
                   key={dim.key}
@@ -811,22 +856,22 @@ export default function ReadinessPage() {
         </Tabs>
 
         {/* Quick Actions */}
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Button asChild className="h-auto py-3 flex-col gap-1">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-3">
+          <Button asChild className="h-auto min-h-14 flex-col gap-1 py-3">
             <Link href="/builder">
               <Rocket className="h-4 w-4" />
               <span className="text-sm font-medium">Open Builder</span>
               <span className="text-xs opacity-70">Build your workspace</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
+          <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
             <Link href="/mentoring">
               <Lightbulb className="h-4 w-4" />
               <span className="text-sm font-medium">Find a Mentor</span>
               <span className="text-xs opacity-70">Get expert guidance</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
+          <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
             <Link href="/programs">
               <Building2 className="h-4 w-4" />
               <span className="text-sm font-medium">Browse Programs</span>
