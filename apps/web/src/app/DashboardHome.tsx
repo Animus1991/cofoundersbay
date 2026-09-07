@@ -638,7 +638,7 @@ export function DashboardHome() {
             </Card>
 
             {/* Milestone Summary */}
-            {milestoneSummary && milestoneSummary.total > 0 && (
+            {milestoneSummary?.counts && milestoneSummary.total > 0 && (
               <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
@@ -664,7 +664,7 @@ export function DashboardHome() {
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">In Progress</span>
-                        <span className="font-medium text-amber-600">{milestoneSummary.counts.in_progress ?? 0}</span>
+                        <span className="font-medium text-amber-600">{milestoneSummary.counts?.in_progress ?? 0}</span>
                       </div>
                       {milestoneSummary.overdue > 0 && (
                         <div className="flex justify-between text-xs">

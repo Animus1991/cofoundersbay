@@ -109,6 +109,143 @@ const PREVIEW_BUILDER_READINESS = {
   assessedAt: NOW,
 };
 
+type PreviewMilestone = {
+  id: string;
+  ownerId: string;
+  collaboratorId: string | null;
+  collaborator: { id: string; displayName: string; avatarUrl: string | null } | null;
+  title: string;
+  description: string | null;
+  status: 'todo' | 'in_progress' | 'blocked' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high';
+  category: string | null;
+  dueDate: string | null;
+  completedAt: string | null;
+  progress: number;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function isoDaysFromNow(days: number): string {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + days);
+  d.setUTCHours(12, 0, 0, 0);
+  return d.toISOString();
+}
+
+let previewMilestones: PreviewMilestone[] = [
+  {
+    id: 'preview-ms-mvp',
+    ownerId: ME_ID,
+    collaboratorId: null,
+    collaborator: null,
+    title: 'Complete MVP v1',
+    description: 'Ship the Harbor matching loop founders can demo to a cofounder.',
+    status: 'in_progress',
+    priority: 'high',
+    category: 'product',
+    dueDate: isoDaysFromNow(21),
+    completedAt: null,
+    progress: 65,
+    notes: 'Preview sample — same checkpoint as the Overview dashboard.',
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-ms-users',
+    ownerId: ME_ID,
+    collaboratorId: null,
+    collaborator: null,
+    title: 'First 100 active users',
+    description: 'Activate the first cohort from Discover and Matches.',
+    status: 'in_progress',
+    priority: 'high',
+    category: 'growth',
+    dueDate: isoDaysFromNow(36),
+    completedAt: null,
+    progress: 23,
+    notes: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-ms-seed',
+    ownerId: ME_ID,
+    collaboratorId: null,
+    collaborator: null,
+    title: 'Seed funding round',
+    description: 'Close a pre-seed using the Pitch Deck builder.',
+    status: 'todo',
+    priority: 'medium',
+    category: 'fundraising',
+    dueDate: isoDaysFromNow(90),
+    completedAt: null,
+    progress: 10,
+    notes: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-ms-team',
+    ownerId: ME_ID,
+    collaboratorId: null,
+    collaborator: null,
+    title: 'Build founding team',
+    description: 'Find a complementary technical cofounder on Discover.',
+    status: 'todo',
+    priority: 'high',
+    category: 'hiring',
+    dueDate: isoDaysFromNow(45),
+    completedAt: null,
+    progress: 0,
+    notes: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+  {
+    id: 'preview-ms-interviews',
+    ownerId: ME_ID,
+    collaboratorId: null,
+    collaborator: null,
+    title: 'Validate problem interviews',
+    description: 'Five founder interviews logged for Idea Core.',
+    status: 'completed',
+    priority: 'medium',
+    category: 'product',
+    dueDate: isoDaysFromNow(-12),
+    completedAt: isoDaysFromNow(-12),
+    progress: 100,
+    notes: null,
+    createdAt: NOW,
+    updatedAt: NOW,
+  },
+];
+
+function previewMilestoneSummary() {
+  const counts = { todo: 0, in_progress: 0, blocked: 0, completed: 0, cancelled: 0 };
+  let overdue = 0;
+  let dueSoon = 0;
+  const now = Date.now();
+  const soon = now + 7 * 24 * 60 * 60 * 1000;
+  for (const m of previewMilestones) {
+    counts[m.status] = (counts[m.status] ?? 0) + 1;
+    if (m.dueDate && m.status !== 'completed' && m.status !== 'cancelled') {
+      const due = new Date(m.dueDate).getTime();
+      if (due < now) overdue += 1;
+      else if (due <= soon) dueSoon += 1;
+    }
+  }
+  const total = previewMilestones.length;
+  return {
+    counts,
+    total,
+    overdue,
+    dueSoon,
+    completionRate: total > 0 ? Math.round((counts.completed / total) * 100) : 0,
+  };
+}
+
 function previewBuilderWorkspace() {
   return {
     id: PREVIEW_BUILDER_WS_ID,
@@ -1027,6 +1164,70 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       return next;
     }
     return found ?? previewBuilderDocs[0];
+  }
+
+  if (pathname === '/api/milestones/summary') {
+    return previewMilestoneSummary();
+  }
+  if (pathname === '/api/milestones') {
+    if (method === 'POST') {
+      const created: PreviewMilestone = {
+        id: `preview-ms-${Date.now()}`,
+        ownerId: ME_ID,
+        collaboratorId: typeof body.collaboratorId === 'string' ? body.collaboratorId : null,
+        collaborator: null,
+        title: typeof body.title === 'string' ? body.title : 'Untitled milestone',
+        description: typeof body.description === 'string' ? body.description : null,
+        status: (body.status as PreviewMilestone['status']) || 'todo',
+        priority: (body.priority as PreviewMilestone['priority']) || 'medium',
+        category: typeof body.category === 'string' ? body.category : null,
+        dueDate: typeof body.dueDate === 'string' ? body.dueDate : null,
+        completedAt: body.status === 'completed' ? new Date().toISOString() : null,
+        progress: typeof body.progress === 'number' ? body.progress : 0,
+        notes: typeof body.notes === 'string' ? body.notes : null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      previewMilestones = [created, ...previewMilestones];
+      return created;
+    }
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const status = params.get('status');
+    const priority = params.get('priority');
+    const category = params.get('category');
+    const filtered = previewMilestones.filter((m) => {
+      if (status && m.status !== status) return false;
+      if (priority && m.priority !== priority) return false;
+      if (category && m.category !== category) return false;
+      return true;
+    });
+    return { milestones: filtered, nextCursor: null, total: filtered.length };
+  }
+  const milestoneMatch = pathname.match(/^\/api\/milestones\/([^/]+)$/);
+  if (milestoneMatch) {
+    const found = previewMilestones.find((m) => m.id === milestoneMatch[1]);
+    if (method === 'DELETE') {
+      previewMilestones = previewMilestones.filter((m) => m.id !== milestoneMatch[1]);
+      return { ok: true };
+    }
+    if ((method === 'PATCH' || method === 'PUT') && found) {
+      const next: PreviewMilestone = {
+        ...found,
+        ...body,
+        id: found.id,
+        ownerId: found.ownerId,
+        updatedAt: new Date().toISOString(),
+        completedAt:
+          body.status === 'completed'
+            ? found.completedAt ?? new Date().toISOString()
+            : body.status
+              ? null
+              : found.completedAt,
+      };
+      previewMilestones = previewMilestones.map((m) => (m.id === found.id ? next : m));
+      return next;
+    }
+    return found ?? previewMilestones[0];
   }
 
   if (pathname === '/api/analytics/overview' || pathname === '/api/analytics/metrics') {

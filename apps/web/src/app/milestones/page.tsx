@@ -253,14 +253,15 @@ function MilestoneCard({
 }
 
 // ── Summary card ─────────────────────────────────────────────────────────────
-function SummaryBar({ summary }: { summary: { counts: Record<string, number>; total: number; overdue: number; dueSoon: number; completionRate: number } | undefined }) {
-  if (!summary) return null;
+function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; total?: number; overdue?: number; dueSoon?: number; completionRate?: number } | undefined }) {
+  const counts = summary?.counts;
+  if (!summary || !counts || typeof counts !== 'object') return null;
   const stats = [
-    { label: 'Total', value: summary.total, icon: Target, color: 'text-foreground' },
-    { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
-    { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
-    { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, color: 'text-red-500' },
-    { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, color: 'text-primary' },
+    { label: 'Total', value: summary.total ?? 0, icon: Target, color: 'text-foreground' },
+    { label: 'In Progress', value: counts.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
+    { label: 'Completed', value: counts.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
+    { label: 'Overdue', value: summary.overdue ?? 0, icon: AlertTriangle, color: 'text-red-500' },
+    { label: 'Completion rate', value: `${summary.completionRate ?? 0}%`, icon: TrendingUp, color: 'text-primary' },
   ];
 
   return (
