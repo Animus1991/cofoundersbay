@@ -327,7 +327,7 @@ export async function executeCopilotAction(
       const message = typeof action.payload.message === 'string' ? action.payload.message : undefined;
       if (!receiverId) return { ok: false, error: 'Missing receiver' };
       await sendConnectionRequest({ receiverId, message });
-      return { ok: true, href: '/connections' };
+      return { ok: true };
     }
     if (action.tool === 'start_or_send_message') {
       const userId = String(action.payload.userId ?? '');

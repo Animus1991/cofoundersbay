@@ -180,7 +180,7 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     }
   }
 
-  if (wantsMessage) {
+  if (wantsMessage && (person || !nav)) {
     const args: Record<string, string> = {};
     if (person) args.name = person;
     add('start_or_send_message', args);

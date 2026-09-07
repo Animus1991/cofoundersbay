@@ -12,7 +12,7 @@ import Link from 'next/link';
 function AIPageInner() {
   const searchParams = useSearchParams();
   const { hasSession, mounted } = useSession();
-  const initialPrompt = searchParams.get('q') ?? undefined;
+  const initialPrompt = searchParams?.get('q') ?? undefined;
 
   if (!mounted) {
     return (

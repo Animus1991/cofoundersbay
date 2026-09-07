@@ -477,7 +477,6 @@ export function UnifiedChatPopup() {
   }, [selected, close, router]);
 
   // Derived
-  const currentAgentConfig = agentList.find((a) => a.id === currentAgent);
   const selectedId = selected?.id ?? null;
   const filteredConvos = conversations.filter(
     c => !c.isArchived && c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -511,9 +510,9 @@ export function UnifiedChatPopup() {
         >
           <Bot className="h-4 w-4 text-white" />
           <span className="text-sm font-medium text-white">Chat</span>
-          {(totalMsgUnread > 0 || aiMessages.length > 0) && (
+          {(totalMsgUnread > 0) && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold text-white">
-              {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
+              {totalMsgUnread}
             </span>
           )}
           <button

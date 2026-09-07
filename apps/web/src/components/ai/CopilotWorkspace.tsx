@@ -121,7 +121,9 @@ export function CopilotWorkspace({
 
   const handleConfirm = async (action: CopilotAction) => {
     const result = await chat.confirmAction(action);
-    if (result?.href) router.push(result.href);
+    if (result?.href && (action.tool === 'navigate' || action.tool === 'start_or_send_message')) {
+      router.push(result.href);
+    }
   };
 
   const onSubmit = (e: FormEvent) => {

@@ -508,6 +508,7 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
           headline: person.headline,
         },
       };
+      CONNECTIONS.unshift(created);
       return { connection: created, ok: true };
     }
     return { connection: CONNECTIONS[0], ok: true };
