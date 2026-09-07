@@ -17,6 +17,7 @@ import { DemoDataProvider } from '@/contexts/DemoDataContext';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LocaleSync } from '@/components/common/LocaleSync';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
+import { I18nProvider } from '@/components/common/I18nProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -87,12 +88,14 @@ export default function RootLayout({
                             <RoleTheme>
                               <PreviewSessionGuard />
                               <LocaleSync />
+                              <I18nProvider>
                               <OfflineBanner />
                               {children}
                               <GlobalFloatingUi />
                               <Suspense fallback={null}>
                                 <PostHogProvider />
                               </Suspense>
+                              </I18nProvider>
                             </RoleTheme>
                           </DemoDataProvider>
                         </MessagingProvider>

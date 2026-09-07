@@ -15,6 +15,7 @@ import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
+import { useI18n } from '@/components/common/I18nProvider';
 
 export function SideNav() {
   const pathname = usePathname();
@@ -23,6 +24,7 @@ export function SideNav() {
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
   const role = useRoleOptional();
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
 
@@ -123,7 +125,7 @@ export function SideNav() {
           <div key={section} className="mb-1">
             {expanded ? (
               <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
-                {section}
+                {t(section)}
               </p>
             ) : (
               <div className="mx-3 my-2 h-px bg-border/50" />
@@ -139,7 +141,7 @@ export function SideNav() {
                     <OptimizedLink
                       href={href}
                       aria-current={active ? 'page' : undefined}
-                      title={!expanded ? label : undefined}
+                      title={!expanded ? t(label) : undefined}
                       className={cn(
                         'group relative flex items-center rounded-lg transition-all duration-150',
                         expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
@@ -175,7 +177,7 @@ export function SideNav() {
                       {/* Label + badge (expanded) */}
                       {expanded && (
                         <>
-                          <span className="truncate text-sm leading-none">{label}</span>
+                          <span className="truncate text-sm leading-none">{t(label)}</span>
                           {badge > 0 && (
                             <span
                               className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"

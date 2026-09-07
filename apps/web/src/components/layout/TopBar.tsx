@@ -21,6 +21,7 @@ import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { useI18n } from '@/components/common/I18nProvider';
 
 const CommandPalette = dynamic(
   () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
@@ -30,6 +31,7 @@ const CommandPalette = dynamic(
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
   const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <DropdownMenu>
@@ -38,7 +40,7 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
           variant="ghost"
           size="icon"
           className="h-9 w-9 shrink-0 md:hidden"
-          aria-label="More tools"
+          aria-label={t('More tools')}
         >
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -46,16 +48,16 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
       <DropdownMenuContent align="end" side="bottom" className="w-56">
         <DropdownMenuItem onClick={onCommand}>
           <Keyboard className="mr-2 h-4 w-4" />
-          Command palette
+          {t('Command palette')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/settings#language')}>
           <Globe className="mr-2 h-4 w-4" />
-          Language
+          {t('Language')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
           {showDemoData ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
-          {showDemoData ? 'Hide sample data' : 'Show sample data'}
+          {showDemoData ? t('Hide sample data') : t('Show sample data')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

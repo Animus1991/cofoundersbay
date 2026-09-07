@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 const themeConfig = [
   {
@@ -55,6 +56,7 @@ const themeConfig = [
 export function ThemeSwitcher() {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark');
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -83,11 +85,11 @@ export function ThemeSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9">
           <CurrentIcon className="h-4 w-4 transition-all" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">{t('Theme')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('Choose Theme')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
         {themeConfig.map((theme, idx) => {
@@ -98,7 +100,7 @@ export function ThemeSwitcher() {
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                    Custom Themes
+                    {t('Custom Themes')}
                   </DropdownMenuLabel>
                 </>
               )}
@@ -115,8 +117,8 @@ export function ThemeSwitcher() {
                   <div style={{ background: theme.swatch[2], width: 8 }} />
                 </div>
                 <div className="flex flex-col gap-0">
-                  <span className="text-sm font-medium leading-tight">{theme.label}</span>
-                  <span className="text-[11px] text-muted-foreground leading-tight">{theme.description}</span>
+                  <span className="text-sm font-medium leading-tight">{t(theme.label)}</span>
+                  <span className="text-[11px] text-muted-foreground leading-tight">{t(theme.description)}</span>
                 </div>
                 {isActive && <Check className="ml-auto h-3.5 w-3.5 text-primary shrink-0" />}
               </DropdownMenuItem>

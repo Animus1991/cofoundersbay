@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
 import { useRoleOptional } from '@/contexts/RoleContext';
+import { useI18n } from '@/components/common/I18nProvider';
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -26,6 +27,7 @@ export function MobileNav() {
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
   const role = useRoleOptional();
+  const { t } = useI18n();
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -60,7 +62,7 @@ export function MobileNav() {
           variant="ghost"
           size="icon"
           className="h-9 w-9 shrink-0 lg:hidden"
-          aria-label="Open navigation"
+          aria-label={t('Open navigation')}
           aria-expanded={mobileNavOpen}
         >
           <Menu className="h-5 w-5" />
@@ -112,7 +114,7 @@ export function MobileNav() {
           {sections.map(({ section, links }) => (
             <div key={section} className="mb-3">
               <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                {section}
+              {t(section)}
               </p>
               <ul className="space-y-0.5">
                 {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
@@ -131,7 +133,7 @@ export function MobileNav() {
                         )}
                       >
                         <Icon className={cn('h-4 w-4 shrink-0', active && 'text-primary')} />
-                        <span className="truncate">{label}</span>
+                        <span className="truncate">{t(label)}</span>
                         {badge > 0 && (
                           <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
                             {badge > 99 ? '99+' : badge}
@@ -154,14 +156,14 @@ export function MobileNav() {
                 className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
                 <User className="h-5 w-5" />
-                My Profile
+                {t('My Profile')}
               </OptimizedLink>
               <OptimizedLink
                 href="/settings"
                 className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               >
                 <Settings className="h-5 w-5" />
-                Settings
+                {t('Settings')}
               </OptimizedLink>
               <button
                 type="button"
@@ -169,16 +171,16 @@ export function MobileNav() {
                 className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="h-5 w-5" />
-                Sign out
+                {t('Sign out')}
               </button>
             </>
           ) : (
             <div className="flex gap-2">
               <OptimizedLink href="/login" className="flex-1">
-                <Button variant="secondary" className="w-full">Sign in</Button>
+                <Button variant="secondary" className="w-full">{t('Sign in')}</Button>
               </OptimizedLink>
               <OptimizedLink href="/register" className="flex-1">
-                <Button className="w-full">Sign up</Button>
+                <Button className="w-full">{t('Sign up')}</Button>
               </OptimizedLink>
             </div>
           )}

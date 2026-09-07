@@ -36,6 +36,7 @@ import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPrefer
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 type AIPreferences = {
   preferredModel: string;
@@ -106,6 +107,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
 
 export default function AISettingsPage() {
   const { success, error: showError } = useToast();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [prefs, setPrefs] = useState<AIPreferences>(DEFAULT_PREFS);
   const [hasChanges, setHasChanges] = useState(false);
@@ -194,7 +196,7 @@ export default function AISettingsPage() {
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Settings
+            {t('Back to Settings')}
           </Link>
           <div className="flex items-center justify-between">
             <div>
@@ -202,7 +204,7 @@ export default function AISettingsPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
                   <Bot className="h-5 w-5 text-white" />
                 </div>
-                AI Assistant Settings
+                {t('AI Assistant Settings')}
               </h1>
               <p className="mt-1 text-muted-foreground">
                 Customize how the AI assistant works for you
@@ -419,10 +421,10 @@ export default function AISettingsPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Languages className="h-4 w-4 text-muted-foreground" />
-                  Response Language
+                  {t('Response Language')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Tap a language. The same setting is in the header globe and in Settings.
+                  {t('Tap a language. The same setting is in the header globe and in Settings.')}
                 </p>
                 <LanguageChipGrid
                   value={prefs.responseLanguage}

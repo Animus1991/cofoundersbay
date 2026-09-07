@@ -7,6 +7,7 @@ import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
 import { cn } from '@/lib/utils';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { useI18n } from '@/components/common/I18nProvider';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -38,7 +39,10 @@ export function AppShell({
   askAi,
 }: AppShellProps) {
   const { expanded, mounted } = useSidebar();
+  const { t } = useI18n();
   const showAskAi = Boolean(title) && askAi !== false;
+  const displayTitle = title ? t(title) : title;
+  const displayDescription = description ? t(description) : description;
   const askAiPrompt =
     typeof askAi === 'string'
       ? askAi
@@ -79,13 +83,13 @@ export function AppShell({
               {(title || description || actions || showAskAi) && (
                 <section className="cfb-page-header">
                   <div className="min-w-0 space-y-1">
-                    {title && (
+                    {displayTitle && (
                       <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                        {title}
+                        {displayTitle}
                       </h1>
                     )}
-                    {description && (
-                      <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
+                    {displayDescription && (
+                      <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{displayDescription}</p>
                     )}
                   </div>
                   {(actions || showAskAi) && (

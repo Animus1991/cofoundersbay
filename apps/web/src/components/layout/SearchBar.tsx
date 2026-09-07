@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/common/I18nProvider';
 
 export function SearchBar() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const { t } = useI18n();
 
   function submit(event?: FormEvent) {
     event?.preventDefault();
@@ -23,9 +25,9 @@ export function SearchBar() {
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search founders, mentors, skills…"
+          placeholder={t('Search founders, mentors, skills…')}
           className="pl-9"
-          aria-label="Search"
+          aria-label={t('Search')}
         />
       </form>
       <Button
@@ -34,7 +36,7 @@ export function SearchBar() {
         size="icon"
         className="h-9 w-9 shrink-0 md:hidden"
         onClick={() => router.push('/search')}
-        aria-label="Search"
+        aria-label={t('Search')}
       >
         <Search className="h-5 w-5" />
       </Button>

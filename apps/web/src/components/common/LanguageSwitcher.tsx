@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT, type AppLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 function useAppLocale() {
   const [locale, setLocale] = useState<AppLocale>('en');
@@ -34,6 +35,7 @@ function useAppLocale() {
 
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { locale, setLocale, mounted } = useAppLocale();
+  const { t } = useI18n();
 
   const handleChange = (next: AppLocale) => {
     setLocale(next);
@@ -42,7 +44,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9 shrink-0', className)} aria-label="Language">
+      <Button variant="ghost" size="icon" className={cn('relative h-9 w-9 shrink-0', className)} aria-label={t('Language')}>
         <Globe className="h-4 w-4" />
       </Button>
     );
@@ -56,16 +58,16 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         <Button
           variant="ghost"
           className={cn('relative h-9 min-w-9 shrink-0 gap-1 px-1.5', className)}
-          aria-label={`Language: ${current.label}`}
-          title="Language"
+          aria-label={`${t('Language')}: ${current.label}`}
+          title={t('Language')}
         >
           <Globe className="h-4 w-4 shrink-0" />
           <span className="text-[10px] font-semibold tabular-nums">{current.short}</span>
-          <span className="sr-only">Change language</span>
+          <span className="sr-only">{t('Change language')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="bottom" className="w-56">
-        <DropdownMenuLabel>Language</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('Language')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {APP_LOCALES.map((lang) => {
           const isActive = locale === lang.value;
@@ -122,6 +124,7 @@ export function LanguageChipGrid({
 /** Full chip picker for sheets / settings — works without a dropdown. */
 export function LanguagePanel({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale, mounted } = useAppLocale();
+  const { t } = useI18n();
 
   if (!mounted) return null;
 
@@ -129,7 +132,7 @@ export function LanguagePanel({ compact = false }: { compact?: boolean }) {
     <div className="space-y-2">
       {!compact && (
         <p className="px-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">
-          Language
+          {t('Language')}
         </p>
       )}
       <LanguageChipGrid

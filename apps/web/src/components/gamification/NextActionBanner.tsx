@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { X, ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
 
@@ -14,6 +15,7 @@ export interface NextAction {
   description: string;
   href: string;
   cta: string;
+  vars?: Record<string, string | number>;
   /** One of: 'primary' | 'amber' | 'emerald' | 'violet' */
   accent?: 'primary' | 'amber' | 'emerald' | 'violet';
   /** Identity-reinforcing micro-copy shown after CTA */
@@ -62,6 +64,7 @@ const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string;
 
 export function NextActionBanner({ action, expiresAt, className }: NextActionBannerProps) {
   const [dismissed, setDismissed] = useState(false);
+  const { t } = useI18n();
 
   const storageKey = `${STORAGE_PREFIX}${action.id}`;
 
@@ -106,8 +109,8 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
         <div className="flex min-w-0 flex-1 gap-3">
           <Sparkles className={cn('mt-0.5 h-4 w-4 shrink-0', ac.icon)} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold leading-snug text-foreground">{action.label}</p>
-            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{action.description}</p>
+            <p className="text-sm font-semibold leading-snug text-foreground">{t(action.label, action.vars)}</p>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{t(action.description)}</p>
             {action.identitySignal && (
               <p className={cn('mt-1 text-xs italic', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
             )}
@@ -117,7 +120,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
                 size="sm"
                 className={cn('h-8 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
               >
-                {action.cta} <ArrowRight className="h-3 w-3" />
+                {t(action.cta)} <ArrowRight className="h-3 w-3" />
               </Button>
             </Link>
           </div>
@@ -129,7 +132,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
               size="sm"
               className={cn('h-7 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
             >
-              {action.cta} <ArrowRight className="h-3 w-3" />
+              {t(action.cta)} <ArrowRight className="h-3 w-3" />
             </Button>
           </Link>
           <button
@@ -161,7 +164,8 @@ export function deriveNextAction(opts: {
   if (opts.pendingRequests > 0) {
     return {
       id: 'pending-requests',
-      label: `${opts.pendingRequests} connection request${opts.pendingRequests > 1 ? 's' : ''} waiting`,
+      label: opts.pendingRequests === 1 ? '{count} connection request waiting' : '{count} connection requests waiting',
+      vars: { count: opts.pendingRequests },
       description: 'Review and accept — new connections compound your opportunities.',
       href: '/connections?tab=requests',
       cta: 'Review now',

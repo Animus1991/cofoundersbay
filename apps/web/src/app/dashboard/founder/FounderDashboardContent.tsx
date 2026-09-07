@@ -36,6 +36,7 @@ import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 import { queryKeys } from '@/lib/query-keys';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { useI18n } from '@/components/common/I18nProvider';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -124,16 +125,17 @@ function StatCard({
   icon: React.ElementType; label: string; value: number | string;
   trend?: { value: number; positive: boolean }; href?: string; accent?: string;
 }) {
+  const { t } = useI18n();
   const content = (
     <Card className="relative h-full overflow-hidden transition-all hover:shadow-md cursor-pointer">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 space-y-1">
-            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
+            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{t(label)}</p>
             <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
               <p className={cn('text-[11px] font-medium sm:text-xs', trend.positive ? 'text-emerald-500' : 'text-red-500')}>
-                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}% this week
+                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}% {t('this week')}
               </p>
             )}
           </div>
@@ -160,15 +162,16 @@ function CardLinkHeader({
   linkLabel: string;
   iconClassName?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <CardTitle className="flex min-w-0 items-center gap-2 text-base">
         <Icon className={cn('icon-sm shrink-0', iconClassName)} />
-        <span className="min-w-0 truncate">{title}</span>
+        <span className="min-w-0 truncate">{t(title)}</span>
       </CardTitle>
       <Link href={href} className="shrink-0">
         <Button variant="ghost" size="sm" className="h-8 px-2 text-xs sm:text-sm">
-          {linkLabel} <ArrowRight className="ml-1 icon-sm" />
+          {t(linkLabel)} <ArrowRight className="ml-1 icon-sm" />
         </Button>
       </Link>
     </div>
@@ -233,6 +236,7 @@ export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
   const { messages: unreadMessages } = useUnreadCounts();
+  const { t, bcp47 } = useI18n();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.profileMe,
@@ -320,10 +324,10 @@ export default function FounderDashboardContent() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {getTimeBasedGreeting()}, {displayName} 👋
+              {t(getTimeBasedGreeting())}, {displayName} 👋
             </h1>
             <p className="mt-1 text-sm leading-snug text-muted-foreground">
-              Your startup command center — track progress, find team, and close your round.
+              {t('Your startup command center — track progress, find team, and close your round.')}
             </p>
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -332,12 +336,12 @@ export default function FounderDashboardContent() {
               className="h-8"
             />
             <Badge variant="outline" className="h-8 gap-1.5">
-              <Rocket className="icon-sm" /> Founder
+              <Rocket className="icon-sm" /> {t('Founder')}
             </Badge>
             <Link href="/readiness">
               <Button variant="outline" size="sm" className="h-8 gap-1.5">
                 <Gauge className="icon-sm" />
-                Readiness: {avgReadiness}%
+                {t('Readiness Score')}: {avgReadiness}%
               </Button>
             </Link>
           </div>
@@ -389,7 +393,7 @@ export default function FounderDashboardContent() {
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <span className="text-sm font-bold text-foreground">{avgReadiness}%</span>
-                        <span className="text-xs text-muted-foreground">Ready</span>
+                        <span className="text-xs text-muted-foreground">{t('Ready')}</span>
                       </div>
                     </div>
                     <div className="grid w-full min-w-0 flex-1 grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
@@ -410,12 +414,12 @@ export default function FounderDashboardContent() {
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href="/builder" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <FileText className="icon-sm" /> Open Builder
+                        <FileText className="icon-sm" /> {t('Open Builder')}
                       </Button>
                     </Link>
                     <Link href="/expert-reviews" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Award className="icon-sm" /> Get Expert Review
+                        <Award className="icon-sm" /> {t('Get Expert Review')}
                       </Button>
                     </Link>
                   </div>
@@ -436,7 +440,7 @@ export default function FounderDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <p className="text-[11px] text-muted-foreground">Sample pipeline — live tracker is on Fundraising.</p>
+                  <p className="text-[11px] text-muted-foreground">{t('Sample pipeline — live tracker is on Fundraising.')}</p>
                   <div className="flex items-end justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">{FUNDRAISING_DEMO.roundName}</p>
@@ -456,18 +460,18 @@ export default function FounderDashboardContent() {
                   </div>
                   <Progress value={fundingPct} className="h-2.5" />
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="icon-sm" /> {FUNDRAISING_DEMO.leadCount} leads tracked</span>
-                    <span className="flex items-center gap-1"><CheckCircle2 className="icon-sm text-emerald-500" /> {FUNDRAISING_DEMO.committedCount} committed</span>
+                    <span className="flex items-center gap-1"><Users className="icon-sm" /> {t('{count} leads tracked', { count: FUNDRAISING_DEMO.leadCount })}</span>
+                    <span className="flex items-center gap-1"><CheckCircle2 className="icon-sm text-emerald-500" /> {t('{count} committed', { count: FUNDRAISING_DEMO.committedCount })}</span>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href="/fundraising" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <TrendingUp className="icon-sm" /> Manage Pipeline
+                        <TrendingUp className="icon-sm" /> {t('Manage Pipeline')}
                       </Button>
                     </Link>
                     <Link href="/investors" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Globe className="icon-sm" /> Find Investors
+                        <Globe className="icon-sm" /> {t('Find Investors')}
                       </Button>
                     </Link>
                   </div>
@@ -492,10 +496,10 @@ export default function FounderDashboardContent() {
                 ))}
                 {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
                   <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground">Complete your profile to get personalized matches</p>
+                    <p className="text-sm text-muted-foreground">{t('Complete your profile to get personalized matches')}</p>
                     <Link href="/profile/edit">
                       <Button variant="outline" size="sm" className="mt-2 gap-1.5">
-                        Complete profile
+                        {t('Complete profile')}
                       </Button>
                     </Link>
                   </div>
@@ -593,7 +597,7 @@ export default function FounderDashboardContent() {
             {/* Quick Actions Grid */}
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Quick Actions</CardTitle>
+                <CardTitle className="text-sm">{t('Quick Actions')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
@@ -610,7 +614,7 @@ export default function FounderDashboardContent() {
                   ].map(({ href, icon: Icon, label, color }) => (
                     <Link key={href} href={href} className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-card p-3 text-center transition-all hover:border-border hover:bg-muted/50">
                       <Icon className={cn('icon-md', color)} />
-                      <span className="text-xs font-medium text-foreground leading-tight">{label}</span>
+                      <span className="text-xs font-medium text-foreground leading-tight">{t(label)}</span>
                     </Link>
                   ))}
                 </div>
@@ -622,10 +626,10 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="flex items-center gap-2 text-sm">
-                    <Activity className="icon-sm text-muted-foreground" /> Recent Activity
+                    <Activity className="icon-sm text-muted-foreground" /> {t('Recent Activity')}
                   </CardTitle>
                   <Link href="/activity">
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">All</Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">{t('All')}</Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -652,10 +656,10 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="flex items-center gap-2 text-sm">
-                    <Calendar className="icon-sm" /> Upcoming
+                    <Calendar className="icon-sm" /> {t('Upcoming Events')}
                   </CardTitle>
                   <Link href="/events">
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">View all</Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">{t('View all')}</Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -679,13 +683,13 @@ export default function FounderDashboardContent() {
                           <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
                           <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             <span className="text-xs text-muted-foreground">
-                              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {event.time}
+                              {new Date(event.date).toLocaleDateString(bcp47, { month: 'short', day: 'numeric' })} · {event.time}
                             </span>
                             <span className={cn(
                               'text-xs font-medium',
                               isUrgent ? 'text-rose-600' : event.daysLeft <= 7 ? 'text-amber-600' : 'text-muted-foreground'
                             )}>
-                              {event.daysLeft === 0 ? 'Today' : event.daysLeft === 1 ? 'Tomorrow' : `In ${event.daysLeft}d`}
+                              {event.daysLeft === 0 ? t('Today') : event.daysLeft === 1 ? t('Tomorrow') : t('In {n}d', { n: event.daysLeft })}
                             </span>
                           </div>
                         </div>
@@ -694,7 +698,7 @@ export default function FounderDashboardContent() {
                   })
                 ) : (
                   <div className="rounded-lg bg-muted/40 p-3 text-center">
-                    <p className="text-xs text-muted-foreground">No events this week</p>
+                    <p className="text-xs text-muted-foreground">{t('No events this week')}</p>
                     <Link href="/events">
                       <Button variant="ghost" size="sm" className="mt-1.5 gap-1">
                         Browse events <ArrowRight className="icon-sm" />

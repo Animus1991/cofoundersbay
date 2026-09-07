@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { sidebarModes, type SidebarMode } from './nav-modes';
+import { useI18n } from '@/components/common/I18nProvider';
 
 interface ModeSwitcherProps {
   currentMode: SidebarMode;
@@ -10,6 +11,7 @@ interface ModeSwitcherProps {
 }
 
 export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitcherProps) {
+  const { t } = useI18n();
   return (
     <div
       className={cn(
@@ -25,7 +27,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
           <button
             key={mode.id}
             onClick={() => onModeChange(mode.id)}
-            title={!expanded ? mode.label : undefined}
+            title={!expanded ? t(mode.label) : undefined}
             className={cn(
               'flex items-center justify-center rounded-md transition-all duration-150',
               expanded
@@ -36,10 +38,10 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
             )}
             aria-pressed={isActive}
-            aria-label={mode.label}
+            aria-label={t(mode.label)}
           >
             <Icon className={cn('flex-shrink-0', expanded ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
-            {expanded && <span className="truncate">{mode.shortLabel}</span>}
+            {expanded && <span className="truncate">{t(mode.shortLabel)}</span>}
           </button>
         );
       })}

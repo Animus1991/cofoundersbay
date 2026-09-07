@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/components/common/I18nProvider';
 
 interface AIInsightButtonProps {
   prompt: string;
@@ -24,6 +25,8 @@ export function AIInsightButton({
   label = 'Ask AI',
 }: AIInsightButtonProps) {
   const router = useRouter();
+  const { t } = useI18n();
+  const displayLabel = t(label);
 
   const openAssistant = () => {
     router.push(`/ai?q=${encodeURIComponent(prompt)}`);
@@ -39,7 +42,7 @@ export function AIInsightButton({
           'text-violet-500 hover:bg-violet-100 dark:hover:bg-violet-900/30',
           className,
         )}
-        title={label}
+        title={displayLabel}
       >
         <Sparkles className="h-4 w-4" />
       </button>
@@ -55,7 +58,7 @@ export function AIInsightButton({
       className={cn('gap-1.5', className)}
     >
       <Sparkles className="h-3.5 w-3.5 text-violet-500" />
-      {label}
+      {displayLabel}
     </Button>
   );
 }

@@ -39,6 +39,7 @@ import { createBillingCheckout, createBillingPortal, getBillingSubscription, cha
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
 import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
+import { useI18n } from '@/components/common/I18nProvider';
 
 type NotifPrefs = {
   messages: boolean;
@@ -87,6 +88,7 @@ const PRIVACY_ITEMS = [
 
 function LanguageCard() {
   const { success } = useToast();
+  const { t } = useI18n();
   const [locale, setLocale] = useState('en');
 
   useEffect(() => {
@@ -104,10 +106,10 @@ function LanguageCard() {
       <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-primary" />
-          Language
+          {t('Language')}
         </CardTitle>
         <CardDescription>
-          Tap a language. This sets AI replies and the page language. Full UI translation is not wired yet — the menus stay in English.
+          {t('Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.')}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
@@ -116,7 +118,10 @@ function LanguageCard() {
           onChange={(next) => {
             setLocale(next);
             applyLocale(next);
-            success('Language saved', next === 'el' ? 'AI replies will use Greek.' : `AI replies will use ${next.toUpperCase()}.`);
+            success(
+              t('Language saved'),
+              next === 'el' ? t('AI replies will use Greek.') : t('AI replies will use {code}.', { code: next.toUpperCase() }),
+            );
           }}
         />
       </CardContent>

@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
 
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
@@ -22,6 +23,7 @@ function scoreTier(score: number): { label: string; color: string; ring: string 
 /* ── Sub-component: Radial gauge ─────────────────────────────────────────── */
 
 function RadialGauge({ score }: { score: number }) {
+  const { t } = useI18n();
   const { label, color, ring } = scoreTier(score);
   const circumference = 2 * Math.PI * 15.5;
   const dash = (score / 100) * circumference;
@@ -40,7 +42,7 @@ function RadialGauge({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-sm font-bold text-foreground tabular-nums">{score}</span>
-        <span className={cn('text-[10px] font-medium', color)}>{label}</span>
+        <span className={cn('text-[10px] font-medium', color)}>{t(label)}</span>
       </div>
     </div>
   );
@@ -57,6 +59,7 @@ interface VentureReadinessCardProps {
 }
 
 export function VentureReadinessCard({ data: prefetched, compact = false, className }: VentureReadinessCardProps) {
+  const { t } = useI18n();
   const { data, isLoading } = useQuery({
     queryKey: ['venture-readiness'],
     queryFn: getVentureReadiness,
@@ -87,7 +90,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'text-sm' : 'text-base')}>
             <TrendingUp className="h-4 w-4 shrink-0 text-primary" />
-            <span className="min-w-0 truncate">Venture Readiness Score</span>
+            <span className="min-w-0 truncate">{t('Venture Readiness Score')}</span>
           </CardTitle>
           <Link href="/achievements" className="shrink-0">
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
@@ -100,7 +103,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         <div className="mb-3 flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
           <RadialGauge score={vrs.overall} />
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <p className={cn('font-semibold text-sm', tierColor)}>{tierLabel} Readiness</p>
+            <p className={cn('font-semibold text-sm', tierColor)}>{t('{tier} Readiness', { tier: t(tierLabel) })}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
               Weighted across 6 dimensions of founder progress
             </p>

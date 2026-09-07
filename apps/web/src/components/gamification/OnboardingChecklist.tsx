@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 /* ── Step definitions ────────────────────────────────────────────────────── */
 
@@ -34,6 +35,7 @@ interface OnboardingChecklistProps {
 /* ── Component ───────────────────────────────────────────────────────────── */
 
 export function OnboardingChecklist({ steps, userName, autoCollapse = true }: OnboardingChecklistProps) {
+  const { t } = useI18n();
   const completedCount = steps.filter((s) => s.done).length;
   const pct           = Math.round((completedCount / steps.length) * 100);
   const allDone       = completedCount === steps.length;
@@ -69,10 +71,10 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             </div>
             <div>
               <CardTitle className="text-sm font-semibold text-foreground">
-                {userName ? `${userName}'s` : 'Your'} Founder Journey
+                {userName ? t("{name}'s Founder Journey", { name: userName }) : t('Your Founder Journey')}
               </CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {completedCount} of {steps.length} steps complete
+                {t('{count} of {total} steps complete', { count: completedCount, total: steps.length })}
               </p>
             </div>
             {expanded
@@ -83,7 +85,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           <button
             onClick={handleDismiss}
             className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground/60 hover:text-muted-foreground"
-            title="Dismiss checklist"
+            title={t('Dismiss checklist')}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -112,17 +114,17 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className={cn('text-xs font-medium', step.done ? 'line-through text-muted-foreground' : 'text-foreground')}>
-                    {step.label}
+                    {t(step.label)}
                   </p>
                   {!step.done && (
-                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{step.description}</p>
+                    <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{t(step.description)}</p>
                   )}
                 </div>
               </div>
               {!step.done && (
                 <Link href={step.href} className="shrink-0 self-start pl-7 sm:pl-0">
                   <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs text-primary hover:bg-primary/10 sm:h-6">
-                    {step.cta} <ChevronRight className="h-3 w-3" />
+                    {t(step.cta)} <ChevronRight className="h-3 w-3" />
                   </Button>
                 </Link>
               )}

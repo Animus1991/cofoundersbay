@@ -6,6 +6,7 @@ import { Home, Compass, MessageCircle, Menu, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUnreadCounts } from '@/hooks/useUnreadCounts';
 import { useSidebar } from './SidebarContext';
+import { useI18n } from '@/components/common/I18nProvider';
 
 const PRIMARY_TABS = [
   { icon: Home, label: 'Home', path: '/dashboard', match: ['/dashboard'] },
@@ -18,6 +19,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const { messages: unreadMessages } = useUnreadCounts();
   const { mobileNavOpen, setMobileNavOpen } = useSidebar();
+  const { t } = useI18n();
 
   const isAuthPage =
     pathname?.startsWith('/login') ||
@@ -36,7 +38,7 @@ export function MobileBottomNav() {
     <nav
       className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border/60 bg-card/95 px-1 pt-1.5 backdrop-blur-md lg:hidden safe-bottom safe-x"
       role="navigation"
-      aria-label="Primary mobile navigation"
+      aria-label={t('Primary mobile navigation')}
     >
       {PRIMARY_TABS.slice(0, 3).map((tab) => {
         const isActive = isTabActive(tab.match);
@@ -60,7 +62,7 @@ export function MobileBottomNav() {
                 </span>
               )}
             </span>
-            <span>{tab.label}</span>
+            <span>{t(tab.label)}</span>
           </OptimizedLink>
         );
       })}
@@ -68,7 +70,7 @@ export function MobileBottomNav() {
       <button
         type="button"
         onClick={() => setMobileNavOpen(true)}
-        aria-label="More destinations"
+        aria-label={t('More destinations')}
         aria-expanded={mobileNavOpen}
         className={cn(
           'relative flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-[10px] font-medium tap-target',
@@ -76,7 +78,7 @@ export function MobileBottomNav() {
         )}
       >
         <Menu className={cn('h-5 w-5', mobileNavOpen && 'stroke-[2.5px]')} aria-hidden />
-        <span>More</span>
+        <span>{t('More')}</span>
       </button>
 
       {PRIMARY_TABS.slice(3).map((tab) => {
@@ -93,7 +95,7 @@ export function MobileBottomNav() {
             )}
           >
             <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} aria-hidden />
-            <span>{tab.label}</span>
+            <span>{t(tab.label)}</span>
           </OptimizedLink>
         );
       })}
