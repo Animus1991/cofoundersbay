@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -352,14 +352,21 @@ function AnalyticsSkeleton() {
 export default function AnalyticsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'engagement' | 'growth'>('overview');
   const [period, setPeriod] = useState('7d');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: overview, isLoading, isError, refetch } = useQuery({
     queryKey: ['analytics', 'overview', period],
     queryFn: () => getAnalyticsOverview(period, 5),
     staleTime: 60_000,
     retry: 1,
+    enabled: mounted,
   });
 
+  const waiting = !mounted || isLoading;
   const metrics = metricsToDisplay(overview?.metrics);
   const profileViews = overview?.profileViews;
   const engagement = overview?.engagement;
@@ -425,7 +432,7 @@ export default function AnalyticsPage() {
               <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent></Card>
-          ) : isLoading ? (
+          ) : waiting ? (
             <AnalyticsSkeleton />
           ) : (
             <>
@@ -517,7 +524,7 @@ export default function AnalyticsPage() {
               <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent></Card>
-          ) : isLoading ? (
+          ) : waiting ? (
             <AnalyticsSkeleton />
           ) : (
             <>
@@ -543,7 +550,7 @@ export default function AnalyticsPage() {
               <p className="text-sm text-muted-foreground">Failed to load analytics data.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
             </CardContent></Card>
-          ) : isLoading ? (
+          ) : waiting ? (
             <AnalyticsSkeleton />
           ) : (
             <>
