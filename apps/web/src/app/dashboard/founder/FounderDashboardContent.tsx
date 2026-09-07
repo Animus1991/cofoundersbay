@@ -164,7 +164,7 @@ function CardLinkHeader({
     <div className="flex flex-wrap items-center justify-between gap-2">
       <CardTitle className="flex min-w-0 items-center gap-2 text-base">
         <Icon className={cn('icon-sm shrink-0', iconClassName)} />
-        <span className="truncate">{title}</span>
+        <span className="min-w-0 truncate">{title}</span>
       </CardTitle>
       <Link href={href} className="shrink-0">
         <Button variant="ghost" size="sm" className="h-8 px-2 text-xs sm:text-sm">
@@ -314,7 +314,7 @@ export default function FounderDashboardContent() {
 
   return (
     <AppShell>
-      <div className="py-6 space-y-6">
+      <div className="min-w-0 space-y-6 overflow-x-clip py-6">
 
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -329,6 +329,7 @@ export default function FounderDashboardContent() {
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             <AIInsightButton
               prompt="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
+              className="h-8"
             />
             <Badge variant="outline" className="h-8 gap-1.5">
               <Rocket className="icon-sm" /> Founder
@@ -357,9 +358,9 @@ export default function FounderDashboardContent() {
           <StatCard icon={Target} label="Milestone Progress" value={`${demoMilestones.filter(m => m.progress === 100).length}/${demoMilestones.length}`} href="/milestones" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-3">
           {/* Main column */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className="min-w-0 space-y-5 lg:col-span-2">
 
             {/* Venture Readiness Score */}
             {vrs && <VentureReadinessCard data={vrs} />}
@@ -521,7 +522,7 @@ export default function FounderDashboardContent() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
 
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />

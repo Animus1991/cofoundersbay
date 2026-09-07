@@ -82,12 +82,12 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   const { label: tierLabel, color: tierColor } = scoreTier(vrs.overall);
 
   return (
-    <Card className={cn('border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
+    <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'text-sm' : 'text-base')}>
             <TrendingUp className="h-4 w-4 shrink-0 text-primary" />
-            <span className="truncate">Venture Readiness Score</span>
+            <span className="min-w-0 truncate">Venture Readiness Score</span>
           </CardTitle>
           <Link href="/achievements" className="shrink-0">
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
@@ -123,7 +123,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           {vrs.dimensions.map((dim) => {
             const { color } = scoreTier(dim.score);
             return (
-              <Link key={dim.key} href={dim.href} className="group block">
+              <Link key={dim.key} href={dim.href} className="group block min-w-0">
                 <div className="mb-0.5 flex items-center justify-between gap-2 text-xs">
                   <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                     {dim.label}
