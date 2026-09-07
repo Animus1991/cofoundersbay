@@ -16,21 +16,23 @@ import { OptimizedLink } from '@/components/common/OptimizedLink';
 import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { useRoleOptional } from '@/contexts/RoleContext';
 
 export function MobileNav() {
   const pathname = usePathname();
   const { mobileNavOpen, setMobileNavOpen } = useSidebar();
   const [mode, setMode] = useSidebarMode();
-  const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
+  const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
+  const role = useRoleOptional();
 
   useEffect(() => {
     setMobileNavOpen(false);
   }, [pathname, setMobileNavOpen]);
 
   const sections = useMemo(
-    () => getSectionsForMode(mode, user?.role),
-    [mode, user?.role],
+    () => getSectionsForMode(mode, role?.primaryRole ?? user?.role),
+    [mode, role?.primaryRole, user?.role],
   );
 
   const handleLogout = () => {
@@ -41,6 +43,7 @@ export function MobileNav() {
   const badgeFor = (href: string, badgeType?: 'messages' | 'connections' | 'notifications'): number => {
     if (badgeType === 'messages' || href === '/messages') return unreadMessages;
     if (badgeType === 'connections' || href === '/connections') return pendingIntros;
+    if (badgeType === 'notifications' || href === '/notifications') return unreadNotifications;
     return 0;
   };
 

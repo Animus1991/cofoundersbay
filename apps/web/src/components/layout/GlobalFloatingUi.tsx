@@ -24,6 +24,7 @@ const HIDDEN_PREFIXES = [
   '/reset-password',
   '/auth',
   '/onboarding',
+  '/ai',
 ];
 
 function matchesHiddenPrefix(pathname: string | null): boolean {

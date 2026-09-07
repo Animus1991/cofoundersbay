@@ -3,6 +3,16 @@
 const NOW = '2026-09-04T10:00:00.000Z';
 const ME_ID = 'preview-demo-user';
 
+const PREVIEW_AI_CONVERSATIONS: Array<{
+  id: string;
+  userId: string;
+  agentId: string;
+  title: string;
+  messages: unknown[];
+  createdAt: string;
+  updatedAt: string;
+}> = [];
+
 const PEOPLE = [
   {
     id: 'hit-elena',
@@ -407,12 +417,15 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   }
 
   if (pathname.startsWith('/api/search/profiles') || pathname.startsWith('/api/v1/search')) {
-    const q = new URLSearchParams(path.split('?')[1] ?? '').get('q')?.toLowerCase() ?? '';
-    const hits = q
-      ? PEOPLE.filter((p) =>
-          `${p.displayName} ${p.headline} ${p.skillNames.join(' ')}`.toLowerCase().includes(q),
-        )
-      : PEOPLE;
+    const params = new URLSearchParams(path.split('?')[1] ?? '');
+    const q = params.get('q')?.toLowerCase() ?? '';
+    const location = params.get('location')?.toLowerCase() ?? '';
+    const hits = PEOPLE.filter((p) => {
+      const blob = `${p.displayName} ${p.headline} ${p.bio} ${p.skillNames.join(' ')} ${p.lookingFor} ${p.role}`.toLowerCase();
+      const qOk = !q || q.split(/\s+/).every((token) => blob.includes(token) || p.location.toLowerCase().includes(token));
+      const locOk = !location || p.location.toLowerCase().includes(location) || blob.includes(location);
+      return qOk && locOk;
+    });
     return { hits, results: hits, total: hits.length };
   }
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
@@ -468,6 +481,34 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
               ? CONNECTIONS.filter((c) => c.receiverId === ME_ID && c.status === 'pending')
               : CONNECTIONS;
       return { connections };
+    }
+    if (method === 'POST') {
+      const receiverId = String(body.receiverId ?? 'user-marcus');
+      const person = PEOPLE.find((p) => p.userId === receiverId) ?? PEOPLE[1];
+      const created = {
+        id: `conn-${Date.now()}`,
+        requesterId: ME_ID,
+        receiverId: person.userId,
+        status: 'pending',
+        message: String(body.message ?? ''),
+        createdAt: NOW,
+        updatedAt: NOW,
+        requester: {
+          id: ME_ID,
+          displayName: 'Alex Demo',
+          avatarUrl: null,
+          role: 'founder',
+          headline: 'Founder exploring CoFounderBay',
+        },
+        receiver: {
+          id: person.userId,
+          displayName: person.displayName,
+          avatarUrl: null,
+          role: person.role,
+          headline: person.headline,
+        },
+      };
+      return { connection: created, ok: true };
     }
     return { connection: CONNECTIONS[0], ok: true };
   }
@@ -608,6 +649,24 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ids: ['user-marcus'] };
   }
 
+  if (pathname === '/api/graph/me') {
+    return {
+      me: {
+        id: ME_ID,
+        displayName: 'Alex Demo',
+        headline: 'Founder exploring CoFounderBay',
+        role: 'founder',
+        location: 'Athens, Greece',
+        avatarUrl: null,
+      },
+      unreadMessages: 1,
+      pendingIntros: 1,
+      unreadNotifications: 2,
+      readiness: { overall: 42, lowestLabel: 'Product', lowestHref: '/builder' },
+      nextAction: { id: 'review-intros', label: 'Review pending intros', href: '/connections' },
+    };
+  }
+
   if (pathname === '/api/ai/health') {
     return { available: false, models: [] };
   }
@@ -616,18 +675,81 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       agents: [
         {
           id: 'general',
-          name: 'General assistant',
-          description: 'Preview AI helper',
-          suggestedQuestions: ['How do I find a cofounder?', 'What should I do next?'],
+          name: 'CoFounderBay Assistant',
+          description: 'Search, intro, message, and navigate from one chat',
+          suggestedQuestions: [
+            'What should I do next?',
+            'Find a technical cofounder in Athens',
+            'Show my best matches',
+          ],
+        },
+        {
+          id: 'matching',
+          name: 'Matching',
+          description: 'Explain and act on cofounder matches',
+          suggestedQuestions: ['Show my best matches', 'Connect with Elena'],
         },
       ],
     };
   }
   if (pathname === '/api/ai/models') {
-    return { models: [], default: 'general' };
+    return { models: [], default: 'copilot' };
+  }
+  if (pathname === '/api/ai/preferences' || pathname.startsWith('/api/ai/preferences')) {
+    return {
+      preferences: {
+        preferredModel: 'copilot',
+        preferredProvider: 'platform',
+        temperature: 0.7,
+        maxTokens: 2048,
+        responseStyle: 'concise',
+        responseLanguage: 'en',
+        useEmoji: false,
+        enableStreaming: true,
+        enableSuggestions: true,
+        enableContextMemory: true,
+        enableAutoSave: true,
+        saveConversations: true,
+        shareForTraining: false,
+        anonymizeData: true,
+        defaultAgent: 'general',
+      },
+    };
+  }
+  if (pathname === '/api/ai/conversations' && method === 'POST') {
+    const conv = {
+      id: `ai-conv-${Date.now()}`,
+      userId: ME_ID,
+      agentId: String(body.agentId ?? 'general'),
+      title: String(body.title ?? 'New Conversation'),
+      messages: [] as unknown[],
+      createdAt: NOW,
+      updatedAt: NOW,
+    };
+    PREVIEW_AI_CONVERSATIONS.unshift(conv);
+    return { conversation: conv };
+  }
+  if (pathname === '/api/ai/conversations') {
+    return { conversations: PREVIEW_AI_CONVERSATIONS };
+  }
+  const aiConvMatch = pathname.match(/^\/api\/ai\/conversations\/([^/]+)$/);
+  if (aiConvMatch) {
+    const conv = PREVIEW_AI_CONVERSATIONS.find((c) => c.id === aiConvMatch[1]);
+    return { conversation: conv ?? PREVIEW_AI_CONVERSATIONS[0] ?? null, deleted: method === 'DELETE' };
+  }
+  if (pathname === '/api/ai/chat' || pathname === '/api/ai/chat/stream') {
+    const text = String(body.message ?? '');
+    return {
+      message: text
+        ? `Preview copilot received: “${text}”. Use the in-app assistant tools for live graph actions.`
+        : 'Preview copilot is ready.',
+      agent: 'general',
+      model: 'copilot',
+      fallback: true,
+    };
   }
   if (pathname.startsWith('/api/ai/')) {
-    return { ok: true, available: false, agents: [], models: [], conversations: [], messages: [] };
+    return { ok: true, available: false, agents: [], models: [], conversations: PREVIEW_AI_CONVERSATIONS, messages: [] };
   }
 
   if (pathname === '/api/gamification/users/me/xp' || pathname.endsWith('/xp')) {

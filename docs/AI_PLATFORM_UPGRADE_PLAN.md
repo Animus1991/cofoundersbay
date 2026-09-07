@@ -342,3 +342,20 @@
 Αυτό μετατρέπει το σημερινό άδειο AI tab σε copilot που βλέπει τον χρήστη και μπορεί να συνδέσει / να γράψει μήνυμα / να πλοηγηθεί — πάνω στα API που ήδη υπάρχουν — χωρίς να ξαναχτιστεί η πλατφόρμα.
 
 Ό,τι ακολουθεί (canvas, feed, calendar, extra ρόλοι) είναι επέκταση του ίδιου καταλόγου tools, όχι νέα «AI προϊόντα».
+
+---
+
+## 13. Υλοποίηση (2026-09-07)
+
+Κλεισμένα σε αυτόν τον κλάδο (όχι ημερολογιακή υπόσχεση — μετρήσιμο στον κώδικα):
+
+| Φάση | Κατάσταση | Πού |
+|---|---|---|
+| A — Truth | Μερικό | `RoleProvider` στο root layout. `query-keys.ts`. Notification badge από `GET /notifications/unread-count`. SideNav/MobileNav διαβάζουν `primaryRole`. |
+| B — Graph | Ναι | `GET /api/graph/me` + preview mock. |
+| C — Copilot read | Ναι | Context packet (`usePageContext`). Citations. Persisted threads + `/ai` full page. |
+| D — Copilot write | Ναι | 6 tools + `ActionCard` confirm. Writes περνάνε από τα υπάρχοντα Connections/Messages APIs. |
+| Full-page chat | Ναι | `/ai` (desktop drawer + mobile sheet-style column). Popup maximize → `/ai`. Ask AI buttons ανοίγουν την ίδια σελίδα. |
+| Settings prefs | Ναι | `GET/PATCH /api/ai/preferences` (Prisma `AIUserPreference`) με localStorage fallback. |
+
+Ανοιχτά (E–G και P2–P5): canvas/builder tools, feed Prisma, calendar SoT, eval suite 50 προτροπών, ενοποίηση realtime bus.

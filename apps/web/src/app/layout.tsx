@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { RoleProvider } from '@/contexts/RoleContext';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
@@ -73,30 +74,32 @@ export default function RootLayout({
         </a>
         <ErrorBoundary>
           <QueryProvider>
-            <TenantProvider>
-              <SidebarProvider>
-                <ServiceWorkerRegistration />
-                <NetworkProvider>
-                  <ToastProvider>
-                    <PopupChatProvider>
-                      <MessagingProvider>
-                        <DemoDataProvider>
-                          <RoleTheme>
-                            <PreviewSessionGuard />
-                            <OfflineBanner />
-                            {children}
-                            <GlobalFloatingUi />
-                            <Suspense fallback={null}>
-                              <PostHogProvider />
-                            </Suspense>
-                          </RoleTheme>
-                        </DemoDataProvider>
-                      </MessagingProvider>
-                    </PopupChatProvider>
-                  </ToastProvider>
-                </NetworkProvider>
-              </SidebarProvider>
-            </TenantProvider>
+            <RoleProvider>
+              <TenantProvider>
+                <SidebarProvider>
+                  <ServiceWorkerRegistration />
+                  <NetworkProvider>
+                    <ToastProvider>
+                      <PopupChatProvider>
+                        <MessagingProvider>
+                          <DemoDataProvider>
+                            <RoleTheme>
+                              <PreviewSessionGuard />
+                              <OfflineBanner />
+                              {children}
+                              <GlobalFloatingUi />
+                              <Suspense fallback={null}>
+                                <PostHogProvider />
+                              </Suspense>
+                            </RoleTheme>
+                          </DemoDataProvider>
+                        </MessagingProvider>
+                      </PopupChatProvider>
+                    </ToastProvider>
+                  </NetworkProvider>
+                </SidebarProvider>
+              </TenantProvider>
+            </RoleProvider>
           </QueryProvider>
         </ErrorBoundary>
       </body>

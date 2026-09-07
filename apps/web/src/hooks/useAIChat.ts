@@ -1,17 +1,23 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/hooks/useSession';
+import { usePageContext } from '@/hooks/usePageContext';
 import {
-  ChatMessage,
   AgentConfig,
-  streamAIChat,
   sendAIChat,
   getAIAgents,
   getAIHealth,
   createAIConversation,
+  getAIConversation,
+  listAIConversations,
   AIConversation,
 } from '@/lib/ai-api';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { executeCopilotAction, runCopilotTurn } from '@/lib/copilot-engine';
+import type { CopilotAction, CopilotCitation } from '@/lib/copilot-types';
+import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
 
 export interface AIMessage {
   id: string;
@@ -20,12 +26,15 @@ export interface AIMessage {
   timestamp: Date;
   model?: string;
   isStreaming?: boolean;
+  actions?: CopilotAction[];
+  citations?: CopilotCitation[];
 }
 
 export interface UseAIChatOptions {
   agentId?: string;
   conversationId?: string;
   autoCreateConversation?: boolean;
+  initialPrompt?: string;
 }
 
 export interface UseAIChatReturn {
@@ -37,14 +46,22 @@ export interface UseAIChatReturn {
   currentAgent: string;
   isAIAvailable: boolean;
   conversationId: string | null;
+  conversations: AIConversation[];
+  pendingActionId: string | null;
   sendMessage: (content: string) => Promise<void>;
   setAgent: (agentId: string) => void;
   clearMessages: () => void;
   retryLastMessage: () => void;
+  confirmAction: (action: CopilotAction) => Promise<{ href?: string } | void>;
+  dismissAction: (action: CopilotAction) => void;
+  loadConversation: (id: string) => Promise<void>;
+  refreshConversations: () => Promise<void>;
 }
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const { hasSession, mounted } = useSession();
+  const pageContext = usePageContext();
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,11 +70,13 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const [currentAgent, setCurrentAgent] = useState(options.agentId || 'general');
   const [isAIAvailable, setIsAIAvailable] = useState(true);
   const [conversationId, setConversationId] = useState<string | null>(options.conversationId || null);
-  
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const lastUserMessageRef = useRef<string | null>(null);
+  const [conversations, setConversations] = useState<AIConversation[]>([]);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
 
-  // Check AI health and load agents on mount
+  const lastUserMessageRef = useRef<string | null>(null);
+  const seededRef = useRef(false);
+  const autoCreate = options.autoCreateConversation !== false;
+
   useEffect(() => {
     if (!hasSession || !mounted) return;
 
@@ -67,7 +86,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           getAIHealth().catch(() => ({ available: false, models: [] })),
           getAIAgents().catch(() => ({ agents: [] })),
         ]);
-        
+
         setIsAIAvailable(Boolean(health?.available));
         setAgents(agentsData?.agents ?? []);
       } catch {
@@ -75,17 +94,70 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       }
     };
 
-    init();
+    void init();
   }, [hasSession, mounted]);
 
-  // Create conversation if needed
+  const refreshConversations = useCallback(async () => {
+    if (!hasSession) return;
+    try {
+      const res = await listAIConversations();
+      setConversations(res.conversations ?? []);
+    } catch {
+      /* preview or offline */
+    }
+  }, [hasSession]);
+
   useEffect(() => {
-    if (!hasSession || !mounted || conversationId || !options.autoCreateConversation) return;
+    if (!hasSession || !mounted) return;
+    void refreshConversations();
+  }, [hasSession, mounted, refreshConversations]);
+
+  useEffect(() => {
+    if (!hasSession || !mounted || conversationId || !autoCreate) return;
 
     createAIConversation({ agentId: currentAgent })
-      .then((res) => setConversationId(res.conversation.id))
-      .catch(() => {/* Silent fail - will work without conversation tracking */});
-  }, [hasSession, mounted, conversationId, currentAgent, options.autoCreateConversation]);
+      .then((res) => {
+        if (res?.conversation?.id) setConversationId(res.conversation.id);
+      })
+      .catch(() => {
+        /* works without persistence */
+      });
+  }, [hasSession, mounted, conversationId, currentAgent, autoCreate]);
+
+  const mapHistory = (conv: AIConversation): AIMessage[] =>
+    (conv.messages ?? [])
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({
+        id: m.id,
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        timestamp: new Date(m.createdAt),
+        model: m.model,
+      }));
+
+  const loadConversation = useCallback(async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await getAIConversation(id);
+      if (res?.conversation) {
+        setConversationId(res.conversation.id);
+        setMessages(mapHistory(res.conversation));
+      }
+    } catch {
+      setError('Could not load that conversation');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const updateAction = useCallback((actionId: string, patch: Partial<CopilotAction>) => {
+    setMessages((prev) =>
+      prev.map((m) => ({
+        ...m,
+        actions: m.actions?.map((a) => (a.id === actionId ? { ...a, ...patch } : a)),
+      })),
+    );
+  }, []);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim() || isStreaming) return;
@@ -93,125 +165,115 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setError(null);
     lastUserMessageRef.current = content;
 
-    // Add user message immediately
     const userMessage: AIMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
       content: content.trim(),
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Create placeholder for assistant response
     const assistantMessageId = `assistant-${Date.now()}`;
-    const assistantMessage: AIMessage = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isStreaming: true,
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
+    setMessages((prev) => [
+      ...prev,
+      userMessage,
+      {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+        isStreaming: true,
+      },
+    ]);
     setIsStreaming(true);
 
-    // Build history from messages
-    const history: ChatMessage[] = messages.slice(-8).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-
     try {
-      // Cancel any existing request
-      abortControllerRef.current?.abort();
-      abortControllerRef.current = new AbortController();
+      const turn = await runCopilotTurn(content.trim(), pageContext);
+      let narrative = turn.message;
 
-      let fullContent = '';
-      let finalModel = '';
-
-      // Try streaming first
-      try {
-        for await (const data of streamAIChat(
-          {
-            message: content,
+      if (!isPreviewDemo() && isAIAvailable) {
+        try {
+          const llm = await sendAIChat({
+            message: content.trim(),
             agentId: currentAgent,
             conversationId: conversationId || undefined,
-            history,
-          },
-          abortControllerRef.current.signal,
-        )) {
-          if (data.chunk) {
-            fullContent += data.chunk;
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantMessageId
-                  ? { ...m, content: fullContent }
-                  : m
-              )
-            );
-          }
-          if (data.done) {
-            finalModel = data.model || '';
-            break;
-          }
-        }
-      } catch (streamError: any) {
-        // If streaming fails, fall back to non-streaming
-        if (streamError.name !== 'AbortError') {
-          const response = await sendAIChat({
-            message: content,
-            agentId: currentAgent,
-            conversationId: conversationId || undefined,
-            history,
+            context: {
+              ...pageContext,
+              toolNarrative: turn.message,
+              usedTools: turn.usedTools,
+            },
           });
-          fullContent = response.message;
-          finalModel = response.model;
-        } else {
-          throw streamError;
+          if (llm?.message) narrative = llm.message;
+        } catch {
+          /* keep tool narrative */
         }
       }
 
-      // Finalize message
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantMessageId
-            ? { ...m, content: fullContent, model: finalModel, isStreaming: false }
-            : m
-        )
+            ? {
+                ...m,
+                content: narrative,
+                model: isAIAvailable && !isPreviewDemo() ? 'copilot+llm' : 'copilot',
+                isStreaming: false,
+                actions: turn.actions,
+                citations: turn.citations,
+              }
+            : m,
+        ),
       );
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        // Remove the empty assistant message on abort
-        setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId));
-        return;
-      }
-
-      setError(err.message || 'Failed to get AI response');
-      // Update assistant message with error
+      void refreshConversations();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to get AI response';
+      setError(message);
       setMessages((prev) =>
         prev.map((m) =>
           m.id === assistantMessageId
-            ? { 
-                ...m, 
+            ? {
+                ...m,
                 content: 'Sorry, I encountered an error. Please try again.',
                 isStreaming: false,
               }
-            : m
-        )
+            : m,
+        ),
       );
     } finally {
       setIsStreaming(false);
-      abortControllerRef.current = null;
     }
-  }, [messages, currentAgent, conversationId, isStreaming]);
+  }, [conversationId, currentAgent, isAIAvailable, isStreaming, pageContext, refreshConversations]);
+
+  const confirmAction = useCallback(async (action: CopilotAction) => {
+    setPendingActionId(action.id);
+    const result = await executeCopilotAction(action);
+    setPendingActionId(null);
+    if (!result.ok) {
+      updateAction(action.id, { status: 'error' });
+      setError(result.error ?? 'Action failed');
+      return;
+    }
+    updateAction(action.id, { status: 'done' });
+    if (action.tool === 'send_connection') {
+      CONNECTION_KEYS.forEach((key) => {
+        void queryClient.invalidateQueries({ queryKey: [...key] });
+      });
+      void queryClient.invalidateQueries({ queryKey: [...queryKeys.graphMe] });
+    }
+    if (action.tool === 'start_or_send_message') {
+      MESSAGE_KEYS.forEach((key) => {
+        void queryClient.invalidateQueries({ queryKey: [...key] });
+      });
+    }
+    return { href: result.href };
+  }, [queryClient, updateAction]);
+
+  const dismissAction = useCallback((action: CopilotAction) => {
+    updateAction(action.id, { status: 'dismissed' });
+  }, [updateAction]);
 
   const setAgent = useCallback((agentId: string) => {
     setCurrentAgent(agentId);
-    // Optionally clear messages when switching agents
-    // setMessages([]);
   }, []);
 
   const clearMessages = useCallback(() => {
-    abortControllerRef.current?.abort();
     setMessages([]);
     setError(null);
     setConversationId(null);
@@ -219,24 +281,20 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   const retryLastMessage = useCallback(() => {
     if (lastUserMessageRef.current) {
-      // Remove last assistant message if it was an error
       setMessages((prev) => {
         const lastMsg = prev[prev.length - 1];
-        if (lastMsg?.role === 'assistant' && lastMsg.content.includes('error')) {
-          return prev.slice(0, -1);
-        }
+        if (lastMsg?.role === 'assistant') return prev.slice(0, -1);
         return prev;
       });
-      sendMessage(lastUserMessageRef.current);
+      void sendMessage(lastUserMessageRef.current);
     }
   }, [sendMessage]);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, []);
+    if (!mounted || !hasSession || seededRef.current || !options.initialPrompt) return;
+    seededRef.current = true;
+    void sendMessage(options.initialPrompt);
+  }, [mounted, hasSession, options.initialPrompt, sendMessage]);
 
   return {
     messages,
@@ -247,9 +305,15 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     currentAgent,
     isAIAvailable,
     conversationId,
+    conversations,
+    pendingActionId,
     sendMessage,
     setAgent,
     clearMessages,
     retryLastMessage,
+    confirmAction,
+    dismissAction,
+    loadConversation,
+    refreshConversations,
   };
 }

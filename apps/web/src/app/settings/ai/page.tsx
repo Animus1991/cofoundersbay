@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
-import { getAIModels, getAIAgents, getAIHealth, type AgentConfig } from '@/lib/ai-api';
+import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { cn } from '@/lib/utils';
 
 type AIPreferences = {
@@ -151,27 +151,47 @@ export default function AISettingsPage() {
   };
 
   const handleSave = async () => {
-    // In a real implementation, this would save to the API
-    // For now, we'll just save to localStorage and show success
     try {
+      await updateAIPreferences(prefs);
       localStorage.setItem('ai-preferences', JSON.stringify(prefs));
-      success('AI preferences saved successfully');
+      void queryClient.invalidateQueries({ queryKey: ['ai', 'preferences'] });
+      success('AI preferences saved');
       setHasChanges(false);
-    } catch (err) {
+    } catch {
       showError('Failed to save preferences');
     }
   };
 
-  // Load saved preferences on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ai-preferences');
-      if (saved) {
-        setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+    let cancelled = false;
+    (async () => {
+      try {
+        const remote = await getAIPreferences();
+        if (cancelled) return;
+        if (remote?.preferences) {
+          setPrefs({
+            ...DEFAULT_PREFS,
+            ...Object.fromEntries(
+              Object.entries(remote.preferences).filter(([, v]) => v !== null && v !== undefined),
+            ),
+          } as AIPreferences);
+          return;
+        }
+      } catch {
+        /* local fallback */
       }
-    } catch {
-      // Ignore parse errors
-    }
+      try {
+        const saved = localStorage.getItem('ai-preferences');
+        if (saved && !cancelled) {
+          setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -198,10 +218,18 @@ export default function AISettingsPage() {
                 Customize how the AI assistant works for you
               </p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="gap-2">
+              <Link href="/ai">
+                <Bot className="h-4 w-4" />
+                Open assistant
+              </Link>
+            </Button>
             <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
               {hasChanges ? <Save className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
+            </div>
           </div>
         </div>
 

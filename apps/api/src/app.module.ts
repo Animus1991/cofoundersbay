@@ -51,6 +51,7 @@ import { MentorshipModule } from './mentorship/mentorship.module';
 import { DigestsModule } from './digests/digests.module';
 import { GamificationModule } from './gamification/gamification.module';
 import { BehavioralOptimizerModule } from './behavioral-optimizer/behavioral-optimizer.module';
+import { GraphModule } from './graph/graph.module';
 import { AppController } from './app.controller';
 import appConfig from './common/config/app.config';
 
@@ -124,6 +125,7 @@ function findEnvFiles(): string[] {
     DigestsModule,
     GamificationModule,
     BehavioralOptimizerModule,
+    GraphModule,
     LoggerModule.forRoot({
       pinoHttp: {
         transport:

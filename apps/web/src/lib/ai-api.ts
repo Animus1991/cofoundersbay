@@ -60,8 +60,26 @@ export interface ChatRequest {
   agentId?: string;
   model?: string;
   history?: ChatMessage[];
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
+
+export type AIPreferences = {
+  preferredModel?: string | null;
+  preferredProvider?: string | null;
+  temperature?: number | null;
+  maxTokens?: number | null;
+  responseStyle?: string | null;
+  responseLanguage?: string | null;
+  useEmoji?: boolean;
+  enableStreaming?: boolean;
+  enableSuggestions?: boolean;
+  enableContextMemory?: boolean;
+  enableAutoSave?: boolean;
+  saveConversations?: boolean;
+  shareForTraining?: boolean;
+  anonymizeData?: boolean;
+  defaultAgent?: string | null;
+};
 
 // ─────────────────────────────────────────────────────────────
 // API Functions
@@ -90,6 +108,20 @@ export async function* streamAIChat(
   request: ChatRequest,
   signal?: AbortSignal,
 ): AsyncGenerator<{ chunk?: string; done: boolean; model?: string; fallback?: boolean }> {
+  if (typeof document !== 'undefined') {
+    try {
+      const preview =
+        document.cookie.includes('cfb_preview_demo=1') ||
+        document.cookie.includes('cfb_session=preview-demo') ||
+        window.localStorage.getItem('cfb_demo_data') === '1' ||
+        window.location.hostname.endsWith('.trycloudflare.com');
+      if (preview) {
+        throw new Error('Preview uses the copilot engine instead of LLM streaming');
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('copilot engine')) throw err;
+    }
+  }
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
   // 30s timeout for the initial connection — matches api.ts circuit breaker intent
@@ -183,6 +215,19 @@ export async function getAIConversation(id: string): Promise<{ conversation: AIC
 export async function deleteAIConversation(id: string): Promise<{ deleted: boolean }> {
   return apiRequest<{ deleted: boolean }>(`/api/ai/conversations/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function getAIPreferences(): Promise<{ preferences: AIPreferences | null }> {
+  return apiRequest<{ preferences: AIPreferences | null }>('/api/ai/preferences');
+}
+
+export async function updateAIPreferences(
+  data: Partial<AIPreferences>,
+): Promise<{ preferences: AIPreferences }> {
+  return apiRequest<{ preferences: AIPreferences }>('/api/ai/preferences', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   });
 }
 
