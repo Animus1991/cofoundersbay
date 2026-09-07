@@ -298,7 +298,7 @@ export function PitchDeckBuilder({ onSave, initialData, workspaceName, ideaCore,
       {/* Main Content */}
       <div className="grid min-w-0 gap-6 lg:grid-cols-4">
         {/* Slide Navigator */}
-        <div className="min-w-0 space-y-4 lg:col-span-1">
+        <div className="order-2 min-w-0 space-y-4 lg:order-1 lg:col-span-1">
           {data.slides.length > 0 && (
             <Card className="min-w-0">
               <CardHeader className="p-3">
@@ -361,7 +361,7 @@ export function PitchDeckBuilder({ onSave, initialData, workspaceName, ideaCore,
         </div>
 
         {/* Slide Editor */}
-        <div className="min-w-0 lg:col-span-3">
+        <div className="order-1 min-w-0 lg:order-2 lg:col-span-3">
           {data.slides.length === 0 ? (
             <Card className="min-w-0">
               <CardContent className="flex flex-col items-center px-4 py-10 text-center">
