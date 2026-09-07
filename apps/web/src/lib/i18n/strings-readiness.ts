@@ -181,6 +181,35 @@ export const READINESS_STRINGS: Record<string, BilingualPair> = {
   find_mentor: { en: 'Find a Mentor', el: 'Εύρεση μέντορα' },
   get_expert_guidance: { en: 'Get expert guidance', el: 'Λάβετε ειδική καθοδήγηση' },
   accelerators_cohorts: { en: 'Accelerators & cohorts', el: 'Επιταχυντές & ομάδες' },
+
+  // ── Mode / AI / explainability ──
+  view_live_readiness: { en: 'View live readiness', el: 'Πραγματική ετοιμότητα' },
+  view_demo_showcase: { en: 'View demo showcase', el: 'Προβολή επίδειξης' },
+  ask_ai: { en: 'Ask AI', el: 'Ρωτήστε το AI' },
+  ask_ai_plan: {
+    en: 'Ask AI for a readiness plan',
+    el: 'Ρωτήστε το AI για πλάνο ετοιμότητας',
+  },
+  show_n_more: { en: 'Show more', el: 'Περισσότερα' },
+  last_assessed_prefix: { en: 'Last saved assessment', el: 'Τελευταία αποθηκευμένη αξιολόγηση' },
+  reassess_reloads: {
+    en: 'Reassess reloads saved scores.',
+    el: 'Η επαναξιολόγηση φορτώνει τις αποθηκευμένες βαθμολογίες.',
+  },
+  pts: { en: 'pts', el: 'μον.' },
+  overall_short: { en: 'overall', el: 'συνολικά' },
+  accel_short: { en: 'accel', el: 'επιταχ.' },
+  invest_short: { en: 'invest', el: 'επενδ.' },
+  score_pct: { en: 'Score', el: 'Βαθμός' },
+  target_65: { en: 'Target: 65%', el: 'Στόχος: 65%' },
+  target_70: { en: 'Target: 70%', el: 'Στόχος: 70%' },
+  weight_hint: { en: 'weight', el: 'βάρος' },
+  status_excellent_label: { en: 'Excellent', el: 'Εξαιρετικό' },
+  status_good_label: { en: 'Good', el: 'Καλό' },
+  status_needs_work_label: { en: 'Needs work', el: 'Χρειάζεται δουλειά' },
+  status_critical_label: { en: 'Critical', el: 'Κρίσιμο' },
+  update_failed: { en: 'Failed to update criterion', el: 'Αποτυχία ενημέρωσης κριτηρίου' },
+  export_history: { en: 'Export history as CSV', el: 'Εξαγωγή ιστορικού σε CSV' },
 };
 
 export function readinessEn(key: keyof typeof READINESS_STRINGS): string {

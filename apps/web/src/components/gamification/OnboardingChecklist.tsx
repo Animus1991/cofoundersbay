@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useId } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Circle, ChevronRight, ChevronDown, Rocket, X } from 'lucide-react';
+import { CheckCircle2, Circle, ChevronRight, ChevronDown, X } from 'lucide-react';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
@@ -112,7 +113,7 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
   const dismissLabel = bilingualAria('Dismiss the getting-started checklist', 'Απόρριψη λίστας πρώτων βημάτων');
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-violet-500/5 shadow-sm">
+    <Card className="border-primary/20 bg-primary/[0.03] shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           {/* Title is not personalised: displayName falls back to 'Founder', which
@@ -126,7 +127,7 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
             aria-controls={listId}
           >
             <div className="shrink-0 rounded-lg bg-primary/10 p-1.5">
-              <Rocket className="icon-sm text-primary-accessible" aria-hidden="true" />
+              <CfbGlyph name="builder" className="icon-sm text-primary-accessible" />
             </div>
             <div className="min-w-0">
               <CardTitle className="text-sm font-semibold text-foreground">

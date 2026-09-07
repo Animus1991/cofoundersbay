@@ -51,7 +51,18 @@ describe('milestones summary guard', () => {
     expect(guarded(full)).toBe(unguarded(full));
   });
 
-  it('still falls back to 0 for a status the payload omits', () => {
-    expect(guarded({ counts: { completed: 2 } as MilestoneSummary['counts'] })).toBe(0);
+  it('keeps the list in lockstep with the summary so the page never shows 12 and an empty state', () => {
+    const summary = resolvePreviewApi('/api/milestones/summary') as MilestoneSummary;
+    const list = resolvePreviewApi('/api/milestones') as { milestones: unknown[]; total: number };
+    expect(list.milestones).toHaveLength(summary.total);
+    expect(list.total).toBe(summary.total);
+    const byStatus = (list.milestones as { status: string }[]).reduce<Record<string, number>>((acc, m) => {
+      acc[m.status] = (acc[m.status] ?? 0) + 1;
+      return acc;
+    }, {});
+    expect(byStatus.todo).toBe(summary.counts.todo);
+    expect(byStatus.in_progress).toBe(summary.counts.in_progress);
+    expect(byStatus.blocked).toBe(summary.counts.blocked);
+    expect(byStatus.completed).toBe(summary.counts.completed);
   });
 });

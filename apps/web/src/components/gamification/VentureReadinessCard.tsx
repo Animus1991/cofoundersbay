@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { ArrowRight, TrendingUp, Zap } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
 import { cn } from '@/lib/utils';
 import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
@@ -35,6 +37,8 @@ function scoreTier(score: number): {
 
 function RadialGauge({ score }: { score: number }) {
   const { labelEn, labelEl, color, ring } = scoreTier(score);
+  const { primary } = useLanguagePreference();
+  const tierLabel = primary === 'el' ? labelEl : labelEn;
   const circumference = 2 * Math.PI * 15.5;
   const dash = (score / 100) * circumference;
 
@@ -63,7 +67,7 @@ function RadialGauge({ score }: { score: number }) {
           {score}
           <span className="text-xs font-medium text-muted-foreground">/100</span>
         </span>
-        <span className={cn('mt-0.5 text-xs font-medium', color)}>{labelEn}</span>
+        <span className={cn('mt-0.5 text-2xs font-medium', color)}>{tierLabel}</span>
       </div>
     </div>
   );
@@ -112,11 +116,11 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   const dimensionCount = vrs.dimensions.length;
 
   return (
-    <Card className={cn('border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
+    <Card className={cn('border-primary/20 bg-primary/[0.03]', className)}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className={cn('flex items-center gap-2', compact ? 'text-sm' : 'text-base')}>
-            <TrendingUp className="icon-sm text-primary-accessible" aria-hidden="true" />
+            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
             <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
           </CardTitle>
           <Link href="/achievements" className="shrink-0">
@@ -143,7 +147,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             </p>
             {vrs.lowestDimension && (
               <p className={cn('mt-2 flex items-center gap-1.5 text-xs', STATUS.warning.text)}>
-                <Zap className="icon-sm shrink-0" aria-hidden="true" />
+                <CfbGlyph name="spark" className="icon-sm shrink-0" />
                 <span>
                   <BilingualText en="Weakest" el="Ασθενέστερη" compact />
                   {': '}

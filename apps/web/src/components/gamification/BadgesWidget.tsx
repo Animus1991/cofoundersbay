@@ -1,20 +1,24 @@
+'use client';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge as BadgeUI } from '@/components/ui/badge';
-import { Award, Trophy, Star, Sparkles } from 'lucide-react';
 import { useMyBadges } from '@/hooks/useGamification';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 export function BadgesWidget() {
   const { data: badges, isLoading } = useMyBadges();
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="icon-md" />
-            Badges
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+            <BilingualText en="Badges" el="Εμβλήματα" compact />
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -30,18 +34,25 @@ export function BadgesWidget() {
 
   if (!badges || badges.length === 0) {
     return (
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="icon-md" />
-            Badges
+          <CardTitle className="flex items-center gap-2 text-base">
+            <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+            <BilingualText en="Badges" el="Εμβλήματα" compact />
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Trophy className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No badges earned yet</p>
-            <p className="text-xs mt-1">Keep building to unlock achievements!</p>
+          <div className="py-8 text-center text-muted-foreground">
+            <CfbGlyphWell name="award" size="lg" className="mx-auto mb-3 opacity-70" />
+            <p className="text-sm">
+              <BilingualText en="No badges earned yet" el="Δεν έχετε εμβλήματα ακόμα" />
+            </p>
+            <p className="mt-1 text-xs">
+              <BilingualText
+                en="Keep building to unlock achievements."
+                el="Συνεχίστε να χτίζετε για να ξεκλειδώσετε επιτεύγματα."
+              />
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -51,47 +62,52 @@ export function BadgesWidget() {
   const unseenCount = badges.filter((b) => !b.seenAt).length;
 
   return (
-    <Card>
+    <Card className="rounded-xl">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between gap-2 text-base">
           <div className="flex items-center gap-2">
-            <Award className="icon-md text-status-accent" />
-            Badges
+            <CfbGlyph name="award" className="icon-md text-primary-accessible" />
+            <BilingualText en="Badges" el="Εμβλήματα" compact />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-normal text-muted-foreground">
-              {badges.length} earned
+              <BilingualText
+                en={`${badges.length} earned`}
+                el={`${badges.length} αποκτήθηκαν`}
+                compact
+              />
             </span>
             {unseenCount > 0 && (
               <BadgeUI variant="secondary" className="gap-1">
-                <Sparkles className="icon-sm" />
-                {unseenCount} new
+                <CfbGlyph name="spark" className="icon-sm" />
+                <BilingualText en={`${unseenCount} new`} el={`${unseenCount} νέα`} compact />
               </BadgeUI>
             )}
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
           {badges.map((badge) => (
             <div
               key={badge.id}
               className={cn(
-                'relative flex flex-col items-center p-3 rounded-lg border transition-all hover:shadow-md',
+                'relative flex flex-col items-center rounded-xl border p-3 transition-all hover:shadow-md',
                 getRarityStyles(badge.rarity),
-                !badge.seenAt && 'ring-2 ring-purple-500 ring-offset-2'
+                !badge.seenAt && 'ring-2 ring-primary/40 ring-offset-2 ring-offset-background',
               )}
             >
               {!badge.seenAt && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
+                <div className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary" />
               )}
-              <div className={cn('text-2xl mb-1', getRarityIconColor(badge.rarity))}>
-                {getBadgeIcon(badge.iconName || badge.category)}
-              </div>
-              <div className="text-xs font-medium text-center line-clamp-2">
+              <CfbGlyph
+                name={glyphForBadge(badge.iconName || badge.category)}
+                className={cn('mb-1 icon-lg', getRarityIconColor(badge.rarity))}
+              />
+              <div className="line-clamp-2 text-center text-xs font-medium">
                 {badge.name}
               </div>
-              <div className="text-2xs text-muted-foreground mt-1 capitalize">
+              <div className="mt-1 text-2xs capitalize text-muted-foreground">
                 {badge.rarity}
               </div>
             </div>
@@ -105,49 +121,49 @@ export function BadgesWidget() {
 function getRarityStyles(rarity: string): string {
   switch (rarity) {
     case 'legendary':
-      return 'bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-400';
+      return cn(STATUS.warning.bg, STATUS.warning.border, 'border');
     case 'epic':
-      return 'bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-400';
+      return cn(STATUS.accent.bg, STATUS.accent.border, 'border');
     case 'rare':
-      return 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 border-blue-400';
+      return cn(STATUS.info.bg, STATUS.info.border, 'border');
     case 'uncommon':
-      return 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-400';
+      return cn(STATUS.success.bg, STATUS.success.border, 'border');
     default:
-      return 'bg-muted/50 border-border';
+      return 'border-border bg-muted/50';
   }
 }
 
 function getRarityIconColor(rarity: string): string {
   switch (rarity) {
     case 'legendary':
-      return 'text-status-warning';
+      return STATUS.warning.icon;
     case 'epic':
-      return 'text-status-accent';
+      return STATUS.accent.icon;
     case 'rare':
-      return 'text-status-info';
+      return STATUS.info.icon;
     case 'uncommon':
-      return 'text-status-success';
+      return STATUS.success.icon;
     default:
       return 'text-muted-foreground';
   }
 }
 
-function getBadgeIcon(iconName: string): string {
-  const iconMap: Record<string, string> = {
-    trophy: '🏆',
-    star: '⭐',
-    medal: '🥇',
-    fire: '🔥',
-    rocket: '🚀',
-    target: '🎯',
-    crown: '👑',
-    gem: '💎',
-    progress: '📈',
-    consistency: '🔥',
-    collaboration: '🤝',
-    quality: '✨',
-    learning: '📚',
-    execution: '⚡',
+function glyphForBadge(iconName: string): CfbGlyphName {
+  const map: Record<string, CfbGlyphName> = {
+    trophy: 'award',
+    star: 'spark',
+    medal: 'award',
+    fire: 'spark',
+    rocket: 'builder',
+    target: 'target',
+    crown: 'award',
+    gem: 'spark',
+    progress: 'chart',
+    consistency: 'spark',
+    collaboration: 'people',
+    quality: 'spark',
+    learning: 'book',
+    execution: 'flag',
   };
-  return iconMap[iconName.toLowerCase()] || '🏅';
+  return map[iconName.toLowerCase()] ?? 'award';
 }

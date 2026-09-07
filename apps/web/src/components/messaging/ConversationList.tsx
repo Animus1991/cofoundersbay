@@ -2,19 +2,25 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Edit, Archive, Pin, MoreHorizontal, Trash2, MessageSquarePlus } from 'lucide-react';
+import { Search, MoreHorizontal, Archive, Pin, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { RoleBadge } from '@/components/common/RoleBadge';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { ThreadAvatar } from '@/components/messaging/ThreadAvatar';
 import { cn } from '@/lib/utils';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  messagesEn,
+  messagesEl,
+  useMessagesPrimaryText,
+} from '@/lib/i18n/strings-messages';
 
 export type Conversation = {
   id: string;
@@ -22,6 +28,7 @@ export type Conversation = {
   recipientName: string;
   recipientAvatar?: string | null;
   recipientRole: string;
+  recipientHeadline?: string | null;
   lastMessage: string;
   lastMessageTime: Date;
   unreadCount: number;
@@ -40,7 +47,7 @@ type ConversationListProps = {
   onDelete?: (id: string) => void;
 };
 
-function formatTime(date: Date): string {
+function formatListTime(date: Date, yesterday: string): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();
   const days = Math.floor(diff / 86400000);
@@ -48,7 +55,7 @@ function formatTime(date: Date): string {
   if (days === 0) {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-  if (days === 1) return 'Yesterday';
+  if (days === 1) return yesterday;
   if (days < 7) return date.toLocaleDateString([], { weekday: 'short' });
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
@@ -60,6 +67,7 @@ function ConversationItem({
   onArchive,
   onPin,
   onDelete,
+  yesterdayLabel,
 }: {
   conversation: Conversation;
   isSelected: boolean;
@@ -67,84 +75,115 @@ function ConversationItem({
   onArchive?: () => void;
   onPin?: () => void;
   onDelete?: () => void;
+  yesterdayLabel: string;
 }) {
+  const unread = conversation.unreadCount > 0;
+
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
       className={cn(
-        'group relative flex items-center gap-3 p-3 cursor-pointer transition-colors rounded-lg',
-        isSelected ? 'bg-primary/10' : 'hover:bg-secondary/60'
+        'group relative flex cursor-pointer items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-150',
+        isSelected
+          ? 'bg-background shadow-[0_10px_28px_-16px_hsl(var(--foreground)/0.35)] ring-1 ring-border/70'
+          : 'hover:bg-background/70',
       )}
       onClick={onSelect}
     >
-      {/* Avatar with online indicator */}
-      <div className="relative">
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={conversation.recipientAvatar || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary-accessible">
-            {conversation.recipientName[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        {conversation.isOnline && (
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background" />
+      <span
+        className={cn(
+          'absolute left-1 top-3 bottom-3 w-1 rounded-full transition-colors',
+          isSelected ? 'bg-primary' : unread ? 'bg-primary/80' : 'bg-transparent',
         )}
-      </div>
+      />
+      <ThreadAvatar
+        name={conversation.recipientName}
+        src={conversation.recipientAvatar}
+        seed={conversation.recipientId}
+        size="lg"
+        online={conversation.isOnline}
+      />
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            {conversation.isPinned && <Pin className="icon-sm text-primary-accessible flex-shrink-0" />}
-            <span className={cn(
-              'text-sm font-semibold truncate',
-              conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
-            )}>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-1.5">
+            {conversation.isPinned && (
+              <Pin className="h-3 w-3 shrink-0 text-primary-accessible" />
+            )}
+            <span
+              className={cn(
+                'truncate text-[13px] leading-tight',
+                unread ? 'font-semibold text-foreground' : 'font-medium text-foreground',
+              )}
+            >
               {conversation.recipientName}
             </span>
-            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-2xs leading-tight" />
           </div>
-          <span className="text-2xs text-muted-foreground flex-shrink-0 tabular-nums">
-            {formatTime(conversation.lastMessageTime)}
+          <span
+            className={cn(
+              'shrink-0 text-2xs tabular-nums',
+              unread ? 'font-medium text-primary-accessible' : 'text-muted-foreground',
+            )}
+          >
+            {formatListTime(conversation.lastMessageTime, yesterdayLabel)}
           </span>
         </div>
-        <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className={cn(
-            'text-xs truncate leading-relaxed',
-            conversation.unreadCount > 0 ? 'text-foreground/80 font-medium' : 'text-muted-foreground'
-          )}>
-            {conversation.lastMessage || <span className="italic">No messages yet</span>}
+        <div className="mt-0.5 flex items-center justify-between gap-2">
+          <p
+            className={cn(
+              'truncate text-[12px] leading-snug',
+              unread ? 'font-medium text-foreground/80' : 'text-muted-foreground',
+            )}
+          >
+            {conversation.lastMessage || (
+              <span className="italic">
+                <BilingualText en={messagesEn('no_messages_yet')} el={messagesEl('no_messages_yet')} compact />
+              </span>
+            )}
           </p>
-          {conversation.unreadCount > 0 && (
-            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground flex-shrink-0">
+          {unread && (
+            <span className="flex h-5 min-w-[1.25rem] shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-2xs font-bold text-primary-foreground">
               {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
             </span>
           )}
         </div>
       </div>
 
-      {/* Actions */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100 absolute right-2 top-2"
+            className="absolute right-1.5 top-1.5 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
             onClick={(e) => e.stopPropagation()}
+            aria-label={bilingualAria(messagesEn('delete_chat'), messagesEl('delete_chat'))}
           >
             <MoreHorizontal className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onPin}>
+        <DropdownMenuContent align="end" className="rounded-xl">
+          <DropdownMenuItem onClick={onPin} className="rounded-lg">
             <Pin className="icon-sm mr-2" />
-            {conversation.isPinned ? 'Unpin' : 'Pin'}
+            <BilingualText
+              en={conversation.isPinned ? messagesEn('unpin') : messagesEn('pin')}
+              el={conversation.isPinned ? messagesEl('unpin') : messagesEl('pin')}
+              compact
+            />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onArchive}>
+          <DropdownMenuItem onClick={onArchive} className="rounded-lg">
             <Archive className="icon-sm mr-2" />
-            Archive
+            <BilingualText en={messagesEn('archive')} el={messagesEl('archive')} compact />
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+          <DropdownMenuItem onClick={onDelete} className="rounded-lg text-destructive-accessible">
             <Trash2 className="icon-sm mr-2" />
-            Delete
+            <BilingualText en={messagesEn('delete_chat')} el={messagesEl('delete_chat')} compact />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -161,53 +200,59 @@ export function ConversationList({
   onPin,
   onDelete,
 }: ConversationListProps) {
+  const t = useMessagesPrimaryText();
   const [searchQuery, setSearchQuery] = useState('');
+  const yesterday = t(messagesEn('yesterday'), messagesEl('yesterday'));
 
   const filteredConversations = conversations.filter(
     (c) =>
       !c.isArchived &&
-      c.recipientName.toLowerCase().includes(searchQuery.toLowerCase())
+      c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const pinnedConversations = filteredConversations.filter((c) => c.isPinned);
   const regularConversations = filteredConversations.filter((c) => !c.isPinned);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-border/60 p-3">
-        <div className="mb-3 hidden items-center justify-between md:flex">
-          <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-          <Button size="icon" variant="ghost" onClick={onNewMessage} aria-label="New message">
-            <Edit className="icon-md" />
-          </Button>
-        </div>
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0 px-3 pb-2 pt-2">
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search conversations..."
+              placeholder={t(messagesEn('search_conversations'), messagesEl('search_conversations'))}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="h-10 rounded-full border-transparent bg-background/80 pl-9 shadow-sm ring-1 ring-border/50 focus-visible:ring-primary/40"
+              aria-label={bilingualAria(messagesEn('search_conversations'), messagesEl('search_conversations'))}
             />
           </div>
-          <Button size="icon" variant="ghost" className="shrink-0 md:hidden" onClick={onNewMessage} aria-label="New message">
-            <Edit className="icon-md" />
-          </Button>
+          {onNewMessage && (
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-10 w-10 shrink-0 rounded-full md:hidden"
+              onClick={onNewMessage}
+              aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
+            >
+              <CfbGlyph name="messages" className="icon-md" />
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Conversation list */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
         {pinnedConversations.length > 0 && (
-          <div className="mb-4">
-            <p className="text-xs font-medium text-muted-foreground px-3 mb-2">Pinned</p>
+          <div className="mb-2">
+            <p className="mb-1 px-3 pt-1 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <BilingualText en={messagesEn('pinned')} el={messagesEl('pinned')} compact />
+            </p>
             {pinnedConversations.map((conv) => (
               <ConversationItem
                 key={conv.id}
                 conversation={conv}
                 isSelected={conv.id === selectedId}
+                yesterdayLabel={yesterday}
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
@@ -220,13 +265,16 @@ export function ConversationList({
         {regularConversations.length > 0 && (
           <div>
             {pinnedConversations.length > 0 && (
-              <p className="text-xs font-medium text-muted-foreground px-3 mb-2">All messages</p>
+              <p className="mb-1 px-3 pt-1 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <BilingualText en={messagesEn('all_messages')} el={messagesEl('all_messages')} compact />
+              </p>
             )}
             {regularConversations.map((conv) => (
               <ConversationItem
                 key={conv.id}
                 conversation={conv}
                 isSelected={conv.id === selectedId}
+                yesterdayLabel={yesterday}
                 onSelect={() => onSelect(conv)}
                 onArchive={() => onArchive?.(conv.id)}
                 onPin={() => onPin?.(conv.id)}
@@ -237,24 +285,32 @@ export function ConversationList({
         )}
 
         {filteredConversations.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="icon-lg text-primary-accessible" />
-            </div>
+          <div className="flex flex-col items-center justify-center gap-3 px-4 py-14 text-center">
+            <CfbGlyphWell name="messages" size="md" />
             <p className="text-sm font-medium text-foreground">
-              {searchQuery ? 'No conversations found' : 'No messages yet'}
+              {searchQuery ? (
+                <BilingualText en={messagesEn('no_conversations_found')} el={messagesEl('no_conversations_found')} />
+              ) : (
+                <BilingualText en={messagesEn('no_conversations')} el={messagesEl('no_conversations')} />
+              )}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {searchQuery
-                ? `No results for "${searchQuery}"`
-                : 'Connect with founders, mentors, and investors to start chatting'}
+            <p className="max-w-[16rem] text-xs text-muted-foreground">
+              {searchQuery ? (
+                <>
+                  <BilingualText en={messagesEn('no_results_for')} el={messagesEl('no_results_for')} compact />
+                  {` “${searchQuery}”`}
+                </>
+              ) : (
+                <BilingualText en={messagesEn('connect_to_chat')} el={messagesEl('connect_to_chat')} />
+              )}
             </p>
             {!searchQuery && (
               <Link
                 href="/discover"
-                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible hover:bg-primary/20 transition-colors"
+                className="mt-1 inline-flex items-center gap-1.5 rounded-xl bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/20"
               >
-                Find people to message
+                <CfbGlyph name="people" className="icon-sm" />
+                <BilingualText en={messagesEn('find_people_message')} el={messagesEl('find_people_message')} compact />
               </Link>
             )}
           </div>

@@ -33,6 +33,7 @@ import {
 import { useToast } from '@/components/ui/toast';
 import { getAIModels, getAIAgents, getAIHealth, type AgentConfig } from '@/lib/ai-api';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { cn } from '@/lib/utils';
 
 type AIPreferences = {
   preferredModel: string;

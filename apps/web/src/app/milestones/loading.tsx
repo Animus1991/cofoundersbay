@@ -9,8 +9,8 @@ export default function MilestonesLoading() {
           <Skeleton className="h-8 w-36" />
           <Skeleton className="h-9 w-32 rounded-lg" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid gap-3 sm:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/60 bg-card p-4 space-y-2">
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-8 w-12" />

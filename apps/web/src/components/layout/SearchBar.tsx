@@ -4,12 +4,21 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  resolveBilingualPair,
+  useLanguagePreference,
+} from '@/lib/i18n/LanguagePreferenceContext';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+
+const SEARCH_EN = 'Search founders, mentors, skills…';
+const SEARCH_EL = 'Αναζήτηση ιδρυτών, μεντόρων, δεξιοτήτων…';
 
 export function SearchBar() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  const { primary, showSecondary } = useLanguagePreference();
+  const resolved = resolveBilingualPair(SEARCH_EN, SEARCH_EL, primary, showSecondary);
 
   function submit(event?: FormEvent) {
     event?.preventDefault();
@@ -24,9 +33,10 @@ export function SearchBar() {
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={bilingualInline('Search founders, mentors, skills…', 'Αναζήτηση ιδρυτών, μεντόρων, δεξιοτήτων…')}
+          placeholder={resolved.primaryText}
           className="pl-9"
-          aria-label={bilingualAria('Search', 'Αναζήτηση')}
+          lang={resolved.primaryLang}
+          aria-label={bilingualAria(SEARCH_EN, SEARCH_EL)}
         />
       </form>
       <Button
@@ -35,7 +45,7 @@ export function SearchBar() {
         size="icon"
         className="h-9 w-9 shrink-0 md:hidden"
         onClick={() => router.push('/search')}
-        aria-label={bilingualAria('Search', 'Αναζήτηση')}
+        aria-label={bilingualAria(SEARCH_EN, SEARCH_EL)}
       >
         <CfbGlyph name="discover" className="icon-md" />
       </Button>

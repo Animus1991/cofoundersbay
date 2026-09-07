@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,25 +8,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Presentation, 
-  Target,
-  Users,
-  TrendingUp,
-  DollarSign,
-  Lightbulb,
-  BarChart3,
-  Rocket,
-  Award,
-  Sparkles,
+import {
   Save,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
   Download,
-  Eye
+  Eye,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BuilderAskAiButton, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useToast } from '@/components/ui/toast';
 
 interface Slide {
   id: string;
@@ -48,22 +45,34 @@ interface PitchDeckData {
 
 interface PitchDeckBuilderProps {
   onSave?: (data: PitchDeckData) => void;
-  initialData?: Partial<PitchDeckData>;
+  initialData?: Partial<PitchDeckData> | { pitchDeck?: Partial<PitchDeckData> };
+  /** Dedicated `/builder/pitch-deck` route — AppShell already shows the title. */
+  hideTitle?: boolean;
 }
 
-const SLIDE_TEMPLATES = [
-  { type: 'cover', title: 'Cover', icon: Presentation, description: 'Company name, tagline, and visual identity' },
-  { type: 'problem', title: 'Problem', icon: Target, description: 'The pain point you are solving' },
-  { type: 'solution', title: 'Solution', icon: Lightbulb, description: 'Your unique approach to solving the problem' },
-  { type: 'market', title: 'Market Opportunity', icon: TrendingUp, description: 'TAM, SAM, SOM and market dynamics' },
-  { type: 'product', title: 'Product', icon: Rocket, description: 'Product demo, features, and benefits' },
-  { type: 'traction', title: 'Traction', icon: BarChart3, description: 'Key metrics, growth, and milestones' },
-  { type: 'business-model', title: 'Business Model', icon: DollarSign, description: 'How you make money' },
-  { type: 'competition', title: 'Competition', icon: Award, description: 'Competitive landscape and positioning' },
-  { type: 'team', title: 'Team', icon: Users, description: 'Founders and key team members' },
-  { type: 'financials', title: 'Financials', icon: DollarSign, description: 'Revenue projections and unit economics' },
-  { type: 'ask', title: 'The Ask', icon: Target, description: 'Funding amount and use of funds' },
-  { type: 'closing', title: 'Closing', icon: Presentation, description: 'Contact info and call to action' }
+function unwrapPitchDeck(
+  raw?: Partial<PitchDeckData> | { pitchDeck?: Partial<PitchDeckData> },
+): Partial<PitchDeckData> {
+  if (!raw || typeof raw !== 'object') return {};
+  if (Array.isArray((raw as PitchDeckData).slides)) return raw as Partial<PitchDeckData>;
+  const nested = (raw as { pitchDeck?: Partial<PitchDeckData> }).pitchDeck;
+  if (nested && typeof nested === 'object') return nested;
+  return raw as Partial<PitchDeckData>;
+}
+
+const SLIDE_TEMPLATES: { type: string; titleKey: 'slide_cover' | 'slide_problem' | 'slide_solution' | 'slide_market' | 'slide_product' | 'slide_traction' | 'slide_bmc' | 'slide_comp' | 'slide_team' | 'slide_fin' | 'slide_ask' | 'slide_close'; glyph: CfbGlyphName }[] = [
+  { type: 'cover', titleKey: 'slide_cover', glyph: 'builder' },
+  { type: 'problem', titleKey: 'slide_problem', glyph: 'target' },
+  { type: 'solution', titleKey: 'slide_solution', glyph: 'spark' },
+  { type: 'market', titleKey: 'slide_market', glyph: 'chart' },
+  { type: 'product', titleKey: 'slide_product', glyph: 'flag' },
+  { type: 'traction', titleKey: 'slide_traction', glyph: 'award' },
+  { type: 'business-model', titleKey: 'slide_bmc', glyph: 'wallet' },
+  { type: 'competition', titleKey: 'slide_comp', glyph: 'shield' },
+  { type: 'team', titleKey: 'slide_team', glyph: 'people' },
+  { type: 'financials', titleKey: 'slide_fin', glyph: 'wallet' },
+  { type: 'ask', titleKey: 'slide_ask', glyph: 'target' },
+  { type: 'closing', titleKey: 'slide_close', glyph: 'builder' },
 ];
 
 const defaultPitchDeckData: PitchDeckData = {
@@ -75,16 +84,33 @@ const defaultPitchDeckData: PitchDeckData = {
   useOfFunds: []
 };
 
-export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps) {
-  const [data, setData] = useState<PitchDeckData>({ ...defaultPitchDeckData, ...initialData });
+export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: PitchDeckBuilderProps) {
+  const t = useBuilderPrimaryText();
+  const { success } = useToast();
+  const didHydrate = useRef(false);
+  const [data, setData] = useState<PitchDeckData>({
+    ...defaultPitchDeckData,
+    ...unwrapPitchDeck(initialData),
+  });
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
-    const filledSlides = data.slides.filter(s => s.content.trim().length > 0).length;
-    const totalSlides = data.slides?.length || 1;
+    if (didHydrate.current) return;
+    const next = unwrapPitchDeck(initialData);
+    const hasPayload = Boolean(
+      next.slides?.length || next.companyName || next.tagline || next.askAmount || next.useOfFunds?.length,
+    );
+    if (!hasPayload) return;
+    didHydrate.current = true;
+    setData({ ...defaultPitchDeckData, ...next });
+  }, [initialData]);
+
+  useEffect(() => {
+    const filledSlides = data.slides.filter((s) => s.content.trim().length > 0).length;
+    const totalSlides = Math.max(data.slides.length, 1);
     setCompletionPercentage((filledSlides / totalSlides) * 100);
   }, [data.slides]);
 
@@ -95,7 +121,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
       const generatedSlides: Slide[] = SLIDE_TEMPLATES.map((template, index) => ({
         id: `slide-${index}`,
         type: template.type,
-        title: template.title,
+        title: builderEn(template.titleKey),
         content: getGeneratedContent(template.type),
         notes: getGeneratedNotes(template.type),
         order: index
@@ -161,7 +187,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
     const newSlide: Slide = {
       id: `slide-${Date.now()}`,
       type: template.type,
-      title: template.title,
+      title: builderEn(template.titleKey),
       content: '',
       notes: '',
       order: data.slides.length
@@ -204,59 +230,104 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
     onSave?.(data);
   };
 
+  const handleExport = () => {
+    const heading = data.companyName.trim() || 'Pitch Deck';
+    const parts = [
+      `# ${heading}`,
+      data.tagline,
+      data.askAmount ? `Ask: ${data.askAmount}` : '',
+      data.useOfFunds.filter((line) => line.trim()).length
+        ? `Use of funds:\n${data.useOfFunds.filter((line) => line.trim()).map((line) => `- ${line}`).join('\n')}`
+        : '',
+      ...data.slides.map((slide, index) => {
+        const notes = slide.notes.trim() ? `\n\n_Notes:_ ${slide.notes}` : '';
+        return `## ${index + 1}. ${slide.title}\n\n${slide.content}${notes}`;
+      }),
+    ].filter((block) => block && block.trim().length > 0);
+
+    const blob = new Blob([parts.join('\n\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    const slug = heading.toLowerCase().replace(/[^\w]+/g, '-').replace(/^-|-$/g, '') || 'pitch-deck';
+    anchor.href = url;
+    anchor.download = `${slug}.md`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    success(t(builderEn('pitch_exported'), builderEl('pitch_exported')));
+  };
+
   const currentSlide = data.slides[currentSlideIndex];
+
+  const renderSlideTitle = (slide: Slide) => {
+    const template = SLIDE_TEMPLATES.find((item) => item.type === slide.type);
+    if (template && slide.title === builderEn(template.titleKey)) {
+      return <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />;
+    }
+    return slide.title;
+  };
 
   return (
     <div className="space-y-6">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <div className="w-2 h-2 rounded-full bg-indigo-500" />
-            {data.slides.length} slides
-          </Badge>
-          <select
-            value={data.deckType}
-            onChange={(e) => setData(prev => ({ ...prev, deckType: e.target.value as PitchDeckData['deckType'] }))}
-            className="px-3 py-1.5 border rounded-md text-sm"
-          >
-            <option value="investor">Investor Deck</option>
-            <option value="accelerator">Accelerator Deck</option>
-            <option value="cofounder">Co-founder Deck</option>
-            <option value="grant">Grant Application</option>
-            <option value="competition">Competition Deck</option>
-          </select>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="icon-sm mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="icon-sm mr-2" />
-            )}
-            AI Generate
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="icon-sm mr-2" />
-            Export
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="icon-sm mr-2" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <BuilderStageHeader
+        glyph="builder"
+        titleEn={builderEn('tab_pitch')}
+        titleEl={builderEl('tab_pitch')}
+        subtitleEn={builderEn('pitch_lead')}
+        subtitleEl={builderEl('pitch_lead')}
+        hideTitle={hideTitle}
+        showAskAi={!hideTitle}
+        completion={hideTitle ? undefined : completionPercentage}
+        extraActions={
+          <>
+            <Badge variant="outline" className="gap-1.5 rounded-xl text-xs">
+              {data.slides.length}{' '}
+              <BilingualText en={builderEn('pitch_slides_n')} el={builderEl('pitch_slides_n')} compact />
+            </Badge>
+            <select
+              value={data.deckType}
+              onChange={(e) => setData((prev) => ({ ...prev, deckType: e.target.value as PitchDeckData['deckType'] }))}
+              className="h-8 rounded-xl border bg-background px-3 text-sm"
+              aria-label={bilingualAria(builderEn('pitch_investor'), builderEl('pitch_investor'))}
+            >
+              <option value="investor">{t(builderEn('pitch_investor'), builderEl('pitch_investor'))}</option>
+              <option value="accelerator">{t(builderEn('pitch_accel'), builderEl('pitch_accel'))}</option>
+              <option value="cofounder">{t(builderEn('pitch_cofounder'), builderEl('pitch_cofounder'))}</option>
+              <option value="grant">{t(builderEn('pitch_grant'), builderEl('pitch_grant'))}</option>
+              <option value="competition">{t(builderEn('pitch_comp'), builderEl('pitch_comp'))}</option>
+            </select>
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_generate')}
+                compact
+              />
+            </Button>
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={handleExport}>
+              <Download className="icon-sm mr-2" />
+              <BilingualText en={builderEn('pitch_export')} el={builderEl('pitch_export')} compact />
+            </Button>
+            <Button size="sm" className="rounded-xl" onClick={handleSave}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
+            </Button>
+          </>
+        }
+      />
 
-      {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>Deck Completion</span>
-          <span>{completionPercentage.toFixed(0)}%</span>
+          <span className="font-medium text-foreground">
+            <BilingualText en={builderEn('pitch_complete')} el={builderEl('pitch_complete')} compact />
+          </span>
+          <span className="tabular-nums text-muted-foreground">{completionPercentage.toFixed(0)}%</span>
         </div>
-        <Progress value={completionPercentage} className="h-2" />
+        <Progress value={completionPercentage} className="h-3 rounded-full" />
+        <p className="text-xs text-muted-foreground">
+          <BilingualText en={builderEn('pitch_complete_hint')} el={builderEl('pitch_complete_hint')} />
+        </p>
       </div>
 
       {/* Main Content */}
@@ -265,55 +336,74 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
         <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader className="py-3">
-              <CardTitle className="text-sm">Slides</CardTitle>
+              <CardTitle className="text-sm">
+                <BilingualText en={builderEn('pitch_slides')} el={builderEl('pitch_slides')} compact />
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 space-y-1 max-h-[400px] overflow-y-auto">
-              {data.slides.map((slide, index) => (
-                <div
-                  key={slide.id}
-                  className={cn(
-                    "p-2 rounded-md cursor-pointer flex items-center justify-between group",
-                    index === currentSlideIndex 
-                      ? "bg-primary text-primary-foreground" 
-                      : "hover:bg-muted"
-                  )}
-                  onClick={() => setCurrentSlideIndex(index)}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono w-5">{index + 1}</span>
-                    <span className="text-sm truncate">{slide.title}</span>
-                  </div>
-                  <div className={cn(
-                    "w-2 h-2 rounded-full",
-                    slide.content ? "bg-green-500" : "bg-gray-300"
-                  )} />
-                </div>
-              ))}
+            <CardContent className="max-h-[400px] space-y-1 overflow-y-auto p-2">
+              {data.slides.length === 0 ? (
+                <p className="px-2 py-3 text-xs text-muted-foreground">
+                  <BilingualText en={builderEn('pitch_no_slides_list')} el={builderEl('pitch_no_slides_list')} />
+                </p>
+              ) : (
+                data.slides.map((slide, index) => (
+                  <button
+                    type="button"
+                    key={slide.id}
+                    className={cn(
+                      'group flex w-full cursor-pointer items-center justify-between rounded-xl p-2 text-left',
+                      index === currentSlideIndex
+                        ? 'bg-primary text-primary-foreground'
+                        : 'hover:bg-muted',
+                    )}
+                    onClick={() => setCurrentSlideIndex(index)}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="w-5 font-mono text-xs">{index + 1}</span>
+                      <span className="truncate text-sm">{renderSlideTitle(slide)}</span>
+                    </div>
+                    <div
+                      className={cn(
+                        'h-2 w-2 shrink-0 rounded-full',
+                        slide.content.trim() ? 'bg-status-success' : 'bg-muted-foreground/30',
+                      )}
+                    />
+                  </button>
+                ))
+              )}
             </CardContent>
           </Card>
 
           {/* Add Slide */}
           <Card>
             <CardHeader className="py-3">
-              <CardTitle className="text-sm">Add Slide</CardTitle>
+              <CardTitle className="text-sm">
+                <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact />
+              </CardTitle>
             </CardHeader>
-            <CardContent className="p-2 space-y-1 max-h-[200px] overflow-y-auto">
-              {SLIDE_TEMPLATES.map(template => {
-                const Icon = template.icon;
-                const exists = data.slides.some(s => s.type === template.type);
+            <CardContent className="max-h-[200px] space-y-1 overflow-y-auto p-2">
+              <p className="px-2 pb-1 text-2xs text-muted-foreground">
+                <BilingualText en={builderEn('pitch_add_hint')} el={builderEl('pitch_add_hint')} />
+              </p>
+              {SLIDE_TEMPLATES.map((template) => {
+                const exists = data.slides.some((s) => s.type === template.type);
                 return (
                   <Button
                     key={template.type}
                     variant="ghost"
                     size="sm"
-                    className={cn(
-                      "w-full justify-start gap-2",
-                      exists && "opacity-50"
-                    )}
+                    className={cn('w-full justify-start gap-2 rounded-xl', exists && 'opacity-60')}
                     onClick={() => addSlide(template.type)}
                   >
-                    <Icon className="icon-sm" />
-                    <span className="text-xs">{template.title}</span>
+                    <CfbGlyph name={template.glyph} className="icon-sm" />
+                    <span className="text-xs">
+                      <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
+                    </span>
+                    {exists && (
+                      <span className="ml-auto text-2xs text-muted-foreground">
+                        <BilingualText en={builderEn('pitch_in_deck')} el={builderEl('pitch_in_deck')} compact />
+                      </span>
+                    )}
                   </Button>
                 );
               })}
@@ -326,18 +416,16 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
           {data.slides.length === 0 ? (
             <Card className="h-[500px] flex items-center justify-center">
               <div className="text-center">
-                <Presentation className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-semibold mb-2">No slides yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Click "AI Generate" to create a complete deck, or add slides manually
+                <CfbGlyphWell name="builder" size="lg" className="mx-auto mb-4 opacity-70" />
+                <h3 className="mb-2 text-lg font-semibold">
+                  <BilingualText en={builderEn('pitch_empty')} el={builderEl('pitch_empty')} />
+                </h3>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('pitch_empty_hint')} el={builderEl('pitch_empty_hint')} />
                 </p>
-                <Button onClick={generateWithAI} disabled={isGenerating}>
-                  {isGenerating ? (
-                    <RefreshCw className="icon-sm mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="icon-sm mr-2" />
-                  )}
-                  Generate Full Deck
+                <Button className="rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
+                  {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+                  <BilingualText en={builderEn('pitch_gen_full')} el={builderEl('pitch_gen_full')} compact />
                 </Button>
               </div>
             </Card>
@@ -348,8 +436,10 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                   <Button
                     variant="outline"
                     size="icon"
+                    className="rounded-xl"
                     onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                     disabled={currentSlideIndex === 0}
+                    aria-label={bilingualAria(builderEn('pitch_prev'), builderEl('pitch_prev'))}
                   >
                     <ChevronLeft className="icon-sm" />
                   </Button>
@@ -361,15 +451,17 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                       <Input
                         value={currentSlide.title}
                         onChange={(e) => updateSlide('title', e.target.value)}
-                        className="font-semibold text-lg h-8 w-48"
+                        className="h-8 w-48 rounded-xl text-lg font-semibold"
                       />
                     </CardTitle>
                   </div>
                   <Button
                     variant="outline"
                     size="icon"
+                    className="rounded-xl"
                     onClick={() => setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))}
                     disabled={currentSlideIndex === data.slides.length - 1}
+                    aria-label={bilingualAria(builderEn('pitch_next'), builderEl('pitch_next'))}
                   >
                     <ChevronRight className="icon-sm" />
                   </Button>
@@ -378,33 +470,47 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                   <Button
                     variant="outline"
                     size="sm"
+                    className="rounded-xl"
                     onClick={() => moveSlide(currentSlideIndex, 'up')}
                     disabled={currentSlideIndex === 0}
+                    aria-label={bilingualAria(builderEn('pitch_move_up'), builderEl('pitch_move_up'))}
                   >
                     ↑
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
+                    className="rounded-xl"
                     onClick={() => moveSlide(currentSlideIndex, 'down')}
                     disabled={currentSlideIndex === data.slides.length - 1}
+                    aria-label={bilingualAria(builderEn('pitch_move_down'), builderEl('pitch_move_down'))}
                   >
                     ↓
                   </Button>
+                  <BuilderAskAiButton
+                    labelEn={builderEn('pitch_ask_slide')}
+                    labelEl={builderEl('pitch_ask_slide')}
+                  />
                   <Button
                     variant="outline"
                     size="sm"
+                    className="rounded-xl"
                     onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}
                   >
                     <Eye className="icon-sm mr-1" />
-                    {viewMode === 'edit' ? 'Preview' : 'Edit'}
+                    <BilingualText
+                      en={viewMode === 'edit' ? builderEn('pitch_preview') : builderEn('pitch_edit')}
+                      el={viewMode === 'edit' ? builderEl('pitch_preview') : builderEl('pitch_edit')}
+                      compact
+                    />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
+                    className="rounded-xl"
                     onClick={() => removeSlide(currentSlideIndex)}
                   >
-                    Delete
+                    <BilingualText en={builderEn('pitch_delete')} el={builderEl('pitch_delete')} compact />
                   </Button>
                 </div>
               </CardHeader>
@@ -412,26 +518,26 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                 {viewMode === 'edit' ? (
                   <>
                     <div>
-                      <Label>Slide Content</Label>
+                      <Label><BilingualText en={builderEn('pitch_content')} el={builderEl('pitch_content')} compact /></Label>
                       <Textarea
                         value={currentSlide.content}
                         onChange={(e) => updateSlide('content', e.target.value)}
-                        placeholder="Enter slide content (use bullet points, key messages)..."
-                        className="min-h-[250px] font-mono text-sm"
+                        placeholder={t(builderEn('pitch_content_ph'), builderEl('pitch_content_ph'))}
+                        className="min-h-[250px] rounded-xl font-mono text-sm"
                       />
                     </div>
                     <div>
-                      <Label>Speaker Notes</Label>
+                      <Label><BilingualText en={builderEn('pitch_notes')} el={builderEl('pitch_notes')} compact /></Label>
                       <Textarea
                         value={currentSlide.notes}
                         onChange={(e) => updateSlide('notes', e.target.value)}
-                        placeholder="Notes for the presenter..."
-                        className="min-h-[80px] text-sm"
+                        placeholder={t(builderEn('pitch_notes_ph'), builderEl('pitch_notes_ph'))}
+                        className="min-h-[80px] rounded-xl text-sm"
                       />
                     </div>
                   </>
                 ) : (
-                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-lg p-8 min-h-[350px]">
+                  <div className="min-h-[350px] rounded-xl bg-foreground p-8 text-background">
                     <h2 className="text-2xl font-bold mb-6">{currentSlide.title}</h2>
                     <div className="whitespace-pre-wrap text-lg leading-relaxed">
                       {currentSlide.content}
@@ -447,34 +553,83 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
       {/* Deck Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Deck Information</CardTitle>
+          <CardTitle className="text-base">
+            <BilingualText en={builderEn('pitch_info')} el={builderEl('pitch_info')} compact />
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
+          </p>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Label>Company Name</Label>
+              <Label><BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact /></Label>
               <Input
+                className="rounded-xl"
                 value={data.companyName}
-                onChange={(e) => setData(prev => ({ ...prev, companyName: e.target.value }))}
-                placeholder="Your company name"
+                onChange={(e) => setData((prev) => ({ ...prev, companyName: e.target.value }))}
+                placeholder={t(builderEn('pitch_company_ph'), builderEl('pitch_company_ph'))}
               />
             </div>
             <div>
-              <Label>Tagline</Label>
+              <Label><BilingualText en={builderEn('pitch_tagline')} el={builderEl('pitch_tagline')} compact /></Label>
               <Input
+                className="rounded-xl"
                 value={data.tagline}
-                onChange={(e) => setData(prev => ({ ...prev, tagline: e.target.value }))}
-                placeholder="Your company tagline"
+                onChange={(e) => setData((prev) => ({ ...prev, tagline: e.target.value }))}
+                placeholder={t(builderEn('pitch_tagline_ph'), builderEl('pitch_tagline_ph'))}
               />
             </div>
             <div>
-              <Label>Funding Ask</Label>
+              <Label><BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact /></Label>
               <Input
+                className="rounded-xl"
                 value={data.askAmount}
-                onChange={(e) => setData(prev => ({ ...prev, askAmount: e.target.value }))}
-                placeholder="e.g., $500,000"
+                onChange={(e) => setData((prev) => ({ ...prev, askAmount: e.target.value }))}
+                placeholder={t(builderEn('pitch_ask_ph'), builderEl('pitch_ask_ph'))}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label><BilingualText en={builderEn('pitch_use_funds')} el={builderEl('pitch_use_funds')} compact /></Label>
+            {data.useOfFunds.map((line, index) => (
+              <div key={`fund-${index}`} className="flex gap-2">
+                <Input
+                  className="rounded-xl"
+                  value={line}
+                  onChange={(e) => {
+                    const next = [...data.useOfFunds];
+                    next[index] = e.target.value;
+                    setData((prev) => ({ ...prev, useOfFunds: next }));
+                  }}
+                  placeholder={t(builderEn('pitch_use_funds_ph'), builderEl('pitch_use_funds_ph'))}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-xl"
+                  aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
+                  onClick={() =>
+                    setData((prev) => ({
+                      ...prev,
+                      useOfFunds: prev.useOfFunds.filter((_, i) => i !== index),
+                    }))
+                  }
+                >
+                  <X className="icon-sm" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-xl"
+              onClick={() => setData((prev) => ({ ...prev, useOfFunds: [...prev.useOfFunds, ''] }))}
+            >
+              <BilingualText en={builderEn('pitch_add_use')} el={builderEl('pitch_add_use')} compact />
+            </Button>
           </div>
         </CardContent>
       </Card>

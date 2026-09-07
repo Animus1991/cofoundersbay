@@ -1,14 +1,8 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
-import {
-  ArrowRight, Briefcase, Calendar, ChevronRight,
-  FileText, Flag, MessageCircle, Rocket, Sparkles,
-  Target, TrendingUp, UserPlus, Users, Zap, DollarSign, Eye,
-  Award, BrainCircuit, GraduationCap, BarChart3,
-  BookOpen, Store, Globe, Shield, Gauge, Activity,
-  CheckCircle2, Circle, AlertCircle,
-} from 'lucide-react';
+import { ArrowRight, ChevronRight, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
 import { queryKeys } from '@/lib/query-keys';
@@ -28,9 +23,13 @@ import {
   getRecommendations,
   listConnectionRequests,
   getVentureReadiness,
-  getMyXP,
   type SearchHit,
 } from '@/lib/api';
+import {
+  fundraisingRoundView,
+  fundraisingPipelineStats,
+  FUNDRAISING_SEED_LEADS,
+} from '@/lib/fundraising-demo';
 import {
   OnboardingChecklist,
   buildOnboardingSteps,
@@ -44,12 +43,45 @@ import { BadgesWidget } from '@/components/gamification/BadgesWidget';
 import { BilingualText } from '@/components/common/BilingualText';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
   if (hour < 12) return { en: dashboardEn('good_morning'), el: dashboardEl('good_morning') };
   if (hour < 17) return { en: dashboardEn('good_afternoon'), el: dashboardEl('good_afternoon') };
   return { en: dashboardEn('good_evening'), el: dashboardEl('good_evening') };
+}
+
+function AskAiButton({
+  labelEn,
+  labelEl,
+  className,
+  variant = 'outline',
+  size = 'sm',
+}: {
+  labelEn?: string;
+  labelEl?: string;
+  className?: string;
+  variant?: 'outline' | 'ghost' | 'secondary';
+  size?: 'sm' | 'md';
+}) {
+  const { open } = usePopupChat();
+  return (
+    <Button
+      type="button"
+      variant={variant}
+      size={size}
+      className={cn('gap-1.5', className)}
+      onClick={() => open()}
+    >
+      <CfbGlyph name="spark" className="icon-sm" />
+      <BilingualText
+        en={labelEn ?? dashboardEn('ask_ai')}
+        el={labelEl ?? dashboardEl('ask_ai')}
+        compact
+      />
+    </Button>
+  );
 }
 
 // ── Demo data ─────────────────────────────────────────────────────────────────
@@ -67,27 +99,18 @@ function isoInDays(offsetDays: number): string {
 }
 
 const DEMO_MILESTONES = [
-  { id: '1', title: 'Complete MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
-  { id: '2', title: 'First 100 active users', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
-  { id: '3', title: 'Seed funding round', status: 'pending', progress: 10, dueDate: isoInDays(100), priority: 'medium' },
-  { id: '4', title: 'Build founding team', status: 'pending', progress: 0, dueDate: isoInDays(39), priority: 'high' },
+  { id: '1', titleEn: 'Complete MVP v1', titleEl: 'Ολοκλήρωση MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
+  { id: '2', titleEn: 'First 100 active users', titleEl: 'Πρώτοι 100 ενεργοί χρήστες', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
+  { id: '3', titleEn: 'Seed funding round', titleEl: 'Γύρος Seed χρηματοδότησης', status: 'pending', progress: 10, dueDate: isoInDays(100), priority: 'medium' },
+  { id: '4', titleEn: 'Build founding team', titleEl: 'Συγκρότηση ιδρυτικής ομάδας', status: 'pending', progress: 0, dueDate: isoInDays(39), priority: 'high' },
 ];
 
 const DEMO_ACTIVITY = [
-  { id: '1', type: 'match', text: 'New 87% match — Nikos Papadakis, CTO', time: '2h ago', icon: Sparkles, color: 'text-primary-accessible' },
-  { id: '2', type: 'connection', text: 'Elena Papadopoulos accepted your request', time: '5h ago', icon: UserPlus, color: STATUS.success.icon },
-  { id: '3', type: 'message', text: 'New message from Marcus Chen', time: '8h ago', icon: MessageCircle, color: STATUS.info.icon },
-  { id: '4', type: 'view', text: 'Your profile was viewed 12 times today', time: '1d ago', icon: Eye, color: STATUS.warning.icon },
+  { id: '1', glyph: 'spark' as const, textEn: 'New 87% match — Nikos Papadakis, CTO', textEl: 'Νέα αντιστοίχιση 87% — Νίκος Παπαδάκης, CTO', timeEn: '2h ago', timeEl: 'πριν 2 ώρες' },
+  { id: '2', glyph: 'people' as const, textEn: 'Elena Papadopoulos accepted your request', textEl: 'Η Έλενα Παπαδοπούλου αποδέχτηκε το αίτημά σας', timeEn: '5h ago', timeEl: 'πριν 5 ώρες' },
+  { id: '3', glyph: 'messages' as const, textEn: 'New message from Marcus Chen', textEl: 'Νέο μήνυμα από τον Marcus Chen', timeEn: '8h ago', timeEl: 'πριν 8 ώρες' },
+  { id: '4', glyph: 'profile' as const, textEn: 'Your profile was viewed 12 times today', textEl: 'Το προφίλ σας προβλήθηκε 12 φορές σήμερα', timeEn: '1d ago', timeEl: 'πριν 1 ημέρα' },
 ];
-
-const FUNDRAISING_DEMO = {
-  roundName: 'Pre-Seed Round',
-  targetAmount: 300000,
-  raisedAmount: 85000,
-  currency: '€',
-  leadCount: 8,
-  committedCount: 2,
-};
 
 type EventType = 'mentorship' | 'deadline' | 'event' | 'pitch';
 const EVENT_CONFIG: Record<EventType, StatusTone> = {
@@ -100,36 +123,48 @@ const EVENT_CONFIG: Record<EventType, StatusTone> = {
 // daysLeft is derived from the date so the two can never disagree.
 const DEMO_EVENTS = (
   [
-    { id: '1', title: 'Mentor Session — Dr. Sarah Chen', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
-    { id: '2', title: 'Pitch Deck Deadline', type: 'deadline' as EventType, time: '23:59', daysLeft: 4 },
-    { id: '3', title: 'Startup Networking Mixer', type: 'event' as EventType, time: '18:00', daysLeft: 9 },
-    { id: '4', title: 'Investor Demo Day', type: 'pitch' as EventType, time: '10:00', daysLeft: 17 },
+    { id: '1', titleEn: 'Mentor Session — Dr. Sarah Chen', titleEl: 'Συνεδρία μέντορα — Dr. Sarah Chen', type: 'mentorship' as EventType, time: '14:00', daysLeft: 2 },
+    { id: '2', titleEn: 'Pitch Deck Deadline', titleEl: 'Προθεσμία pitch deck', type: 'deadline' as EventType, time: '23:59', daysLeft: 4 },
+    { id: '3', titleEn: 'Startup Networking Mixer', titleEl: 'Networking mixer νεοφυών', type: 'event' as EventType, time: '18:00', daysLeft: 9 },
+    { id: '4', titleEn: 'Investor Demo Day', titleEl: 'Demo Day επενδυτών', type: 'pitch' as EventType, time: '10:00', daysLeft: 17 },
   ]
 ).map((e) => ({ ...e, date: isoInDays(e.daysLeft) }));
+
+const QUICK_ACTIONS: { href: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
+  { href: '/discover', glyph: 'discover', labelEn: 'Find co-founders', labelEl: 'Εύρεση συνιδρυτών' },
+  { href: '/mentoring', glyph: 'mentor', labelEn: 'Find mentors', labelEl: 'Εύρεση μεντόρων' },
+  { href: '/coaching', glyph: 'mentor', labelEn: 'Coaching', labelEl: 'Καθοδήγηση' },
+  { href: '/expert-reviews', glyph: 'award', labelEn: 'Expert review', labelEl: 'Αξιολόγηση ειδικού' },
+  { href: '/opportunities', glyph: 'target', labelEn: 'Opportunities', labelEl: 'Ευκαιρίες' },
+  { href: '/programs', glyph: 'award', labelEn: 'Programs', labelEl: 'Προγράμματα' },
+  { href: '/marketplace', glyph: 'briefcase', labelEn: 'Services', labelEl: 'Υπηρεσίες' },
+  { href: '/analytics', glyph: 'chart', labelEn: 'Analytics', labelEl: 'Αναλυτικά' },
+];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function StatCard({
-  icon: Icon, label, value, trend, href, accent,
+  glyph, label, value, trend, href,
 }: {
-  icon: React.ElementType; label: React.ReactNode; value: number | string;
-  trend?: { value: number; positive: boolean }; href?: string; accent?: string;
+  glyph: CfbGlyphName; label: ReactNode; value: number | string;
+  trend?: { value: number; positive: boolean }; href?: string;
 }) {
   const content = (
-    <Card className="relative overflow-hidden transition-all hover:shadow-md cursor-pointer">
+    <Card className="relative overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="text-xl font-bold tabular-nums">{value}</p>
             {trend && (
               <p className={cn('text-xs font-medium', trend.positive ? TREND.up : TREND.down)}>
-                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}% this week
+                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%{' '}
+                <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} compact />
               </p>
             )}
           </div>
-          <div className={cn('rounded-lg p-2', accent ?? 'bg-primary/10')}>
-            <Icon className={cn('icon-md', accent ? 'text-white' : 'text-primary-accessible')} />
+          <div className="rounded-lg bg-primary/10 p-2">
+            <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
           </div>
         </div>
       </CardContent>
@@ -142,7 +177,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
   return (
-    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
+    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
@@ -155,7 +190,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
       </div>
       <div className="flex items-center gap-1.5">
         <span className={cn('text-sm font-bold tabular-nums flex items-center gap-0.5', scoreColor)}>
-          <Sparkles className="icon-sm" />{score}%
+          <CfbGlyph name="spark" className="icon-sm" />{score}%
         </span>
         <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
       </div>
@@ -187,7 +222,9 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium truncate">{milestone.title}</p>
+          <p className="text-sm font-medium truncate">
+            <BilingualText en={milestone.titleEn} el={milestone.titleEl} compact />
+          </p>
           {/* 'warning', not 'destructive': high priority is not an error state, and
               reserving red for overdue/failure keeps the colour meaningful.
               The word 'priority' is spelled out — a bare 'High' next to a
@@ -242,13 +279,6 @@ export default function FounderDashboardContent() {
     enabled: hasSession && mounted,
   });
 
-  const { data: xpData } = useQuery({
-    queryKey: ['my-xp'],
-    queryFn: getMyXP,
-    enabled: hasSession && mounted,
-    staleTime: 5 * 60_000,
-  });
-
   const { data: vrs } = useQuery({
     queryKey: ['venture-readiness'],
     queryFn: getVentureReadiness,
@@ -257,14 +287,17 @@ export default function FounderDashboardContent() {
   });
 
   const displayName = profile?.profile?.displayName || 'Founder';
-  const pendingRequests = connectionRequests?.connections?.filter((r: any) => r.status === 'pending')?.length ?? 0;
+  const pendingRequests = connectionRequests?.connections?.filter((r: { status?: string }) => r.status === 'pending')?.length ?? 0;
   const profilePct = profile?.hasCompletedOnboarding ? 100 : 52;
   const avgReadiness = vrs?.overall ?? 0;
-  const fundingPct = Math.round((FUNDRAISING_DEMO.raisedAmount / FUNDRAISING_DEMO.targetAmount) * 100);
+  const fundRound = fundraisingRoundView(FUNDRAISING_SEED_LEADS);
+  const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
+  const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
+  const greeting = getTimeBasedGreeting();
 
   const onboardingSteps = buildOnboardingSteps({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
-    hasPreferences:  !!((profile?.profile as any)?.lookingFor && ((profile?.profile as any)?.lookingFor as unknown[])?.length > 0),
+    hasPreferences:  !!((profile?.profile as { lookingFor?: unknown[] } | undefined)?.lookingFor && ((profile?.profile as { lookingFor?: unknown[] }).lookingFor as unknown[])?.length > 0),
     hasConnection:   (vrs?.signals?.connectionCount ?? 0) > 0,
     hasBoard:        (vrs?.signals?.boardCount ?? 0) > 0,
     hasArtifact:     (vrs?.signals?.docCount ?? 0) > 0,
@@ -275,7 +308,7 @@ export default function FounderDashboardContent() {
 
   const nextAction = deriveNextAction({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),
-    hasPreferences:  !!((profile?.profile as any)?.lookingFor && ((profile?.profile as any)?.lookingFor as unknown[])?.length > 0),
+    hasPreferences:  !!((profile?.profile as { lookingFor?: unknown[] } | undefined)?.lookingFor && ((profile?.profile as { lookingFor?: unknown[] }).lookingFor as unknown[])?.length > 0),
     connectionCount: vrs?.signals?.connectionCount ?? 0,
     boardCount:      vrs?.signals?.boardCount ?? 0,
     docCount:        vrs?.signals?.docCount ?? 0,
@@ -299,17 +332,16 @@ export default function FounderDashboardContent() {
 
   return (
     <AppShell
-      title={`${getTimeBasedGreeting().en}, ${displayName}`}
-      description="Your startup command center — track progress, find team, and close your round."
       showHelp
       actions={
         <>
+          <AskAiButton variant="outline" />
           <Badge variant="outline" className="gap-1.5">
-            <Rocket className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
+            <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
           </Badge>
           <Link href="/readiness">
             <Button variant="outline" size="sm" className="gap-1.5">
-              <Gauge className="icon-sm" />
+              <CfbGlyph name="chart" className="icon-sm" />
               <BilingualText en={`Readiness: ${avgReadiness}%`} el={`Ετοιμότητα: ${avgReadiness}%`} compact />
             </Button>
           </Link>
@@ -317,6 +349,13 @@ export default function FounderDashboardContent() {
       }
     >
       <div className="space-y-6">
+
+        <p className="text-sm text-muted-foreground">
+          <BilingualText
+            en={`${greeting.en}, ${displayName}. ${dashboardEn('greeting_lead')}`}
+            el={`${greeting.el}, ${displayName}. ${dashboardEl('greeting_lead')}`}
+          />
+        </p>
 
         {/* Getting-started checklist. */}
         <OnboardingChecklist steps={onboardingSteps} />
@@ -333,10 +372,10 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-          <StatCard icon={Users} label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
-          <StatCard icon={Sparkles} label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard icon={MessageCircle} label={<BilingualText en="Unread Messages" el="Αδιάβαστα μηνύματα" stacked />} value={3} href="/messages" />
-          <StatCard icon={Target} label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
+          <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
+          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked />} value={3} href="/messages" />
+          <StatCard glyph="flag" label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -353,40 +392,50 @@ export default function FounderDashboardContent() {
               <VentureReadinessCard
                 data={vrs}
                 footer={
-                  <div className="grid gap-2 sm:grid-cols-3">
-                    <Link href="/readiness" className="w-full">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Gauge className="icon-sm" aria-hidden="true" />
-                        <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
-                      </Button>
-                    </Link>
-                    <Link href="/builder" className="w-full">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <FileText className="icon-sm" aria-hidden="true" />
-                        <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
-                      </Button>
-                    </Link>
-                    <Link href="/expert-reviews" className="w-full">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Award className="icon-sm" aria-hidden="true" />
-                        <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
-                      </Button>
-                    </Link>
+                  <div className="space-y-2">
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <Link href="/readiness" className="w-full">
+                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                          <CfbGlyph name="chart" className="icon-sm" />
+                          <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
+                        </Button>
+                      </Link>
+                      <Link href="/builder" className="w-full">
+                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                          <CfbGlyph name="builder" className="icon-sm" />
+                          <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
+                        </Button>
+                      </Link>
+                      <Link href="/expert-reviews" className="w-full">
+                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                          <CfbGlyph name="award" className="icon-sm" />
+                          <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
+                        </Button>
+                      </Link>
+                    </div>
+                    <AskAiButton
+                      variant="ghost"
+                      className="w-full"
+                      labelEn={dashboardEn('ask_ai_readiness')}
+                      labelEl={dashboardEl('ask_ai_readiness')}
+                    />
                   </div>
                 }
               />
             )}
 
             {/* Fundraising widget */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <DollarSign className={cn('icon-sm', STATUS.success.icon)} /> <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
+                    <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
                   <Link href="/fundraising">
-                    <Button variant="ghost" size="sm">
-                      Open tracker <ArrowRight className="ml-1 icon-sm" />
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
+                      <ArrowRight className="icon-sm" />
                     </Button>
                   </Link>
                 </div>
@@ -395,11 +444,13 @@ export default function FounderDashboardContent() {
                 <div className="space-y-3">
                   <div className="flex items-end justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground">{FUNDRAISING_DEMO.roundName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {fundRound.name}
+                      </p>
                       <p className="text-xl font-bold text-foreground">
-                        {FUNDRAISING_DEMO.currency}{(FUNDRAISING_DEMO.raisedAmount / 1000).toFixed(0)}K
+                        {fundRound.currency}{(fundRound.raised / 1000).toFixed(0)}K
                         <span className="text-sm font-normal text-muted-foreground ml-1">
-                          / {FUNDRAISING_DEMO.currency}{(FUNDRAISING_DEMO.targetAmount / 1000).toFixed(0)}K
+                          / {fundRound.currency}{(fundRound.target / 1000).toFixed(0)}K
                         </span>
                       </p>
                     </div>
@@ -412,18 +463,28 @@ export default function FounderDashboardContent() {
                   </div>
                   <Progress value={fundingPct} className="h-2.5" />
                   <div className="flex gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Users className="icon-sm" /> {FUNDRAISING_DEMO.leadCount} leads tracked</span>
-                    <span className="flex items-center gap-1"><CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} /> {FUNDRAISING_DEMO.committedCount} committed</span>
+                    <span className="flex items-center gap-1">
+                      <CfbGlyph name="people" className="icon-sm" />
+                      {fundStats.total}{' '}
+                      <BilingualText en={dashboardEn('leads_tracked')} el={dashboardEl('leads_tracked')} compact />
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                      {fundStats.committed}{' '}
+                      <BilingualText en={dashboardEn('committed_count')} el={dashboardEl('committed_count')} compact />
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     <Link href="/fundraising" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <TrendingUp className="icon-sm" /> Manage Pipeline
+                        <CfbGlyph name="wallet" className="icon-sm" />
+                        <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
                       </Button>
                     </Link>
                     <Link href="/investors" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
-                        <Globe className="icon-sm" /> Find Investors
+                        <CfbGlyph name="discover" className="icon-sm" />
+                        <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
                       </Button>
                     </Link>
                   </div>
@@ -432,14 +493,18 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Top Matches */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary-accessible" /> <BilingualText en="Top Matches for You" el="Κορυφαίες αντιστοιχίσεις" />
+                    <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
                   </CardTitle>
                   <Link href="/matches">
-                    <Button variant="ghost" size="sm">View all <ArrowRight className="ml-1 icon-sm" /></Button>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                      <ArrowRight className="icon-sm" />
+                    </Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -448,29 +513,45 @@ export default function FounderDashboardContent() {
                   <MatchPreviewCard key={match.userId} match={match} />
                 ))}
                 {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
-                  <div className="text-center py-6">
+                  <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-center">
+                    <CfbGlyphWell name="matches" size="md" className="mx-auto mb-3" />
                     <p className="text-sm text-muted-foreground">
-                      <BilingualText en="Complete your profile to get personalized matches" el="Ολοκληρώστε το προφίλ σας για εξατομικευμένες αντιστοιχίσεις" />
+                      <BilingualText
+                        en={dashboardEn('complete_profile_for_matches')}
+                        el={dashboardEl('complete_profile_for_matches')}
+                      />
                     </p>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm" className="mt-2 gap-1.5">
-                        <BilingualText en="Complete profile" el="Ολοκλήρωση προφίλ" />
-                      </Button>
-                    </Link>
+                    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                      <Link href="/profile/edit">
+                        <Button variant="outline" size="sm" className="gap-1.5">
+                          <CfbGlyph name="profile" className="icon-sm" />
+                          <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
+                        </Button>
+                      </Link>
+                      <AskAiButton
+                        variant="ghost"
+                        labelEn={dashboardEn('ask_ai_matches')}
+                        labelEl={dashboardEl('ask_ai_matches')}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* Milestones */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm text-primary-accessible" /> <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
+                    <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
                   <Link href="/milestones">
-                    <Button variant="ghost" size="sm">Manage <ArrowRight className="ml-1 icon-sm" /></Button>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
+                      <ArrowRight className="icon-sm" />
+                    </Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -486,51 +567,25 @@ export default function FounderDashboardContent() {
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />
 
-            {/* XP Progress Widget (new comprehensive version) */}
+            {/* XP Progress Widget */}
             <XPProgressWidget />
 
             {/* Badges Widget */}
             <BadgesWidget />
 
-            {/* XP Progress Strip (legacy - can be removed after testing) */}
-            {false && xpData ? (
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Zap className={cn('icon-sm', STATUS.warning.icon)} />
-                    XP Progress
-                    {(xpData?.streak?.currentStreak ?? 0) > 0 && (
-                      <span className={cn('ml-auto text-xs font-normal', STATUS.warning.icon)}>
-                        🔥 {xpData?.streak?.currentStreak}-day streak
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-foreground">Level {xpData?.level ?? 1} — {xpData?.levelLabel ?? 'Member'}</span>
-                    <span className="text-muted-foreground tabular-nums">{(xpData?.totalXp ?? 0).toLocaleString()} XP</span>
-                  </div>
-                  <Progress value={(xpData?.levelProgress ?? 0) * 100} className="h-2" />
-                  <p className="text-xs text-muted-foreground">
-                    {(xpData?.xpToNextLevel ?? 0) > 0
-                      ? `${xpData?.xpToNextLevel.toLocaleString()} XP to next level`
-                      : 'Maximum level reached'}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : null}
-
             {/* Profile Strength */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Shield className="icon-sm text-primary-accessible" /> <BilingualText en="Profile Strength" el="Ισχύς προφίλ" />
+                  <CfbGlyph name="shield" className="icon-sm text-primary-accessible" />
+                  <BilingualText en={dashboardEn('profile_strength')} el={dashboardEl('profile_strength')} />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Completion</span>
+                  <span className="text-muted-foreground">
+                    <BilingualText en={dashboardEn('completion')} el={dashboardEl('completion')} compact />
+                  </span>
                   <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
                 </div>
                 <Progress value={profilePct} className="h-2" />
@@ -551,8 +606,9 @@ export default function FounderDashboardContent() {
                 </div>
                 {profilePct < 100 && (
                   <Link href="/profile/edit">
-                    <Button variant="secondary" size="sm" className="w-full">
-                      <BilingualText en="Complete profile" el="Ολοκλήρωση προφίλ" />
+                    <Button variant="secondary" size="sm" className="w-full gap-1.5">
+                      <CfbGlyph name="profile" className="icon-sm" />
+                      <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
                     </Button>
                   </Link>
                 )}
@@ -560,24 +616,21 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Quick Actions Grid */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm"><BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} /></CardTitle>
+                <CardTitle className="text-sm">
+                  <BilingualText en={dashboardEn('quick_actions')} el={dashboardEl('quick_actions')} />
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { href: '/discover', icon: Users, labelEn: 'Find Co-founders', labelEl: 'Εύρεση συνιδρυτών', tone: 'accent' as const },
-                    { href: '/mentoring', icon: GraduationCap, labelEn: 'Find Mentors', labelEl: 'Εύρεση μεντόρων', tone: 'info' as const },
-                    { href: '/coaching', icon: BrainCircuit, labelEn: 'Coaching', labelEl: 'Καθοδήγηση', tone: 'accent' as const },
-                    { href: '/expert-reviews', icon: Award, labelEn: 'Expert Review', labelEl: 'Αξιολόγηση ειδικού', tone: 'warning' as const },
-                    { href: '/opportunities', icon: Briefcase, labelEn: 'Opportunities', labelEl: 'Ευκαιρίες', tone: 'success' as const },
-                    { href: '/programs', icon: BookOpen, labelEn: 'Programs', labelEl: 'Προγράμματα', tone: 'success' as const },
-                    { href: '/marketplace', icon: Store, labelEn: 'Services', labelEl: 'Υπηρεσίες', tone: 'warning' as const },
-                    { href: '/analytics', icon: BarChart3, labelEn: 'Analytics', labelEl: 'Αναλυτικά', tone: 'info' as const },
-                  ].map(({ href, icon: Icon, labelEn, labelEl, tone }) => (
-                    <Link key={href} href={href} className="flex flex-col items-center gap-1.5 rounded-lg border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border">
-                      <Icon className={cn('icon-md', STATUS[tone].icon)} />
+                  {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className="flex flex-col items-center gap-1.5 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
+                    >
+                      <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
                       <span className="text-xs font-medium text-foreground leading-tight">
                         <BilingualText en={labelEn} el={labelEl} compact />
                       </span>
@@ -588,44 +641,51 @@ export default function FounderDashboardContent() {
             </Card>
 
             {/* Recent Activity */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Activity className="icon-sm text-muted-foreground" /> <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
+                    <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
+                    <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
                   </CardTitle>
                   <Link href="/activity">
-                    <Button variant="ghost" size="sm">All</Button>
+                    <Button variant="ghost" size="sm">
+                      <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
+                    </Button>
                   </Link>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {DEMO_ACTIVITY.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.id} className="flex items-start gap-2.5">
-                      <div className={cn('mt-0.5 shrink-0 rounded-full bg-muted/60 p-1.5', item.color)}>
-                        <Icon className="icon-sm" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-foreground leading-snug">{item.text}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{item.time}</p>
-                      </div>
+                {DEMO_ACTIVITY.map((item) => (
+                  <div key={item.id} className="flex items-start gap-2.5">
+                    <div className="mt-0.5 shrink-0 rounded-full bg-primary/10 p-1.5 text-primary-accessible">
+                      <CfbGlyph name={item.glyph} className="icon-sm" />
                     </div>
-                  );
-                })}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-foreground leading-snug">
+                        <BilingualText en={item.textEn} el={item.textEl} />
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        <BilingualText en={item.timeEn} el={item.timeEl} compact />
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
 
             {/* Upcoming Events */}
-            <Card>
+            <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Calendar className="icon-sm" /> <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
+                    <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
+                    <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
                   </CardTitle>
                   <Link href="/events">
-                    <Button variant="ghost" size="sm">View all</Button>
+                    <Button variant="ghost" size="sm" className="gap-1">
+                      <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
+                    </Button>
                   </Link>
                 </div>
               </CardHeader>
@@ -639,24 +699,34 @@ export default function FounderDashboardContent() {
                       <div
                         key={event.id}
                         className={cn(
-                          'flex items-start gap-2.5 rounded-lg border p-2.5 transition-colors',
+                          'flex items-start gap-2.5 rounded-xl border p-2.5 transition-colors',
                           isUrgent ? cn('border', cfg.border, cfg.bg) : 'border-border/60'
                         )}
                       >
-                        <div className={cn('mt-0.5 rounded-md p-1.5 shrink-0', cfg.bg)}>
-                          <Calendar className={cn('icon-sm', cfg.icon)} />
+                        <div className={cn('mt-0.5 rounded-lg p-1.5 shrink-0', cfg.bg)}>
+                          <CfbGlyph name="calendar" className={cn('icon-sm', cfg.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-foreground truncate">{event.title}</p>
+                          <p className="text-xs font-medium text-foreground truncate">
+                            <BilingualText en={event.titleEn} el={event.titleEl} compact />
+                          </p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-xs text-muted-foreground">
-                              {new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · {event.time}
+                              <BilingualText
+                                en={`${formatShortDate(event.date, 'en')} · ${event.time}`}
+                                el={`${formatShortDate(event.date, 'el')} · ${event.time}`}
+                                compact
+                              />
                             </span>
                             <span className={cn(
                               'text-xs font-medium',
                               isUrgent ? STATUS.danger.icon : event.daysLeft <= 7 ? STATUS.warning.icon : 'text-muted-foreground'
                             )}>
-                              {event.daysLeft === 0 ? 'Today' : event.daysLeft === 1 ? 'Tomorrow' : `In ${event.daysLeft}d`}
+                              {event.daysLeft === 0
+                                ? <BilingualText en={dashboardEn('today')} el={dashboardEl('today')} compact />
+                                : event.daysLeft === 1
+                                ? <BilingualText en={dashboardEn('tomorrow')} el={dashboardEl('tomorrow')} compact />
+                                : <BilingualText en={`In ${event.daysLeft}d`} el={`Σε ${event.daysLeft}η`} compact />}
                             </span>
                           </div>
                         </div>
@@ -664,7 +734,7 @@ export default function FounderDashboardContent() {
                     );
                   })
                 ) : (
-                  <div className="rounded-lg bg-muted/40 p-3 text-center">
+                  <div className="rounded-xl bg-muted/40 p-3 text-center">
                     <p className="text-xs text-muted-foreground">
                       <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" />
                     </p>

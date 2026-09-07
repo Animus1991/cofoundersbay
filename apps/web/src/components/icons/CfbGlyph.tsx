@@ -79,6 +79,7 @@ const SEGMENT_GLYPH: Record<string, CfbGlyphName> = {
   marketplace: 'briefcase',
   jobs: 'briefcase',
   coaching: 'mentor',
+  'expert-reviews': 'award',
   help: 'book',
   activity: 'spark',
   achievements: 'award',

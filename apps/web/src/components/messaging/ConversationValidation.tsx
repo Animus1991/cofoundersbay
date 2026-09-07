@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Shield, ShieldCheck, ShieldAlert, Download, FileText, Copy, Check,
   AlertTriangle, Info, Unlock, Hash,
-  ChevronDown, Loader2,
+  Loader2,
 } from 'lucide-react';
 import {
   Dialog,
@@ -31,6 +31,9 @@ import {
   exportConversationTranscript,
   type ConversationValidationMode as ApiValidationMode,
 } from '@/lib/api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria } from '@/lib/i18n/format';
+import { messagesEn, messagesEl } from '@/lib/i18n/strings-messages';
 import { cn } from '@/lib/utils';
 
 export type ValidationMode = 'casual' | 'one_party' | 'two_party';
@@ -56,29 +59,29 @@ type ConversationValidationProps = {
 };
 
 const MODE_CONFIG: Record<ValidationMode, {
-  label: string;
-  description: string;
+  labelKey: 'val_casual' | 'val_one' | 'val_two';
+  descKey: 'val_casual_desc' | 'val_one_desc' | 'val_two_desc';
   icon: React.ElementType;
   color: string;
   bgColor: string;
 }> = {
   casual: {
-    label: 'Casual Chat',
-    description: 'Standard private messaging, no validation',
+    labelKey: 'val_casual',
+    descKey: 'val_casual_desc',
     icon: Unlock,
     color: 'text-muted-foreground',
     bgColor: 'bg-muted',
   },
   one_party: {
-    label: 'One-Party Validation',
-    description: 'You can save/validate your side of the conversation',
+    labelKey: 'val_one',
+    descKey: 'val_one_desc',
     icon: Shield,
     color: 'text-status-warning',
     bgColor: 'bg-status-warning-bg',
   },
   two_party: {
-    label: 'Two-Party Validation',
-    description: 'Both parties agree to validated transcript',
+    labelKey: 'val_two',
+    descKey: 'val_two_desc',
     icon: ShieldCheck,
     color: 'text-status-success',
     bgColor: 'bg-status-success-bg',
@@ -93,7 +96,9 @@ function ValidationModeIndicator({ state }: { state: ConversationValidationState
   return (
     <div className={cn('flex items-center gap-1.5 rounded-full px-2 py-0.5', config.bgColor)}>
       <Icon className={cn('icon-sm', config.color)} />
-      <span className={cn('text-xs font-medium', config.color)}>{config.label}</span>
+      <span className={cn('text-xs font-medium', config.color)}>
+        <BilingualText en={messagesEn(config.labelKey)} el={messagesEl(config.labelKey)} compact />
+      </span>
     </div>
   );
 }
@@ -112,7 +117,7 @@ export function ConversationValidationBadge({
     return (
       <div
         className={cn('flex h-6 w-6 items-center justify-center rounded-full', config.bgColor)}
-        title={config.label}
+        title={messagesEn(config.labelKey)}
       >
         <Icon className={cn('icon-sm', config.color)} />
       </div>
@@ -141,7 +146,7 @@ export function ConversationValidationMenu({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       onModeChange?.(data.validationState.mode);
-      success('Validation mode updated', `Conversation is now in ${MODE_CONFIG[data.validationState.mode].label} mode`);
+      success('Validation mode updated', messagesEn(MODE_CONFIG[data.validationState.mode].labelKey));
       setShowModeDialog(false);
     },
     onError: () => {
@@ -210,16 +215,21 @@ export function ConversationValidationMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-xl"
+            title={bilingualAria(messagesEn(config.labelKey), messagesEl(config.labelKey))}
+          >
             <Icon className={cn('icon-sm', config.color)} />
-            <span className="hidden sm:inline">{config.label}</span>
-            <ChevronDown className="icon-sm text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <div className="px-2 py-1.5">
             <p className="text-xs font-medium text-foreground">Conversation Validation</p>
-            <p className="text-xs text-muted-foreground">{config.description}</p>
+            <p className="text-xs text-muted-foreground">
+              <BilingualText en={messagesEn(config.descKey)} el={messagesEl(config.descKey)} compact />
+            </p>
           </div>
           <DropdownMenuSeparator />
           
@@ -335,13 +345,15 @@ export function ConversationValidationMenu({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{modeConfig.label}</p>
+                        <p className="font-medium text-foreground">
+                          <BilingualText en={messagesEn(modeConfig.labelKey)} el={messagesEl(modeConfig.labelKey)} compact />
+                        </p>
                         {isActive && (
                           <Badge variant="secondary" className="text-xs">Current</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {modeConfig.description}
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        <BilingualText en={messagesEn(modeConfig.descKey)} el={messagesEl(modeConfig.descKey)} />
                       </p>
                       {mode === 'two_party' && (
                         <p className="text-xs text-status-warning mt-1 flex items-center gap-1">

@@ -22,26 +22,36 @@ import { VersionHistoryDrawer } from '@/components/builder/VersionHistoryDrawer'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Lightbulb, 
-  Target, 
-  TrendingUp, 
-  Code, 
-  DollarSign,
-  Rocket,
-  CheckCircle2,
-  Presentation,
-  Award,
-  Users,
-  Loader2,
-  AlertCircle,
-  Plus,
-  Sparkles,
-  ArrowRight,
-  X,
-} from 'lucide-react';
+import { Loader2, AlertCircle, ArrowRight, X } from 'lucide-react';
+import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
+import type { BuilderDocumentType } from '@/lib/builder-api';
 
 const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
+
+const BUILDER_TABS: { id: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
+  { id: 'overview', glyph: 'builder', labelEn: builderEn('tab_overview'), labelEl: builderEl('tab_overview') },
+  { id: 'idea-core', glyph: 'spark', labelEn: builderEn('tab_idea'), labelEl: builderEl('tab_idea') },
+  { id: 'bmc', glyph: 'target', labelEn: builderEn('tab_bmc'), labelEl: builderEl('tab_bmc') },
+  { id: 'market', glyph: 'chart', labelEn: builderEn('tab_market'), labelEl: builderEl('tab_market') },
+  { id: 'pitch-deck', glyph: 'builder', labelEn: builderEn('tab_pitch'), labelEl: builderEl('tab_pitch') },
+  { id: 'mvp', glyph: 'flag', labelEn: builderEn('tab_mvp'), labelEl: builderEl('tab_mvp') },
+  { id: 'financials', glyph: 'wallet', labelEn: builderEn('tab_financials'), labelEl: builderEl('tab_financials') },
+  { id: 'readiness', glyph: 'award', labelEn: builderEn('tab_readiness'), labelEl: builderEl('tab_readiness') },
+  { id: 'applications', glyph: 'applications', labelEn: builderEn('tab_applications'), labelEl: builderEl('tab_applications') },
+];
+
+function AskAiButton() {
+  const { open } = usePopupChat();
+  return (
+    <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => open()}>
+      <CfbGlyph name="spark" className="icon-sm" />
+      <BilingualText en={builderEn('ask_ai')} el={builderEl('ask_ai')} compact />
+    </Button>
+  );
+}
 
 function BuilderPageContent() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -55,7 +65,6 @@ function BuilderPageContent() {
   }, []);
   const {
     workspace,
-    workspaces,
     isLoadingWorkspaces,
     documents,
     activeDocument,
@@ -63,27 +72,36 @@ function BuilderPageContent() {
     error,
     isGenerating,
     loadWorkspaces,
-    selectWorkspace,
-    createDocument,
-    selectDocument,
     updateDocumentSection,
     generateContent,
+    createDocument,
     clearError,
   } = useBuilder();
 
-  // Load workspaces on mount + auto-select first (single flow, no waterfall)
   useEffect(() => {
     loadWorkspaces(true);
   }, [loadWorkspaces]);
 
-  const handleSave = async (section: string, data: any) => {
+  const handleSave = async (section: string, data: unknown) => {
     if (!activeDocument) return;
-    await updateDocumentSection(activeDocument.id, section, data);
+    await updateDocumentSection(activeDocument.id, section, (data ?? {}) as Record<string, any>);
   };
 
-  const handleGenerate = async (documentType: any, sectionKey?: string) => {
+  const handleSaveApplications = async (data: unknown) => {
     try {
-      const result = await generateContent(documentType, sectionKey);
+      let doc = documents.find((d) => d.type === 'application');
+      if (!doc) {
+        doc = await createDocument('application', 'Program applications');
+      }
+      await updateDocumentSection(doc.id, 'applications', { applications: data } as Record<string, any>);
+    } catch {
+      // BuilderContext already surfaces the error banner.
+    }
+  };
+
+  const handleGenerate = async (documentType: string, sectionKey?: string) => {
+    try {
+      const result = await generateContent(documentType as BuilderDocumentType, sectionKey);
       return result.content;
     } catch (err) {
       console.error('Generation failed:', err);
@@ -91,19 +109,6 @@ function BuilderPageContent() {
     }
   };
 
-  const BUILDER_TABS = [
-    { id: 'overview', label: 'Overview', icon: Rocket },
-    { id: 'idea-core', label: 'Idea Core', icon: Lightbulb },
-    { id: 'bmc', label: 'Business Model', icon: Target },
-    { id: 'market', label: 'Market', icon: TrendingUp },
-    { id: 'pitch-deck', label: 'Pitch Deck', icon: Presentation },
-    { id: 'mvp', label: 'MVP', icon: Code },
-    { id: 'financials', label: 'Financials', icon: DollarSign },
-    { id: 'readiness', label: 'Readiness', icon: Award },
-    { id: 'applications', label: 'Applications', icon: CheckCircle2 },
-  ];
-
-  // Get document content by type
   const getDocumentContent = (type: string) => {
     const doc = documents.find((d) => d.type === type);
     return doc?.content || {};
@@ -111,44 +116,40 @@ function BuilderPageContent() {
 
   if (isLoadingWorkspaces) {
     return (
-      <AppShell title="Startup Builder" description="Structure idea, team, market, traction, and pitch — all in one workspace.">
-        <div className="flex items-center justify-center h-64">
+      <AppShell showHelp>
+        <div className="flex h-64 flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={builderEn('loading')} el={builderEl('loading')} compact />
+          </p>
         </div>
       </AppShell>
     );
   }
 
   return (
-    <AppShell
-      title="Startup Builder"
-      description="Structure idea, team, market, traction, and pitch — all in one workspace."
-      showHelp
-    >
+    <AppShell showHelp actions={<AskAiButton />}>
       <div className="space-y-6">
-        {/* Error Alert */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
+          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
             <AlertCircle className="icon-md text-destructive-accessible" />
             <p className="text-sm text-destructive-accessible">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
-              <BilingualText en="Dismiss" el="Απόρριψη" compact />
+              <BilingualText en={builderEn('dismiss')} el={builderEl('dismiss')} compact />
             </Button>
           </div>
         )}
 
-        {/* Behavioral Nudge */}
         <BehavioralNudge surface="builder" compact />
 
-        {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
           <div className={cn('flex items-center gap-3 rounded-xl border px-4 py-3', STATUS.warning.border, STATUS.warning.bg)}>
-            <Sparkles className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
-            <div className="flex-1 min-w-0">
+            <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
                 <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />
               </p>
             </div>
@@ -158,60 +159,57 @@ function BuilderPageContent() {
               </Button>
             </a>
             <button
+              type="button"
               onClick={() => { setReviewBannerDismissed(true); localStorage.setItem(BUILDER_REVIEW_DISMISS_KEY, 'true'); }}
-              className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
-              title="Dismiss"
+              className="shrink-0 rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+              title={bilingualAria('Dismiss', 'Απόρριψη')}
+              aria-label={bilingualAria('Dismiss expert-review suggestion', 'Απόρριψη πρότασης αξιολόγησης')}
             >
               <X className="icon-sm" />
             </button>
           </div>
         )}
 
-        {/* Context Bar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="icon-lg text-primary-accessible" />
-              </div>
-              {workspace?.name || 'Startup Builder'}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {workspace?.description || 'Transform your idea into a validated startup plan with AI assistance'}
+            {workspace?.name && (
+              <p className="text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
+            )}
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {workspace?.description
+                ? workspace.description
+                : <BilingualText en={builderEn('tagline')} el={builderEl('tagline')} />}
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
-                <Users className="icon-sm text-muted-foreground" />
+                <CfbGlyph name="people" className="icon-sm text-muted-foreground" />
                 <div className="flex -space-x-2">
                   {onlineCollaborators.slice(0, 3).map((c) => (
                     <Avatar key={c.odId} className="h-6 w-6 border-2 border-background">
-                      <AvatarFallback className="text-xs bg-primary/20">
+                      <AvatarFallback className="bg-primary/20 text-xs">
                         {c.odName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                   {onlineCollaborators.length > 3 && (
-                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs border-2 border-background">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-xs">
                       +{onlineCollaborators.length - 3}
                     </div>
                   )}
                 </div>
               </div>
             )}
-            {/* AI Generating Indicator */}
             {isGenerating && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="icon-sm animate-spin" />
-                <span>AI generating...</span>
+                <BilingualText en={builderEn('ai_generating')} el={builderEl('ai_generating')} compact />
               </div>
             )}
           </div>
         </div>
 
-        {/* Collab Toolbar — shown when a document is active */}
         {activeDocument && workspace && (
           <CollabToolbar
             documentId={activeDocument.id}
@@ -221,23 +219,19 @@ function BuilderPageContent() {
           />
         )}
 
-        {/* Main Builder Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex h-auto w-full justify-start overflow-x-auto">
-            {BUILDER_TABS.map(tab => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger 
-                  key={tab.id} 
-                  value={tab.id}
-                  className="flex min-h-10 shrink-0 items-center gap-1.5 text-xs"
-                  title={tab.label}
-                >
-                  <Icon className="icon-sm" />
-                  <span>{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto rounded-xl">
+            {BUILDER_TABS.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex min-h-10 shrink-0 items-center gap-1.5 text-xs"
+                title={bilingualAria(tab.labelEn, tab.labelEl)}
+              >
+                <CfbGlyph name={tab.glyph} className="icon-sm" />
+                <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -245,44 +239,44 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="idea-core" className="space-y-6">
-            <IdeaCore 
+            <IdeaCore
               onSave={(data) => handleSave('ideaCore', data)}
               initialData={getDocumentContent('idea_core')}
             />
           </TabsContent>
 
           <TabsContent value="bmc" className="space-y-6">
-            <BusinessModelCanvas 
+            <BusinessModelCanvas
               onSave={(data) => handleSave('bmc', data)}
               initialData={getDocumentContent('business_model_canvas')}
             />
           </TabsContent>
 
           <TabsContent value="market" className="space-y-6">
-            <MarketAnalysis 
+            <MarketAnalysis
               onSave={(data) => handleSave('marketAnalysis', data)}
               initialData={getDocumentContent('market_analysis')}
             />
           </TabsContent>
 
           <TabsContent value="pitch-deck" className="space-y-6">
-            <PitchDeckBuilder 
+            <PitchDeckBuilder
               onSave={(data) => handleSave('pitchDeck', data)}
               initialData={getDocumentContent('pitch_deck')}
             />
           </TabsContent>
 
           <TabsContent value="mvp" className="space-y-6">
-            <MVPPlanner 
+            <MVPPlanner
               onSave={(data) => handleSave('mvpPlan', data)}
               initialData={getDocumentContent('mvp_plan')}
             />
           </TabsContent>
 
           <TabsContent value="financials" className="space-y-6">
-            <FinancialPlanning 
+            <FinancialPlanning
               onSave={(data) => handleSave('financials', data)}
-              initialData={getDocumentContent('financial_projections')}
+              initialData={getDocumentContent('financials')}
             />
           </TabsContent>
 
@@ -294,15 +288,15 @@ function BuilderPageContent() {
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-6">
-            <ApplicationGenerator 
-              onSave={(data) => handleSave('applications', data)}
+            <ApplicationGenerator
+              onSave={handleSaveApplications}
+              initialData={getDocumentContent('application')}
               workspaceData={documents.reduce((acc, d) => ({ ...acc, [d.type]: d.content }), {})}
             />
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Version History Drawer */}
       {activeDocument && (
         <VersionHistoryDrawer
           open={showVersionHistory}

@@ -6,17 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Lightbulb, 
-  Target, 
-  TrendingUp, 
-  Save,
-  RefreshCw,
-  Sparkles
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Save, RefreshCw } from 'lucide-react';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import { bilingualAria } from '@/lib/i18n/format';
 
 interface IdeaCoreData {
   problemStatement: string;
@@ -35,6 +31,7 @@ interface IdeaCoreProps {
 }
 
 export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
+  const t = useBuilderPrimaryText();
   const [data, setData] = useState<IdeaCoreData>({
     problemStatement: '',
     targetAudience: '',
@@ -44,82 +41,79 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
     assumptions: [],
     painPoints: [],
     marketSize: '',
-    ...initialData
+    ...initialData,
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
-    // Calculate completion percentage
     const fields = [
       data.problemStatement,
       data.targetAudience,
       data.solution,
       data.uniqueValue,
       data.timing,
-      data.marketSize
+      data.marketSize,
     ];
-    const completedFields = fields.filter(field => field.trim().length > 0).length;
+    const completedFields = fields.filter((field) => field.trim().length > 0).length;
     setCompletionPercentage((completedFields / fields.length) * 100);
   }, [data]);
 
   const handleFieldChange = (field: keyof IdeaCoreData, value: string) => {
-    setData(prev => ({ ...prev, [field]: value }));
+    setData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleAssumptionChange = (index: number, value: string) => {
     const newAssumptions = [...data.assumptions];
     newAssumptions[index] = value;
-    setData(prev => ({ ...prev, assumptions: newAssumptions }));
+    setData((prev) => ({ ...prev, assumptions: newAssumptions }));
   };
 
   const addAssumption = () => {
-    setData(prev => ({ ...prev, assumptions: [...prev.assumptions, ''] }));
+    setData((prev) => ({ ...prev, assumptions: [...prev.assumptions, ''] }));
   };
 
   const removeAssumption = (index: number) => {
-    setData(prev => ({ 
-      ...prev, 
-      assumptions: prev.assumptions.filter((_, i) => i !== index)
+    setData((prev) => ({
+      ...prev,
+      assumptions: prev.assumptions.filter((_, i) => i !== index),
     }));
   };
 
   const handlePainPointChange = (index: number, value: string) => {
     const newPainPoints = [...data.painPoints];
     newPainPoints[index] = value;
-    setData(prev => ({ ...prev, painPoints: newPainPoints }));
+    setData((prev) => ({ ...prev, painPoints: newPainPoints }));
   };
 
   const addPainPoint = () => {
-    setData(prev => ({ ...prev, painPoints: [...prev.painPoints, ''] }));
+    setData((prev) => ({ ...prev, painPoints: [...prev.painPoints, ''] }));
   };
 
   const removePainPoint = (index: number) => {
-    setData(prev => ({ 
-      ...prev, 
-      painPoints: prev.painPoints.filter((_, i) => i !== index)
+    setData((prev) => ({
+      ...prev,
+      painPoints: prev.painPoints.filter((_, i) => i !== index),
     }));
   };
 
   const generateWithAI = async () => {
     setIsGenerating(true);
-    
-    // Simulate AI generation
     setTimeout(() => {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         assumptions: [
           'Target customers are willing to pay for this solution',
           'Market timing is optimal for entry',
           'Technology can solve the core problem effectively',
-          'Team can execute the business model'
+          'Team can execute the business model',
         ],
         painPoints: [
           'Current solutions are too expensive',
           'Existing tools lack key features',
-          'Market underserved by current offerings'
-        ]
+          'Market underserved by current offerings',
+        ],
       }));
       setIsGenerating(false);
     }, 2000);
@@ -131,93 +125,90 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Lightbulb className="icon-md text-primary-accessible" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Idea Core</h2>
-            <p className="text-sm text-muted-foreground">
-              Define the fundamental problem, solution, and market opportunity
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <div className="w-2 h-2 rounded-full bg-blue-500" />
-            {completionPercentage.toFixed(0)}% Complete
-          </Badge>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="icon-sm mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="icon-sm mr-2" />
-            )}
-            AI Assist
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="icon-sm mr-2" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <BuilderStageHeader
+        glyph="spark"
+        titleEn={builderEn('tab_idea')}
+        titleEl={builderEl('tab_idea')}
+        subtitleEn={builderEn('idea_sub')}
+        subtitleEl={builderEl('idea_sub')}
+        completion={completionPercentage}
+        extraActions={
+          <>
+            <Button variant="outline" size="sm" onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? (
+                <RefreshCw className="icon-sm mr-2 animate-spin" />
+              ) : (
+                <CfbGlyph name="spark" className="icon-sm mr-2" />
+              )}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_assist')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_assist')}
+                compact
+              />
+            </Button>
+            <Button size="sm" onClick={handleSave}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('save')} el={builderEl('save')} compact />
+            </Button>
+          </>
+        }
+      />
 
-      {/* Progress */}
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
-          <span>Idea Core Completion</span>
+          <span className="text-muted-foreground">
+            <BilingualText en={builderEn('tab_idea')} el={builderEl('tab_idea')} compact />{' '}
+            <BilingualText en={builderEn('stage_complete')} el={builderEl('stage_complete')} compact />
+          </span>
           <span>{completionPercentage.toFixed(0)}%</span>
         </div>
         <Progress value={completionPercentage} className="h-2" />
       </div>
 
-      {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Left Column */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="icon-md" />
-                Problem Statement
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CfbGlyph name="target" className="icon-md" />
+                <BilingualText en={builderEn('idea_problem_card')} el={builderEl('idea_problem_card')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="problem">What problem are you solving?</Label>
+                <Label htmlFor="problem">
+                  <BilingualText en={builderEn('idea_problem_label')} el={builderEl('idea_problem_label')} compact />
+                </Label>
                 <Textarea
                   id="problem"
-                  placeholder="Describe the core problem your target customers face..."
+                  placeholder={t(builderEn('idea_problem_ph'), builderEl('idea_problem_ph'))}
                   value={data.problemStatement}
                   onChange={(e) => handleFieldChange('problemStatement', e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[100px] rounded-xl"
                 />
               </div>
-              
               <div>
-                <Label htmlFor="audience">Who are you solving it for?</Label>
+                <Label htmlFor="audience">
+                  <BilingualText en={builderEn('idea_audience')} el={builderEl('idea_audience')} compact />
+                </Label>
                 <Input
                   id="audience"
-                  placeholder="e.g., Small business owners, Students, Developers..."
+                  placeholder={t(builderEn('idea_audience_ph'), builderEl('idea_audience_ph'))}
                   value={data.targetAudience}
                   onChange={(e) => handleFieldChange('targetAudience', e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
-
               <div>
-                <Label htmlFor="market">Market Size</Label>
+                <Label htmlFor="market">
+                  <BilingualText en={builderEn('idea_market')} el={builderEl('idea_market')} compact />
+                </Label>
                 <Input
                   id="market"
-                  placeholder="e.g., $10M TAM, $2M SAM, $500K SOM"
+                  placeholder={t(builderEn('idea_market_ph'), builderEl('idea_market_ph'))}
                   value={data.marketSize}
                   onChange={(e) => handleFieldChange('marketSize', e.target.value)}
+                  className="rounded-xl"
                 />
               </div>
             </CardContent>
@@ -225,119 +216,121 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="icon-md" />
-                Solution & Value
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CfbGlyph name="chart" className="icon-md" />
+                <BilingualText en={builderEn('idea_solution_card')} el={builderEl('idea_solution_card')} compact />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="solution">Your Solution</Label>
+                <Label htmlFor="solution">
+                  <BilingualText en={builderEn('idea_solution')} el={builderEl('idea_solution')} compact />
+                </Label>
                 <Textarea
                   id="solution"
-                  placeholder="How do you solve this problem?"
+                  placeholder={t(builderEn('idea_solution_ph'), builderEl('idea_solution_ph'))}
                   value={data.solution}
                   onChange={(e) => handleFieldChange('solution', e.target.value)}
-                  className="min-h-[100px]"
+                  className="min-h-[100px] rounded-xl"
                 />
               </div>
-
               <div>
-                <Label htmlFor="unique">Unique Value Proposition</Label>
+                <Label htmlFor="unique">
+                  <BilingualText en={builderEn('idea_uvp')} el={builderEl('idea_uvp')} compact />
+                </Label>
                 <Textarea
                   id="unique"
-                  placeholder="What makes your solution unique or better?"
+                  placeholder={t(builderEn('idea_uvp_ph'), builderEl('idea_uvp_ph'))}
                   value={data.uniqueValue}
                   onChange={(e) => handleFieldChange('uniqueValue', e.target.value)}
-                  className="min-h-[80px]"
+                  className="min-h-[80px] rounded-xl"
                 />
               </div>
-
               <div>
-                <Label htmlFor="timing">Why Now?</Label>
+                <Label htmlFor="timing">
+                  <BilingualText en={builderEn('idea_why_now')} el={builderEl('idea_why_now')} compact />
+                </Label>
                 <Textarea
                   id="timing"
-                  placeholder="Why is this the right time for this solution?"
+                  placeholder={t(builderEn('idea_why_now_ph'), builderEl('idea_why_now_ph'))}
                   value={data.timing}
                   onChange={(e) => handleFieldChange('timing', e.target.value)}
-                  className="min-h-[80px]"
+                  className="min-h-[80px] rounded-xl"
                 />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Key Assumptions</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('idea_assumptions')} el={builderEl('idea_assumptions')} compact />
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.assumptions.map((assumption, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    placeholder="Enter a key assumption..."
+                    placeholder={t(builderEn('idea_assumption_ph'), builderEl('idea_assumption_ph'))}
                     value={assumption}
                     onChange={(e) => handleAssumptionChange(index, e.target.value)}
+                    className="rounded-xl"
                   />
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => removeAssumption(index)}
+                    aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >
                     ×
                   </Button>
                 </div>
               ))}
-              <Button 
-                variant="outline" 
-                onClick={addAssumption}
-                className="w-full"
-              >
-                + Add Assumption
+              <Button variant="outline" onClick={addAssumption} className="w-full rounded-xl">
+                <BilingualText en={builderEn('idea_add_assumption')} el={builderEl('idea_add_assumption')} compact />
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Pain Points</CardTitle>
+              <CardTitle className="text-base">
+                <BilingualText en={builderEn('idea_pains')} el={builderEl('idea_pains')} compact />
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.painPoints.map((painPoint, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    placeholder="Enter a pain point..."
+                    placeholder={t(builderEn('idea_pain_ph'), builderEl('idea_pain_ph'))}
                     value={painPoint}
                     onChange={(e) => handlePainPointChange(index, e.target.value)}
+                    className="rounded-xl"
                   />
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => removePainPoint(index)}
+                    aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
                   >
                     ×
                   </Button>
                 </div>
               ))}
-              <Button 
-                variant="outline" 
-                onClick={addPainPoint}
-                className="w-full"
-              >
-                + Add Pain Point
+              <Button variant="outline" onClick={addPainPoint} className="w-full rounded-xl">
+                <BilingualText en={builderEn('idea_add_pain')} el={builderEl('idea_add_pain')} compact />
               </Button>
             </CardContent>
           </Card>
 
-          {/* AI Suggestions */}
           {isGenerating && (
             <Card>
               <CardContent className="p-6 text-center">
-                <RefreshCw className="icon-xl animate-spin mx-auto mb-4 text-primary-accessible" />
+                <RefreshCw className="icon-xl mx-auto mb-4 animate-spin text-primary-accessible" />
                 <p className="text-sm text-muted-foreground">
-                  AI is analyzing your idea and generating insights...
+                  <BilingualText en={builderEn('ai_analyzing')} el={builderEl('ai_analyzing')} />
                 </p>
               </CardContent>
             </Card>

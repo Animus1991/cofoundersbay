@@ -11,6 +11,8 @@ type PageContextualHelpProps = {
   title?: string;
   titleEl?: string;
   children?: ReactNode;
+  defaultOpen?: boolean;
+  compact?: boolean;
 };
 
 type HelpCopy = { en: ReactNode; el: ReactNode };
@@ -29,26 +31,108 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          The Builder turns scattered notes into investor-ready artefacts. Move through{' '}
-          <strong>Idea → Market → Business Model → MVP → Financials → Pitch</strong> at your own pace —
-          progress unlocks the Pitch Deck and Application Generator tabs automatically.
+          The Builder turns scattered notes into investor-ready artefacts. Move through the stage tabs:{' '}
+          <strong>Idea Core → Market → Business Model → MVP → Financials → Pitch</strong>. Progress unlocks Pitch Deck
+          and Applications. Invite collaborators and keep Version History for rollbacks.
         </p>
         <p>
-          Every change syncs across collaborators in real time. Use <strong>Version History</strong> to roll back
-          without losing data.
+          Use <em>New Document</em> for artefacts, or <em>Ask AI</em> to draft a section and suggest what to complete next.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Ο Builder μετατρέπει διάσπαρτες σημειώσεις σε υλικό έτοιμο για επενδυτές. Προχωρήστε στα βήματα{' '}
-          <strong>Ιδέα → Αγορά → Επιχειρηματικό μοντέλο → MVP → Οικονομικά → Pitch</strong> με τον ρυθμό σας —
-          η πρόοδος ξεκλειδώνει αυτόματα τις καρτέλες Pitch Deck και Application Generator.
+          Ο Builder μετατρέπει διάσπαρτες σημειώσεις σε υλικό για επενδυτές. Προχωρήστε στις καρτέλες:{' '}
+          <strong>Πυρήνας ιδέας → Αγορά → Επιχειρηματικό μοντέλο → MVP → Οικονομικά → Pitch</strong>. Η πρόοδος
+          ξεκλειδώνει Pitch Deck και Αιτήσεις. Προσκαλέστε συνεργάτες και κρατήστε Ιστορικό εκδόσεων για επαναφορά.
         </p>
         <p>
-          Κάθε αλλαγή συγχρονίζεται ζωντανά με τους συνεργάτες σας. Με το{' '}
-          <strong>Ιστορικό εκδόσεων</strong> επιστρέφετε σε προηγούμενη μορφή χωρίς απώλεια δεδομένων.
+          Με το <em>Νέο έγγραφο</em> προσθέτετε παραδοτέα, ή <em>Ρωτήστε το AI</em> για προσχέδιο ενότητας και τι να
+          ολοκληρώσετε μετά.
+        </p>
+      </>
+    ),
+  },
+  'pitch-deck': {
+    en: (
+      <>
+        <p>
+          This page edits the same <strong>pitch_deck</strong> artefact as the Pitch tab in Startup Builder. Completion is
+          the share of slides that have body text — adding empty templates does not raise the bar.
+        </p>
+        <p>
+          Use <em>AI Generate</em> for a full outline, or <em>Ask AI</em> to draft the current slide from Idea Core, Market,
+          and Financials. <em>Export</em> downloads Markdown. Save writes back to the workspace.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτή η σελίδα επεξεργάζεται το ίδιο παραδοτέο <strong>pitch_deck</strong> με την καρτέλα Pitch στον Startup Builder.
+          Η ολοκλήρωση είναι το μερίδιο διαφανειών με κείμενο — τα κενά πρότυπα δεν ανεβάζουν τη μπάρα.
+        </p>
+        <p>
+          Με <em>Δημιουργία AI</em> παίρνετε πλήρες περίγραμμα, ή <em>Ρωτήστε το AI</em> για προσχέδιο της τρέχουσας
+          διαφάνειας από Ιδέα, Αγορά και Οικονομικά. Η <em>Εξαγωγή</em> κατεβάζει Markdown. Η αποθήκευση γράφει στον χώρο εργασίας.
+        </p>
+      </>
+    ),
+  },
+  applications: {
+    en: (
+      <>
+        <p>
+          This page edits the same <strong>application</strong> artefact as the Applications tab in Startup Builder. Four
+          templates stay on the page — Y Combinator, Techstars, university incubator, and grants. Completion is the share
+          of <em>required</em> answers filled; optional questions do not hold the bar.
+        </p>
+        <p>
+          Use <em>AI Generate</em> to fill the open program with a draft, or <em>Ask AI</em> to write from Idea Core,
+          Market, and Pitch. Save writes the workspace. <em>Mark submitted</em> appears when every required field is
+          filled. View Program opens the real application page.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Αυτή η σελίδα επεξεργάζεται το ίδιο παραδοτέο <strong>application</strong> με την καρτέλα Αιτήσεις στον Startup
+          Builder. Τα τέσσερα πρότυπα μένουν στη σελίδα — Y Combinator, Techstars, πανεπιστημιακό incubator και
+          επιχορηγήσεις. Η ολοκλήρωση είναι το μερίδιο <em>υποχρεωτικών</em> απαντήσεων· οι προαιρετικές δεν κρατούν τη μπάρα.
+        </p>
+        <p>
+          Με <em>Δημιουργία AI</em> γεμίζετε το ανοιχτό πρόγραμμα, ή με <em>Ρωτήστε το AI</em> συντάσσετε από Ιδέα, Αγορά
+          και Pitch. Η αποθήκευση γράφει στον χώρο εργασίας. Η <em>Σήμανση υποβολής</em> εμφανίζεται όταν όλα τα υποχρεωτικά
+          πεδία έχουν απάντηση. Το «Προβολή προγράμματος» ανοίγει την πραγματική αίτηση.
+        </p>
+      </>
+    ),
+  },
+  research: {
+    en: (
+      <>
+        <p>
+          Each board is a canvas of notes, files, and links. <em>Use template</em> seeds a common workflow
+          (validation, market, pitch). <em>New board</em> starts blank. Pin keeps a board at the top.
+        </p>
+        <p>
+          Open a board to add nodes, upload files, and connect ideas. Use <em>Ask AI</em> to propose a board
+          structure from Builder artefacts, or to summarise what is already on the canvas.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Κάθε πίνακας είναι καμβάς σημειώσεων, αρχείων και συνδέσμων. Το <em>Χρήση προτύπου</em> γεμίζει μια
+          συνηθισμένη ροή (επικύρωση, αγορά, pitch). Το <em>Νέος πίνακας</em> ξεκινά κενός. Το καρφίτσωμα κρατά
+          τον πίνακα στην κορυφή.
+        </p>
+        <p>
+          Ανοίξτε έναν πίνακα για κόμβους, αρχεία και συνδέσεις. Με το <em>Ρωτήστε το AI</em> προτείνετε δομή από
+          τα παραδοτέα του Builder, ή σύνοψη όσων υπάρχουν ήδη στον καμβά.
         </p>
       </>
     ),
@@ -57,25 +141,50 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Your score combines 6 dimensions: <strong>Idea, Market, Team, Product, Traction, Funding</strong>. Each is
-          weighted by stage — pre-seed weighs Team and Idea more, Series A weighs Traction and Funding.
+          Your score combines 6 dimensions: <strong>Team, Market, Product, Business Model, Funding, Execution</strong>.
+          Accelerator and investor views weight those dimensions differently — team and market count more for investors.
         </p>
         <p>
-          Click any dimension card to see what is missing. Hit <em>Reassess</em> after major updates (new MVP, signed LOI,
-          team change) to refresh the score.
+          Tick criteria on a dimension card to update the saved score. Use <em>Reassess</em> after a major change, or{' '}
+          <em>Ask AI</em> for a plan on the weakest area.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Η βαθμολογία συνδυάζει 6 διαστάσεις: <strong>Ιδέα, Αγορά, Ομάδα, Προϊόν, Απήχηση, Χρηματοδότηση</strong>.
-          Η βαρύτητα κάθε μιας εξαρτάται από το στάδιο — στο pre-seed μετρούν περισσότερο η Ομάδα και η Ιδέα, στο
-          Series A η Απήχηση και η Χρηματοδότηση.
+          Η βαθμολογία συνδυάζει 6 διαστάσεις: <strong>Ομάδα, Αγορά, Προϊόν, Επιχειρηματικό μοντέλο, Χρηματοδότηση, Εκτέλεση</strong>.
+          Οι όψεις επιταχυντή και επενδυτή τις ζυγίζουν διαφορετικά — ομάδα και αγορά μετράνε περισσότερο για επενδυτές.
         </p>
         <p>
-          Πατήστε σε οποιαδήποτε κάρτα διάστασης για να δείτε τι λείπει. Μετά από σημαντική εξέλιξη (νέο MVP,
-          υπογεγραμμένο LOI, αλλαγή στην ομάδα) πατήστε <em>Επαναξιολόγηση</em> για ενημέρωση της βαθμολογίας.
+          Τσεκάρετε κριτήρια σε μια κάρτα διάστασης για ενημέρωση της αποθηκευμένης βαθμολογίας. Μετά από σημαντική αλλαγή
+          πατήστε <em>Επαναξιολόγηση</em>, ή <em>Ρωτήστε το AI</em> για πλάνο στο ασθενέστερο σημείο.
+        </p>
+      </>
+    ),
+  },
+  analytics: {
+    en: (
+      <>
+        <p>
+          Numbers here are <strong>recorded counts</strong> for the selected period. A dash means the metric was not
+          measured — it is not zero. Trends compare this period with the previous one of the same length.
+        </p>
+        <p>
+          Use <em>Overview</em> for the funnel, <em>Engagement</em> for type breakdown, and <em>Growth</em> for view
+          trends. <em>Ask AI</em> can explain a drop or suggest the next action.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Οι αριθμοί είναι <strong>καταγεγραμμένα πλήθη</strong> για την επιλεγμένη περίοδο. Η παύλα σημαίνει ότι η
+          μέτρηση δεν έγινε — όχι μηδέν. Οι τάσεις συγκρίνουν αυτή την περίοδο με την προηγούμενη ίδιου μήκους.
+        </p>
+        <p>
+          Η <em>Επισκόπηση</em> δείχνει το χωνί, η <em>Αφοσίωση</em> την ανάλυση ανά τύπο και η <em>Ανάπτυξη</em> την
+          τάση προβολών. Το <em>Ρωτήστε το AI</em> εξηγεί μια πτώση ή προτείνει το επόμενο βήμα.
         </p>
       </>
     ),
@@ -110,25 +219,26 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Kanban columns map to standard fundraising stages:{' '}
-          <strong>Intro → Meeting → Diligence → Term Sheet → Closed/Passed</strong>. Drag cards as deals progress.
+          The summary counts the <strong>full pipeline</strong>. Committed contacts are the investor count on the round
+          card — they cannot disagree. Move a card in Kanban or the pipeline list; both tabs share the same contacts.
         </p>
         <p>
-          The <strong>Data Room</strong> tab holds documents shared with investors via tokenised links — nothing is
-          public unless you share it.
+          Use <em>Ask AI</em> for who to contact next from Builder, Pitch deck, and Data Room gaps. The{' '}
+          <strong>Data Room</strong> tab holds documents shared via tokenised links — nothing is public unless you share it.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Οι στήλες Kanban αντιστοιχούν στα καθιερωμένα στάδια χρηματοδότησης:{' '}
-          <strong>Γνωριμία → Συνάντηση → Έλεγχος → Term Sheet → Κλείσιμο/Απόρριψη</strong>. Σύρετε τις κάρτες καθώς
-          εξελίσσεται κάθε συζήτηση.
+          Οι στήλες Kanban είναι τα στάδια:{' '}
+          <strong>Υποψήφιος → Επικοινωνία → Συνάντηση → Έλεγχος → Δεσμευμένος → Απόρριψη</strong>. Η σύνοψη μετρά ολόκληρο
+          τον αγωγό· οι δεσμευμένοι είναι ο αριθμός επενδυτών στην κάρτα γύρου — δεν μπορεί να διαφωνούν.
         </p>
         <p>
-          Η καρτέλα <strong>Data Room</strong> κρατά τα έγγραφα που μοιράζεστε με επενδυτές μέσω συνδέσμων με
-          token — τίποτα δεν είναι δημόσιο αν δεν το μοιραστείτε εσείς.
+          Με <em>Ρωτήστε το AI</em> δείτε ποιον να προσεγγίσετε μετά από Builder, pitch deck και κενά του Data Room. Η
+          καρτέλα <strong>Data Room</strong> κρατά έγγραφα με συνδέσμους token — τίποτα δεν είναι δημόσιο αν δεν το
+          μοιραστείτε.
         </p>
       </>
     ),
@@ -267,17 +377,53 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
     en: (
       <>
         <p>
-          Milestones are atomic goals with owners and dates. Group them by quarter or theme. Completed milestones feed
-          your readiness score and produce evidence for investor updates.
+          Each row is one goal with an owner and a date. The summary counts the <strong>full tracker</strong>;
+          search, category, and status only filter the list below. Completed items feed Readiness and investor updates.
+        </p>
+        <p>
+          Use <em>New milestone</em> or <em>Ask AI</em> to propose the next three from Builder artefacts. Mark complete
+          from the card menu — you can reopen if the work is not actually done.
         </p>
       </>
     ),
     el: (
       <>
         <p>
-          Τα ορόσημα είναι μεμονωμένοι στόχοι με υπεύθυνο και ημερομηνία. Ομαδοποιήστε τα ανά τρίμηνο ή θέμα. Τα
-          ολοκληρωμένα ορόσημα τροφοδοτούν τη βαθμολογία ετοιμότητας και δίνουν τεκμήρια για τις ενημερώσεις προς
-          επενδυτές.
+          Κάθε γραμμή είναι ένας στόχος με υπεύθυνο και ημερομηνία. Η σύνοψη μετρά τον <strong>ολόκληρο πίνακα</strong>·
+          αναζήτηση, κατηγορία και κατάσταση φιλτράρουν μόνο τη λίστα. Τα ολοκληρωμένα τροφοδοτούν Ετοιμότητα και
+          ενημερώσεις επενδυτών.
+        </p>
+        <p>
+          Με <em>Νέο ορόσημο</em> ή <em>Ρωτήστε το AI</em> προτείνετε τα επόμενα τρία από τον Builder. Η ολοκλήρωση γίνεται
+          από το μενού της κάρτας — μπορείτε να το ξανανοίξετε αν η δουλειά δεν τελείωσε.
+        </p>
+      </>
+    ),
+  },
+  projects: {
+    en: (
+      <>
+        <p>
+          <strong>Discover</strong> is the full catalogue. <em>My projects</em>, <em>Joined</em>, and <em>Starred</em> are
+          slices of the same list — the summary counts every project, filters only change what is on screen.
+        </p>
+        <p>
+          Open a card for roles, team, milestones, and updates. Use <em>Ask AI</em> to match open roles to your skills or
+          to draft a new project from Builder artefacts. Create still publishes a listing with every field from the
+          four-step form.
+        </p>
+      </>
+    ),
+    el: (
+      <>
+        <p>
+          Η <strong>Ανακάλυψη</strong> είναι ο πλήρης κατάλογος. <em>Τα έργα μου</em>, <em>Συμμετοχές</em> και{' '}
+          <em>Αγαπημένα</em> είναι φέτες της ίδιας λίστας — η σύνοψη μετρά όλα τα έργα, τα φίλτρα αλλάζουν μόνο ό,τι φαίνεται.
+        </p>
+        <p>
+          Ανοίξτε κάρτα για ρόλους, ομάδα, ορόσημα και ενημερώσεις. Με <em>Ρωτήστε το AI</em> αντιστοιχίστε ανοιχτούς ρόλους
+          στις δεξιότητές σας ή συντάξτε νέο έργο από τον Builder. Η δημιουργία δημοσιεύει καταχώριση με όλα τα πεδία της
+          φόρμας τεσσάρων βημάτων.
         </p>
       </>
     ),
@@ -499,7 +645,7 @@ const HELP_CONTENT: Record<string, HelpCopy> = {
  * Renders contextual help from page-registry when helpId/helpTitle exist,
  * or explicit props when provided.
  */
-export function PageContextualHelp({ id, title, titleEl, children }: PageContextualHelpProps) {
+export function PageContextualHelp({ id, title, titleEl, children, defaultOpen, compact }: PageContextualHelpProps) {
   const meta = usePageMeta();
   const { primary } = useLanguagePreference();
   const helpId = id ?? meta?.helpId;
@@ -518,7 +664,13 @@ export function PageContextualHelp({ id, title, titleEl, children }: PageContext
   if (!body) return null;
 
   return (
-    <HelpCallout id={helpId} title={helpTitle} titleEl={helpTitleEl}>
+    <HelpCallout
+      id={helpId}
+      title={helpTitle}
+      titleEl={helpTitleEl}
+      defaultOpen={defaultOpen ?? true}
+      compact={compact}
+    >
       {body}
     </HelpCallout>
   );

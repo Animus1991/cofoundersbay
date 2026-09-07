@@ -39,17 +39,18 @@ export const PAGE_REGISTRY: PageMeta[] = [
   // ── Founder work ──
   { path: '/dashboard/founder', title: 'Founder dashboard', description: 'Your startup command center — readiness, matches, and next actions.', helpId: 'dashboard-founder', helpTitle: 'Founder dashboard', helpTitleEl: 'Ο πίνακας του ιδρυτή', section: 'Work', audience: ['founder'], priority: 'critical', status: 'complete' },
   { path: '/readiness', title: 'Readiness Score', description: 'Assess your startup\u2019s readiness across 6 key dimensions and see what to fix next.', helpId: 'readiness', helpTitle: 'How the readiness score works', helpTitleEl: 'Πώς υπολογίζεται η ετοιμότητα', section: 'Work', audience: ['founder'], status: 'complete' },
+  { path: '/analytics', title: 'Analytics', description: 'Track your profile performance and network growth.', helpId: 'analytics', helpTitle: 'How to read these metrics', helpTitleEl: 'Πώς διαβάζονται οι μετρήσεις', section: 'Work', audience: ['founder'], status: 'complete' },
   { path: '/builder', title: 'Startup Builder', description: 'Structure idea, team, market, traction, and pitch \u2014 all in one workspace.', helpId: 'builder', helpTitle: 'Using the Startup Builder', helpTitleEl: 'Πώς δουλεύει ο Startup Builder', section: 'Work', priority: 'critical', status: 'complete' },
-  { path: '/builder/pitch-deck', title: 'Pitch deck', description: 'Draft and refine slide content tied to your builder data.', section: 'Work', status: 'complete' },
-  { path: '/builder/applications', title: 'Program applications', description: 'Track accelerator and grant applications in one place.', section: 'Work', status: 'complete' },
-  { path: '/research', title: 'Research boards', description: 'Visual canvases for market, product, and competitive research.', section: 'Work', status: 'complete' },
-  { path: '/milestones', title: 'Milestones', description: 'Plan and track startup milestones with due dates and owners.', helpId: 'milestones', helpTitle: 'Milestones', helpTitleEl: 'Ορόσημα', section: 'Work', status: 'complete' },
+  { path: '/builder/pitch-deck', title: 'Pitch deck', description: 'Draft slides tied to Builder data. Completion counts filled content, not empty outlines.', helpId: 'pitch-deck', helpTitle: 'How this pitch deck works', helpTitleEl: 'Πώς δουλεύει αυτό το pitch deck', section: 'Work', status: 'complete' },
+  { path: '/builder/applications', title: 'Program applications', description: 'Four templates — YC, Techstars, university, grants. Answers save on the same workspace artefact as the Builder Applications tab.', helpId: 'applications', helpTitle: 'How program applications work', helpTitleEl: 'Πώς δουλεύουν οι αιτήσεις προγράμματος', section: 'Work', status: 'complete' },
+  { path: '/research', title: 'Research boards', description: 'Visual canvases for market, product, and competitive research. Templates seed a board; the canvas holds notes, files, and links.', helpId: 'research', helpTitle: 'How research boards work', helpTitleEl: 'Πώς δουλεύουν οι πίνακες έρευνας', section: 'Work', status: 'complete' },
+  { path: '/milestones', title: 'Milestones', description: 'Atomic goals with owners and dates. Completing them feeds Readiness and investor updates.', helpId: 'milestones', helpTitle: 'How milestones work', helpTitleEl: 'Πώς δουλεύουν τα ορόσημα', section: 'Work', status: 'complete' },
   // Creation routes need their own line: inheriting the list page told the user
   // they were "tracking" milestones on the form that creates one.
-  { path: '/milestones/new', title: 'New milestone', description: 'Define one milestone — what done looks like, who owns it, and when it is due.', section: 'Work', status: 'complete' },
-  { path: '/projects', title: 'Projects', description: 'Manage side projects and startup initiatives.', section: 'Work', status: 'complete' },
-  { path: '/projects/create', title: 'Create project', description: 'Name the project and set its goal before inviting collaborators.', section: 'Work', status: 'complete' },
-  { path: '/fundraising', title: 'Fundraising', description: 'Track your round, manage investor pipeline, and organize your data room.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', helpTitleEl: 'Ο γύρος χρηματοδότησης εδώ', section: 'Work', audience: ['founder'], status: 'complete' },
+  { path: '/milestones/new', title: 'New milestone', description: 'Define one milestone — what done looks like, who owns it, and when it is due.', helpId: 'milestones', helpTitle: 'How milestones work', helpTitleEl: 'Πώς δουλεύουν τα ορόσημα', section: 'Work', status: 'complete' },
+  { path: '/projects', title: 'Projects', description: 'Discover startup projects, join a team, or publish one with open roles. Completing work here sits next to Milestones and Builder.', helpId: 'projects', helpTitle: 'How projects work', helpTitleEl: 'Πώς δουλεύουν τα έργα', section: 'Work', status: 'complete' },
+  { path: '/projects/create', title: 'Create project', description: 'Name the idea, pick a stage, and list the roles you still need — then publish.', helpId: 'projects', helpTitle: 'How projects work', helpTitleEl: 'Πώς δουλεύουν τα έργα', section: 'Work', status: 'complete' },
+  { path: '/fundraising', title: 'Fundraising', description: 'Track the round, move investors through the pipeline, and share a private data room. Completing diligence here sits next to Pitch deck and Readiness.', helpId: 'fundraising', helpTitle: 'Running your fundraise here', helpTitleEl: 'Ο γύρος χρηματοδότησης εδώ', section: 'Work', audience: ['founder'], status: 'complete' },
 
   // ── Discovery ──
   { path: '/matches', title: 'Matches', description: 'AI-ranked co-founder and team matches based on your profile compatibility.', helpId: 'matches', helpTitle: 'How matching works', helpTitleEl: 'Πώς γίνεται η αντιστοίχιση', section: 'Explore', priority: 'critical', status: 'complete' },
@@ -59,7 +60,7 @@ export const PAGE_REGISTRY: PageMeta[] = [
   { path: '/search', title: 'Search', description: 'Find people, jobs, events, programs, and posts. Use filters in the result tabs to narrow by type.', section: 'Explore', status: 'complete' },
   { path: '/connections', title: 'Connections', description: 'Manage pending requests and active professional relationships.', helpId: 'connections', helpTitle: 'Connections', helpTitleEl: 'Συνδέσεις', section: 'Network', status: 'complete' },
   { path: '/shortlist', title: 'Saved profiles', description: 'Profiles you bookmarked for later outreach.', section: 'Network', status: 'complete' },
-  { path: '/messages', title: 'Messages', description: 'Direct conversations and intro requests with your network.', helpId: 'messages', helpTitle: 'Chats vs intro requests', helpTitleEl: 'Συνομιλίες και αιτήματα γνωριμίας', section: 'Communicate', priority: 'critical', status: 'complete' },
+  { path: '/messages', title: 'Messages', description: 'Full-height inbox for chats and intro requests. New message opens a connection picker; Ask AI drafts from the thread.', helpId: 'messages', helpTitle: 'Chats vs intro requests', helpTitleEl: 'Συνομιλίες και αιτήματα γνωριμίας', section: 'Communicate', priority: 'critical', status: 'complete' },
   { path: '/calendar', title: 'Calendar', description: 'Sessions, calls, and events in one timeline.', section: 'Communicate', status: 'complete' },
 
   // ── Mentor ──
@@ -217,7 +218,10 @@ const DYNAMIC_PATTERNS: Array<{ pattern: RegExp; meta: Omit<PageMeta, 'path'> & 
     pattern: /^\/projects\/(?!create$)[^/]+$/,
     meta: {
       title: 'Project',
-      description: 'Overview, milestones, and updates for this project.',
+      description: 'Overview, open roles, team, milestones, and updates for this project.',
+      helpId: 'projects',
+      helpTitle: 'How projects work',
+      helpTitleEl: 'Πώς δουλεύουν τα έργα',
       section: 'Work',
       status: 'complete',
     },

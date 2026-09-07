@@ -8,6 +8,13 @@ vi.mock('@/lib/api', () => ({ getAnalyticsOverview: vi.fn() }));
 vi.mock('@/lib/preview-demo', () => ({ isPreviewDemo: () => false }));
 vi.mock('@/components/layout/AppShell', () => ({ AppShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main> }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: { en: string }) => <>{en}</> }));
+vi.mock('@/contexts/PopupChatContext', () => ({
+  usePopupChat: () => ({
+    open: vi.fn(), close: vi.fn(), toggle: vi.fn(),
+    isOpen: false, isMinimized: false, initialUserId: null,
+    minimize: vi.fn(), restore: vi.fn(),
+  }),
+}));
 vi.mock('next/dynamic', () => ({ default: () => () => <div /> }));
 
 const overview: AnalyticsOverview = {

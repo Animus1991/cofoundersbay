@@ -87,6 +87,17 @@ import { CanvasBranchSelector } from '@/components/research/CanvasBranchSelector
 import { CollaboratorsBar, LiveCursors } from '@/components/research/CollaboratorsBar';
 import { useResearchCollaboration } from '@/hooks/useResearchCollaboration';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import {
+  researchEn,
+  researchEl,
+  useResearchPrimaryText,
+  RESEARCH_NODE_CATEGORY_EL,
+  RESEARCH_NODE_LABEL_EL,
+} from '@/lib/i18n/strings-research';
 
 type Tool = DrawTool;
 
@@ -322,6 +333,8 @@ export default function ResearchBoardPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
+  const t = useResearchPrimaryText();
+  const { open: openAskAi } = usePopupChat();
   const boardId = params?.boardId as string;
 
   // Canvas state
@@ -1204,16 +1217,23 @@ export default function ResearchBoardPage() {
         <MobileBottomNav />
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-1 flex-col items-center justify-center">
             <Loader2 className="icon-xl animate-spin text-primary-accessible" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              <BilingualText en={researchEn('canvas_loading')} el={researchEl('canvas_loading')} compact />
+            </p>
           </div>
         )}
 
         {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="text-destructive-accessible mb-4">Failed to load board</p>
-            <Button onClick={() => router.push('/research')}>Back to Boards</Button>
+            <p className="mb-4 text-destructive-accessible">
+              <BilingualText en={researchEn('canvas_fail')} el={researchEl('canvas_fail')} />
+            </p>
+            <Button className="rounded-xl" onClick={() => router.push('/research')}>
+              <BilingualText en={researchEn('canvas_back')} el={researchEl('canvas_back')} compact />
+            </Button>
           </div>
         )}
 
@@ -1224,12 +1244,19 @@ export default function ResearchBoardPage() {
         <div className="h-12 border-b bg-card/95 backdrop-blur-sm flex items-center px-3 sm:px-4 shrink-0 z-50 gap-2 sm:gap-3 overflow-x-auto scrollbar-hide">
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
-            <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Layers className="icon-md text-primary-accessible shrink-0" />
-              <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
+            <Link href="/research" className="flex items-center gap-2 transition-opacity hover:opacity-80" aria-label={bilingualAria(researchEn('canvas_back'), researchEl('canvas_back'))}>
+              <CfbGlyph name="research" className="icon-md text-primary-accessible shrink-0" />
+              <span className="hidden text-sm font-semibold text-foreground sm:inline">
+                <BilingualText en={researchEn('canvas_title')} el={researchEl('canvas_title')} compact />
+              </span>
             </Link>
-            <span className="text-2xs text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
-              {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
+            <span className="shrink-0 rounded-full bg-secondary/80 px-2 py-0.5 text-2xs tabular-nums text-muted-foreground">
+              {board.nodes.length}{' '}
+              <BilingualText
+                en={board.nodes.length === 1 ? researchEn('node') : researchEn('nodes')}
+                el={board.nodes.length === 1 ? researchEl('node') : researchEl('nodes')}
+                compact
+              />
             </span>
             <CollaboratorsBar collaborators={collaborators} isConnected={isConnected} className="ml-1" />
           </div>
@@ -1241,19 +1268,23 @@ export default function ResearchBoardPage() {
             variant={activeTool === 'note' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTool(activeTool === 'note' ? 'select' : 'note')}
-            className="gap-1.5 h-8 text-xs"
-            title="Click canvas to place note (N)"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            title={t(researchEn('note_title'), researchEl('note_title'))}
           >
             <StickyNote className="icon-sm text-amber-500" />
-            <span className="hidden md:inline">Note</span>
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('note')} el={researchEl('note')} compact />
+            </span>
           </Button>
 
           {/* Categorised Add Node mega-dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
+              <Button variant="ghost" size="sm" className="h-8 gap-1 rounded-xl text-xs">
                 <Plus className="icon-sm" />
-                <span className="hidden md:inline">Add Node</span>
+                <span className="hidden md:inline">
+                  <BilingualText en={researchEn('add_node')} el={researchEl('add_node')} compact />
+                </span>
                 <ChevronDown className="icon-sm opacity-60" />
               </Button>
             </DropdownMenuTrigger>
@@ -1262,7 +1293,7 @@ export default function ResearchBoardPage() {
                 <div key={cat.category}>
                   {ci > 0 && <DropdownMenuSeparator />}
                   <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {cat.category}
+                    <BilingualText en={cat.category} el={RESEARCH_NODE_CATEGORY_EL[cat.category] ?? cat.category} compact />
                   </div>
                   {cat.items.map((item) => {
                     const Icon = item.icon;
@@ -1271,7 +1302,7 @@ export default function ResearchBoardPage() {
                         key={item.type}
                         onClick={() => {
                           if (item.type === 'link') {
-                            const url = prompt('Enter URL:');
+                            const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
                             if (url) {
                               createNodeMutation.mutate({
                                 type: 'link',
@@ -1305,7 +1336,7 @@ export default function ResearchBoardPage() {
                         className="gap-2"
                       >
                         <Icon className="icon-sm shrink-0" style={{ color: item.color }} />
-                        {item.label}
+                        <BilingualText en={item.label} el={RESEARCH_NODE_LABEL_EL[item.type] ?? item.label} compact />
                       </DropdownMenuItem>
                     );
                   })}
@@ -1319,10 +1350,12 @@ export default function ResearchBoardPage() {
             variant="default"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="gap-1.5 h-8 text-xs"
+            className="h-8 gap-1.5 rounded-xl text-xs"
           >
             <Upload className="icon-sm" />
-            <span className="hidden md:inline">Upload</span>
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
+            </span>
           </Button>
 
           {/* Connect tool */}
@@ -1330,21 +1363,37 @@ export default function ResearchBoardPage() {
             variant={activeTool === 'connect' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setActiveTool(activeTool === 'connect' ? 'select' : 'connect')}
-            className="gap-1.5 h-8 text-xs"
-            title="Draw connection (C)"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            title={t(researchEn('connect_title'), researchEl('connect_title'))}
           >
             <GitBranch className="icon-sm text-emerald-500" />
-            <span className="hidden md:inline">Connect</span>
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('connect')} el={researchEl('connect')} compact />
+            </span>
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 rounded-xl text-xs"
+            onClick={() => openAskAi()}
+            title={t(researchEn('ask_ai_canvas'), researchEl('ask_ai_canvas'))}
+          >
+            <CfbGlyph name="spark" className="icon-sm" />
+            <span className="hidden md:inline">
+              <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
+            </span>
           </Button>
 
           <div className="h-5 w-px bg-border/60" />
 
           {/* Undo / Redo */}
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={undo} disabled={historyIndex <= 0} title="Undo (Ctrl+Z)">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={undo} disabled={historyIndex <= 0} title={t(researchEn('undo'), researchEl('undo'))}>
               <Undo2 className="icon-sm" />
             </Button>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={redo} disabled={historyIndex >= history.length - 1} title="Redo (Ctrl+Y)">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={redo} disabled={historyIndex >= history.length - 1} title={t(researchEn('redo'), researchEl('redo'))}>
               <Redo2 className="icon-sm" />
             </Button>
           </div>
@@ -1354,13 +1403,13 @@ export default function ResearchBoardPage() {
 
           {/* Zoom controls */}
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title="Zoom out">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(-0.25)} title={t(researchEn('zoom_out'), researchEl('zoom_out'))}>
               <ZoomOut className="icon-sm" />
             </Button>
             <span className="text-2xs text-muted-foreground w-10 text-center tabular-nums select-none">
               {Math.round(zoom * 100)}%
             </span>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title="Zoom in">
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => handleZoom(0.25)} title={t(researchEn('zoom_in'), researchEl('zoom_in'))}>
               <ZoomIn className="icon-sm" />
             </Button>
             <Button
@@ -1368,7 +1417,7 @@ export default function ResearchBoardPage() {
               size="sm"
               className="h-7 w-7 p-0"
               onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}
-              title="Reset view (1:1)"
+              title={t(researchEn('reset_view'), researchEl('reset_view'))}
             >
               <Maximize2 className="icon-sm" />
             </Button>
@@ -1377,7 +1426,7 @@ export default function ResearchBoardPage() {
               size="sm"
               className="h-7 w-7 p-0"
               onClick={fitToContent}
-              title="Fit all nodes in view"
+              title={t(researchEn('fit_nodes'), researchEl('fit_nodes'))}
             >
               <Layers className="icon-sm" />
             </Button>
@@ -1391,7 +1440,7 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => setSnapToGrid((v) => !v)}
-            title={snapToGrid ? 'Snap to grid ON' : 'Snap to grid OFF'}
+            title={snapToGrid ? t(researchEn('snap_on'), researchEl('snap_on')) : t(researchEn('snap_off'), researchEl('snap_off'))}
           >
             <Magnet className="icon-sm" />
           </Button>
@@ -1404,7 +1453,7 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => { setShowAIPanel((v) => !v); setShowBoardSummary(false); }}
-            title="AI Analysis"
+            title={t(researchEn('ai_analysis'), researchEl('ai_analysis'))}
           >
             <Sparkles className="icon-sm" />
           </Button>
@@ -1415,7 +1464,7 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => { setShowBoardSummary((v) => !v); setShowAIPanel(false); }}
-            title="Board Summary & Health"
+            title={t(researchEn('board_summary'), researchEl('board_summary'))}
           >
             <BarChart3 className="icon-sm" />
           </Button>
@@ -1434,7 +1483,7 @@ export default function ResearchBoardPage() {
             size="sm"
             className="h-7 w-7 p-0"
             onClick={() => setShowHistoryDrawer((v) => !v)}
-            title="Canvas History, Versions & Branches"
+            title={t(researchEn('canvas_history'), researchEl('canvas_history'))}
           >
             <History className="icon-sm" />
           </Button>
@@ -1448,7 +1497,7 @@ export default function ResearchBoardPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuItem onClick={() => {
-                const url = prompt('Enter URL:');
+                const url = prompt(t(researchEn('enter_url'), researchEl('enter_url')));
                 if (url) {
                   createNodeMutation.mutate({
                     type: 'link',
@@ -1460,24 +1509,32 @@ export default function ResearchBoardPage() {
                 }
               }}>
                 <LinkIcon className="icon-sm mr-2" />
-                Add Link
+                <BilingualText en={researchEn('add_link')} el={researchEl('add_link')} compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowEntitySelector(true)}>
                 <Users className="icon-sm mr-2" />
-                Reference Entity
+                <BilingualText en={researchEn('ref_entity')} el={researchEl('ref_entity')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowGrid(!showGrid)}>
                 <Grid3X3 className="icon-sm mr-2" />
-                {showGrid ? 'Hide' : 'Show'} Grid
+                <BilingualText
+                  en={showGrid ? researchEn('hide_grid') : researchEn('show_grid')}
+                  el={showGrid ? researchEl('hide_grid') : researchEl('show_grid')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSnapToGrid((v) => !v)}>
                 <Magnet className="icon-sm mr-2" />
-                {snapToGrid ? 'Disable' : 'Enable'} Snap to Grid
+                <BilingualText
+                  en={snapToGrid ? researchEn('disable_snap') : researchEn('enable_snap')}
+                  el={snapToGrid ? researchEl('disable_snap') : researchEl('enable_snap')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={fitToContent}>
                 <Layers className="icon-sm mr-2" />
-                Fit All Nodes in View
+                <BilingualText en={researchEn('fit_nodes')} el={researchEl('fit_nodes')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {
@@ -1486,7 +1543,7 @@ export default function ResearchBoardPage() {
                 createGroup(cx - 200, cy - 150);
               }}>
                 <Grid3X3 className="icon-sm mr-2 text-blue-500" />
-                Create Group Frame
+                <BilingualText en={researchEn('create_group')} el={researchEl('create_group')} compact />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => {
                 const cx = (window.innerWidth / 2 - pan.x) / zoom;
@@ -1494,21 +1551,29 @@ export default function ResearchBoardPage() {
                 createNodeMutation.mutate({ type: 'note' as any, title: '', content: '', posX: cx - 100, posY: cy - 100, width: 200, height: 200, color: '#F59E0B', metadata: { isSticky: true } });
               }}>
                 <StickyNote className="icon-sm mr-2 text-amber-500" />
-                Add Sticky Note
+                <BilingualText en={researchEn('add_sticky')} el={researchEl('add_sticky')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowFilterBar((v) => !v)}>
                 <Filter className="icon-sm mr-2" />
-                {showFilterBar ? 'Hide' : 'Show'} Filters
+                <BilingualText
+                  en={showFilterBar ? researchEn('hide_filters') : researchEn('show_filters')}
+                  el={showFilterBar ? researchEl('hide_filters') : researchEl('show_filters')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setShowMiniMap((v) => !v)}>
                 <Map className="icon-sm mr-2" />
-                {showMiniMap ? 'Hide' : 'Show'} Mini-Map
+                <BilingualText
+                  en={showMiniMap ? researchEn('hide_map') : researchEn('show_map')}
+                  el={showMiniMap ? researchEl('hide_map') : researchEl('show_map')}
+                  compact
+                />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowBoardSettings(true)}>
                 <Settings className="icon-sm mr-2" />
-                Board Settings
+                <BilingualText en={researchEn('board_settings')} el={researchEl('board_settings')} compact />
               </DropdownMenuItem>
               {board && (
                 <DropdownMenuItem asChild>
@@ -1519,12 +1584,12 @@ export default function ResearchBoardPage() {
               )}
               <DropdownMenuItem onClick={handleExportPng}>
                 <Download className="icon-sm mr-2 text-blue-500" />
-                Export as PNG
+                <BilingualText en={researchEn('export_png')} el={researchEl('export_png')} compact />
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {/* Auto Layout */}
               <div className="px-2 py-1.5 text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Auto Layout
+                <BilingualText en={researchEn('auto_layout')} el={researchEl('auto_layout')} compact />
               </div>
               {([
                 { alg: 'dagre-tb' as LayoutAlgorithm, label: '↓ Top → Bottom', icon: '↓' },
@@ -1542,7 +1607,7 @@ export default function ResearchBoardPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowShortcuts(true)}>
                 <Keyboard className="icon-sm mr-2" />
-                Keyboard Shortcuts
+                <BilingualText en={researchEn('shortcuts')} el={researchEl('shortcuts')} compact />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1800,25 +1865,30 @@ export default function ResearchBoardPage() {
           <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-primary/5 backdrop-blur-[2px] transition-all duration-200">
             <div className="bg-card/95 border-2 border-dashed border-primary rounded-2xl p-10 text-center shadow-2xl">
               <Upload className="h-14 w-14 text-primary-accessible mx-auto mb-4 animate-bounce" />
-              <p className="text-lg font-semibold">Drop files here</p>
-              <p className="text-sm text-muted-foreground mt-1">PDFs, images, documents, screenshots</p>
+              <p className="text-lg font-semibold">
+                <BilingualText en={researchEn('drop_here')} el={researchEl('drop_here')} />
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                <BilingualText en={researchEn('drop_hint')} el={researchEl('drop_hint')} />
+              </p>
             </div>
           </div>
         )}
 
         {/* Bottom status bar */}
         <div className="absolute bottom-0 inset-x-0 h-7 bg-card/80 backdrop-blur-sm border-t border-border/50 flex items-center justify-between px-3 z-30 pointer-events-none select-none">
-          <span className="text-2xs text-muted-foreground/70 tabular-nums">
-            {Math.round(zoom * 100)}% · {board.nodes.length} node{board.nodes.length !== 1 ? 's' : ''}
-            {board.connectors.length > 0 && ` · ${board.connectors.length} connection${board.connectors.length !== 1 ? 's' : ''}`}
-            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} selected`}
-            {connectionStart && ' · Drawing connection…'}
-            {groups.length > 0 && ` · ${groups.length} group${groups.length !== 1 ? 's' : ''}`}
-            {snapToGrid && ' · ⊞ Snap'}
+          <span className="text-2xs tabular-nums text-muted-foreground/70">
+            {Math.round(zoom * 100)}% · {board.nodes.length}{' '}
+            {t(board.nodes.length === 1 ? researchEn('node') : researchEn('nodes'), board.nodes.length === 1 ? researchEl('node') : researchEl('nodes'))}
+            {board.connectors.length > 0 && ` · ${board.connectors.length} ${t(board.connectors.length === 1 ? researchEn('connection') : researchEn('connections'), board.connectors.length === 1 ? researchEl('connection') : researchEl('connections'))}`}
+            {selectedNodeIds.size > 0 && ` · ${selectedNodeIds.size} ${t(researchEn('selected'), researchEl('selected'))}`}
+            {connectionStart && ` · ${t(researchEn('drawing'), researchEl('drawing'))}`}
+            {groups.length > 0 && ` · ${groups.length} ${t(groups.length === 1 ? researchEn('group') : researchEn('groups'), groups.length === 1 ? researchEl('group') : researchEl('groups'))}`}
+            {snapToGrid && ` · ⊞ ${t(researchEn('snap'), researchEl('snap'))}`}
           </span>
-          <span className="text-2xs text-muted-foreground/50 tabular-nums">
-            {history.length > 0 && `History: ${historyIndex + 1}/${history.length} · `}
-            Scroll to zoom · Drag to pan · ? for shortcuts
+          <span className="text-2xs tabular-nums text-muted-foreground/50">
+            {history.length > 0 && `${t(researchEn('history'), researchEl('history'))}: ${historyIndex + 1}/${history.length} · `}
+            {t(researchEn('hint_nav'), researchEl('hint_nav'))}
           </span>
         </div>
       </div>
@@ -1986,7 +2056,8 @@ export default function ResearchBoardPage() {
                     }}
                     className="w-full px-3 py-1.5 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
                   >
-                    <Icon className="icon-sm" style={{ color: item.color }} /> {item.label}
+                    <Icon className="icon-sm" style={{ color: item.color }} />
+                    <BilingualText en={item.label} el={RESEARCH_NODE_LABEL_EL[item.type] ?? item.label} compact />
                   </button>
                 );
               })}
@@ -1995,7 +2066,8 @@ export default function ResearchBoardPage() {
                 onClick={() => { fileInputRef.current?.click(); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
-                <Upload className="icon-sm" /> Upload File
+                <Upload className="icon-sm" />
+                <BilingualText en={researchEn('upload')} el={researchEl('upload')} compact />
               </button>
               <div className="h-px bg-border my-1" />
               <button

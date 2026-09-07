@@ -8,7 +8,7 @@ export default function AnalyticsLoading() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="rounded-xl">
             <CardContent className="p-5">
               <Skeleton className="h-10 w-10 mb-3" />
               <Skeleton className="h-8 w-24 mb-2" />
@@ -19,7 +19,7 @@ export default function AnalyticsLoading() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>
@@ -32,7 +32,7 @@ export default function AnalyticsLoading() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader>
             <Skeleton className="h-6 w-48" />
           </CardHeader>

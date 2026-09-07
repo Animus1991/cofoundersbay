@@ -1,13 +1,15 @@
-import { Activity, Eye, Heart, MessageCircle, Target, TrendingUp, UserPlus } from 'lucide-react';
 import type { UserMetrics } from '@/lib/api';
 import type { StatusTone } from '@/lib/semantic-colors';
+import type { CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { analyticsEl } from '@/lib/i18n/strings-analytics';
 
 export interface AnalyticsMetric {
   label: string;
+  labelEl: string;
   value: number | null;
   change: number | null;
   changeType: 'increase' | 'decrease' | 'neutral';
-  icon: typeof TrendingUp;
+  glyph: CfbGlyphName;
   tone: StatusTone;
 }
 
@@ -18,6 +20,24 @@ export const METRIC_TONE: Record<string, StatusTone> = {
   'Engagement Rate': 'accent',
   'Search Appearances': 'warning',
   'Activity Score': 'info',
+};
+
+const METRIC_GLYPH: Record<string, CfbGlyphName> = {
+  'Profile Views': 'profile',
+  'New Connections': 'people',
+  'Messages Sent': 'messages',
+  'Engagement Rate': 'spark',
+  'Search Appearances': 'discover',
+  'Activity Score': 'chart',
+};
+
+const METRIC_EL: Record<string, string> = {
+  'Profile Views': analyticsEl('metric_views'),
+  'New Connections': analyticsEl('metric_connections'),
+  'Messages Sent': analyticsEl('metric_messages'),
+  'Engagement Rate': analyticsEl('metric_engagement'),
+  'Search Appearances': analyticsEl('metric_search'),
+  'Activity Score': analyticsEl('metric_activity'),
 };
 
 /**
@@ -39,30 +59,28 @@ export const METRIC_TONE: Record<string, StatusTone> = {
 export function metricsToDisplay(m?: Partial<{ [K in keyof UserMetrics]: number | null }> | null): AnalyticsMetric[] {
   const changeType = (v: number | null): 'increase' | 'decrease' | 'neutral' =>
     v === null ? 'neutral' : v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
-  // Guards against null/NaN/strings as well as undefined — a JSON payload can
-  // carry any of them, and NaN would render as "NaN" in the tile.
   const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
   const tile = (
     label: string,
     value: unknown,
     change: unknown,
-    icon: AnalyticsMetric['icon'],
   ): AnalyticsMetric => ({
     label,
+    labelEl: METRIC_EL[label] ?? label,
     value: num(value),
     change: num(change),
     changeType: changeType(num(change)),
-    icon,
+    glyph: METRIC_GLYPH[label] ?? 'chart',
     tone: METRIC_TONE[label] ?? 'neutral',
   });
 
   return [
-    tile('Profile Views', m?.profileViews, m?.profileViewsChange, Eye),
-    tile('New Connections', m?.newConnections, m?.newConnectionsChange, UserPlus),
-    tile('Messages Sent', m?.messagesSent, m?.messagesSentChange, MessageCircle),
-    tile('Engagement Rate', m?.engagementRate, m?.engagementRateChange, Heart),
-    tile('Search Appearances', m?.searchAppearances, m?.searchAppearancesChange, Target),
-    tile('Activity Score', m?.activityScore, m?.activityScoreChange, Activity),
+    tile('Profile Views', m?.profileViews, m?.profileViewsChange),
+    tile('New Connections', m?.newConnections, m?.newConnectionsChange),
+    tile('Messages Sent', m?.messagesSent, m?.messagesSentChange),
+    tile('Engagement Rate', m?.engagementRate, m?.engagementRateChange),
+    tile('Search Appearances', m?.searchAppearances, m?.searchAppearancesChange),
+    tile('Activity Score', m?.activityScore, m?.activityScoreChange),
   ];
 }

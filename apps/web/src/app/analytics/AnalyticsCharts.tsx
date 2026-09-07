@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BilingualText } from '@/components/common/BilingualText';
 import { useDemoData } from '@/contexts/DemoDataContext';
-import { BarChart3, PieChart, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import type { AnalyticsEngagement, AnalyticsProfileView } from '@/lib/api';
 
 const DEMO_AREA_DATA = [
@@ -65,11 +66,11 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
   };
 
   return (
-    <Card>
+    <Card className="rounded-xl">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <BarChart3 className="icon-sm" aria-hidden="true" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
+            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
           <Button variant="ghost" size="sm" className="gap-1" onClick={exportData} disabled={!chartData.length}>
             <Download className="icon-sm" aria-hidden="true" /><BilingualText en="Export" el="Εξαγωγή" compact />
@@ -124,9 +125,9 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
   return (
     <div className="space-y-4">
       {isSample && <SampleNotice />}
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <BarChart3 className="icon-sm" aria-hidden="true" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
+          <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement by Type" el="Αλληλεπίδραση ανά τύπο" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {barData.length ? <ResponsiveContainer width="100%" height={180}>
@@ -134,7 +135,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
-              <Bar dataKey="value" radius={[4, 4, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
+              <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>
           </ResponsiveContainer> : <Unavailable />}
           <ul className="mt-3 space-y-1 text-xs text-muted-foreground">{values.map((item) => <li key={item.name}>
@@ -142,9 +143,9 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
           </li>)}</ul>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="rounded-xl">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <PieChart className="icon-sm" aria-hidden="true" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
+          <CfbGlyph name="compare" className="icon-sm text-primary-accessible" /><BilingualText en="Engagement Distribution" el="Κατανομή αλληλεπίδρασης" compact />
         </CardTitle></CardHeader>
         <CardContent>
           {pieData.length ? <ResponsiveContainer width="100%" height={180}>

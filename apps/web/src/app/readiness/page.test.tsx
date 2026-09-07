@@ -8,6 +8,13 @@ vi.mock('@/lib/api', () => ({ assessReadiness: vi.fn(), updateReadinessCriterion
 vi.mock('@/components/layout/AppShell', () => ({ AppShell: ({ children, actions }: any) => <main>{actions}{children}</main> }));
 vi.mock('@/components/common/BilingualText', () => ({ BilingualText: ({ en }: any) => <span>{en}</span> }));
 vi.mock('@/components/ui/toast', () => ({ useToast: () => ({ error: vi.fn() }) }));
+vi.mock('@/contexts/PopupChatContext', () => ({
+  usePopupChat: () => ({
+    open: vi.fn(), close: vi.fn(), toggle: vi.fn(),
+    isOpen: false, isMinimized: false, initialUserId: null,
+    minimize: vi.fn(), restore: vi.fn(),
+  }),
+}));
 vi.mock('next/dynamic', () => ({ default: () => () => <div data-testid="chart" /> }));
 
 const workspaceId = 'workspace-live';

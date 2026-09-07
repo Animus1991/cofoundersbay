@@ -1,15 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useDemoData } from '@/contexts/DemoDataContext';
 import {
-  DollarSign, TrendingUp, Users, FileText, Target, CheckCircle2,
-  Clock, Plus, ChevronRight, Zap, Lock, Unlock, BarChart3,
-  Briefcase, Globe, Calendar, PieChart, ArrowUpRight, Circle,
-  Building2, MessageCircle, Eye, AlertCircle, Download, Upload,
-  Layers, BadgeCheck, Bookmark,
+  Plus, ChevronRight, Clock, Upload, Download, X,
 } from 'lucide-react';
+import { useDemoData } from '@/contexts/DemoDataContext';
 import { AppShell } from '@/components/layout/AppShell';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
@@ -17,168 +13,261 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { useToast } from '@/components/ui/toast';
+import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
+import {
+  fundraisingEn,
+  fundraisingEl,
+  useFundraisingPrimaryText,
+  INVESTOR_STATUS_KEYS,
+  ROUND_STATUS_KEYS,
+  DOC_STATUS_KEYS,
+  DOC_CATEGORY_KEYS,
+} from '@/lib/i18n/strings-fundraising';
+import {
+  FUNDRAISING_SEED_DOCS,
+  PIPELINE_STAGES,
+  DOC_CATEGORIES,
+  INVESTOR_TYPES,
+  listFundraisingLeads,
+  addFundraisingLead,
+  moveFundraisingLead,
+  fundraisingPipelineStats,
+  fundraisingRoundView,
+  fmtMoney,
+  daysUntil,
+  readFundraisingOverlay,
+  type InvestorLead,
+  type InvestorStatus,
+  type DataRoomDoc,
+  type DocStatus,
+} from '@/lib/fundraising-demo';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type RoundStatus = 'planning' | 'active' | 'closing' | 'closed';
-type InvestorStatus = 'prospect' | 'contacted' | 'meeting' | 'dd' | 'committed' | 'passed';
-type DocStatus = 'draft' | 'ready' | 'shared';
-
-type Round = {
-  id: string;
-  name: string;
-  type: string;
-  target: number;
-  raised: number;
-  status: RoundStatus;
-  closingDate?: string;
-  valuation?: number;
-  leadInvestor?: string;
-  investors: number;
-};
-
-type InvestorLead = {
-  id: string;
-  name: string;
-  firm?: string;
-  type: string;
-  stage: string;
-  checkSize: string;
-  status: InvestorStatus;
-  lastContact?: string;
-  notes?: string;
-  isVerified: boolean;
-};
-
-type DataRoomDoc = {
-  id: string;
-  name: string;
-  category: string;
-  status: DocStatus;
-  isRequired: boolean;
-  lastUpdated?: string;
-};
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function fmt(n: number) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
-  return `$${n}`;
-}
-
-const ROUND_STATUS_TONE: Record<RoundStatus, StatusTone> = {
+const ROUND_TONE: Record<string, StatusTone> = {
   planning: 'neutral',
   active: 'success',
   closing: 'warning',
   closed: 'info',
 };
 
-const INVESTOR_STATUS_STYLE: Record<InvestorStatus, { tone: StatusTone; label: string }> = {
-  prospect:  { tone: 'neutral', label: 'Prospect' },
-  contacted: { tone: 'info', label: 'Contacted' },
-  meeting:   { tone: 'accent', label: 'Meeting' },
-  dd:        { tone: 'warning', label: 'Due Diligence' },
-  committed: { tone: 'success', label: 'Committed' },
-  passed:    { tone: 'danger', label: 'Passed' },
+const INVESTOR_TONE: Record<InvestorStatus, StatusTone> = {
+  prospect: 'neutral',
+  contacted: 'info',
+  meeting: 'accent',
+  dd: 'warning',
+  committed: 'success',
+  passed: 'danger',
 };
 
-// ── Mock Data ──────────────────────────────────────────────────────────────────
-
-const MOCK_ROUND: Round = {
-  id: 'r1',
-  name: 'Seed Round',
-  type: 'SAFE',
-  target: 750_000,
-  raised: 375_000,
-  status: 'active',
-  closingDate: '2024-06-30',
-  valuation: 3_000_000,
-  leadInvestor: 'Athens Tech Angels',
-  investors: 4,
+const DOC_TONE: Record<DocStatus, StatusTone> = {
+  draft: 'warning',
+  ready: 'success',
+  shared: 'info',
 };
 
-const MOCK_LEADS: InvestorLead[] = [
-  { id: 'l1', name: 'Sarah Chen', firm: 'Chen Ventures', type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$25K–$150K', status: 'meeting', lastContact: '2d ago', isVerified: true, notes: 'Interested in AI angle. Follow up after demo.' },
-  { id: 'l2', name: 'Michael Torres', firm: 'Horizon Capital', type: 'VC', stage: 'Seed / A', checkSize: '$500K–$3M', status: 'contacted', lastContact: '1w ago', isVerified: true, notes: 'Warm intro via Nikos. Waiting for deck review.' },
-  { id: 'l3', name: 'Athens Tech Angels', firm: 'Syndicate', type: 'Syndicate', stage: 'Pre-Seed / Seed', checkSize: '€50K–€200K', status: 'committed', lastContact: '3d ago', isVerified: true, notes: 'Lead investor — committed €200K.' },
-  { id: 'l4', name: 'Emma Williams', firm: undefined, type: 'Angel', stage: 'Pre-Seed / Seed', checkSize: '$10K–$75K', status: 'prospect', lastContact: undefined, isVerified: true, notes: undefined },
-  { id: 'l5', name: 'Sequoia Scout', firm: 'Sequoia Capital', type: 'Scout', stage: 'Pre-Seed', checkSize: '$100K–$500K', status: 'dd', lastContact: '5d ago', isVerified: true, notes: 'Requested financials and cap table.' },
-  { id: 'l6', name: 'Klaus Weber', firm: 'Weber Family Office', type: 'Family Office', stage: 'Seed / A', checkSize: '$1M–$5M', status: 'passed', lastContact: '2w ago', isVerified: false, notes: 'Too early for their ticket size.' },
-];
+const DOC_GLYPH: Record<DocStatus, CfbGlyphName> = {
+  draft: 'book',
+  ready: 'award',
+  shared: 'discover',
+};
 
-const DATA_ROOM_DOCS: DataRoomDoc[] = [
-  { id: 'd1', name: 'Pitch Deck', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '3d ago' },
-  { id: 'd2', name: 'Executive Summary', category: 'Pitch', status: 'ready', isRequired: true, lastUpdated: '1w ago' },
-  { id: 'd3', name: '3-Year Financial Model', category: 'Financials', status: 'draft', isRequired: true, lastUpdated: '5d ago' },
-  { id: 'd4', name: 'Cap Table', category: 'Legal', status: 'ready', isRequired: true, lastUpdated: '2w ago' },
-  { id: 'd5', name: 'SAFE / Term Sheet Template', category: 'Legal', status: 'draft', isRequired: true, lastUpdated: undefined },
-  { id: 'd6', name: 'Product Demo Video', category: 'Product', status: 'ready', isRequired: false, lastUpdated: '1d ago' },
-  { id: 'd7', name: 'Market Research Report', category: 'Market', status: 'shared', isRequired: false, lastUpdated: '2w ago' },
-  { id: 'd8', name: 'Team Bios & LinkedIn', category: 'Team', status: 'ready', isRequired: false, lastUpdated: '3w ago' },
-  { id: 'd9', name: 'IP & Patents (if any)', category: 'Legal', status: 'draft', isRequired: false, lastUpdated: undefined },
-  { id: 'd10', name: 'Customer Contracts / LOIs', category: 'Traction', status: 'draft', isRequired: false, lastUpdated: undefined },
-];
+function statusLabel(status: InvestorStatus) {
+  const key = INVESTOR_STATUS_KEYS[status];
+  return key
+    ? <BilingualText en={fundraisingEn(key)} el={fundraisingEl(key)} compact />
+    : status;
+}
 
-// ── Round Progress Card ────────────────────────────────────────────────────────
+function AddLeadModal({
+  open,
+  defaultStatus,
+  onClose,
+  onCreated,
+}: {
+  open: boolean;
+  defaultStatus: InvestorStatus;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const t = useFundraisingPrimaryText();
+  const { success } = useToast();
+  const [name, setName] = useState('');
+  const [firm, setFirm] = useState('');
+  const [type, setType] = useState<string>('Angel');
+  const [stage, setStage] = useState('Pre-Seed / Seed');
+  const [checkSize, setCheckSize] = useState('$25K–$150K');
+  const [status, setStatus] = useState<InvestorStatus>(defaultStatus);
+  const [notes, setNotes] = useState('');
 
-function RoundCard({ round }: { round: Round }) {
-  const pct = Math.round((round.raised / round.target) * 100);
-  const remaining = round.target - round.raised;
-  const daysLeft = round.closingDate
-    ? Math.max(0, Math.ceil((new Date(round.closingDate).getTime() - Date.now()) / 86_400_000))
-    : null;
+  if (!open) return null;
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    addFundraisingLead({
+      name: name.trim(),
+      firm: firm.trim() || undefined,
+      type,
+      stage,
+      checkSize,
+      status,
+      notes: notes.trim() || undefined,
+    });
+    success(t(fundraisingEn('created'), fundraisingEl('created')), t(fundraisingEn('created_hint'), fundraisingEl('created_hint')));
+    onCreated();
+    onClose();
+  }
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <form onSubmit={submit} className="relative w-full max-w-lg space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
+            <h2 className="text-sm font-semibold">
+              <BilingualText en={fundraisingEn('modal_new')} el={fundraisingEl('modal_new')} />
+            </h2>
+          </div>
+          <button type="button" onClick={onClose} className="rounded-xl p-1.5 text-muted-foreground hover:bg-muted" aria-label={bilingualAria(fundraisingEn('cancel'), fundraisingEl('cancel'))}>
+            <X className="icon-sm" />
+          </button>
+        </div>
+        <div className="space-y-1.5">
+          <Label><BilingualText en={fundraisingEn('field_name')} el={fundraisingEl('field_name')} compact /> *</Label>
+          <Input className="rounded-xl" required value={name} onChange={(e) => setName(e.target.value)} placeholder={t(fundraisingEn('name_ph'), fundraisingEl('name_ph'))} />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label><BilingualText en={fundraisingEn('field_firm')} el={fundraisingEl('field_firm')} compact /></Label>
+            <Input className="rounded-xl" value={firm} onChange={(e) => setFirm(e.target.value)} placeholder={t(fundraisingEn('firm_ph'), fundraisingEl('firm_ph'))} />
+          </div>
+          <div className="space-y-1.5">
+            <Label><BilingualText en={fundraisingEn('field_type')} el={fundraisingEl('field_type')} compact /></Label>
+            <select className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={type} onChange={(e) => setType(e.target.value)}>
+              {INVESTOR_TYPES.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label><BilingualText en={fundraisingEn('field_stage')} el={fundraisingEl('field_stage')} compact /></Label>
+            <Input className="rounded-xl" value={stage} onChange={(e) => setStage(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label><BilingualText en={fundraisingEn('field_check')} el={fundraisingEl('field_check')} compact /></Label>
+            <Input className="rounded-xl" value={checkSize} onChange={(e) => setCheckSize(e.target.value)} />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label><BilingualText en={fundraisingEn('field_status')} el={fundraisingEl('field_status')} compact /></Label>
+          <select className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm" value={status} onChange={(e) => setStatus(e.target.value as InvestorStatus)}>
+            {PIPELINE_STAGES.map((s) => (
+              <option key={s} value={s}>{t(fundraisingEn(INVESTOR_STATUS_KEYS[s]), fundraisingEl(INVESTOR_STATUS_KEYS[s]))}</option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label><BilingualText en={fundraisingEn('field_notes')} el={fundraisingEl('field_notes')} compact /></Label>
+          <textarea className="w-full resize-none rounded-xl border border-input bg-background px-3 py-2 text-sm" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t(fundraisingEn('notes_ph'), fundraisingEl('notes_ph'))} />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="ghost" className="rounded-xl" onClick={onClose}>
+            <BilingualText en={fundraisingEn('cancel')} el={fundraisingEl('cancel')} compact />
+          </Button>
+          <Button type="submit" className="rounded-xl" disabled={!name.trim()}>
+            <BilingualText en={fundraisingEn('save')} el={fundraisingEl('save')} compact />
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function RoundCard({
+  round,
+  onAdd,
+}: {
+  round: ReturnType<typeof fundraisingRoundView>;
+  onAdd: () => void;
+}) {
+  const pct = Math.round((round.raised / round.target) * 100);
+  const remaining = round.target - round.raised;
+  const days = daysUntil(round.closingDate);
+  const roundKey = ROUND_STATUS_KEYS[round.status];
+
+  return (
+    <Card className="rounded-xl border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
       <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <CfbGlyphWell name="wallet" size="sm" />
               <h2 className="text-xl font-bold">{round.name}</h2>
-              <Badge variant="outline" className={cn('border', STATUS[ROUND_STATUS_TONE[round.status]].chip)}>
-                {round.status.charAt(0).toUpperCase() + round.status.slice(1)}
+              <Badge variant="outline" className={cn('rounded-full border', STATUS[ROUND_TONE[round.status]].chip)}>
+                {roundKey ? <BilingualText en={fundraisingEn(roundKey)} el={fundraisingEl(roundKey)} compact /> : round.status}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {round.type} · {round.valuation ? `${fmt(round.valuation)} pre-money valuation` : 'Valuation TBD'}
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {round.type} · {round.valuation
+                ? `${fmtMoney(round.valuation, round.currency)} `
+                : null}
+              {round.valuation
+                ? <BilingualText en={fundraisingEn('pre_money')} el={fundraisingEl('pre_money')} compact />
+                : <BilingualText en={fundraisingEn('valuation_tbd')} el={fundraisingEl('valuation_tbd')} compact />}
             </p>
           </div>
-          <Button size="sm" variant="outline" className="shrink-0">
-            <Plus className="icon-sm mr-1.5" />Add Investor
+          <Button size="sm" variant="outline" className="shrink-0 rounded-xl" onClick={onAdd}>
+            <Plus className="icon-sm mr-1.5" />
+            <BilingualText en={fundraisingEn('add_investor')} el={fundraisingEl('add_investor')} compact />
           </Button>
         </div>
 
-        {/* Progress */}
-        <div className="space-y-1.5 mb-4">
+        <div className="mb-4 space-y-1.5">
           <div className="flex justify-between text-sm font-medium">
-            <span>{fmt(round.raised)} raised</span>
-            <span className="text-muted-foreground">{fmt(round.target)} target</span>
+            <span>{fmtMoney(round.raised, round.currency)} <BilingualText en={fundraisingEn('raised')} el={fundraisingEl('raised')} compact /></span>
+            <span className="text-muted-foreground">{fmtMoney(round.target, round.currency)} <BilingualText en={fundraisingEn('target')} el={fundraisingEl('target')} compact /></span>
           </div>
           <Progress value={pct} className="h-3" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{pct}% of target</span>
-            <span>{fmt(remaining)} remaining</span>
+          <div className="flex justify-between text-2xs text-muted-foreground">
+            <span>{pct}% <BilingualText en={fundraisingEn('of_target')} el={fundraisingEl('of_target')} compact /></span>
+            <span>{fmtMoney(remaining, round.currency)} <BilingualText en={fundraisingEn('remaining')} el={fundraisingEl('remaining')} compact /></span>
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { icon: Users, label: 'Investors', value: round.investors.toString() },
-            { icon: Target, label: 'Committed', value: fmt(round.raised) },
-            { icon: Calendar, label: 'Closing', value: daysLeft !== null ? `${daysLeft}d left` : 'TBD' },
-            { icon: BadgeCheck, label: 'Lead Investor', value: round.leadInvestor ?? 'None yet' },
-          ].map(s => (
-            <div key={s.label} className="rounded-lg bg-background/60 p-3">
-              <div className="flex items-center gap-1.5 mb-1">
-                <s.icon className="h-3.5 w-3.5 text-primary-accessible" />
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+            { glyph: 'people' as const, label: 'stat_investors' as const, value: round.investors.toString() },
+            { glyph: 'chart' as const, label: 'stat_committed_amt' as const, value: fmtMoney(round.raised, round.currency) },
+            { glyph: 'calendar' as const, label: 'stat_closing' as const, value: days === null ? null : days < 0 ? 'overdue' : `${days}` },
+            { glyph: 'award' as const, label: 'lead_investor' as const, value: round.leadInvestor ?? '' },
+          ].map((s) => (
+            <div key={s.label} className="rounded-xl bg-background/60 p-3">
+              <div className="mb-1 flex items-center gap-1.5">
+                <CfbGlyph name={s.glyph} className="icon-sm text-primary-accessible" />
+                <p className="text-2xs text-muted-foreground">
+                  <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact />
+                </p>
               </div>
-              <p className="text-sm font-semibold truncate">{s.value}</p>
+              <p className="truncate text-sm font-semibold">
+                {s.label === 'stat_closing' && s.value === 'overdue'
+                  ? <BilingualText en={fundraisingEn('overdue')} el={fundraisingEl('overdue')} compact />
+                  : s.label === 'stat_closing' && s.value === null
+                    ? <BilingualText en={fundraisingEn('closing_tbd')} el={fundraisingEl('closing_tbd')} compact />
+                    : s.label === 'stat_closing' && s.value
+                      ? <>{s.value}<BilingualText en={fundraisingEn('days_left')} el={fundraisingEl('days_left')} compact /></>
+                      : s.label === 'lead_investor' && !s.value
+                        ? <BilingualText en={fundraisingEn('none_yet')} el={fundraisingEl('none_yet')} compact />
+                        : s.value}
+              </p>
             </div>
           ))}
         </div>
@@ -187,58 +276,77 @@ function RoundCard({ round }: { round: Round }) {
   );
 }
 
-// ── Investor Pipeline ──────────────────────────────────────────────────────────
-
-const PIPELINE_STAGES: InvestorStatus[] = ['prospect', 'contacted', 'meeting', 'dd', 'committed', 'passed'];
-
-function PipelineView({ leads }: { leads: InvestorLead[] }) {
+function PipelineView({
+  leads,
+  onAdd,
+  onMove,
+}: {
+  leads: InvestorLead[];
+  onAdd: (status: InvestorStatus) => void;
+  onMove: (id: string, status: InvestorStatus) => void;
+}) {
+  const { primary } = useLanguagePreference();
   const byStage = PIPELINE_STAGES.reduce<Record<InvestorStatus, InvestorLead[]>>((acc, s) => {
-    acc[s] = leads.filter(l => l.status === s);
+    acc[s] = leads.filter((l) => l.status === s);
     return acc;
   }, {} as Record<InvestorStatus, InvestorLead[]>);
 
   return (
     <div className="overflow-x-auto pb-2">
-      <div className="flex gap-3 min-w-max">
-        {PIPELINE_STAGES.map(stage => {
-          const cfg = INVESTOR_STATUS_STYLE[stage];
-          const stageColors = STATUS[cfg.tone];
+      <div className="flex min-w-max gap-3">
+        {PIPELINE_STAGES.map((stage) => {
           const items = byStage[stage];
+          const colors = STATUS[INVESTOR_TONE[stage]];
           return (
             <div key={stage} className="w-56 shrink-0">
-              <div className={cn('rounded-lg px-2.5 py-1.5 mb-2 flex items-center justify-between border', stageColors.chip)}>
-                <span className="text-xs font-semibold">{cfg.label}</span>
-                <Badge variant="secondary" size="sm" className="px-1.5">{items.length}</Badge>
+              <div className={cn('mb-2 flex items-center justify-between rounded-xl border px-2.5 py-1.5', colors.chip)}>
+                <span className="text-xs font-semibold">{statusLabel(stage)}</span>
+                <Badge variant="secondary" size="sm" className="rounded-full px-1.5">{items.length}</Badge>
               </div>
               <div className="space-y-2">
-                {items.map(lead => (
-                  <Card key={lead.id} className="cursor-pointer hover:border-primary/30 transition-colors">
-                    <CardContent className="p-3 space-y-1.5">
+                {items.map((lead) => (
+                  <Card key={lead.id} className="rounded-xl transition-colors hover:border-primary/30">
+                    <CardContent className="space-y-1.5 p-3">
                       <div className="flex items-center gap-1.5">
-                        <Avatar className="h-7 w-7 rounded-lg shrink-0">
-                          <AvatarFallback className="rounded-lg bg-primary/10 text-primary-accessible text-xs font-bold">
+                        <Avatar className="h-7 w-7 shrink-0 rounded-xl">
+                          <AvatarFallback className="rounded-xl bg-primary/10 text-xs font-bold text-primary-accessible">
                             {lead.name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate">{lead.name}</p>
-                          {lead.firm && <p className="text-xs text-muted-foreground truncate">{lead.firm}</p>}
+                          <p className="truncate text-xs font-semibold">{lead.name}</p>
+                          {lead.firm && <p className="truncate text-2xs text-muted-foreground">{lead.firm}</p>}
                         </div>
-                        {lead.isVerified && <BadgeCheck className={cn('icon-sm shrink-0 ml-auto', STATUS.info.icon)} />}
+                        {lead.isVerified && <CfbGlyph name="award" className={cn('ml-auto icon-sm shrink-0', STATUS.info.icon)} />}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <DollarSign className="icon-sm" />{lead.checkSize}
+                      <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                        <CfbGlyph name="wallet" className="icon-sm" />{lead.checkSize}
                       </div>
                       {lead.lastContact && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="icon-sm" />Last contact: {lead.lastContact}
+                        <p className="flex items-center gap-1 text-2xs text-muted-foreground">
+                          <Clock className="icon-sm" />
+                          <BilingualText en={fundraisingEn('last_contact')} el={fundraisingEl('last_contact')} compact />
+                          : {formatShortDate(lead.lastContact, primary)}
                         </p>
                       )}
+                      <select
+                        className="w-full rounded-xl border border-border/60 bg-background px-2 py-1 text-2xs"
+                        value={lead.status}
+                        onChange={(e) => onMove(lead.id, e.target.value as InvestorStatus)}
+                        aria-label={bilingualAria(fundraisingEn('move_to'), fundraisingEl('move_to'))}
+                      >
+                        {PIPELINE_STAGES.map((s) => (
+                          <option key={s} value={s}>
+                            {primary === 'el' ? fundraisingEl(INVESTOR_STATUS_KEYS[s]) : fundraisingEn(INVESTOR_STATUS_KEYS[s])}
+                          </option>
+                        ))}
+                      </select>
                     </CardContent>
                   </Card>
                 ))}
-                <Button variant="ghost" size="sm" className="w-full h-7 text-xs text-muted-foreground border border-dashed border-border/60">
-                  <Plus className="icon-sm mr-1" />Add
+                <Button variant="ghost" size="sm" className="h-7 w-full rounded-xl border border-dashed border-border/60 text-xs text-muted-foreground" onClick={() => onAdd(stage)}>
+                  <Plus className="icon-sm mr-1" />
+                  <BilingualText en={fundraisingEn('add_to_stage')} el={fundraisingEl('add_to_stage')} compact />
                 </Button>
               </div>
             </div>
@@ -249,138 +357,181 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
   );
 }
 
-// ── Data Room ─────────────────────────────────────────────────────────────────
-
-const DOC_STATUS_STYLE: Record<DocStatus, { tone: StatusTone; icon: React.ElementType; label: string }> = {
-  draft:  { tone: 'warning', icon: AlertCircle, label: 'Draft' },
-  ready:  { tone: 'success', icon: CheckCircle2, label: 'Ready' },
-  shared: { tone: 'info', icon: Globe, label: 'Shared' },
-};
-
-const DOC_CATEGORIES = ['All', 'Pitch', 'Financials', 'Legal', 'Product', 'Market', 'Team', 'Traction'];
-
 function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
+  const { primary } = useLanguagePreference();
+  const t = useFundraisingPrimaryText();
+  const { success } = useToast();
   const [catFilter, setCatFilter] = useState('All');
-  const filtered = catFilter === 'All' ? docs : docs.filter(d => d.category === catFilter);
-  const ready = docs.filter(d => d.status === 'ready' || d.status === 'shared').length;
-  const required = docs.filter(d => d.isRequired);
-  const requiredReady = required.filter(d => d.status === 'ready' || d.status === 'shared').length;
+  const filtered = catFilter === 'All' ? docs : docs.filter((d) => d.category === catFilter);
+  const ready = docs.filter((d) => d.status === 'ready' || d.status === 'shared').length;
+  const required = docs.filter((d) => d.isRequired);
+  const requiredReady = required.filter((d) => d.status === 'ready' || d.status === 'shared').length;
 
   return (
     <div className="space-y-4">
-      {/* Data room health */}
-      <Card className="border-primary/20 bg-primary/[0.03]">
+      <Card className="rounded-xl border-primary/20 bg-primary/[0.03]">
         <CardContent className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="font-semibold text-sm">Data Room Health</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {requiredReady}/{required.length} required docs ready · {ready}/{docs.length} total docs ready
+              <p className="text-sm font-semibold"><BilingualText en={fundraisingEn('dr_health')} el={fundraisingEl('dr_health')} compact /></p>
+              <p className="mt-0.5 text-2xs text-muted-foreground">
+                {requiredReady}/{required.length} <BilingualText en={fundraisingEn('dr_required')} el={fundraisingEl('dr_required')} compact />
+                {' · '}
+                {ready}/{docs.length} <BilingualText en={fundraisingEn('dr_total')} el={fundraisingEl('dr_total')} compact />
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <p className="text-xl font-bold text-primary-accessible">{Math.round((ready / docs.length) * 100)}%</p>
-                <p className="text-xs text-muted-foreground">complete</p>
+                <p className="text-xl font-bold tabular-nums text-primary-accessible">{docs.length ? Math.round((ready / docs.length) * 100) : 0}%</p>
+                <p className="text-2xs text-muted-foreground"><BilingualText en={fundraisingEn('dr_complete')} el={fundraisingEl('dr_complete')} compact /></p>
               </div>
-              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
-                <Globe className="icon-sm" />Share Room
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5 rounded-xl text-xs"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(`${window.location.origin}/share/data-room-seed`);
+                  success(t(fundraisingEn('share_done'), fundraisingEl('share_done')), t(fundraisingEn('share_hint'), fundraisingEl('share_hint')));
+                }}
+              >
+                <CfbGlyph name="discover" className="icon-sm" />
+                <BilingualText en={fundraisingEn('share_room')} el={fundraisingEl('share_room')} compact />
               </Button>
             </div>
           </div>
-          <Progress value={(ready / docs.length) * 100} className="h-2 mt-3" />
+          <Progress value={docs.length ? (ready / docs.length) * 100 : 0} className="mt-3 h-2" />
         </CardContent>
       </Card>
 
-      {/* Category filter */}
-      <div className="flex gap-2 flex-wrap">
-        {DOC_CATEGORIES.map(c => (
-          <button
-            key={c}
-            onClick={() => setCatFilter(c)}
-            className={cn(
-              'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              catFilter === c ? 'border-primary bg-primary/15 text-primary-accessible' : 'border-border/60 text-muted-foreground hover:border-primary/40',
-            )}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-
-      {/* Doc list */}
-      <div className="space-y-2">
-        {filtered.map(doc => {
-          const cfg = DOC_STATUS_STYLE[doc.status];
-          const StatusIcon = cfg.icon;
+      <div className="flex flex-wrap gap-2">
+        {DOC_CATEGORIES.map((c) => {
+          const key = DOC_CATEGORY_KEYS[c];
           return (
-            <Card key={doc.id} className="hover:border-primary/20 transition-colors">
-              <CardContent className="p-3.5 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <FileText className="icon-sm text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">{doc.name}</p>
-                    {doc.isRequired && <Badge variant="secondary" size="sm" className={STATUS.danger.chip}>Required</Badge>}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                    <span>{doc.category}</span>
-                    {doc.lastUpdated && <span>· Updated {doc.lastUpdated}</span>}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className={cn('flex items-center gap-1 text-xs font-medium', STATUS[cfg.tone].text)}>
-                    <StatusIcon className="icon-sm" />{cfg.label}
-                  </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Upload className="icon-sm" /></Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Download className="icon-sm" /></Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCatFilter(c)}
+              className={cn(
+                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                catFilter === c ? 'border-primary bg-primary/15 text-primary-accessible' : 'border-border/60 text-muted-foreground hover:border-primary/40',
+              )}
+            >
+              {key ? <BilingualText en={fundraisingEn(key)} el={fundraisingEl(key)} compact /> : c}
+            </button>
           );
         })}
       </div>
+
+      {filtered.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          <BilingualText en={fundraisingEn('empty_docs')} el={fundraisingEl('empty_docs')} />
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((doc) => {
+            const docKey = DOC_STATUS_KEYS[doc.status];
+            return (
+              <Card key={doc.id} className="rounded-xl transition-colors hover:border-primary/20">
+                <CardContent className="flex items-center gap-3 p-3.5">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
+                    <CfbGlyph name="book" className="icon-sm text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-medium">{doc.name}</p>
+                      {doc.isRequired && (
+                        <Badge variant="secondary" size="sm" className={cn('rounded-full', STATUS.danger.chip)}>
+                          <BilingualText en={fundraisingEn('required')} el={fundraisingEl('required')} compact />
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2 text-2xs text-muted-foreground">
+                      <span>{DOC_CATEGORY_KEYS[doc.category] ? <BilingualText en={fundraisingEn(DOC_CATEGORY_KEYS[doc.category])} el={fundraisingEl(DOC_CATEGORY_KEYS[doc.category])} compact /> : doc.category}</span>
+                      {doc.lastUpdated && (
+                        <span>· <BilingualText en={fundraisingEn('updated')} el={fundraisingEl('updated')} compact /> {formatShortDate(doc.lastUpdated, primary)}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <div className={cn('flex items-center gap-1 text-xs font-medium', STATUS[DOC_TONE[doc.status]].text)}>
+                      <CfbGlyph name={DOC_GLYPH[doc.status]} className="icon-sm" />
+                      {docKey ? <BilingualText en={fundraisingEn(docKey)} el={fundraisingEl(docKey)} compact /> : doc.status}
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" aria-label={bilingualAria(fundraisingEn('upload'), fundraisingEl('upload'))} onClick={() => success(t(fundraisingEn('upload_done'), fundraisingEl('upload_done')), doc.name)}>
+                        <Upload className="icon-sm" />
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" aria-label={bilingualAria(fundraisingEn('download'), fundraisingEl('download'))} onClick={() => success(t(fundraisingEn('download_done'), fundraisingEl('download_done')), doc.name)}>
+                        <Download className="icon-sm" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Investor List Table ────────────────────────────────────────────────────────
+function InvestorListView({
+  leads,
+  onMove,
+}: {
+  leads: InvestorLead[];
+  onMove: (id: string, status: InvestorStatus) => void;
+}) {
+  const { primary } = useLanguagePreference();
+  const { open: openAskAi } = usePopupChat();
 
-function InvestorListView({ leads }: { leads: InvestorLead[] }) {
+  if (leads.length === 0) return null;
+
   return (
     <div className="space-y-2">
-      {leads.map(lead => {
-        const cfg = INVESTOR_STATUS_STYLE[lead.status];
-        const leadColors = STATUS[cfg.tone];
+      {leads.map((lead) => {
+        const colors = STATUS[INVESTOR_TONE[lead.status]];
         return (
-          <Card key={lead.id} className="hover:border-primary/20 transition-colors">
-            <CardContent className="p-4 flex items-center gap-4">
-              <Avatar className="h-10 w-10 rounded-xl shrink-0">
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-accessible font-bold">{lead.name[0]}</AvatarFallback>
+          <Card key={lead.id} className="rounded-xl transition-colors hover:border-primary/20">
+            <CardContent className="flex items-center gap-4 p-4">
+              <Avatar className="h-10 w-10 shrink-0 rounded-xl">
+                <AvatarFallback className="rounded-xl bg-primary/10 font-bold text-primary-accessible">{lead.name[0]}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <p className="font-semibold text-sm">{lead.name}</p>
-                  {lead.isVerified && <BadgeCheck className={cn('icon-sm', STATUS.info.icon)} />}
+                  <p className="text-sm font-semibold">{lead.name}</p>
+                  {lead.isVerified && <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} />}
                 </div>
-                <p className="text-xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
-                {lead.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.notes}</p>}
+                <p className="text-2xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
+                {lead.notes && <p className="mt-0.5 truncate text-2xs text-muted-foreground">{lead.notes}</p>}
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex shrink-0 items-center gap-3">
                 {lead.lastContact && (
-                  <p className="text-xs text-muted-foreground hidden sm:block">
-                    <Clock className="icon-sm inline mr-1" />{lead.lastContact}
+                  <p className="hidden text-2xs text-muted-foreground sm:block">
+                    <Clock className="mr-1 inline icon-sm" />
+                    {formatShortDate(lead.lastContact, primary)}
                   </p>
                 )}
-                <Badge variant="outline" className={cn('text-xs border', leadColors.chip)}>
-                  {cfg.label}
-                </Badge>
+                <select
+                  className={cn('rounded-full border bg-transparent px-2 py-1 text-xs', colors.chip)}
+                  value={lead.status}
+                  onChange={(e) => onMove(lead.id, e.target.value as InvestorStatus)}
+                  aria-label={bilingualAria(fundraisingEn('move_to'), fundraisingEl('move_to'))}
+                >
+                  {PIPELINE_STAGES.map((s) => (
+                    <option key={s} value={s}>
+                      {primary === 'el' ? fundraisingEl(INVESTOR_STATUS_KEYS[s]) : fundraisingEn(INVESTOR_STATUS_KEYS[s])}
+                    </option>
+                  ))}
+                </select>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><MessageCircle className="icon-sm" /></Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="icon-sm" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" aria-label={bilingualAria(fundraisingEn('message'), fundraisingEl('message'))} onClick={() => openAskAi()}>
+                    <CfbGlyph name="messages" className="icon-sm" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 rounded-xl p-0" aria-label={bilingualAria(fundraisingEn('view_details'), fundraisingEl('view_details'))} onClick={() => openAskAi()}>
+                    <CfbGlyph name="discover" className="icon-sm" />
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -391,112 +542,219 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
   );
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
-
 export default function FundraisingPage() {
   const { showDemoData } = useDemoData();
-  const round = showDemoData ? MOCK_ROUND : null;
-  const leads = showDemoData ? MOCK_LEADS : [];
-  const dataRoomDocs = showDemoData ? DATA_ROOM_DOCS : [];
-  const pipelineByStage = PIPELINE_STAGES.reduce((acc, s) => {
-    acc[s] = leads.filter(l => l.status === s).length;
-    return acc;
-  }, {} as Record<string, number>);
+  const { open: openAskAi } = usePopupChat();
+  const [tick, setTick] = useState(0);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addStatus, setAddStatus] = useState<InvestorStatus>('prospect');
 
-  const totalLeads = leads.length;
-  const activeLeads = leads.filter(l => ['contacted', 'meeting', 'dd'].includes(l.status)).length;
-  const committed = leads.filter(l => l.status === 'committed').length;
+  const leads = useMemo(() => {
+    const all = listFundraisingLeads();
+    if (showDemoData) return all;
+    const createdIds = new Set(readFundraisingOverlay().created.map((l) => l.id));
+    return all.filter((l) => createdIds.has(l.id));
+  }, [showDemoData, tick]);
+  const docs = showDemoData ? FUNDRAISING_SEED_DOCS : [];
+  const stats = fundraisingPipelineStats(leads);
+  const round = showDemoData ? fundraisingRoundView(leads) : null;
+
+  function refresh() {
+    setTick((n) => n + 1);
+  }
+
+  function openAdd(status: InvestorStatus = 'prospect') {
+    setAddStatus(status);
+    setAddOpen(true);
+  }
+
+  function handleMove(id: string, status: InvestorStatus) {
+    moveFundraisingLead(id, status);
+    refresh();
+  }
+
+  const emptyCta = (
+    <div className="flex flex-wrap justify-center gap-2">
+      <Button size="sm" className="rounded-xl" onClick={() => openAdd()}>
+        <Plus className="icon-sm mr-1.5" />
+        <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
+      </Button>
+      <Button size="sm" variant="outline" className="rounded-xl" asChild>
+        <Link href="/investors"><BilingualText en={fundraisingEn('find_investors')} el={fundraisingEl('find_investors')} compact /></Link>
+      </Button>
+    </div>
+  );
 
   return (
-    <AppShell title="Fundraising" description="Track your round, manage investor pipeline, and organize your data room" showHelp>
-      <div className="space-y-6">
-        {/* Active Round */}
-        {round && <RoundCard round={round} />}
+    <AppShell
+      showHelp
+      actions={
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => openAskAi()}>
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en={fundraisingEn('ask_ai')} el={fundraisingEl('ask_ai')} compact />
+          </Button>
+          <Button size="sm" className="gap-1.5 rounded-xl" asChild>
+            <Link href="/investors">
+              <CfbGlyph name="discover" className="icon-sm" />
+              <BilingualText en={fundraisingEn('find_investors')} el={fundraisingEl('find_investors')} compact />
+            </Link>
+          </Button>
+          <Button size="sm" className="gap-1.5 rounded-xl" onClick={() => openAdd()}>
+            <Plus className="icon-sm" />
+            <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <button
+          type="button"
+          onClick={() => openAskAi()}
+          className="flex w-full items-center gap-3 rounded-xl border border-primary/25 bg-primary/[0.06] px-4 py-3 text-left transition-colors hover:bg-primary/10"
+        >
+          <CfbGlyphWell name="spark" size="sm" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-medium text-foreground">
+              <BilingualText en={fundraisingEn('ask_ai_plan')} el={fundraisingEl('ask_ai_plan')} stacked />
+            </span>
+            <span className="block text-2xs text-muted-foreground">
+              <BilingualText en={fundraisingEn('ask_ai_hint')} el={fundraisingEl('ask_ai_hint')} compact />
+            </span>
+          </span>
+        </button>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {round ? (
+          <RoundCard round={round} onAdd={() => openAdd('committed')} />
+        ) : (
+          <Card className="rounded-xl border-dashed">
+            <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+              <CfbGlyphWell name="wallet" size="lg" />
+              <p className="font-medium"><BilingualText en={fundraisingEn('empty_round_title')} el={fundraisingEl('empty_round_title')} /></p>
+              <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_round_hint')} el={fundraisingEl('empty_round_hint')} /></p>
+              <Button size="sm" className="rounded-xl" onClick={() => openAskAi()}>
+                <CfbGlyph name="spark" className="icon-sm mr-1.5" />
+                <BilingualText en={fundraisingEn('ask_ai')} el={fundraisingEl('ask_ai')} compact />
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { icon: Users, labelEn: 'Total Leads', labelEl: 'Συνολικές επαφές', value: totalLeads, tone: 'accent' as const },
-            { icon: Zap, labelEn: 'Active Conversations', labelEl: 'Ενεργές συζητήσεις', value: activeLeads, tone: 'warning' as const },
-            { icon: CheckCircle2, labelEn: 'Committed', labelEl: 'Δεσμευμένοι', value: committed, tone: 'success' as const },
-            { icon: BarChart3, labelEn: 'Conversion Rate', labelEl: 'Ποσοστό μετατροπής', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', tone: 'info' as const },
-          ].map(s => (
-            <Card key={s.labelEn}>
-              <CardContent className="p-4 flex items-center gap-3">
-                <div className="rounded-lg p-2 bg-secondary shrink-0">
-                  <s.icon className={cn('icon-sm', STATUS[s.tone].icon)} />
+            { glyph: 'people' as const, label: 'stat_leads' as const, value: stats.total, tone: 'accent' as const },
+            { glyph: 'messages' as const, label: 'stat_active' as const, value: stats.active, tone: 'warning' as const },
+            { glyph: 'award' as const, label: 'stat_committed' as const, value: stats.committed, tone: 'success' as const },
+            { glyph: 'chart' as const, label: 'stat_conversion' as const, value: stats.total ? `${stats.conversion}%` : '—', tone: 'info' as const },
+          ].map((s) => (
+            <Card key={s.label} className="rounded-xl">
+              <CardContent className="flex items-center gap-3 p-4">
+                <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
+                  <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
                 </div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
-                  <p className="text-xs text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact /></p>
+                  <p className="text-2xs text-muted-foreground">
+                    <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact />
+                  </p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Tabs */}
         <Tabs defaultValue="pipeline">
-          <div className="flex items-center justify-between gap-4">
-            <TabsList>
-              <TabsTrigger value="pipeline">
-                <BilingualText en="Pipeline" el="Αγωγός" compact />
-                <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{totalLeads}</Badge>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <TabsList className="rounded-xl">
+              <TabsTrigger value="pipeline" className="rounded-xl">
+                <BilingualText en={fundraisingEn('tab_pipeline')} el={fundraisingEl('tab_pipeline')} compact />
+                <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{stats.total}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="kanban">Kanban</TabsTrigger>
-              <TabsTrigger value="dataroom">
-                <BilingualText en="Data Room" el="Δωμάτιο δεδομένων" compact />
-                <Badge variant="secondary" size="sm" className="ml-1.5 px-1.5">{DATA_ROOM_DOCS.length}</Badge>
+              <TabsTrigger value="kanban" className="rounded-xl">
+                <BilingualText en={fundraisingEn('tab_kanban')} el={fundraisingEl('tab_kanban')} compact />
+              </TabsTrigger>
+              <TabsTrigger value="dataroom" className="rounded-xl">
+                <BilingualText en={fundraisingEn('tab_dataroom')} el={fundraisingEl('tab_dataroom')} compact />
+                <Badge variant="secondary" size="sm" className="ml-1.5 rounded-full px-1.5">{docs.length}</Badge>
               </TabsTrigger>
             </TabsList>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" asChild>
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 rounded-xl text-xs" asChild>
                 <Link href="/investors">
-                  <Users className="icon-sm" /><BilingualText en="Find Investors" el="Εύρεση επενδυτών" compact />
+                  <CfbGlyph name="discover" className="icon-sm" />
+                  <BilingualText en={fundraisingEn('find_investors')} el={fundraisingEl('find_investors')} compact />
                 </Link>
               </Button>
-              <Button size="sm" className="h-8 text-xs gap-1.5">
-                <Plus className="icon-sm" /><BilingualText en="Add Lead" el="Προσθήκη επαφής" compact />
+              <Button size="sm" className="h-8 gap-1.5 rounded-xl text-xs" onClick={() => openAdd()}>
+                <Plus className="icon-sm" />
+                <BilingualText en={fundraisingEn('add_lead')} el={fundraisingEl('add_lead')} compact />
               </Button>
             </div>
           </div>
 
           <TabsContent value="pipeline" className="mt-4">
-            <InvestorListView leads={leads} />
+            {leads.length === 0 ? (
+              <Card className="rounded-xl border-dashed">
+                <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                  <CfbGlyphWell name="people" size="lg" />
+                  <p className="font-medium"><BilingualText en={fundraisingEn('empty_pipeline_title')} el={fundraisingEl('empty_pipeline_title')} /></p>
+                  <p className="max-w-sm text-sm text-muted-foreground"><BilingualText en={fundraisingEn('empty_pipeline_hint')} el={fundraisingEl('empty_pipeline_hint')} /></p>
+                  {emptyCta}
+                </CardContent>
+              </Card>
+            ) : (
+              <InvestorListView leads={leads} onMove={handleMove} />
+            )}
           </TabsContent>
-
           <TabsContent value="kanban" className="mt-4">
-            <PipelineView leads={leads} />
+            <PipelineView leads={leads} onAdd={openAdd} onMove={handleMove} />
           </TabsContent>
-
           <TabsContent value="dataroom" className="mt-4">
-            <DataRoomView docs={dataRoomDocs} />
+            <DataRoomView docs={docs} />
           </TabsContent>
         </Tabs>
 
-        {/* Resources */}
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold"><BilingualText en="Fundraising Resources" el="Πόροι χρηματοδότησης" /></CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              <BilingualText en={fundraisingEn('resources')} el={fundraisingEl('resources')} />
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {[
-              { title: 'Seed Fundraising Playbook', href: '/learning', desc: 'Complete guide from pitch to close' },
-              { title: 'Find Investors', href: '/investors', desc: 'Browse 200+ active investors on CoFounderBay' },
-              { title: 'Readiness Score', href: '/readiness', desc: 'Check how investor-ready your startup is' },
-              { title: 'Pitch Deck Builder', href: '/builder/pitch-deck', desc: 'AI-powered deck creation and review' },
-            ].map(r => (
-              <Link key={r.href} href={r.href} className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors group">
-                <div>
-                  <p className="text-sm font-medium group-hover:text-primary-accessible transition-colors">{r.title}</p>
-                  <p className="text-xs text-muted-foreground">{r.desc}</p>
+              { title: 'res_playbook' as const, desc: 'res_playbook_desc' as const, href: '/learning', glyph: 'book' as const },
+              { title: 'res_find' as const, desc: 'res_find_desc' as const, href: '/investors', glyph: 'discover' as const },
+              { title: 'res_ready' as const, desc: 'res_ready_desc' as const, href: '/readiness', glyph: 'chart' as const },
+              { title: 'res_deck' as const, desc: 'res_deck_desc' as const, href: '/builder/pitch-deck', glyph: 'builder' as const },
+            ].map((r) => (
+              <Link key={r.href} href={r.href} className="group flex items-center justify-between rounded-xl p-3 transition-colors hover:bg-muted">
+                <div className="flex items-center gap-3">
+                  <CfbGlyph name={r.glyph} className="icon-sm text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium transition-colors group-hover:text-primary-accessible">
+                      <BilingualText en={fundraisingEn(r.title)} el={fundraisingEl(r.title)} compact />
+                    </p>
+                    <p className="text-2xs text-muted-foreground">
+                      <BilingualText en={fundraisingEn(r.desc)} el={fundraisingEl(r.desc)} compact />
+                    </p>
+                  </div>
                 </div>
-                <ChevronRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
               </Link>
             ))}
           </CardContent>
         </Card>
       </div>
+
+      {addOpen && (
+        <AddLeadModal
+          key={addStatus}
+          open
+          defaultStatus={addStatus}
+          onClose={() => setAddOpen(false)}
+          onCreated={refresh}
+        />
+      )}
     </AppShell>
   );
 }

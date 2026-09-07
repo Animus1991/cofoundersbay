@@ -1,29 +1,34 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  Rocket,
-  GraduationCap,
-  Award,
-  Building,
-  Sparkles,
+import {
   Save,
   RefreshCw,
   Copy,
   CheckCircle2,
   Clock,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { STATUS } from '@/lib/semantic-colors';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
+import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
+import {
+  applicationQuestionCopy,
+  applicationTipCopy,
+} from '@/lib/i18n/strings-application-questions';
+import { bilingualAria } from '@/lib/i18n/format';
+import { useToast } from '@/components/ui/toast';
+import { usePopupChat } from '@/contexts/PopupChatContext';
 
 interface ApplicationQuestion {
   id: string;
@@ -38,15 +43,72 @@ interface ApplicationTemplate {
   id: string;
   name: string;
   description: string;
-  icon: any;
+  descKey?: 'app_yc_desc' | 'app_ts_desc' | 'app_uni_desc' | 'app_grant_desc';
+  glyph: CfbGlyphName;
   deadline?: string;
+  deadlineKey?: 'app_deadline_rolling' | 'app_deadline_varies';
+  website?: string;
   questions: ApplicationQuestion[];
   status: 'draft' | 'in-progress' | 'completed' | 'submitted';
 }
 
 interface ApplicationGeneratorProps {
-  onSave?: (data: ApplicationTemplate[]) => void;
-  workspaceData?: any;
+  onSave?: (data: ApplicationTemplate[]) => void | Promise<void>;
+  workspaceData?: Record<string, unknown>;
+  initialData?: unknown;
+  hideTitle?: boolean;
+}
+
+export function requiredCompletion(app: { questions: ApplicationQuestion[] }): number {
+  const required = app.questions.filter((q) => q.required);
+  if (required.length === 0) return 100;
+  const answered = required.filter((q) => q.answer.trim().length > 0);
+  return Math.round((answered.length / required.length) * 100);
+}
+
+export function deriveApplicationStatus(
+  app: ApplicationTemplate,
+): ApplicationTemplate['status'] {
+  if (app.status === 'submitted') return 'submitted';
+  const pct = requiredCompletion(app);
+  if (pct === 0) return 'draft';
+  if (pct === 100) return 'completed';
+  return 'in-progress';
+}
+
+function seedApplications(): ApplicationTemplate[] {
+  return APPLICATION_TEMPLATES.map((tpl) => ({ ...tpl, status: 'draft' as const }));
+}
+
+function asApplicationList(saved: unknown): unknown[] | null {
+  if (Array.isArray(saved)) return saved;
+  if (!saved || typeof saved !== 'object') return null;
+  const outer = saved as Record<string, unknown>;
+  if (Array.isArray(outer.applications)) return outer.applications;
+  if (outer.applications && typeof outer.applications === 'object') {
+    const inner = outer.applications as Record<string, unknown>;
+    if (Array.isArray(inner.applications)) return inner.applications;
+    if (Array.isArray(inner.list)) return inner.list;
+  }
+  return null;
+}
+
+export function mergeSavedApplications(saved: unknown): ApplicationTemplate[] {
+  const seed = seedApplications();
+  const list = asApplicationList(saved);
+  if (!list) return seed;
+  return seed.map((tpl) => {
+    const match = list.find((item) => item && typeof item === 'object' && (item as { id?: string }).id === tpl.id) as
+      | { questions?: { id: string; answer?: string }[]; status?: ApplicationTemplate['status'] }
+      | undefined;
+    if (!match) return tpl;
+    const questions = tpl.questions.map((q) => {
+      const found = match.questions?.find((mq) => mq.id === q.id);
+      return found && typeof found.answer === 'string' ? { ...q, answer: found.answer } : q;
+    });
+    const next = { ...tpl, questions, status: match.status ?? tpl.status };
+    return { ...next, status: deriveApplicationStatus(next) };
+  });
 }
 
 const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
@@ -54,8 +116,11 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
     id: 'yc',
     name: 'Y Combinator',
     description: 'The most prestigious startup accelerator',
-    icon: Rocket,
+    descKey: 'app_yc_desc' as const,
+    glyph: 'award',
     deadline: 'Rolling admissions',
+    deadlineKey: 'app_deadline_rolling' as const,
+    website: 'https://www.ycombinator.com/apply',
     questions: [
       { id: 'yc1', question: 'Describe what your company does in 50 characters or less.', answer: '', maxLength: 50, tips: 'Be extremely concise. Think elevator pitch in one sentence.', required: true },
       { id: 'yc2', question: 'What is your company going to make? Please describe your product and what it does or will do.', answer: '', maxLength: 500, tips: 'Focus on the product, not the market. Be specific about what you\'re building.', required: true },
@@ -75,8 +140,11 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
     id: 'techstars',
     name: 'Techstars',
     description: 'Global accelerator network',
-    icon: Award,
+    descKey: 'app_ts_desc' as const,
+    glyph: 'flag',
     deadline: 'Varies by program',
+    deadlineKey: 'app_deadline_varies' as const,
+    website: 'https://www.techstars.com/accelerators',
     questions: [
       { id: 'ts1', question: 'What does your company do? (One sentence)', answer: '', maxLength: 100, required: true },
       { id: 'ts2', question: 'What problem are you solving?', answer: '', maxLength: 500, required: true },
@@ -93,7 +161,9 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
     id: 'university',
     name: 'University Incubator',
     description: 'Academic startup programs',
-    icon: GraduationCap,
+    descKey: 'app_uni_desc' as const,
+    glyph: 'book',
+    website: '/opportunities',
     questions: [
       { id: 'uni1', question: 'Project/Startup Name', answer: '', required: true },
       { id: 'uni2', question: 'Executive Summary (max 300 words)', answer: '', maxLength: 2000, required: true },
@@ -111,7 +181,9 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
     id: 'grant',
     name: 'Innovation Grant',
     description: 'Government and foundation grants',
-    icon: Building,
+    descKey: 'app_grant_desc' as const,
+    glyph: 'building',
+    website: '/fundraising',
     questions: [
       { id: 'gr1', question: 'Project Title', answer: '', required: true },
       { id: 'gr2', question: 'Abstract (max 250 words)', answer: '', maxLength: 1500, required: true },
@@ -127,21 +199,26 @@ const APPLICATION_TEMPLATES: Omit<ApplicationTemplate, 'status'>[] = [
   }
 ];
 
-export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGeneratorProps) {
-  const [applications, setApplications] = useState<ApplicationTemplate[]>(
-    APPLICATION_TEMPLATES.map(t => ({ ...t, status: 'draft' as const }))
-  );
+export function ApplicationGenerator({ onSave, workspaceData, initialData, hideTitle = false }: ApplicationGeneratorProps) {
+  const t = useBuilderPrimaryText();
+  const { success } = useToast();
+  const { open: openAskAi } = usePopupChat();
+  const [applications, setApplications] = useState<ApplicationTemplate[]>(() => mergeSavedApplications(initialData));
   const [activeApp, setActiveApp] = useState<string>('yc');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const didHydrate = useRef(false);
 
-  const currentApp = applications.find(a => a.id === activeApp);
+  useEffect(() => {
+    if (didHydrate.current) return;
+    const merged = mergeSavedApplications(initialData);
+    const hasAnswers = merged.some((app) => app.questions.some((q) => q.answer.trim().length > 0) || app.status === 'submitted');
+    if (!hasAnswers) return;
+    didHydrate.current = true;
+    setApplications(merged);
+  }, [initialData]);
 
-  const calculateCompletion = (app: ApplicationTemplate) => {
-    const requiredQuestions = app.questions.filter(q => q.required);
-    const answeredRequired = requiredQuestions.filter(q => q.answer.trim().length > 0);
-    return Math.round((answeredRequired.length / requiredQuestions.length) * 100);
-  };
+  const currentApp = applications.find((a) => a.id === activeApp);
 
   const generateWithAI = async () => {
     if (!currentApp) return;
@@ -198,17 +275,29 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
         'gr9': 'Expected outcomes: 5,000 registered users, 500 successful matches, 100 active workspaces, validation of AI matching effectiveness. Impact: Reduced startup failure rate due to team issues, more efficient founder matching, democratized access to startup formation tools.',
         'gr10': 'Post-grant sustainability through SaaS revenue model. Freemium tier ensures accessibility while Pro and Enterprise tiers generate revenue. Path to profitability within 24 months of grant completion. Additional revenue potential from accelerator partnerships and white-label licensing.'
       };
+
+      const idea = (workspaceData?.idea_core ?? workspaceData?.ideaCore) as Record<string, unknown> | undefined;
+      if (idea && typeof idea.solution === 'string' && idea.solution.trim()) {
+        generatedAnswers.yc2 = idea.solution;
+        generatedAnswers.ts3 = idea.solution;
+        generatedAnswers.uni4 = idea.solution;
+      }
+      if (idea && typeof idea.problemStatement === 'string' && idea.problemStatement.trim()) {
+        generatedAnswers.ts2 = idea.problemStatement;
+        generatedAnswers.uni3 = idea.problemStatement;
+        generatedAnswers.gr3 = idea.problemStatement;
+      }
       
       setApplications(prev => prev.map(app => {
         if (app.id !== activeApp) return app;
-        return {
+        const next: ApplicationTemplate = {
           ...app,
           questions: app.questions.map(q => ({
             ...q,
             answer: generatedAnswers[q.id] || q.answer
           })),
-          status: 'in-progress' as const
         };
+        return { ...next, status: deriveApplicationStatus(next) };
       }));
       
       setIsGenerating(false);
@@ -218,13 +307,13 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
   const updateAnswer = (questionId: string, answer: string) => {
     setApplications(prev => prev.map(app => {
       if (app.id !== activeApp) return app;
-      return {
+      const next: ApplicationTemplate = {
         ...app,
         questions: app.questions.map(q => 
           q.id === questionId ? { ...q, answer } : q
         ),
-        status: 'in-progress' as const
       };
+      return { ...next, status: deriveApplicationStatus(next) };
     }));
   };
 
@@ -234,94 +323,158 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleSave = () => {
-    onSave?.(applications);
+  const handleSave = async () => {
+    await onSave?.(applications);
+    success(
+      t(builderEn('app_saved'), builderEl('app_saved')),
+      t(builderEn('app_saved_hint'), builderEl('app_saved_hint')),
+    );
   };
+
+  const markSubmitted = () => {
+    setApplications((prev) =>
+      prev.map((app) => {
+        if (app.id !== activeApp) return app;
+        if (requiredCompletion(app) < 100) return app;
+        return { ...app, status: 'submitted' as const };
+      }),
+    );
+  };
+
+  const stats = useMemo(() => {
+    const completions = applications.map((app) => requiredCompletion(app));
+    const avg = completions.length
+      ? Math.round(completions.reduce((sum, n) => sum + n, 0) / completions.length)
+      : 0;
+    return {
+      programs: applications.length,
+      inProgress: applications.filter((app) => app.status === 'in-progress').length,
+      ready: applications.filter((app) => app.status === 'completed').length,
+      avg,
+    };
+  }, [applications]);
 
   const getStatusBadge = (status: ApplicationTemplate['status']) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="secondary">Draft</Badge>;
+        return (
+          <Badge variant="secondary">
+            <BilingualText en={builderEn('app_draft')} el={builderEl('app_draft')} compact />
+          </Badge>
+        );
       case 'in-progress':
-        return <Badge variant="outline" className="text-status-warning border-yellow-600">In Progress</Badge>;
+        return (
+          <Badge variant="outline" className={cn('border', STATUS.warning.chip)}>
+            <BilingualText en={builderEn('status_in_progress')} el={builderEl('status_in_progress')} compact />
+          </Badge>
+        );
       case 'completed':
-        return <Badge variant="outline" className="text-status-success border-green-600">Completed</Badge>;
+        return (
+          <Badge variant="outline" className={cn('border', STATUS.success.chip)}>
+            <BilingualText en={builderEn('status_completed')} el={builderEl('status_completed')} compact />
+          </Badge>
+        );
       case 'submitted':
-        return <Badge className="bg-green-600">Submitted</Badge>;
+        return (
+          <Badge className={STATUS.success.chip}>
+            <BilingualText en={builderEn('app_submitted')} el={builderEl('app_submitted')} compact />
+          </Badge>
+        );
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-status-warning-bg rounded-lg">
-            <FileText className="icon-md text-status-warning" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Application Generator</h2>
-            <p className="text-sm text-muted-foreground">
-              Generate applications for accelerators, grants, and competitions
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={generateWithAI}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <RefreshCw className="icon-sm mr-2 animate-spin" />
-            ) : (
-              <Sparkles className="icon-sm mr-2" />
-            )}
-            AI Generate
-          </Button>
-          <Button size="sm" onClick={handleSave}>
-            <Save className="icon-sm mr-2" />
-            Save All
-          </Button>
-        </div>
+      <BuilderStageHeader
+        glyph="applications"
+        titleEn={builderEn('app_title')}
+        titleEl={builderEl('app_title')}
+        subtitleEn={builderEn('app_sub')}
+        subtitleEl={builderEl('app_sub')}
+        hideTitle={hideTitle}
+        showAskAi={!hideTitle}
+        extraActions={
+          <>
+            <Button variant="outline" size="sm" className="rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
+              {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+              <BilingualText
+                en={isGenerating ? builderEn('generating') : builderEn('ai_generate')}
+                el={isGenerating ? builderEl('generating') : builderEl('ai_generate')}
+                compact
+              />
+            </Button>
+            <Button size="sm" className="rounded-xl" onClick={() => void handleSave()}>
+              <Save className="icon-sm mr-2" />
+              <BilingualText en={builderEn('app_save_all')} el={builderEl('app_save_all')} compact />
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {(
+          [
+            { glyph: 'applications' as const, label: 'app_stat_programs' as const, value: String(stats.programs) },
+            { glyph: 'flag' as const, label: 'app_stat_progress' as const, value: String(stats.inProgress) },
+            { glyph: 'award' as const, label: 'app_stat_ready' as const, value: String(stats.ready) },
+            { glyph: 'chart' as const, label: 'app_stat_avg' as const, value: `${stats.avg}%` },
+          ] as const
+        ).map((item) => (
+          <Card key={item.label} className="rounded-xl">
+            <CardContent className="flex items-center gap-3 p-4">
+              <CfbGlyphWell name={item.glyph} size="sm" />
+              <div className="min-w-0">
+                <p className="text-2xs text-muted-foreground">
+                  <BilingualText en={builderEn(item.label)} el={builderEl(item.label)} compact />
+                </p>
+                <p className="text-lg font-semibold tracking-tight">{item.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Application Selector */}
       <div className="grid gap-4 md:grid-cols-4">
-        {applications.map(app => {
-          const Icon = app.icon;
-          const completion = calculateCompletion(app);
+        {applications.map((app) => {
+          const completion = requiredCompletion(app);
           
           return (
             <Card 
               key={app.id}
               className={cn(
-                "cursor-pointer transition-all",
+                "cursor-pointer rounded-xl transition-all",
                 activeApp === app.id && "ring-2 ring-primary"
               )}
               onClick={() => setActiveApp(app.id)}
             >
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
-                  <div className="p-2 bg-muted rounded-lg">
-                    <Icon className="icon-md" />
-                  </div>
+                  <CfbGlyphWell name={app.glyph} size="sm" />
                   {getStatusBadge(app.status)}
                 </div>
                 <h3 className="font-semibold mb-1">{app.name}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{app.description}</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {app.descKey ? (
+                    <BilingualText en={builderEn(app.descKey)} el={builderEl(app.descKey)} compact />
+                  ) : (
+                    app.description
+                  )}
+                </p>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span>Completion</span>
+                    <span><BilingualText en={builderEn('completion')} el={builderEl('completion')} compact /></span>
                     <span>{completion}%</span>
                   </div>
                   <Progress value={completion} className="h-1.5" />
                 </div>
-                {app.deadline && (
+                {(app.deadlineKey || app.deadline) && (
                   <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                     <Clock className="icon-sm" />
-                    {app.deadline}
+                    {app.deadlineKey ? (
+                      <BilingualText en={builderEn(app.deadlineKey)} el={builderEl(app.deadlineKey)} compact />
+                    ) : (
+                      app.deadline
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -330,85 +483,130 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
         })}
       </div>
 
-      {/* Application Form */}
       {currentApp && (
-        <Card>
+        <Card className="rounded-xl">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                {(() => {
-                  const Icon = currentApp.icon;
-                  return <Icon className="icon-lg" />;
-                })()}
+                <CfbGlyph name={currentApp.glyph} className="icon-lg" />
                 <div>
-                  <CardTitle>{currentApp.name} Application</CardTitle>
+                  <CardTitle>
+                    {currentApp.name}{' '}
+                    <BilingualText en={builderEn('app_application')} el={builderEl('app_application')} compact />
+                  </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    {currentApp.questions.length} questions • {calculateCompletion(currentApp)}% complete
+                    {currentApp.questions.length}{' '}
+                    <BilingualText en={builderEn('app_questions')} el={builderEl('app_questions')} compact />
+                    {' · '}
+                    {requiredCompletion(currentApp)}% <BilingualText en={builderEn('complete')} el={builderEl('complete')} compact />
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="icon-sm mr-2" />
-                  View Program
-                </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                {requiredCompletion(currentApp) === 100 && currentApp.status !== 'submitted' && (
+                  <Button variant="outline" size="sm" className="rounded-xl" onClick={markSubmitted}>
+                    <CheckCircle2 className="icon-sm mr-2" />
+                    <BilingualText en={builderEn('app_mark_submitted')} el={builderEl('app_mark_submitted')} compact />
+                  </Button>
+                )}
+                {currentApp.website && (
+                  <Button asChild variant="outline" size="sm" className="rounded-xl">
+                    {currentApp.website.startsWith('http') ? (
+                      <a
+                        href={currentApp.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={bilingualAria(builderEn('app_view'), builderEl('app_view'))}
+                      >
+                        <ExternalLink className="icon-sm mr-2" />
+                        <BilingualText en={builderEn('app_view')} el={builderEl('app_view')} compact />
+                      </a>
+                    ) : (
+                      <Link
+                        href={currentApp.website}
+                        aria-label={bilingualAria(builderEn('app_view'), builderEl('app_view'))}
+                      >
+                        <ExternalLink className="icon-sm mr-2" />
+                        <BilingualText en={builderEn('app_view')} el={builderEl('app_view')} compact />
+                      </Link>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {currentApp.questions.map((question, index) => (
-              <div key={question.id} className="space-y-2">
-                <div className="flex items-start justify-between">
-                  <Label className="flex items-start gap-2">
-                    <span className="text-xs font-mono text-muted-foreground mt-0.5">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span>
-                      {question.question}
-                      {question.required && <span className="text-status-danger ml-1">*</span>}
-                    </span>
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    {question.answer && (
+            {currentApp.questions.map((question, index) => {
+              const prompt = applicationQuestionCopy(question.id, question.question);
+              const tip = applicationTipCopy(question.id, question.tips);
+              return (
+                <div key={question.id} className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <Label className="flex items-start gap-2">
+                      <span className="mt-0.5 font-mono text-xs text-muted-foreground">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <span>
+                        <BilingualText en={prompt.en} el={prompt.el} />
+                        {question.required && <span className="ml-1 text-status-danger">*</span>}
+                      </span>
+                    </Label>
+                    <div className="flex items-center gap-2">
                       <Button
+                        type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => copyToClipboard(question.answer, question.id)}
+                        className="rounded-xl"
+                        onClick={() => openAskAi()}
+                        aria-label={bilingualAria(builderEn('app_ask_fill'), builderEl('app_ask_fill'))}
                       >
-                        {copiedId === question.id ? (
-                          <CheckCircle2 className="icon-sm text-status-success" />
-                        ) : (
-                          <Copy className="icon-sm" />
-                        )}
+                        <CfbGlyph name="spark" className="icon-sm" />
+                        <span className="sr-only">
+                          <BilingualText en={builderEn('app_ask_fill')} el={builderEl('app_ask_fill')} compact />
+                        </span>
                       </Button>
-                    )}
-                    {question.maxLength && (
-                      <Badge variant="outline" className="text-xs">
-                        {question.answer.length}/{question.maxLength}
-                      </Badge>
-                    )}
+                      {question.answer && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-xl"
+                          onClick={() => copyToClipboard(question.answer, question.id)}
+                        >
+                          {copiedId === question.id ? (
+                            <CheckCircle2 className="icon-sm text-status-success" />
+                          ) : (
+                            <Copy className="icon-sm" />
+                          )}
+                        </Button>
+                      )}
+                      {question.maxLength && (
+                        <Badge variant="outline" className="rounded-xl text-xs">
+                          {question.answer.length}/{question.maxLength}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-                
-                <Textarea
-                  value={question.answer}
-                  onChange={(e) => updateAnswer(question.id, e.target.value)}
-                  placeholder="Enter your answer..."
-                  className={cn(
-                    "min-h-[100px]",
-                    question.maxLength && question.answer.length > question.maxLength && "border-red-500"
+
+                  <Textarea
+                    value={question.answer}
+                    onChange={(e) => updateAnswer(question.id, e.target.value)}
+                    placeholder={t(builderEn('app_answer_ph'), builderEl('app_answer_ph'))}
+                    className={cn(
+                      'min-h-[100px] rounded-xl',
+                      question.maxLength && question.answer.length > question.maxLength && 'border-status-danger',
+                    )}
+                    maxLength={question.maxLength ? question.maxLength * 1.5 : undefined}
+                  />
+
+                  {tip && (
+                    <p className="flex items-start gap-1 text-xs text-muted-foreground">
+                      <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
+                      <BilingualText en={tip.en} el={tip.el} />
+                    </p>
                   )}
-                  maxLength={question.maxLength ? question.maxLength * 1.5 : undefined}
-                />
-                
-                {question.tips && (
-                  <p className="text-xs text-muted-foreground flex items-start gap-1">
-                    <Sparkles className="icon-sm mt-0.5 shrink-0" />
-                    {question.tips}
-                  </p>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       )}

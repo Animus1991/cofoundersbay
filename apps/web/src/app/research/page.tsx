@@ -5,9 +5,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import {
   Plus, Search, MoreVertical, Pin, Archive, Trash2,
-  FileText, Image as ImageIcon, Link as LinkIcon, StickyNote,
-  Grid3X3, List, Loader2, FolderOpen, Sparkles,
+  Grid3X3, List, Loader2, AlertCircle,
 } from 'lucide-react';
+import { formatDistanceToNow, type Locale } from 'date-fns';
+import { el as elLocale, enUS } from 'date-fns/locale';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,16 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import { bilingualAria } from '@/lib/i18n/format';
+import { commonEn, commonEl } from '@/lib/i18n/strings-common';
+import {
+  researchEn,
+  researchEl,
+  useResearchPrimaryText,
+} from '@/lib/i18n/strings-research';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   listResearchBoards,
   createResearchBoard,
@@ -39,31 +50,39 @@ import {
   deleteResearchBoard,
   type ResearchBoard,
 } from '@/lib/api';
-import { formatDistanceToNow } from 'date-fns';
 import { BoardTemplatesDialog, type BoardTemplate } from '@/components/research/BoardTemplates';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
 
-const BOARD_COLORS = [
-  { name: 'Default', value: null },
-  { name: 'Blue', value: '#3B82F6' },
-  { name: 'Green', value: '#22C55E' },
-  { name: 'Purple', value: '#A855F7' },
-  { name: 'Orange', value: '#F97316' },
-  { name: 'Pink', value: '#EC4899' },
-  { name: 'Cyan', value: '#06B6D4' },
+const BOARD_COLORS: { nameKey: 'color_default' | 'color_blue' | 'color_green' | 'color_purple' | 'color_orange' | 'color_pink' | 'color_cyan'; value: string | null }[] = [
+  { nameKey: 'color_default', value: null },
+  { nameKey: 'color_blue', value: '#3B82F6' },
+  { nameKey: 'color_green', value: '#22C55E' },
+  { nameKey: 'color_purple', value: '#A855F7' },
+  { nameKey: 'color_orange', value: '#F97316' },
+  { nameKey: 'color_pink', value: '#EC4899' },
+  { nameKey: 'color_cyan', value: '#06B6D4' },
 ];
 
-const BOARD_ICONS = [
-  { name: 'Document', value: 'document', icon: FileText },
-  { name: 'Image', value: 'image', icon: ImageIcon },
-  { name: 'Link', value: 'link', icon: LinkIcon },
-  { name: 'Note', value: 'note', icon: StickyNote },
-  { name: 'Sparkles', value: 'sparkles', icon: Sparkles },
+const BOARD_ICONS: { nameKey: 'icon_document' | 'icon_image' | 'icon_link' | 'icon_note' | 'icon_sparkles'; value: string; glyph: CfbGlyphName }[] = [
+  { nameKey: 'icon_document', value: 'document', glyph: 'book' },
+  { nameKey: 'icon_image', value: 'image', glyph: 'bookmark' },
+  { nameKey: 'icon_link', value: 'link', glyph: 'compare' },
+  { nameKey: 'icon_note', value: 'note', glyph: 'research' },
+  { nameKey: 'icon_sparkles', value: 'sparkles', glyph: 'spark' },
 ];
 
-function getIconComponent(iconValue: string | null) {
-  const found = BOARD_ICONS.find((i) => i.value === iconValue);
-  return found?.icon ?? FileText;
+function getBoardGlyph(iconValue: string | null): CfbGlyphName {
+  return BOARD_ICONS.find((i) => i.value === iconValue)?.glyph ?? 'research';
+}
+
+function AskAiButton() {
+  const { open } = usePopupChat();
+  return (
+    <Button type="button" variant="outline" size="sm" className="gap-1.5 rounded-xl" onClick={() => open()}>
+      <CfbGlyph name="spark" className="icon-sm" />
+      <BilingualText en={researchEn('ask_ai')} el={researchEl('ask_ai')} compact />
+    </Button>
+  );
 }
 
 export default function ResearchBoardsPage() {
@@ -71,6 +90,9 @@ export default function ResearchBoardsPage() {
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const confirm = useConfirm();
+  const t = useResearchPrimaryText();
+  const { primary } = useLanguagePreference();
+  const dateLocale = primary === 'el' ? elLocale : enUS;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -90,7 +112,7 @@ export default function ResearchBoardsPage() {
     mutationFn: createResearchBoard,
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['research-boards'] });
-      success('Board created', `"${result.board.title}" is ready`);
+      success(t(researchEn('created'), researchEl('created')), `"${result.board.title}" ${t(researchEn('created_ready'), researchEl('created_ready'))}`);
       setCreateDialogOpen(false);
       setNewBoardTitle('');
       setNewBoardDescription('');
@@ -99,7 +121,7 @@ export default function ResearchBoardsPage() {
       router.push(`/research/${result.board.id}`);
     },
     onError: (err) => {
-      showError('Failed to create board', err instanceof Error ? err.message : 'Please try again');
+      showError(t(researchEn('fail_create'), researchEl('fail_create')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
     },
   });
 
@@ -115,10 +137,10 @@ export default function ResearchBoardsPage() {
     mutationFn: deleteResearchBoard,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['research-boards'] });
-      success('Board deleted', 'The board has been removed');
+      success(t(researchEn('deleted'), researchEl('deleted')), t(researchEn('deleted_hint'), researchEl('deleted_hint')));
     },
     onError: (err) => {
-      showError('Failed to delete', err instanceof Error ? err.message : 'Please try again');
+      showError(t(researchEn('fail_delete'), researchEl('fail_delete')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
     },
   });
 
@@ -126,7 +148,7 @@ export default function ResearchBoardsPage() {
   const filteredBoards = boards.filter((b) =>
     b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     b.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+    b.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const pinnedBoards = filteredBoards.filter((b) => b.isPinned);
@@ -155,12 +177,12 @@ export default function ResearchBoardsPage() {
           el="Μεταφέρεται εκτός των ενεργών πινάκων. Μπορείτε να τον επαναφέρετε αργότερα."
         />
       ),
-      confirmLabel: <BilingualText en="Archive" el="Αρχειοθέτηση" compact />,
+      confirmLabel: <BilingualText en={researchEn('archive')} el={researchEl('archive')} compact />,
       variant: 'default',
     });
     if (!ok) return;
     updateMutation.mutate({ boardId: board.id, data: { isArchived: true } });
-    success('Board archived', `"${board.title}" has been archived`);
+    success(t(researchEn('archived'), researchEl('archived')), `"${board.title}"`);
   };
 
   const handleDelete = async (board: ResearchBoard) => {
@@ -171,7 +193,6 @@ export default function ResearchBoardsPage() {
 
   const handleSelectTemplate = async (template: BoardTemplate) => {
     try {
-      // Create the board first
       const result = await createResearchBoard({
         title: template.name,
         description: template.description,
@@ -179,7 +200,6 @@ export default function ResearchBoardsPage() {
         tags: template.tags,
       });
 
-      // Then create all the template nodes
       for (const node of template.initialNodes) {
         await createResearchNode(result.board.id, {
           type: node.type,
@@ -194,259 +214,291 @@ export default function ResearchBoardsPage() {
       }
 
       queryClient.invalidateQueries({ queryKey: ['research-boards'] });
-      success('Board created from template', `"${template.name}" is ready with ${template.initialNodes.length} nodes`);
+      success(
+        t(researchEn('created_tpl'), researchEl('created_tpl')),
+        `"${template.name}" · ${template.initialNodes.length} ${t(researchEn('tpl_nodes'), researchEl('tpl_nodes'))}`,
+      );
       router.push(`/research/${result.board.id}`);
     } catch (err) {
-      showError('Failed to create from template', err instanceof Error ? err.message : 'Please try again');
+      showError(t(researchEn('fail_tpl'), researchEl('fail_tpl')), err instanceof Error ? err.message : t(researchEn('try_again'), researchEl('try_again')));
     }
   };
 
   return (
     <AppShell
-      title="Research Workspace"
-      description="Visual research boards for startup ecosystem intelligence"
+      showHelp
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2" disabled={isLoading}>
-            <Sparkles className="icon-sm" />
-            Use Template
+        <div className="flex flex-wrap gap-2">
+          <AskAiButton />
+          <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2 rounded-xl" disabled={isLoading}>
+            <CfbGlyph name="spark" className="icon-sm" />
+            <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
           </Button>
-          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2" disabled={isLoading}>
+          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2 rounded-xl" disabled={isLoading}>
             <Plus className="icon-sm" />
-            New Board
+            <BilingualText en={researchEn('new_board')} el={researchEl('new_board')} compact />
           </Button>
         </div>
       }
     >
       {isLoading && (
-        <div className="flex items-center justify-center min-h-[40vh]">
+        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
           <Loader2 className="icon-xl animate-spin text-primary-accessible" />
+          <p className="text-sm text-muted-foreground">
+            <BilingualText en={researchEn('loading')} el={researchEl('loading')} compact />
+          </p>
         </div>
       )}
       {!isLoading && error && (
-        <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-          <p className="text-destructive-accessible mb-4">Failed to load research boards</p>
-          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
-            Retry
-          </Button>
-        </div>
-      )}
-      {!isLoading && !error && <>
-
-      {/* Behavioral Nudge */}
-      <BehavioralNudge surface="canvas" compact className="mb-4" />
-
-      {/* Search and View Toggle */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
-          <Input
-            placeholder="Search boards..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <div className="flex gap-1 p-1 bg-secondary/50 rounded-lg">
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-            className="gap-2"
-          >
-            <Grid3X3 className="icon-sm" />
-            Grid
-          </Button>
-          <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-            className="gap-2"
-          >
-            <List className="icon-sm" />
-            List
-          </Button>
-        </div>
-      </div>
-
-      {/* Empty State */}
-      {boards.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-            <FolderOpen className="h-10 w-10 text-primary-accessible" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">No research boards yet</h2>
-          <p className="text-muted-foreground mb-6 max-w-md">
-            Create your first research board to start organizing startup ecosystem research,
-            market analysis, and strategic insights.
+        <div className="flex min-h-[40vh] flex-col items-center justify-center text-center">
+          <AlertCircle className="icon-lg mb-3 text-destructive-accessible" />
+          <p className="mb-4 text-destructive-accessible">
+            <BilingualText en={researchEn('load_fail')} el={researchEl('load_fail')} />
           </p>
-          <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-            <Plus className="icon-sm" />
-            Create Your First Board
+          <Button className="rounded-xl" onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
+            <BilingualText en={researchEn('retry')} el={researchEl('retry')} compact />
           </Button>
         </div>
       )}
+      {!isLoading && !error && (
+        <>
+          <BehavioralNudge surface="canvas" compact className="mb-4" />
 
-      {/* Pinned Boards */}
-      {pinnedBoards.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
-            <Pin className="icon-sm" />
-            Pinned
-          </h2>
-          <div className={cn(
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4'
-              : 'flex flex-col gap-3'
-          )}>
-            {pinnedBoards.map((board) => (
-              <BoardCard
-                key={board.id}
-                board={board}
-                viewMode={viewMode}
-                onOpen={() => router.push(`/research/${board.id}`)}
-                onTogglePin={() => handleTogglePin(board)}
-                onArchive={() => handleArchive(board)}
-                onDelete={() => handleDelete(board)}
+          <p className="mb-4 max-w-3xl text-sm text-muted-foreground">
+            <BilingualText en={researchEn('lead')} el={researchEl('lead')} />
+          </p>
+
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="icon-sm absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t(researchEn('search_ph'), researchEl('search_ph'))}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="rounded-xl pl-10"
+                aria-label={bilingualAria(researchEn('search_ph'), researchEl('search_ph'))}
               />
-            ))}
+            </div>
+            <div className="flex gap-1 rounded-xl bg-secondary/50 p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="gap-2 rounded-xl"
+                aria-pressed={viewMode === 'grid'}
+              >
+                <Grid3X3 className="icon-sm" />
+                <BilingualText en={researchEn('grid')} el={researchEl('grid')} compact />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="gap-2 rounded-xl"
+                aria-pressed={viewMode === 'list'}
+              >
+                <List className="icon-sm" />
+                <BilingualText en={researchEn('list')} el={researchEl('list')} compact />
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
 
-      {/* Regular Boards */}
-      {regularBoards.length > 0 && (
-        <div>
-          {pinnedBoards.length > 0 && (
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">All Boards</h2>
+          {boards.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <CfbGlyphWell name="research" size="lg" className="mb-6" />
+              <h2 className="mb-2 text-xl font-semibold">
+                <BilingualText en={researchEn('empty_title')} el={researchEl('empty_title')} />
+              </h2>
+              <p className="mb-6 max-w-md text-sm text-muted-foreground">
+                <BilingualText en={researchEn('empty_hint')} el={researchEl('empty_hint')} />
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl" onClick={() => setTemplatesDialogOpen(true)}>
+                  <CfbGlyph name="spark" className="icon-sm" />
+                  <BilingualText en={researchEn('use_template')} el={researchEl('use_template')} compact />
+                </Button>
+                <Button className="gap-2 rounded-xl" onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="icon-sm" />
+                  <BilingualText en={researchEn('empty_cta')} el={researchEl('empty_cta')} compact />
+                </Button>
+              </div>
+            </div>
           )}
-          <div className={cn(
-            viewMode === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4'
-              : 'flex flex-col gap-3'
-          )}>
-            {regularBoards.map((board) => (
-              <BoardCard
-                key={board.id}
-                board={board}
-                viewMode={viewMode}
-                onOpen={() => router.push(`/research/${board.id}`)}
-                onTogglePin={() => handleTogglePin(board)}
-                onArchive={() => handleArchive(board)}
-                onDelete={() => handleDelete(board)}
-              />
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* No Results */}
-      {filteredBoards.length === 0 && boards.length > 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No boards match your search</p>
-        </div>
-      )}
-
-      {/* Create Board Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Create Research Board</DialogTitle>
-            <DialogDescription>
-              A new workspace for organizing research, documents, and insights
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Title</label>
-              <Input
-                placeholder="e.g., Market Research Q1 2024"
-                value={newBoardTitle}
-                onChange={(e) => setNewBoardTitle(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Description (optional)</label>
-              <Input
-                placeholder="Brief description of this board's purpose"
-                value={newBoardDescription}
-                onChange={(e) => setNewBoardDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Color</label>
-              <div className="flex gap-2 flex-wrap">
-                {BOARD_COLORS.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={() => setNewBoardColor(color.value)}
-                    className={cn(
-                      'w-8 h-8 rounded-lg border-2 transition-all',
-                      newBoardColor === color.value
-                        ? 'border-primary scale-110'
-                        : 'border-transparent hover:scale-105',
-                      !color.value && 'bg-secondary'
-                    )}
-                    style={color.value ? { backgroundColor: color.value } : undefined}
-                    title={color.name}
+          {pinnedBoards.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Pin className="icon-sm" />
+                <BilingualText en={researchEn('pinned')} el={researchEl('pinned')} compact />
+              </h2>
+              <div className={cn(
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
+                  : 'flex flex-col gap-3',
+              )}>
+                {pinnedBoards.map((board) => (
+                  <BoardCard
+                    key={board.id}
+                    board={board}
+                    viewMode={viewMode}
+                    dateLocale={dateLocale}
+                    onOpen={() => router.push(`/research/${board.id}`)}
+                    onTogglePin={() => handleTogglePin(board)}
+                    onArchive={() => handleArchive(board)}
+                    onDelete={() => handleDelete(board)}
                   />
                 ))}
               </div>
             </div>
+          )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Icon</label>
-              <div className="flex gap-2 flex-wrap">
-                {BOARD_ICONS.map((icon) => {
-                  const Icon = icon.icon;
-                  return (
-                    <button
-                      key={icon.value}
-                      onClick={() => setNewBoardIcon(icon.value)}
-                      className={cn(
-                        'w-10 h-10 rounded-lg border flex items-center justify-center transition-all',
-                        newBoardIcon === icon.value
-                          ? 'border-primary bg-primary/10 text-primary-accessible'
-                          : 'border-border hover:border-primary/50'
-                      )}
-                      title={icon.name}
-                    >
-                      <Icon className="icon-md" />
-                    </button>
-                  );
-                })}
+          {regularBoards.length > 0 && (
+            <div>
+              {pinnedBoards.length > 0 && (
+                <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+                  <BilingualText en={researchEn('all_boards')} el={researchEl('all_boards')} compact />
+                </h2>
+              )}
+              <div className={cn(
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'
+                  : 'flex flex-col gap-3',
+              )}>
+                {regularBoards.map((board) => (
+                  <BoardCard
+                    key={board.id}
+                    board={board}
+                    viewMode={viewMode}
+                    dateLocale={dateLocale}
+                    onOpen={() => router.push(`/research/${board.id}`)}
+                    onTogglePin={() => handleTogglePin(board)}
+                    onArchive={() => handleArchive(board)}
+                    onDelete={() => handleDelete(board)}
+                  />
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateBoard}
-              disabled={!newBoardTitle.trim() || createMutation.isPending}
-            >
-              {createMutation.isPending ? (
-                <Loader2 className="icon-sm animate-spin mr-2" />
-              ) : null}
-              Create Board
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          {filteredBoards.length === 0 && boards.length > 0 && (
+            <div className="py-12 text-center text-muted-foreground">
+              <BilingualText en={researchEn('no_match')} el={researchEl('no_match')} />
+            </div>
+          )}
 
-      {/* Templates Dialog */}
-      <BoardTemplatesDialog
-        open={templatesDialogOpen}
-        onClose={() => setTemplatesDialogOpen(false)}
-        onSelectTemplate={handleSelectTemplate}
-      />
-      </>}
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogContent className="rounded-xl sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>
+                  <BilingualText en={researchEn('create_title')} el={researchEl('create_title')} />
+                </DialogTitle>
+                <DialogDescription>
+                  <BilingualText en={researchEn('create_desc')} el={researchEl('create_desc')} />
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    <BilingualText en={researchEn('field_title')} el={researchEl('field_title')} compact />
+                  </label>
+                  <Input
+                    className="rounded-xl"
+                    placeholder={t(researchEn('title_ph'), researchEl('title_ph'))}
+                    value={newBoardTitle}
+                    onChange={(e) => setNewBoardTitle(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    <BilingualText en={researchEn('field_desc')} el={researchEl('field_desc')} compact />
+                  </label>
+                  <Input
+                    className="rounded-xl"
+                    placeholder={t(researchEn('desc_ph'), researchEl('desc_ph'))}
+                    value={newBoardDescription}
+                    onChange={(e) => setNewBoardDescription(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    <BilingualText en={researchEn('field_color')} el={researchEl('field_color')} compact />
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {BOARD_COLORS.map((color) => (
+                      <button
+                        key={color.nameKey}
+                        type="button"
+                        onClick={() => setNewBoardColor(color.value)}
+                        className={cn(
+                          'h-8 w-8 rounded-xl border-2 transition-all',
+                          newBoardColor === color.value
+                            ? 'scale-110 border-primary'
+                            : 'border-transparent hover:scale-105',
+                          !color.value && 'bg-secondary',
+                        )}
+                        style={color.value ? { backgroundColor: color.value } : undefined}
+                        title={t(researchEn(color.nameKey), researchEl(color.nameKey))}
+                        aria-label={bilingualAria(researchEn(color.nameKey), researchEl(color.nameKey))}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    <BilingualText en={researchEn('field_icon')} el={researchEl('field_icon')} compact />
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {BOARD_ICONS.map((icon) => (
+                      <button
+                        key={icon.value}
+                        type="button"
+                        onClick={() => setNewBoardIcon(icon.value)}
+                        className={cn(
+                          'flex h-10 w-10 items-center justify-center rounded-xl border transition-all',
+                          newBoardIcon === icon.value
+                            ? 'border-primary bg-primary/10 text-primary-accessible'
+                            : 'border-border hover:border-primary/50',
+                        )}
+                        title={t(researchEn(icon.nameKey), researchEl(icon.nameKey))}
+                        aria-label={bilingualAria(researchEn(icon.nameKey), researchEl(icon.nameKey))}
+                      >
+                        <CfbGlyph name={icon.glyph} className="icon-md" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="ghost" className="rounded-xl" onClick={() => setCreateDialogOpen(false)}>
+                  <BilingualText en={commonEn('cancel')} el={commonEl('cancel')} compact />
+                </Button>
+                <Button
+                  className="rounded-xl"
+                  onClick={handleCreateBoard}
+                  disabled={!newBoardTitle.trim() || createMutation.isPending}
+                >
+                  {createMutation.isPending ? (
+                    <Loader2 className="icon-sm mr-2 animate-spin" />
+                  ) : null}
+                  <BilingualText en={researchEn('create_board')} el={researchEl('create_board')} compact />
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <BoardTemplatesDialog
+            open={templatesDialogOpen}
+            onClose={() => setTemplatesDialogOpen(false)}
+            onSelectTemplate={handleSelectTemplate}
+          />
+        </>
+      )}
     </AppShell>
   );
 }
@@ -454,6 +506,7 @@ export default function ResearchBoardsPage() {
 function BoardCard({
   board,
   viewMode,
+  dateLocale,
   onOpen,
   onTogglePin,
   onArchive,
@@ -461,123 +514,109 @@ function BoardCard({
 }: {
   board: ResearchBoard;
   viewMode: 'grid' | 'list';
+  dateLocale: Locale;
   onOpen: () => void;
   onTogglePin: () => void;
   onArchive: () => void;
   onDelete: () => void;
 }) {
-  const Icon = getIconComponent(board.icon);
+  const glyph = getBoardGlyph(board.icon);
+  const updated = formatDistanceToNow(new Date(board.updatedAt), { addSuffix: true, locale: dateLocale });
+
+  const menu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+        <Button
+          variant={viewMode === 'list' ? 'ghost' : 'secondary'}
+          size="sm"
+          className="h-8 w-8 rounded-xl p-0"
+          aria-label={bilingualAria(researchEn('more'), researchEl('more'))}
+        >
+          <MoreVertical className="icon-sm" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onClick={onTogglePin}>
+          <Pin className="icon-sm mr-2" />
+          <BilingualText
+            en={board.isPinned ? researchEn('unpin') : researchEn('pin')}
+            el={board.isPinned ? researchEl('unpin') : researchEl('pin')}
+            compact
+          />
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onArchive}>
+          <Archive className="icon-sm mr-2" />
+          <BilingualText en={researchEn('archive')} el={researchEl('archive')} compact />
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
+          <Trash2 className="icon-sm mr-2" />
+          <BilingualText en={commonEn('delete')} el={commonEl('delete')} compact />
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   if (viewMode === 'list') {
     return (
-      <Card
-        className="cursor-pointer hover:border-primary/40 transition-colors"
-        onClick={onOpen}
-      >
-        <CardContent className="p-4 flex items-center gap-4">
+      <Card className="cursor-pointer rounded-xl transition-colors hover:border-primary/40" onClick={onOpen}>
+        <CardContent className="flex items-center gap-4 p-4">
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
             style={{ backgroundColor: board.color ? `${board.color}20` : 'var(--secondary)' }}
           >
-            <Icon
-              className="icon-lg"
-              style={{ color: board.color ?? 'var(--muted-foreground)' }}
-            />
+            <span style={{ color: board.color ?? 'var(--muted-foreground)' }}>
+              <CfbGlyph name={glyph} className="icon-lg" />
+            </span>
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold truncate">{board.title}</h3>
-              {board.isPinned && <Pin className="icon-sm text-primary-accessible shrink-0" />}
+              <h3 className="truncate font-semibold">{board.title}</h3>
+              {board.isPinned && <Pin className="icon-sm shrink-0 text-primary-accessible" />}
             </div>
             {board.description && (
-              <p className="text-sm text-muted-foreground truncate">{board.description}</p>
+              <p className="truncate text-sm text-muted-foreground">{board.description}</p>
             )}
           </div>
-          <div className="text-sm text-muted-foreground shrink-0">
-            {board.nodeCount} items
+          <div className="shrink-0 text-sm text-muted-foreground">
+            {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
           </div>
-          <div className="text-sm text-muted-foreground shrink-0">
-            {formatDistanceToNow(new Date(board.updatedAt), { addSuffix: true })}
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <MoreVertical className="icon-sm" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-              <DropdownMenuItem onClick={onTogglePin}>
-                <Pin className="icon-sm mr-2" />
-                {board.isPinned ? 'Unpin' : 'Pin'}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={onArchive}>
-                <Archive className="icon-sm mr-2" />
-                Archive
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-                <Trash2 className="icon-sm mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="shrink-0 text-sm text-muted-foreground">{updated}</div>
+          {menu}
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card
-      className="cursor-pointer hover:border-primary/40 transition-all hover:shadow-md group"
-      onClick={onOpen}
-    >
+    <Card className="group cursor-pointer rounded-xl transition-all hover:border-primary/40 hover:shadow-md" onClick={onOpen}>
       <CardContent className="p-0">
         <div
-          className="h-32 rounded-t-xl flex items-center justify-center relative"
+          className="relative flex h-32 items-center justify-center rounded-t-xl"
           style={{ backgroundColor: board.color ? `${board.color}15` : 'var(--secondary)' }}
         >
-          <Icon
-            className="h-12 w-12 opacity-40"
-            style={{ color: board.color ?? 'var(--muted-foreground)' }}
-          />
+          <span className="opacity-50" style={{ color: board.color ?? 'var(--muted-foreground)' }}>
+            <CfbGlyph name={glyph} className="h-12 w-12" />
+          </span>
           {board.isPinned && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute left-3 top-3">
               <Pin className="icon-sm text-primary-accessible" />
             </div>
           )}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="secondary" size="sm" className="h-8 w-8 p-0">
-                  <MoreVertical className="icon-sm" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                <DropdownMenuItem onClick={onTogglePin}>
-                  <Pin className="icon-sm mr-2" />
-                  {board.isPinned ? 'Unpin' : 'Pin'}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={onArchive}>
-                  <Archive className="icon-sm mr-2" />
-                  Archive
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onDelete} className="text-destructive-accessible">
-                  <Trash2 className="icon-sm mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+            {menu}
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-semibold truncate mb-1">{board.title}</h3>
+          <h3 className="mb-1 truncate font-semibold">{board.title}</h3>
           {board.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{board.description}</p>
+            <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">{board.description}</p>
           )}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{board.nodeCount} items</span>
-            <span>{formatDistanceToNow(new Date(board.updatedAt), { addSuffix: true })}</span>
+            <span>
+              {board.nodeCount} <BilingualText en={researchEn('items')} el={researchEl('items')} compact />
+            </span>
+            <span>{updated}</span>
           </div>
         </div>
       </CardContent>

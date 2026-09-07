@@ -12,7 +12,7 @@ const roleConfig: Record<RoleType, { label: string; icon: React.ComponentType<{ 
 };
 
 type RoleBadgeProps = {
-  role: string;
+  role?: string | null;
   showIcon?: boolean;
   size?: BadgeProps['size'];
   className?: string;
@@ -26,6 +26,7 @@ export function RoleBadge({
   className,
   animated = false,
 }: RoleBadgeProps) {
+  if (!role) return null;
   const roleKey = role.toLowerCase() as RoleType;
   const config = roleConfig[roleKey];
   

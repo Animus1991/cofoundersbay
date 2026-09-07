@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { HelpCircle, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { bilingualAria } from '@/lib/i18n/format';
 import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 /**
  * Contextual help block. Each page passes a unique `id` so dismissed state
@@ -22,6 +23,7 @@ export function HelpCallout({
   children,
   badge,
   defaultOpen = true,
+  compact = false,
   className,
 }: {
   id: string;
@@ -31,6 +33,8 @@ export function HelpCallout({
   children: ReactNode;
   badge?: string;
   defaultOpen?: boolean;
+  /** Icon-only trigger when the callout is collapsed (for tight headers). */
+  compact?: boolean;
   className?: string;
 }) {
   const storageKey = `cfb.help.${id}`;
@@ -55,13 +59,17 @@ export function HelpCallout({
       <button
         type="button"
         onClick={() => persist(true)}
+        aria-label={bilingualAria(title, titleEl)}
         className={cn(
           'inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary-accessible transition-colors hover:bg-primary/10',
+          compact && 'h-8 w-8 justify-center p-0',
           className,
         )}
       >
-        <HelpCircle className="icon-sm" aria-hidden="true" />
-        <BilingualText en={title} el={titleEl} compact />
+        <CfbGlyph name="book" className="icon-sm" />
+        <span className={cn(compact && 'sr-only')}>
+          <BilingualText en={title} el={titleEl} compact />
+        </span>
       </button>
     );
   }
@@ -71,14 +79,14 @@ export function HelpCallout({
       role="note"
       aria-label={bilingualAria(title, titleEl)}
       className={cn(
-        'rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-transparent p-4 text-sm leading-relaxed shadow-sm',
+        'rounded-2xl border border-primary/20 bg-primary/[0.03] p-4 text-sm leading-relaxed shadow-sm',
         className,
       )}
     >
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 font-semibold text-primary-accessible">
           <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
-            <HelpCircle className="icon-sm" aria-hidden="true" />
+            <CfbGlyph name="book" className="icon-sm" />
           </span>
           <BilingualText en={title} el={titleEl} />
           {badge && (

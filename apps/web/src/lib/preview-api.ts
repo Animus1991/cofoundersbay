@@ -303,6 +303,29 @@ const ME_PROFILE = {
   hasCompletedOnboarding: true,
 };
 
+const PREVIEW_MILESTONES = [
+  { id: 'ms-1', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Launch beta to first 20 users', description: 'Invite waitlist, instrument onboarding, collect qualitative feedback.', status: 'todo', priority: 'high', category: 'product', dueDate: '2026-09-10T17:00:00.000Z', completedAt: null, progress: 15, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-2', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Hire first engineer', description: 'Scorecard, three finalists, offer out.', status: 'todo', priority: 'medium', category: 'hiring', dueDate: '2026-10-15T17:00:00.000Z', completedAt: null, progress: 0, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-3', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'File trademark', description: null, status: 'todo', priority: 'low', category: 'other', dueDate: null, completedAt: null, progress: 0, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-4', ownerId: ME_ID, collaboratorId: 'user-elena', collaborator: { id: 'user-elena', displayName: 'Elena Papadopoulos', avatarUrl: null }, title: 'Close seed round', description: 'Term sheet in, data room current, 8 meetings booked.', status: 'in_progress', priority: 'high', category: 'fundraising', dueDate: '2026-08-20T17:00:00.000Z', completedAt: null, progress: 55, notes: 'Two angels waiting on traction slide.', createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-5', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Ship onboarding checklist', description: 'Founder can finish setup without a call.', status: 'in_progress', priority: 'medium', category: 'product', dueDate: '2026-09-12T17:00:00.000Z', completedAt: null, progress: 40, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-6', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Sign university MoU', description: 'Pilot cohort of 12 teams.', status: 'blocked', priority: 'high', category: 'partnerships', dueDate: '2026-10-01T17:00:00.000Z', completedAt: null, progress: 20, notes: 'Legal review stalled.', createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-7', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Publish landing page', description: null, status: 'completed', priority: 'medium', category: 'growth', dueDate: '2026-07-01T17:00:00.000Z', completedAt: '2026-06-28T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-8', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'First mentor office hours', description: null, status: 'completed', priority: 'low', category: 'growth', dueDate: '2026-07-15T17:00:00.000Z', completedAt: '2026-07-14T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-9', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'BMC v1 in Builder', description: null, status: 'completed', priority: 'medium', category: 'product', dueDate: '2026-06-20T17:00:00.000Z', completedAt: '2026-06-18T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-10', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Pitch deck outline', description: null, status: 'completed', priority: 'high', category: 'fundraising', dueDate: '2026-08-01T17:00:00.000Z', completedAt: '2026-07-30T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-11', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Readiness score above 40', description: null, status: 'completed', priority: 'medium', category: 'other', dueDate: '2026-08-10T17:00:00.000Z', completedAt: '2026-08-08T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+  { id: 'ms-12', ownerId: ME_ID, collaboratorId: null, collaborator: null, title: 'Intro call with first accelerator', description: null, status: 'completed', priority: 'low', category: 'partnerships', dueDate: '2026-08-25T17:00:00.000Z', completedAt: '2026-08-22T12:00:00.000Z', progress: 100, notes: null, createdAt: NOW, updatedAt: NOW },
+];
+
+const PREVIEW_MILESTONE_SUMMARY = {
+  counts: { todo: 3, in_progress: 2, blocked: 1, completed: 6, cancelled: 0 },
+  total: 12,
+  overdue: 1,
+  dueSoon: 2,
+  completionRate: 50,
+};
+
 function pathnameOf(path: string) {
   return path.split('?')[0] ?? path;
 }
@@ -712,13 +735,39 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
   // carries `milestones: []` but no `counts`, so the summary bar on /milestones
   // and the founder dashboard read a field that was never there.
   if (pathname === '/api/milestones/summary') {
-    return {
-      counts: { todo: 3, in_progress: 2, blocked: 1, completed: 6, cancelled: 0 },
-      total: 12,
-      overdue: 1,
-      dueSoon: 2,
-      completionRate: 50,
-    };
+    return PREVIEW_MILESTONE_SUMMARY;
+  }
+  if (pathname === '/api/milestones') {
+    if (method === 'POST') {
+      return {
+        id: 'ms-preview-new',
+        ownerId: ME_ID,
+        collaboratorId: (body as { collaboratorId?: string }).collaboratorId ?? null,
+        collaborator: null,
+        title: (body as { title?: string }).title ?? 'New milestone',
+        description: (body as { description?: string }).description ?? null,
+        status: (body as { status?: string }).status ?? 'todo',
+        priority: (body as { priority?: string }).priority ?? 'medium',
+        category: (body as { category?: string }).category ?? null,
+        dueDate: (body as { dueDate?: string }).dueDate ?? null,
+        completedAt: null,
+        progress: (body as { progress?: number }).progress ?? 0,
+        notes: (body as { notes?: string }).notes ?? null,
+        createdAt: NOW,
+        updatedAt: NOW,
+      };
+    }
+    const q = new URLSearchParams(path.split('?')[1] ?? '');
+    const status = q.get('status');
+    const priority = q.get('priority');
+    const category = q.get('category');
+    const filtered = PREVIEW_MILESTONES.filter((m) => {
+      if (status && m.status !== status) return false;
+      if (priority && m.priority !== priority) return false;
+      if (category && m.category !== category) return false;
+      return true;
+    });
+    return { milestones: filtered, nextCursor: null, total: filtered.length };
   }
   if (pathname === '/api/analytics/overview') {
     return PREVIEW_ANALYTICS_OVERVIEW;

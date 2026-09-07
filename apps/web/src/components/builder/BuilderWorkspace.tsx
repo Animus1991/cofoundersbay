@@ -12,7 +12,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -33,39 +32,61 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Lightbulb, Target, TrendingUp, FileText, Code, DollarSign,
-  Users, Rocket, CheckCircle2, Presentation, Award, Plus,
-  ArrowRight, AlertCircle, Clock, CheckCircle, GitBranch,
-  Share2, UserPlus, Loader2, BarChart3, RefreshCw, ChevronRight,
-  MoreHorizontal, Trash2, Mail, Crown, Eye, Edit2, Shield,
-  MessageSquare, Star, Activity, Zap, BookOpen,
+  Plus,
+  ArrowRight,
+  AlertCircle,
+  ChevronRight,
+  MoreHorizontal,
+  Trash2,
+  Crown,
+  Eye,
+  Edit2,
+  MessageSquare,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { useBuilder } from '@/contexts/BuilderContext';
 import { ActivityTimeline } from './ActivityTimeline';
 import { useToast } from '@/components/ui/toast';
-import type { BuilderDocument, BuilderCollaborator } from '@/lib/builder-api';
+import type { BuilderDocument } from '@/lib/builder-api';
+import { BilingualText } from '@/components/common/BilingualText';
+import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { usePopupChat } from '@/contexts/PopupChatContext';
+import {
+  builderEn,
+  builderEl,
+  builderDocLabel,
+  builderDocDescription,
+  BUILDER_DOC_TYPES,
+} from '@/lib/i18n/strings-builder';
+import { bilingualInline, bilingualAria } from '@/lib/i18n/format';
+import {
+  resolveBilingualPair,
+  useLanguagePreference,
+} from '@/lib/i18n/LanguagePreferenceContext';
 
 // ── Document type metadata ─────────────────────────────────────────────────
 
-const DOC_META: Record<string, { label: string; icon: React.ElementType; description: string; tab: string }> = {
-  idea_core:              { label: 'Idea Core',           icon: Lightbulb,      description: 'Core problem and solution definition',          tab: 'idea-core' },
-  business_model_canvas:  { label: 'Business Model',      icon: Target,         description: 'Value proposition and business model',          tab: 'bmc' },
-  market_analysis:        { label: 'Market Analysis',     icon: TrendingUp,     description: 'TAM/SAM/SOM and competitive landscape',         tab: 'market' },
-  pitch_deck:             { label: 'Pitch Deck',          icon: Presentation,   description: 'Investor and stakeholder presentations',         tab: 'pitch-deck' },
-  mvp_plan:               { label: 'MVP Planner',         icon: Rocket,         description: 'Product roadmap and technical requirements',     tab: 'mvp' },
-  technical_architecture: { label: 'Tech Architecture',  icon: Code,           description: 'Technology stack and system design',            tab: 'mvp' },
-  financial_plan:         { label: 'Financial Planning',  icon: DollarSign,     description: 'Revenue models and projections',                tab: 'financials' },
-  prd:                    { label: 'PRD & User Stories',  icon: FileText,       description: 'Product requirements and features',             tab: 'mvp' },
-  branding_kit:           { label: 'Branding Kit',        icon: Star,           description: 'Brand identity and messaging',                  tab: 'overview' },
-  application:            { label: 'Applications',        icon: CheckCircle2,   description: 'Accelerator and funding applications',           tab: 'applications' },
-  swot_analysis:          { label: 'SWOT Analysis',       icon: BarChart3,      description: 'Strengths, weaknesses, opportunities, threats',  tab: 'market' },
-  lean_canvas:            { label: 'Lean Canvas',         icon: Target,         description: 'Lean startup model canvas',                     tab: 'bmc' },
-  competitive_analysis:   { label: 'Competitive Analysis',icon: Shield,         description: 'Competitor landscape and positioning',          tab: 'market' },
-  go_to_market:           { label: 'Go-to-Market',        icon: Zap,            description: 'Launch and growth strategy',                    tab: 'market' },
-  fundraising_memo:       { label: 'Fundraising Memo',    icon: BookOpen,       description: 'Investment thesis and ask',                     tab: 'overview' },
-  product_roadmap:        { label: 'Product Roadmap',     icon: ChevronRight,   description: 'Feature timeline and prioritization',           tab: 'mvp' },
+const DOC_GLYPH: Record<string, CfbGlyphName> = {
+  idea_core: 'spark',
+  business_model_canvas: 'target',
+  market_analysis: 'chart',
+  pitch_deck: 'builder',
+  mvp_plan: 'flag',
+  technical_architecture: 'sliders',
+  financial_plan: 'wallet',
+  prd: 'book',
+  branding_kit: 'spark',
+  application: 'applications',
+  swot_analysis: 'chart',
+  lean_canvas: 'target',
+  competitive_analysis: 'shield',
+  go_to_market: 'flag',
+  fundraising_memo: 'wallet',
+  product_roadmap: 'flag',
 };
 
 const DEFAULT_DOC_TYPES = [
@@ -73,13 +94,25 @@ const DEFAULT_DOC_TYPES = [
   'mvp_plan', 'financial_plan',
 ] as const;
 
+function docGlyph(type: string): CfbGlyphName {
+  return DOC_GLYPH[type] ?? 'book';
+}
+
+function docLabelEn(type: string) {
+  return builderDocLabel(type, 'en');
+}
+
+function docLabelEl(type: string) {
+  return builderDocLabel(type, 'el');
+}
+
 // ── Role display helpers ───────────────────────────────────────────────────
 
-const ROLE_META: Record<string, { label: string; tone: StatusTone; icon: React.ElementType }> = {
-  owner:     { label: 'Owner',     tone: 'warning', icon: Crown },
-  editor:    { label: 'Editor',    tone: 'info',    icon: Edit2 },
-  commenter: { label: 'Commenter', tone: 'accent',  icon: MessageSquare },
-  viewer:    { label: 'Viewer',    tone: 'neutral', icon: Eye },
+const ROLE_META: Record<string, { labelKey: 'role_owner' | 'role_editor_short' | 'role_commenter_short' | 'role_viewer_short'; tone: StatusTone; icon: LucideIcon }> = {
+  owner:     { labelKey: 'role_owner',           tone: 'warning', icon: Crown },
+  editor:    { labelKey: 'role_editor_short',    tone: 'info',    icon: Edit2 },
+  commenter: { labelKey: 'role_commenter_short', tone: 'accent',  icon: MessageSquare },
+  viewer:    { labelKey: 'role_viewer_short',    tone: 'neutral', icon: Eye },
 };
 
 function roleChip(role: string) {
@@ -102,21 +135,27 @@ function statusColor(s: string) {
   }
 }
 
-function statusLabel(s: string) {
+function statusKey(s: string): 'status_completed' | 'status_in_progress' | 'status_reviewed' | 'status_not_started' {
   switch (s) {
-    case 'completed': return 'Completed';
-    case 'in-progress': return 'In Progress';
-    case 'reviewed': return 'Under Review';
-    default: return 'Not Started';
+    case 'completed': return 'status_completed';
+    case 'in-progress': return 'status_in_progress';
+    case 'reviewed': return 'status_reviewed';
+    default: return 'status_not_started';
   }
 }
 
-function dimensionLabel(d: string) {
-  const map: Record<string, string> = {
-    team: 'Team Readiness', market: 'Market Validation', product: 'Product Definition',
-    business: 'Business Model', funding: 'Funding Readiness', execution: 'Execution Plan',
+function dimensionKey(d: string): 'dim_team' | 'dim_market' | 'dim_product' | 'dim_business' | 'dim_funding' | 'dim_execution' | null {
+  const map: Record<string, 'dim_team' | 'dim_market' | 'dim_product' | 'dim_business' | 'dim_funding' | 'dim_execution'> = {
+    team: 'dim_team', market: 'dim_market', product: 'dim_product',
+    business: 'dim_business', funding: 'dim_funding', execution: 'dim_execution',
   };
-  return map[d] ?? d;
+  return map[d] ?? null;
+}
+
+function DimensionLabel({ d }: { d: string }) {
+  const key = dimensionKey(d);
+  if (!key) return <span>{d}</span>;
+  return <BilingualText en={builderEn(key)} el={builderEl(key)} compact />;
 }
 
 function dimensionColor(score: number) {
@@ -140,6 +179,29 @@ function docStatusChip(status: string) {
   return STATUS.neutral.chip;
 }
 
+function AskAiButton({
+  labelEn,
+  labelEl,
+  variant = 'outline',
+}: {
+  labelEn?: string;
+  labelEl?: string;
+  variant?: 'outline' | 'ghost' | 'secondary';
+}) {
+  const { open } = usePopupChat();
+  return (
+    <Button type="button" variant={variant} size="sm" className="h-8 gap-1.5 text-xs" onClick={() => open()}>
+      <CfbGlyph name="spark" className="icon-sm" />
+      <BilingualText en={labelEn ?? builderEn('ask_ai')} el={labelEl ?? builderEl('ask_ai')} compact />
+    </Button>
+  );
+}
+
+function usePrimaryText() {
+  const { primary, showSecondary } = useLanguagePreference();
+  return (en: string, el: string) => resolveBilingualPair(en, el, primary, showSecondary).primaryText;
+}
+
 // ── Invite Collaborator Dialog ─────────────────────────────────────────────
 
 interface InviteDialogProps {
@@ -152,6 +214,7 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
   const [userId, setUserId] = useState('');
   const [role, setRole] = useState('viewer');
   const [loading, setLoading] = useState(false);
+  const t = usePrimaryText();
 
   const handleSubmit = async () => {
     if (!userId.trim()) return;
@@ -170,38 +233,49 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite Collaborator</DialogTitle>
-          <DialogDescription>Add a team member, mentor, or advisor to this workspace.</DialogDescription>
+          <DialogTitle>
+            <BilingualText en={builderEn('invite_title')} el={builderEl('invite_title')} />
+          </DialogTitle>
+          <DialogDescription>
+            <BilingualText en={builderEn('invite_desc')} el={builderEl('invite_desc')} />
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label htmlFor="invite-user">User ID or Email</Label>
+            <Label htmlFor="invite-user">
+              <BilingualText en={builderEn('user_id')} el={builderEl('user_id')} compact />
+            </Label>
             <Input
               id="invite-user"
-              placeholder="Enter user ID..."
+              placeholder={t(builderEn('user_ph'), builderEl('user_ph'))}
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
+              aria-label={bilingualAria(builderEn('user_id'), builderEl('user_id'))}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="invite-role">Role</Label>
+            <Label htmlFor="invite-role">
+              <BilingualText en={builderEn('role')} el={builderEl('role')} compact />
+            </Label>
             <Select value={role} onValueChange={setRole}>
               <SelectTrigger id="invite-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="editor">Editor — can edit all documents</SelectItem>
-                <SelectItem value="commenter">Commenter — can comment and suggest</SelectItem>
-                <SelectItem value="viewer">Viewer — read-only access</SelectItem>
+                <SelectItem value="editor">{t(builderEn('role_editor'), builderEl('role_editor'))}</SelectItem>
+                <SelectItem value="commenter">{t(builderEn('role_commenter'), builderEl('role_commenter'))}</SelectItem>
+                <SelectItem value="viewer">{t(builderEn('role_viewer'), builderEl('role_viewer'))}</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            <BilingualText en={builderEn('cancel')} el={builderEl('cancel')} compact />
+          </Button>
           <Button onClick={handleSubmit} disabled={loading || !userId.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
-            Send Invite
+            <BilingualText en={builderEn('send_invite')} el={builderEl('send_invite')} compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -221,6 +295,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
   const [docType, setDocType] = useState('custom');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
+  const t = usePrimaryText();
 
   const handleSubmit = async () => {
     if (!title.trim()) return;
@@ -239,39 +314,50 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Document</DialogTitle>
-          <DialogDescription>Add a new startup artifact to this workspace.</DialogDescription>
+          <DialogTitle>
+            <BilingualText en={builderEn('create_doc')} el={builderEl('create_doc')} />
+          </DialogTitle>
+          <DialogDescription>
+            <BilingualText en={builderEn('create_doc_desc')} el={builderEl('create_doc_desc')} />
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label>Document Type</Label>
+            <Label>
+              <BilingualText en={builderEn('doc_type')} el={builderEl('doc_type')} compact />
+            </Label>
             <Select value={docType} onValueChange={setDocType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(DOC_META).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v.label}</SelectItem>
+                {Object.keys(BUILDER_DOC_TYPES).map((k) => (
+                  <SelectItem key={k} value={k}>{t(docLabelEn(k), docLabelEl(k))}</SelectItem>
                 ))}
-                <SelectItem value="custom">Custom Document</SelectItem>
+                <SelectItem value="custom">{t(builderEn('custom_doc'), builderEl('custom_doc'))}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label>Title</Label>
+            <Label>
+              <BilingualText en={builderEn('title')} el={builderEl('title')} compact />
+            </Label>
             <Input
-              placeholder="Document title..."
+              placeholder={t(builderEn('title_ph'), builderEl('title_ph'))}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              aria-label={bilingualAria(builderEn('title'), builderEl('title'))}
             />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            <BilingualText en={builderEn('cancel')} el={builderEl('cancel')} compact />
+          </Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
             {loading && <Loader2 className="icon-sm mr-2 animate-spin" />}
-            Create
+            <BilingualText en={builderEn('create')} el={builderEl('create')} compact />
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -326,9 +412,9 @@ export function BuilderWorkspace() {
   const handleInvite = useCallback(async (userId: string, role: string) => {
     try {
       await addCollaborator(userId, role);
-      success('Collaborator added successfully');
+      success(bilingualInline(builderEn('toast_collab_added'), builderEl('toast_collab_added')));
     } catch {
-      toastError('Failed to add collaborator');
+      toastError(bilingualInline(builderEn('toast_collab_failed'), builderEl('toast_collab_failed')));
       throw new Error('invite failed');
     }
   }, [addCollaborator, success, toastError]);
@@ -336,10 +422,10 @@ export function BuilderWorkspace() {
   const handleCreateDoc = useCallback(async (type: string, title: string) => {
     try {
       const doc = await createDocument(type as any, title);
-      success('Document created');
+      success(bilingualInline(builderEn('toast_doc_created'), builderEl('toast_doc_created')));
       selectDocument(doc.id);
     } catch {
-      toastError('Failed to create document');
+      toastError(bilingualInline(builderEn('toast_doc_failed'), builderEl('toast_doc_failed')));
       throw new Error('create failed');
     }
   }, [createDocument, selectDocument, success, toastError]);
@@ -347,9 +433,9 @@ export function BuilderWorkspace() {
   const handleRemoveCollaborator = useCallback(async (collaboratorId: string) => {
     try {
       await removeCollaborator(collaboratorId);
-      success('Collaborator removed');
+      success(bilingualInline(builderEn('toast_removed'), builderEl('toast_removed')));
     } catch {
-      toastError('Failed to remove collaborator');
+      toastError(bilingualInline(builderEn('toast_remove_failed'), builderEl('toast_remove_failed')));
     }
   }, [removeCollaborator, success, toastError]);
 
@@ -357,9 +443,9 @@ export function BuilderWorkspace() {
     setAssessingReadiness(true);
     try {
       await assessReadiness();
-      success('Readiness assessment updated');
+      success(bilingualInline(builderEn('toast_reassessed'), builderEl('toast_reassessed')));
     } catch {
-      toastError('Failed to assess readiness');
+      toastError(bilingualInline(builderEn('toast_assess_failed'), builderEl('toast_assess_failed')));
     } finally {
       setAssessingReadiness(false);
     }
@@ -400,35 +486,50 @@ export function BuilderWorkspace() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4 text-center">
+            <CfbGlyphWell name="builder" size="sm" className="mx-auto mb-2" />
             <div className="text-2xl font-bold text-foreground">{overallCompletion}%</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completion</div>
-            <Progress value={overallCompletion} className="h-1.5 mt-2" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className={cn('text-2xl font-bold', dimensionColor(overallReadiness))}>
-              {assessingReadiness ? <Loader2 className="icon-lg animate-spin mx-auto" /> : `${overallReadiness}%`}
+            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('completion')} el={builderEl('completion')} compact />
             </div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Readiness</div>
-            <Progress value={overallReadiness} className="h-1.5 mt-2" />
+            <Progress value={overallCompletion} className="mt-2 h-1.5" />
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4 text-center">
+            <CfbGlyphWell name="award" size="sm" className="mx-auto mb-2" />
+            <div className={cn('text-2xl font-bold', dimensionColor(overallReadiness))}>
+              {assessingReadiness ? <Loader2 className="icon-lg mx-auto animate-spin" /> : `${overallReadiness}%`}
+            </div>
+            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('readiness')} el={builderEl('readiness')} compact />
+            </div>
+            <Progress value={overallReadiness} className="mt-2 h-1.5" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 text-center">
+            <CfbGlyphWell name="flag" size="sm" className="mx-auto mb-2" />
             <div className={cn('text-2xl font-bold', STATUS.success.text)}>{completedDocs}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completed</div>
-            <div className="text-xs text-muted-foreground mt-1.5">{inProgressDocs} in progress</div>
+            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('completed')} el={builderEl('completed')} compact />
+            </div>
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              {inProgressDocs}{' '}
+              <BilingualText en={builderEn('in_progress')} el={builderEl('in_progress')} compact />
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4 text-center">
+            <CfbGlyphWell name="people" size="sm" className="mx-auto mb-2" />
             <div className="text-2xl font-bold text-primary-accessible">{collaborators.length}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Collaborators</div>
-            <div className="flex justify-center mt-2 -space-x-1.5">
+            <div className="mt-0.5 text-2xs uppercase tracking-wide text-muted-foreground">
+              <BilingualText en={builderEn('collaborators')} el={builderEl('collaborators')} compact />
+            </div>
+            <div className="mt-2 -space-x-1.5 flex justify-center">
               {collaborators.slice(0, 4).map(c => (
                 <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                   <AvatarImage src={c.user.avatarUrl} />
@@ -442,51 +543,61 @@ export function BuilderWorkspace() {
 
       {/* ── Tabs ──────────────────────────────────────────────────────────── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="documents">
-              Documents
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <TabsList className="rounded-xl">
+            <TabsTrigger value="overview" className="gap-1.5">
+              <CfbGlyph name="builder" className="icon-sm" />
+              <BilingualText en={builderEn('tab_overview')} el={builderEl('tab_overview')} compact />
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-1.5">
+              <CfbGlyph name="book" className="icon-sm" />
+              <BilingualText en={builderEn('tab_documents')} el={builderEl('tab_documents')} compact />
               {documents.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 text-xs h-4 px-1.5">{documents.length}</Badge>
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-xs">{documents.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="collaboration">
-              Team
+            <TabsTrigger value="collaboration" className="gap-1.5">
+              <CfbGlyph name="people" className="icon-sm" />
+              <BilingualText en={builderEn('tab_team')} el={builderEl('tab_team')} compact />
               {collaborators.length > 0 && (
-                <Badge variant="secondary" className="ml-1.5 text-xs h-4 px-1.5">{collaborators.length}</Badge>
+                <Badge variant="secondary" className="ml-1.5 h-4 px-1.5 text-xs">{collaborators.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="readiness">Readiness</TabsTrigger>
+            <TabsTrigger value="readiness" className="gap-1.5">
+              <CfbGlyph name="award" className="icon-sm" />
+              <BilingualText en={builderEn('tab_readiness')} el={builderEl('tab_readiness')} compact />
+            </TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <AskAiButton labelEn={builderEn('ask_ai_plan')} labelEl={builderEl('ask_ai_plan')} />
             <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-              <UserPlus className="icon-sm mr-1.5" />
-              Invite
+              <CfbGlyph name="people" className="icon-sm mr-1.5" />
+              <BilingualText en={builderEn('invite')} el={builderEl('invite')} compact />
             </Button>
             <Button size="sm" onClick={() => setShowCreateDocDialog(true)}>
               <Plus className="icon-sm mr-1.5" />
-              New Document
+              <BilingualText en={builderEn('new_document')} el={builderEl('new_document')} compact />
             </Button>
           </div>
         </div>
 
         {/* ── Overview Tab ──────────────────────────────────────────────── */}
-        <TabsContent value="overview" className="space-y-6 mt-4">
+        <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="grid gap-6 lg:grid-cols-2">
-            {/* Progress card */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Rocket className="icon-sm" />
-                  Startup Progress
+                  <CfbGlyph name="flag" className="icon-sm" />
+                  <BilingualText en={builderEn('startup_progress')} el={builderEl('startup_progress')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Overall Completion</span>
+                    <span className="text-muted-foreground">
+                      <BilingualText en={builderEn('overall_completion')} el={builderEl('overall_completion')} compact />
+                    </span>
                     <span className="font-medium">{overallCompletion}%</span>
                   </div>
                   <Progress value={overallCompletion} className="h-2" />
@@ -495,7 +606,9 @@ export function BuilderWorkspace() {
                 {readinessDimensions.slice(0, 4).map(dim => (
                   <div key={dim.dimension} className="space-y-1">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">{dimensionLabel(dim.dimension)}</span>
+                      <span className="text-muted-foreground">
+                        <DimensionLabel d={dim.dimension} />
+                      </span>
                       <span className={cn('font-medium', dimensionColor(dim.score))}>{dim.score}%</span>
                     </div>
                     <Progress value={dim.score} className="h-1.5" />
@@ -505,26 +618,27 @@ export function BuilderWorkspace() {
                 {assessingReadiness && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <Loader2 className="icon-sm animate-spin" />
-                    Assessing readiness…
+                    <BilingualText en={builderEn('assessing')} el={builderEl('assessing')} compact />
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Quick Actions card */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
+                <CardTitle className="text-base">
+                  <BilingualText en={builderEn('quick_actions')} el={builderEl('quick_actions')} compact />
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {DEFAULT_DOC_TYPES.map(type => {
-                  const meta = DOC_META[type];
                   const existing = documents.find(d => d.type === type);
-                  const Icon = meta?.icon ?? FileText;
+                  const labelEn = docLabelEn(type);
+                  const labelEl = docLabelEl(type);
                   return (
                     <Button
                       key={type}
-                      className="w-full justify-between"
+                      className="w-full justify-between rounded-xl"
                       variant="outline"
                       onClick={() => {
                         if (existing) {
@@ -534,9 +648,13 @@ export function BuilderWorkspace() {
                         }
                       }}
                     >
-                      <span className="flex items-center gap-2">
-                        <Icon className="icon-sm text-muted-foreground" />
-                        {existing ? `Edit ${meta?.label}` : `Start ${meta?.label}`}
+                      <span className="flex min-w-0 items-center gap-2">
+                        <CfbGlyph name={docGlyph(type)} className="icon-sm shrink-0 text-muted-foreground" />
+                        <BilingualText
+                          en={`${existing ? builderEn('edit') : builderEn('start')} ${labelEn}`}
+                          el={`${existing ? builderEl('edit') : builderEl('start')} ${labelEl}`}
+                          compact
+                        />
                       </span>
                       {existing ? (
                         <Badge
@@ -553,8 +671,10 @@ export function BuilderWorkspace() {
                 })}
 
                 {readinessAssessment?.blockers && readinessAssessment.blockers.length > 0 && (
-                  <div className="pt-2 border-t mt-2 space-y-1.5">
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Gaps</p>
+                  <div className="mt-2 space-y-1.5 border-t pt-2">
+                    <p className="text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+                      <BilingualText en={builderEn('critical_gaps')} el={builderEl('critical_gaps')} compact />
+                    </p>
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
                       <div key={i} className={cn('flex items-start gap-1.5 text-xs', STATUS.danger.text)}>
                         <AlertCircle className="icon-sm mt-0.5 shrink-0" />
@@ -567,20 +687,19 @@ export function BuilderWorkspace() {
             </Card>
           </div>
 
-          {/* Next milestones */}
           {readinessAssessment?.nextMilestones && readinessAssessment.nextMilestones.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className={cn('icon-sm', STATUS.warning.icon)} />
-                  Recommended Next Steps
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="spark" className={cn('icon-sm', STATUS.warning.icon)} />
+                  <BilingualText en={builderEn('next_steps')} el={builderEl('next_steps')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
-                    <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-sm">
-                      <ChevronRight className="icon-sm text-primary-accessible mt-0.5 shrink-0" />
+                    <div key={i} className="flex items-start gap-2 rounded-xl bg-muted/50 p-2.5 text-sm">
+                      <ChevronRight className="icon-sm mt-0.5 shrink-0 text-primary-accessible" />
                       <span className="text-muted-foreground">{milestone}</span>
                     </div>
                   ))}
@@ -589,14 +708,13 @@ export function BuilderWorkspace() {
             </Card>
           )}
 
-          {/* Activity Timeline */}
           {workspace && (
             <ActivityTimeline workspaceId={workspace.id} limit={15} />
           )}
         </TabsContent>
 
         {/* ── Documents Tab ─────────────────────────────────────────────── */}
-        <TabsContent value="documents" className="space-y-4 mt-4">
+        <TabsContent value="documents" className="mt-4 space-y-4">
           {isLoadingDocuments ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -609,44 +727,53 @@ export function BuilderWorkspace() {
           ) : documents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-muted-foreground mb-4">No documents yet. Create your first startup artifact.</p>
-                <Button onClick={() => setShowCreateDocDialog(true)}>
-                  <Plus className="icon-sm mr-2" />
-                  Create First Document
-                </Button>
+                <CfbGlyphWell name="book" size="lg" className="mx-auto mb-3 opacity-70" />
+                <p className="mb-4 text-muted-foreground">
+                  <BilingualText en={builderEn('no_docs')} el={builderEl('no_docs')} />
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button onClick={() => setShowCreateDocDialog(true)}>
+                    <Plus className="icon-sm mr-2" />
+                    <BilingualText en={builderEn('create_first')} el={builderEl('create_first')} compact />
+                  </Button>
+                  <AskAiButton labelEn={builderEn('ask_ai_plan')} labelEl={builderEl('ask_ai_plan')} />
+                </div>
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {documents.map(doc => {
-                const meta = DOC_META[doc.type];
                 const status = docStatus(doc);
-                const Icon = meta?.icon ?? FileText;
+                const sk = statusKey(status);
                 return (
                   <Card
                     key={doc.id}
-                    className="hover:shadow-md transition-all cursor-pointer group border-border/60"
+                    className="group cursor-pointer border-border/60 transition-all hover:shadow-md"
                     onClick={() => selectDocument(doc.id)}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="p-1.5 rounded-md bg-primary/8 shrink-0">
-                            <Icon className="icon-sm text-primary-accessible" />
-                          </div>
-                          <CardTitle className="text-sm truncate">{doc.title}</CardTitle>
+                        <div className="flex min-w-0 items-center gap-2">
+                          <CfbGlyphWell name={docGlyph(doc.type)} size="sm" />
+                          <CardTitle className="truncate text-sm">{doc.title}</CardTitle>
                         </div>
-                        <div className={cn('w-2 h-2 rounded-full shrink-0', statusColor(status))} />
+                        <div className={cn('h-2 w-2 shrink-0 rounded-full', statusColor(status))} />
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0 space-y-3">
-                      {doc.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">{doc.description}</p>
-                      )}
+                    <CardContent className="space-y-3 pt-0">
+                      {doc.description ? (
+                        <p className="line-clamp-2 text-xs text-muted-foreground">{doc.description}</p>
+                      ) : builderDocDescription(doc.type, 'en') ? (
+                        <p className="line-clamp-2 text-xs text-muted-foreground">
+                          <BilingualText
+                            en={builderDocDescription(doc.type, 'en')}
+                            el={builderDocDescription(doc.type, 'el')}
+                          />
+                        </p>
+                      ) : null}
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>{statusLabel(status)}</span>
+                          <BilingualText en={builderEn(sk)} el={builderEl(sk)} compact />
                           <span>{doc.completionPercent}%</span>
                         </div>
                         <Progress value={doc.completionPercent} className="h-1" />
@@ -655,8 +782,8 @@ export function BuilderWorkspace() {
                         <Badge variant="secondary" className="text-xs">
                           v{doc.version}
                         </Badge>
-                        <span className="text-xs text-muted-foreground group-hover:text-primary-accessible transition-colors flex items-center gap-1">
-                          Open <ArrowRight className="icon-sm" />
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-primary-accessible">
+                          <BilingualText en={builderEn('open')} el={builderEl('open')} compact /> <ArrowRight className="icon-sm" />
                         </span>
                       </div>
                     </CardContent>
@@ -664,14 +791,15 @@ export function BuilderWorkspace() {
                 );
               })}
 
-              {/* Add document card */}
               <Card
-                className="hover:shadow-md transition-all cursor-pointer border-dashed border-2 border-border/40 hover:border-primary/40 bg-muted/20 hover:bg-primary/5"
+                className="cursor-pointer border-2 border-dashed border-border/40 bg-muted/20 transition-all hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
                 onClick={() => setShowCreateDocDialog(true)}
               >
-                <CardContent className="py-8 flex flex-col items-center justify-center text-center gap-2">
-                  <Plus className="icon-xl text-muted-foreground/40 group-hover:text-primary-accessible transition-colors" />
-                  <p className="text-sm text-muted-foreground">Add Document</p>
+                <CardContent className="flex flex-col items-center justify-center gap-2 py-8 text-center">
+                  <Plus className="icon-xl text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">
+                    <BilingualText en={builderEn('add_document')} el={builderEl('add_document')} compact />
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -679,28 +807,30 @@ export function BuilderWorkspace() {
         </TabsContent>
 
         {/* ── Collaboration Tab ─────────────────────────────────────────── */}
-        <TabsContent value="collaboration" className="space-y-4 mt-4">
+        <TabsContent value="collaboration" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="icon-sm" />
-                  Team Members
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="people" className="icon-sm" />
+                  <BilingualText en={builderEn('team_members')} el={builderEl('team_members')} compact />
                 </CardTitle>
                 <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-                  <UserPlus className="icon-sm mr-1.5" />
-                  Invite
+                  <CfbGlyph name="people" className="icon-sm mr-1.5" />
+                  <BilingualText en={builderEn('invite')} el={builderEl('invite')} compact />
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               {collaborators.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm mb-3">No collaborators yet</p>
+                <div className="py-8 text-center text-muted-foreground">
+                  <CfbGlyphWell name="people" size="lg" className="mx-auto mb-3 opacity-70" />
+                  <p className="mb-3 text-sm">
+                    <BilingualText en={builderEn('no_collab')} el={builderEl('no_collab')} />
+                  </p>
                   <Button size="sm" onClick={() => setShowInviteDialog(true)}>
-                    <UserPlus className="icon-sm mr-1.5" />
-                    Invite First Collaborator
+                    <CfbGlyph name="people" className="icon-sm mr-1.5" />
+                    <BilingualText en={builderEn('invite_first')} el={builderEl('invite_first')} compact />
                   </Button>
                 </div>
               ) : (
@@ -710,7 +840,7 @@ export function BuilderWorkspace() {
                     const RoleIcon = roleMeta.icon;
                     return (
                       <div key={collab.id} className="flex items-center justify-between py-3">
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex min-w-0 items-center gap-3">
                           <Avatar className="h-8 w-8 shrink-0">
                             <AvatarImage src={collab.user.avatarUrl} />
                             <AvatarFallback className="text-xs">
@@ -718,24 +848,29 @@ export function BuilderWorkspace() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">
+                            <div className="truncate text-sm font-medium">
                               {collab.user?.displayName ?? collab.user.email}
                             </div>
-                            <div className="text-xs text-muted-foreground truncate">{collab.user.email}</div>
+                            <div className="truncate text-xs text-muted-foreground">{collab.user.email}</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex shrink-0 items-center gap-2">
                           <Badge
                             variant="outline"
-                            className={cn('text-xs flex items-center gap-1 px-2 border', roleChip(collab.role))}
+                            className={cn('flex items-center gap-1 border px-2 text-xs', roleChip(collab.role))}
                           >
                             <RoleIcon className="h-2.5 w-2.5" />
-                            {roleMeta.label}
+                            <BilingualText en={builderEn(roleMeta.labelKey)} el={builderEl(roleMeta.labelKey)} compact />
                           </Badge>
                           {collab.role !== 'owner' && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  aria-label={bilingualAria(builderEn('remove'), builderEl('remove'))}
+                                >
                                   <MoreHorizontal className="icon-sm" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -745,7 +880,7 @@ export function BuilderWorkspace() {
                                   onClick={() => handleRemoveCollaborator(collab.id)}
                                 >
                                   <Trash2 className="icon-sm mr-2" />
-                                  Remove
+                                  <BilingualText en={builderEn('remove')} el={builderEl('remove')} compact />
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -759,35 +894,42 @@ export function BuilderWorkspace() {
             </CardContent>
           </Card>
 
-          {/* Workspace info */}
           {workspace && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Share2 className="icon-sm" />
-                  Workspace Settings
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CfbGlyph name="sliders" className="icon-sm" />
+                  <BilingualText en={builderEn('workspace_settings')} el={builderEl('workspace_settings')} compact />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Startup</span>
+                    <span className="text-muted-foreground">
+                      <BilingualText en={builderEn('startup')} el={builderEl('startup')} compact />
+                    </span>
                     <span className="font-medium">{workspace.startupName ?? workspace.name}</span>
                   </div>
                   {workspace.industry && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Industry</span>
+                      <span className="text-muted-foreground">
+                        <BilingualText en={builderEn('industry')} el={builderEl('industry')} compact />
+                      </span>
                       <span className="font-medium capitalize">{workspace.industry}</span>
                     </div>
                   )}
                   {workspace.stage && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Stage</span>
+                      <span className="text-muted-foreground">
+                        <BilingualText en={builderEn('stage')} el={builderEl('stage')} compact />
+                      </span>
                       <Badge variant="secondary" className="text-xs capitalize">{workspace.stage}</Badge>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Visibility</span>
+                    <span className="text-muted-foreground">
+                      <BilingualText en={builderEn('visibility')} el={builderEl('visibility')} compact />
+                    </span>
                     <Badge variant="outline" className="text-xs capitalize">{workspace.visibility}</Badge>
                   </div>
                 </div>
@@ -797,44 +939,57 @@ export function BuilderWorkspace() {
         </TabsContent>
 
         {/* ── Readiness Tab ─────────────────────────────────────────────── */}
-        <TabsContent value="readiness" className="space-y-4 mt-4">
-          <div className="flex items-center justify-between">
+        <TabsContent value="readiness" className="mt-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm text-muted-foreground">
                 {readinessAssessment
-                  ? `Overall readiness: ${readinessAssessment.readinessLevel} — ${overallReadiness}%`
-                  : 'Run an assessment to see your startup readiness scores'}
+                  ? (
+                    <BilingualText
+                      en={`${builderEn('overall_readiness_line')}: ${readinessAssessment.readinessLevel} — ${overallReadiness}%`}
+                      el={`${builderEl('overall_readiness_line')}: ${readinessAssessment.readinessLevel} — ${overallReadiness}%`}
+                    />
+                  )
+                  : <BilingualText en={builderEn('run_to_see')} el={builderEl('run_to_see')} />}
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleReassess}
-              disabled={assessingReadiness}
-            >
-              {assessingReadiness ? (
-                <Loader2 className="icon-sm mr-1.5 animate-spin" />
-              ) : (
-                <RefreshCw className="icon-sm mr-1.5" />
-              )}
-              {assessingReadiness ? 'Assessing…' : 'Reassess'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <AskAiButton />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleReassess}
+                disabled={assessingReadiness}
+              >
+                {assessingReadiness ? (
+                  <Loader2 className="icon-sm mr-1.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="icon-sm mr-1.5" />
+                )}
+                <BilingualText
+                  en={assessingReadiness ? builderEn('assessing_short') : builderEn('reassess')}
+                  el={assessingReadiness ? builderEl('assessing_short') : builderEl('reassess')}
+                  compact
+                />
+              </Button>
+            </div>
           </div>
 
-          {/* Overall score */}
           {readinessAssessment && (
             <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="p-4 flex items-center gap-4">
+              <CardContent className="flex items-center gap-4 p-4">
                 <div className="flex-1">
-                  <div className="flex justify-between mb-1.5 text-sm">
-                    <span className="font-medium">Overall Readiness Score</span>
+                  <div className="mb-1.5 flex justify-between text-sm">
+                    <span className="font-medium">
+                      <BilingualText en={builderEn('overall_readiness')} el={builderEl('overall_readiness')} compact />
+                    </span>
                     <span className={cn('font-bold', dimensionColor(overallReadiness))}>{overallReadiness}%</span>
                   </div>
                   <Progress value={overallReadiness} className="h-3" />
                 </div>
                 <Badge
                   variant="outline"
-                  className={cn('shrink-0 capitalize text-sm px-3 py-1', dimensionColor(overallReadiness))}
+                  className={cn('shrink-0 capitalize px-3 py-1 text-sm', dimensionColor(overallReadiness))}
                 >
                   {readinessAssessment.readinessLevel}
                 </Badge>
@@ -842,7 +997,6 @@ export function BuilderWorkspace() {
             </Card>
           )}
 
-          {/* Dimension cards */}
           {assessingReadiness ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -854,10 +1008,12 @@ export function BuilderWorkspace() {
           ) : readinessDimensions.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {readinessDimensions.map(dim => (
-                <Card key={dim.dimension} className="hover:shadow-sm transition-shadow">
-                  <CardContent className="p-4 space-y-3">
+                <Card key={dim.dimension} className="transition-shadow hover:shadow-sm">
+                  <CardContent className="space-y-3 p-4">
                     <div className="flex items-center justify-between">
-                      <div className="font-medium text-sm">{dimensionLabel(dim.dimension)}</div>
+                      <div className="text-sm font-medium">
+                        <DimensionLabel d={dim.dimension} />
+                      </div>
                       <div className={cn('text-lg font-bold', dimensionColor(dim.score))}>{dim.score}%</div>
                     </div>
                     <Progress value={dim.score} className="h-2" />
@@ -868,10 +1024,10 @@ export function BuilderWorkspace() {
                       {dim.status?.replace('-', ' ')}
                     </Badge>
                     {dim.recommendations && dim.recommendations.length > 0 && (
-                      <div className="space-y-1 pt-1 border-t border-border/40">
+                      <div className="space-y-1 border-t border-border/40 pt-1">
                         {dim.recommendations.slice(0, 2).map((r, i) => (
-                          <div key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                            <ChevronRight className="icon-sm text-primary-accessible mt-0.5 shrink-0" />
+                          <div key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                            <ChevronRight className="icon-sm mt-0.5 shrink-0 text-primary-accessible" />
                             {r}
                           </div>
                         ))}
@@ -884,21 +1040,23 @@ export function BuilderWorkspace() {
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
-                <BarChart3 className="h-10 w-10 mx-auto mb-3 text-muted-foreground/30" />
-                <p className="text-sm text-muted-foreground mb-3">
-                  No readiness data yet. Complete some documents first, then run an assessment.
+                <CfbGlyphWell name="chart" size="lg" className="mx-auto mb-3 opacity-70" />
+                <p className="mb-3 text-sm text-muted-foreground">
+                  <BilingualText en={builderEn('no_readiness')} el={builderEl('no_readiness')} />
                 </p>
-                <Button onClick={handleReassess} disabled={assessingReadiness}>
-                  {assessingReadiness ? <Loader2 className="icon-sm mr-2 animate-spin" /> : <Activity className="icon-sm mr-2" />}
-                  Run Assessment
-                </Button>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button onClick={handleReassess} disabled={assessingReadiness}>
+                    {assessingReadiness ? <Loader2 className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="chart" className="icon-sm mr-2" />}
+                    <BilingualText en={builderEn('run_assessment')} el={builderEl('run_assessment')} compact />
+                  </Button>
+                  <AskAiButton labelEn={builderEn('ask_ai_plan')} labelEl={builderEl('ask_ai_plan')} />
+                </div>
               </CardContent>
             </Card>
           )}
         </TabsContent>
       </Tabs>
 
-      {/* ── Dialogs ──────────────────────────────────────────────────────── */}
       <InviteCollaboratorDialog
         open={showInviteDialog}
         onClose={() => setShowInviteDialog(false)}

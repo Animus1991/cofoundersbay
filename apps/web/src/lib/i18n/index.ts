@@ -72,6 +72,53 @@ export {
   readinessEl,
 } from './strings-readiness';
 export {
+  ANALYTICS_STRINGS,
+  analyticsEn,
+  analyticsEl,
+} from './strings-analytics';
+export {
+  BUILDER_STRINGS,
+  BUILDER_DOC_TYPES,
+  builderEn,
+  builderEl,
+  builderDocLabel,
+  builderDocDescription,
+} from './strings-builder';
+export {
+  RESEARCH_STRINGS,
+  RESEARCH_TEMPLATE_I18N,
+  RESEARCH_NODE_CATEGORY_EL,
+  RESEARCH_NODE_LABEL_EL,
+  researchEn,
+  researchEl,
+  useResearchPrimaryText,
+} from './strings-research';
+export {
+  MILESTONE_STRINGS,
+  MILESTONE_CATEGORY_KEYS,
+  MILESTONE_STATUS_KEYS,
+  MILESTONE_PRIORITY_KEYS,
+  milestoneEn,
+  milestoneEl,
+  useMilestonePrimaryText,
+} from './strings-milestones';
+export {
+  PROJECT_STRINGS,
+  PROJECT_STAGE_KEYS,
+  PROJECT_STAGE_FULL_KEYS,
+  projectEn,
+  projectEl,
+  useProjectPrimaryText,
+} from './strings-projects';
+export {
+  FUNDRAISING_STRINGS,
+  INVESTOR_STATUS_KEYS,
+  ROUND_STATUS_KEYS,
+  fundraisingEn,
+  fundraisingEl,
+  useFundraisingPrimaryText,
+} from './strings-fundraising';
+export {
   ACHIEVEMENTS_STRINGS,
   achievementsEn,
   achievementsEl,

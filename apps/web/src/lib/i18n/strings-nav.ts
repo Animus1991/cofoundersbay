@@ -129,7 +129,7 @@ export const NAV_LABEL_EL: Record<string, string> = {
   '/provider/projects': 'Έργα πελατών',
   '/provider/reviews': 'Αξιολογήσεις',
   '/provider/services': 'Οι υπηρεσίες μου',
-  '/readiness': 'Readiness Score',
+  '/readiness': 'Βαθμολογία ετοιμότητας',
   '/recommendations': 'Για εσάς',
   '/referrals': 'Παραπομπές',
   '/reputation': 'Φήμη',
@@ -179,7 +179,7 @@ export const NAV_DESCRIPTION_EL: Record<string, string> = {
   '/builder/pitch-deck':
     'Περιεχόμενο slides συνδεδεμένο με τον builder',
   '/builder/applications':
-    'Παρακολούθηση αιτήσεων σε accelerators και επιχορηγήσεις',
+    'Τέσσερα πρότυπα αιτήσεων στο ίδιο παραδοτέο με τον Builder',
   '/research':
     'Οπτικοί πίνακες έρευνας και στρατηγικής',
   '/milestones':
