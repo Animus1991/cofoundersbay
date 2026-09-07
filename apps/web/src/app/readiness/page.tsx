@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
-  ArrowRight,
   Lightbulb,
   RefreshCw,
   Loader2,
@@ -287,7 +286,7 @@ function DimensionCard({
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="min-h-10 px-1.5 text-sm text-primary hover:underline"
+                  className="min-h-11 px-1.5 text-sm text-primary hover:underline"
                 >
                   {expanded ? 'Show less' : `+${dim.criteria.length - 3} more`}
                 </button>
@@ -413,9 +412,11 @@ function ReadinessSkeleton() {
 export default function ReadinessPage() {
   const { error: toastError } = useToast();
   const qc = useQueryClient();
-  const [workspaceId] = useState<string | null>(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('cfb_default_workspace') : null,
-  );
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setWorkspaceId(localStorage.getItem('cfb_default_workspace'));
+  }, []);
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['readiness', workspaceId],
@@ -450,7 +451,7 @@ export default function ReadinessPage() {
   const askPrompt = `My overall startup readiness is ${overallScore}%. Weakest dimensions: ${weakDims.map((d) => `${d.label} ${Math.round((d.score / d.maxScore) * 100)}% — ${d.recommendations[0] ?? 'needs work'}`).join('; ') || 'none'}. What should I do next in Builder, interviews, or fundraising?`;
 
   if (isLoading) {
-    return <AppShell><div className="py-6"><ReadinessSkeleton /></div></AppShell>;
+    return <AppShell><div className="min-w-0 space-y-6 overflow-x-clip py-6"><ReadinessSkeleton /></div></AppShell>;
   }
 
   return (
