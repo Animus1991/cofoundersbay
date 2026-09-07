@@ -2,6 +2,8 @@ export type CopilotToolName =
   | 'get_graph'
   | 'search_people'
   | 'get_recommendations'
+  | 'get_notifications'
+  | 'shortlist_add'
   | 'send_connection'
   | 'start_or_send_message'
   | 'navigate';
@@ -11,7 +13,11 @@ export type PlannedTool = {
   args: Record<string, string>;
 };
 
-export type CopilotActionTool = 'send_connection' | 'start_or_send_message' | 'navigate';
+export type CopilotActionTool =
+  | 'send_connection'
+  | 'start_or_send_message'
+  | 'navigate'
+  | 'shortlist_add';
 
 export type CopilotActionStatus = 'pending' | 'done' | 'dismissed' | 'error';
 

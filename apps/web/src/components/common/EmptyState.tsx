@@ -1,4 +1,9 @@
+'use client';
+
 import { ReactNode } from 'react';
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
@@ -10,6 +15,8 @@ type EmptyStateProps = {
   className?: string;
   illustration?: IllustrationType;
   size?: 'sm' | 'md' | 'lg';
+  /** Secondary Ask AI action — never replaces the primary `action`. */
+  askAiPrompt?: string;
 };
 
 // SVG Illustrations for different empty states
@@ -121,7 +128,8 @@ export function EmptyState({
   action, 
   className,
   illustration = 'default',
-  size = 'md'
+  size = 'md',
+  askAiPrompt,
 }: EmptyStateProps) {
   const sizeClasses = {
     sm: 'p-4',
@@ -138,7 +146,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border/60 bg-card/70 text-center shadow-glow-sm animate-fade-in',
+        'relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 text-center shadow-sm animate-fade-in',
         sizeClasses[size],
         className,
       )}
@@ -167,10 +175,20 @@ export function EmptyState({
           )}
         </div>
 
-        {/* Action button */}
-        {action && (
-          <div className="pt-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        {(action || askAiPrompt) && (
+          <div
+            className="flex flex-wrap items-center justify-center gap-2 pt-2 animate-fade-in-up"
+            style={{ animationDelay: '200ms' }}
+          >
             {action}
+            {askAiPrompt && (
+              <Button asChild variant="outline" size="sm" className="gap-1.5">
+                <Link href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}>
+                  <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                  Ask AI
+                </Link>
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -406,6 +407,11 @@ export default function FundraisingPage() {
   return (
     <AppShell title="Fundraising" description="Track your round, manage investor pipeline, and organize your data room">
       <div className="space-y-6">
+        <SampleDataNotice
+          surface="Fundraising"
+          detail="Rounds, leads, and the data room on this page are sample records until a live fundraising API exists. Ask the assistant for next steps from your actual profile, matches, and builder docs."
+          askAiPrompt="Fundraising is still sample data. Based on my graph, what should I do next toward a real round — profile, matches, or builder?"
+        />
         {/* Active Round */}
         {round && <RoundCard round={round} />}
 

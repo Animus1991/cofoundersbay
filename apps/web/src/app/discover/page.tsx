@@ -23,7 +23,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, sendConnectionRequest, type SearchHit
+  searchProfiles, getRecommendations, sendConnectionRequest, saveToShortlist, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,7 @@ import { SearchFilters, type SearchFiltersValues } from '@/components/discover/S
 import { ProfileCard, ProfileCardSkeleton, type ProfileCardData } from '@/components/discover/ProfileCard';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { queryKeys } from '@/lib/query-keys';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -180,7 +181,7 @@ export default function DiscoverPage() {
     try {
       await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.connections });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }
@@ -192,8 +193,15 @@ export default function DiscoverPage() {
   };
 
   // Handle bookmark
-  const handleBookmark = (profile: ProfileCardData) => {
-    success('Profile saved', `${profile.displayName} added to your bookmarks`);
+  const handleBookmark = async (profile: ProfileCardData) => {
+    try {
+      await saveToShortlist(profile.userId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlist });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlistIds });
+      success('Saved to shortlist', `${profile.displayName} is on your saved profiles`);
+    } catch (err) {
+      showError('Could not save', err instanceof Error ? err.message : 'Try again from the profile page');
+    }
   };
 
   // Apply role filter to hits
@@ -377,6 +385,7 @@ export default function DiscoverPage() {
               description="Try adjusting your filters or search for something different."
               illustration="search"
               className="py-12"
+              askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
                   Clear filters
@@ -441,6 +450,7 @@ export default function DiscoverPage() {
               title="No suggestions yet"
               description="Complete your profile to get personalized recommendations."
               illustration="rocket"
+              askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
               action={
                 <Link href="/profile/edit">
                   <Button className="gap-2">
@@ -505,6 +515,7 @@ export default function DiscoverPage() {
               title="No matches yet"
               description="Start by exploring profiles and indicating your interests."
               illustration="connection"
+              askAiPrompt="Discover matches tab is empty. Help me find complementary people from the network."
               action={
                 <Button onClick={() => setActiveTab('search')}>
                   Explore profiles

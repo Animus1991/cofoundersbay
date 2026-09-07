@@ -30,6 +30,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AppShell } from '@/components/layout/AppShell';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 type ProjectStatus = 'idea' | 'validating' | 'building' | 'launched' | 'scaling';
 
@@ -349,23 +350,24 @@ export default function ProjectsPage() {
   const regularProjects  = filteredProjects.filter((p) => !p.isStarred);
 
   return (
-    <AppShell>
+    <AppShell
+      title="Projects & Collaborations"
+      description="Discover startup projects or create your own to find co-founders"
+      actions={
+        <Button asChild>
+          <Link href="/projects/create">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Project
+          </Link>
+        </Button>
+      }
+    >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">Projects & Collaborations</h1>
-            <p className="text-muted-foreground">
-              Discover startup projects or create your own to find co-founders
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/projects/create">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Project
-            </Link>
-          </Button>
-        </div>
+        <SampleDataNotice
+          surface="Projects"
+          detail="Listed collaborations on this page are sample records until a projects API exists. Create Project still opens the form. Ask the assistant to find people instead of inventing live project data."
+          askAiPrompt="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
+        />
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

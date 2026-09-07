@@ -383,6 +383,7 @@ export default function ConnectionsPage() {
               illustration="default"
               title="No intro requests"
               description="When someone sends you a connection request with a message, it appears here."
+              askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
               action={
                 <Link href="/discover">
                   <Button variant="secondary" className="gap-2">
@@ -432,6 +433,7 @@ export default function ConnectionsPage() {
                       ? 'Browse profiles and send connection requests.'
                       : 'When people send you requests, they appear here.'
                 }
+                askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={
                   t !== 'received' ? (
                     <Link href="/discover">

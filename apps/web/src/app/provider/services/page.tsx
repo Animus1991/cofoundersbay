@@ -195,6 +195,7 @@ export default function ProviderServicesPage() {
             illustration="default"
             title="No services listed"
             description="Create your first service offering to start receiving bookings."
+            askAiPrompt="I have not listed any services. Help me describe a first offering based on a typical service provider on CoFounderBay."
             action={<Button size="sm"><Plus className="mr-2 h-4 w-4" />Add Service</Button>}
           />
         )}

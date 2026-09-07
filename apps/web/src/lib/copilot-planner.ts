@@ -12,7 +12,13 @@ const ROUTE_ALIASES: Array<{ keys: string[]; href: string; label: string }> = [
   { keys: ['research', 'canvas', 'έρευνα'], href: '/research', label: 'Research' },
   { keys: ['builder', 'pitch'], href: '/builder', label: 'Builder' },
   { keys: ['notification', 'ειδοποιήσεις'], href: '/notifications', label: 'Notifications' },
-  { keys: ['recommendation', 'for you', 'προτάσεις'], href: '/recommendations', label: 'For You' },
+  { keys: ['shortlist', 'saved profile', 'αποθηκευμ'], href: '/shortlist', label: 'Saved Profiles' },
+  { keys: ['calendar', 'ημερολόγ', 'ημερολογ'], href: '/calendar', label: 'Calendar' },
+  { keys: ['fundraising', 'χρηματοδ'], href: '/fundraising', label: 'Fundraising' },
+  { keys: ['job', 'jobs', 'θέσεις', 'θεσεις'], href: '/jobs', label: 'Jobs' },
+  { keys: ['event', 'events', 'εκδήλωσ', 'εκδηλωσ'], href: '/events', label: 'Events' },
+  { keys: ['mentor', 'mentoring', 'μέντορ', 'μεντορ'], href: '/mentoring', label: 'Mentoring' },
+  { keys: ['assistant', 'copilot', 'ai chat'], href: '/ai', label: 'AI Assistant' },
 ];
 
 const LOCATION_ALIASES: Array<{ keys: string[]; value: string }> = [
@@ -133,6 +139,27 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'προτασ',
   ]);
 
+  const wantsNotifications = includesAny(message, [
+    'notification',
+    'alert',
+    'inbox alert',
+    'ειδοποιή',
+    'ειδοποιη',
+  ]);
+
+  const wantsShortlist = includesAny(message, [
+    'shortlist',
+    'bookmark',
+    'save to',
+    'save them',
+    'save her',
+    'save him',
+    'αποθήκευσε',
+    'αποθηκευσε',
+    'λίστα',
+    'λιστα',
+  ]);
+
   const wantsConnect = includesAny(message, [
     'connect',
     'intro',
@@ -170,6 +197,17 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
   }
 
   if (wantsMatches) add('get_recommendations');
+
+  if (wantsNotifications) add('get_notifications');
+
+  if (wantsShortlist) {
+    const args: Record<string, string> = {};
+    if (person) args.name = person;
+    add('shortlist_add', args);
+    if (person && !tools.some((t) => t.name === 'search_people')) {
+      add('search_people', { q: person });
+    }
+  }
 
   if (wantsConnect) {
     const args: Record<string, string> = {};

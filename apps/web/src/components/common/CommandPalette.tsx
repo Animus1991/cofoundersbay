@@ -75,6 +75,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       category: 'navigation',
     },
     {
+      id: 'ai-assistant',
+      label: 'Go to AI Assistant',
+      description: 'Full-page copilot workspace',
+      icon: Sparkles,
+      shortcut: ['G', 'A'],
+      action: () => router.push('/ai'),
+      category: 'navigation',
+    },
+    {
       id: 'messages',
       label: 'Go to Messages',
       description: 'View your conversations',
@@ -94,6 +103,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     },
 
     // Actions
+    {
+      id: 'ask-ai',
+      label: 'Ask AI…',
+      description: 'Start a new assistant conversation',
+      icon: Sparkles,
+      action: () => router.push('/ai'),
+      category: 'actions',
+    },
     {
       id: 'search',
       label: 'Search profiles',
@@ -116,7 +133,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       label: 'Get recommendations',
       description: 'AI-powered suggestions',
       icon: Sparkles,
-      action: () => router.push('/discover'),
+      action: () => router.push('/matches'),
+      category: 'actions',
+    },
+    {
+      id: 'shortlist',
+      label: 'Open saved profiles',
+      description: 'People you shortlisted',
+      icon: Users,
+      action: () => router.push('/shortlist'),
       category: 'actions',
     },
 

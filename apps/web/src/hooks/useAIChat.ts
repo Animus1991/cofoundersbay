@@ -262,6 +262,10 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         void queryClient.invalidateQueries({ queryKey: [...key] });
       });
     }
+    if (action.tool === 'shortlist_add') {
+      void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
+      void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
+    }
     return { href: result.href };
   }, [queryClient, updateAction]);
 

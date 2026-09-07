@@ -3,10 +3,12 @@ import {
   getNotificationUnreadCount,
   listConnectionRequests,
   listMessageConversations,
+  listNotifications,
   searchProfiles,
   getRecommendations,
   sendConnectionRequest,
   getOrCreateDirectConversation,
+  saveToShortlist,
   type SearchHit,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
@@ -207,6 +209,76 @@ export async function runCopilotTurn(
       }
     }
 
+    if (tool.name === 'get_notifications') {
+      const result = await listNotifications({ limit: 8 });
+      const items = result.notifications ?? [];
+      if (items.length === 0) {
+        sections.push('You are caught up — no notifications in the queue.');
+      } else {
+        const lines = items.slice(0, 6).map((n) => {
+          citations.push({
+            type: 'notification',
+            id: n.id,
+            label: n.title || n.type || 'Notification',
+            href: '/notifications',
+          });
+          const unread = n.readAt ? '' : ' · unread';
+          return `• **${n.title || n.type}**${unread}`;
+        });
+        sections.push(`Latest notifications:\n${lines.join('\n')}`);
+      }
+      actions.push({
+        id: newId('nav'),
+        tool: 'navigate',
+        title: 'Open notifications',
+        description: 'The same inbox as the bell in the top bar.',
+        confirmLabel: 'Open',
+        payload: { href: '/notifications' },
+        status: 'pending',
+        href: '/notifications',
+      });
+    }
+
+    if (tool.name === 'shortlist_add') {
+      const pool = people.length ? people : matches;
+      const target = findPerson(pool, tool.args.name || detectPersonName(userMessage));
+      if (target) {
+        try {
+          await saveToShortlist(target.userId);
+          sections.push(`Saved **${target.displayName}** to your shortlist. You can undo that from Saved Profiles.`);
+          citations.push({
+            type: 'person',
+            id: target.userId,
+            label: target.displayName,
+            href: personHref(target),
+          });
+          actions.push({
+            id: newId('shortlist'),
+            tool: 'shortlist_add',
+            title: `Saved ${target.displayName}`,
+            description: 'Already written through the Shortlist API. Open Saved Profiles to remove.',
+            confirmLabel: 'Open shortlist',
+            payload: { userId: target.userId, displayName: target.displayName },
+            status: 'done',
+            href: '/shortlist',
+          });
+        } catch {
+          actions.push({
+            id: newId('shortlist'),
+            tool: 'shortlist_add',
+            title: `Save ${target.displayName} to shortlist`,
+            description: 'Could not save automatically. Confirm to retry via the same Shortlist API.',
+            confirmLabel: 'Save',
+            payload: { userId: target.userId, displayName: target.displayName },
+            status: 'pending',
+            href: '/shortlist',
+          });
+        }
+      } else {
+        sections.push('Name someone from Matches or Search and I will save them to your shortlist.');
+      }
+    }
+
     if (tool.name === 'send_connection') {
       const pool = people.length ? people : matches;
       const target = findPerson(pool, tool.args.name || detectPersonName(userMessage));
@@ -302,8 +374,8 @@ export async function runCopilotTurn(
   let message = sections.join('\n\n').trim();
   if (!message) {
     message = isPreviewDemo()
-      ? 'I can search people, explain your matches, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.'
-      : 'I can search the network, pull your matches, send an intro, open a conversation, or navigate. What should we do?';
+      ? 'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.'
+      : 'I can search the network, pull matches, save a shortlist, read alerts, send an intro, open a conversation, or navigate. What should we do?';
   }
 
   return {
@@ -334,6 +406,12 @@ export async function executeCopilotAction(
       if (!userId) return { ok: false, error: 'Missing user' };
       const { conversationId } = await getOrCreateDirectConversation(userId);
       return { ok: true, href: `/messages?c=${conversationId}` };
+    }
+    if (action.tool === 'shortlist_add') {
+      const userId = String(action.payload.userId ?? '');
+      if (!userId) return { ok: false, error: 'Missing user' };
+      await saveToShortlist(userId);
+      return { ok: true, href: '/shortlist' };
     }
     return { ok: false, error: 'Unsupported action' };
   } catch (err) {

@@ -26,7 +26,7 @@ function AIPageInner() {
 
   if (!hasSession) {
     return (
-      <AppShell title="AI Assistant" description="Sign in to let the copilot read your graph and act on it.">
+      <AppShell askAi={false} title="AI Assistant" description="Sign in to let the copilot read your graph and act on it.">
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border/60 bg-card px-6 py-16 text-center">
           <Sparkles className="h-8 w-8 text-violet-500" />
           <p className="max-w-md text-sm text-muted-foreground">

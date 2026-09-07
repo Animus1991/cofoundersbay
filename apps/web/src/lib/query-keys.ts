@@ -20,6 +20,8 @@ export const queryKeys = {
   aiModels: ['ai-models'] as const,
   aiAgents: ['ai-agents'] as const,
   roles: ['roles', 'dashboard-context'] as const,
+  shortlist: ['shortlist'] as const,
+  shortlistIds: ['shortlist', 'ids'] as const,
 };
 
 export const PROFILE_KEYS = [queryKeys.profileMe, queryKeys.meProfileLegacy] as const;

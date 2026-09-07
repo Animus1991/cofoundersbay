@@ -33,6 +33,9 @@ import { OnboardingChecklist, buildOnboardingSteps } from '@/components/gamifica
 import { NextActionBanner, deriveNextAction } from '@/components/gamification/NextActionBanner';
 import { VentureReadinessCard } from '@/components/gamification/VentureReadinessCard';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
+import { queryKeys } from '@/lib/query-keys';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();
@@ -180,9 +183,10 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
 export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
+  const { messages: unreadMessages } = useUnreadCounts();
 
   const { data: profile } = useQuery({
-    queryKey: ['me-profile'],
+    queryKey: queryKeys.profileMe,
     queryFn: getMeProfile,
     enabled: hasSession && mounted,
   });
@@ -194,19 +198,19 @@ export default function FounderDashboardContent() {
   });
 
   const { data: recommendations } = useQuery({
-    queryKey: ['recommendations', { limit: 5 }],
+    queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
     enabled: hasSession && mounted,
   });
 
   const { data: connectionRequests } = useQuery({
-    queryKey: ['connection-requests'],
-    queryFn: () => listConnectionRequests(),
+    queryKey: queryKeys.connectionsPending,
+    queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     enabled: hasSession && mounted,
   });
 
   const { data: xpData } = useQuery({
-    queryKey: ['my-xp'],
+    queryKey: queryKeys.xpMe,
     queryFn: getMyXP,
     enabled: hasSession && mounted,
     staleTime: 5 * 60_000,
@@ -241,7 +245,7 @@ export default function FounderDashboardContent() {
     docCount:        vrs?.signals?.docCount ?? 0,
     vrsLowestKey:    vrs?.lowestDimension?.key,
     pendingRequests,
-    unreadMessages:  3,
+    unreadMessages,
   });
 
   if (!mounted) {
@@ -272,6 +276,9 @@ export default function FounderDashboardContent() {
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <AIInsightButton
+              prompt="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
+            />
             <Badge variant="outline" className="gap-1.5">
               <Rocket className="icon-sm" /> Founder
             </Badge>
@@ -295,7 +302,7 @@ export default function FounderDashboardContent() {
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
           <StatCard icon={Users} label="Profile Views (7d)" value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
           <StatCard icon={Sparkles} label="New Matches" value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard icon={MessageCircle} label="Unread Messages" value={3} href="/messages" />
+          <StatCard icon={MessageCircle} label="Unread Messages" value={unreadMessages} href="/messages" />
           <StatCard icon={Target} label="Milestone Progress" value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 

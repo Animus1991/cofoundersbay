@@ -625,6 +625,7 @@ export default function MatchesPage() {
             title="Sign in to see matches"
             description="Your matches are personalized based on your profile and preferences."
             illustration="connection"
+            askAiPrompt="I am not signed in. Explain how matching works on CoFounderBay and what I should complete after login."
             action={
               <Link href="/login">
                 <Button className="gap-2">
@@ -717,6 +718,7 @@ export default function MatchesPage() {
             title="No matches yet"
             description="Complete your profile (stage, commitment, roles sought) to get better cofounder and team suggestions."
             illustration="rocket"
+            askAiPrompt="I have no matches yet. Tell me which profile fields to complete so I get better cofounder suggestions."
             action={
               <Link href="/profile/edit">
                 <Button className="gap-2">

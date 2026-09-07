@@ -77,7 +77,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/60 bg-card/95 px-2 backdrop-blur-sm sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
+      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
         <MobileNav />
         <SearchBar />
 

@@ -84,6 +84,8 @@ const PEOPLE = [
   },
 ];
 
+const SHORTLIST_IDS = new Set<string>(['user-marcus']);
+
 const CONVERSATIONS = [
   {
     id: 'conv-elena',
@@ -646,8 +648,41 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
 
-  if (pathname === '/api/shortlist' || pathname.includes('shortlist')) {
-    return { ids: ['user-marcus'] };
+  if (pathname === '/api/shortlist/ids') {
+    return { ids: [...SHORTLIST_IDS] };
+  }
+  if (pathname === '/api/shortlist' || pathname.startsWith('/api/shortlist?')) {
+    if (method === 'POST') {
+      const userId = String(body.userId ?? '');
+      if (userId) SHORTLIST_IDS.add(userId);
+      return { ok: true, saved: true, id: `sl-${userId || 'new'}` };
+    }
+    const items = PEOPLE.filter((p) => SHORTLIST_IDS.has(p.userId)).map((p) => ({
+      id: `sl-${p.userId}`,
+      userId: p.userId,
+      note: null,
+      savedAt: NOW,
+      profile: {
+        displayName: p.displayName,
+        avatarUrl: p.avatarUrl,
+        headline: p.headline,
+        role: p.role,
+        location: p.location,
+        skills: p.skills,
+      },
+    }));
+    return { items, nextCursor: null };
+  }
+  if (pathname.startsWith('/api/shortlist/')) {
+    const rest = pathname.replace('/api/shortlist/', '');
+    const userId = rest.replace(/\/note$/, '');
+    if (method === 'DELETE') {
+      SHORTLIST_IDS.delete(userId);
+      return { ok: true, saved: false };
+    }
+    if (method === 'PATCH') {
+      return { ok: true };
+    }
   }
 
   if (pathname === '/api/graph/me') {

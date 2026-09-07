@@ -475,9 +475,17 @@ export default function ShortlistPage() {
               </p>
             </div>
             {rawItems.length === 0 && (
-              <Link href="/matches">
-                <Button size="sm" variant="outline" className="gap-1.5">Browse matches</Button>
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Link href="/matches">
+                  <Button size="sm" className="gap-1.5">Browse matches</Button>
+                </Link>
+                <Link href={`/ai?q=${encodeURIComponent('I have no saved profiles. Who from my matches should I shortlist first?')}`}>
+                  <Button size="sm" variant="outline" className="gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                    Ask AI
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         ) : (

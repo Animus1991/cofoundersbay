@@ -190,6 +190,8 @@
 
 ---
 
+> **2026-09-07:** Οπτική ανανέωση και empty-state Ask AI περιγράφονται στο `docs/PLATFORM_DESIGN_AI_PLAN.md` (φάσεις H–K). Ο χρήστης ζήτησε ρητά σύγχρονο UI σε όλες τις σελίδες· το παλιό μη-στόχο «μην ξανασχεδιάσεις το visual language» δεν ισχύει πλέον για chrome/tokens. Η παλέτα και τα themes μένουν.
+
 ## 6. UI/UX — συνοχή, όχι νέα «θέματα»
 
 ### 6.1 Ένα chrome
@@ -316,7 +318,7 @@
 - Δεν αντικαθιστούμε το matching ML με LLM ranking.
 - Δεν βάζουμε αυτόνομο agent να στέλνει μηνύματα τη νύχτα.
 - Δεν ενώνουμε Ollama + OpenAI + Anthropic σε έναν «super model» χωρίς router· κρατάμε: chat/tools → Ollama (ή hosted compatible), long document → υπάρχον builder provider.
-- Δεν ξανασχεδιάζουμε ολόκληρο το visual language.
+- Δεν αλλάζουμε παλέτα/themes· chrome, ακτίνες και empty states ανανεώνονται στο `PLATFORM_DESIGN_AI_PLAN.md`.
 - Δεν κρατάμε νεκρά components «για αργότερα»· είτε δένονται είτε διαγράφονται στη φάση που τα αγγίζουμε.
 
 ---

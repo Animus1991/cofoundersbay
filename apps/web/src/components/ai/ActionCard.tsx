@@ -1,6 +1,7 @@
 'use client';
 
 import { Check, Loader2, Sparkles, X } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { CopilotAction } from '@/lib/copilot-types';
@@ -33,10 +34,17 @@ export function ActionCard({ action, busyId, onConfirm, onDismiss }: ActionCardP
       )}
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {done ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-            <Check className="h-3.5 w-3.5" />
-            Done
-          </span>
+          <>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <Check className="h-3.5 w-3.5" />
+              Done
+            </span>
+            {action.href && (
+              <Button asChild size="sm" variant="ghost" className="h-7">
+                <Link href={action.href}>Open</Link>
+              </Button>
+            )}
+          </>
         ) : dismissed ? (
           <span className="text-xs text-muted-foreground">Dismissed</span>
         ) : (

@@ -144,7 +144,7 @@ export function SideNav() {
                         'group relative flex items-center rounded-lg transition-all duration-150',
                         expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
                         active
-                          ? 'bg-primary/8 text-primary font-medium'
+                          ? 'bg-primary/10 text-primary font-medium shadow-sm'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >

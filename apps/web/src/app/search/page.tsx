@@ -218,6 +218,12 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
             Browse Events
           </Button>
         </Link>
+        <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
+          <Button variant="outline" size="sm" className="gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500" />
+            Ask AI
+          </Button>
+        </Link>
       </div>
     </div>
   );

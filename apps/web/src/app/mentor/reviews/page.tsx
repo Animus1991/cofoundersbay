@@ -130,6 +130,7 @@ export default function MentorReviewsPage() {
           illustration="default"
           title="No reviews yet"
           description="Reviews will appear here after your mentees complete sessions and leave feedback."
+          askAiPrompt="I have no mentor reviews yet. What should I do in sessions so mentees leave useful feedback?"
         />
       </AppShell>
     );

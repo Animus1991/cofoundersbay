@@ -26,8 +26,9 @@ const STARTERS = [
   'What should I do next?',
   'Find a technical cofounder in Athens',
   'Show my best matches',
+  'Show my notifications',
+  'Save Elena to my shortlist',
   'Connect with Elena',
-  'Open messages',
 ];
 
 function formatTime(d: Date) {

@@ -6,6 +6,7 @@ import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
 import { cn } from '@/lib/utils';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -20,6 +21,11 @@ type AppShellProps = {
   fullHeight?: boolean;
   /** Extra class on the content wrapper */
   contentClassName?: string;
+  /**
+   * Contextual Ask AI prompt. Defaults to the page title when omitted.
+   * Pass `false` to hide (AI workspace, pages that already own the CTA).
+   */
+  askAi?: string | false;
 };
 
 export function AppShell({
@@ -29,8 +35,14 @@ export function AppShell({
   children,
   fullHeight = false,
   contentClassName,
+  askAi,
 }: AppShellProps) {
   const { expanded, mounted } = useSidebar();
+  const showAskAi = Boolean(title) && askAi !== false;
+  const askAiPrompt =
+    typeof askAi === 'string'
+      ? askAi
+      : `Help me with ${title ?? 'this page'}${description ? `: ${description}` : ''}. What should I do next?`;
 
   return (
     <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
@@ -59,24 +71,31 @@ export function AppShell({
             className={cn(
               'flex-1 mx-auto w-full max-w-screen-2xl',
               'px-3 sm:px-6 lg:px-8',
-              'pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-10',
+              'pt-4 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] lg:pb-12',
               contentClassName,
             )}
           >
-            <div className="space-y-5">
-              {(title || description || actions) && (
-                <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
-                  <div>
+            <div className="space-y-6">
+              {(title || description || actions || showAskAi) && (
+                <section className="cfb-page-header">
+                  <div className="min-w-0 space-y-1">
                     {title && (
-                      <h1 className="text-lg font-semibold tracking-tight text-foreground">
+                      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                         {title}
                       </h1>
                     )}
                     {description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+                      <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
                     )}
                   </div>
-                  {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+                  {(actions || showAskAi) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {showAskAi && (
+                        <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
+                      )}
+                      {actions}
+                    </div>
+                  )}
                 </section>
               )}
               {children}
