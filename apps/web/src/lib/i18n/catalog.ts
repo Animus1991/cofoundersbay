@@ -46,7 +46,9 @@ const el: Record<string, string> = {
   'AI replies will use Greek.': 'Οι απαντήσεις του AI θα είναι στα ελληνικά.',
   'AI replies will use {code}.': 'Οι απαντήσεις του AI θα είναι στα {code}.',
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    'Πάτησε μια γλώσσα. Μενού, κουμπιά και τίτλοι ενημερώνονται αμέσως. Το AI απαντά στην ίδια γλώσσα. Κάποιο περιεχόμενο χρηστών μένει στην αρχική γλώσσα.',
+    'Πάτησε μια γλώσσα. Μενού, κουμπιά, τίτλοι και τα δείγματα δεδομένων ενημερώνονται αμέσως. Το AI απαντά στην ίδια γλώσσα.',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    'Πάτησε μια γλώσσα. Μενού, κουμπιά, τίτλοι και τα δείγματα δεδομένων ενημερώνονται αμέσως. Το AI απαντά στην ίδια γλώσσα.',
   'Manage billing, notifications, and integrations.': 'Διαχείριση χρέωσης, ειδοποιήσεων και συνδέσεων.',
   'Privacy & Visibility': 'Απόρρητο και εμφάνιση',
   Billing: 'Χρέωση',
@@ -62,8 +64,8 @@ const el: Record<string, string> = {
   Analytics: 'Αναλυτικά',
   Dashboard: 'Πίνακας',
   Build: 'Κατασκευή',
-  'Startup Builder': 'Startup Builder',
-  'Pitch Deck': 'Pitch Deck',
+  'Startup Builder': 'Κατασκευαστής startup',
+  'Pitch Deck': 'Παρουσίαση pitch',
   'Research Canvas': 'Καμβάς έρευνας',
   Milestones: 'Ορόσημα',
   Projects: 'Έργα',
@@ -313,6 +315,14 @@ const el: Record<string, string> = {
   'Upgrade to Premium to unlock advanced features.': 'Αναβάθμισε σε Premium για περισσότερες δυνατότητες.',
   'Premium is active.': 'Το Premium είναι ενεργό.',
   'Loading billing…': 'Φόρτωση χρέωσης…',
+  'Skip to main content': 'Μετάβαση στο κύριο περιεχόμενο',
+  Close: 'Κλείσιμο',
+  'Close dialog': 'Κλείσιμο διαλόγου',
+  '{surface} is showing sample items': '{surface} δείχνει δείγματα',
+  'Select date range': 'Επιλογή εύρους ημερομηνιών',
+  'Write something...': 'Γράψε κάτι...',
+  'Link text...': 'Κείμενο συνδέσμου...',
+  'Fill sample': 'Συμπλήρωση δείγματος',
 };
 
 const es: Record<string, string> = {
@@ -356,13 +366,17 @@ const es: Record<string, string> = {
   'AI replies will use Greek.': 'Las respuestas de la IA usarán griego.',
   'AI replies will use {code}.': 'Las respuestas de la IA usarán {code}.',
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    'Elige un idioma. Menús, botones y títulos se actualizan al instante. La IA responde en el mismo idioma. Parte del contenido de usuarios permanece original.',
+    'Elige un idioma. Menús, botones, títulos y los datos de ejemplo se actualizan al instante. La IA responde en el mismo idioma.',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    'Elige un idioma. Menús, botones, títulos y los datos de ejemplo se actualizan al instante. La IA responde en el mismo idioma.',
   'Manage billing, notifications, and integrations.': 'Gestiona facturación, notificaciones e integraciones.',
   Work: 'Trabajo',
   Explore: 'Explorar',
   Overview: 'Resumen',
   Analytics: 'Analítica',
   Dashboard: 'Panel',
+  'Startup Builder': 'Constructor de startup',
+  'Pitch Deck': 'Presentación pitch',
   Calendar: 'Calendario',
   Matches: 'Matches',
   Mentors: 'Mentores',
@@ -407,6 +421,8 @@ const fr: Record<string, string> = {
   'My Profile': 'Mon profil',
   'Edit Profile': 'Modifier le profil',
   Settings: 'Paramètres',
+  'Startup Builder': 'Constructeur de startup',
+  'Pitch Deck': 'Pitch deck',
   'Sign out': 'Déconnexion',
   'Sign in': 'Connexion',
   'Sign up': "S'inscrire",
@@ -416,7 +432,9 @@ const fr: Record<string, string> = {
   'AI replies will use Greek.': "Les réponses de l'IA seront en grec.",
   'AI replies will use {code}.': "Les réponses de l'IA seront en {code}.",
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    "Choisissez une langue. Menus, boutons et titres se mettent à jour tout de suite. L'IA répond dans la même langue. Une partie du contenu utilisateur reste d'origine.",
+    "Choisissez une langue. Menus, boutons, titres et données d'exemple se mettent à jour tout de suite. L'IA répond dans la même langue.",
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    "Choisissez une langue. Menus, boutons, titres et données d'exemple se mettent à jour tout de suite. L'IA répond dans la même langue.",
   'Manage billing, notifications, and integrations.': 'Gérez facturation, notifications et intégrations.',
   Work: 'Travail',
   Explore: 'Explorer',
@@ -460,6 +478,8 @@ const de: Record<string, string> = {
   'My Profile': 'Mein Profil',
   'Edit Profile': 'Profil bearbeiten',
   Settings: 'Einstellungen',
+  'Startup Builder': 'Startup-Builder',
+  'Pitch Deck': 'Pitch-Deck',
   'Sign out': 'Abmelden',
   'Sign in': 'Anmelden',
   'Sign up': 'Registrieren',
@@ -469,7 +489,9 @@ const de: Record<string, string> = {
   'AI replies will use Greek.': 'KI-Antworten erfolgen auf Griechisch.',
   'AI replies will use {code}.': 'KI-Antworten erfolgen auf {code}.',
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    'Sprache wählen. Menüs, Buttons und Titel wechseln sofort. Die KI antwortet in derselben Sprache. Nutzerinhalte können original bleiben.',
+    'Sprache wählen. Menüs, Buttons, Titel und Beispieldaten wechseln sofort. Die KI antwortet in derselben Sprache.',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    'Sprache wählen. Menüs, Buttons, Titel und Beispieldaten wechseln sofort. Die KI antwortet in derselben Sprache.',
   'Manage billing, notifications, and integrations.': 'Abrechnung, Benachrichtigungen und Integrationen verwalten.',
   Work: 'Arbeit',
   Explore: 'Entdecken',
@@ -517,6 +539,10 @@ const it: Record<string, string> = {
   'Language saved': 'Lingua salvata',
   'AI replies will use Greek.': "Le risposte dell'IA saranno in greco.",
   'AI replies will use {code}.': "Le risposte dell'IA saranno in {code}.",
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    'Tocca una lingua. Menu, pulsanti, titoli e i dati di esempio si aggiornano subito. L’IA risponde nella stessa lingua.',
+  'Startup Builder': 'Builder startup',
+  'Pitch Deck': 'Pitch deck',
   Work: 'Lavoro',
   Explore: 'Esplora',
   Overview: 'Panoramica',
@@ -558,6 +584,10 @@ const pt: Record<string, string> = {
   Account: 'Conta',
   'Ask AI': 'Perguntar à IA',
   'Language saved': 'Idioma guardado',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    'Escolhe um idioma. Menus, botões, títulos e os dados de exemplo atualizam de imediato. A IA responde no mesmo idioma.',
+  'Startup Builder': 'Construtor de startup',
+  'Pitch Deck': 'Pitch deck',
   Work: 'Trabalho',
   Explore: 'Explorar',
   Overview: 'Visão geral',
@@ -596,6 +626,8 @@ const zh: Record<string, string> = {
   'My Profile': '我的资料',
   'Edit Profile': '编辑资料',
   Settings: '设置',
+  'Startup Builder': '创业构建器',
+  'Pitch Deck': '路演文稿',
   'Sign out': '退出',
   'Sign in': '登录',
   'Sign up': '注册',
@@ -605,7 +637,9 @@ const zh: Record<string, string> = {
   'AI replies will use Greek.': 'AI 将使用希腊语回复。',
   'AI replies will use {code}.': 'AI 将使用 {code} 回复。',
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    '点选语言。菜单、按钮和标题立即更新。AI 使用同一语言回复。部分用户内容保持原文。',
+    '点选语言。菜单、按钮、标题和示例数据立即更新。AI 使用同一语言回复。',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    '点选语言。菜单、按钮、标题和示例数据立即更新。AI 使用同一语言回复。',
   'Manage billing, notifications, and integrations.': '管理账单、通知和集成。',
   Work: '工作',
   Explore: '探索',
@@ -656,6 +690,8 @@ const ja: Record<string, string> = {
   'My Profile': 'マイプロフィール',
   'Edit Profile': 'プロフィールを編集',
   Settings: '設定',
+  'Startup Builder': 'スタートアップビルダー',
+  'Pitch Deck': 'ピッチデッキ',
   'Sign out': 'ログアウト',
   'Sign in': 'ログイン',
   'Sign up': '登録',
@@ -665,7 +701,9 @@ const ja: Record<string, string> = {
   'AI replies will use Greek.': 'AIの返信はギリシャ語になります。',
   'AI replies will use {code}.': 'AIの返信は{code}になります。',
   'Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.':
-    '言語をタップ。メニュー・ボタン・タイトルがすぐ変わります。AIも同じ言語で返信します。一部のユーザー投稿は元の言語のままです。',
+    '言語をタップ。メニュー・ボタン・タイトル・サンプルデータがすぐ変わります。AIも同じ言語で返信します。',
+  'Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.':
+    '言語をタップ。メニュー・ボタン・タイトル・サンプルデータがすぐ変わります。AIも同じ言語で返信します。',
   'Manage billing, notifications, and integrations.': '請求、通知、連携を管理します。',
   Work: 'ワーク',
   Explore: '探索',

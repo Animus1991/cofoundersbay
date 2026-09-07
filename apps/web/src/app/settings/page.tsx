@@ -109,7 +109,7 @@ function LanguageCard() {
           {t('Language')}
         </CardTitle>
         <CardDescription>
-          {t('Tap a language. Menus, buttons, and page titles update immediately. AI replies use the same language. Some user content stays in the original language.')}
+          {t('Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.')}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">
@@ -151,8 +151,8 @@ function PrivacyCard() {
                 <Icon className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{label}</p>
-                <p className="text-xs text-muted-foreground">{desc}</p>
+                <p className="text-sm font-medium text-foreground">{t(label)}</p>
+                <p className="text-xs text-muted-foreground">{t(desc)}</p>
               </div>
             </div>
             <Toggle checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
@@ -310,7 +310,7 @@ export default function SettingsPage() {
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading billing…
+                    {t('Loading billing…')}
                   </div>
                 ) : (
                   <div className="rounded-xl border border-border/60 bg-card/60 p-4 text-sm">

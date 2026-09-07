@@ -7,7 +7,7 @@ import {
   getStoredLocale,
   type AppLocale,
 } from '@/lib/locale';
-import { LOCALE_BCP47, translate, type TranslateVars } from '@/lib/i18n/translate';
+import { LOCALE_BCP47, ensureExtraCatalog, translate, type TranslateVars } from '@/lib/i18n/translate';
 
 type I18nContextValue = {
   locale: AppLocale;
@@ -23,6 +23,7 @@ const I18nContext = createContext<I18nContextValue>({
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<AppLocale>('en');
+  const [catalogTick, setCatalogTick] = useState(0);
 
   useEffect(() => {
     setLocale(getStoredLocale());
@@ -34,7 +35,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
   }, []);
 
-  const t = useCallback((source: string, vars?: TranslateVars) => translate(locale, source, vars), [locale]);
+  useEffect(() => {
+    let cancelled = false;
+    ensureExtraCatalog(locale).then(() => {
+      if (!cancelled) setCatalogTick((n) => n + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
+
+  const t = useCallback((source: string, vars?: TranslateVars) => translate(locale, source, vars), [locale, catalogTick]);
 
   const value = useMemo<I18nContextValue>(
     () => ({ locale, bcp47: LOCALE_BCP47[locale], t }),

@@ -195,7 +195,7 @@ AI είναι παράλληλη ράγα: κάθε βήμα έχει Ask AI ή 
 | **4. Analytics** `/analytics` | Period pills + Refresh στην ίδια wrap γραμμή· tabs min-h-10· metric cards 2×2 compact· Weekly Summary 2×2· Ask AI με τα πραγματικά metrics | Ολοκληρώθηκε |
 | **5. Pitch Deck** `/builder/pitch-deck` | Header stack + Ask AI· empty state χωρίς h-[500px]· Add Slide grid χωρίς nested 200px scroll· Fill sample από Idea Core (όχι hardcoded CoFounderBay)· Save δημιουργεί pitch_deck artifact· Export honest toast | Ολοκληρώθηκε |
 | **6. Discover / Matches** `/discover`, `/matches` | Stats 2×2· tabs/chips min-h-10 + σύντομα labels· search bar χωρίς overflow· Connection/Compatibility dialogs πάνω από το πληκτρολόγιο· MatchCard/list actions wrap· Ask AI με counts | Ολοκληρώθηκε |
-| **6c. UI i18n** | Επιλογή γλώσσας μεταφράζει chrome (nav, header, Settings) και Overview. Περιεχόμενο χρηστών/demo μπορεί να μείνει στα αγγλικά. | Αυτός ο κύκλος |
+| **6c. UI i18n** | Κάθε στοιχείο UI σε κάθε σελίδα + όλα τα sample/demo data μεταφράζονται και στις 9 γλώσσες συστήματος (en, el, es, fr, de, it, pt, zh, ja). Τα ονόματα προσώπων μένουν ως έχουν. | Αυτός ο κύκλος |
 | 7. Messages | Thread list + composer + safe-area | Επόμενο |
 | 8. Profile / Settings | Φόρμες, tabs, save | Επόμενο |
 | 9. AI `/ai` | Full-page copilot, confirm, tools | Επόμενο |
