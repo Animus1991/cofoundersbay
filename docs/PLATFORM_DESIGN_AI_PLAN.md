@@ -192,14 +192,15 @@ AI είναι παράλληλη ράγα: κάθε βήμα έχει Ask AI ή 
 | **1. Overview** `/dashboard/founder` | Greeting + Ask AI χωρίς οριζόντιο overflow· stats 2×2· banners χωρίς truncate· VRS bars = score όχι weight· demo dates στο μέλλον· command palette πάνω από το πληκτρολόγιο | Ολοκληρώθηκε |
 | **2. Readiness** `/readiness` | Header stack + Ask AI· radar ticks χωρίς clip («Funding» όχι «ng Readiness»)· tabs χωρίς κομμένο History· criteria wrap + tap ≥44px· info tap αντί hover tooltip | Ολοκληρώθηκε |
 | **3. Startup Builder** `/builder` | Stats 2×2 (όχι 4 ψηλές κάρτες)· inner toolbar wrap (Overview / Documents κάτω από Invite + New Document)· Ask AI στο header και Quick Actions· Create Document modal πάνω από το πληκτρολόγιο· outer tabs με σύντομα labels· sub-editor headers wrap | Ολοκληρώθηκε |
-| **4. Analytics** `/analytics` | Period pills + Refresh στην ίδια wrap γραμμή (όχι full-width Refresh)· tabs min-h-10 χωρίς κομμένο Engagement· metric cards 2×2 compact (όχι 6 ψηλές κάρτες)· Weekly Summary 2×2· Ask AI με τα πραγματικά metrics· charts χωρίς Y-axis overflow | Αυτός ο κύκλος |
-| 5. Discover / Matches | Κάρτες, φίλτρα, shortlist, Ask AI | Επόμενο |
-| 6. Messages | Thread list + composer + safe-area | Επόμενο |
-| 7. Profile / Settings | Φόρμες, tabs, save | Επόμενο |
-| 8. AI `/ai` | Full-page copilot, confirm, tools | Επόμενο |
-| 9. Work (research, milestones, fundraising) | Honest sample + Ask AI | Επόμενο |
-| 10. Explore (events, programs, marketplace) | Ίδιο chrome | Επόμενο |
-| 11. Modals / command palette | Keyboard inset, tap targets ≥44px, χωρίς desktop-only kbd σε touch | Palette + Builder dialogs |
+| **4. Analytics** `/analytics` | Period pills + Refresh στην ίδια wrap γραμμή· tabs min-h-10· metric cards 2×2 compact· Weekly Summary 2×2· Ask AI με τα πραγματικά metrics | Ολοκληρώθηκε |
+| **5. Pitch Deck** `/builder/pitch-deck` | Header stack + Ask AI· empty state χωρίς h-[500px]· Add Slide grid χωρίς nested 200px scroll· Fill sample από Idea Core (όχι hardcoded CoFounderBay)· Save δημιουργεί pitch_deck artifact· Export honest toast | Αυτός ο κύκλος |
+| 6. Discover / Matches | Κάρτες, φίλτρα, shortlist, Ask AI | Επόμενο |
+| 7. Messages | Thread list + composer + safe-area | Επόμενο |
+| 8. Profile / Settings | Φόρμες, tabs, save | Επόμενο |
+| 9. AI `/ai` | Full-page copilot, confirm, tools | Επόμενο |
+| 10. Work (research, milestones, fundraising) | Honest sample + Ask AI | Επόμενο |
+| 11. Explore (events, programs, marketplace) | Ίδιο chrome | Επόμενο |
+| 12. Modals / command palette | Keyboard inset, tap targets ≥44px | Palette + Builder dialogs |
 
 **Ευρήματα Overview από live κινητό (Σεπ 2026):** chips δίπλα στο greeting έσπρωχναν τον τίτλο· «1 connection request wait...» κόβονταν· 4 stat cards σε μία στήλη· `Team (1%)` δίπλα σε bar 50% (το `1%` ήταν **weight**, όχι score)· Startup Readiness bars overflow· milestones/events με due dates Απρ–Μαρ 2026 άρα όλα overdue· command palette κομμένο από Gboard και shortcuts `G H` άσχετα σε touch.
 
@@ -207,4 +208,6 @@ AI είναι παράλληλη ράγα: κάθε βήμα έχει Ask AI ή 
 
 **Ευρήματα Analytics από live κινητό:** period pills και full-width Refresh έτρωγαν ύψος· 6 metric cards σε μία στήλη με p-5 και sparkline κάτω δεξιά· Weekly Summary σε μία στήλη με μεγάλο κενό από `card-comfortable` p-6· Network Velocity labels («New Connections») στριμωγμένα σε 3 στήλες· Ask AI generic από το AppShell title, χωρίς τα metrics.
 
-**Διορθώσεις αυτού του κύκλου:** stacked header, wrap chips, 2-col stats, banner CTA κάτω από το copy, απόκρυψη VRS weight, stacked readiness gauge, relative demo dates, Ask AI στο Quick Actions, palette pinned στο top με scroll και footer «Tap a result to go». Builder: stats 2×2, inner toolbar wrap, Ask AI στο header + Quick Actions, modal pinned στο top, σύντομα tab labels, preview sample workspace (όχι 0% kitchen-sink). Analytics: pills + Refresh wrap, compact 2×2 metrics, Weekly Summary 2×2, Ask AI με πραγματικά νούμερα, chart Y-axis χωρίς overflow. Το κόκκινο «1 Issue» πάνω στο Discover είναι το Next.js **dev error overlay**, όχι προϊόν· δεν το κρύβουμε με CSS.
+**Ευρήματα Pitch Deck από live κινητό:** toolbar (0 slides / Investor Deck / AI Generate / Export / Save) τύλιγε σε δύο γραμμές· empty Slides card δίπλα σε Add Slide με nested scroll 200px· empty editor `h-[500px]`· χωρίς Ask AI copilot· Save δεν έκανε τίποτα χωρίς activeDocument· Generate γέμιζε πάντα «CoFounderBay» αγνοώντας το Harbor Idea Core.
+
+**Διορθώσεις αυτού του κύκλου:** stacked header, wrap chips, 2-col stats, banner CTA κάτω από το copy, απόκρυψη VRS weight, stacked readiness gauge, relative demo dates, Ask AI στο Quick Actions, palette pinned στο top με scroll και footer «Tap a result to go». Builder: stats 2×2, inner toolbar wrap, Ask AI στο header + Quick Actions, modal pinned στο top, σύντομα tab labels, preview sample workspace (όχι 0% kitchen-sink). Analytics: pills + Refresh wrap, compact 2×2 metrics, Weekly Summary 2×2, Ask AI με πραγματικά νούμερα, chart Y-axis χωρίς overflow. Pitch Deck: compact empty state, Add Slide 2-col tap targets, Ask AI + Fill sample από Idea Core, Save δημιουργεί artifact, Export toast. Το κόκκινο «1 Issue» πάνω στο Discover είναι το Next.js **dev error overlay**, όχι προϊόν· δεν το κρύβουμε με CSS.

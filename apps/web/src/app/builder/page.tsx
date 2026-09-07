@@ -272,6 +272,8 @@ function BuilderPageContent() {
             <PitchDeckBuilder 
               onSave={(data) => handleSave('pitchDeck', data)}
               initialData={getDocumentContent('pitch_deck')}
+              workspaceName={workspace?.startupName || workspace?.name}
+              ideaCore={getDocumentContent('idea_core')}
             />
           </TabsContent>
 
