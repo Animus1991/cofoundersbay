@@ -16,6 +16,7 @@ import {
   Loader2,
   Info,
   CheckCircle2,
+  Bot,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -31,9 +32,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
-import { getAIModels, getAIAgents, getAIHealth, type AgentConfig } from '@/lib/ai-api';
+import { getAIModels, getAIAgents, getAIHealth, getAIPreferences, updateAIPreferences, type AgentConfig } from '@/lib/ai-api';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
+import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { applyLocale } from '@/lib/locale';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 type AIPreferences = {
   preferredModel: string;
@@ -78,18 +82,6 @@ const RESPONSE_STYLES = [
   { value: 'formal', label: 'Formal', desc: 'Professional, business-like' },
 ];
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'el', label: 'Greek (Ελληνικά)' },
-  { value: 'es', label: 'Spanish (Español)' },
-  { value: 'fr', label: 'French (Français)' },
-  { value: 'de', label: 'German (Deutsch)' },
-  { value: 'it', label: 'Italian (Italiano)' },
-  { value: 'pt', label: 'Portuguese (Português)' },
-  { value: 'zh', label: 'Chinese (中文)' },
-  { value: 'ja', label: 'Japanese (日本語)' },
-];
-
 function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <button
@@ -116,6 +108,7 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
 
 export default function AISettingsPage() {
   const { success, error: showError } = useToast();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const [prefs, setPrefs] = useState<AIPreferences>(DEFAULT_PREFS);
   const [hasChanges, setHasChanges] = useState(false);
@@ -151,27 +144,47 @@ export default function AISettingsPage() {
   };
 
   const handleSave = async () => {
-    // In a real implementation, this would save to the API
-    // For now, we'll just save to localStorage and show success
     try {
+      await updateAIPreferences(prefs);
       localStorage.setItem('ai-preferences', JSON.stringify(prefs));
-      success('AI preferences saved successfully');
+      void queryClient.invalidateQueries({ queryKey: ['ai', 'preferences'] });
+      success('AI preferences saved');
       setHasChanges(false);
-    } catch (err) {
+    } catch {
       showError('Failed to save preferences');
     }
   };
 
-  // Load saved preferences on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('ai-preferences');
-      if (saved) {
-        setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+    let cancelled = false;
+    (async () => {
+      try {
+        const remote = await getAIPreferences();
+        if (cancelled) return;
+        if (remote?.preferences) {
+          setPrefs({
+            ...DEFAULT_PREFS,
+            ...Object.fromEntries(
+              Object.entries(remote.preferences).filter(([, v]) => v !== null && v !== undefined),
+            ),
+          } as AIPreferences);
+          return;
+        }
+      } catch {
+        /* local fallback */
       }
-    } catch {
-      // Ignore parse errors
-    }
+      try {
+        const saved = localStorage.getItem('ai-preferences');
+        if (saved && !cancelled) {
+          setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(saved) });
+        }
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -184,7 +197,7 @@ export default function AISettingsPage() {
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
             <ArrowLeft className="icon-sm" />
-            Back to Settings
+            {t('Back to Settings')}
           </Link>
           <div className="flex items-center justify-between">
             <div>
@@ -192,16 +205,24 @@ export default function AISettingsPage() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                   <CfbGlyph name="spark" className="icon-md" />
                 </div>
-                AI Assistant Settings
+                {t('AI Assistant Settings')}
               </h1>
               <p className="mt-1 text-muted-foreground">
                 Customize how the AI assistant works for you
               </p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+            <Button asChild variant="outline" className="gap-2">
+              <Link href="/ai">
+                <Bot className="h-4 w-4" />
+                Open assistant
+              </Link>
+            </Button>
             <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
               {hasChanges ? <Save className="icon-sm" /> : <CheckCircle2 className="icon-sm" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
+            </div>
           </div>
         </div>
 
@@ -401,23 +422,18 @@ export default function AISettingsPage() {
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Languages className="icon-sm text-muted-foreground" />
-                  Response Language
+                  {t('Response Language')}
                 </Label>
-                <Select
+                <p className="text-sm text-muted-foreground">
+                  {t('Tap a language. The same setting is in the header globe and in Settings.')}
+                </p>
+                <LanguageChipGrid
                   value={prefs.responseLanguage}
-                  onValueChange={(v) => updatePref('responseLanguage', v)}
-                >
-                  <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => {
+                    updatePref('responseLanguage', v);
+                    applyLocale(v);
+                  }}
+                />
               </div>
 
               {/* Use Emoji */}

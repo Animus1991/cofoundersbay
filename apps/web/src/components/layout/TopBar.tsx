@@ -2,9 +2,9 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Keyboard, MoreHorizontal, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Globe, Keyboard, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -18,6 +18,7 @@ import { SearchBar } from './SearchBar';
 import { UserMenu } from './UserMenu';
 import { MobileNav } from './MobileNav';
 import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
+import { LanguageSwitcher } from '@/components/common/LanguageSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { LanguagePreferenceToggle } from '@/components/common/LanguagePreferenceToggle';
@@ -29,6 +30,7 @@ import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
 
 /**
  * Small, inline indicator that this is the shared preview-demo account.
@@ -79,6 +81,8 @@ const CommandPalette = dynamic(
 
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
+  const router = useRouter();
+  const { t } = useI18n();
 
   return (
     <DropdownMenu>
@@ -87,19 +91,23 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
           variant="ghost"
           size="icon"
           className="h-9 w-9 shrink-0 md:hidden"
-          aria-label={bilingualAria('More tools', 'Περισσότερα εργαλεία')}
+          aria-label={t('More tools')}
         >
           <MoreHorizontal className="icon-sm" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" side="bottom" className="w-56">
         <DropdownMenuItem onClick={onCommand}>
-          <Keyboard className="mr-2 icon-sm" aria-hidden="true" />
+          <Keyboard className="mr-2 icon-sm shrink-0" aria-hidden="true" />
           <BilingualText en="Command palette" el="Παλέτα εντολών" compact />
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings#language')}>
+          <Globe className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+          <BilingualText en="Language" el="Γλώσσα" compact />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
-          {showDemoData ? <Eye className="mr-2 icon-sm" aria-hidden="true" /> : <EyeOff className="mr-2 icon-sm" aria-hidden="true" />}
+          {showDemoData ? <Eye className="mr-2 icon-sm shrink-0" aria-hidden="true" /> : <EyeOff className="mr-2 icon-sm shrink-0" aria-hidden="true" />}
           <BilingualText
             en={showDemoData ? 'Hide sample data' : 'Show sample data'}
             el={showDemoData ? 'Απόκρυψη δείγματος δεδομένων' : 'Εμφάνιση δείγματος δεδομένων'}
@@ -132,7 +140,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/60 bg-card/95 px-2 backdrop-blur-sm sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
+      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
         <MobileNav />
         <SearchBar />
 
@@ -155,6 +163,7 @@ export function TopBar() {
             <LanguagePreferenceToggle />
           </div>
           <MobileToolsMenu onCommand={() => setCommandOpen(true)} />
+          <LanguageSwitcher />
           <ThemeSwitcher />
           <NotificationsBell className="h-9 w-9" />
           {ready && <UserMenu />}

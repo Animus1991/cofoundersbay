@@ -389,6 +389,7 @@ export default function ConnectionsPage() {
               illustration="default"
               title={<BilingualText en={connectionsEn('no_intro_requests')} el={connectionsEl('no_intro_requests')} />}
               description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
+              askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
               action={
                 <Link href="/discover">
                   <Button variant="secondary" className="gap-2">
@@ -452,6 +453,7 @@ export default function ConnectionsPage() {
                     }
                   />
                 }
+                askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={
                   t !== 'received' ? (
                     <Link href="/discover">

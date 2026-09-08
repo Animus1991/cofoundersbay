@@ -80,13 +80,14 @@ export function useOnboardingChecklistDismissed(): boolean | undefined {
 
 interface OnboardingChecklistProps {
   steps: OnboardingStep[];
+  userName?: string;
   /** If true, shows collapsed by default once >50% done */
   autoCollapse?: boolean;
 }
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 
-export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingChecklistProps) {
+export function OnboardingChecklist({ steps, userName, autoCollapse = true }: OnboardingChecklistProps) {
   const completedCount = steps.filter((s) => s.done).length;
   const pct           = steps.length ? Math.round((completedCount / steps.length) * 100) : 0;
   const allDone       = completedCount === steps.length;
@@ -112,13 +113,13 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
   const nextStep = steps.find((s) => !s.done);
   const dismissLabel = bilingualAria('Dismiss the getting-started checklist', 'Απόρριψη λίστας πρώτων βημάτων');
 
+  const titleEn = userName ? `${userName}'s founder journey` : 'Your founder journey';
+  const titleEl = userName ? `Η πορεία του ${userName} ως ιδρυτής` : 'Η πορεία σας ως ιδρυτής';
+
   return (
     <Card className="border-primary/20 bg-primary/[0.03] shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
-          {/* Title is not personalised: displayName falls back to 'Founder', which
-              produced "Founder's Founder Journey", and a possessive apostrophe
-              does not translate. The greeting above already names the user. */}
           <button
             type="button"
             className="flex min-w-0 items-center gap-2 rounded-md text-left"
@@ -131,7 +132,7 @@ export function OnboardingChecklist({ steps, autoCollapse = true }: OnboardingCh
             </div>
             <div className="min-w-0">
               <CardTitle className="text-sm font-semibold text-foreground">
-                <BilingualText en="Your founder journey" el="Η πορεία σας ως ιδρυτής" />
+                <BilingualText en={titleEn} el={titleEl} />
               </CardTitle>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 <BilingualText

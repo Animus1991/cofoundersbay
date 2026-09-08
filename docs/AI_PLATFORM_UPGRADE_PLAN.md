@@ -192,6 +192,8 @@
 
 ---
 
+> **2026-09-07:** Οπτική ανανέωση και empty-state Ask AI περιγράφονται στο `docs/PLATFORM_DESIGN_AI_PLAN.md` (φάσεις H–K). Ο χρήστης ζήτησε ρητά σύγχρονο UI σε όλες τις σελίδες· το παλιό μη-στόχο «μην ξανασχεδιάσεις το visual language» δεν ισχύει πλέον για chrome/tokens. Η παλέτα και τα themes μένουν.
+
 ## 6. UI/UX — συνοχή, όχι νέα «θέματα»
 
 ### 6.1 Ένα chrome
@@ -318,7 +320,7 @@
 - Δεν αντικαθιστούμε το matching ML με LLM ranking.
 - Δεν βάζουμε αυτόνομο agent να στέλνει μηνύματα τη νύχτα.
 - Δεν ενώνουμε Ollama + OpenAI + Anthropic σε έναν «super model» χωρίς router· κρατάμε: chat/tools → Ollama (ή hosted compatible), long document → υπάρχον builder provider.
-- Δεν ξανασχεδιάζουμε ολόκληρο το visual language.
+- Δεν αλλάζουμε παλέτα/themes· chrome, ακτίνες και empty states ανανεώνονται στο `PLATFORM_DESIGN_AI_PLAN.md`.
 - Δεν κρατάμε νεκρά components «για αργότερα»· είτε δένονται είτε διαγράφονται στη φάση που τα αγγίζουμε.
 
 ---
@@ -347,15 +349,32 @@
 
 ---
 
-## 13. Παράρτημα — Multi-provider AI & ενοποιημένη τηλεμετρία
+## 13. Υλοποίηση (2026-09-07)
 
-*Συμπληρωματικό υλικό από την ανεξάρτητη ανάλυση "Cognitive Core" (2026-09-05), δεν αντικαθιστά τίποτα από τα §1–12.*
+Κλεισμένα σε αυτόν τον κλάδο (όχι ημερολογιακή υπόσχεση — μετρήσιμο στον κώδικα):
 
-### 13.1 Γιατί το `IAIProvider` παραμένει μονο-provider (Ollama) ενώ σχεδιάστηκε για πολλούς
+| Φάση | Κατάσταση | Πού |
+|---|---|---|
+| A — Truth | Μερικό | `RoleProvider` στο root layout. `query-keys.ts`. Notification badge από `GET /notifications/unread-count`. SideNav/MobileNav διαβάζουν `primaryRole`. |
+| B — Graph | Ναι | `GET /api/graph/me` + preview mock. |
+| C — Copilot read | Ναι | Context packet (`usePageContext`). Citations. Persisted threads + `/ai` full page. |
+| D — Copilot write | Ναι | 6 tools + `ActionCard` confirm. Writes περνάνε από τα υπάρχοντα Connections/Messages APIs. |
+| Full-page chat | Ναι | `/ai` (desktop drawer + mobile sheet-style column). Popup maximize → `/ai`. Ask AI buttons ανοίγουν την ίδια σελίδα. |
+| Settings prefs | Ναι | `GET/PATCH /api/ai/preferences` (Prisma `AIUserPreference`) με localStorage fallback. |
+
+Ανοιχτά (E–G και P2–P5): canvas/builder tools, feed Prisma, calendar SoT, eval suite 50 προτροπών, ενοποίηση realtime bus.
+
+---
+
+## 14. Παράρτημα — Multi-provider AI & ενοποιημένη τηλεμετρία
+
+*Συμπληρωματικό υλικό από την ανεξάρτητη ανάλυση "Cognitive Core" (2026-09-05), δεν αντικαθιστά τίποτα από τα §1–13.*
+
+### 14.1 Γιατί το `IAIProvider` παραμένει μονο-provider (Ollama) ενώ σχεδιάστηκε για πολλούς
 
 `apps/api/src/ai/providers/ai-provider.interface.ts` δηλώνει ρητά στην τεκμηρίωσή του: *"Adding a new provider (OpenAI, Anthropic, Groq, etc.) requires: 1. Create a service that implements this interface 2. Register it with AIProviderRegistry..."* — και το Prisma σχόλιο του `BuilderAIGeneration.model` ήδη ανέμενε τιμές όπως `"claude-3-opus"`. Η πρόθεση για πολλαπλούς παρόχους υπήρχε από την αρχή· απλά δεν υλοποιήθηκε ποτέ δεύτερος. Το §5 του παρόντος πλάνου σωστά αποφεύγει να «ενώσει Ollama+OpenAI+Anthropic σε ένα super model χωρίς router» (§10) — αυτό το παράρτημα προτείνει *πώς* να προστεθεί ένας δεύτερος provider με σαφή ρόλο, όχι σε αντίθεση με εκείνη την αρχή αλλά ως η συγκεκριμένη υλοποίησή της.
 
-### 13.2 Προτεινόμενο tiering (τιμές Ιανουαρίου 2026, ανά 1M tokens)
+### 14.2 Προτεινόμενο tiering (τιμές Ιανουαρίου 2026, ανά 1M tokens)
 
 | Χρήση | Μοντέλο | Input / Output | Γιατί |
 |---|---|---|---|
@@ -366,10 +385,10 @@
 
 Το επιλεγμένο μοντέλο/provider ανά χρήστη προκύπτει από το ήδη υπάρχον `AIUserPreference.preferredProvider`/`preferredModel` (Prisma) — υλοποίηση ενός ήδη μοντελοποιημένου πεδίου, όχι νέο schema. Prompt caching στο σταθερό τμήμα κάθε system prompt (15 agent personas × μεγάλα, στατικά prompts) μετριάζει σημαντικά το κόστος tier 1.
 
-### 13.3 Ενοποιημένη τηλεμετρία πέρα από το AI chat
+### 14.3 Ενοποιημένη τηλεμετρία πέρα από το AI chat
 
 Το §1.1 σωστά εντοπίζει ότι τα agents δεν βλέπουν `MatchInferenceLog`/`UserBehaviorSignal`. Πέρα από το `get_graph` tool του §5, υπάρχει ευκαιρία για μια read-only SQL view που ενώνει `AIUsageLog` + `MatchInferenceLog` + `NudgeLog` + `UserBehaviorSignal` ανά `userId` — ώστε ο `matching` agent να μπορεί να εξηγήσει ένα score παραθέτοντας το πραγματικό `MatchInferenceLog` αντί για γενική θεωρία, χωρίς να αλλάξει το ML pipeline του matching (§10 μη-στόχος παραμένει ακέραιος).
 
-### 13.4 Πλήρης αφήγηση
+### 14.4 Πλήρης αφήγηση
 
 Η αναλυτική, εικονογραφημένη εκδοχή αυτού του παραρτήματος (με πλήρη απογραφή πλατφόρμας, τεκμηρίωση κενών, και οπτικό υλικό) είναι δημοσιευμένη ως docket: "Cognitive Core" — βλ. σημείωση commit `feat: wire notification badge`.

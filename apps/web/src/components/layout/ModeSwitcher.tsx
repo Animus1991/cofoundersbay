@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { NavIcon, glyphForMode } from '@/components/icons/CfbGlyph';
+import { useI18n } from '@/components/common/I18nProvider';
 
 interface ModeSwitcherProps {
   currentMode: SidebarMode;
@@ -20,6 +21,8 @@ interface ModeSwitcherProps {
 }
 
 export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitcherProps) {
+  const { t } = useI18n();
+
   return (
     <TooltipProvider delayDuration={300}>
       <div
@@ -36,13 +39,12 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
           const Icon = mode.icon;
           const isActive = currentMode === mode.id;
           const labelEl = SIDEBAR_MODE_EL[mode.id];
-          const aria = bilingualAria(mode.shortLabel, labelEl);
 
           const button = (
             <button
               key={mode.id}
               onClick={() => onModeChange(mode.id)}
-              title={aria}
+              title={!expanded ? t(mode.shortLabel) : undefined}
               className={cn(
                 'flex items-center rounded-md transition-all duration-150 min-w-0 overflow-hidden',
                 expanded
@@ -53,7 +55,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
                   : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
               )}
               aria-pressed={isActive}
-              aria-label={aria}
+              aria-label={bilingualAria(mode.shortLabel, labelEl)}
             >
               <NavIcon name={glyphForMode(mode.id)} fallback={Icon} className="icon-sm shrink-0" />
               {expanded && (

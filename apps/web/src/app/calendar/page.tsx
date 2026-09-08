@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -270,6 +271,11 @@ export default function CalendarPage() {
       }
     >
       <div className="space-y-6">
+        <SampleDataNotice
+          surface="Calendar"
+          detail="Live sessions, events, and milestone due dates are not merged into one API yet. These items are samples so you can learn the layout. Ask the assistant to open Events or Milestones instead."
+          askAiPrompt="The calendar still shows sample items. What live surfaces should I use for sessions, events, and milestones, and what should I do next?"
+        />
 
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

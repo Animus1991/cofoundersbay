@@ -63,7 +63,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[min(90dvh,calc(100svh-2rem))] max-w-md overflow-y-auto max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="icon-md text-primary-accessible" />
@@ -277,28 +277,28 @@ function MatchListRow({
         </div>
 
         {/* Actions */}
-        <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 justify-between">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
-              title="Pass">
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
+              title="Pass" aria-label="Pass">
               <X className="icon-sm" />
             </button>
             <button onClick={onSave}
-              className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
+              className={cn('flex h-10 w-10 items-center justify-center rounded-full transition-colors', isSaved ? STATUS.warning.icon : 'border border-border/60 text-muted-foreground hover:text-status-warning')}
               title={isSaved ? 'Saved' : 'Save to shortlist'}>
               {isSaved ? <BookmarkCheck className="icon-sm" /> : <Bookmark className="icon-sm" />}
             </button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <button onClick={onBreakdown}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary-accessible transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
+              className="flex min-h-10 items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-primary-accessible">
               <BarChart3 className="icon-sm" /> Breakdown
             </button>
-            <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
+            <Button size="sm" variant="outline" onClick={onMessage} className="h-10 gap-1.5 px-3 text-xs">
               <MessageCircle className="icon-sm" /> Message
             </Button>
-            <Button size="sm" onClick={onConnect} className="h-8 gap-1.5 text-xs px-3">
+            <Button size="sm" onClick={onConnect} className="h-10 gap-1.5 px-3 text-xs">
               <Heart className="icon-sm" /> Connect
             </Button>
           </div>
@@ -333,16 +333,16 @@ function MatchPreviewPanel({
       <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-[360px] z-50 border-l border-border/60 bg-card shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[360px] overflow-y-auto border-l border-border/60 bg-card shadow-2xl animate-in slide-in-from-right duration-200 max-md:max-w-none">
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
+          <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground" aria-label="Close preview">
             <X className="icon-sm" />
           </button>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
             <Avatar className="h-16 w-16 rounded-2xl border-2 border-border/60">
@@ -620,25 +620,33 @@ export default function MatchesPage() {
 
   const hasActiveFilters = activeFilter !== 'all' || roleFilter !== 'all' || nameSearch || locationFilter || availFilter.size > 0;
 
+  const askAi = hasToken && visible.length > 0
+    ? `Matches: ${counts.all} total, ${counts.excellent} excellent (≥80%), average ${avgScore}%, top ${topScore}%. ${filtered.length !== counts.all ? `${filtered.length} showing with current filters. ` : ''}Recommend who I should connect with first and draft a short intro.`
+    : 'I am on Matches. Explain how compatibility scoring works and what to complete on my profile so I get better cofounder suggestions.';
+
   return (
     <AppShell
+      title={matchesEn('page_title')}
+      description={matchesEn('page_description')}
       showHelp
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="sm" className="min-h-10 gap-1.5" onClick={() => void refetch()}>
             <RefreshCw className="icon-sm" />
-            <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} />
+            <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} compact />
           </Button>
           <Link href="/discover">
-            <Button variant="outline" size="sm" className="gap-2">
-              <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} />
+            <Button variant="outline" size="sm" className="min-h-10 gap-2">
+              <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} compact />
               <ArrowRight className="icon-sm" />
             </Button>
           </Link>
         </div>
       }
     >
-      <div className="space-y-4 pb-10">
+      <div className="min-w-0 space-y-4 overflow-x-clip pb-10">
 
         {/* ── Not authenticated ── */}
         {!hasToken && (
@@ -646,6 +654,7 @@ export default function MatchesPage() {
             title={<BilingualText en={matchesEn('sign_in_to_see')} el={matchesEl('sign_in_to_see')} />}
             description={<BilingualText en={matchesEn('sign_in_desc')} el={matchesEl('sign_in_desc')} />}
             illustration="connection"
+            askAiPrompt="I am not signed in. Explain how matching works on CoFounderBay and what I should complete after login."
             action={
               <Link href="/login">
                 <Button className="gap-2">
@@ -685,7 +694,7 @@ export default function MatchesPage() {
 
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[
               { labelEn: matchesEn('total_matches'), labelEl: matchesEl('total_matches'), value: counts.all, tone: 'neutral' as const, icon: Users },
               { labelEn: matchesEn('excellent_80'), labelEl: matchesEl('excellent_80'), value: counts.excellent, tone: 'success' as const, icon: Star },
@@ -696,14 +705,14 @@ export default function MatchesPage() {
                 ? { bg: 'bg-muted/40', icon: 'text-foreground' }
                 : { bg: STATUS[tone].bg, icon: STATUS[tone].icon };
               return (
-              <Card key={labelEn} className="shadow-sm border-border/50">
-                <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', statColors.bg)}>
+              <Card key={labelEn} className="min-w-0 shadow-sm border-border/50">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3.5">
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg sm:h-9 sm:w-9', statColors.bg)}>
                     <Icon className={cn('icon-sm', statColors.icon)} />
                   </div>
-                  <div>
-                    <p className={cn('text-xl font-black tabular-nums leading-none', statColors.icon)}>{value}</p>
-                    <p className="mt-0.5 text-2xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className={cn('text-lg font-black tabular-nums leading-none sm:text-xl', statColors.icon)}>{value}</p>
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">
                       <BilingualText en={labelEn} el={labelEl} compact />
                     </p>
                   </div>
@@ -715,21 +724,21 @@ export default function MatchesPage() {
 
         {/* ── Insights banner (excellent matches) ── */}
         {hasToken && !isLoading && counts.excellent > 0 && (
-          <div className={cn('rounded-xl border bg-gradient-to-r from-status-success-bg/50 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300', STATUS.success.border)}>
-            <div className="flex items-center gap-3">
-              <div className={cn('rounded-lg p-2 shrink-0', STATUS.success.bg)}>
+          <div className={cn('flex flex-col gap-3 rounded-xl border bg-gradient-to-r from-status-success-bg/50 via-card to-transparent p-4 animate-in fade-in slide-in-from-top-1 duration-300 sm:flex-row sm:items-center sm:justify-between sm:gap-4', STATUS.success.border)}>
+            <div className="flex min-w-0 items-start gap-3 sm:items-center">
+              <div className={cn('shrink-0 rounded-lg p-2', STATUS.success.bg)}>
                 <Award className={cn('icon-md', STATUS.success.icon)} />
               </div>
-              <div>
-                <p className="font-semibold text-sm text-foreground">
-                  🎯 {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {counts.excellent} Excellent Match{counts.excellent !== 1 ? 'es' : ''} Ready to Connect
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   Top score: {topScore}% · These profiles are highly compatible — reach out now
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
                   <RotateCcw className="icon-sm" /> Undo
@@ -748,6 +757,7 @@ export default function MatchesPage() {
             title={<BilingualText en={matchesEn('no_matches_yet')} el={matchesEl('no_matches_yet')} />}
             description={<BilingualText en={matchesEn('no_matches_desc')} el={matchesEl('no_matches_desc')} />}
             illustration="rocket"
+            askAiPrompt="I have no matches yet. Tell me which profile fields to complete so I get better cofounder suggestions."
             action={
               <Link href="/profile/edit">
                 <Button className="gap-2">
@@ -903,7 +913,7 @@ export default function MatchesPage() {
               {/* Mobile: scrollable tier chips + filters toggle */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
-                  className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                  className={cn('flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                     showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-accessible' : 'border-border/60 text-muted-foreground')}>
                   <SlidersHorizontal className="icon-sm" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
@@ -912,7 +922,7 @@ export default function MatchesPage() {
                   const isActive = activeFilter === tab.key;
                   return (
                     <button key={tab.key} onClick={() => setActiveFilter(isActive ? 'all' : tab.key)}
-                      className={cn('flex items-center gap-1 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
+                      className={cn('flex min-h-10 shrink-0 items-center gap-1 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-all',
                         isActive ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground')}>
                       {tab.tier && <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', TIER_DOT[tab.tier])} />}
                       <BilingualText en={tab.labelEn} el={tab.labelEl} compact />
@@ -930,7 +940,7 @@ export default function MatchesPage() {
                         <BilingualText en={matchesEn('tier')} el={matchesEl('tier')} compact />
                       </label>
                       <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {TIER_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
                       </select>
                     </div>
@@ -939,14 +949,14 @@ export default function MatchesPage() {
                         <BilingualText en={matchesEn('role')} el={matchesEl('role')} compact />
                       </label>
                       <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
-                        className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
+                        className="h-10 w-full rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {ROLE_TABS.map(({ key, labelEn }) => <option key={key} value={key}>{labelEn}</option>)}
                       </select>
                     </div>
                     <div className="col-span-2">
                       <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
                       <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
-                        placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
+                        placeholder="City or country..." className="h-10 w-full rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
                     </div>
                   </div>
                   {hasActiveFilters && (
@@ -959,8 +969,8 @@ export default function MatchesPage() {
               )}
 
               {/* Results toolbar */}
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-muted-foreground min-w-0">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+                <p className="min-w-0 text-xs text-muted-foreground">
                   {filtered.length > 0 && (
                     <span>
                       <span className="font-semibold text-foreground">{filtered.length}</span> match{filtered.length !== 1 ? 'es' : ''}
@@ -968,10 +978,10 @@ export default function MatchesPage() {
                     </span>
                   )}
                 </p>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
                   <button
                     onClick={() => { setSelectMode(s => !s); setSelectedIds(new Set()); }}
-                    className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
+                    className={cn('flex h-10 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-medium transition-colors',
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
                     <CheckSquare className="icon-sm" />
@@ -980,22 +990,24 @@ export default function MatchesPage() {
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
-                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
-                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
+                    className={cn('flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
+                      showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}
+                    aria-label="Search matches">
                     <Search className="icon-sm" />
                   </button>
 
-                  <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
+                  <div className="flex items-center gap-1 rounded-lg border border-border/60 p-0.5">
                     {([
-                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false },
-                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true },
-                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false },
-                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean }[]).map(({ mode, icon: Icon, title, small }) => (
+                      { mode: 'grid2' as ViewMode, icon: LayoutGrid, title: '2-col', small: false, mobile: true },
+                      { mode: 'grid3' as ViewMode, icon: LayoutGrid, title: '3-col', small: true, mobile: false },
+                      { mode: 'list'  as ViewMode, icon: List,       title: 'List',  small: false, mobile: true },
+                    ] as { mode: ViewMode; icon: typeof LayoutGrid; title: string; small: boolean; mobile: boolean }[]).map(({ mode, icon: Icon, title, small, mobile }) => (
                       <button key={mode} onClick={() => setViewMode(mode)} title={title}
-                        className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
+                        className={cn('h-9 items-center justify-center rounded-md px-2 transition-all',
+                          mobile ? 'flex' : 'hidden sm:flex',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('icon-sm', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-2xs ml-0.5 font-bold">3</span>}
+                        {mode === 'grid3' && <span className="ml-0.5 text-2xs font-bold">3</span>}
                       </button>
                     ))}
                   </div>
@@ -1014,7 +1026,7 @@ export default function MatchesPage() {
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
-                    placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
+                    placeholder="Search by name, headline, or skill..." className="min-h-10 pl-9 text-sm" autoFocus />
                   {nameSearch && (
                     <button onClick={() => setNameSearch('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground">
@@ -1152,7 +1164,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 flex-wrap items-center justify-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-2xl animate-in slide-in-from-bottom duration-200 lg:bottom-6">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"

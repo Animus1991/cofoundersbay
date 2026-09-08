@@ -840,6 +840,7 @@ export default function MentoringPage() {
                   illustration="search"
                   title="No mentors found"
                   description="No mentor profiles have been created yet. Mentors who register and complete their profile will appear here."
+                  askAiPrompt="No mentors are listed. What kind of mentor should a first-time founder look for, and how do I book a session?"
                 />
               )}
             </>
@@ -878,6 +879,7 @@ export default function MentoringPage() {
                         ? 'Browse mentors and request a session to get started.'
                         : 'Your completed sessions will appear here.'
                     }
+                    askAiPrompt="I have no mentoring sessions. Recommend who to book and what to ask in the first call."
                     action={
                       t === 'upcoming' ? (
                         <Button variant="secondary" className="gap-2" onClick={() => setMainTab('find')}>

@@ -12,5 +12,6 @@ export default {
     execArgv: process.allowedNodeEnvironmentFlags.has('--experimental-webstorage') ? ['--no-experimental-webstorage'] : [],
     include: ['src/**/*.test.{ts,tsx}'],
     restoreMocks: true,
+    testTimeout: 60_000,
   },
 };

@@ -131,7 +131,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent>
+      <DialogContent className="max-md:top-[max(0.5rem,env(safe-area-inset-top))] max-md:translate-y-0">
         <DialogHeader>
           <DialogTitle>Share Document</DialogTitle>
           <DialogDescription>
@@ -275,7 +275,7 @@ export function CollabToolbar({
 
   return (
     <TooltipProvider>
-      <div className={cn('flex items-center gap-1.5', className)}>
+      <div className={cn('flex min-w-0 flex-wrap items-center gap-1.5', className)}>
 
         {/* ── Version History ────────────────────────────────────────────── */}
         {onHistoryClick && (

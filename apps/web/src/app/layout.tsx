@@ -35,18 +35,21 @@ import { ToastProvider } from '@/components/ui/toast';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
+import { RoleProvider } from '@/contexts/RoleContext';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
 import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
-import { RoleProvider } from '@/contexts/RoleContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
 import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
+import { LocaleSync } from '@/components/common/LocaleSync';
 import { PreviewSessionGuard } from '@/components/common/PreviewSessionGuard';
+import { I18nProvider } from '@/components/common/I18nProvider';
+import { DomI18n } from '@/components/common/DomI18n';
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 
 export const metadata: Metadata = {
@@ -115,35 +118,40 @@ export default function RootLayout({
         <ErrorBoundary>
           <QueryProvider>
             <LanguagePreferenceProvider>
-            <TenantProvider>
-            <RoleProvider>
-              <SidebarProvider>
-                <ServiceWorkerRegistration />
-                <NetworkProvider>
-                  <ApiHealthProbe />
-                  <ToastProvider>
-                   <ConfirmProvider>
-                    <PopupChatProvider>
-                      <MessagingProvider>
-                        <DemoDataProvider>
-                          <RoleTheme>
-                            <PreviewSessionGuard />
-                            <OfflineBanner />
-                            {children}
-                            <GlobalFloatingUi />
-                            <Suspense fallback={null}>
-                              <PostHogProvider />
-                            </Suspense>
-                          </RoleTheme>
-                        </DemoDataProvider>
-                      </MessagingProvider>
-                    </PopupChatProvider>
-                   </ConfirmProvider>
-                  </ToastProvider>
-                </NetworkProvider>
-              </SidebarProvider>
-            </RoleProvider>
-            </TenantProvider>
+              <I18nProvider>
+                <LocaleSync />
+                <TenantProvider>
+                  <RoleProvider>
+                    <SidebarProvider>
+                      <ServiceWorkerRegistration />
+                      <NetworkProvider>
+                        <ApiHealthProbe />
+                        <ToastProvider>
+                          <ConfirmProvider>
+                            <PopupChatProvider>
+                              <MessagingProvider>
+                                <DemoDataProvider>
+                                  <RoleTheme>
+                                    <PreviewSessionGuard />
+                                    <DomI18n>
+                                      <OfflineBanner />
+                                      {children}
+                                      <GlobalFloatingUi />
+                                      <Suspense fallback={null}>
+                                        <PostHogProvider />
+                                      </Suspense>
+                                    </DomI18n>
+                                  </RoleTheme>
+                                </DemoDataProvider>
+                              </MessagingProvider>
+                            </PopupChatProvider>
+                          </ConfirmProvider>
+                        </ToastProvider>
+                      </NetworkProvider>
+                    </SidebarProvider>
+                  </RoleProvider>
+                </TenantProvider>
+              </I18nProvider>
             </LanguagePreferenceProvider>
           </QueryProvider>
         </ErrorBoundary>

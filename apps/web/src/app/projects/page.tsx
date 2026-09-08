@@ -40,6 +40,7 @@ import {
   PROJECT_STAGE_FULL_KEYS,
 } from '@/lib/i18n/strings-projects';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import {
   listDemoProjects,
   toggleDemoStar,
@@ -410,6 +411,8 @@ export default function ProjectsPage() {
 
   return (
     <AppShell
+      title="Projects"
+      description="Discover startup projects or create your own to find co-founders"
       showHelp
       actions={
         <div className="flex flex-wrap gap-2">
@@ -422,6 +425,11 @@ export default function ProjectsPage() {
       }
     >
       <div className="space-y-4">
+        <SampleDataNotice
+          surface="Projects"
+          detail="Listed collaborations on this page are sample records until a projects API exists. Create Project still opens the form. Ask the assistant to find people instead of inventing live project data."
+          askAiPrompt="Projects is still sample data. Help me find collaborators from matches and shortlist instead of treating these cards as live."
+        />
         <button
           type="button"
           onClick={() => openAskAi()}

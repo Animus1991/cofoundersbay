@@ -23,6 +23,7 @@ import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/Cf
 import { BuilderAskAiButton, BuilderStageHeader, useBuilderPrimaryText } from './BuilderStageChrome';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import { useToast } from '@/components/ui/toast';
 
 interface Slide {
@@ -48,6 +49,9 @@ interface PitchDeckBuilderProps {
   initialData?: Partial<PitchDeckData> | { pitchDeck?: Partial<PitchDeckData> };
   /** Dedicated `/builder/pitch-deck` route — AppShell already shows the title. */
   hideTitle?: boolean;
+  workspaceName?: string;
+  ideaCore?: Record<string, unknown>;
+  askPrompt?: string;
 }
 
 function unwrapPitchDeck(
@@ -84,7 +88,14 @@ const defaultPitchDeckData: PitchDeckData = {
   useOfFunds: []
 };
 
-export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: PitchDeckBuilderProps) {
+export function PitchDeckBuilder({
+  onSave,
+  initialData,
+  hideTitle = false,
+  workspaceName,
+  ideaCore,
+  askPrompt,
+}: PitchDeckBuilderProps) {
   const t = useBuilderPrimaryText();
   const { success } = useToast();
   const didHydrate = useRef(false);
@@ -114,26 +125,42 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
     setCompletionPercentage((filledSlides / totalSlides) * 100);
   }, [data.slides]);
 
+  useEffect(() => {
+    if (!data.companyName && workspaceName) {
+      setData((prev) => (prev.companyName ? prev : { ...prev, companyName: workspaceName }));
+    }
+  }, [workspaceName, data.companyName]);
+
   const generateWithAI = async () => {
     setIsGenerating(true);
-    
+    const name = data.companyName || workspaceName || 'Your startup';
+    const problem = typeof ideaCore?.problemStatement === 'string' && ideaCore.problemStatement.trim()
+      ? ideaCore.problemStatement
+      : null;
+    const solution = typeof ideaCore?.solution === 'string' && ideaCore.solution.trim()
+      ? ideaCore.solution
+      : null;
+    const unique = typeof ideaCore?.uniqueValue === 'string' && ideaCore.uniqueValue.trim()
+      ? ideaCore.uniqueValue
+      : null;
+
     setTimeout(() => {
       const generatedSlides: Slide[] = SLIDE_TEMPLATES.map((template, index) => ({
         id: `slide-${index}`,
         type: template.type,
         title: builderEn(template.titleKey),
-        content: getGeneratedContent(template.type),
+        content: getGeneratedContent(template.type, { name, problem, solution, unique }),
         notes: getGeneratedNotes(template.type),
         order: index
       }));
-      
+
       setData(prev => ({
         ...prev,
         slides: generatedSlides,
-        companyName: 'CoFounderBay',
-        tagline: 'Where Great Teams Are Built',
-        askAmount: '$500,000',
-        useOfFunds: [
+        companyName: prev.companyName || name,
+        tagline: prev.tagline || unique || 'Where Great Teams Are Built',
+        askAmount: prev.askAmount || '$500,000',
+        useOfFunds: prev.useOfFunds.length ? prev.useOfFunds : [
           'Product Development (40%)',
           'Marketing & Growth (30%)',
           'Team Expansion (20%)',
@@ -144,11 +171,18 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
     }, 3000);
   };
 
-  const getGeneratedContent = (type: string): string => {
+  const getGeneratedContent = (
+    type: string,
+    ctx: { name: string; problem: string | null; solution: string | null; unique: string | null },
+  ): string => {
     const contents: Record<string, string> = {
-      'cover': 'CoFounderBay\n\nWhere Great Teams Are Built\n\nAI-Powered Startup Formation & Execution Platform',
-      'problem': '• 90% of startups fail, and 23% fail due to team issues\n• Finding the right co-founder is like finding a needle in a haystack\n• No structured way to validate team compatibility before committing\n• Founders waste months on misaligned partnerships',
-      'solution': '• AI-powered co-founder matching based on complementary skills and goals\n• Shared startup workspaces for collaborative execution\n• AI-generated startup documents (BMC, pitch decks, market analysis)\n• Readiness scoring and progress tracking\n• Mentor and accelerator ecosystem integration',
+      'cover': `${ctx.name}\n\n${ctx.unique || 'Where Great Teams Are Built'}\n\nAI-Powered Startup Formation & Execution Platform`,
+      'problem': ctx.problem
+        ? ctx.problem
+        : '• 90% of startups fail, and 23% fail due to team issues\n• Finding the right co-founder is like finding a needle in a haystack\n• No structured way to validate team compatibility before committing\n• Founders waste months on misaligned partnerships',
+      'solution': ctx.solution
+        ? ctx.solution
+        : '• AI-powered co-founder matching based on complementary skills and goals\n• Shared startup workspaces for collaborative execution\n• AI-generated startup documents (BMC, pitch decks, market analysis)\n• Readiness scoring and progress tracking\n• Mentor and accelerator ecosystem integration',
       'market': 'TAM: $50B - Global startup ecosystem tools\nSAM: $8B - English-speaking markets\nSOM: $200M - First 3 years focus\n\n• 500M+ aspiring entrepreneurs globally\n• Growing remote work enabling global team formation\n• AI tools adoption accelerating in startup space',
       'product': '• Intelligent Matching Engine - Find complementary co-founders\n• Startup Builder Workspace - Collaborative document creation\n• AI Document Generation - BMC, pitch decks, market analysis\n• Readiness Assessment - Track startup maturity\n• Ecosystem Integration - Mentors, accelerators, universities',
       'traction': '• 1,000+ registered users\n• 150+ successful co-founder matches\n• 50+ startup workspaces created\n• 85% user satisfaction rate\n• 15% month-over-month growth\n• Featured in TechCrunch, Product Hunt',
@@ -157,7 +191,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
       'team': '• CEO - 10+ years startup experience, 2 exits\n• CTO - Ex-Google, AI/ML expertise\n• CPO - Former product lead at Stripe\n• Advisors from Y Combinator, Sequoia',
       'financials': 'Projections (Year 1-3):\n\nYear 1: $150K ARR, 500 paid users\nYear 2: $800K ARR, 2,500 paid users\nYear 3: $3M ARR, 10,000 paid users\n\nUnit Economics:\n• CAC: $50 | LTV: $400 | LTV/CAC: 8x\n• Payback: 3 months | Gross Margin: 80%',
       'ask': 'Raising: $500,000 Seed Round\n\nUse of Funds:\n• Product Development (40%) - AI features, mobile app\n• Marketing & Growth (30%) - User acquisition, content\n• Team Expansion (20%) - Engineering, sales\n• Operations (10%) - Infrastructure, legal',
-      'closing': 'CoFounderBay\n\nBuilding the future of startup team formation\n\nContact: founders@cofounderbay.com\nWebsite: cofounderbay.com\n\nLet\'s build something great together.'
+      'closing': `${ctx.name}\n\nBuilding the future of startup team formation\n\nContact: founders@cofounderbay.com\nWebsite: cofounderbay.com\n\nLet's build something great together.`
     };
     return contents[type] || '';
   };
@@ -258,6 +292,9 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
     success(t(builderEn('pitch_exported'), builderEl('pitch_exported')));
   };
 
+  const copilotPrompt = askPrompt
+    ?? `Help me build a ${data.deckType} pitch deck for ${data.companyName || workspaceName || 'this startup'} with ${data.slides.length} slides. Draft Cover and Problem from the Idea Core.`;
+
   const currentSlide = data.slides[currentSlideIndex];
 
   const renderSlideTitle = (slide: Slide) => {
@@ -269,7 +306,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6 overflow-x-clip">
       <BuilderStageHeader
         glyph="builder"
         titleEn={builderEn('tab_pitch')}
@@ -331,16 +368,16 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
       </div>
 
       {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-4">
         {/* Slide Navigator */}
-        <div className="lg:col-span-1 space-y-4">
-          <Card>
+        <div className="order-2 min-w-0 space-y-4 lg:order-1 lg:col-span-1">
+          <Card className="min-w-0">
             <CardHeader className="py-3">
               <CardTitle className="text-sm">
                 <BilingualText en={builderEn('pitch_slides')} el={builderEl('pitch_slides')} compact />
               </CardTitle>
             </CardHeader>
-            <CardContent className="max-h-[400px] space-y-1 overflow-y-auto p-2">
+            <CardContent className="max-h-[min(40vh,320px)] space-y-1 overflow-y-auto p-2 lg:max-h-[400px]">
               {data.slides.length === 0 ? (
                 <p className="px-2 py-3 text-xs text-muted-foreground">
                   <BilingualText en={builderEn('pitch_no_slides_list')} el={builderEl('pitch_no_slides_list')} />
@@ -351,7 +388,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                     type="button"
                     key={slide.id}
                     className={cn(
-                      'group flex w-full cursor-pointer items-center justify-between rounded-xl p-2 text-left',
+                      'group flex min-h-11 w-full cursor-pointer items-center justify-between rounded-xl p-2 text-left',
                       index === currentSlideIndex
                         ? 'bg-primary text-primary-foreground'
                         : 'hover:bg-muted',
@@ -359,7 +396,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                     onClick={() => setCurrentSlideIndex(index)}
                   >
                     <div className="flex min-w-0 items-center gap-2">
-                      <span className="w-5 font-mono text-xs">{index + 1}</span>
+                      <span className="w-5 shrink-0 font-mono text-xs">{index + 1}</span>
                       <span className="truncate text-sm">{renderSlideTitle(slide)}</span>
                     </div>
                     <div
@@ -375,14 +412,14 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
           </Card>
 
           {/* Add Slide */}
-          <Card>
+          <Card className="min-w-0">
             <CardHeader className="py-3">
               <CardTitle className="text-sm">
                 <BilingualText en={builderEn('pitch_add')} el={builderEl('pitch_add')} compact />
               </CardTitle>
             </CardHeader>
-            <CardContent className="max-h-[200px] space-y-1 overflow-y-auto p-2">
-              <p className="px-2 pb-1 text-2xs text-muted-foreground">
+            <CardContent className="grid max-h-[200px] grid-cols-2 gap-1 overflow-y-auto p-2 sm:grid-cols-1">
+              <p className="col-span-2 px-2 pb-1 text-2xs text-muted-foreground sm:col-span-1">
                 <BilingualText en={builderEn('pitch_add_hint')} el={builderEl('pitch_add_hint')} />
               </p>
               {SLIDE_TEMPLATES.map((template) => {
@@ -392,11 +429,11 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                     key={template.type}
                     variant="ghost"
                     size="sm"
-                    className={cn('w-full justify-start gap-2 rounded-xl', exists && 'opacity-60')}
+                    className={cn('h-auto min-h-11 w-full justify-start gap-2 rounded-xl px-2 py-2', exists && 'opacity-60')}
                     onClick={() => addSlide(template.type)}
                   >
-                    <CfbGlyph name={template.glyph} className="icon-sm" />
-                    <span className="text-xs">
+                    <CfbGlyph name={template.glyph} className="icon-sm shrink-0" />
+                    <span className="truncate text-xs">
                       <BilingualText en={builderEn(template.titleKey)} el={builderEl(template.titleKey)} compact />
                     </span>
                     {exists && (
@@ -412,53 +449,56 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
         </div>
 
         {/* Slide Editor */}
-        <div className="lg:col-span-3">
+        <div className="order-1 min-w-0 lg:order-2 lg:col-span-3">
           {data.slides.length === 0 ? (
-            <Card className="h-[500px] flex items-center justify-center">
+            <Card className="flex h-[500px] min-w-0 items-center justify-center">
               <div className="text-center">
                 <CfbGlyphWell name="builder" size="lg" className="mx-auto mb-4 opacity-70" />
                 <h3 className="mb-2 text-lg font-semibold">
                   <BilingualText en={builderEn('pitch_empty')} el={builderEl('pitch_empty')} />
                 </h3>
-                <p className="mb-4 text-sm text-muted-foreground">
+                <p className="mb-4 max-w-sm text-sm leading-snug text-muted-foreground">
                   <BilingualText en={builderEn('pitch_empty_hint')} el={builderEl('pitch_empty_hint')} />
                 </p>
-                <Button className="rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
-                  {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
-                  <BilingualText en={builderEn('pitch_gen_full')} el={builderEl('pitch_gen_full')} compact />
-                </Button>
+                <div className="flex w-full max-w-sm flex-col gap-2 sm:flex-row">
+                  <AIInsightButton className="min-h-11 w-full" prompt={copilotPrompt} />
+                  <Button className="min-h-11 w-full rounded-xl" onClick={generateWithAI} disabled={isGenerating}>
+                    {isGenerating ? <RefreshCw className="icon-sm mr-2 animate-spin" /> : <CfbGlyph name="spark" className="icon-sm mr-2" />}
+                    <BilingualText en={builderEn('pitch_gen_full')} el={builderEl('pitch_gen_full')} compact />
+                  </Button>
+                </div>
               </div>
             </Card>
           ) : currentSlide ? (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center gap-4">
+            <Card className="min-w-0">
+              <CardHeader className="flex flex-col gap-3 space-y-0 p-3 sm:p-6">
+                <div className="flex min-w-0 items-center gap-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-xl"
+                    className="h-10 w-10 shrink-0 rounded-xl"
                     onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                     disabled={currentSlideIndex === 0}
                     aria-label={bilingualAria(builderEn('pitch_prev'), builderEl('pitch_prev'))}
                   >
                     <ChevronLeft className="icon-sm" />
                   </Button>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <CardTitle className="flex items-center gap-2">
-                      <span className="text-sm font-mono text-muted-foreground">
+                      <span className="font-mono text-sm text-muted-foreground">
                         {currentSlideIndex + 1}/{data.slides.length}
                       </span>
                       <Input
                         value={currentSlide.title}
                         onChange={(e) => updateSlide('title', e.target.value)}
-                        className="h-8 w-48 rounded-xl text-lg font-semibold"
+                        className="h-10 w-full min-w-0 rounded-xl font-semibold"
                       />
                     </CardTitle>
                   </div>
                   <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-xl"
+                    className="h-10 w-10 shrink-0 rounded-xl"
                     onClick={() => setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))}
                     disabled={currentSlideIndex === data.slides.length - 1}
                     aria-label={bilingualAria(builderEn('pitch_next'), builderEl('pitch_next'))}
@@ -466,11 +506,11 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                     <ChevronRight className="icon-sm" />
                   </Button>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-xl"
+                    className="min-h-10 rounded-xl"
                     onClick={() => moveSlide(currentSlideIndex, 'up')}
                     disabled={currentSlideIndex === 0}
                     aria-label={bilingualAria(builderEn('pitch_move_up'), builderEl('pitch_move_up'))}
@@ -480,7 +520,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-xl"
+                    className="min-h-10 rounded-xl"
                     onClick={() => moveSlide(currentSlideIndex, 'down')}
                     disabled={currentSlideIndex === data.slides.length - 1}
                     aria-label={bilingualAria(builderEn('pitch_move_down'), builderEl('pitch_move_down'))}
@@ -494,7 +534,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-xl"
+                    className="min-h-10 rounded-xl"
                     onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}
                   >
                     <Eye className="icon-sm mr-1" />
@@ -507,14 +547,14 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="rounded-xl"
+                    className="min-h-10 rounded-xl"
                     onClick={() => removeSlide(currentSlideIndex)}
                   >
                     <BilingualText en={builderEn('pitch_delete')} el={builderEl('pitch_delete')} compact />
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-3 sm:p-6">
                 {viewMode === 'edit' ? (
                   <>
                     <div>
@@ -523,7 +563,7 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                         value={currentSlide.content}
                         onChange={(e) => updateSlide('content', e.target.value)}
                         placeholder={t(builderEn('pitch_content_ph'), builderEl('pitch_content_ph'))}
-                        className="min-h-[250px] rounded-xl font-mono text-sm"
+                        className="min-h-[180px] rounded-xl font-mono text-sm sm:min-h-[250px]"
                       />
                     </div>
                     <div>
@@ -537,9 +577,9 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
                     </div>
                   </>
                 ) : (
-                  <div className="min-h-[350px] rounded-xl bg-foreground p-8 text-background">
-                    <h2 className="text-2xl font-bold mb-6">{currentSlide.title}</h2>
-                    <div className="whitespace-pre-wrap text-lg leading-relaxed">
+                  <div className="min-h-[220px] rounded-xl bg-foreground p-6 text-background sm:min-h-[350px] sm:p-8">
+                    <h2 className="mb-4 text-xl font-bold sm:mb-6 sm:text-2xl">{currentSlide.title}</h2>
+                    <div className="whitespace-pre-wrap text-base leading-relaxed sm:text-lg">
                       {currentSlide.content}
                     </div>
                   </div>
@@ -551,8 +591,8 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
       </div>
 
       {/* Deck Info */}
-      <Card>
-        <CardHeader>
+      <Card className="min-w-0">
+        <CardHeader className="p-3 sm:p-6">
           <CardTitle className="text-base">
             <BilingualText en={builderEn('pitch_info')} el={builderEl('pitch_info')} compact />
           </CardTitle>
@@ -560,30 +600,30 @@ export function PitchDeckBuilder({ onSave, initialData, hideTitle = false }: Pit
             <BilingualText en={builderEn('pitch_info_hint')} el={builderEl('pitch_info_hint')} />
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div>
+        <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="min-w-0 space-y-1.5">
               <Label><BilingualText en={builderEn('pitch_company')} el={builderEl('pitch_company')} compact /></Label>
               <Input
-                className="rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={data.companyName}
                 onChange={(e) => setData((prev) => ({ ...prev, companyName: e.target.value }))}
                 placeholder={t(builderEn('pitch_company_ph'), builderEl('pitch_company_ph'))}
               />
             </div>
-            <div>
+            <div className="min-w-0 space-y-1.5">
               <Label><BilingualText en={builderEn('pitch_tagline')} el={builderEl('pitch_tagline')} compact /></Label>
               <Input
-                className="rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={data.tagline}
                 onChange={(e) => setData((prev) => ({ ...prev, tagline: e.target.value }))}
                 placeholder={t(builderEn('pitch_tagline_ph'), builderEl('pitch_tagline_ph'))}
               />
             </div>
-            <div>
+            <div className="min-w-0 space-y-1.5">
               <Label><BilingualText en={builderEn('pitch_ask')} el={builderEl('pitch_ask')} compact /></Label>
               <Input
-                className="rounded-xl"
+                className="min-h-11 rounded-xl"
                 value={data.askAmount}
                 onChange={(e) => setData((prev) => ({ ...prev, askAmount: e.target.value }))}
                 placeholder={t(builderEn('pitch_ask_ph'), builderEl('pitch_ask_ph'))}

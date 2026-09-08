@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useToast } from '@/components/ui/toast';
@@ -587,6 +588,8 @@ export default function FundraisingPage() {
 
   return (
     <AppShell
+      title="Fundraising"
+      description="Track your round, manage investor pipeline, and organize your data room"
       showHelp
       actions={
         <div className="flex flex-wrap gap-2">
@@ -623,6 +626,14 @@ export default function FundraisingPage() {
             </span>
           </span>
         </button>
+
+        {showDemoData && (
+          <SampleDataNotice
+            surface="Fundraising"
+            detail="Rounds, leads, and the data room on this page are sample records until a live fundraising API exists. Ask the assistant for next steps from your actual profile, matches, and builder docs."
+            askAiPrompt="Fundraising is still sample data. Based on my graph, what should I do next toward a real round — profile, matches, or builder?"
+          />
+        )}
 
         {round ? (
           <RoundCard round={round} onAdd={() => openAdd('committed')} />

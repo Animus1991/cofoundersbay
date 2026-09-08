@@ -20,6 +20,8 @@ export interface NextAction {
   href: string;
   cta: string;
   ctaEl?: string;
+  /** Optional interpolation variables for templates like `{count}`. */
+  vars?: Record<string, string | number>;
   /** One of: 'primary' | 'amber' | 'emerald' | 'violet' */
   accent?: 'primary' | 'amber' | 'emerald' | 'violet';
   /** Identity-reinforcing micro-copy shown after CTA */
@@ -34,6 +36,16 @@ interface NextActionBannerProps {
   /** If provided, banner will be suppressed after this ISO date */
   expiresAt?: string;
   className?: string;
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+
+function interpolate(template: string, vars?: Record<string, string | number>): string {
+  if (!vars) return template;
+  return Object.entries(vars).reduce(
+    (acc, [key, value]) => acc.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value)),
+    template,
+  );
 }
 
 /* ── Color maps ──────────────────────────────────────────────────────────── */
@@ -93,47 +105,84 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
   const accent = action.accent ?? 'primary';
   const ac     = ACCENT_CLASSES[accent] ?? ACCENT_CLASSES.primary;
 
+  const label = interpolate(action.label, action.vars);
+  const labelEl = action.labelEl ? interpolate(action.labelEl, action.vars) : undefined;
+  const description = interpolate(action.description, action.vars);
+  const descriptionEl = action.descriptionEl ? interpolate(action.descriptionEl, action.vars) : undefined;
+  const cta = interpolate(action.cta, action.vars);
+  const ctaEl = action.ctaEl ? interpolate(action.ctaEl, action.vars) : undefined;
+  const identitySignal = action.identitySignal ? interpolate(action.identitySignal, action.vars) : undefined;
+  const identitySignalEl = action.identitySignalEl ? interpolate(action.identitySignalEl, action.vars) : undefined;
+
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-xl border px-4 py-3 transition-all',
+        'relative rounded-xl border px-4 py-3 pr-10 transition-all sm:pr-4',
         ac.border,
         ac.bg,
         className,
       )}
     >
-      <CfbGlyph name="spark" className={cn('icon-sm shrink-0', ac.icon)} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground truncate">
-          <BilingualText en={action.label} el={action.labelEl} compact />
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
-          <BilingualText en={action.description} el={action.descriptionEl} />
-        </p>
-        {action.identitySignal && (
-          <p className={cn('text-xs italic mt-1', ac.icon)}>
-            <BilingualText en={action.identitySignal} el={action.identitySignalEl} />
-          </p>
-        )}
-      </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        <Link href={action.href}>
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground sm:hidden"
+        title={bilingualAria('Dismiss', 'Απόρριψη')}
+        aria-label={bilingualAria('Dismiss next-action suggestion', 'Απόρριψη επόμενης ενέργειας')}
+      >
+        <X className="icon-sm" />
+      </button>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 flex-1 gap-3">
+          <CfbGlyph name="spark" className={cn('icon-sm mt-0.5 shrink-0', ac.icon)} />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold leading-snug text-foreground">
+              <BilingualText en={label} el={labelEl} />
+            </p>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              <BilingualText en={description} el={descriptionEl} />
+            </p>
+            {identitySignal && (
+              <p className={cn('mt-1 text-xs italic opacity-70', ac.icon)}>
+                <BilingualText en={identitySignal} el={identitySignalEl} />
+              </p>
+            )}
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className={cn('mt-2 inline-flex h-8 gap-1 px-2.5 text-xs font-semibold sm:hidden', ac.cta)}
+            >
+              <Link href={action.href}>
+                <BilingualText en={cta} el={ctaEl} compact />
+                <ArrowRight className="icon-sm" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+        <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
           <Button
+            asChild
             variant="ghost"
             size="sm"
-            className={cn('h-7 gap-1 text-xs font-semibold px-2.5', ac.cta)}
+            className={cn('h-7 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
           >
-            <BilingualText en={action.cta} el={action.ctaEl} compact /> <ArrowRight className="icon-sm" />
+            <Link href={action.href}>
+              <BilingualText en={cta} el={ctaEl} compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
           </Button>
-        </Link>
-        <button
-          onClick={handleDismiss}
-          className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          title={bilingualAria('Dismiss', 'Απόρριψη')}
-          aria-label={bilingualAria('Dismiss next-action suggestion', 'Απόρριψη επόμενης ενέργειας')}
-        >
-          <X className="icon-sm" />
-        </button>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-muted/60 hover:text-muted-foreground"
+            title={bilingualAria('Dismiss', 'Απόρριψη')}
+            aria-label={bilingualAria('Dismiss next-action suggestion', 'Απόρριψη επόμενης ενέργειας')}
+          >
+            <X className="icon-sm" />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -155,10 +204,11 @@ export function deriveNextAction(opts: {
   if (opts.pendingRequests > 0) {
     return {
       id: 'pending-requests',
-      label: `${opts.pendingRequests} connection request${opts.pendingRequests > 1 ? 's' : ''} waiting`,
-      labelEl: opts.pendingRequests > 1
-        ? `${opts.pendingRequests} αιτήματα σύνδεσης σε αναμονή`
-        : '1 αίτημα σύνδεσης σε αναμονή',
+      label: opts.pendingRequests === 1 ? '{count} connection request waiting' : '{count} connection requests waiting',
+      labelEl: opts.pendingRequests === 1
+        ? '{count} αίτημα σύνδεσης σε αναμονή'
+        : '{count} αιτήματα σύνδεσης σε αναμονή',
+      vars: { count: opts.pendingRequests },
       description: 'Review and accept — new connections compound your opportunities.',
       descriptionEl: 'Δείτε και αποδεχτείτε — οι νέες συνδέσεις πολλαπλασιάζουν τις ευκαιρίες.',
       href: '/connections?tab=requests',

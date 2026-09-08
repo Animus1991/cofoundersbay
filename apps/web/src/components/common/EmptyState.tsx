@@ -1,4 +1,9 @@
+'use client';
+
 import { ReactNode } from 'react';
+import Link from 'next/link';
+import { Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type IllustrationType = 'search' | 'connection' | 'message' | 'rocket' | 'profile' | 'calendar' | 'default';
@@ -10,6 +15,8 @@ type EmptyStateProps = {
   className?: string;
   illustration?: IllustrationType;
   size?: 'sm' | 'md' | 'lg';
+  /** Secondary Ask AI action — never replaces the primary `action`. */
+  askAiPrompt?: string;
 };
 
 // SVG Illustrations for different empty states
@@ -62,13 +69,20 @@ export function EmptyState({
   className,
   illustration = 'default',
   size = 'md',
+  askAiPrompt,
 }: EmptyStateProps) {
   const sizeClasses = { sm: 'p-4', md: 'p-6', lg: 'p-8' };
   const illustrationSizes = { sm: 'w-16 h-16', md: 'w-24 h-24', lg: 'w-32 h-32' };
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl border border-border/60 bg-card text-center shadow-sm', sizeClasses[size], className)}>
-      {/* Quiet identity wash — no animated decoration */}
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-2xl border border-border/60 bg-card/80 text-center shadow-sm',
+        sizeClasses[size],
+        className,
+      )}
+    >
+      {/* Quiet identity wash */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-10">
         <div className="absolute -top-12 left-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
         <div className="absolute bottom-0 right-10 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
@@ -83,8 +97,19 @@ export function EmptyState({
           <p className="mx-auto max-w-prose text-balance break-words text-base font-semibold leading-snug">{title}</p>
           {description && <p className="mx-auto max-w-prose break-words text-sm leading-relaxed text-muted-foreground">{description}</p>}
         </div>
-        {/* Action button */}
-        {action && <div className="flex flex-wrap items-center justify-center gap-2 pt-2">{action}</div>}
+        {(action || askAiPrompt) && (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {action}
+            {askAiPrompt && (
+              <Button asChild variant="outline" size="sm" className="gap-1.5">
+                <Link href={`/ai?q=${encodeURIComponent(askAiPrompt)}`}>
+                  <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+                  Ask AI
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

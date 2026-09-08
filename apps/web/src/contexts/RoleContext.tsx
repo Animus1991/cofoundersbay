@@ -265,6 +265,10 @@ export function useRole() {
   return context;
 }
 
+export function useRoleOptional() {
+  return useContext(RoleContext);
+}
+
 // HOC for role-based access control
 export function withRoleGuard<P extends object>(
   WrappedComponent: React.ComponentType<P>,

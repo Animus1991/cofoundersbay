@@ -28,6 +28,7 @@ import { usePopupChat } from '@/contexts/PopupChatContext';
 import { builderEn, builderEl } from '@/lib/i18n/strings-builder';
 import { bilingualAria } from '@/lib/i18n/format';
 import type { BuilderDocumentType } from '@/lib/builder-api';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const BUILDER_REVIEW_DISMISS_KEY = 'cfb_builder_review_dismissed_v1';
 
@@ -109,6 +110,7 @@ function BuilderPageContent() {
     }
   };
 
+  // Get document content by type
   const getDocumentContent = (type: string) => {
     const doc = documents.find((d) => d.type === type);
     return doc?.content || {};
@@ -129,12 +131,15 @@ function BuilderPageContent() {
 
   return (
     <AppShell showHelp actions={<AskAiButton />}>
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6 overflow-x-clip">
+        {/* Error Alert */}
         {error && (
-          <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4">
-            <AlertCircle className="icon-md text-destructive-accessible" />
-            <p className="text-sm text-destructive-accessible">{error}</p>
-            <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
+          <div className="flex flex-col gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 items-start gap-3">
+              <AlertCircle className="icon-md shrink-0 text-destructive-accessible" />
+              <p className="text-sm text-destructive-accessible">{error}</p>
+            </div>
+            <Button variant="ghost" size="sm" onClick={clearError} className="sm:ml-auto">
               <BilingualText en={builderEn('dismiss')} el={builderEl('dismiss')} compact />
             </Button>
           </div>
@@ -143,18 +148,18 @@ function BuilderPageContent() {
         <BehavioralNudge surface="builder" compact />
 
         {!reviewBannerDismissed && documents.length >= 2 && (
-          <div className={cn('flex items-center gap-3 rounded-xl border px-4 py-3', STATUS.warning.border, STATUS.warning.bg)}>
+          <div className={cn('flex flex-col gap-3 rounded-xl border px-4 py-3 sm:flex-row sm:items-center', STATUS.warning.border, STATUS.warning.bg)}>
             <CfbGlyph name="award" className={cn('icon-sm shrink-0', STATUS.warning.icon)} />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-foreground">
                 <BilingualText en="Your artifacts are ready for expert review" el="Τα τεχνουργήματά σας είναι έτοιμα για αξιολόγηση ειδικού" />
               </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
                 <BilingualText en="Get actionable feedback from a domain expert — investors, mentors, or industry specialists." el="Λάβετε πρακτική ανατροφοδότηση από ειδικό τομέα — επενδυτές, μέντορες ή ειδικούς κλάδου." />
               </p>
             </div>
             <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className={cn('h-7 gap-1 text-xs font-semibold hover:bg-status-warning-bg', STATUS.warning.text)}>
+              <Button variant="ghost" size="sm" className={cn('h-9 w-full gap-1 text-xs font-semibold hover:bg-status-warning-bg sm:w-auto', STATUS.warning.text)}>
                 <BilingualText en="Get review" el="Αξιολόγηση" compact /> <ArrowRight className="icon-sm" />
               </Button>
             </a>
@@ -170,18 +175,24 @@ function BuilderPageContent() {
           </div>
         )}
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        {/* Context Bar */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             {workspace?.name && (
               <p className="text-lg font-semibold tracking-tight text-foreground">{workspace.name}</p>
             )}
-            <p className="mt-0.5 text-sm text-muted-foreground">
+            <p className="mt-0.5 text-sm leading-snug text-muted-foreground">
               {workspace?.description
                 ? workspace.description
                 : <BilingualText en={builderEn('tagline')} el={builderEl('tagline')} />}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <AIInsightButton
+              className="h-9"
+              prompt={`Startup Builder workspace "${workspace?.name ?? 'my venture'}": ${documents.length} artifacts (${documents.map((d) => `${d.title} ${d.completionPercent}%`).join(', ') || 'none yet'}). Recommend the next document — Idea Core, Business Model, interviews, pitch, MVP, or financials — and draft the first section.`}
+            />
+            {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
                 <CfbGlyph name="people" className="icon-sm text-muted-foreground" />
@@ -220,12 +231,12 @@ function BuilderPageContent() {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex h-auto w-full justify-start overflow-x-auto rounded-xl">
+          <TabsList className="flex h-auto w-full snap-x snap-mandatory justify-start overflow-x-auto rounded-xl">
             {BUILDER_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="flex min-h-10 shrink-0 items-center gap-1.5 text-xs"
+                className="flex min-h-10 shrink-0 snap-start items-center gap-1.5 text-xs"
                 title={bilingualAria(tab.labelEn, tab.labelEl)}
               >
                 <CfbGlyph name={tab.glyph} className="icon-sm" />
@@ -263,6 +274,8 @@ function BuilderPageContent() {
             <PitchDeckBuilder
               onSave={(data) => handleSave('pitchDeck', data)}
               initialData={getDocumentContent('pitch_deck')}
+              workspaceName={workspace?.startupName || workspace?.name}
+              ideaCore={getDocumentContent('idea_core')}
             />
           </TabsContent>
 

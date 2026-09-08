@@ -14,14 +14,58 @@
  * existing key in one pass, only to give new and touched call sites a single
  * source of truth to converge on.
  */
+
+const connectionsList = (tab?: string) =>
+  tab ? (['connections', tab] as const) : (['connections'] as const);
+const connectionsPending = () => ['connections', 'pending-received'] as const;
+
+const connections = Object.assign(['connections'] as const, {
+  list: connectionsList,
+  pendingReceived: connectionsPending,
+});
+
+type ConnectionsKey = readonly ['connections'] & {
+  list: (tab?: string) => readonly string[];
+  pendingReceived: () => readonly ['connections', 'pending-received'];
+};
+
 export const queryKeys = {
   me: {
+    /** Current user's profile. */
     profile: () => ['me', 'profile'] as const,
   },
-  connections: {
-    /** Pending connection requests received by the current user. */
-    pendingReceived: () => ['connections', 'pending-received'] as const,
-    /** All connections, optionally scoped to a tab (e.g. 'received' | 'sent'). */
-    list: (tab?: string) => (tab ? (['connections', tab] as const) : (['connections'] as const)),
-  },
+  /** Connections query-key family. Use as an array or call `.list()` / `.pendingReceived()`. */
+  connections: connections as ConnectionsKey,
+  profileMe: ['me', 'profile'] as const,
+  meProfileLegacy: ['me-profile'] as const,
+  connectionsPending: ['connections', 'pending-received'] as const,
+  conversations: ['conversations'] as const,
+  conversationsList: ['conversations', 'list'] as const,
+  messages: (conversationId: string) => ['messages', conversationId] as const,
+  notifications: ['notifications'] as const,
+  notificationsUnread: ['notifications', 'unread-count'] as const,
+  recommendations: ['recommendations'] as const,
+  graphMe: ['graph', 'me'] as const,
+  xpMe: ['xp', 'me'] as const,
+  aiConversations: ['ai', 'conversations'] as const,
+  aiConversation: (id: string) => ['ai', 'conversation', id] as const,
+  aiPreferences: ['ai', 'preferences'] as const,
+  aiHealth: ['ai-health'] as const,
+  aiModels: ['ai-models'] as const,
+  aiAgents: ['ai-agents'] as const,
+  roles: ['roles', 'dashboard-context'] as const,
+  shortlist: ['shortlist'] as const,
+  shortlistIds: ['shortlist', 'ids'] as const,
 };
+
+export const PROFILE_KEYS = [
+  queryKeys.profileMe,
+  queryKeys.meProfileLegacy,
+  queryKeys.me.profile(),
+] as const;
+export const CONNECTION_KEYS = [
+  queryKeys.connections,
+  queryKeys.connectionsPending,
+  queryKeys.connections.pendingReceived(),
+] as const;
+export const MESSAGE_KEYS = [queryKeys.conversations, queryKeys.conversationsList] as const;

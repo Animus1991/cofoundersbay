@@ -9,7 +9,7 @@ export class GraphController {
   constructor(private readonly graph: GraphService) {}
 
   @Get('me')
-  async getMyGraph(@CurrentUser() user: { id: string }) {
+  async getMe(@CurrentUser() user: { id: string }) {
     return this.graph.getMyGraph(user.id);
   }
 }

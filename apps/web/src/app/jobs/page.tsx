@@ -373,6 +373,11 @@ export default function JobsPage() {
               ? 'Try a different keyword or clear the search.'
               : 'Be the first to post an opportunity for the community.'
           }
+          askAiPrompt={
+            search
+              ? `No jobs matched "${search}". Suggest better keywords or people I should reach instead of a job post.`
+              : 'Help me write a cofounder or early-hire job post based on my profile gaps.'
+          }
           action={
             !search ? (
               <Button className="gap-2" onClick={() => {}}>

@@ -360,6 +360,7 @@ export default function ComparePage() {
             illustration="search"
             title="No profiles to compare"
             description="Add profiles from your matches or search to compare them side by side"
+            askAiPrompt="Help me pick two or three people from my matches to compare as potential cofounders."
             action={
               <Button onClick={handleAdd}>
                 <Plus className="icon-sm mr-2" />

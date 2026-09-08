@@ -12,5 +12,6 @@ import { GraphService } from './graph.service';
   imports: [PrismaModule, ProfileModule, RolesModule, ConnectionsModule, MessagingModule, DashboardModule],
   controllers: [GraphController],
   providers: [GraphService],
+  exports: [GraphService],
 })
 export class GraphModule {}

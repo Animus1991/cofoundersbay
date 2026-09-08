@@ -139,6 +139,7 @@ export default function InvestorPipelinePage() {
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
+          askAiPrompt="My investment pipeline is empty. How should I scout startups on CoFounderBay and what to shortlist first?"
           action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" />Scout Startups</Link></Button>}
         />
       </AppShell>

@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectionsForMode, type SidebarMode } from './nav-modes';
 import { ModeSwitcher } from './ModeSwitcher';
@@ -25,7 +25,7 @@ import { Logo, LogoIcon } from '@/components/brand/Logo';
 import { NavIcon } from '@/components/icons/CfbGlyph';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { useStoredUser } from '@/hooks/useStoredUser';
-import { useRole } from '@/contexts/RoleContext';
+import { useRoleOptional } from '@/contexts/RoleContext';
 
 export function SideNav() {
   const pathname = usePathname();
@@ -33,7 +33,8 @@ export function SideNav() {
   const { expanded, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
-  const { primaryRole } = useRole();
+  const role = useRoleOptional();
+  const primaryRole = role?.primaryRole;
   const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useSidebarMode();
 
@@ -94,93 +95,97 @@ export function SideNav() {
 
   return (
     <TooltipProvider delayDuration={400}>
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-hidden border-r border-border/60 bg-card/98 backdrop-blur-sm',
-        'transition-[width] duration-200 ease-out will-change-[width]',
-        'hidden lg:flex',
-        'max-lg:pointer-events-none max-lg:invisible',
-        expanded ? 'w-[240px]' : 'w-[68px]',
-      )}
-      aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
-    >
-      {/* ── Logo header ── */}
-      <div
+      <aside
         className={cn(
-          'flex h-14 flex-shrink-0 items-center border-b border-border/60',
-          expanded ? 'justify-between px-4' : 'justify-center px-0',
+          'fixed left-0 top-0 z-40 flex h-full flex-col overflow-x-hidden border-r border-border/60 bg-card/98 backdrop-blur-sm',
+          'transition-[width] duration-200 ease-out will-change-[width]',
+          'hidden lg:flex',
+          'max-lg:pointer-events-none max-lg:invisible',
+          expanded ? 'w-[240px]' : 'w-[68px]',
         )}
+        aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >
-        {expanded ? (
-          <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
-            <Logo size="sm" />
-          </OptimizedLink>
-        ) : (
-          <OptimizedLink href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
-            <LogoIcon size={28} />
-          </OptimizedLink>
-        )}
-        {expanded && mounted && (
-          <button
-            onClick={toggle}
-            className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label={bilingualAria(commonEn('collapse_sidebar'), commonEl('collapse_sidebar'))}
-          >
-            <PanelLeftClose className="icon-sm" />
-          </button>
-        )}
-      </div>
+        {/* ── Logo header ── */}
+        <div
+          className={cn(
+            'flex h-14 flex-shrink-0 items-center border-b border-border/60',
+            expanded ? 'justify-between px-4' : 'justify-center px-0',
+          )}
+        >
+          {expanded ? (
+            <OptimizedLink href="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <Logo size="sm" />
+            </OptimizedLink>
+          ) : (
+            <OptimizedLink href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
+              <LogoIcon size={28} />
+            </OptimizedLink>
+          )}
+          {expanded && mounted && (
+            <button
+              onClick={toggle}
+              className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+              aria-label={bilingualAria(commonEn('collapse_sidebar'), commonEl('collapse_sidebar'))}
+            >
+              <PanelLeftClose className="icon-sm" />
+            </button>
+          )}
+        </div>
 
-      {/* ── Mode Switcher ── */}
-      <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={expanded} />
+        {/* ── Mode Switcher ── */}
+        <ModeSwitcher currentMode={mode} onModeChange={handleModeChange} expanded={expanded} />
 
-      {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
-        {sections.map(({ section, links }) => (
-          <div key={section} className="mb-1">
-            {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
-                <BilingualText
-                  en={section}
-                  el={getNavSectionEl(section)}
-                  stacked
-                  primaryClassName="font-semibold uppercase tracking-widest"
-                  secondaryClassName="normal-case tracking-normal"
-                />
-              </p>
-            ) : (
-              <div className="mx-3 my-2 h-px bg-border/50" />
-            )}
-            <ul className="space-y-0.5 px-2">
-              {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
-                const active =
-                  pathname === href || (href !== '/' && pathname?.startsWith(href));
-                const badge = badgeFor(href, badgeType);
+        {/* ── Navigation ── */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
+          {sections.map(({ section, links }) => (
+            <div key={section} className="mb-1">
+              {expanded ? (
+                <p className="mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
+                  <BilingualText
+                    en={section}
+                    el={getNavSectionEl(section)}
+                    stacked
+                    primaryClassName="font-semibold uppercase tracking-widest"
+                    secondaryClassName="normal-case tracking-normal"
+                  />
+                </p>
+              ) : (
+                <div className="mx-3 my-2 h-px bg-border/50" />
+              )}
+              <ul className="space-y-0.5 px-2">
+                {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
+                  const active =
+                    pathname === href || (href !== '/' && pathname?.startsWith(href));
+                  const badge = badgeFor(href, badgeType);
 
-                const navHint = NAV_LINK_DESCRIPTIONS[href];
-                const navHintEl = getNavDescriptionEl(href);
-                const labelEl = getNavLabelEl(href);
+                  const navHint = NAV_LINK_DESCRIPTIONS[href];
+                  const navHintEl = getNavDescriptionEl(href);
+                  const labelEl = getNavLabelEl(href);
 
-                const link = (
-                  <OptimizedLink
-                    href={href}
-                    aria-current={active ? 'page' : undefined}
-                    title={
-                      !expanded
-                        ? bilingualAria(
-                            navHint ?? label,
-                            navHintEl ?? labelEl,
-                          )
-                        : undefined
-                    }
-                    className={cn(
-                      'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
-                      expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
-                      active
-                        ? 'bg-primary/8 text-primary-accessible font-medium'
-                        : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
-                    )}
-                  >
+                  // Remote introduced the /ai hub; use the Bot lucide glyph as the
+                  // navigational icon for AI Assistant / Ask AI entries.
+                  const FallbackIcon = href === '/ai' ? Bot : Icon;
+
+                  const link = (
+                    <OptimizedLink
+                      href={href}
+                      aria-current={active ? 'page' : undefined}
+                      title={
+                        !expanded
+                          ? bilingualAria(
+                              navHint ?? label,
+                              navHintEl ?? labelEl,
+                            )
+                          : undefined
+                      }
+                      className={cn(
+                        'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
+                        expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
+                        active
+                          ? 'bg-primary/8 text-primary-accessible font-medium'
+                          : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+                      )}
+                    >
                       {/* Active left bar */}
                       {active && expanded && (
                         <span
@@ -193,7 +198,7 @@ export function SideNav() {
                       <span className="relative flex-shrink-0">
                         <NavIcon
                           href={href}
-                          fallback={Icon}
+                          fallback={FallbackIcon}
                           className={cn(
                             'icon-sm',
                             active ? 'text-primary-accessible' : 'text-muted-foreground/70 group-hover:text-foreground',
@@ -221,81 +226,81 @@ export function SideNav() {
                         </>
                       )}
                     </OptimizedLink>
-                );
+                  );
 
-                return (
-                  <li key={`${section}-${href}`}>
-                    {expanded && navHint ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>{link}</TooltipTrigger>
-                        <TooltipContent side="right" className="max-w-[240px] text-xs">
-                          <p className="font-medium text-foreground">
-                            <BilingualText en={label} el={labelEl} />
-                          </p>
-                          {navHint && (
-                            <p className="text-muted-foreground">
-                              <BilingualText en={navHint} el={navHintEl} />
+                  return (
+                    <li key={`${section}-${href}`}>
+                      {expanded && navHint ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>{link}</TooltipTrigger>
+                          <TooltipContent side="right" className="max-w-[240px] text-xs">
+                            <p className="font-medium text-foreground">
+                              <BilingualText en={label} el={labelEl} />
                             </p>
-                          )}
-                        </TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      link
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
+                            {navHint && (
+                              <p className="text-muted-foreground">
+                                <BilingualText en={navHint} el={navHintEl} />
+                              </p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        link
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
 
-      {/* ── User profile footer ── */}
-      <div className="flex-shrink-0 border-t border-border/60 p-2">
-        {user && mounted ? (
-          <OptimizedLink
-            href="/profile"
-            title={!expanded ? (user.displayName ?? 'Profile') : undefined}
-            className={cn(
-              'flex items-center rounded-lg transition-colors hover:bg-secondary/60',
-              expanded ? 'gap-2.5 px-2 py-2' : 'justify-center p-2',
-            )}
-          >
-            <Avatar className="h-7 w-7 flex-shrink-0">
-              <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            {expanded && (
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium leading-tight text-foreground">
-                  {user.displayName ?? 'User'}
-                </p>
-                {user.role && (
-                  <p className="truncate text-xs capitalize leading-tight text-muted-foreground">
-                    {user.role}
+        {/* ── User profile footer ── */}
+        <div className="flex-shrink-0 border-t border-border/60 p-2">
+          {user && mounted ? (
+            <OptimizedLink
+              href="/profile"
+              title={!expanded ? (user.displayName ?? 'Profile') : undefined}
+              className={cn(
+                'flex items-center rounded-lg transition-colors hover:bg-secondary/60',
+                expanded ? 'gap-2.5 px-2 py-2' : 'justify-center p-2',
+              )}
+            >
+              <Avatar className="h-7 w-7 flex-shrink-0">
+                <AvatarImage src={user.avatarUrl ?? undefined} />
+                <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-accessible">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              {expanded && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium leading-tight text-foreground">
+                    {user.displayName ?? 'User'}
                   </p>
-                )}
-              </div>
-            )}
-          </OptimizedLink>
-        ) : (
-          <div className={cn('rounded-lg bg-secondary/40', expanded ? 'h-10' : 'h-9 w-9 mx-auto')} />
-        )}
+                  {user.role && (
+                    <p className="truncate text-xs capitalize leading-tight text-muted-foreground">
+                      {user.role}
+                    </p>
+                  )}
+                </div>
+              )}
+            </OptimizedLink>
+          ) : (
+            <div className={cn('rounded-lg bg-secondary/40', expanded ? 'h-10' : 'h-9 w-9 mx-auto')} />
+          )}
 
-        {/* Expand button when collapsed */}
-        {!expanded && mounted && (
-          <button
-            onClick={toggle}
-            className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
-            aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
-          >
-            <PanelLeftOpen className="icon-sm" />
-          </button>
-        )}
-      </div>
-    </aside>
+          {/* Expand button when collapsed */}
+          {!expanded && mounted && (
+            <button
+              onClick={toggle}
+              className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+              aria-label={bilingualAria(commonEn('expand_sidebar'), commonEl('expand_sidebar'))}
+            >
+              <PanelLeftOpen className="icon-sm" />
+            </button>
+          )}
+        </div>
+      </aside>
     </TooltipProvider>
   );
 }

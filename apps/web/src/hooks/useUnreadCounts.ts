@@ -39,7 +39,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   }, []);
 
   const { data: convData, isError: convError } = useQuery({
-    queryKey: ['conversations', 'list'],
+    queryKey: queryKeys.conversationsList,
     queryFn: listMessageConversations,
     staleTime: 60_000,
     // Stop polling on error (server down / 401) — resume only after window focus or manual refetch
@@ -54,7 +54,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   });
 
   const { data: introData, isError: introError } = useQuery({
-    queryKey: queryKeys.connections.pendingReceived(),
+    queryKey: queryKeys.connectionsPending,
     queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     staleTime: 60_000,
     refetchInterval: (query) => {
@@ -68,7 +68,7 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   });
 
   const { data: notifData, isError: notifError } = useQuery({
-    queryKey: ['notifications', 'unread-count'],
+    queryKey: queryKeys.notificationsUnread,
     queryFn: getNotificationUnreadCount,
     staleTime: 60_000,
     refetchInterval: (query) => {
@@ -81,7 +81,6 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
     retry: 0,
   });
 
-  // Silence unused-variable warnings
   void convError;
   void introError;
   void notifError;

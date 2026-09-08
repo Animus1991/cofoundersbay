@@ -1,19 +1,35 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
+function useOptionalQueryClient() {
+  try {
+    return useQueryClient();
+  } catch {
+    return undefined;
+  }
+}
 import { useSession } from '@/hooks/useSession';
 import { useApiAvailability } from '@/hooks/useApiAvailability';
 import {
-  ChatMessage,
   AgentConfig,
-  streamAIChat,
   sendAIChat,
   getAIAgents,
   getAIHealth,
   createAIConversation,
+  getAIConversation,
+  listAIConversations,
   AIConversation,
   isAIStreamUnsupported,
+  streamAIChat,
+  type ChatRequest,
+  type ChatMessage,
 } from '@/lib/ai-api';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { executeCopilotAction, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
+import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
+import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
 
 export interface AIMessage {
   id: string;
@@ -23,12 +39,17 @@ export interface AIMessage {
   model?: string;
   fallback?: boolean;
   isStreaming?: boolean;
+  actions?: CopilotAction[];
+  citations?: CopilotCitation[];
 }
 
 export interface UseAIChatOptions {
   agentId?: string;
   conversationId?: string;
   autoCreateConversation?: boolean;
+  initialPrompt?: string;
+  enableCopilot?: boolean;
+  pageContext?: PageContextPacket;
 }
 
 export interface UseAIChatReturn {
@@ -40,15 +61,25 @@ export interface UseAIChatReturn {
   currentAgent: string;
   isAIAvailable: boolean;
   conversationId: string | null;
+  conversations: AIConversation[];
+  pendingActionId: string | null;
   sendMessage: (content: string) => Promise<void>;
   setAgent: (agentId: string) => void;
   clearMessages: () => void;
   retryLastMessage: () => void;
+  confirmAction: (action: CopilotAction) => Promise<{ href?: string } | void>;
+  dismissAction: (action: CopilotAction) => void;
+  loadConversation: (id: string) => Promise<void>;
+  refreshConversations: () => Promise<void>;
 }
 
 export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const { hasSession, mounted } = useSession();
   const apiAvailable = useApiAvailability();
+  const queryClient = useOptionalQueryClient();
+  const pageContext = options.pageContext;
+  const enableCopilot = options.enableCopilot ?? false;
+
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,11 +88,20 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const [currentAgent, setCurrentAgent] = useState(options.agentId || 'general');
   const [isAIAvailable, setIsAIAvailable] = useState(true);
   const [conversationId, setConversationId] = useState<string | null>(options.conversationId || null);
-  
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const lastUserMessageRef = useRef<string | null>(null);
+  const [conversations, setConversations] = useState<AIConversation[]>([]);
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
 
-  // Check AI health and load agents on mount
+  const lastUserMessageRef = useRef<string | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const autoCreate = options.autoCreateConversation !== false;
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
+    };
+  }, []);
+
   useEffect(() => {
     if (!hasSession || !mounted || !apiAvailable) return;
 
@@ -71,7 +111,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           getAIHealth().catch(() => ({ available: false, models: [] })),
           getAIAgents().catch(() => ({ agents: [] })),
         ]);
-        
+
         setIsAIAvailable(Boolean(health?.available));
         setAgents(agentsData?.agents ?? []);
       } catch {
@@ -79,118 +119,267 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       }
     };
 
-    init();
+    void init();
   }, [hasSession, mounted, apiAvailable]);
 
-  // Create conversation if needed
+  const refreshConversations = useCallback(async () => {
+    if (!hasSession) return;
+    try {
+      const res = await listAIConversations();
+      setConversations(res.conversations ?? []);
+    } catch {
+      /* preview or offline */
+    }
+  }, [hasSession]);
+
   useEffect(() => {
-    if (!hasSession || !mounted || conversationId || !options.autoCreateConversation) return;
+    if (!hasSession || !mounted) return;
+    void refreshConversations();
+  }, [hasSession, mounted, refreshConversations]);
+
+  useEffect(() => {
+    if (!hasSession || !mounted || conversationId || !autoCreate) return;
 
     createAIConversation({ agentId: currentAgent })
-      .then((res) => setConversationId(res.conversation.id))
-      .catch(() => {/* Silent fail - will work without conversation tracking */});
-  }, [hasSession, mounted, conversationId, currentAgent, options.autoCreateConversation]);
+      .then((res) => {
+        if (res?.conversation?.id) setConversationId(res.conversation.id);
+      })
+      .catch(() => {
+        /* works without persistence */
+      });
+  }, [hasSession, mounted, conversationId, currentAgent, autoCreate]);
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim() || abortControllerRef.current) return;
+  const mapHistory = (conv: AIConversation): AIMessage[] =>
+    (conv.messages ?? [])
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
+      .map((m) => ({
+        id: m.id,
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        timestamp: new Date(m.createdAt),
+        model: m.model,
+      }));
 
-    // Cancel any existing request
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-    const isCurrent = () => abortControllerRef.current === controller && !controller.signal.aborted;
-    setError(null);
-    lastUserMessageRef.current = content;
-
-    // Add user message immediately
-    const turnId = crypto.randomUUID();
-    const userMessage: AIMessage = {
-      id: `user-${turnId}`,
-      role: 'user',
-      content: content.trim(),
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Create placeholder for assistant response
-    const assistantMessageId = `assistant-${turnId}`;
-    const assistantMessage: AIMessage = {
-      id: assistantMessageId,
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      isStreaming: true,
-    };
-    setMessages((prev) => [...prev, assistantMessage]);
-    setIsStreaming(true);
-
-    // Build history from messages
-    const history: ChatMessage[] = conversationId ? [] : messages.slice(-8).map((m) => ({
-      role: m.role,
-      content: m.content,
-    }));
-    const request = { message: content.trim(), agentId: currentAgent, conversationId: conversationId || undefined, history };
-    let fullContent = '';
-    let finalModel = '';
-    let fallback = false;
-    let receivedEvent = false;
-
+  const loadConversation = useCallback(async (id: string) => {
+    setIsLoading(true);
     try {
-      // Try streaming first
-      try {
-        for await (const data of streamAIChat(request, controller.signal)) {
-          if (!isCurrent()) return;
-          receivedEvent = true;
-          if (data.fallback) {
-            fullContent = data.chunk ?? '';
-            fallback = true;
-            finalModel = data.model || 'fallback';
-          } else {
-            fullContent += data.chunk ?? '';
-            finalModel = data.model || finalModel;
-          }
-          setMessages((prev) => prev.map((message) => message.id === assistantMessageId
-            ? { ...message, content: fullContent, model: finalModel, fallback } : message));
-          if (data.done) break;
-        }
-      } catch (streamError) {
-        // If streaming fails, fall back to non-streaming
-        if (!isCurrent() || receivedEvent || !isAIStreamUnsupported(streamError)) throw streamError;
-        const response = await sendAIChat(request, controller.signal);
-        fullContent = response.message;
-        finalModel = response.model;
-        fallback = response.fallback ?? false;
+      const res = await getAIConversation(id);
+      if (res?.conversation) {
+        setConversationId(res.conversation.id);
+        setMessages(mapHistory(res.conversation));
       }
-
-      if (!isCurrent()) return;
-      // Finalize message
-      setMessages((prev) => prev.map((message) => message.id === assistantMessageId
-        ? { ...message, content: fullContent, model: finalModel, fallback, isStreaming: false } : message));
-    } catch (err) {
-      if (!isCurrent()) return;
-      const requestError = err instanceof Error || err instanceof DOMException ? err : null;
-      if (requestError?.name === 'AbortError') {
-        // Remove the empty assistant message on abort
-        setMessages((prev) => prev.filter((message) => message.id !== assistantMessageId));
-        return;
-      }
-
-      setError(requestError?.message || 'Failed to get AI response');
-      // Update assistant message with error
-      setMessages((prev) => prev.map((message) => message.id === assistantMessageId
-        ? { ...message, content: fullContent || 'Sorry, I encountered an error. Please try again.', model: finalModel, fallback, isStreaming: false }
-        : message));
+    } catch {
+      setError('Could not load that conversation');
     } finally {
-      if (abortControllerRef.current === controller) {
-        setIsStreaming(false);
-        abortControllerRef.current = null;
-      }
+      setIsLoading(false);
     }
-  }, [messages, currentAgent, conversationId]);
+  }, []);
+
+  const updateAction = useCallback((actionId: string, patch: Partial<CopilotAction>) => {
+    setMessages((prev) =>
+      prev.map((m) => ({
+        ...m,
+        actions: m.actions?.map((a) => (a.id === actionId ? { ...a, ...patch } : a)),
+      })),
+    );
+  }, []);
+
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim() || abortControllerRef.current) return;
+
+      // Cancel any existing request
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const isCurrent = () => abortControllerRef.current === controller && !controller.signal.aborted;
+      setError(null);
+      lastUserMessageRef.current = content;
+      let receivedEvent = false;
+
+      const turnId = crypto.randomUUID();
+      const userMessage: AIMessage = {
+        id: `user-${turnId}`,
+        role: 'user',
+        content: content.trim(),
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
+      const assistantMessageId = `assistant-${turnId}`;
+      const assistantMessage: AIMessage = {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: '',
+        timestamp: new Date(),
+        isStreaming: true,
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setIsStreaming(true);
+
+      try {
+        let turn: CopilotTurnResult | undefined;
+
+        if (enableCopilot) {
+          try {
+            turn = await runCopilotTurn(content.trim(), pageContext);
+            if (!isCurrent()) return;
+          } catch {
+            /* proceed without copilot tools */
+          }
+        }
+
+        const narrative = turn?.message ?? '';
+        const actions = turn?.actions;
+        const citations = turn?.citations;
+
+        if (isAIAvailable && !isPreviewDemo()) {
+          const history: ChatMessage[] = conversationId
+            ? []
+            : messages.slice(-8).map((m) => ({
+                role: m.role,
+                content: m.content,
+              }));
+          const request: ChatRequest = {
+            message: content.trim(),
+            agentId: currentAgent,
+            conversationId: conversationId || undefined,
+            history,
+            context: {
+              ...pageContext,
+              toolNarrative: narrative,
+              usedTools: turn?.usedTools ?? [],
+            },
+          };
+          let fullContent = '';
+          let finalModel = '';
+          let fallback = false;
+
+          try {
+            for await (const data of streamAIChat(request, controller.signal)) {
+              if (!isCurrent()) return;
+              receivedEvent = true;
+              if (data.fallback) {
+                fullContent = data.chunk ?? '';
+                fallback = true;
+                finalModel = data.model || 'fallback';
+              } else {
+                fullContent += data.chunk ?? '';
+                finalModel = data.model || finalModel;
+              }
+              setMessages((prev) =>
+                prev.map((message) =>
+                  message.id === assistantMessageId
+                    ? { ...message, content: fullContent, model: finalModel, fallback }
+                    : message,
+                ),
+              );
+              if (data.done) break;
+            }
+          } catch (streamError) {
+            // If streaming fails, fall back to non-streaming only when no content was received
+            if (!isCurrent() || receivedEvent || !isAIStreamUnsupported(streamError)) throw streamError;
+            const response = await sendAIChat(request, controller.signal);
+            fullContent = response.message;
+            finalModel = response.model;
+            fallback = response.fallback ?? false;
+          }
+
+          if (!isCurrent()) return;
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === assistantMessageId
+                ? { ...message, content: fullContent, model: finalModel, fallback, isStreaming: false, actions, citations }
+                : message,
+            ),
+          );
+        } else {
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === assistantMessageId
+                ? { ...message, content: narrative, model: 'copilot', isStreaming: false, actions, citations }
+                : message,
+            ),
+          );
+        }
+
+        void refreshConversations();
+      } catch (err) {
+        if (!isCurrent()) return;
+        const requestError = err instanceof Error || err instanceof DOMException ? err : null;
+        if (requestError?.name === 'AbortError') {
+          // Remove the empty assistant message on abort
+          setMessages((prev) => prev.filter((message) => message.id !== assistantMessageId));
+          return;
+        }
+
+        setError(requestError?.message || 'Failed to get AI response');
+        setMessages((prev) =>
+          prev.map((message) =>
+            message.id === assistantMessageId
+              ? {
+                  ...message,
+                  content: receivedEvent ? message.content : 'Sorry, I encountered an error. Please try again.',
+                  isStreaming: false,
+                }
+              : message,
+          ),
+        );
+      } finally {
+        if (abortControllerRef.current === controller) {
+          setIsStreaming(false);
+          abortControllerRef.current = null;
+        }
+      }
+    },
+    [messages, currentAgent, conversationId, isAIAvailable, pageContext, refreshConversations, enableCopilot],
+  );
+
+  const confirmAction = useCallback(
+    async (action: CopilotAction) => {
+      if (pendingActionId) return;
+      setPendingActionId(action.id);
+      try {
+        const result = await executeCopilotAction(action);
+        if (queryClient && !isPreviewDemo()) {
+          if (action.tool === 'send_connection') {
+            CONNECTION_KEYS.forEach((key) => {
+              void queryClient.invalidateQueries({ queryKey: [...key] });
+            });
+            void queryClient.invalidateQueries({ queryKey: [...queryKeys.graphMe] });
+          }
+          if (action.tool === 'start_or_send_message') {
+            MESSAGE_KEYS.forEach((key) => {
+              void queryClient.invalidateQueries({ queryKey: [...key] });
+            });
+          }
+          if (action.tool === 'shortlist_add') {
+            void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
+            void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
+          }
+        }
+        if (!result.ok) {
+          updateAction(action.id, { status: 'error' });
+          setError(result.error ?? 'Action failed');
+          return;
+        }
+        updateAction(action.id, { status: 'done' });
+        return { href: result.href };
+      } finally {
+        setPendingActionId(null);
+      }
+    },
+    [queryClient, updateAction, pendingActionId],
+  );
+
+  const dismissAction = useCallback(
+    (action: CopilotAction) => {
+      updateAction(action.id, { status: 'dismissed' });
+    },
+    [updateAction],
+  );
 
   const setAgent = useCallback((agentId: string) => {
     setCurrentAgent(agentId);
-    // Optionally clear messages when switching agents
-    // setMessages([]);
   }, []);
 
   const clearMessages = useCallback(() => {
@@ -205,24 +394,14 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
   const retryLastMessage = useCallback(() => {
     if (lastUserMessageRef.current) {
-      // Remove last assistant message if it was an error
       setMessages((prev) => {
         const lastMsg = prev[prev.length - 1];
-        if (lastMsg?.role === 'assistant' && lastMsg.content.includes('error')) {
-          return prev.slice(0, -1);
-        }
+        if (lastMsg?.role === 'assistant') return prev.slice(0, -1);
         return prev;
       });
-      sendMessage(lastUserMessageRef.current);
+      void sendMessage(lastUserMessageRef.current);
     }
   }, [sendMessage]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, []);
 
   return {
     messages,
@@ -233,9 +412,15 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     currentAgent,
     isAIAvailable,
     conversationId,
+    conversations,
+    pendingActionId,
     sendMessage,
     setAgent,
     clearMessages,
     retryLastMessage,
+    confirmAction,
+    dismissAction,
+    loadConversation,
+    refreshConversations,
   };
 }

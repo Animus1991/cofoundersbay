@@ -23,7 +23,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 import {
-  searchProfiles, getRecommendations, sendConnectionRequest, type SearchHit
+  searchProfiles, getRecommendations, sendConnectionRequest, saveToShortlist, type SearchHit
 } from '@/lib/api';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,7 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { discoverEn, discoverEl } from '@/lib/i18n/strings-discover';
 import { cn } from '@/lib/utils';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
+import { queryKeys } from '@/lib/query-keys';
 
 const MatchCard = dynamic(() => import('@/components/common/MatchCard').then((m) => ({ default: m.MatchCard })), { ssr: false });
 const ConnectionRequestDialog = dynamic(() => import('@/components/common/ConnectionRequest').then((m) => ({ default: m.ConnectionRequestDialog })), { ssr: false });
@@ -192,7 +193,7 @@ export default function DiscoverPage() {
     try {
       await sendConnectionRequest({ receiverId: connectionTarget.userId, message: message || undefined });
       success('Connection request sent!', `Your request to ${connectionTarget.displayName} has been sent.`);
-      queryClient.invalidateQueries({ queryKey: ['connections'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.connections });
     } catch (err) {
       showError('Could not send request', err instanceof Error ? err.message : 'Please try again');
     }
@@ -204,8 +205,15 @@ export default function DiscoverPage() {
   };
 
   // Handle bookmark
-  const handleBookmark = (profile: ProfileCardData) => {
-    success('Profile saved', `${profile.displayName} added to your bookmarks`);
+  const handleBookmark = async (profile: ProfileCardData) => {
+    try {
+      await saveToShortlist(profile.userId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlist });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.shortlistIds });
+      success('Saved to shortlist', `${profile.displayName} is on your saved profiles`);
+    } catch (err) {
+      showError('Could not save', err instanceof Error ? err.message : 'Try again from the profile page');
+    }
   };
 
   // Apply role filter to hits
@@ -214,33 +222,39 @@ export default function DiscoverPage() {
     h.role?.toLowerCase() === roleFilter
   );
 
+  const askAi = `Discover (${activeTab === 'suggestions' ? 'For You' : activeTab === 'matches' ? 'Top Matches' : 'Search'}): ${filteredHits.length} search results${roleFilter !== 'all' ? `, role filter ${roleFilter.replace('_', ' ')}` : ''}, ${suggestions.length} recommendations. Who should I shortlist or message next, and which filters would find a complementary technical cofounder?`;
+
   return (
     <AppShell
+      title={discoverEn('page_title')}
+      description={discoverEn('page_description')}
       showHelp
+      askAi={askAi}
+      contentClassName="overflow-x-clip"
       actions={
         <Link href="/matches">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="min-h-10 gap-2">
             <TrendingUp className="icon-sm" />
-            <BilingualText en={discoverEn('view_matches')} el={discoverEl('view_matches')} />
+            <BilingualText en={discoverEn('view_matches')} el={discoverEl('view_matches')} compact />
           </Button>
         </Link>
       }
     >
-      <div className="space-y-5 pb-10">
+      <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
 
         {/* Platform stats bar */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {PLATFORM_STATS.map((s) => {
             const SIcon = s.icon;
             return (
-              <Card key={s.labelEn} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
-                <CardContent className="flex items-center gap-3 p-3">
+              <Card key={s.labelEn} className="min-w-0 shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
+                <CardContent className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                     <SIcon className="icon-sm text-primary-accessible" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                    <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground sm:text-xs">
                       <BilingualText en={s.labelEn} el={s.labelEl} compact />
                     </p>
                   </div>
@@ -252,18 +266,18 @@ export default function DiscoverPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v as typeof activeTab); setRoleFilter('all'); }}>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <TabsList>
-              <TabsTrigger value="search" className="gap-2">
-                <Users className="icon-sm" />
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <TabsList className="h-auto min-h-10 w-full min-w-0 sm:w-auto">
+              <TabsTrigger value="search" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Users className="icon-sm hidden sm:block" />
                 <BilingualText en={discoverEn('search')} el={discoverEl('search')} compact />
               </TabsTrigger>
-              <TabsTrigger value="suggestions" className="gap-2">
-                <Sparkles className="icon-sm" />
+              <TabsTrigger value="suggestions" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <Sparkles className="icon-sm hidden sm:block" />
                 <BilingualText en={discoverEn('for_you')} el={discoverEl('for_you')} compact />
               </TabsTrigger>
-              <TabsTrigger value="matches" className="gap-2">
-                <TrendingUp className="icon-sm" />
+              <TabsTrigger value="matches" className="min-h-10 flex-1 gap-1.5 px-2.5 text-xs sm:flex-none sm:gap-2 sm:px-3 sm:text-sm">
+                <TrendingUp className="icon-sm hidden sm:block" />
                 <BilingualText en={discoverEn('top_matches')} el={discoverEl('top_matches')} compact />
               </TabsTrigger>
             </TabsList>
@@ -273,16 +287,18 @@ export default function DiscoverPage() {
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
             >
               <LayoutGrid className="icon-sm" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
-              className="h-8 w-8"
+              className="h-10 w-10 sm:h-8 sm:w-8"
               onClick={() => setViewMode('list')}
+              aria-label="List view"
             >
               <List className="icon-sm" />
             </Button>
@@ -291,8 +307,8 @@ export default function DiscoverPage() {
 
         {/* Role filter chips - shown for search & suggestions tabs */}
         {activeTab !== 'matches' && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Filter className="icon-sm text-muted-foreground shrink-0" />
+          <div className="flex min-w-0 items-center gap-2 overflow-x-auto pt-1 scrollbar-hide -mx-1 px-1">
+            <Filter className="icon-sm shrink-0 text-muted-foreground" />
             {ROLE_FILTERS.map((rf) => {
               const RIcon = rf.icon;
               const isActive = roleFilter === rf.value;
@@ -302,7 +318,7 @@ export default function DiscoverPage() {
                   key={rf.value}
                   onClick={() => setRoleFilter(rf.value)}
                   className={cn(
-                    'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    'inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-all',
                     isActive
                       ? 'border-primary bg-primary text-primary-foreground shadow-sm'
                       : 'border-border/60 bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted/50',
@@ -350,15 +366,15 @@ export default function DiscoverPage() {
           {/* Featured strip when no query */}
           {!loading && !filters.q && hits.length > 0 && roleFilter === 'all' && (
             <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 to-status-accent-bg/30 p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <BadgeCheck className="icon-sm text-primary-accessible" />
+              <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2">
+                <BadgeCheck className="icon-sm shrink-0 text-primary-accessible" />
                 <span className="text-sm font-semibold text-foreground">Featured Profiles</span>
-                <span className="text-xs text-muted-foreground">— Top matches based on your profile</span>
+                <span className="hidden text-xs text-muted-foreground sm:inline">— Top matches based on your profile</span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 scrollbar-hide sm:flex-wrap">
                 {hits.slice(0, 4).map((h) => (
                   <Link key={h.id} href={`/profile/${h.userId}`}
-                    className="flex items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
+                    className="flex shrink-0 items-center gap-2 rounded-lg border border-border/50 bg-card px-3 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all">
                     <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary-accessible">
                       {h.displayName?.charAt(0) ?? '?'}
                     </div>
@@ -391,6 +407,7 @@ export default function DiscoverPage() {
               description="Try adjusting your filters or search for something different."
               illustration="search"
               className="py-12"
+              askAiPrompt="Discover search returned nobody. Suggest filters and a prompt to find a technical cofounder."
               action={
                 <Button onClick={() => setFilters(defaultFilters)}>
                   Clear filters
@@ -427,16 +444,14 @@ export default function DiscoverPage() {
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="icon-md text-primary-accessible" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Sparkles className="icon-md shrink-0 text-primary-accessible" />
                 Suggested for you
               </h2>
               <p className="text-sm text-muted-foreground">
                 Based on your profile and preferences
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (
@@ -455,6 +470,7 @@ export default function DiscoverPage() {
               title="No suggestions yet"
               description="Complete your profile to get personalized recommendations."
               illustration="rocket"
+              askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
               action={
                 <Link href="/profile/edit">
                   <Button className="gap-2">
@@ -494,16 +510,14 @@ export default function DiscoverPage() {
 
         {/* Top Matches Tab */}
         <TabsContent value="matches" className="space-y-6 mt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="icon-md text-primary-accessible" />
+          <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <TrendingUp className="icon-md shrink-0 text-primary-accessible" />
                 Your Top Matches
               </h2>
               <p className="text-sm text-muted-foreground">
                 People with the highest compatibility
               </p>
-            </div>
           </div>
 
           {!suggestionsLoaded && (
@@ -519,6 +533,7 @@ export default function DiscoverPage() {
               title="No matches yet"
               description="Start by exploring profiles and indicating your interests."
               illustration="connection"
+              askAiPrompt="Discover matches tab is empty. Help me find complementary people from the network."
               action={
                 <Button onClick={() => setActiveTab('search')}>
                   Explore profiles

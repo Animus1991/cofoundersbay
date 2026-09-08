@@ -77,7 +77,7 @@ async function getActivityLog(
   const result = await apiRequest<{ activities: BuilderActivityLog[] }>(
     `/api/builder/workspaces/${workspaceId}/activity?limit=${limit}`,
   );
-  return result.activities;
+  return Array.isArray(result?.activities) ? result.activities : [];
 }
 
 // ── ActivityTimeline component ───────────────────────────────────────────────

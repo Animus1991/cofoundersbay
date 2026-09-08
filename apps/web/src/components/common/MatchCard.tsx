@@ -265,11 +265,11 @@ function MatchCardInner({
         <div className="mt-4 border-t border-border/50" />
 
         {/* Action buttons */}
-        <div className="mt-3 flex items-center gap-1.5">
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {onPass && (
             <button
               onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-accessible hover:border-destructive/40 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive-accessible"
             >
               <X className="icon-sm" />
             </button>
@@ -277,7 +277,7 @@ function MatchCardInner({
           {onLike && (
             <button
               onClick={onLike}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-status-accent hover:border-status-accent-border/40 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:border-status-accent-border/40 hover:text-status-accent"
             >
               <Heart className="icon-sm" />
             </button>
@@ -285,21 +285,19 @@ function MatchCardInner({
           <button
             onClick={handleBookmark}
             className={cn(
-              'h-8 w-8 flex items-center justify-center rounded-full transition-colors',
+              'flex h-10 w-10 items-center justify-center rounded-full transition-colors',
               bookmarked ? STATUS.warning.icon : cn('text-muted-foreground', 'hover:text-status-warning')
             )}
           >
             <Bookmark className={cn('icon-sm', bookmarked && 'fill-current')} />
           </button>
 
-          <div className="flex-1" />
-
-          {/* Compatibility breakdown / analysis */}
+          <div className="flex min-w-0 flex-1 basis-full flex-wrap items-center justify-end gap-1.5 sm:basis-auto">
           {onBreakdown ? (
             <Button
               size="sm"
               variant="outline"
-              className={cn('gap-1.5 h-8 text-xs font-medium px-2.5', colors.border, colors.text)}
+              className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.border, colors.text)}
               style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}
               onClick={onBreakdown}
             >
@@ -308,7 +306,7 @@ function MatchCardInner({
             </Button>
           ) : (
             <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className={cn('gap-1.5 h-8 text-xs font-medium px-2.5', colors.text)}
+              <Button size="sm" variant="outline" className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.text)}
                 style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}>
                 <TrendingUp className="icon-sm" />
                 Compatibility
@@ -317,11 +315,12 @@ function MatchCardInner({
           )}
 
           {onMessage && (
-            <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">
+            <Button onClick={onMessage} size="sm" className="h-10 gap-1.5 px-2.5 text-xs">
               <MessageCircle className="icon-sm" />
               Message
             </Button>
           )}
+          </div>
         </div>
       </CardContent>
     </Card>

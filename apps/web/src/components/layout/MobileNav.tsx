@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, type MouseEvent } from 'react';
 import { usePathname } from 'next/navigation';
-import { Menu, LogOut, User, Settings } from 'lucide-react';
+import { Menu, LogOut, User, Settings, Bot } from 'lucide-react';
+import { LanguagePanel } from '@/components/common/LanguageSwitcher';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/brand/Logo';
 import { Button } from '@/components/ui/button';
@@ -20,13 +21,18 @@ import { cn } from '@/lib/utils';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
 import { NavIcon } from '@/components/icons/CfbGlyph';
 import { useStoredUser } from '@/hooks/useStoredUser';
+import { useRoleOptional } from '@/contexts/RoleContext';
+import { useI18n } from '@/components/common/I18nProvider';
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { mobileNavOpen, mobileNavId, setMobileNavOpen } = useSidebar();
   const [mode, setMode] = useSidebarMode();
   const { messages: unreadMessages, intros: pendingIntros, notifications: unreadNotifications } = useUnreadCounts();
   const user = useStoredUser();
+  const role = useRoleOptional();
+  const primaryRole = role?.primaryRole;
   const openerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -34,8 +40,8 @@ export function MobileNav() {
   }, [pathname, setMobileNavOpen]);
 
   const sections = useMemo(
-    () => getSectionsForMode(mode, user?.role),
-    [mode, user?.role],
+    () => getSectionsForMode(mode, primaryRole ?? user?.role),
+    [mode, primaryRole, user?.role],
   );
   const activeHref = getActiveNavHref(pathname, sections);
 
@@ -68,7 +74,7 @@ export function MobileNav() {
           variant="ghost"
           size="icon"
           className="h-11 w-11 shrink-0 lg:hidden"
-          aria-label={bilingualAria('Open navigation', 'Άνοιγμα πλοήγησης')}
+          aria-label={t('Open navigation')}
           aria-expanded={mobileNavOpen}
           aria-controls={mobileNavOpen ? mobileNavId : undefined}
         >
@@ -98,7 +104,10 @@ export function MobileNav() {
               </OptimizedLink>
             </SheetTitle>
             <SheetDescription className="sr-only">
-              <BilingualText en="Choose Work, Explore or Account to browse destinations." el="Επιλέξτε Εργασία, Εξερεύνηση ή Λογαριασμό για να δείτε τις διαθέσιμες σελίδες." />
+              <BilingualText
+                en="Choose Work, Explore or Account to browse destinations."
+                el="Επιλέξτε Εργασία, Εξερεύνηση ή Λογαριασμό για να δείτε τις διαθέσιμες σελίδες."
+              />
             </SheetDescription>
           </SheetHeader>
         </div>
@@ -128,7 +137,11 @@ export function MobileNav() {
 
           <ModeSwitcher currentMode={mode} onModeChange={setMode} expanded />
 
-          <nav className="px-2 py-3" aria-label={bilingualAria('Mobile navigation', 'Πλοήγηση κινητού')}>
+          <div className="border-b border-border/60 px-3 py-3">
+            <LanguagePanel />
+          </div>
+
+          <nav className="px-2 py-3" aria-label={t('Primary mobile navigation')}>
             {sections.map(({ section, links }) => (
               <div key={section} className="mb-3">
                 <p className="px-3 pb-1 text-xs text-muted-foreground">
@@ -144,6 +157,11 @@ export function MobileNav() {
                   {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
                     const active = activeHref === href;
                     const badge = badgeFor(href, badgeType);
+
+                    // Remote introduced the /ai hub; use the Bot lucide glyph for
+                    // AI Assistant / Ask AI entries.
+                    const FallbackIcon = href === '/ai' ? Bot : Icon;
+
                     return (
                       <li key={`${section}-${href}`}>
                         <OptimizedLink
@@ -156,11 +174,21 @@ export function MobileNav() {
                               : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                           )}
                         >
-                          <NavIcon href={href} fallback={Icon} className="icon-sm shrink-0" />
-                          <BilingualText en={label} el={getNavLabelEl(href)} stacked className="min-w-0 flex-1" primaryClassName="whitespace-normal break-words" secondaryClassName="whitespace-normal break-words" />
+                          <NavIcon href={href} fallback={FallbackIcon} className="icon-sm shrink-0" />
+                          <BilingualText
+                            en={label}
+                            el={getNavLabelEl(href)}
+                            stacked
+                            className="min-w-0 flex-1"
+                            primaryClassName="whitespace-normal break-words"
+                            secondaryClassName="whitespace-normal break-words"
+                          />
                           {badge > 0 && (
                             <>
-                              <span aria-hidden="true" className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
+                              <span
+                                aria-hidden="true"
+                                className="ml-auto flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground"
+                              >
                                 {badge > 99 ? '99+' : badge}
                               </span>
                               <span className="sr-only">
@@ -182,15 +210,25 @@ export function MobileNav() {
           <div className="safe-bottom space-y-1 border-t border-border/60 p-3">
             {user ? (
               <>
-                <OptimizedLink href="/profile" className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground focus-ring">
+                <OptimizedLink
+                  href="/profile"
+                  className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground focus-ring"
+                >
                   <User className="icon-md shrink-0" aria-hidden="true" />
                   <BilingualText en="My Profile" el="Το προφίλ μου" stacked />
                 </OptimizedLink>
-                <OptimizedLink href="/settings" className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground focus-ring">
+                <OptimizedLink
+                  href="/settings"
+                  className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground focus-ring"
+                >
                   <Settings className="icon-md shrink-0" aria-hidden="true" />
                   <BilingualText en="Settings" el="Ρυθμίσεις" stacked />
                 </OptimizedLink>
-                <button type="button" onClick={handleLogout} className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-destructive-accessible hover:bg-destructive/10 focus-ring">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-destructive-accessible hover:bg-destructive/10 focus-ring"
+                >
                   <LogOut className="icon-md shrink-0" aria-hidden="true" />
                   <BilingualText en="Sign out" el="Αποσύνδεση" stacked />
                 </button>
@@ -198,10 +236,19 @@ export function MobileNav() {
             ) : (
               <div className="grid grid-cols-2 gap-2">
                 <Button asChild variant="secondary" className="h-auto min-h-11 py-2">
-                  <OptimizedLink href="/login"><BilingualText en="Sign in" el="Σύνδεση" stacked /></OptimizedLink>
+                  <OptimizedLink href="/login">
+                    <BilingualText en="Sign in" el="Σύνδεση" stacked />
+                  </OptimizedLink>
                 </Button>
                 <Button asChild className="h-auto min-h-11 py-2">
-                  <OptimizedLink href="/register"><BilingualText en="Sign up" el="Εγγραφή" stacked secondaryClassName="text-primary-foreground" /></OptimizedLink>
+                  <OptimizedLink href="/register">
+                    <BilingualText
+                      en="Sign up"
+                      el="Εγγραφή"
+                      stacked
+                      secondaryClassName="text-primary-foreground"
+                    />
+                  </OptimizedLink>
                 </Button>
               </div>
             )}

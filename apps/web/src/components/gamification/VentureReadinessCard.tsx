@@ -39,6 +39,7 @@ function RadialGauge({ score }: { score: number }) {
   const { labelEn, labelEl, color, ring } = scoreTier(score);
   const { primary } = useLanguagePreference();
   const tierLabel = primary === 'el' ? labelEl : labelEn;
+
   const circumference = 2 * Math.PI * 15.5;
   const dash = (score / 100) * circumference;
 
@@ -61,7 +62,6 @@ function RadialGauge({ score }: { score: number }) {
           strokeLinecap="round"
         />
       </svg>
-      {/* The number needs a unit to be self-explanatory: 42 alone is ambiguous. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
         <span className="text-base font-bold leading-none text-foreground tabular-nums">
           {score}
@@ -116,15 +116,15 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   const dimensionCount = vrs.dimensions.length;
 
   return (
-    <Card className={cn('border-primary/20 bg-primary/[0.03]', className)}>
+    <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className={cn('flex items-center gap-2', compact ? 'text-sm' : 'text-base')}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className={cn('flex min-w-0 items-center gap-2', compact ? 'text-sm' : 'text-base')}>
             <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
             <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
           </CardTitle>
           <Link href="/achievements" className="shrink-0">
-            <Button variant="ghost" size="sm" className="gap-1">
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
               <BilingualText en="History" el="Ιστορικό" compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
             </Button>
@@ -132,13 +132,12 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="mb-3 flex items-center gap-4">
+        <div className="mb-3 flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
           <RadialGauge score={vrs.overall} />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 text-center sm:text-left">
             <p className={cn('text-sm font-semibold', tierColor)}>
               <BilingualText en={`${tierEn} readiness`} el={`${tierEl} ετοιμότητα`} />
             </p>
-            {/* Count comes from the payload — it was hardcoded to 6 while the API returns 8. */}
             <p className="mt-0.5 text-xs text-muted-foreground">
               <BilingualText
                 en={`Weighted across ${dimensionCount} dimensions of founder progress`}
@@ -146,17 +145,16 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
               />
             </p>
             {vrs.lowestDimension && (
-              <p className={cn('mt-2 flex items-center gap-1.5 text-xs', STATUS.warning.text)}>
-                <CfbGlyph name="spark" className="icon-sm shrink-0" />
-                <span>
-                  <BilingualText en="Weakest" el="Ασθενέστερη" compact />
-                  {': '}
+              <div className={cn('mt-2 flex items-start justify-center gap-1.5 text-xs sm:justify-start', STATUS.warning.text)}>
+                <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
+                <span className="min-w-0 text-pretty">
+                  <BilingualText en="Lowest" el="Χαμηλότερη" compact />{': '}
                   <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
                     {vrs.lowestDimension.label}
                   </Link>{' '}
                   ({vrs.lowestDimension.score}%)
                 </span>
-              </p>
+              </div>
             )}
           </div>
         </div>
@@ -170,8 +168,6 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                   <div className="mb-0.5 flex items-center justify-between gap-2 text-xs">
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                       {dim.label}
-                      {/* Spell out what the parenthesised number is — a bare (15%) next to
-                          another percentage reads as a second score. */}
                       <span className="ml-1 text-muted-foreground/60">
                         · <BilingualText en={`weight ${dim.weight}%`} el={`βάρος ${dim.weight}%`} compact />
                       </span>

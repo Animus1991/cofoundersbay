@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus, CheckCircle2, Clock,
@@ -282,14 +282,15 @@ function MilestoneCard({
 }
 
 // ── Summary card ─────────────────────────────────────────────────────────────
-function SummaryBar({ summary }: { summary: { counts: Record<string, number>; total: number; overdue: number; dueSoon: number; completionRate: number } | undefined }) {
-  if (!summary) return null;
+function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; total?: number; overdue?: number; dueSoon?: number; completionRate?: number } | undefined }) {
+  const counts = summary?.counts;
+  if (!summary || !counts || typeof counts !== 'object') return null;
   const stats: { labelKey: 'stat_total' | 'stat_in_progress' | 'stat_completed' | 'stat_overdue' | 'stat_rate'; value: string | number; glyph: CfbGlyphName; tone: StatusTone | 'neutral' }[] = [
-    { labelKey: 'stat_total', value: summary.total, glyph: 'flag', tone: 'neutral' },
-    { labelKey: 'stat_in_progress', value: summary.counts?.in_progress ?? 0, glyph: 'calendar', tone: 'info' },
-    { labelKey: 'stat_completed', value: summary.counts?.completed ?? 0, glyph: 'award', tone: 'success' },
-    { labelKey: 'stat_overdue', value: summary.overdue, glyph: 'target', tone: 'danger' },
-    { labelKey: 'stat_rate', value: `${summary.completionRate}%`, glyph: 'chart', tone: 'accent' },
+    { labelKey: 'stat_total', value: summary.total ?? 0, glyph: 'flag', tone: 'neutral' },
+    { labelKey: 'stat_in_progress', value: counts.in_progress ?? 0, glyph: 'calendar', tone: 'info' },
+    { labelKey: 'stat_completed', value: counts.completed ?? 0, glyph: 'award', tone: 'success' },
+    { labelKey: 'stat_overdue', value: summary.overdue ?? 0, glyph: 'target', tone: 'danger' },
+    { labelKey: 'stat_rate', value: `${summary.completionRate ?? 0}%`, glyph: 'chart', tone: 'accent' },
   ];
 
   return (
@@ -326,6 +327,11 @@ export default function MilestonesPage() {
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [editTarget, setEditTarget] = useState<Milestone | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const queryKey = ['milestones', statusFilter, priorityFilter];
 
@@ -338,15 +344,17 @@ export default function MilestonesPage() {
         limit: 100,
       }),
     staleTime: 30_000,
-    enabled: isAuthenticated && !isChecking,
+    enabled: mounted && isAuthenticated && !isChecking,
   });
 
   const { data: summaryData } = useQuery({
     queryKey: ['milestones', 'summary'],
     queryFn: getMilestoneSummary,
     staleTime: 60_000,
-    enabled: isAuthenticated && !isChecking,
+    enabled: mounted && isAuthenticated && !isChecking,
   });
+
+  const waiting = !mounted || isLoading;
 
   const allMilestones = data?.milestones ?? [];
   const milestones = allMilestones.filter((m) => {
@@ -444,7 +452,7 @@ export default function MilestonesPage() {
         </button>
 
         {/* Summary strip */}
-        {isLoading ? (
+        {waiting ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-20 rounded-xl" />
@@ -570,7 +578,7 @@ export default function MilestonesPage() {
               <BilingualText en={milestoneEn('retry')} el={milestoneEl('retry')} compact />
             </Button>
           </div>
-        ) : isLoading ? (
+        ) : waiting ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <MilestoneSkeleton key={i} />)}
           </div>

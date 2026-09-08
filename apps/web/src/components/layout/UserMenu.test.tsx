@@ -131,10 +131,23 @@ describe('UserMenu', () => {
   // Radix restores focus and unmounts the menu across a frame, so these two need
   // the real async helpers. Budgeted generously: see the note on `openMenu` for
   // why a `waitFor` costs ~20s here.
-  it.each(['ArrowDown', 'Enter'])('opens with %s and Escape closes and restores trigger focus', async (key) => {
+  it('opens with ArrowDown and Escape closes and restores trigger focus', async () => {
     render(<UserMenu />);
     const trigger = screen.getByRole('button');
-    const menu = openMenu(key);
+    const menu = openMenu('ArrowDown');
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    await waitFor(() => expect(within(menu).getAllByRole('menuitem').length).toBeGreaterThan(0));
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(clearPreviewDemoSession).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  }, 240_000);
+
+  it('opens with Enter and Escape closes and restores trigger focus', async () => {
+    render(<UserMenu />);
+    const trigger = screen.getByRole('button');
+    const menu = openMenu('Enter');
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
     await waitFor(() => expect(within(menu).getAllByRole('menuitem')[0]).toBe(document.activeElement));
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });

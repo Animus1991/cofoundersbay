@@ -13,6 +13,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { applyTheme, getStoredTheme, type ThemeName } from '@/lib/themes';
 import { cn } from '@/lib/utils';
+import { useI18n } from '@/components/common/I18nProvider';
+import { BilingualText } from '@/components/common/BilingualText';
+import { translate } from '@/lib/i18n/translate';
 
 const themeConfig = [
   {
@@ -55,6 +58,7 @@ const themeConfig = [
 export function ThemeSwitcher() {
   const [currentTheme, setCurrentTheme] = useState<ThemeName>('dark');
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -83,13 +87,15 @@ export function ThemeSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9">
           <CurrentIcon className="icon-sm transition-all" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">{t('Theme')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Choose Theme</DropdownMenuLabel>
+        <DropdownMenuLabel className="font-normal">
+          <BilingualText en="Choose Theme" el={translate('el', 'Choose Theme')} compact />
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {themeConfig.map((theme, idx) => {
           const isActive = currentTheme === theme.name;
           return (
@@ -97,8 +103,13 @@ export function ThemeSwitcher() {
               {idx === 3 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
-                    Custom Themes
+                  <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                    <BilingualText
+                      en="Custom Themes"
+                      el={translate('el', 'Custom Themes')}
+                      compact
+                      secondaryClassName="text-muted-foreground/60"
+                    />
                   </DropdownMenuLabel>
                 </>
               )}
@@ -114,9 +125,21 @@ export function ThemeSwitcher() {
                   <div style={{ background: theme.swatch[1], width: 8 }} />
                   <div style={{ background: theme.swatch[2], width: 8 }} />
                 </div>
-                <div className="flex flex-col gap-0">
-                  <span className="text-sm font-medium leading-tight">{theme.label}</span>
-                  <span className="text-2xs text-muted-foreground leading-tight">{theme.description}</span>
+                <div className="min-w-0 flex-1">
+                  <BilingualText
+                    en={theme.label}
+                    el={translate('el', theme.label)}
+                    stacked
+                    primaryClassName="text-sm font-medium leading-tight"
+                    secondaryClassName="leading-tight"
+                  />
+                  <BilingualText
+                    en={theme.description}
+                    el={translate('el', theme.description)}
+                    stacked
+                    primaryClassName="text-[11px] leading-tight text-muted-foreground"
+                    secondaryClassName="text-[11px] leading-tight text-muted-foreground"
+                  />
                 </div>
                 {isActive && <Check className="ml-auto icon-sm text-primary-accessible shrink-0" />}
               </DropdownMenuItem>

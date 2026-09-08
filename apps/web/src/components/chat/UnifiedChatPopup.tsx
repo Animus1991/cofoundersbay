@@ -9,16 +9,14 @@ import {
   ChevronDown,
   Send,
   Loader2,
-  RefreshCw,
-  Trash2,
   GripVertical,
-  ChevronRight,
   ArrowLeft,
   Search,
   MessageCircle,
   Maximize2,
   Check,
   CheckCheck,
+  Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,8 +25,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useDraggable } from '@/hooks/useDraggable';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { useMessaging } from '@/contexts/MessagingContext';
-import { useAIChat, AIMessage } from '@/hooks/useAIChat';
-import { getAgentIcon } from '@/lib/ai-api';
+import { CopilotWorkspace } from '@/components/ai/CopilotWorkspace';
 import {
   getMe, listMessageConversations, listConversationMessages,
   getOrCreateDirectConversation,
@@ -38,7 +35,6 @@ import { createMessagingSocket, type ServerToClientEvents } from '@/lib/messagin
 import type { Conversation } from '@/components/messaging/ConversationList';
 import { BilingualText } from '@/components/common/BilingualText';
 import { bilingualAria } from '@/lib/i18n/format';
-import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 type TabType = 'messages' | 'ai';
 
@@ -161,110 +157,6 @@ function TypingIndicator() {
   );
 }
 
-// ── AI sub-components ──────────────────────────────────────────────────────────
-
-interface AgentSelectorProps {
-  agents: Array<{ id: string; name: string; description: string }>;
-  currentAgent: string;
-  onSelect: (agentId: string) => void;
-}
-
-function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const current = agents.find((a) => a.id === currentAgent);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-status-accent-bg text-status-accent text-xs font-medium hover:bg-status-accent-bg/80 transition-colors"
-      >
-        <span>{getAgentIcon(currentAgent)}</span>
-        <span>{current?.name || 'Assistant'}</span>
-        <ChevronDown className={cn('icon-sm transition-transform', isOpen && 'rotate-180')} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-2">
-            {agents.map((agent) => (
-              <button
-                key={agent.id}
-                onClick={() => { onSelect(agent.id); setIsOpen(false); }}
-                className={cn(
-                  'w-full flex items-start gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors',
-                  agent.id === currentAgent && 'bg-muted/50'
-                )}
-              >
-                <span className="text-lg">{getAgentIcon(agent.id)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium">{agent.name}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-1">{agent.description}</div>
-                </div>
-                {agent.id === currentAgent && (
-                  <ChevronRight className="icon-sm text-status-accent mt-0.5" />
-                )}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function AIMessageBubble({ message }: { message: AIMessage }) {
-  const isUser = message.role === 'user';
-  return (
-    <div className={cn('flex gap-2', isUser && 'flex-row-reverse')}>
-      <div className={cn(
-        'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs',
-        isUser ? 'bg-primary text-primary-foreground' : 'bg-primary/15 text-primary-accessible'
-      )}>
-        {isUser ? <CfbGlyph name="profile" className="icon-sm" /> : <CfbGlyph name="spark" className="icon-sm" />}
-      </div>
-      <div className={cn(
-        'flex-1 rounded-2xl px-3 py-2 max-w-[85%] text-sm',
-        isUser ? 'rounded-tr-sm bg-primary text-primary-foreground ml-auto' : 'rounded-tl-sm bg-muted/60'
-      )}>
-        {message.isStreaming && !message.content ? (
-          <div className="flex items-center gap-1.5">
-            <Loader2 className="icon-sm animate-spin" />
-            <span className="text-xs text-muted-foreground">Thinking...</span>
-          </div>
-        ) : (
-          <div className="whitespace-pre-wrap">
-            {message.content.split('**').map((part, i) =>
-              i % 2 === 1 ? <strong key={i}>{part}</strong> : part
-            )}
-          </div>
-        )}
-        {message.model && !message.isStreaming && (
-          <div className="text-2xs text-muted-foreground mt-1 opacity-60">{message.model}</div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function QuickActions({ questions, onSelect }: { questions: string[]; onSelect: (q: string) => void }) {
-  if (!questions.length) return null;
-  return (
-    <div className="flex flex-wrap gap-1.5 px-3 py-2">
-      {questions.slice(0, 4).map((q) => (
-        <button
-          key={q}
-          onClick={() => onSelect(q)}
-          className="text-xs px-2.5 py-1 rounded-full border border-border bg-card hover:bg-muted transition-colors"
-        >
-          {q}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function UnifiedChatPopup() {
@@ -276,24 +168,6 @@ export function UnifiedChatPopup() {
 
   // ── Tab ────────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<TabType>('ai');
-
-  // ── AI state ───────────────────────────────────────────────────────────────
-  const [aiInput, setAiInput] = useState('');
-  const aiMessagesEndRef = useRef<HTMLDivElement>(null);
-  const aiInputRef = useRef<HTMLInputElement>(null);
-
-  const {
-    messages: aiMessages,
-    isStreaming,
-    agents,
-    currentAgent,
-    isAIAvailable,
-    sendMessage: sendAIMessage,
-    setAgent,
-    clearMessages,
-    retryLastMessage,
-  } = useAIChat({ agentId: 'general' });
-  const agentList = agents ?? [];
 
   // ── Messaging state ────────────────────────────────────────────────────────
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -357,18 +231,9 @@ export function UnifiedChatPopup() {
     pathname?.startsWith('/onboarding') ||
     pathname?.startsWith('/auth') ||
     pathname?.startsWith('/forgot-password') ||
-    pathname?.startsWith('/reset-password');
-
-  // ── AI effects ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    aiMessagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [aiMessages]);
-
-  useEffect(() => {
-    if (isOpen && !isMinimized && activeTab === 'ai') {
-      setTimeout(() => aiInputRef.current?.focus(), 100);
-    }
-  }, [isOpen, isMinimized, activeTab]);
+    pathname?.startsWith('/reset-password') ||
+    pathname === '/ai' ||
+    pathname?.startsWith('/ai/');
 
   // ── Messaging: init socket + conversations on first open ───────────────────
   useEffect(() => {
@@ -602,12 +467,10 @@ export function UnifiedChatPopup() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleMsgSend(); }
   }, [handleMsgSend]);
 
-  const handleAISubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiInput.trim() || isStreaming) return;
-    sendAIMessage(aiInput);
-    setAiInput('');
-  }, [aiInput, isStreaming, sendAIMessage]);
+  const handleAIExpand = useCallback(() => {
+    close();
+    router.push('/ai');
+  }, [close, router]);
 
   const handleExpandToFullPage = useCallback(() => {
     const url = selected ? `/messages?c=${selected.id}` : '/messages';
@@ -616,7 +479,6 @@ export function UnifiedChatPopup() {
   }, [selected, close, router]);
 
   // Derived
-  const currentAgentConfig = agentList.find((a) => a.id === currentAgent);
   const selectedId = selected?.id ?? null;
   const filteredConvos = conversations.filter(
     c => !c.isArchived && c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -648,13 +510,13 @@ export function UnifiedChatPopup() {
           className="flex items-center gap-2 cursor-pointer rounded-full bg-primary shadow-lg px-4 py-2.5 hover:bg-primary/90 hover:shadow-xl transition-all"
           onClick={restore}
         >
-          <CfbGlyph name="spark" className="icon-sm text-primary-foreground" />
+          <Bot className="icon-sm text-primary-foreground" />
           <span className="text-sm font-medium text-primary-foreground">
             <BilingualText en="Chat" el="Συνομιλία" compact />
           </span>
-          {(totalMsgUnread > 0 || aiMessages.length > 0) && (
+          {totalMsgUnread > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
-              {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
+              {totalMsgUnread}
             </span>
           )}
           <button
@@ -716,11 +578,8 @@ export function UnifiedChatPopup() {
               activeTab === 'ai' ? 'bg-white text-status-accent' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <CfbGlyph name="spark" className="icon-sm" />
+            <Bot className="icon-sm" />
             <BilingualText en="AI Assistant" el="Βοηθός AI" compact />
-            {!isAIAvailable && (
-              <span className="h-1.5 w-1.5 rounded-full bg-status-warning" title={bilingualAria('Limited mode', 'Περιορισμένη λειτουργία')} />
-            )}
           </button>
         </div>
 
@@ -733,77 +592,7 @@ export function UnifiedChatPopup() {
       </div>
 
       {/* ── AI Tab ── */}
-      {activeTab === 'ai' && (
-        <>
-          <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/30 shrink-0">
-            <AgentSelector agents={agentList} currentAgent={currentAgent} onSelect={setAgent} />
-            <div className="flex items-center gap-1">
-              {aiMessages.length > 0 && (
-                <>
-                  <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title={bilingualAria('Retry last message', 'Επανάληψη τελευταίου μηνύματος')} aria-label={bilingualAria('Retry last message', 'Επανάληψη τελευταίου μηνύματος')}>
-                    <RefreshCw className="icon-sm text-muted-foreground" />
-                  </button>
-                  <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title={bilingualAria('Clear conversation', 'Εκκαθάριση συνομιλίας')} aria-label={bilingualAria('Clear conversation', 'Εκκαθάριση συνομιλίας')}>
-                    <Trash2 className="icon-sm text-muted-foreground" />
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 space-y-3">
-            {aiMessages.length === 0 ? (
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-accessible">
-                    <CfbGlyph name="spark" className="icon-sm" />
-                  </div>
-                  <div className="flex-1 rounded-2xl rounded-tl-sm bg-muted/60 px-3 py-2">
-                    <p className="text-sm">
-                      Hi! 👋 I'm your {currentAgentConfig?.name || 'AI Assistant'}.
-                      {currentAgentConfig?.description && (
-                        <span className="text-muted-foreground"> {currentAgentConfig.description}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-                {currentAgentConfig?.suggestedQuestions && (
-                  <QuickActions questions={currentAgentConfig.suggestedQuestions} onSelect={sendAIMessage} />
-                )}
-              </div>
-            ) : (
-              aiMessages.map((msg) => <AIMessageBubble key={msg.id} message={msg} />)
-            )}
-            <div ref={aiMessagesEndRef} />
-          </div>
-
-          <form onSubmit={handleAISubmit} className="border-t border-border/60 p-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <Input
-                ref={aiInputRef}
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                placeholder="Ask me anything... / Ρωτήστε με οτιδήποτε..."
-                className="flex-1 h-10 rounded-full bg-muted/50 border-0 px-4 text-sm focus-visible:ring-1 focus-visible:ring-ring"
-                disabled={isStreaming}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!aiInput.trim() || isStreaming}
-                className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90"
-              >
-                {isStreaming ? <Loader2 className="icon-sm animate-spin" /> : <Send className="icon-sm" />}
-              </Button>
-            </div>
-            <p className="text-2xs text-muted-foreground text-center mt-2">
-              {isAIAvailable
-                ? <BilingualText en="Powered by local AI · Your data stays private" el="Τοπικό AI · Τα δεδομένα μένουν ιδιωτικά" compact />
-                : <BilingualText en="AI running in limited mode" el="Το AI λειτουργεί σε περιορισμένη λειτουργία" compact />}
-            </p>
-          </form>
-        </>
-      )}
+      {activeTab === 'ai' && <CopilotWorkspace variant="popup" onExpand={handleAIExpand} />}
 
       {/* ── Messages Tab ── */}
       {activeTab === 'messages' && (

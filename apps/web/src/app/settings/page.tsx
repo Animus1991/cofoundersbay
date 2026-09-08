@@ -38,6 +38,9 @@ import { useToast } from '@/components/ui/toast';
 import { createBillingCheckout, createBillingPortal, getBillingSubscription, changePassword, getTwoFactorStatus, getLinkedAccounts, type BillingSubscription } from '@/lib/api';
 import { TwoFactorManagement } from '@/components/auth/TwoFactorManagement';
 import { clearPreviewDemoSession } from '@/lib/preview-demo';
+import { LanguageChipGrid } from '@/components/common/LanguageSwitcher';
+import { APP_LOCALES, applyLocale, getStoredLocale, LOCALE_CHANGE_EVENT } from '@/lib/locale';
+import { useI18n } from '@/components/common/I18nProvider';
 
 type NotifPrefs = {
   messages: boolean;
@@ -84,7 +87,51 @@ const PRIVACY_ITEMS = [
   { id: 'showActivity',   icon: Activity, label: 'Show recent activity', desc: 'Visible to connections on your profile' },
 ] as const;
 
+function LanguageCard() {
+  const { success } = useToast();
+  const { t } = useI18n();
+  const [locale, setLocale] = useState('en');
+
+  useEffect(() => {
+    setLocale(getStoredLocale());
+    const onChange = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      if (APP_LOCALES.some((l) => l.value === next)) setLocale(next);
+    };
+    window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+  }, []);
+
+  return (
+    <Card id="language" className="scroll-mt-16 shadow-sm border-border/50">
+      <CardHeader className="border-b border-border/50">
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Globe className="h-5 w-5 text-primary" />
+          {t('Language')}
+        </CardTitle>
+        <CardDescription>
+          {t('Tap a language. Menus, buttons, page titles, and sample data update immediately. AI replies use the same language.')}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <LanguageChipGrid
+          value={locale}
+          onChange={(next) => {
+            setLocale(next);
+            applyLocale(next);
+            success(
+              t('Language saved'),
+              next === 'el' ? t('AI replies will use Greek.') : t('AI replies will use {code}.', { code: next.toUpperCase() }),
+            );
+          }}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 function PrivacyCard() {
+  const { t } = useI18n();
   const [flags, setFlags] = useState<Record<string, boolean>>({
     publicProfile: true, showLocation: true, searchable: true, showActivity: false,
   });
@@ -93,7 +140,7 @@ function PrivacyCard() {
       <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
           <Globe className="icon-md text-primary-accessible" />
-          Privacy & Visibility
+          {t('Privacy & Visibility')}
         </CardTitle>
         <CardDescription>Control who can see your profile and activity.</CardDescription>
       </CardHeader>
@@ -105,8 +152,8 @@ function PrivacyCard() {
                 <Icon className="icon-sm text-primary-accessible" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">{label}</p>
-                <p className="text-xs text-muted-foreground">{desc}</p>
+                <p className="text-sm font-medium text-foreground">{t(label)}</p>
+                <p className="text-xs text-muted-foreground">{t(desc)}</p>
               </div>
             </div>
             <Toggle checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
@@ -120,6 +167,7 @@ function PrivacyCard() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const { success, error: showError } = useToast();
+  const { t } = useI18n();
 
   const [hasToken, setHasToken] = useState(false);
   useEffect(() => {
@@ -238,13 +286,14 @@ export default function SettingsPage() {
 
       {hasToken && (
         <div className="space-y-6 pb-10">
+          <LanguageCard />
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Billing */}
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <CreditCard className="icon-md text-primary-accessible" />
-                  Billing
+                  {t('Billing')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -263,12 +312,12 @@ export default function SettingsPage() {
                 {loading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="icon-sm animate-spin" />
-                    Loading billing…
+                    {t('Loading billing…')}
                   </div>
                 ) : (
                   <div className="rounded-xl border border-border/60 bg-card/60 p-4 text-sm">
                     <p className="font-medium text-foreground">
-                      {isPremium ? 'Premium is active.' : 'Upgrade to Premium to unlock advanced features.'}
+                      {isPremium ? t('Premium is active.') : t('Upgrade to Premium to unlock advanced features.')}
                     </p>
                     <p className="mt-1 text-muted-foreground">
                       Mentor booking payments, file attachments, and advanced discovery filters.

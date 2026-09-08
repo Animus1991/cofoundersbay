@@ -19,6 +19,20 @@ type RoleBadgeProps = {
   animated?: boolean;
 };
 
+function normalizeRole(raw: string): RoleType | null {
+  const key = raw.toLowerCase().replace(/[\s-]+/g, '_');
+  if (key === 'founder' || key === 'mentor' || key === 'investor' || key === 'org') return key;
+  if (key === 'cofounder' || key === 'co_founder' || key === 'technical_talent' || key === 'operator') {
+    return 'founder';
+  }
+  if (key === 'advisor' || key === 'coach') return 'mentor';
+  if (key === 'angel' || key === 'angel_investor' || key === 'vc' || key === 'vc_analyst' || key === 'vc_scout') {
+    return 'investor';
+  }
+  if (key === 'organization' || key === 'admin' || key === 'community_manager') return 'org';
+  return null;
+}
+
 export function RoleBadge({ 
   role, 
   showIcon = true, 
@@ -26,11 +40,14 @@ export function RoleBadge({
   className,
   animated = false,
 }: RoleBadgeProps) {
-  if (!role) return null;
-  const roleKey = role.toLowerCase() as RoleType;
-  const config = roleConfig[roleKey];
+  if (typeof role !== 'string' || !role.trim()) {
+    return null;
+  }
+
+  const roleKey = normalizeRole(role);
+  const config = roleKey ? roleConfig[roleKey] : undefined;
   
-  if (!config) {
+  if (!config || !roleKey) {
     return <Badge variant="secondary" size={size} className={className}>{role}</Badge>;
   }
 

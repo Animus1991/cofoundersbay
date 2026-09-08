@@ -68,11 +68,11 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
   return (
     <Card className="rounded-xl">
       <CardHeader className="pb-2">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <CfbGlyph name="chart" className="icon-sm text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <CardTitle className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+            <CfbGlyph name="chart" className="icon-sm shrink-0 text-primary-accessible" /><BilingualText en="Profile Views Trend" el="Τάση προβολών προφίλ" compact />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="gap-1" onClick={exportData} disabled={!chartData.length}>
+          <Button variant="ghost" size="sm" className="h-9 gap-1 text-xs" onClick={exportData} disabled={!chartData.length}>
             <Download className="icon-sm" aria-hidden="true" /><BilingualText en="Export" el="Εξαγωγή" compact />
           </Button>
         </div>
@@ -93,8 +93,8 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+              <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Area type="monotone" dataKey="views" stroke="hsl(var(--primary))" strokeWidth={2} fill={`url(#${id}-views)`} name="Views" />
               <Area type="monotone" dataKey="unique" stroke="hsl(var(--status-info-fg))" strokeWidth={2} fill={`url(#${id}-unique)`} name="Unique" connectNulls={false} />
@@ -131,9 +131,10 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
         </CardTitle></CardHeader>
         <CardContent>
           {barData.length ? <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={barData} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
+            <BarChart data={barData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} className="text-muted-foreground" />
+              <YAxis width={28} tick={{ fontSize: 10 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>

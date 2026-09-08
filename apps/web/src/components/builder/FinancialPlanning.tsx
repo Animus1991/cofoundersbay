@@ -276,9 +276,9 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       />
 
       {/* Key Metrics Dashboard */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardContent className="p-3">
             <div className="flex items-center gap-2 mb-2">
               <TrendingDown className="icon-sm text-status-danger" />
               <span className="text-sm text-muted-foreground">
@@ -516,7 +516,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.revenueStreams.map((stream, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
                       <Label>Name</Label>
                       <Input
@@ -741,7 +741,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.fundingRounds.map((round, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     <div>
                       <Label>Stage</Label>
                       <Input

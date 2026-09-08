@@ -44,6 +44,8 @@ import { BilingualText } from '@/components/common/BilingualText';
 import { dashboardEn, dashboardEl } from '@/lib/i18n/strings-dashboard';
 import { bilingualAria, formatShortDate } from '@/lib/i18n/format';
 import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
+import { useUnreadCounts } from '@/hooks/useUnreadCounts';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 function getTimeBasedGreeting(): { en: string; el: string } {
   const hour = new Date().getHours();
@@ -98,7 +100,17 @@ function isoInDays(offsetDays: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-const DEMO_MILESTONES = [
+type DemoMilestone = {
+  id: string;
+  titleEn: string;
+  titleEl: string;
+  status: 'in_progress' | 'pending' | 'completed';
+  progress: number;
+  dueDate: string;
+  priority: 'high' | 'medium' | 'low';
+};
+
+const DEMO_MILESTONES: DemoMilestone[] = [
   { id: '1', titleEn: 'Complete MVP v1', titleEl: 'Ολοκλήρωση MVP v1', status: 'in_progress', progress: 65, dueDate: isoInDays(24), priority: 'high' },
   { id: '2', titleEn: 'First 100 active users', titleEl: 'Πρώτοι 100 ενεργοί χρήστες', status: 'in_progress', progress: 23, dueDate: isoInDays(40), priority: 'high' },
   { id: '3', titleEn: 'Seed funding round', titleEl: 'Γύρος Seed χρηματοδότησης', status: 'pending', progress: 10, dueDate: isoInDays(100), priority: 'medium' },
@@ -131,6 +143,7 @@ const DEMO_EVENTS = (
 ).map((e) => ({ ...e, date: isoInDays(e.daysLeft) }));
 
 const QUICK_ACTIONS: { href: string; glyph: CfbGlyphName; labelEn: string; labelEl: string }[] = [
+  { href: '/ai', glyph: 'spark', labelEn: 'Ask AI', labelEl: 'Ρώτα το AI' },
   { href: '/discover', glyph: 'discover', labelEn: 'Find co-founders', labelEl: 'Εύρεση συνιδρυτών' },
   { href: '/mentoring', glyph: 'mentor', labelEn: 'Find mentors', labelEl: 'Εύρεση μεντόρων' },
   { href: '/coaching', glyph: 'mentor', labelEn: 'Coaching', labelEl: 'Καθοδήγηση' },
@@ -150,20 +163,20 @@ function StatCard({
   trend?: { value: number; positive: boolean }; href?: string;
 }) {
   const content = (
-    <Card className="relative overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
+    <Card className="relative h-full overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 space-y-1">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold tabular-nums">{value}</p>
+            <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
+            <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
-              <p className={cn('text-xs font-medium', trend.positive ? TREND.up : TREND.down)}>
+              <p className={cn('text-[11px] font-medium sm:text-xs', trend.positive ? TREND.up : TREND.down)}>
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%{' '}
                 <BilingualText en={dashboardEn('this_week')} el={dashboardEl('this_week')} compact />
               </p>
             )}
           </div>
-          <div className="rounded-lg bg-primary/10 p-2">
+          <div className="shrink-0 rounded-lg bg-primary/10 p-1.5 sm:p-2">
             <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
           </div>
         </div>
@@ -188,17 +201,17 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <p className="truncate text-sm font-medium">{match.displayName}</p>
         <p className="truncate text-xs text-muted-foreground">{match.headline}</p>
       </div>
-      <div className="flex items-center gap-1.5">
-        <span className={cn('text-sm font-bold tabular-nums flex items-center gap-0.5', scoreColor)}>
+      <div className="flex shrink-0 items-center gap-1.5">
+        <span className={cn('flex items-center gap-0.5 text-sm font-bold tabular-nums', scoreColor)}>
           <CfbGlyph name="spark" className="icon-sm" />{score}%
         </span>
-        <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+        <ChevronRight className="icon-sm hidden text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 sm:block" />
       </div>
     </Link>
   );
 }
 
-function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
+function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   const isComplete = milestone.status === 'completed';
   const isOverdue = !!milestone.dueDate && new Date(milestone.dueDate) < new Date() && !isComplete;
   const stateLabel = isComplete
@@ -254,6 +267,7 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
 export default function FounderDashboardContent() {
   const { hasSession, mounted } = useSession();
   const { showDemoData } = useDemoData();
+  const { messages: unreadMessages } = useUnreadCounts();
 
   const { data: profile } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -268,14 +282,14 @@ export default function FounderDashboardContent() {
   });
 
   const { data: recommendations } = useQuery({
-    queryKey: ['recommendations', { limit: 5 }],
+    queryKey: queryKeys.recommendations,
     queryFn: () => getRecommendations({ limit: 5 }),
     enabled: hasSession && mounted,
   });
 
   const { data: connectionRequests } = useQuery({
     queryKey: queryKeys.connections.pendingReceived(),
-    queryFn: () => listConnectionRequests(),
+    queryFn: () => listConnectionRequests({ type: 'received', limit: 50 }),
     enabled: hasSession && mounted,
   });
 
@@ -314,7 +328,7 @@ export default function FounderDashboardContent() {
     docCount:        vrs?.signals?.docCount ?? 0,
     vrsLowestKey:    vrs?.lowestDimension?.key,
     pendingRequests,
-    unreadMessages:  3,
+    unreadMessages,
   });
 
   if (!mounted) {
@@ -322,7 +336,7 @@ export default function FounderDashboardContent() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -335,6 +349,9 @@ export default function FounderDashboardContent() {
       showHelp
       actions={
         <>
+          <AIInsightButton
+            prompt="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
+          />
           <AskAiButton variant="outline" />
           <Badge variant="outline" className="gap-1.5">
             <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
@@ -348,7 +365,7 @@ export default function FounderDashboardContent() {
         </>
       }
     >
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6 overflow-x-clip">
 
         <p className="text-sm text-muted-foreground">
           <BilingualText
@@ -371,16 +388,16 @@ export default function FounderDashboardContent() {
         )}
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
           <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked />} value={3} href="/messages" />
+          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked />} value={unreadMessages} href="/messages" />
           <StatCard glyph="flag" label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-6 lg:grid-cols-3">
           {/* Main column */}
-          <div className="lg:col-span-2 space-y-5">
+          <div className="min-w-0 space-y-5 lg:col-span-2">
 
             {/* Readiness — single home.
                 This previously rendered VentureReadinessCard *and* a second
@@ -442,8 +459,15 @@ export default function FounderDashboardContent() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <div>
+                  <p className="text-[11px] text-muted-foreground">
+                    <BilingualText
+                      en="Sample pipeline — live tracker is on Fundraising."
+                      el="Δείγμα pipeline — η ζωντανή παρακολούθηση είναι στη Χρηματοδότηση."
+                      compact
+                    />
+                  </p>
+                  <div className="flex items-end justify-between gap-3">
+                    <div className="min-w-0">
                       <p className="text-xs text-muted-foreground">
                         {fundRound.name}
                       </p>
@@ -455,14 +479,14 @@ export default function FounderDashboardContent() {
                       </p>
                     </div>
                     <span className={cn(
-                      'text-sm font-bold',
+                      'shrink-0 text-sm font-bold',
                       fundingPct >= 75 ? STATUS.success.icon : fundingPct >= 40 ? STATUS.warning.icon : 'text-muted-foreground'
                     )}>
                       {fundingPct}%
                     </span>
                   </div>
                   <Progress value={fundingPct} className="h-2.5" />
-                  <div className="flex gap-4 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <CfbGlyph name="people" className="icon-sm" />
                       {fundStats.total}{' '}
@@ -474,7 +498,7 @@ export default function FounderDashboardContent() {
                       <BilingualText en={dashboardEn('committed_count')} el={dashboardEl('committed_count')} compact />
                     </span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Link href="/fundraising" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full gap-1.5">
                         <CfbGlyph name="wallet" className="icon-sm" />
@@ -495,7 +519,7 @@ export default function FounderDashboardContent() {
             {/* Top Matches */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
@@ -542,7 +566,7 @@ export default function FounderDashboardContent() {
             {/* Milestones */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
@@ -556,13 +580,20 @@ export default function FounderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <p className="text-[11px] text-muted-foreground">
+                  <BilingualText
+                    en="Sample timeline — manage live items on Milestones."
+                    el="Δείγμα χρονοδιαγράμματος — διαχειριστείτε τα πραγματικά στα Ορόσημα."
+                    compact
+                  />
+                </p>
                 {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
 
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />
@@ -628,7 +659,7 @@ export default function FounderDashboardContent() {
                     <Link
                       key={href}
                       href={href}
-                      className="flex flex-col items-center gap-1.5 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
+                      className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
                     >
                       <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
                       <span className="text-xs font-medium text-foreground leading-tight">
@@ -643,13 +674,13 @@ export default function FounderDashboardContent() {
             {/* Recent Activity */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
                   </CardTitle>
                   <Link href="/activity">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
                       <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
                     </Button>
                   </Link>
@@ -677,13 +708,13 @@ export default function FounderDashboardContent() {
             {/* Upcoming Events */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
                   </CardTitle>
                   <Link href="/events">
-                    <Button variant="ghost" size="sm" className="gap-1">
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1">
                       <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
                     </Button>
                   </Link>
@@ -710,7 +741,7 @@ export default function FounderDashboardContent() {
                           <p className="text-xs font-medium text-foreground truncate">
                             <BilingualText en={event.titleEn} el={event.titleEl} compact />
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5">
+                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                             <span className="text-xs text-muted-foreground">
                               <BilingualText
                                 en={`${formatShortDate(event.date, 'en')} · ${event.time}`}

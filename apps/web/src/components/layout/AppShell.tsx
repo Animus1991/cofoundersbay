@@ -12,6 +12,7 @@ import { PageContextualHelp } from '@/components/common/PageContextualHelp';
 import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
 import { CfbGlyphWell } from '@/components/icons/CfbGlyph';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -28,6 +29,11 @@ type AppShellProps = {
   fullHeight?: boolean;
   /** Extra class on the content wrapper */
   contentClassName?: string;
+  /**
+   * Contextual Ask AI prompt. Defaults to the page title when omitted.
+   * Pass `false` to hide (AI workspace, pages that already own the CTA).
+   */
+  askAi?: string | false;
 };
 
 export function AppShell({
@@ -38,6 +44,7 @@ export function AppShell({
   showHelp = false,
   fullHeight = false,
   contentClassName,
+  askAi,
 }: AppShellProps) {
   const pathname = usePathname() ?? '/';
   const resolved = resolvePageHeader(pathname, { title, description });
@@ -46,6 +53,11 @@ export function AppShell({
   const pageDescription = resolved.description;
   const pageDescriptionEl = resolved.descriptionEl;
   const { expanded, mounted } = useSidebar();
+  const showAskAi = Boolean(pageTitle) && askAi !== false;
+  const askAiPrompt =
+    typeof askAi === 'string'
+      ? askAi
+      : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
 
   return (
     <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
@@ -77,10 +89,10 @@ export function AppShell({
           <main
             id="main-content"
             tabIndex={-1}
-            className={cn(appShellMainClasses, contentClassName)}
+            className={cn(appShellMainClasses, 'mx-auto max-w-screen-2xl', contentClassName)}
           >
-            <div className="space-y-5">
-              {(pageTitle || pageDescription || actions) && (
+            <div className="space-y-6">
+              {(pageTitle || pageDescription || actions || showAskAi) && (
                 <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm sm:px-5 sm:flex-row sm:items-center">
                   <div className="flex min-w-0 items-start gap-3">
                     <CfbGlyphWell href={pathname} size="md" />
@@ -97,7 +109,14 @@ export function AppShell({
                       )}
                     </div>
                   </div>
-                  {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+                  {(actions || showAskAi) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {showAskAi && (
+                        <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
+                      )}
+                      {actions}
+                    </div>
+                  )}
                 </section>
               )}
               {showHelp && <PageContextualHelp />}

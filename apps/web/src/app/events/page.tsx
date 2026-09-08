@@ -235,6 +235,7 @@ export default function EventsPage() {
                       : 'No events available right now'
                 }
                 illustration="calendar"
+                askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
                 action={
                   tab === 'my-events' && !hasToken ? (
                     <Link href="/login">

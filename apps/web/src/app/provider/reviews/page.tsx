@@ -170,6 +170,7 @@ export default function ProviderReviewsPage() {
           illustration="default"
           title="No client reviews yet"
           description="Reviews will appear here once clients rate your completed service engagements."
+          askAiPrompt="I have no client reviews yet. What should I do in inquiries and projects so reviews start appearing?"
         />
       </AppShell>
     );

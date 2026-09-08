@@ -388,6 +388,7 @@ export default function SavedSearchesPage() {
             illustration="search"
             title="No saved searches"
             description="Save your search queries to quickly find matching profiles and get alerts for new results"
+            askAiPrompt="I have no saved searches. Suggest a search I should save for a technical cofounder in my city."
             action={
               <Button onClick={handleCreateNew}>
                 <Plus className="icon-sm mr-2" />

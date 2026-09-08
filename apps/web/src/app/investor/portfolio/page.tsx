@@ -171,6 +171,7 @@ export default function InvestorPortfolioPage() {
           illustration="default"
           title="No portfolio companies yet"
           description="Start investing through your deal pipeline to build your portfolio."
+          askAiPrompt="My investor portfolio is empty. What should I review in the pipeline before marking a company as invested?"
           action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" />View Pipeline</Link></Button>}
         />
       </AppShell>

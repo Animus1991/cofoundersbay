@@ -110,7 +110,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
-          onClick={handleLogout}
+          onSelect={handleLogout}
           className="text-destructive-accessible focus:text-destructive-accessible"
         >
           <LogOut className="mr-2 icon-sm shrink-0" aria-hidden="true" />

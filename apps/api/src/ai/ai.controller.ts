@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Delete, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Res, HttpStatus, NotFoundException } from '@nestjs/common';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -9,7 +9,7 @@ import { AIJobQueueService, AIJobData } from './ai-job-queue.service';
 import { AIRateLimitGuard } from './guards/ai-rate-limit.guard';
 import { PrismaService } from '../prisma/prisma.service';
 import { AIAgentType } from '@prisma/client';
-import { ChatRequestDto, CreateConversationDto } from './dto/chat.dto';
+import { ChatRequestDto, CreateConversationDto, UpdateAIPreferencesDto } from './dto/chat.dto';
 import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { getAgent, listAgents } from './agents/base-agent';
 
@@ -257,6 +257,43 @@ export class AIController {
   ) {
     const deleted = await this.conversations.deleteConversation(id, user.id);
     return { deleted };
+  }
+
+  @Get('preferences')
+  async getPreferences(@CurrentUser() user: { id: string }) {
+    const preferences = await this.prisma.aIUserPreference.findUnique({
+      where: { userId: user.id },
+    });
+    return { preferences };
+  }
+
+  @Patch('preferences')
+  async updatePreferences(
+    @CurrentUser() user: { id: string },
+    @Body() dto: UpdateAIPreferencesDto,
+  ) {
+    const data = {
+      preferredModel: dto.preferredModel,
+      preferredProvider: dto.preferredProvider,
+      temperature: dto.temperature,
+      maxTokens: dto.maxTokens,
+      responseStyle: dto.responseStyle,
+      responseLanguage: dto.responseLanguage,
+      useEmoji: dto.useEmoji,
+      enableStreaming: dto.enableStreaming,
+      enableSuggestions: dto.enableSuggestions,
+      enableContextMemory: dto.enableContextMemory,
+      enableAutoSave: dto.enableAutoSave,
+      saveConversations: dto.saveConversations,
+      shareForTraining: dto.shareForTraining,
+      anonymizeData: dto.anonymizeData,
+    };
+    const preferences = await this.prisma.aIUserPreference.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, ...data },
+      update: data,
+    });
+    return { preferences };
   }
 
   // ─────────────────────────────────────────────────────────────
