@@ -37,16 +37,36 @@ export function applyPreviewDemoSession(
   setCookie('cfb_primary_role', 'existing_founder');
   setCookie('cfb_preview_demo', '1');
 
+  const serializedUser = JSON.stringify(user);
+  let alreadySignedIn = false;
   try {
-    localStorage.setItem('user', JSON.stringify(user));
+    alreadySignedIn =
+      localStorage.getItem('accessToken') === 'preview-demo' &&
+      localStorage.getItem('cfb_demo_data') === '1' &&
+      localStorage.getItem('user') === serializedUser;
+
+    localStorage.setItem('user', serializedUser);
     localStorage.setItem('cfb_demo_data', '1');
     localStorage.setItem('accessToken', 'preview-demo');
   } catch {
     // ignore quota / private mode
   }
 
-  window.dispatchEvent(new CustomEvent('cfb:login'));
-  window.dispatchEvent(new CustomEvent('cfb:user'));
+  // Announce only an actual change. These two events wake every session
+  // subscriber at once — useSession's external store (so every
+  // useSyncExternalStore consumer re-renders), MessagingContext,
+  // NotificationsBell, and the React Query observers gated on auth. Re-emitting
+  // them for a session that is already applied is a self-inflicted render storm.
+  //
+  // It matters because several callers all fire on first mount:
+  // PreviewSessionGuard, useSession's restore path, and the /demo fallback —
+  // and in development React StrictMode invokes each of those mount effects
+  // twice. That is the "first page load of a fresh demo session hangs, but a
+  // reload is fine" symptom: mounting is the only window where they pile up.
+  if (!alreadySignedIn) {
+    window.dispatchEvent(new CustomEvent('cfb:login'));
+    window.dispatchEvent(new CustomEvent('cfb:user'));
+  }
 }
 
 /** Re-apply demo cookies if sample-data mode is on but the session cookie was cleared. */
