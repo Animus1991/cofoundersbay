@@ -70,11 +70,20 @@ function ConversationItem({
 }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      data-conversation-id={conversation.id}
       className={cn(
         'group relative flex items-center gap-3 p-3 cursor-pointer transition-colors rounded-lg',
         isSelected ? 'bg-primary/10' : 'hover:bg-secondary/60'
       )}
       onClick={onSelect}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
     >
       {/* Avatar with online indicator */}
       <div className="relative">

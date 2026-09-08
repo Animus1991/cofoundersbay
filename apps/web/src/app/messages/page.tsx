@@ -547,7 +547,9 @@ export default function MessagesPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
+              {!isPreviewDemo() && (
+                <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
+              )}
               <Button variant="outline" size="sm" className="gap-2" onClick={goToDiscover}>
                 <MessageSquare className="icon-sm" />
                 New Message
