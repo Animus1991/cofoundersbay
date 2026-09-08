@@ -1,17 +1,31 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
 import { Loader2, Sparkles } from 'lucide-react';
 import { applyPreviewDemoSession } from '@/lib/preview-demo';
 
+/**
+ * Demo entry point — fallback UI.
+ *
+ * The handoff itself is done by middleware, which sets the demo cookies and
+ * redirects to the dashboard in a single response (see `middleware.ts`). It has
+ * to happen there: the auth guard reads those cookies server-side, and doing the
+ * redirect from a client effect meant racing the provider tree's hydration —
+ * a race this page lost, leaving it re-rendering on "Loading demo…" forever.
+ *
+ * This component therefore normally never renders. It stays as a safety net for
+ * the case where middleware does not run (e.g. a static export), and the latch
+ * keeps the redirect one-shot if it ever does.
+ */
 export default function DemoPage() {
-  const router = useRouter();
+  const handedOff = useRef(false);
 
   useEffect(() => {
+    if (handedOff.current) return;
+    handedOff.current = true;
     applyPreviewDemoSession();
-    router.replace('/dashboard/founder');
-  }, [router]);
+    window.location.replace('/dashboard/founder');
+  }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

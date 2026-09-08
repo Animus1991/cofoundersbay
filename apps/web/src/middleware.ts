@@ -135,6 +135,23 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // ── Demo entry point ───────────────────────────────────────────────────────
+  // Installing the demo session and redirecting happen together, in one response,
+  // because both are things the *server* has to agree with: the auth guard below
+  // reads these cookies, so the target must be requested with them already set.
+  // Doing it from the client instead (the previous approach) meant an effect
+  // racing the provider tree's hydration render churn — it lost, the redirect
+  // never committed, and /demo sat on its loading screen re-rendering itself
+  // while React reported "Maximum update depth exceeded". Cookies cannot be set
+  // during a Server Component render in Next 15, so middleware is the right home
+  // for this. The client-only half of the demo session (localStorage) is filled
+  // in on arrival by PreviewSessionGuard in the root layout.
+  if (pathname === '/demo') {
+    const demoRedirect = NextResponse.redirect(new URL('/dashboard/founder', publicOrigin));
+    applyPreviewDemoCookies(demoRedirect, publicOrigin.startsWith('https:'));
+    return demoRedirect;
+  }
+
   // Always allow public paths (after setting tenant headers)
   if (isPublicPath(pathname)) {
     return response;

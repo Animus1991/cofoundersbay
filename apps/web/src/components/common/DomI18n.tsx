@@ -9,10 +9,39 @@ export function DomI18n({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     const root = document.body;
-    const apply = () => translateDom(root, t, locale === 'en');
-    apply();
+    const passthrough = locale === 'en';
+
+    // English is the source language: a pass is still needed once, to restore any
+    // text a previous locale rewrote, but after that every pass is guaranteed to be
+    // a no-op. Walking the whole document on every mutation to produce no changes
+    // was pure overhead on the default locale, so don't observe at all here.
+    if (passthrough) {
+      translateDom(root, t, true);
+      return;
+    }
+
+    const OBSERVE_OPTIONS: MutationObserverInit = {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['placeholder', 'title', 'aria-label', 'alt', 'label'],
+    };
 
     let frame = 0;
+    // translateDom rewrites text nodes and attributes — i.e. it *causes* exactly the
+    // mutations this observer watches for. Left connected, each pass scheduled the
+    // next one and the document got re-walked every animation frame indefinitely.
+    // Detaching around the write makes the pass self-terminating.
+    const apply = () => {
+      obs.disconnect();
+      try {
+        translateDom(root, t, false);
+      } finally {
+        obs.observe(root, OBSERVE_OPTIONS);
+      }
+    };
+
     const obs = new MutationObserver(() => {
       if (frame) return;
       frame = requestAnimationFrame(() => {
@@ -20,13 +49,9 @@ export function DomI18n({ children }: { children: ReactNode }) {
         apply();
       });
     });
-    obs.observe(root, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ['placeholder', 'title', 'aria-label', 'alt', 'label'],
-    });
+
+    apply();
+
     return () => {
       obs.disconnect();
       if (frame) cancelAnimationFrame(frame);

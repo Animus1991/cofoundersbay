@@ -20,7 +20,12 @@ export default async function FounderDashboardPage() {
       queryFn: () => serverFetch('/api/dashboard/stats'),
     }),
     queryClient.prefetchQuery({
-      queryKey: ['recommendations', { limit: 5 }],
+      // Must stay `queryKeys.recommendations` (= ['recommendations']) to match the
+      // client's useQuery. It previously prefetched ['recommendations', {limit:5}],
+      // which hydrates into a different cache entry — so this fetch was paid for on
+      // the server, shipped in the payload, then thrown away and refetched on the
+      // client, exactly the silent miss the comment above warns about.
+      queryKey: queryKeys.recommendations,
       queryFn: () => serverFetch('/api/matching/recommendations?limit=5'),
     }),
     queryClient.prefetchQuery({

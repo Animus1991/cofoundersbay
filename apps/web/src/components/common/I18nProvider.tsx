@@ -37,8 +37,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    ensureExtraCatalog(locale).then(() => {
-      if (!cancelled) setCatalogTick((n) => n + 1);
+    // Only invalidate `t` when a catalog was genuinely added. Bumping the tick
+    // unconditionally re-created `t`, then the context value, re-rendering every
+    // useI18n consumer in the tree and re-running DomI18n's whole-document pass —
+    // on every locale-effect run, including English, where nothing can change.
+    ensureExtraCatalog(locale).then((loaded) => {
+      if (loaded && !cancelled) setCatalogTick((n) => n + 1);
     });
     return () => {
       cancelled = true;

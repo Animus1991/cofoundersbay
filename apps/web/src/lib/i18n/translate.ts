@@ -14,11 +14,20 @@ const extraLoaders: Record<Exclude<AppLocale, 'en'>, () => Promise<{ default: Re
   ja: () => import('./messages/ja.json'),
 };
 
-export async function ensureExtraCatalog(locale: AppLocale): Promise<void> {
-  if (locale === 'en') return;
-  if (extraCache[locale]) return;
+/**
+ * Loads the on-demand message catalog for a locale.
+ *
+ * Returns whether this call actually added a catalog. Callers use that to decide
+ * whether re-rendering is warranted: English has no catalog and an already-cached
+ * locale has nothing new, so in both cases the translation output is unchanged and
+ * invalidating consumers would be pure churn.
+ */
+export async function ensureExtraCatalog(locale: AppLocale): Promise<boolean> {
+  if (locale === 'en') return false;
+  if (extraCache[locale]) return false;
   const mod = await extraLoaders[locale]();
   extraCache[locale] = mod.default as Record<string, string>;
+  return true;
 }
 
 export const LOCALE_BCP47: Record<AppLocale, string> = {
