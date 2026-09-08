@@ -1,3 +1,12 @@
+'use client';
+
+// Required: the `asChild` branch below hands `onClickCapture` / `onKeyDownCapture`
+// to Radix's Slot. Without this directive Button compiles as a Server Component
+// wherever a server tree imports it (app/not-found.tsx and
+// app/investor/dashboard/page.tsx both render <Button asChild>), and React
+// rejects the render with "Event handlers cannot be passed to Client Component
+// props" — which is what broke the /login response.
+
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
