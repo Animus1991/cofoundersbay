@@ -89,7 +89,7 @@ export function AppShell({
           <main
             id="main-content"
             tabIndex={-1}
-            className={cn(appShellMainClasses, 'mx-auto max-w-screen-2xl', contentClassName)}
+            className={cn(appShellMainClasses, 'mx-auto max-w-shell', contentClassName)}
           >
             <div className="space-y-6">
               {(pageTitle || pageDescription || actions || showAskAi) && (
