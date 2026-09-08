@@ -22,12 +22,12 @@ const buttonVariants = cva(
           'text-primary underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
       size: {
-        xs:   'h-7 px-2.5 text-xs rounded',
-        sm:   'h-8 px-3 text-xs',
-        md:   'h-9 px-4',
-        lg:   'h-10 px-6 text-base',
+        xs:   'h-7 min-h-7 px-2.5 text-xs rounded',
+        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8',
+        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9',
+        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10',
         xl:   'h-12 px-8 text-base',
-        icon: 'h-9 w-9',
+        icon: 'h-11 w-11 md:h-9 md:w-9',
       },
     },
     defaultVariants: {

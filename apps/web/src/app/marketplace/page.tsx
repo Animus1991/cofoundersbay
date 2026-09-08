@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { listMarketplaceServices, type MarketplaceCategory } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -163,7 +164,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
               </div>
             </div>
           </div>
-          <button onClick={() => setSaved(!saved)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors">
+          <button onClick={() => setSaved(!saved)} className="tap-target flex h-11 w-11 shrink-0 items-center justify-center rounded hover:bg-muted transition-colors" aria-label={saved ? 'Remove bookmark' : 'Save provider'}>
             <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} />
           </button>
         </div>
@@ -308,15 +309,24 @@ export default function MarketplacePage() {
   return (
     <AppShell title="Services Marketplace" description="Find verified experts for every startup need">
       <div className="space-y-6 pb-10">
+        {backendProviders.length === 0 && (
+          <SampleDataNotice
+            surface="Marketplace"
+            detail="Live provider listings are not the source of truth yet. These cards are sample experts so you can browse the layout."
+            askAiPrompt="The marketplace is showing sample providers. How should I evaluate legal, finance, and coaching help for an early-stage startup?"
+          />
+        )}
         {/* Banner CTA for providers */}
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardContent className="p-4 flex items-center justify-between gap-4">
+          <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold">Are you a service provider?</p>
               <p className="text-sm text-muted-foreground">List your services and reach 500+ founders on CoFounderBay</p>
             </div>
-            <Button size="sm" className="shrink-0">
-              <Plus className="mr-1.5 h-4 w-4" />List Your Service
+            <Button size="sm" className="shrink-0" asChild>
+              <Link href="/provider/services">
+                <Plus className="mr-1.5 h-4 w-4" />List Your Service
+              </Link>
             </Button>
           </CardContent>
         </Card>

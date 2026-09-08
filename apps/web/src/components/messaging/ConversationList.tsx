@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { Search, Edit, Archive, Pin, MoreHorizontal, Trash2, MessageSquarePlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { RoleBadge } from '@/components/common/RoleBadge';
+import { EmptyMessages } from '@/components/common/EmptyStates';
 import { cn } from '@/lib/utils';
 
 export type Conversation = {
@@ -127,8 +127,9 @@ function ConversationItem({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 opacity-0 group-hover:opacity-100 absolute right-2 top-2"
+            className="absolute right-1 top-1 h-11 w-11 opacity-100 md:right-2 md:top-2 md:h-8 md:w-8 md:opacity-0 md:group-hover:opacity-100"
             onClick={(e) => e.stopPropagation()}
+            aria-label="Conversation actions"
           >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
@@ -178,7 +179,7 @@ export function ConversationList({
       <div className="border-b border-border/60 p-3">
         <div className="mb-3 hidden items-center justify-between md:flex">
           <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-          <Button size="icon" variant="ghost" onClick={onNewMessage} aria-label="New message">
+          <Button size="icon" variant="ghost" onClick={onNewMessage} aria-label="New message" className="tap-target">
             <Edit className="h-5 w-5" />
           </Button>
         </div>
@@ -189,10 +190,10 @@ export function ConversationList({
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="h-11 pl-9"
             />
           </div>
-          <Button size="icon" variant="ghost" className="shrink-0 md:hidden" onClick={onNewMessage} aria-label="New message">
+          <Button size="icon" variant="ghost" className="tap-target shrink-0 md:hidden" onClick={onNewMessage} aria-label="New message">
             <Edit className="h-5 w-5" />
           </Button>
         </div>
@@ -237,27 +238,17 @@ export function ConversationList({
         )}
 
         {filteredConversations.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="h-6 w-6 text-primary" />
+          searchQuery ? (
+            <div className="flex flex-col items-center justify-center gap-3 px-4 py-12 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <MessageSquarePlus className="h-6 w-6 text-primary" />
+              </div>
+              <p className="text-sm font-medium text-foreground">No conversations found</p>
+              <p className="text-xs text-muted-foreground">No results for &ldquo;{searchQuery}&rdquo;</p>
             </div>
-            <p className="text-sm font-medium text-foreground">
-              {searchQuery ? 'No conversations found' : 'No messages yet'}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {searchQuery
-                ? `No results for "${searchQuery}"`
-                : 'Connect with founders, mentors, and investors to start chatting'}
-            </p>
-            {!searchQuery && (
-              <Link
-                href="/discover"
-                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
-              >
-                Find people to message
-              </Link>
-            )}
-          </div>
+          ) : (
+            <EmptyMessages className="py-8" />
+          )
         )}
       </div>
     </div>

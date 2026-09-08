@@ -90,15 +90,15 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: (
       disabled={disabled}
       onClick={() => !disabled && onChange(!checked)}
       className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
+        'relative inline-flex h-11 w-[2.75rem] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors tap-target focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
         checked ? 'bg-primary' : 'bg-secondary',
         disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
       <span
         className={cn(
-          'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
-          checked ? 'translate-x-5' : 'translate-x-0'
+          'pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-transform',
+          checked ? 'translate-x-5' : 'translate-x-0.5'
         )}
       />
     </button>

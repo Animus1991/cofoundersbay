@@ -65,7 +65,11 @@ export function AppShell({
         {fullHeight ? (
           <main
             id="main-content"
-            className={cn('flex flex-col flex-1 overflow-hidden', contentClassName)}
+            className={cn(
+              'flex min-h-0 flex-1 flex-col overflow-hidden',
+              'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0',
+              contentClassName,
+            )}
           >
             {children}
           </main>

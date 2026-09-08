@@ -13,6 +13,9 @@ import { RoleBadge } from '@/components/common/RoleBadge';
 import { AppShell } from '@/components/layout/AppShell';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
+import { EmptyState } from '@/components/common/EmptyState';
 import {
   getOrCreateDirectConversation,
   listConversationMessages,
@@ -504,6 +507,9 @@ export default function MessagesPage() {
   };
 
   const pendingIntrosCount = introRequests.length;
+  const goToDiscover = () => router.push('/discover');
+  const askAiPrompt =
+    'Help me with Messages: who should I reply to first, and who should I intro from Discover?';
 
   if (!canUseMessaging) {
     return (
@@ -518,29 +524,51 @@ export default function MessagesPage() {
   }
 
   return (
-    <AppShell
-      title="Messages"
-      description="Connect with co-founders, mentors, and team members"
-      actions={
-        <Button variant="outline" size="sm" className="gap-2">
-          <MessageSquare className="icon-sm" />
-          New Message
-        </Button>
-      }
-    >
-      <div className="flex min-h-[28rem] flex-col overflow-hidden rounded-xl border border-border/60 bg-card md:min-h-[32rem]">
-        <div className="flex min-h-0 flex-1">
+    <AppShell fullHeight contentClassName="min-h-0" askAi={false}>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div
+          className={cn(
+            'shrink-0 space-y-3 border-b border-border/60 px-3 py-3 sm:px-4',
+            isMobileViewingChat && 'hidden md:block',
+          )}
+        >
+          {isPreviewDemo() && (
+            <SampleDataNotice
+              surface="Messages"
+              detail="Preview threads are sample conversations so you can try the inbox. Live accounts use your real connections."
+              askAiPrompt="My preview inbox has sample conversations. Who should I message first after I connect with a real match?"
+            />
+          )}
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Messages</h1>
+              <p className="hidden text-sm text-muted-foreground sm:block">
+                Connect with co-founders, mentors, and team members
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
+              <Button variant="outline" size="sm" className="gap-2" onClick={goToDiscover}>
+                <MessageSquare className="icon-sm" />
+                New Message
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-0 flex min-h-0 flex-1 overflow-hidden rounded-none border-0 bg-card md:mx-4 md:mb-4 md:mt-3 md:rounded-2xl md:border md:border-border/60">
+          <div className="flex min-h-0 flex-1">
           {/* Messenger sidebar — conversations + intros */}
           <div
             className={cn(
-              'w-full md:w-[320px] lg:w-[360px] border-r border-border/60 flex-shrink-0 flex flex-col bg-card',
-              isMobileViewingChat && 'hidden md:flex'
+              'flex w-full flex-shrink-0 flex-col bg-card md:w-[320px] lg:w-[360px] md:border-r md:border-border/60',
+              isMobileViewingChat && 'hidden md:flex',
             )}
           >
-            <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex flex-col h-full">
-              <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
-                <TabsList className="w-full">
-                  <TabsTrigger value="chats" className="flex-1 gap-1.5">
+            <Tabs value={sidebarTab} onValueChange={(v) => setSidebarTab(v as 'chats' | 'intros')} className="flex h-full min-h-0 flex-col">
+              <div className="flex-shrink-0 border-b border-border/40 px-3 pt-3 pb-0 sm:px-4 sm:pt-4">
+                <TabsList className="w-full min-h-11">
+                  <TabsTrigger value="chats" className="min-h-10 flex-1 gap-1.5">
                     <MessageSquare className="h-3.5 w-3.5" />
                     Chats
                     {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
@@ -549,7 +577,7 @@ export default function MessagesPage() {
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="intros" className="flex-1 gap-1.5">
+                  <TabsTrigger value="intros" className="min-h-10 flex-1 gap-1.5">
                     <UserPlus className="h-3.5 w-3.5" />
                     Intros
                     {pendingIntrosCount > 0 && (
@@ -561,7 +589,7 @@ export default function MessagesPage() {
                 </TabsList>
               </div>
 
-          <TabsContent value="chats" className="flex-1 overflow-hidden mt-0">
+          <TabsContent value="chats" className="mt-0 min-h-0 flex-1 overflow-hidden">
             <ConversationList
               conversations={conversations}
               selectedId={selectedConversation?.id}
@@ -571,18 +599,18 @@ export default function MessagesPage() {
                 markConversationRead(conv.id);
                 setIsMobileViewingChat(true);
               }}
-              onNewMessage={() => {}}
+              onNewMessage={goToDiscover}
               onPin={handlePin}
               onArchive={handleArchive}
               onDelete={handleDelete}
             />
           </TabsContent>
 
-          <TabsContent value="intros" className="flex-1 overflow-y-auto mt-0">
+          <TabsContent value="intros" className="mt-0 min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {introLoading ? (
-              <div className="p-4 space-y-3">
+              <div className="space-y-3 p-4">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="rounded-xl border border-border/40 bg-card/40 p-4 animate-pulse">
+                  <div key={i} className="animate-pulse rounded-xl border border-border/40 bg-card/40 p-4">
                     <div className="flex gap-3">
                       <div className="h-10 w-10 rounded-full bg-secondary" />
                       <div className="flex-1 space-y-2">
@@ -595,46 +623,53 @@ export default function MessagesPage() {
                 ))}
               </div>
             ) : introRequests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-                <div className="rounded-full bg-secondary p-3">
-                  <UserPlus className="icon-lg text-muted-foreground" />
-                </div>
-                <p className="text-sm font-medium text-foreground">No pending intros</p>
-                <p className="text-xs text-muted-foreground">When someone sends you a connection request, it will appear here.</p>
-              </div>
+              <EmptyState
+                illustration="connection"
+                size="sm"
+                title="No pending intros"
+                description="When someone sends you a connection request, it will appear here."
+                action={
+                  <Button variant="outline" onClick={goToDiscover} className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Find people
+                  </Button>
+                }
+                askAiPrompt="I have no pending intros. Who should I reach out to from my matches?"
+                className="py-8"
+              />
             ) : (
               <div className="space-y-2 p-4">
                 {introRequests.map((req) => (
                   <div
                     key={req.id}
-                    className="rounded-xl border border-border/50 bg-card/60 p-4 animate-fade-in"
+                    className="animate-fade-in rounded-xl border border-border/50 bg-card/60 p-4"
                   >
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarImage src={req.requester.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                        <AvatarFallback className="bg-primary/20 text-xs font-semibold text-primary">
                           {req.requester.displayName[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium text-foreground truncate">
+                          <span className="truncate text-sm font-medium text-foreground">
                             {req.requester.displayName}
                           </span>
-                          <span className="text-xs text-muted-foreground shrink-0">
+                          <span className="shrink-0 text-xs text-muted-foreground">
                             {new Date(req.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         <RoleBadge role={req.requester.role} size="sm" className="mt-0.5" />
                         {req.message && (
-                          <p className="mt-2 text-xs text-foreground/70 leading-relaxed line-clamp-3 italic">
+                          <p className="mt-2 line-clamp-3 text-xs italic leading-relaxed text-foreground/70">
                             &ldquo;{req.message}&rdquo;
                           </p>
                         )}
-                        <div className="mt-3 flex gap-2">
+                        <div className="mt-3 flex flex-wrap gap-2">
                           <Button
                             size="sm"
-                            className="h-7 gap-1 text-xs px-3"
+                            className="min-h-11 gap-1 px-3 text-xs"
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'accepted')}
                           >
@@ -644,7 +679,7 @@ export default function MessagesPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 gap-1 text-xs px-3"
+                            className="min-h-11 gap-1 px-3 text-xs"
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'declined')}
                           >
@@ -665,8 +700,8 @@ export default function MessagesPage() {
       {/* Chat window */}
       <div
         className={cn(
-          'flex-1 min-w-0',
-          !isMobileViewingChat && 'hidden md:flex md:flex-col'
+          'flex min-h-0 min-w-0 flex-1 flex-col',
+          !isMobileViewingChat && 'hidden md:flex',
         )}
       >
         {selectedConversation ? (
@@ -742,6 +777,7 @@ export default function MessagesPage() {
           <NoChatSelected />
         )}
       </div>
+          </div>
         </div>
       </div>
     </AppShell>

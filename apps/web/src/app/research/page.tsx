@@ -191,10 +191,11 @@ export default function ResearchBoardsPage() {
       title="Research Workspace"
       description="Visual research boards for startup ecosystem intelligence"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setTemplatesDialogOpen(true)} className="gap-2" disabled={isLoading}>
             <Sparkles className="h-4 w-4" />
-            Use Template
+            <span className="hidden sm:inline">Use Template</span>
+            <span className="sm:hidden">Template</span>
           </Button>
           <Button onClick={() => setCreateDialogOpen(true)} className="gap-2" disabled={isLoading}>
             <Plus className="h-4 w-4" />

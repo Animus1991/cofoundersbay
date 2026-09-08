@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { AIInsightButton } from '@/components/ai/AIInsightButton';
 import {
   listNotifications,
   markNotificationRead,
@@ -327,7 +328,7 @@ export default function NotificationsPage() {
             <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setSelectedIds(new Set()); }}>
               <TabsList className="h-8 gap-0.5 flex-nowrap">
                 {FILTER_TABS.map((t) => (
-                  <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
+                  <TabsTrigger key={t.value} value={t.value} className="min-h-10 shrink-0 px-3 text-xs">
                     {t.label}
                     {catCounts[t.value] ? (
                       <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary">
@@ -339,7 +340,7 @@ export default function NotificationsPage() {
               </TabsList>
             </Tabs>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {bulkMode && selectedIds.size > 0 && (
               <>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
@@ -358,7 +359,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                'inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
                 bulkMode ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
@@ -368,7 +369,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => setShowUnreadOnly((v) => !v)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+                'inline-flex min-h-11 items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition-colors',
                 showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
@@ -417,9 +418,16 @@ export default function NotificationsPage() {
                   {showUnreadOnly ? 'You have no unread notifications right now.' : "We'll notify you about connections, messages, and activity."}
                 </p>
               </div>
-              {showUnreadOnly && (
-                <Button variant="outline" size="sm" onClick={() => setShowUnreadOnly(false)}>Show all notifications</Button>
-              )}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {showUnreadOnly && (
+                  <Button variant="outline" size="sm" onClick={() => setShowUnreadOnly(false)}>Show all notifications</Button>
+                )}
+                <AIInsightButton
+                  prompt="I am all caught up on notifications. What should I do next on Discover, Matches, or Messages?"
+                  variant="outline"
+                  size="sm"
+                />
+              </div>
             </div>
           ) : (
             grouped.map(({ label, items }) => (

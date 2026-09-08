@@ -130,6 +130,7 @@ function MessageBubble({
       className={cn('group flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
+      onClick={() => setShowActions((v) => !v)}
     >
       {/* Avatar placeholder for alignment */}
       <div className="w-8 flex-shrink-0">
@@ -156,12 +157,11 @@ function MessageBubble({
         )}
 
         <div className="relative">
-          {/* Hover action bar */}
-          {showActions && (
-            <div className={cn(
-              'absolute -top-8 flex items-center gap-0.5 rounded-full border border-border/60 bg-card shadow-md px-1 py-0.5 z-10',
-              isOwn ? 'right-0' : 'left-0',
-            )}>
+          <div className={cn(
+            'absolute -top-8 z-10 items-center gap-0.5 rounded-full border border-border/60 bg-card px-1 py-0.5 shadow-md',
+            isOwn ? 'right-0' : 'left-0',
+            showActions ? 'hidden md:flex' : 'hidden',
+          )}>
               {QUICK_EMOJIS.map((emoji) => (
                 <button
                   key={emoji}
@@ -189,8 +189,30 @@ function MessageBubble({
               >
                 <Copy className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
-            </div>
-          )}
+          </div>
+          <div className={cn(
+            'absolute -top-1 z-10 md:hidden',
+            isOwn ? 'right-0' : 'left-0',
+            showActions ? 'block' : 'hidden',
+          )}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-11 w-11" aria-label="Message actions">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={isOwn ? 'end' : 'start'}>
+                <DropdownMenuItem onClick={() => onReply?.(message)}>
+                  <Reply className="mr-2 h-4 w-4" />
+                  Reply
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleCopy}>
+                  <Copy className="mr-2 h-4 w-4" />
+                  {copied ? 'Copied!' : 'Copy'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
           <div
             className={cn(
@@ -360,19 +382,19 @@ export function ChatWindow({
   });
 
   return (
-    <div className={cn('flex flex-col h-full bg-background', className)}>
+    <div className={cn('flex min-h-0 flex-1 flex-col bg-background', className)}>
       {/* Header */}
-      <div className="flex flex-col border-b border-border/60">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-3">
+      <div className="flex shrink-0 flex-col border-b border-border/60">
+        <div className="flex items-center justify-between gap-2 px-2 py-2 sm:p-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {onBack && (
-              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
+              <Button variant="ghost" size="icon" onClick={onBack} className="tap-target shrink-0 md:hidden" aria-label="Back to conversations">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             )}
-            <Link href={`/profiles/${conversation.recipientId}`} className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar className="h-10 w-10">
+            <Link href={`/profiles/${conversation.recipientId}`} className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <div className="relative shrink-0">
+                <Avatar className="h-9 w-9 sm:h-10 sm:w-10">
                   <AvatarImage src={conversation.recipientAvatar || undefined} />
                   <AvatarFallback className="bg-primary/20 text-primary">
                     {conversation.recipientName[0]?.toUpperCase()}
@@ -382,10 +404,15 @@ export function ChatWindow({
                   <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-background" />
                 )}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-foreground">{conversation.recipientName}</span>
-                  <RoleBadge role={conversation.recipientRole} size="sm" />
+              <div className="min-w-0">
+                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                  <span className="truncate font-semibold text-foreground">{conversation.recipientName}</span>
+                  <RoleBadge role={conversation.recipientRole} size="sm" className="shrink-0" />
+                  {validationState && validationState.mode !== 'casual' && (
+                    <span className="md:hidden">
+                      <ConversationValidationBadge state={validationState} compact />
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {conversation.isOnline
@@ -397,35 +424,37 @@ export function ChatWindow({
               </div>
             </Link>
           </div>
-          <div className="flex items-center gap-1">
-            {validationState && (
-              <ConversationValidationMenu
-                conversationId={conversation.id}
-                currentUserId={currentUserId}
-                otherUserId={conversation.recipientId}
-                otherUserName={conversation.recipientName}
-                validationState={validationState}
-                onModeChange={onValidationModeChange}
-              />
-            )}
-            {validationState && validationState.mode !== 'casual' && (
-              <TranscriptExportButton
-                conversationId={conversation.id}
-                validationState={validationState}
-              />
-            )}
-            <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <div className="hidden md:flex md:items-center md:gap-1">
+              {validationState && (
+                <ConversationValidationMenu
+                  conversationId={conversation.id}
+                  currentUserId={currentUserId}
+                  otherUserId={conversation.recipientId}
+                  otherUserName={conversation.recipientName}
+                  validationState={validationState}
+                  onModeChange={onValidationModeChange}
+                />
+              )}
+              {validationState && validationState.mode !== 'casual' && (
+                <TranscriptExportButton
+                  conversationId={conversation.id}
+                  validationState={validationState}
+                />
+              )}
+            </div>
+            <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }} aria-label="Search messages">
               <Search className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" disabled title="Voice call (coming soon)">
+            <Button variant="ghost" size="icon" disabled title="Voice call (coming soon)" className="hidden md:inline-flex">
               <Phone className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" disabled title="Video call (coming soon)">
+            <Button variant="ghost" size="icon" disabled title="Video call (coming soon)" className="hidden md:inline-flex">
               <Video className="h-5 w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label="Conversation menu">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -437,6 +466,15 @@ export function ChatWindow({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem disabled className="md:hidden">
+                  <Phone className="h-4 w-4 mr-2" />
+                  Voice call (coming soon)
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled className="md:hidden">
+                  <Video className="h-4 w-4 mr-2" />
+                  Video call (coming soon)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="md:hidden" />
                 <DropdownMenuItem onClick={onReport}>
                   <Flag className="h-4 w-4 mr-2" />
                   Report
@@ -451,24 +489,24 @@ export function ChatWindow({
         </div>
         {/* Search bar */}
         {searchOpen && (
-          <div className="px-4 pb-3 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex items-center gap-2 px-3 pb-3">
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <input
                 autoFocus
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search messages…"
-                className="w-full rounded-lg border border-border/60 bg-secondary/50 pl-8 pr-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                className="h-11 w-full rounded-lg border border-border/60 bg-secondary/50 py-2 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
               />
             </div>
             {searchQuery && (
-              <span className="text-xs text-muted-foreground shrink-0">
+              <span className="shrink-0 text-xs text-muted-foreground">
                 {filteredMessages.length} result{filteredMessages.length !== 1 ? 's' : ''}
               </span>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
+            <Button variant="ghost" size="icon" aria-label="Close search" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -476,7 +514,7 @@ export function ChatWindow({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-3 sm:p-4">
         {/* Load more button at top */}
         {hasMoreMessages && (
           <div className="flex justify-center py-2">
@@ -538,7 +576,7 @@ export function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-border/60">
+      <div className="shrink-0 border-t border-border/60 p-3 sm:p-4">
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
@@ -549,7 +587,7 @@ export function ChatWindow({
               </p>
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
+            <Button variant="ghost" size="icon" className="shrink-0" onClick={() => setReplyTo(null)} aria-label="Cancel reply">
               <X className="h-3 w-3" />
             </Button>
           </div>
@@ -596,25 +634,26 @@ export function ChatWindow({
             type="button"
             variant="ghost"
             size="icon"
-            className="flex-shrink-0"
+            className="shrink-0"
+            aria-label="Attach file"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
           </Button>
-          <div className="flex-1 relative">
+          <div className="relative min-w-0 flex-1">
             <Textarea
               ref={textareaRef}
               value={inputValue}
               onChange={(e) => handleTyping(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
+              placeholder="Type a message…"
               rows={1}
-              className="min-h-[44px] max-h-[120px] pr-10 resize-none"
+              className="min-h-11 max-h-[120px] resize-none pr-12"
             />
-            <div className="absolute right-1 bottom-1">
+            <div className="absolute bottom-0.5 right-0.5">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" aria-label="Insert emoji">
                     <Smile className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -642,7 +681,8 @@ export function ChatWindow({
           <Button
             onClick={handleSend}
             disabled={!inputValue.trim()}
-            className="flex-shrink-0"
+            className="min-h-11 shrink-0"
+            aria-label="Send message"
           >
             <Send className="h-5 w-5" />
           </Button>
@@ -670,17 +710,17 @@ export function NoChatSelected() {
           Select a conversation from the list, or start a new one by connecting with someone on Discover.
         </p>
       </div>
-      <div className="flex flex-col gap-2 w-full max-w-[200px]">
+      <div className="flex w-full max-w-[220px] flex-col gap-2">
         <a
           href="/discover"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+          className="tap-target inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
         >
           <Users className="h-4 w-4" />
           Find people to message
         </a>
         <a
           href="/connections"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+          className="tap-target inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
         >
           <UserCheck className="h-4 w-4" />
           View connections

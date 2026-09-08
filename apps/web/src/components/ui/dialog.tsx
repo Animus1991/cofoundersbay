@@ -36,7 +36,9 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg translate-x-[-50%] translate-y-[-50%]',
+        'fixed left-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg translate-x-[-50%]',
+        'top-[max(0.75rem,env(safe-area-inset-top))] translate-y-0',
+        'md:top-[50%] md:translate-y-[-50%]',
         'max-h-[min(92dvh,720px)] overflow-y-auto overscroll-contain',
         'rounded-xl border border-border/60 bg-card p-5 sm:p-6 text-card-foreground shadow-modal',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
@@ -52,7 +54,7 @@ const DialogContent = React.forwardRef<
       {children}
       {!hideClose && (
         <DialogPrimitive.Close
-          className="absolute right-4 top-4 rounded-md p-1 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-md p-0 text-muted-foreground opacity-70 transition-opacity hover:opacity-100 hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
           aria-label="Close dialog"
         >
           <X className="icon-sm" />
