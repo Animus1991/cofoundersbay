@@ -129,19 +129,43 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and security
   async headers() {
-    const apiOrigin = process.env.NEXT_PUBLIC_API_URL || '';
-    const wsOrigin = apiOrigin.replace(/^http/, 'ws');
+    const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
-    // `unsafe-inline` is required for styles because Tailwind's runtime theme
-    // switching writes inline custom properties; `unsafe-eval` is only allowed
-    // in development, where React Refresh needs it.
+    // The API lives on a different origin, so it must be named in connect-src
+    // or every request the app makes is blocked by the browser — silently, from
+    // the server's point of view. Fail loudly at build time instead.
+    if (isProduction && !apiOrigin) {
+      console.warn(
+        '\n[next.config] NEXT_PUBLIC_API_URL is not set for this production build.\n' +
+          '  The Content-Security-Policy will only allow same-origin requests, so every\n' +
+          '  call to the API will be blocked in the browser. Set it before deploying.\n',
+      );
+    }
+
+    // Each entry is dropped when empty, so an unset origin cannot leave a
+    // stray token (or a double space) inside the directive.
+    const connectSrc = [
+      "'self'",
+      apiOrigin,
+      apiOrigin.replace(/^http/, 'ws'),
+      'https://*.posthog.com',
+      'https://*.sentry.io',
+      'wss:',
+      // Local dev talks to the API and the websocket over plain http on
+      // another port; without these `next dev` blocks its own requests.
+      ...(isProduction ? [] : ['http://localhost:*', 'ws://localhost:*', 'http://127.0.0.1:*', 'ws://127.0.0.1:*']),
+    ].filter(Boolean);
+
+    // `unsafe-inline` is required for styles because the theme system writes
+    // inline custom properties; `unsafe-eval` is only allowed in development,
+    // where React Refresh needs it.
     const csp = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"} https://*.posthog.com`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data:",
-      `connect-src 'self' ${apiOrigin} ${wsOrigin} https://*.posthog.com https://*.sentry.io wss:`.trim(),
+      `connect-src ${connectSrc.join(' ')}`,
       "media-src 'self' blob: https:",
       "worker-src 'self' blob:",
       "frame-src 'self' https://*.daily.co",
@@ -149,7 +173,11 @@ const nextConfig: NextConfig = {
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'self'",
-      ...(isProduction ? ['upgrade-insecure-requests'] : []),
+      // Only in production: on a plain-http local worker run this would upgrade
+      // same-origin navigations to https and break them.
+      ...(isProduction && process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://')
+        ? ['upgrade-insecure-requests']
+        : []),
     ].join('; ');
 
     const headers = [
