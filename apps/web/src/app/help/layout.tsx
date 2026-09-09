@@ -1,3 +1,4 @@
+import { AppShellFrame } from '@/components/layout/AppShell';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,5 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function HelpLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <AppShellFrame>{children}</AppShellFrame>
+  );
 }

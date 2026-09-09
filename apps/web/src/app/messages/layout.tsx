@@ -1,11 +1,19 @@
 import { Suspense, ReactNode } from 'react';
+import { AppShellFrame } from '@/components/layout/AppShell';
 import MessagesLoading from './loading';
 
 /**
- * The messages page uses AppShell fullHeight which provides its own
- * TopBar + SideNav + MobileBottomNav. The Suspense boundary is required
- * so useSearchParams() in the client page works correctly in Next.js 15.
+ * Messages is the one full-height section: the thread list and pane fill the
+ * viewport and scroll independently, so the frame is mounted here with
+ * fullHeight rather than by the page.
+ *
+ * The Suspense boundary is required for useSearchParams() in the client page
+ * under Next.js 15.
  */
 export default function MessagesLayout({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<MessagesLoading />}>{children}</Suspense>;
+  return (
+    <AppShellFrame fullHeight contentClassName="min-h-0">
+      <Suspense fallback={<MessagesLoading />}>{children}</Suspense>
+    </AppShellFrame>
+  );
 }
