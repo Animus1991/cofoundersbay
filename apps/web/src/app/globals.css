@@ -111,7 +111,12 @@ html {
     --popover-foreground: 210 40% 96%;
     --primary: 235 88% 62%; /* WCAG AA: white on primary ≥4.5:1 (was 66%) */
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 235 88% 71%; /* text-on-dark variant — bumped from 70% (axe: 4.42:1 vs sidebar bg, needed 4.5) */
+    /* Text-on-dark variant. 71% was tuned against the page and sidebar only and
+       still failed the case that matters most for this token — accent text on a
+       `bg-primary/20` tint (avatar fallbacks, active chips): 3.70:1. Raised to
+       78%, which clears every surface it is actually drawn on:
+       tint 5.18 · sidebar 6.53 · card 7.01 · page 7.63. */
+    --primary-accessible: 235 88% 78%;
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;

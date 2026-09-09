@@ -36,6 +36,7 @@ import {
   type SearchResultTypeKey,
 } from '@/lib/i18n/strings-search';
 import { cn } from '@/lib/utils';
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 type SearchCategory = SearchCategoryKey;
 
@@ -165,7 +166,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               {result.description && (
                 <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                   {result.highlight ? (
-                    <span dangerouslySetInnerHTML={{ __html: result.highlight }} />
+                    <SanitizedHtml as="span" profile="highlight" html={result.highlight} />
                   ) : (
                     result.description
                   )}

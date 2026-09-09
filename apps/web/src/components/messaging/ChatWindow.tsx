@@ -682,7 +682,14 @@ export function NoChatSelected({ onNewMessage }: { onNewMessage?: () => void }) 
         {onNewMessage && (
           <Button type="button" className="h-11 rounded-full px-6 shadow-sm" onClick={onNewMessage}>
             <CfbGlyph name="messages" className="icon-sm mr-2" />
-            <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} compact />
+            {/* Same as the Messages header button: the secondary line needs the
+                button's foreground, not the muted default, on a primary fill. */}
+            <BilingualText
+              en={messagesEn('new_message')}
+              el={messagesEl('new_message')}
+              compact
+              secondaryClassName="text-primary-foreground"
+            />
           </Button>
         )}
         <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm">

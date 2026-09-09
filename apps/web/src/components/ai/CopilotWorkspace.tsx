@@ -22,6 +22,7 @@ import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
 import { CitationChip } from '@/components/ai/CitationChip';
 import type { CopilotAction } from '@/lib/copilot-types';
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 const STARTERS = [
   'What should I do next?',
@@ -63,9 +64,9 @@ function AssistantBody({
           Working across your graph…
         </div>
       ) : (
-        <div
+        <SanitizedHtml
           className="text-sm leading-relaxed text-foreground"
-          dangerouslySetInnerHTML={{ __html: html }}
+          html={html}
         />
       )}
       {message.citations && message.citations.length > 0 && (

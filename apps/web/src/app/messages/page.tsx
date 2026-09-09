@@ -591,7 +591,15 @@ export default function MessagesPage() {
                   aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
                 >
                   <CfbGlyph name="messages" className="icon-sm" />
-                  <BilingualText en={messagesEn('new_message')} el={messagesEl('new_message')} compact />
+                  {/* Inside a filled primary button the secondary line's default
+                      muted colour measures 2.07:1, so it takes the button's own
+                      foreground instead. */}
+                  <BilingualText
+                    en={messagesEn('new_message')}
+                    el={messagesEl('new_message')}
+                    compact
+                    secondaryClassName="text-primary-foreground"
+                  />
                 </Button>
               </div>
               <button
