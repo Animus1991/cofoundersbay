@@ -82,7 +82,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
       </div>
       <Badge className={cn('shrink-0 text-xs', cfg.color)}>{cfg.label}</Badge>
       {invite.status === 'pending' && (
-        <Button
+        <Button aria-label="Close"
           variant="ghost"
           size="icon"
           className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"

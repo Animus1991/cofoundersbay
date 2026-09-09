@@ -105,7 +105,7 @@ function ReportCard({ report }: { report: Report }) {
                 </Badge>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
                       <MoreVertical className="icon-sm" />
                     </Button>
                   </DropdownMenuTrigger>

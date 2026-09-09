@@ -215,7 +215,7 @@ function ProjectCard({ project, viewMode }: { project: Project; viewMode: 'grid'
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -425,7 +425,7 @@ export default function ProjectsPage() {
                 </SelectContent>
               </Select>
               <div className="flex border border-border rounded-lg">
-                <Button
+                <Button aria-label="Grid view"
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="icon"
                   className="rounded-r-none"
@@ -433,7 +433,7 @@ export default function ProjectsPage() {
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
-                <Button
+                <Button aria-label="List view"
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="icon"
                   className="rounded-l-none"

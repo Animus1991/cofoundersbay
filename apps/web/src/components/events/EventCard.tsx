@@ -258,7 +258,7 @@ export function EventCard({
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Button
+              <Button aria-label="Save"
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
@@ -266,7 +266,7 @@ export function EventCard({
               >
                 <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
               </Button>
-              <Button variant="ghost" size="icon" onClick={onShare}>
+              <Button aria-label="Share" variant="ghost" size="icon" onClick={onShare}>
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button
@@ -357,7 +357,7 @@ export function EventCard({
         
         {/* Actions */}
         <div className="mt-4 flex items-center justify-end gap-2 pt-3 border-t border-border/40">
-          <Button
+          <Button aria-label="Save"
             variant="ghost"
             size="icon"
             onClick={handleBookmark}

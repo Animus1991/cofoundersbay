@@ -122,7 +122,7 @@ export function AIQuickAsk({
               className="flex-1 h-8 text-sm border-0 bg-muted/50 focus-visible:ring-1 focus-visible:ring-violet-500"
               disabled={isLoading}
             />
-            <Button
+            <Button aria-label="Send"
               type="submit"
               size="icon"
               disabled={!input.trim() || isLoading}

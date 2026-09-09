@@ -117,7 +117,7 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
     <div className="flex-1 min-w-[280px] space-y-4">
       {/* Header */}
       <Card className="relative">
-        <Button
+        <Button aria-label="Close"
           variant="ghost"
           size="icon"
           className="absolute top-2 right-2 h-7 w-7"
@@ -329,7 +329,7 @@ export default function MatchComparePage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">

@@ -196,13 +196,13 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           {/* Actions */}
           <div className="flex items-center justify-between pt-2 border-t border-border/40">
             <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+              <Button aria-label="Add image" variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Image className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+              <Button aria-label="Copy link" variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <Link2 className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" disabled>
+              <Button aria-label="Mention someone" variant="ghost" size="icon" className="h-9 w-9" disabled>
                 <AtSign className="h-4 w-4" />
               </Button>
             </div>

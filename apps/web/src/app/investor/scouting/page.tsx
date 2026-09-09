@@ -94,12 +94,12 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
+                <Button aria-label="Show" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
                   <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary fill-primary/20' : 'text-muted-foreground')} />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Button aria-label="More options" variant="ghost" size="icon" className="h-7 w-7">
                       <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -225,10 +225,10 @@ export default function InvestorScoutingPage() {
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
+            <Button aria-label="List view" variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
               <List className="h-4 w-4" />
             </Button>
-            <Button variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
+            <Button aria-label="Grid view" variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
               <LayoutGrid className="h-4 w-4" />
             </Button>
           </div>

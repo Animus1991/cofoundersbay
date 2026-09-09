@@ -5,6 +5,7 @@ import './globals.css';
 import { RoleTheme } from '@/components/layout/RoleTheme';
 import { SkipToContent } from '@/components/layout/SkipToContent';
 import { ToastProvider } from '@/components/ui/toast';
+import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { NetworkProvider, OfflineBanner } from '@/components/common/OfflineIndicator';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { QueryProvider } from '@/components/providers/QueryProvider';
@@ -157,6 +158,7 @@ export default function RootLayout({
                 <ServiceWorkerRegistration />
                 <NetworkProvider>
                   <ToastProvider>
+                    <ConfirmProvider>
                     <PopupChatProvider>
                       <MessagingProvider>
                         <DemoDataProvider>
@@ -171,6 +173,7 @@ export default function RootLayout({
                         </DemoDataProvider>
                       </MessagingProvider>
                     </PopupChatProvider>
+                    </ConfirmProvider>
                   </ToastProvider>
                 </NetworkProvider>
               </SidebarProvider>

@@ -196,8 +196,19 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button variant={variant} size={size} className={className} onClick={() => setOpen(true)}>
-        {children ?? <><Share2 className="h-4 w-4 mr-1.5" />Share</>}
+      <Button
+        variant={variant}
+        size={size}
+        aria-label="Share"
+        className={className}
+        onClick={() => setOpen(true)}
+      >
+        {children ?? (
+          <>
+            <Share2 className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            Share
+          </>
+        )}
       </Button>
       <ShareModal open={open} onClose={() => setOpen(false)} url={url} title={title} description={description} imageUrl={imageUrl} hashtags={hashtags} />
     </>

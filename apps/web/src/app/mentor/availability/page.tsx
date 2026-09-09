@@ -274,7 +274,7 @@ export default function MentorAvailabilityPage() {
                                   ))}
                                 </SelectContent>
                               </Select>
-                              <Button
+                              <Button aria-label="Delete"
                                 size="icon"
                                 variant="ghost"
                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"

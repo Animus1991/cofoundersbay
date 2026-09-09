@@ -129,7 +129,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
             <code className="flex-1 rounded bg-secondary px-3 py-2 text-sm font-mono">
               {setupData?.secret}
             </code>
-            <Button variant="outline" size="icon" onClick={copySecret}>
+            <Button aria-label="Confirm" variant="outline" size="icon" onClick={copySecret}>
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>

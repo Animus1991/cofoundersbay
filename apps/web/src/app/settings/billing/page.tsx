@@ -74,7 +74,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           rel="noreferrer"
           className="shrink-0"
         >
-          <Button variant="ghost" size="icon" className="h-8 w-8">
+          <Button aria-label="Download" variant="ghost" size="icon" className="h-8 w-8">
             <Download className="h-3.5 w-3.5" />
           </Button>
         </a>

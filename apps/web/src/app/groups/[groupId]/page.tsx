@@ -187,7 +187,7 @@ function PostCard({
                 placeholder="Write a comment..."
                 className="flex-1 rounded-xl border border-input bg-secondary/40 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-primary/50"
               />
-              <Button
+              <Button aria-label="Send"
                 size="icon"
                 className="h-8 w-8 shrink-0"
                 disabled={submittingComment || !newComment.trim()}

@@ -152,7 +152,7 @@ export function CookieConsent() {
                     <p className="text-xs text-muted-foreground">Manage your cookie settings</p>
                   </div>
                 </div>
-                <Button
+                <Button aria-label="Close"
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"

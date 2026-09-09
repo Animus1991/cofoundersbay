@@ -474,7 +474,7 @@ export default function MilestonesPage() {
                 className={cn('rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
               ><LayoutGrid className="h-3.5 w-3.5" /></button>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
+            <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
             </Button>
           </div>

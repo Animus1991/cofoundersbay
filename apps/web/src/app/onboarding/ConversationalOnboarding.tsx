@@ -364,7 +364,7 @@ export function ConversationalOnboarding() {
                 className="flex-1"
                 autoFocus
               />
-              <Button
+              <Button aria-label="Next"
                 onClick={() => {
                   if (step === 'name') void handleSubmitName();
                   else if (step === 'headline') void handleSubmitHeadline();

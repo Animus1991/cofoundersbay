@@ -111,7 +111,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
         <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
-          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+          <Button aria-label="Download" variant="ghost" size="icon" className="h-7 w-7 shrink-0">
             <Download className="h-3.5 w-3.5" />
           </Button>
         </a>
@@ -456,7 +456,7 @@ export default function AdminBillingPage() {
                           </p>
                         </div>
                         {coupon.isActive && (
-                          <Button
+                          <Button aria-label="Delete"
                             variant="ghost"
                             size="icon"
                             className="h-7 w-7 text-destructive hover:text-destructive shrink-0"

@@ -257,7 +257,7 @@ export default function DiscoverPage() {
 
           {/* View mode toggle */}
           <div className="inline-flex items-center gap-1 rounded-lg border border-border/60 bg-card p-1 shadow-sm">
-            <Button
+            <Button aria-label="Grid view"
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"
@@ -265,7 +265,7 @@ export default function DiscoverPage() {
             >
               <LayoutGrid className="icon-sm" />
             </Button>
-            <Button
+            <Button aria-label="List view"
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
               size="icon"
               className="h-8 w-8"

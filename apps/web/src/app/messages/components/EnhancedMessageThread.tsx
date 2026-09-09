@@ -161,28 +161,28 @@ export function EnhancedMessageThread({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
+          <Button aria-label="Search"
             variant="ghost"
             size="icon"
             onClick={() => setShowSearch(!showSearch)}
           >
             <Search className="icon-md" />
           </Button>
-          <Button
+          <Button aria-label="Call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('audio')}
           >
             <Phone className="icon-md" />
           </Button>
-          <Button
+          <Button aria-label="Start video call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('video')}
           >
             <Video className="icon-md" />
           </Button>
-          <Button
+          <Button aria-label="More information"
             variant="ghost"
             size="icon"
             onClick={() => setShowInfo(!showInfo)}
@@ -191,7 +191,7 @@ export function EnhancedMessageThread({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button aria-label="More options" variant="ghost" size="icon">
                 <MoreVertical className="icon-md" />
               </Button>
             </DropdownMenuTrigger>
@@ -308,7 +308,7 @@ export function EnhancedMessageThread({
                                   {formatFileSize(attachment.size)}
                                 </p>
                               </div>
-                              <Button size="icon" variant="ghost" className="h-8 w-8">
+                              <Button aria-label="Download" size="icon" variant="ghost" className="h-8 w-8">
                                 <Download className="icon-sm" />
                               </Button>
                             </>
@@ -323,7 +323,7 @@ export function EnhancedMessageThread({
                     "absolute top-0 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1",
                     isOwn ? "left-0 -translate-x-full" : "right-0 translate-x-full"
                   )}>
-                    <Button
+                    <Button aria-label="Reply"
                       size="icon"
                       variant="secondary"
                       className="h-7 w-7"
@@ -333,7 +333,7 @@ export function EnhancedMessageThread({
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="secondary" className="h-7 w-7">
+                        <Button aria-label="More options" size="icon" variant="secondary" className="h-7 w-7">
                           <MoreVertical className="icon-sm" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -396,7 +396,7 @@ export function EnhancedMessageThread({
               {replyingTo.content}
             </p>
           </div>
-          <Button
+          <Button aria-label="More options"
             variant="ghost"
             size="icon"
             onClick={() => setReplyingTo(null)}
@@ -423,7 +423,7 @@ export function EnhancedMessageThread({
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
                 </span>
-                <Button
+                <Button aria-label="More options"
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
@@ -447,14 +447,14 @@ export function EnhancedMessageThread({
             className="hidden"
             onChange={handleFileSelect}
           />
-          <Button
+          <Button aria-label="Attach file"
             variant="ghost"
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button aria-label="Add image" variant="ghost" size="icon">
             <ImageIcon className="h-5 w-5" />
           </Button>
           
@@ -468,7 +468,7 @@ export function EnhancedMessageThread({
               className="w-full px-4 py-3 pr-12 rounded-2xl bg-muted resize-none focus:outline-none focus:ring-2 focus:ring-primary min-h-[48px] max-h-[200px]"
               rows={1}
             />
-            <Button
+            <Button aria-label="Add emoji"
               variant="ghost"
               size="icon"
               className="absolute right-2 bottom-2"

@@ -83,8 +83,8 @@ export function ShareButton({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant} size={size} className={className}>
-          <Share2 className="h-4 w-4 mr-2" />
+        <Button variant={variant} size={size} aria-label="Share" className={className}>
+          <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
           Share
         </Button>
       </DropdownMenuTrigger>

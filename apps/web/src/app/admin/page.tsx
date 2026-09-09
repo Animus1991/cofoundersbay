@@ -295,7 +295,7 @@ function ReportCard({
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
+                <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
                   <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
@@ -402,7 +402,7 @@ function UserRow({
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" disabled={isActing}>
+          <Button aria-label="More options" variant="ghost" size="icon" disabled={isActing}>
             <MoreHorizontal className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
@@ -1040,7 +1040,7 @@ export default function AdminPage() {
                           )}
                         </div>
                       </div>
-                      <Button
+                      <Button aria-label="Delete"
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 shrink-0 text-destructive opacity-0 group-hover:opacity-100"

@@ -144,14 +144,14 @@ export function EnhancedMemberDirectory() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
+          <Button aria-label="Grid view"
             variant={viewMode === 'grid' ? 'default' : 'outline'}
             size="icon"
             onClick={() => setViewMode('grid')}
           >
             <Grid className="h-4 w-4" />
           </Button>
-          <Button
+          <Button aria-label="List view"
             variant={viewMode === 'list' ? 'default' : 'outline'}
             size="icon"
             onClick={() => setViewMode('list')}

@@ -219,7 +219,7 @@ export default function OrgAdminPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
+          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
             <ArrowLeft className="icon-md" />
           </Button>
           <div className="flex items-center gap-4 flex-1">
@@ -389,7 +389,7 @@ export default function OrgAdminPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <Button aria-label="More options" variant="ghost" size="icon">
                               <MoreVertical className="icon-sm" />
                             </Button>
                           </DropdownMenuTrigger>

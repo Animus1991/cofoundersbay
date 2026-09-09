@@ -128,6 +128,8 @@ export function AIInsightButton({
       <Button
         variant={variant}
         size={size}
+        // The `icon` size renders no visible text, so the label must be explicit.
+        aria-label={label}
         onClick={fetchInsight}
         disabled={isLoading}
         className={cn(

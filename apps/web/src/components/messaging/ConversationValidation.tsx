@@ -452,7 +452,7 @@ export function ValidationHashDisplay({ hash }: { hash: string | null }) {
       <code className="flex-1 text-xs font-mono text-muted-foreground truncate">
         {hash}
       </code>
-      <Button
+      <Button aria-label="Confirm"
         variant="ghost"
         size="icon"
         className="h-6 w-6 shrink-0"

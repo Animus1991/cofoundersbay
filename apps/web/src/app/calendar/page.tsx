@@ -257,10 +257,10 @@ export default function CalendarPage() {
       actions={
         <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-md">
-            <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')}>
+            <Button aria-label="Grid view" variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')}>
               <LayoutGrid className="h-3.5 w-3.5" />
             </Button>
-            <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-l-none" onClick={() => setView('list')}>
+            <Button aria-label="List view" variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-l-none" onClick={() => setView('list')}>
               <List className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -307,9 +307,9 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <Button variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="icon-sm" /></Button>
+                    <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="icon-sm" /></Button>
                     <span className="text-sm font-semibold">{MONTHS[currentMonth]} {currentYear}</span>
-                    <Button variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="icon-sm" /></Button>
+                    <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="icon-sm" /></Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">

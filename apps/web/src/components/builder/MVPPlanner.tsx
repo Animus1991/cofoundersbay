@@ -427,6 +427,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                       placeholder="Define a measurable success criterion..."
                     />
                     <Button
+                      aria-label="Remove item"
                       variant="ghost"
                       size="icon"
                       onClick={() => {
@@ -742,6 +743,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                     placeholder="Describe a potential risk..."
                   />
                   <Button
+                    aria-label="Remove item"
                     variant="ghost"
                     size="icon"
                     onClick={() => {

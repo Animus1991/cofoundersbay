@@ -150,7 +150,7 @@ export function ProfileCompleteness({
         </div>
         {percentage < 100 && (
           <Link href="/profile/edit">
-            <Button variant="ghost" size="icon" className="h-7 w-7">
+            <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7">
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           </Link>

@@ -383,11 +383,11 @@ export default function NotificationsPage() {
                 <CheckCheck className="h-3.5 w-3.5" />Mark all read
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
+            <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
             </Button>
             <Link href="/settings" title="Notification settings">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
                 <Settings className="h-3.5 w-3.5" />
               </Button>
             </Link>

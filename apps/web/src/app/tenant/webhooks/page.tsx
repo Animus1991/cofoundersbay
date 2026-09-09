@@ -85,7 +85,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded truncate max-w-xs">{truncUrl}</code>
-              <Button variant="ghost" size="icon">
+              <Button aria-label="Copy" variant="ghost" size="icon">
                 <Copy className="icon-sm" />
               </Button>
             </div>
@@ -106,7 +106,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
             <Switch checked={active} onCheckedChange={setActive} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button aria-label="More options" variant="ghost" size="icon">
                   <MoreVertical className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>

@@ -196,7 +196,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                 <p className="text-sm text-muted-foreground line-clamp-1">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button
+                <Button aria-label="Notifications"
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
@@ -211,7 +211,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-7 w-7">
+                    <Button aria-label="More options" variant="ghost" size="icon" className="h-7 w-7">
                       <MoreVertical className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>

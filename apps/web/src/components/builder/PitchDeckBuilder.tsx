@@ -345,7 +345,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Button
+                  <Button aria-label="Previous"
                     variant="outline"
                     size="icon"
                     onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
@@ -365,7 +365,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                       />
                     </CardTitle>
                   </div>
-                  <Button
+                  <Button aria-label="Next"
                     variant="outline"
                     size="icon"
                     onClick={() => setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))}

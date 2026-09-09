@@ -282,6 +282,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                     onChange={(e) => handleAssumptionChange(index, e.target.value)}
                   />
                   <Button
+                    aria-label="Remove item"
                     variant="outline"
                     size="icon"
                     onClick={() => removeAssumption(index)}
@@ -313,6 +314,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
                     onChange={(e) => handlePainPointChange(index, e.target.value)}
                   />
                   <Button
+                    aria-label="Remove item"
                     variant="outline"
                     size="icon"
                     onClick={() => removePainPoint(index)}

@@ -223,7 +223,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       description={profile.headline ?? `${profile.role} on CoFounderBay`}
       actions={
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
+          <Button aria-label="Copy link" variant="ghost" size="icon" onClick={handleShare} title="Copy link">
             <Share2 className="icon-sm" />
           </Button>
           <Link href="/discover">

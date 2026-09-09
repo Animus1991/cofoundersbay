@@ -540,7 +540,7 @@ export default function DataRoomPage() {
                             <TableCell>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
@@ -585,7 +585,7 @@ export default function DataRoomPage() {
                               <FileIcon className="h-10 w-10 text-muted-foreground" />
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button
+                                  <Button aria-label="More options"
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -712,7 +712,7 @@ export default function DataRoomPage() {
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

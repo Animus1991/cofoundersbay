@@ -440,7 +440,7 @@ export default function ProgramsPage() {
             </SelectContent>
           </Select>
           {hasFilters && (
-            <Button variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title="Clear filters">
+            <Button aria-label="Clear filters" variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title="Clear filters">
               <X className="h-4 w-4" />
             </Button>
           )}

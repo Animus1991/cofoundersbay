@@ -203,13 +203,13 @@ export function BookingCalendar({
             <CardContent>
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-4">
-                <Button variant="ghost" size="icon" onClick={prevMonth}>
+                <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}>
                   <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <span className="font-semibold text-foreground">
                   {currentMonth.toLocaleDateString([], { month: 'long', year: 'numeric' })}
                 </span>
-                <Button variant="ghost" size="icon" onClick={nextMonth}>
+                <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}>
                   <ChevronRight className="h-5 w-5" />
                 </Button>
               </div>

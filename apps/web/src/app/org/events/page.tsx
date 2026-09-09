@@ -170,7 +170,7 @@ function EventCard({ event }: { event: OrgEvent }) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0">
+              <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
                 <MoreVertical className="icon-sm" />
               </Button>
             </DropdownMenuTrigger>

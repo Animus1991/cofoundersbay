@@ -597,17 +597,17 @@ export default function PitchDeckPage() {
           <div className="rounded-xl border bg-card p-4">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Share</p>
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+              <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
                   <Twitter className="h-3.5 w-3.5" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" asChild>
+              <Button aria-label="Share on LinkedIn" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
                   <Linkedin className="h-3.5 w-3.5" />
                 </a>
               </Button>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
+              <Button aria-label="Confirm" variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
                 {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5" />}
               </Button>
             </div>

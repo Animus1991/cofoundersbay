@@ -476,7 +476,7 @@ export default function AutomationsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <Button
+                    <Button aria-label="Edit rule"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
@@ -485,7 +485,7 @@ export default function AutomationsPage() {
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button
+                    <Button aria-label="Manual trigger"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
@@ -496,7 +496,7 @@ export default function AutomationsPage() {
                       <Play className="h-3.5 w-3.5" />
                     </Button>
                     {rule.status === 'active' ? (
-                      <Button
+                      <Button aria-label="Pause"
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
@@ -506,7 +506,7 @@ export default function AutomationsPage() {
                         <Pause className="h-3.5 w-3.5" />
                       </Button>
                     ) : rule.status === 'paused' || rule.status === 'draft' ? (
-                      <Button
+                      <Button aria-label="Activate"
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
@@ -516,7 +516,7 @@ export default function AutomationsPage() {
                         <Zap className="h-3.5 w-3.5 text-emerald-600" />
                       </Button>
                     ) : null}
-                    <Button
+                    <Button aria-label="Delete"
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"

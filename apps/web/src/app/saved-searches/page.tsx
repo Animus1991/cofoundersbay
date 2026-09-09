@@ -140,7 +140,7 @@ function SearchCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button aria-label="More options" variant="ghost" size="icon">
                   <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>

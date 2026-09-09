@@ -98,7 +98,7 @@ function ServiceCard({ service }: { service: any }) {
           <span className="text-xs font-medium text-primary">{service.price}</span>
         </div>
       </div>
-      <Button variant="ghost" size="icon">
+      <Button aria-label="Settings" variant="ghost" size="icon">
         <Settings className="icon-sm" />
       </Button>
     </div>

@@ -86,7 +86,7 @@ function MenteeCard({ mentee }: { mentee: any }) {
         <Badge variant="outline" className="text-xs">
           {mentee.sessionsCompleted} sessions
         </Badge>
-        <Button variant="ghost" size="icon">
+        <Button aria-label="Message" variant="ghost" size="icon">
           <MessageCircle className="icon-sm" />
         </Button>
       </div>

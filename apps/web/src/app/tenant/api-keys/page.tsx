@@ -62,10 +62,10 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           </div>
           <div className="flex items-center gap-2 mt-2">
             <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{revealed ? revealedKey : maskedKey}</code>
-            <Button variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
+            <Button aria-label="Hide" variant="ghost" size="icon" onClick={() => setRevealed(!revealed)}>
               {revealed ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
             </Button>
-            <Button variant="ghost" size="icon"><Copy className="icon-sm" /></Button>
+            <Button aria-label="Copy" variant="ghost" size="icon"><Copy className="icon-sm" /></Button>
           </div>
           <div className="flex flex-wrap gap-1 mt-2">
             {apiKey.scopes.map(s => (
@@ -80,7 +80,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
+            <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
               <MoreVertical className="icon-sm" />
             </Button>
           </DropdownMenuTrigger>

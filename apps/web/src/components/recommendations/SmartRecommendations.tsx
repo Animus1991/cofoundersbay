@@ -331,7 +331,7 @@ export function SmartRecommendations() {
                   <X className="h-4 w-4" />
                   Dismiss
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button aria-label="Next" variant="ghost" size="icon">
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

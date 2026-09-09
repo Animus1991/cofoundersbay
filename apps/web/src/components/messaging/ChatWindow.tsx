@@ -366,7 +366,7 @@ export function ChatWindow({
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             {onBack && (
-              <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
+              <Button aria-label="Go back" variant="ghost" size="icon" onClick={onBack} className="md:hidden">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             )}
@@ -414,18 +414,18 @@ export function ChatWindow({
                 validationState={validationState}
               />
             )}
-            <Button variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
+            <Button aria-label="Search messages" variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
               <Search className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" disabled title="Voice call (coming soon)">
+            <Button aria-label="Voice call (coming soon)" variant="ghost" size="icon" disabled title="Voice call (coming soon)">
               <Phone className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" disabled title="Video call (coming soon)">
+            <Button aria-label="Video call (coming soon)" variant="ghost" size="icon" disabled title="Video call (coming soon)">
               <Video className="h-5 w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button aria-label="More options" variant="ghost" size="icon">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -468,7 +468,7 @@ export function ChatWindow({
                 {filteredMessages.length} result{filteredMessages.length !== 1 ? 's' : ''}
               </span>
             )}
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
+            <Button aria-label="Close" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -549,7 +549,7 @@ export function ChatWindow({
               </p>
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
-            <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
+            <Button aria-label="Close" variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
               <X className="h-3 w-3" />
             </Button>
           </div>
@@ -592,7 +592,7 @@ export function ChatWindow({
               setPendingFiles((prev) => [...prev, ...files].slice(0, 5));
             }}
           />
-          <Button
+          <Button aria-label="Attach file"
             type="button"
             variant="ghost"
             size="icon"
@@ -614,7 +614,7 @@ export function ChatWindow({
             <div className="absolute right-1 bottom-1">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button aria-label="Add emoji" variant="ghost" size="icon" className="h-8 w-8">
                     <Smile className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

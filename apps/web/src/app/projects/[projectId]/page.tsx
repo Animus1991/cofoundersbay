@@ -93,7 +93,7 @@ export default function ProjectDetailPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+          <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
@@ -107,19 +107,19 @@ export default function ProjectDetailPage() {
             <p className="text-muted-foreground">{project.tagline}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
+            <Button aria-label="Favourite"
               variant="ghost"
               size="icon"
               onClick={() => setIsStarred(!isStarred)}
             >
               <Star className={cn('h-5 w-5', isStarred && 'fill-amber-500 text-amber-500')} />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button aria-label="Share" variant="ghost" size="icon">
               <Share2 className="h-5 w-5" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button aria-label="More options" variant="ghost" size="icon">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -229,10 +229,10 @@ export default function ProjectDetailPage() {
                           <p className="text-sm text-muted-foreground">{member.role}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button aria-label="Message" variant="ghost" size="icon" className="h-8 w-8">
                             <MessageSquare className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button aria-label="Start video call" variant="ghost" size="icon" className="h-8 w-8">
                             <Video className="h-4 w-4" />
                           </Button>
                         </div>

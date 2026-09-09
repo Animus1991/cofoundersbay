@@ -254,7 +254,7 @@ export default function PublicProfilePage() {
                           Connect
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon">
+                      <Button aria-label="Share" variant="ghost" size="icon">
                         <Share2 className="h-4 w-4" />
                       </Button>
                     </div>

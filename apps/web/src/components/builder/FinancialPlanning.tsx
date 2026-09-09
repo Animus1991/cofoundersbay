@@ -411,6 +411,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                       />
                       <Button
+                        aria-label="Remove item"
                         variant="ghost"
                         size="icon"
                         onClick={() => {
@@ -473,6 +474,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                         }}
                       />
                       <Button
+                        aria-label="Remove item"
                         variant="ghost"
                         size="icon"
                         onClick={() => {

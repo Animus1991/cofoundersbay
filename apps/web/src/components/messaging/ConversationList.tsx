@@ -124,7 +124,7 @@ function ConversationItem({
       {/* Actions */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
+          <Button aria-label="More options"
             variant="ghost"
             size="icon"
             className="h-8 w-8 opacity-0 group-hover:opacity-100 absolute right-2 top-2"
@@ -178,7 +178,7 @@ export function ConversationList({
       <div className="p-4 border-b border-border/60">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">Messages</h2>
-          <Button size="icon" variant="ghost" onClick={onNewMessage}>
+          <Button aria-label="Edit" size="icon" variant="ghost" onClick={onNewMessage}>
             <Edit className="h-5 w-5" />
           </Button>
         </div>

@@ -775,6 +775,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                       placeholder="Enter a key differentiator..."
                     />
                     <Button
+                      aria-label="Remove item"
                       variant="ghost"
                       size="icon"
                       onClick={() => {

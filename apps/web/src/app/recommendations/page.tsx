@@ -165,7 +165,7 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <Button
+      <Button aria-label="Feedback"
         size="icon"
         variant="ghost"
         className="h-7 w-7 text-muted-foreground"
@@ -322,7 +322,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
               </Button>
               <div className="ml-auto flex items-center gap-1">
                 {onSave && (
-                  <Button
+                  <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
                     className="h-7 w-7 text-muted-foreground hover:text-blue-600"
@@ -332,7 +332,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                     <BookmarkPlus className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <Button
+                <Button aria-label="Good match"
                   size="icon"
                   variant="ghost"
                   className="h-7 w-7 text-muted-foreground hover:text-emerald-600"

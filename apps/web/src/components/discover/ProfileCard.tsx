@@ -290,7 +290,7 @@ function ProfileCardInner({
               </Button>
             </div>
             <div className="flex items-center gap-1">
-              <Button
+              <Button aria-label="Save"
                 variant="ghost"
                 size="icon"
                 onClick={handleBookmark}
@@ -303,7 +303,7 @@ function ProfileCardInner({
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -375,7 +375,7 @@ function ProfileCardInner({
                     {profile.matchScore}%
                   </div>
                 )}
-                <Button
+                <Button aria-label="Save"
                   variant="ghost"
                   size="icon"
                   onClick={handleBookmark}

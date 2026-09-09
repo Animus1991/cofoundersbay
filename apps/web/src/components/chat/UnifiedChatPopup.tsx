@@ -784,7 +784,7 @@ export function UnifiedChatPopup() {
                 className="flex-1 h-10 rounded-full bg-muted/50 border-0 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
                 disabled={isStreaming}
               />
-              <Button
+              <Button aria-label="Send"
                 type="submit"
                 size="icon"
                 disabled={!aiInput.trim() || isStreaming}

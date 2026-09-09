@@ -235,7 +235,7 @@ export function NotificationCenter() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <Badge
@@ -262,7 +262,7 @@ export function NotificationCenter() {
                 <CheckCheck className="h-4 w-4 mr-1" />
                 Mark all read
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
                 <Settings className="h-4 w-4" />
               </Button>
             </div>

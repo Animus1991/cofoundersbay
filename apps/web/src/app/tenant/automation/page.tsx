@@ -208,20 +208,20 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
+          <Button aria-label="Run now" variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
             <Play className="h-3.5 w-3.5" />
           </Button>
           {rule.status === 'active' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
+            <Button aria-label="Pause" variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
               <Pause className="h-3.5 w-3.5" />
             </Button>
           ) : rule.status !== 'archived' ? (
-            <Button variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
+            <Button aria-label="Activate" variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
               <Zap className="h-3.5 w-3.5 text-emerald-600" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
-            <Button
+            <Button aria-label="Delete"
               variant="ghost" size="icon"
               className="h-8 w-8 text-destructive hover:text-destructive"
               onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}

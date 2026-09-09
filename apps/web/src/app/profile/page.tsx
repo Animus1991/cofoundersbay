@@ -310,7 +310,7 @@ export default function ProfilePage() {
             <Share2 className="icon-sm" />
             Share Profile
           </Button>
-          <Button variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
+          <Button aria-label="Copy profile link" variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
             <Share2 className="icon-sm" />
           </Button>
           <Link href="/profile/edit">

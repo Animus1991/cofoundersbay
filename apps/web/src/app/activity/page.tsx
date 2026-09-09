@@ -105,7 +105,7 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
       </div>
       {item.href && (
         <Link href={item.href} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
+          <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7">
             <ArrowRight className="h-3.5 w-3.5" />
           </Button>
         </Link>
@@ -146,7 +146,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
       </div>
       {item.link && (
         <Link href={item.link} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
+          <Button aria-label="Open in new tab" variant="ghost" size="icon" className="h-7 w-7">
             <ExternalLink className="h-3.5 w-3.5" />
           </Button>
         </Link>
@@ -309,7 +309,7 @@ export default function ActivityPage() {
                       <CheckCheck className="h-3.5 w-3.5" /> Mark all read
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
+                  <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
                     <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
                   </Button>
                 </div>

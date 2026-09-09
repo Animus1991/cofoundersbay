@@ -85,7 +85,7 @@ function SkillRow({
       <Badge variant="secondary" className="text-xs">{skill.count}</Badge>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+          <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
             <MoreVertical className="icon-sm" />
           </Button>
         </DropdownMenuTrigger>
@@ -261,7 +261,7 @@ export default function AdminTaxonomyPage() {
             <p className="text-muted-foreground">Manage skills, categories, and classification systems</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
+            <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
               <RefreshCw className="icon-sm" />
             </Button>
             <Button onClick={() => setEditTarget('new')}>

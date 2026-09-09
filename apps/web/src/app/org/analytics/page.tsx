@@ -175,7 +175,7 @@ export default function OrgAnalyticsPage() {
                 <SelectItem value="all">All time</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="icon" title="Refresh">
+            <Button aria-label="Refresh" variant="outline" size="icon" title="Refresh">
               <RefreshCw className="icon-sm" />
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5">

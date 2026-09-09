@@ -136,7 +136,7 @@ export function QuickActions({
       </div>
 
       {/* Main FAB button */}
-      <Button
+      <Button aria-label="Close"
         size="icon"
         className={cn(
           'h-14 w-14 rounded-full shadow-lg transition-all duration-300',
@@ -173,7 +173,7 @@ export function FloatingActionButton({
   className?: string;
 }) {
   const button = (
-    <Button
+    <Button aria-label="{label}"
       size="icon"
       className={cn(
         'fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 animate-bounce-subtle',
