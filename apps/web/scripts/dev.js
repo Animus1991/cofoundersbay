@@ -15,7 +15,20 @@ const { ensureStrictLocalPort } = require('../../../scripts/strict-local-port.cj
 require('node:dns').setDefaultResultOrder('ipv4first');
 
 const WEB_PORT = 3000;
-const WEB_HOST = '127.0.0.1';
+// Bind dual-stack, not 127.0.0.1 only.
+//
+// setDefaultResultOrder above fixes the ::1 stall for connections *this process*
+// makes. It cannot fix the browser, which resolves `localhost` itself and still
+// tries ::1 first. While nothing listened there, every request from the browser
+// paid the fallback: measured on this machine at connect 202ms vs 1ms, and
+// 666ms vs 442ms end to end for the same document. App Router fetches an RSC
+// payload per navigation, so that was ~200ms added to every page transition.
+//
+// Listening on '::' accepts both ::1 and 127.0.0.1 (Node leaves ipv6Only off),
+// so the first address the browser tries now answers immediately. The advertised
+// origin stays `localhost` — see WEB_ORIGIN_HOST — so cookie scope and OAuth
+// redirect URIs are untouched.
+const WEB_HOST = '::';
 // Advertised origin: stays `localhost` because OAuth providers whitelist it and
 // cookies are scoped to it. Only the proxy's upstream target changes below.
 const WEB_ORIGIN_HOST = 'localhost';
