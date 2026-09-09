@@ -31,6 +31,9 @@ const config: Config = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          // Text-on-surface variant. `bg-primary` and `text-primary` need
+          // opposite adjustments to clear 4.5:1, so brand text uses this.
+          emphasis: 'hsl(var(--primary-emphasis))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

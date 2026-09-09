@@ -109,7 +109,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Building2 className="icon-md text-primary" aria-hidden="true" />
+              <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
               <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
@@ -194,7 +194,7 @@ export default function TenantsAdminPage() {
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary" aria-hidden="true" />
+                        <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -462,7 +462,7 @@ function TenantEditor({
                     <div className="flex gap-2">
                       {(['draft', 'active', 'suspended'] as const).map(s => (
                         <button key={s} type="button" onClick={() => setGeneral(p => ({ ...p, status: s }))}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${general.status === s ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
                           {s.charAt(0).toUpperCase() + s.slice(1)}
                         </button>
                       ))}
@@ -504,7 +504,7 @@ function TenantEditor({
                   <div className="flex gap-2 flex-wrap">
                     {BG_STYLES.map(s => (
                       <button key={s} type="button" onClick={() => setBranding(p => ({ ...p, backgroundStyle: s }))}
-                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        className={`px-3 py-1.5 rounded-lg border text-sm transition-colors ${branding.backgroundStyle === s ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
                         {s.charAt(0).toUpperCase() + s.slice(1)}
                       </button>
                     ))}

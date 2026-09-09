@@ -127,7 +127,7 @@ function SearchCard({
                 aria-label="Toggle alerts"
               />
               {search.alertsEnabled ? (
-                <Bell className="icon-sm text-primary" aria-hidden="true" />
+                <Bell className="icon-sm text-primary-emphasis" aria-hidden="true" />
               ) : (
                 <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
               )}
@@ -327,13 +327,13 @@ export default function SavedSearchesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Search className="icon-lg text-primary" aria-hidden="true" />
+              <Search className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Saved Searches
             </h1>
             <p className="text-muted-foreground mt-1">
               {searches.length} saved searches
               {totalNewResults > 0 && (
-                <span className="text-primary ml-2">• {totalNewResults} new results</span>
+                <span className="text-primary-emphasis ml-2">• {totalNewResults} new results</span>
               )}
             </p>
           </div>
@@ -348,7 +348,7 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Search className="icon-md text-primary" aria-hidden="true" />
+                <Search className="icon-md text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">{searches.length}</p>

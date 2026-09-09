@@ -199,7 +199,7 @@ export default function ProviderInquiriesPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary' },
+            { label: 'Total Inquiries', value: inquiries.length, icon: Inbox, color: 'text-primary-emphasis' },
             { label: 'New', value: counts.new, icon: Mail, color: 'text-blue-600' },
             { label: 'Response Rate', value: `${responseRate}%`, icon: TrendingUp, color: 'text-emerald-600' },
             { label: 'Conversion', value: `${conversionRate}%`, icon: DollarSign, color: 'text-amber-600' },

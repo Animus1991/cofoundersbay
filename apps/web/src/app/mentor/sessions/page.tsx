@@ -234,7 +234,7 @@ export default function MentorSessionsPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Clock className="icon-md text-primary" aria-hidden="true" />
+                <Clock className="icon-md text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalDuration} min</p>

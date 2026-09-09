@@ -429,7 +429,7 @@ export function CanvasCommentPins({
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="icon-2xs text-primary" aria-hidden="true" />
+                <Pin className="icon-2xs text-primary-emphasis" aria-hidden="true" />
                 Add Pin Comment
               </div>
               <Button

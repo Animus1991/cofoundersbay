@@ -68,7 +68,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
           {/* Company avatar */}
           <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
             <AvatarImage src={job.creator.avatarUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold text-sm">
               {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
             </AvatarFallback>
           </Avatar>
@@ -77,7 +77,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary-emphasis transition-colors">
                     {job.title}
                   </h3>
                   {featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />}
@@ -344,7 +344,7 @@ export default function JobsPage() {
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 employmentType === t
-                  ? 'border-primary bg-primary/15 text-primary'
+                  ? 'border-primary bg-primary/15 text-primary-emphasis'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
               )}
             >{t}</button>
@@ -397,7 +397,7 @@ export default function JobsPage() {
           {!search && roleFilter === 'all' && featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+                <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Roles</h2>
               </div>
               {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}

@@ -63,7 +63,7 @@ function StatCard({
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
           <div className={cn('p-2 rounded-lg', iconColor || 'bg-primary/10')}>
-            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary')} />
+            <Icon className={cn('h-5 w-5', iconColor ? 'text-white' : 'text-primary-emphasis')} />
           </div>
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>

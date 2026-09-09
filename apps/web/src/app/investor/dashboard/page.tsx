@@ -44,13 +44,13 @@ function StartupCard({ startup }: { startup: Startup }) {
     <div className="flex items-center gap-4 p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors">
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
           {startup.name[0]?.toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/startups/${startup.id}`} className="font-medium hover:text-primary transition-colors">
+          <Link href={`/startups/${startup.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
             {startup.name}
           </Link>
           <Badge variant="outline" className={cn('text-xs', statusColors[startup.status])}>
@@ -230,7 +230,7 @@ function _InvestorDashboardPage_legacy() {
                 {upcomingMeetings.map((meeting) => (
                   <div key={meeting.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="p-2 rounded-lg bg-primary/10">
-                      <Calendar className="icon-sm text-primary" aria-hidden="true" />
+                      <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{meeting.startup}</p>

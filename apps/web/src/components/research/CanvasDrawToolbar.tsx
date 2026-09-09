@@ -108,7 +108,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
                   'w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-100',
                   'hover:bg-secondary active:scale-95',
                   isActive
-                    ? 'bg-primary/15 ring-1 ring-primary/50 text-primary'
+                    ? 'bg-primary/15 ring-1 ring-primary/50 text-primary-emphasis'
                     : 'text-muted-foreground',
                 )}
                 style={isActive && def.color ? { color: def.color } : undefined}

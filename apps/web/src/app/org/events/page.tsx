@@ -208,7 +208,7 @@ export default function OrgEventsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="icon-lg text-primary" aria-hidden="true" />
+              <Calendar className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Organization Events
             </h1>
             <p className="text-muted-foreground">Manage workshops, demo days, and cohort events</p>
@@ -235,7 +235,7 @@ export default function OrgEventsPage() {
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-4 w-4 text-primary-emphasis" />
                 </div>
               </CardContent>
             </Card>

@@ -48,7 +48,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           <div className="flex flex-col md:flex-row gap-6 items-start">
             <Avatar className="h-16 w-16 shrink-0 ring-2 ring-border">
               <AvatarImage src={org.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-base bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="text-base bg-primary/10 text-primary-emphasis font-semibold">
                 {org.name?.[0]?.toUpperCase() ?? 'O'}
               </AvatarFallback>
             </Avatar>
@@ -192,7 +192,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     <CardContent className="pt-5 pb-4">
                       <div className="space-y-2">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary-emphasis transition-colors line-clamp-2">
                             {opp.title}
                           </h3>
                           <Badge
@@ -254,7 +254,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     <CardContent className="pt-5 pb-4">
                       <div className="space-y-2">
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary-emphasis transition-colors">
                             {cohort.name}
                           </h3>
                           <Badge
@@ -319,14 +319,14 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10 shrink-0">
                           <AvatarImage src={member.avatarUrl ?? undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-semibold">
                             {member.displayName?.[0]?.toUpperCase() ?? 'M'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <a
                             href={`/profiles/${member.id}`}
-                            className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+                            className="text-sm font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-1"
                           >
                             {member.displayName}
                           </a>

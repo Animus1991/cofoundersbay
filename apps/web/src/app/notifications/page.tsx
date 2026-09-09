@@ -36,7 +36,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 
 const TYPE_COLORS: Record<string, string> = {
   connection: 'bg-blue-500/10 text-blue-500',
-  message: 'bg-primary/10 text-primary',
+  message: 'bg-primary/10 text-primary-emphasis',
   event: 'bg-purple-500/10 text-purple-500',
   match: 'bg-emerald-500/10 text-emerald-500',
   achievement: 'bg-amber-500/10 text-amber-500',
@@ -136,8 +136,8 @@ const NotificationRow = memo(function NotificationRow({
       )}
     >
       {selectable && (
-        <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground/60 hover:text-primary transition-colors">
-          {selected ? <SquareCheck className="icon-sm text-primary" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
+        <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground/60 hover:text-primary-emphasis transition-colors">
+          {selected ? <SquareCheck className="icon-sm text-primary-emphasis" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
         </button>
       )}
 
@@ -172,7 +172,7 @@ const NotificationRow = memo(function NotificationRow({
             <Link
               href={item.link}
               onClick={() => onRead(item.id)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary-emphasis hover:underline"
             >
               View <ExternalLink className="icon-2xs" aria-hidden="true" />
             </Link>
@@ -330,7 +330,7 @@ export default function NotificationsPage() {
                   <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
                     {t.label}
                     {catCounts[t.value] ? (
-                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-2xs font-bold text-primary">
+                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-2xs font-bold text-primary-emphasis">
                         {catCounts[t.value]}
                       </span>
                     ) : null}
@@ -359,7 +359,7 @@ export default function NotificationsPage() {
               onClick={() => { setBulkMode((v) => !v); setSelectedIds(new Set()); }}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                bulkMode ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
+                bulkMode ? 'border-primary/40 bg-primary/10 text-primary-emphasis' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
               <SquareCheck className="h-3.5 w-3.5" aria-hidden="true" />
@@ -369,7 +369,7 @@ export default function NotificationsPage() {
               onClick={() => setShowUnreadOnly((v) => !v)}
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
-                showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
+                showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary-emphasis' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
               <Filter className="h-3.5 w-3.5" aria-hidden="true" />

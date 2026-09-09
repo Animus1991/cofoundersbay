@@ -97,7 +97,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
             <Link href={`/profiles/${member.userId}`} className="relative inline-block">
               <Avatar className="h-16 w-16 ring-2 ring-primary/20 mb-3">
                 <AvatarImage src={member.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold text-base">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-base">
                   {member.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -110,7 +110,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
 
             <Link
               href={`/profiles/${member.userId}`}
-              className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors mb-1"
+              className="font-display text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors mb-1"
             >
               {member.displayName}
             </Link>
@@ -194,7 +194,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
           <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
             <Avatar className="h-12 w-12 ring-2 ring-primary/20">
               <AvatarImage src={member.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-sm">
                 {member.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -210,7 +210,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
               <div>
                 <Link
                   href={`/profiles/${member.userId}`}
-                  className="font-display text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                  className="font-display text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors"
                 >
                   {member.displayName}
                 </Link>
@@ -438,7 +438,7 @@ export function MembersPageClient() {
         {!isLoading && featuredMembers.length > 0 && !searchQuery && activeFiltersCount === 0 && activeSkill === 'All Skills' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+              <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Members</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -447,14 +447,14 @@ export function MembersPageClient() {
                   <Link href={`/profiles/${member.userId}`} className="relative shrink-0">
                     <Avatar className="h-10 w-10 ring-1 ring-primary/30">
                       <AvatarImage src={member.avatarUrl ?? undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm">{member.displayName[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-1">{member.displayName}</Link>
+                    <Link href={`/profiles/${member.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-1">{member.displayName}</Link>
                     <p className="text-2xs text-muted-foreground truncate">{member.headline ?? member.role ?? 'Member'}</p>
                   </div>
-                  <BadgeCheck className="icon-sm text-primary shrink-0" aria-hidden="true" />
+                  <BadgeCheck className="icon-sm text-primary-emphasis shrink-0" aria-hidden="true" />
                 </div>
               ))}
             </div>

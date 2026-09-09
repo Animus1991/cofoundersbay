@@ -206,7 +206,7 @@ function DomainRow({
                 {domain.domainName}
               </a>
               {domain.isPrimary && (
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">Primary</Badge>
+                <Badge className="bg-primary/10 text-primary-emphasis border-primary/20 text-xs">Primary</Badge>
               )}
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
@@ -418,7 +418,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="icon-sm text-primary" aria-hidden="true" />
+              <Globe className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Platform Subdomain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -464,7 +464,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary" aria-hidden="true" />
+              <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Custom Domain
             </CardTitle>
             <CardDescription className="text-xs">

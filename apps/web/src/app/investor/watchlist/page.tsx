@@ -179,7 +179,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
         <div className="flex gap-4">
           <Avatar className="h-10 w-10 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-bold">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">
               {startup.name[0]}
             </AvatarFallback>
           </Avatar>
@@ -189,7 +189,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               <div>
                 <Link
                   href={`/startups/${startup.id}`}
-                  className="font-semibold hover:text-primary transition-colors"
+                  className="font-semibold hover:text-primary-emphasis transition-colors"
                 >
                   {startup.name}
                 </Link>
@@ -204,7 +204,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                   title={alertsEnabled ? 'Disable alerts' : 'Enable alerts'}
                 >
                   {alertsEnabled ? (
-                    <Bell className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                    <Bell className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />
                   ) : (
                     <BellOff className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   )}
@@ -243,7 +243,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               <Badge variant="outline" className="text-2xs">{startup.stage}</Badge>
               <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{startup.teamSize}</span>
               <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{startup.location}</span>
-              <span className="flex items-center gap-1 text-primary font-medium">{startup.raisingAmount}</span>
+              <span className="flex items-center gap-1 text-primary-emphasis font-medium">{startup.raisingAmount}</span>
             </div>
 
             {/* Scores */}
@@ -268,7 +268,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match</p>
-                <p className="text-sm font-bold text-primary">{startup.matchScore}%</p>
+                <p className="text-sm font-bold text-primary-emphasis">{startup.matchScore}%</p>
               </div>
             </div>
 
@@ -314,7 +314,7 @@ export default function InvestorWatchlistPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Eye className="icon-lg text-primary" aria-hidden="true" />
+              <Eye className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Watchlist
             </h1>
             <p className="text-muted-foreground">
@@ -350,7 +350,7 @@ export default function InvestorWatchlistPage() {
                   <p className="text-xl font-bold">{stat.value}</p>
                 </div>
                 <div className="rounded-lg bg-primary/10 p-2">
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-4 w-4 text-primary-emphasis" />
                 </div>
               </CardContent>
             </Card>
@@ -419,7 +419,7 @@ export default function InvestorWatchlistPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <Avatar className="h-9 w-9 rounded-lg shrink-0">
-                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
+                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis text-xs font-bold">
                           {item.startupName[0]}
                         </AvatarFallback>
                       </Avatar>

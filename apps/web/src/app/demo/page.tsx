@@ -59,7 +59,7 @@ export default function DemoPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Sparkles className="icon-xl text-primary animate-pulse" aria-hidden="true" />
+          <Sparkles className="icon-xl text-primary-emphasis animate-pulse" aria-hidden="true" />
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-semibold text-foreground">Loading demo…</h2>

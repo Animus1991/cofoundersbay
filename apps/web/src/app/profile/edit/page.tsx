@@ -300,7 +300,7 @@ function SelectButtons({
             className={cn(
               'px-3 py-1.5 rounded-full border text-sm transition-colors',
               selected.includes(opt.value)
-                ? 'border-primary bg-primary/10 text-primary'
+                ? 'border-primary bg-primary/10 text-primary-emphasis'
                 : 'border-border/60 text-muted-foreground hover:border-primary/50 hover:text-foreground'
             )}
           >
@@ -508,7 +508,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="icon-xl animate-spin text-primary" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-primary-emphasis" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -584,7 +584,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="icon-md text-primary" aria-hidden="true" />
+                    <Camera className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Profile Photo
                   </CardTitle>
                   <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
@@ -614,7 +614,7 @@ export default function ProfileEditPage() {
                       <div className="relative group cursor-pointer">
                         <Avatar className="h-28 w-28 ring-4 ring-background shadow-md">
                           <AvatarImage src={form.avatarUrl || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+                          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-3xl font-semibold">
                             {form.displayName[0]?.toUpperCase() || '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -655,7 +655,7 @@ export default function ProfileEditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="icon-md text-primary" aria-hidden="true" />
+                        <User className="icon-md text-primary-emphasis" aria-hidden="true" />
                         Personal Identity
                       </CardTitle>
                       <CardDescription>How you'll appear across the platform</CardDescription>
@@ -664,7 +664,7 @@ export default function ProfileEditPage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="gap-2 text-primary border-primary/30 hover:bg-primary/10 self-start"
+                      className="gap-2 text-primary-emphasis border-primary/30 hover:bg-primary/10 self-start"
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
@@ -714,7 +714,7 @@ export default function ProfileEditPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+                            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
                           </div>
                           <span className="font-semibold text-foreground">AI Review</span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
@@ -780,7 +780,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="icon-md text-primary" aria-hidden="true" />
+                    <MapPin className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Location & Timezone
                   </CardTitle>
                 </CardHeader>
@@ -808,7 +808,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary" aria-hidden="true" />
+                    <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Skills & Expertise
                   </CardTitle>
                   <CardDescription>What are your core strengths and areas of focus?</CardDescription>
@@ -850,7 +850,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-primary/20 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="icon-md text-primary" aria-hidden="true" />
+                    <Briefcase className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Your Primary Role
                   </CardTitle>
                   <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
@@ -873,7 +873,7 @@ export default function ProfileEditPage() {
                         >
                           <div className={cn(
                             'rounded-lg p-2',
-                            form.role === opt.value ? 'bg-primary/20 text-primary' : 'bg-secondary text-muted-foreground'
+                            form.role === opt.value ? 'bg-primary/20 text-primary-emphasis' : 'bg-secondary text-muted-foreground'
                           )}>
                             <Icon className="h-5 w-5" />
                           </div>
@@ -1059,7 +1059,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="icon-md text-primary" aria-hidden="true" />
+                    <Globe className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Web & Social Links
                   </CardTitle>
                   <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
@@ -1118,7 +1118,7 @@ export default function ProfileEditPage() {
             <TabsContent value="portfolio" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-2">
               <Card className="shadow-sm border-border/50 text-center py-12">
                 <CardContent className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
+                  <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary-emphasis mb-4">
                     <LayoutDashboard className="icon-xl" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
@@ -1143,7 +1143,7 @@ export default function ProfileEditPage() {
             <CardContent className="space-y-5 pt-5">
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-2xl font-bold text-primary">{completionPercentage}%</span>
+                  <span className="text-2xl font-bold text-primary-emphasis">{completionPercentage}%</span>
                   <span className="text-sm text-muted-foreground pb-1">Complete</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-secondary overflow-hidden">

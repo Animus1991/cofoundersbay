@@ -35,7 +35,7 @@ export function SkillChip({
         'inline-flex items-center gap-1.5 rounded-full border border-border/60 font-medium transition-all duration-200',
         sizeClasses[size],
         active 
-          ? 'bg-primary/20 text-primary border-primary/30 shadow-sm' 
+          ? 'bg-primary/20 text-primary-emphasis border-primary/30 shadow-sm' 
           : 'bg-secondary/60 text-muted-foreground hover:text-foreground',
         isInteractive && 'cursor-pointer hover:scale-105 active:scale-95',
         isInteractive && !active && 'hover:bg-secondary/80 hover:border-border',
@@ -97,7 +97,7 @@ export function SkillChipGroup({
         <button
           type="button"
           onClick={onAdd}
-          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
+          className="inline-flex items-center gap-1 rounded-full border border-dashed border-border/60 px-3 py-1 text-xs font-medium text-muted-foreground hover:border-primary/50 hover:text-primary-emphasis transition-colors"
         >
           + Add skill
         </button>

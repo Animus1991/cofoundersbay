@@ -149,7 +149,7 @@ export default function GroupsModerationPage() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="icon-lg text-primary" aria-hidden="true" />
+            <Shield className="icon-lg text-primary-emphasis" aria-hidden="true" />
             Moderation Queue
           </h1>
           <p className="text-muted-foreground">Review and action community reports</p>

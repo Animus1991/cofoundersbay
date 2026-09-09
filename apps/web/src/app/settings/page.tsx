@@ -91,7 +91,7 @@ function PrivacyCard() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Globe className="icon-md text-primary" aria-hidden="true" />
+          <Globe className="icon-md text-primary-emphasis" aria-hidden="true" />
           Privacy & Visibility
         </CardTitle>
         <CardDescription>Control who can see your profile and activity.</CardDescription>
@@ -101,7 +101,7 @@ function PrivacyCard() {
           <div key={id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="h-4 w-4 text-primary" />
+                <Icon className="h-4 w-4 text-primary-emphasis" />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{label}</p>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="icon-md text-primary" aria-hidden="true" />
+                  <CreditCard className="icon-md text-primary-emphasis" aria-hidden="true" />
                   Billing
                 </CardTitle>
               </CardHeader>
@@ -327,7 +327,7 @@ export default function SettingsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="icon-md text-primary" aria-hidden="true" />
+                  <Bell className="icon-md text-primary-emphasis" aria-hidden="true" />
                   Notification preferences
                 </CardTitle>
                 <CardDescription>
@@ -349,7 +349,7 @@ export default function SettingsPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-4 w-4 text-primary" />
+                        <Icon className="h-4 w-4 text-primary-emphasis" />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">{label}</p>
@@ -373,7 +373,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <KeyRound className="icon-md text-primary" aria-hidden="true" />
+                <KeyRound className="icon-md text-primary-emphasis" aria-hidden="true" />
                 Change password
               </CardTitle>
               <CardDescription>Leave blank to keep your current password.</CardDescription>
@@ -423,7 +423,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Shield className="icon-md text-primary" aria-hidden="true" />
+                <Shield className="icon-md text-primary-emphasis" aria-hidden="true" />
                 Security
               </CardTitle>
               <CardDescription>Two-factor authentication and account security.</CardDescription>
@@ -442,7 +442,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <Link2 className="icon-md text-primary" aria-hidden="true" />
+                <Link2 className="icon-md text-primary-emphasis" aria-hidden="true" />
                 Connected accounts
               </CardTitle>
               <CardDescription>
@@ -512,7 +512,7 @@ export default function SettingsPage() {
           <Card className="shadow-sm border-border/50">
             <CardHeader className="border-b border-border/50">
               <CardTitle className="text-lg flex items-center gap-2">
-                <User className="icon-md text-primary" aria-hidden="true" />
+                <User className="icon-md text-primary-emphasis" aria-hidden="true" />
                 Account
               </CardTitle>
             </CardHeader>

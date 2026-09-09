@@ -161,7 +161,7 @@ export function ScheduleCallModal({
           <DialogTitle className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={recipientAvatar} />
-              <AvatarFallback className="bg-primary/10 text-primary">
+              <AvatarFallback className="bg-primary/10 text-primary-emphasis">
                 {recipientName[0]}
               </AvatarFallback>
             </Avatar>
@@ -292,7 +292,7 @@ export function ScheduleCallModal({
                     callType === 'video' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
                   <div className="text-left">
                     <p className="font-medium text-sm">Video Call</p>
                     <p className="text-xs text-muted-foreground">Face-to-face meeting</p>
@@ -306,7 +306,7 @@ export function ScheduleCallModal({
                     callType === 'phone' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
                   <div className="text-left">
                     <p className="font-medium text-sm">Phone Call</p>
                     <p className="text-xs text-muted-foreground">Audio only</p>

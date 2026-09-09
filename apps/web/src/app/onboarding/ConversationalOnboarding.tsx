@@ -53,7 +53,7 @@ function TypingIndicator() {
   return (
     <div className="flex items-end gap-2">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="icon-sm text-primary" aria-hidden="true" />
+        <Bot className="icon-sm text-primary-emphasis" aria-hidden="true" />
       </div>
       <div className="rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <div className="flex gap-1 items-center h-4">
@@ -70,7 +70,7 @@ function BotBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-end gap-2 animate-fade-in">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Bot className="icon-sm text-primary" aria-hidden="true" />
+        <Bot className="icon-sm text-primary-emphasis" aria-hidden="true" />
       </div>
       <div className="max-w-[80%] rounded-2xl rounded-bl-sm bg-card border border-border px-4 py-3">
         <p className="text-sm text-foreground leading-relaxed">{children}</p>
@@ -297,7 +297,7 @@ export function ConversationalOnboarding() {
                       : 'border-border hover:border-primary/50 hover:bg-secondary/50',
                   )}
                 >
-                  <Icon className="h-5 w-5 text-primary shrink-0" />
+                  <Icon className="h-5 w-5 text-primary-emphasis shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-foreground">{label}</p>
                     <p className="text-xs text-muted-foreground">{desc}</p>
@@ -328,7 +328,7 @@ export function ConversationalOnboarding() {
                     className={cn(
                       'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                       selectedSkills.includes(skill.id)
-                        ? 'border-primary bg-primary/10 text-primary'
+                        ? 'border-primary bg-primary/10 text-primary-emphasis'
                         : 'border-border text-muted-foreground hover:border-primary/50',
                     )}
                   >

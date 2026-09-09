@@ -69,7 +69,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-emphasis" />
           </div>
         </div>
       </CardContent>
@@ -94,7 +94,7 @@ function StartupCard({ startup }: { startup: any }) {
     >
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-semibold">
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -114,7 +114,7 @@ function StartupCard({ startup }: { startup: any }) {
         </div>
       </div>
       <div className="text-right">
-        <p className="text-sm font-semibold text-primary">{startup.raising}</p>
+        <p className="text-sm font-semibold text-primary-emphasis">{startup.raising}</p>
         <p className="text-xs text-muted-foreground">{startup.matchScore}% match</p>
       </div>
     </Link>
@@ -154,7 +154,7 @@ function PortfolioItem({ company }: { company: any }) {
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={company.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
           {company.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -292,7 +292,7 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Rocket className="icon-sm text-primary" aria-hidden="true" />
+                    <Rocket className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Trending Startups
                   </CardTitle>
                   <div className="flex items-center gap-2">
@@ -320,7 +320,7 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="icon-sm text-primary" aria-hidden="true" />
+                    <BarChart3 className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Active Deals
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -347,7 +347,7 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <PieChart className="icon-sm text-primary" aria-hidden="true" />
+                    <PieChart className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Portfolio Companies
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>

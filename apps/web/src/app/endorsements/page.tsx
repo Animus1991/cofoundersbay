@@ -140,11 +140,11 @@ function EndorsementCard({
             <Link href={`/p/${user.id}`}>
               <Avatar className="h-11 w-11 rounded-xl">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-semibold">{initials}</AvatarFallback>
+                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Link>
             <div>
-              <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary transition-colors">
+              <Link href={`/p/${user.id}`} className="font-semibold text-sm hover:text-primary-emphasis transition-colors">
                 {user.name}
               </Link>
               {user.role && <p className="text-xs text-muted-foreground">{user.role}</p>}
@@ -166,7 +166,7 @@ function EndorsementCard({
 
         {/* Quote */}
         <div className="relative pl-4 border-l-2 border-primary/30">
-          <Quote className="absolute -top-1 -left-0.5 icon-sm text-primary/50" aria-hidden="true" />
+          <Quote className="absolute -top-1 -left-0.5 icon-sm text-primary-emphasis/50" aria-hidden="true" />
           <p className="text-sm text-muted-foreground leading-relaxed italic">{endorsement.content}</p>
         </div>
 
@@ -202,7 +202,7 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Award className="icon-sm text-primary" aria-hidden="true" />My Endorsed Skills
+          <Award className="icon-sm text-primary-emphasis" aria-hidden="true" />My Endorsed Skills
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -214,12 +214,12 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
                 <div className="flex -space-x-1">
                   {s.endorsers.slice(0, 3).map((e, i) => (
                     <Avatar key={i} className="h-5 w-5 rounded-full border border-background">
-                      <AvatarFallback className="text-xs bg-primary/10 text-primary">{e.name[0]}</AvatarFallback>
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">{e.name[0]}</AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
               </div>
-              <span className="text-xs font-semibold text-primary">{s.count}</span>
+              <span className="text-xs font-semibold text-primary-emphasis">{s.count}</span>
             </div>
             <Progress value={(s.count / maxCount) * 100} className="h-1.5" />
           </div>
@@ -244,7 +244,7 @@ function RequestPanel() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Send className="icon-sm text-primary" aria-hidden="true" />Request Endorsements
+          <Send className="icon-sm text-primary-emphasis" aria-hidden="true" />Request Endorsements
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -257,7 +257,7 @@ function RequestPanel() {
             <div key={c.id} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Avatar className="h-7 w-7 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">{c.name[0]}</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis text-xs font-bold">{c.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-xs font-medium">{c.name}</p>
@@ -387,7 +387,7 @@ export default function EndorsementsPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary' },
+              { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary-emphasis' },
               { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600' },
               { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600' },
             ].map(s => (

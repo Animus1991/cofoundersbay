@@ -247,13 +247,13 @@ export function PdfAnnotationViewer({
             className={cn(
               'h-7 px-2 flex items-center gap-1 rounded-lg text-2xs font-medium transition-colors',
               showAnnotationPanel
-                ? 'bg-primary/10 text-primary'
+                ? 'bg-primary/10 text-primary-emphasis'
                 : 'bg-secondary hover:bg-secondary/80 text-muted-foreground'
             )}
           >
             <Type className="icon-2xs" aria-hidden="true" />
             {annotations.length > 0 && (
-              <span className="text-2xs bg-primary/20 text-primary rounded-full px-1.5 py-0">{annotations.length}</span>
+              <span className="text-2xs bg-primary/20 text-primary-emphasis rounded-full px-1.5 py-0">{annotations.length}</span>
             )}
           </button>
         </div>
@@ -266,7 +266,7 @@ export function PdfAnnotationViewer({
           {isLoading && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
-                <Loader2 className="icon-xl text-primary animate-spin" aria-hidden="true" />
+                <Loader2 className="icon-xl text-primary-emphasis animate-spin" aria-hidden="true" />
                 <span className="text-sm text-muted-foreground">Loading PDF…</span>
               </div>
             </div>
@@ -305,7 +305,7 @@ export function PdfAnnotationViewer({
           <div className="w-64 flex-none border-l border-border bg-card overflow-y-auto">
             <div className="p-3 border-b border-border">
               <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                <MessageSquare className="w-3.5 h-3.5 text-primary-emphasis" aria-hidden="true" />
                 Annotations
                 <span className="text-2xs text-muted-foreground ml-auto">{annotations.length}</span>
               </h3>
@@ -361,7 +361,7 @@ export function PdfAnnotationViewer({
                     note: '',
                   });
                 }}
-                className="w-full h-7 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 text-2xs font-medium transition-colors flex items-center justify-center gap-1"
+                className="w-full h-7 rounded-lg bg-primary/10 text-primary-emphasis hover:bg-primary/20 text-2xs font-medium transition-colors flex items-center justify-center gap-1"
               >
                 <Plus className="icon-2xs" aria-hidden="true" />
                 Add note for page {currentPage}

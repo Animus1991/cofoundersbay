@@ -187,7 +187,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
                 {difficultyConfig.label}
               </Badge>
               {resource.isFeatured && (
-                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary">
+                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary-emphasis">
                   Featured
                 </Badge>
               )}
@@ -195,7 +195,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             onClick={() => setSaved(!saved)}
-            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary' : 'text-muted-foreground/40 hover:text-muted-foreground')}
+            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary-emphasis' : 'text-muted-foreground/40 hover:text-muted-foreground')}
           >
             <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} aria-hidden="true" />
           </button>
@@ -257,7 +257,7 @@ function LearningPathCard({ path }: { path: LearningPath }) {
         <span className="flex items-center gap-0.5"><Clock className="icon-2xs" aria-hidden="true" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary">
+      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary-emphasis">
         {path.progress > 0 ? 'Continue path' : 'Start path'}
         <ChevronRight className="icon-2xs" aria-hidden="true" />
       </div>
@@ -401,7 +401,7 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="icon-sm text-primary" aria-hidden="true" />
+              <Target className="icon-sm text-primary-emphasis" aria-hidden="true" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
             </div>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
@@ -418,7 +418,7 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recommended for you
             </h2>
@@ -462,7 +462,7 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap',
                     typeFilter === tf.key
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-emphasis'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >{tf.label}</button>
@@ -478,7 +478,7 @@ export default function LearningPage() {
                   className={cn(
                     'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
                     selectedCategory === category
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-emphasis'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -511,7 +511,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
+                <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Featured Resources
                 </h2>

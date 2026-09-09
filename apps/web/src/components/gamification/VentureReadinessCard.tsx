@@ -86,7 +86,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className={cn('flex items-center gap-2', compact ? 'text-sm' : 'text-base')}>
-            <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
+            <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Venture Readiness Score
           </CardTitle>
           <Link href="/achievements">

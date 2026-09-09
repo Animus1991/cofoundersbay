@@ -174,7 +174,7 @@ export function FlowDiagramNode({
             <div className="relative">
               <button
                 onMouseDown={(e) => { e.stopPropagation(); setShowPalette((v) => !v); }}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 hover:bg-primary/20 text-primary text-2xs font-medium transition-colors"
+                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-primary/10 hover:bg-primary/20 text-primary-emphasis text-2xs font-medium transition-colors"
                 title="Add node"
               >
                 <Plus className="icon-2xs" aria-hidden="true" />

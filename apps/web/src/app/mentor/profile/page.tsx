@@ -115,7 +115,7 @@ export default function MentorProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <User className="icon-lg text-primary" aria-hidden="true" />
+              <User className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Mentor Profile
             </h1>
             <p className="text-muted-foreground">How mentees see you on the platform</p>
@@ -132,14 +132,14 @@ export default function MentorProfilePage() {
             <div className="flex items-start gap-4">
               <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/30">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-xl">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h2 className="font-semibold text-lg">{displayName}</h2>
-                  <BadgeCheck className="icon-sm text-primary" aria-hidden="true" />
+                  <BadgeCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
                   <Badge variant="secondary" className="text-xs">Mentor</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">

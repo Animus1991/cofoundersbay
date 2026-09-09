@@ -62,7 +62,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
           <Link href={`/p/${mentor.userId}`}>
             <Avatar className="icon-md">
               <AvatarImage src={mentor.avatar} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -71,11 +71,11 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="flex items-center gap-2">
-                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary transition-colors">
+                  <Link href={`/p/${mentor.userId}`} className="font-medium hover:text-primary-emphasis transition-colors">
                     {mentor.name}
                   </Link>
                   {mentor.isVerified && (
-                    <CheckCircle2 className="icon-sm text-primary" aria-hidden="true" />
+                    <CheckCircle2 className="icon-sm text-primary-emphasis" aria-hidden="true" />
                   )}
                 </div>
                 {mentor.headline && (

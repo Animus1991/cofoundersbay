@@ -762,7 +762,7 @@ export function ResearchNodeCard({
               {node.builderDocumentId && (
                 <button
                   onClick={() => { router.push('/builder'); setShowMenu(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary hover:bg-primary/10 w-full text-left transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary-emphasis hover:bg-primary/10 w-full text-left transition-colors"
                 >
                   <Rocket className="w-3.5 h-3.5" aria-hidden="true" /> Open in Builder
                 </button>
@@ -917,7 +917,7 @@ export function ResearchNodeCard({
 
           {/* Link preview */}
           {(effectiveType === 'link' || node.type === 'link') && node.url && (
-            <p className="text-2xs text-primary truncate underline">{node.url}</p>
+            <p className="text-2xs text-primary-emphasis truncate underline">{node.url}</p>
           )}
 
           {/* Reference preview */}
@@ -952,8 +952,8 @@ export function ResearchNodeCard({
               onClick={(e) => { e.stopPropagation(); router.push('/builder'); }}
               title="Linked to a Builder document — click to open Builder"
             >
-              <Rocket className="w-2.5 h-2.5 text-primary" aria-hidden="true" />
-              <span className="text-2xs font-medium text-primary">Linked to Builder</span>
+              <Rocket className="w-2.5 h-2.5 text-primary-emphasis" aria-hidden="true" />
+              <span className="text-2xs font-medium text-primary-emphasis">Linked to Builder</span>
             </div>
           )}
 

@@ -101,7 +101,7 @@ export function MobileNav() {
                     className={cn(
                       'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200',
                       active
-                        ? 'bg-primary/15 text-primary shadow-sm'
+                        ? 'bg-primary/15 text-primary-emphasis shadow-sm'
                         : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
                     )}
                   >

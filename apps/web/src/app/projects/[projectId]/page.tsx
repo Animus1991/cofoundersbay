@@ -218,12 +218,12 @@ export default function ProjectDetailPage() {
                       <div key={member.id} className="flex items-center gap-4">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={member.avatar} />
-                          <AvatarFallback className="bg-primary/10 text-primary">
+                          <AvatarFallback className="bg-primary/10 text-primary-emphasis">
                             {member.name[0]}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <Link href={`/profiles/${member.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                          <Link href={`/profiles/${member.id}`} className="font-medium text-foreground hover:text-primary-emphasis transition-colors">
                             {member.name}
                           </Link>
                           <p className="text-sm text-muted-foreground">{member.role}</p>
@@ -369,7 +369,7 @@ export default function ProjectDetailPage() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Website</p>
-                      <a href={project.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary hover:underline">
+                      <a href={project.website} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-primary-emphasis hover:underline">
                         {project.website.replace('https://', '')}
                       </a>
                     </div>
@@ -396,12 +396,12 @@ export default function ProjectDetailPage() {
                 <Link href={`/profiles/${project.founder.id}`} className="flex items-center gap-3 group">
                   <Avatar className="h-12 w-12">
                     <AvatarImage src={project.founder.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-primary-emphasis">
                       {project.founder.name[0]}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                    <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                       {project.founder.name}
                     </p>
                     <RoleBadge role={project.founder.role} size="sm" />

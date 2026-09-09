@@ -39,7 +39,7 @@ function CommentBubble({
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         ) : (
-          <span className="text-2xs font-semibold text-primary">
+          <span className="text-2xs font-semibold text-primary-emphasis">
             {(comment.authorName ?? 'U')[0].toUpperCase()}
           </span>
         )}
@@ -137,12 +137,12 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <MessageCircle className="icon-sm text-primary" aria-hidden="true" />
+          <MessageCircle className="icon-sm text-primary-emphasis" aria-hidden="true" />
           <span className="text-sm font-semibold truncate max-w-[180px]">
             {nodeTitle ? `Comments: ${nodeTitle}` : 'Comments'}
           </span>
           {active.length > 0 && (
-            <span className="text-xs bg-primary/15 text-primary px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-primary/15 text-primary-emphasis px-1.5 py-0.5 rounded-full font-medium">
               {active.length}
             </span>
           )}

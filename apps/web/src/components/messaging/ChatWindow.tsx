@@ -136,7 +136,7 @@ function MessageBubble({
         {showAvatar && !isOwn && (
           <Avatar className="h-8 w-8">
             <AvatarImage src={recipientAvatar || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+            <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs">
               {recipientName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -243,7 +243,7 @@ function MessageBubble({
               {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
               {message.status === 'sent' && <Check className="icon-2xs" aria-hidden="true" />}
               {message.status === 'delivered' && <CheckCheck className="icon-2xs" aria-hidden="true" />}
-              {message.status === 'read' && <CheckCheck className="icon-2xs text-primary" aria-hidden="true" />}
+              {message.status === 'read' && <CheckCheck className="icon-2xs text-primary-emphasis" aria-hidden="true" />}
             </span>
           )}
         </div>
@@ -374,7 +374,7 @@ export function ChatWindow({
               <div className="relative">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={conversation.recipientAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary">
+                  <AvatarFallback className="bg-primary/20 text-primary-emphasis">
                     {conversation.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -520,7 +520,7 @@ export function ChatWindow({
           <div className="flex items-center gap-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={conversation.recipientAvatar || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary text-xs">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs">
                 {conversation.recipientName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -542,7 +542,7 @@ export function ChatWindow({
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
-            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary-emphasis" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-foreground/70">
                 {replyTo.senderId === currentUserId ? 'You' : conversation.recipientName}
@@ -658,7 +658,7 @@ export function NoChatSelected() {
     <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
       <div className="relative">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <MessageCircle className="h-10 w-10 text-primary" aria-hidden="true" />
+          <MessageCircle className="h-10 w-10 text-primary-emphasis" aria-hidden="true" />
         </div>
         <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center border-2 border-background">
           <span className="text-emerald-400 text-xs font-bold">✓</span>
@@ -673,7 +673,7 @@ export function NoChatSelected() {
       <div className="flex flex-col gap-2 w-full max-w-[200px]">
         <a
           href="/discover"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary-emphasis hover:bg-primary/20 transition-colors"
         >
           <Users className="icon-sm" aria-hidden="true" />
           Find people to message

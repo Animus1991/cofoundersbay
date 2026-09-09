@@ -206,7 +206,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Shield className="icon-md text-primary" aria-hidden="true" />
+                <Shield className="icon-md text-primary-emphasis" aria-hidden="true" />
                 What would you like to do?
               </DialogTitle>
               <DialogDescription>
@@ -282,7 +282,7 @@ export function ReportBlockModal({
                         value={reason.value}
                         checked={selectedReason === reason.value}
                         onChange={() => setSelectedReason(reason.value)}
-                        className="mt-1 h-4 w-4 text-primary border-border focus:ring-primary"
+                        className="mt-1 h-4 w-4 text-primary-emphasis border-border focus:ring-primary"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground">{reason.label}</p>

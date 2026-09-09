@@ -94,7 +94,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(false); }}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded text-2xs transition-colors',
-              !showCode ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+              !showCode ? 'bg-primary/15 text-primary-emphasis' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Preview diagram"
           >
@@ -105,7 +105,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded text-2xs transition-colors',
-              showCode ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+              showCode ? 'bg-primary/15 text-primary-emphasis' : 'text-muted-foreground hover:text-foreground'
             )}
             title="Edit Mermaid code"
           >
@@ -186,7 +186,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
               {!readOnly && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); setShowCode(true); }}
-                  className="px-2 py-1 bg-primary/10 text-primary rounded text-2xs hover:bg-primary/20"
+                  className="px-2 py-1 bg-primary/10 text-primary-emphasis rounded text-2xs hover:bg-primary/20"
                 >
                   Write Mermaid code
                 </button>

@@ -80,7 +80,7 @@ function ConversationItem({
       <div className="relative">
         <Avatar className="h-12 w-12">
           <AvatarImage src={conversation.recipientAvatar || undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
+          <AvatarFallback className="bg-primary/20 text-primary-emphasis">
             {conversation.recipientName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
@@ -93,7 +93,7 @@ function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            {conversation.isPinned && <Pin className="icon-2xs text-primary flex-shrink-0" aria-hidden="true" />}
+            {conversation.isPinned && <Pin className="icon-2xs text-primary-emphasis flex-shrink-0" aria-hidden="true" />}
             <span className={cn(
               'text-sm font-semibold truncate',
               conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
@@ -234,7 +234,7 @@ export function ConversationList({
         {filteredConversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="icon-lg text-primary" aria-hidden="true" />
+              <MessageSquarePlus className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'No conversations found' : 'No messages yet'}
@@ -247,7 +247,7 @@ export function ConversationList({
             {!searchQuery && (
               <Link
                 href="/discover"
-                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors"
+                className="mt-1 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary-emphasis hover:bg-primary/20 transition-colors"
               >
                 Find people to message
               </Link>

@@ -98,7 +98,7 @@ const DEMO_PROPOSALS: Proposal[] = [
 
 const OPP_TYPE_DISPLAY: Record<OpportunityType, { label: string; className: string; icon: typeof Briefcase }> = {
   cofounder: { label: 'Co-founder', className: 'bg-indigo-500/20 text-indigo-700 border-indigo-500/20 dark:text-indigo-400', icon: Handshake },
-  job: { label: 'Job', className: 'bg-primary/20 text-primary border-primary/20', icon: Building2 },
+  job: { label: 'Job', className: 'bg-primary/20 text-primary-emphasis border-primary/20', icon: Building2 },
   investment: { label: 'Investment', className: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/20 dark:text-emerald-400', icon: Coins },
   partnership: { label: 'Partnership', className: 'bg-purple-500/20 text-purple-700 border-purple-500/20 dark:text-purple-400', icon: Users },
   mentorship: { label: 'Mentorship', className: 'bg-amber-500/20 text-amber-700 border-amber-500/20 dark:text-amber-400', icon: Rocket },
@@ -120,7 +120,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">{initials}</AvatarFallback>
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-emphasis font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
@@ -221,7 +221,7 @@ function JobCard({ job }: { job: JobPostingView }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary font-bold text-sm">
+              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-emphasis font-bold text-sm">
                 {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
               </AvatarFallback>
             </Avatar>
@@ -229,7 +229,7 @@ function JobCard({ job }: { job: JobPostingView }) {
               <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary border-primary/20">
+                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary-emphasis border-primary/20">
                   <Building2 className="mr-1 icon-2xs" aria-hidden="true" />
                   Job
                 </Badge>
@@ -299,7 +299,7 @@ function ProposalCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs font-bold">
                 {proposal.fromInitials}
               </AvatarFallback>
             </Avatar>
@@ -404,7 +404,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
                   className={cn(
                     'flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                     form.type === key
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-emphasis'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -582,7 +582,7 @@ export default function OpportunitiesPage() {
               <Icon className="h-4 w-4" />
               {label}
               {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary-emphasis">
                   {badge}
                 </span>
               )}
@@ -612,7 +612,7 @@ export default function OpportunitiesPage() {
                     className={cn(
                       'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                       oppTypeFilter === t
-                        ? 'border-primary bg-primary/20 text-primary'
+                        ? 'border-primary bg-primary/20 text-primary-emphasis'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40',
                     )}
                   >

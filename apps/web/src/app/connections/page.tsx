@@ -72,7 +72,7 @@ function ConnectionCard({
         <Link href={`/profiles/${other.id}`}>
           <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
             <AvatarImage src={other.avatarUrl ?? undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+            <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
               {other.displayName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -80,7 +80,7 @@ function ConnectionCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -162,7 +162,7 @@ function IntroRequestCard({
           <Link href={`/profiles/${sender.id}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/30">
               <AvatarImage src={sender.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
                 {sender.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -170,11 +170,11 @@ function IntroRequestCard({
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
-              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary gap-1">
+              <Badge variant="outline" size="sm" className="ml-auto border-primary/40 text-primary-emphasis gap-1">
                 <Handshake className="icon-sm" aria-hidden="true" />
                 Intro request
               </Badge>
@@ -186,7 +186,7 @@ function IntroRequestCard({
 
             {connection.message && (
               <div className="flex gap-2 rounded-xl bg-secondary/50 px-3 py-2.5">
-                <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary/60" aria-hidden="true" />
+                <Quote className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary-emphasis/60" aria-hidden="true" />
                 <p className="text-sm text-foreground/80 italic">{connection.message}</p>
               </div>
             )}

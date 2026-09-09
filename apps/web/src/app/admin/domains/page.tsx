@@ -350,7 +350,7 @@ export default function DomainsAdminPage() {
                   >
                     {t.logoUrl
                       ? <img src={t.logoUrl} alt="" className="icon-lg rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" aria-hidden="true" /></div>}
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary-emphasis" aria-hidden="true" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>

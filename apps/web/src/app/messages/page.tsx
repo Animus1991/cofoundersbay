@@ -612,7 +612,7 @@ export default function MessagesPage() {
                     <div className="flex items-start gap-3">
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarImage src={req.requester.avatarUrl ?? undefined} />
-                        <AvatarFallback className="bg-primary/20 text-primary text-xs font-semibold">
+                        <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xs font-semibold">
                           {req.requester.displayName[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>

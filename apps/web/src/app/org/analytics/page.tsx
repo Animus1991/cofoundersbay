@@ -65,7 +65,7 @@ function StatCard({
             )}
           </div>
           <div className="p-2 rounded-lg bg-primary/10">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-emphasis" />
           </div>
         </div>
       </CardContent>
@@ -160,7 +160,7 @@ export default function OrgAnalyticsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary" aria-hidden="true" /> Org Analytics
+              <BarChart3 className="icon-lg text-primary-emphasis" aria-hidden="true" /> Org Analytics
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               Track performance, cohort health, and program impact

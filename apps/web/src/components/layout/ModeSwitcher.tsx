@@ -32,7 +32,7 @@ export function ModeSwitcher({ currentMode, onModeChange, expanded }: ModeSwitch
                 ? 'flex-1 gap-1.5 px-2 py-1.5 text-xs font-medium'
                 : 'h-9 w-9',
               isActive
-                ? 'bg-primary/10 text-primary shadow-sm'
+                ? 'bg-primary/10 text-primary-emphasis shadow-sm'
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
             )}
             aria-pressed={isActive}

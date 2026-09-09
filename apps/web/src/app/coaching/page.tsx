@@ -188,7 +188,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
         <div className="flex items-start gap-3">
           <Avatar className="h-10 w-10 shrink-0">
             {session.coachAvatar && <AvatarImage src={session.coachAvatar} />}
-            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+            <AvatarFallback className="bg-primary/10 text-primary-emphasis text-xs font-semibold">
               {session.coachName.split(' ').map((n) => n[0]).join('')}
             </AvatarFallback>
           </Avatar>
@@ -315,7 +315,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
       <div className="flex items-start gap-3">
         <Avatar className="h-10 w-10 shrink-0">
           {coach.avatar && <AvatarImage src={coach.avatar} />}
-          <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-semibold">
             {coach.name.split(' ').map((n) => n[0]).join('')}
           </AvatarFallback>
         </Avatar>
@@ -325,7 +325,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold text-foreground">{coach.name}</p>
                 {coach.isVerified && (
-                  <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary border-primary/20">Verified</Badge>
+                  <Badge size="sm" className="rounded-full px-1.5 bg-primary/10 text-primary-emphasis border-primary/20">Verified</Badge>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{coach.title}</p>
@@ -392,7 +392,7 @@ export default function CoachingPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Total sessions', value: sessions.length, icon: Calendar, color: 'text-primary-emphasis', bg: 'bg-primary/10' },
             { label: 'Upcoming', value: upcoming.length, icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/10' },
             { label: 'Action items done', value: `${completedActions}/${totalActionItems.length}`, icon: ListChecks, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
             { label: 'Avg rating', value: completed.length ? `${(completed.filter(s => s.rating).reduce((a, s) => a + (s.rating ?? 0), 0) / completed.filter(s => s.rating).length).toFixed(1)}/5` : '—', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -451,7 +451,7 @@ export default function CoachingPage() {
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <BrainCircuit className="h-7 w-7 text-primary" aria-hidden="true" />
+                  <BrainCircuit className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">No coaching sessions yet</p>
@@ -531,7 +531,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary" aria-hidden="true" /> Session Themes
+                    <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" /> Session Themes
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">

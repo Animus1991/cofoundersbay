@@ -14,7 +14,7 @@ type EmptyStateProps = {
 
 // SVG Illustrations for different empty states
 function EmptyIllustration({ type, className }: { type: IllustrationType; className?: string }) {
-  const baseClass = cn('mx-auto text-primary/60', className);
+  const baseClass = cn('mx-auto text-primary-emphasis/60', className);
 
   switch (type) {
     case 'search':

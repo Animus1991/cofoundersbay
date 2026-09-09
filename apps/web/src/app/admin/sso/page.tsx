@@ -70,7 +70,7 @@ export default function SSOAdminPage() {
       {/* Stats row */}
       <div className="grid gap-4 lg:grid-cols-4 mb-6">
         {[
-          { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary' },
+          { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-emphasis' },
           { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-blue-500' },
           { label: 'Total Providers', value: statsLoading ? '…' : (stats?.totalProviders ?? 0), icon: Shield, color: 'text-violet-500' },
           { label: 'Events (24h)', value: statsLoading ? '…' : (stats?.recentEvents ?? 0), icon: Activity, color: 'text-green-500' },
@@ -183,7 +183,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
           <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
         ) : (
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Building2 className="icon-md text-primary" aria-hidden="true" />
+            <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
           </div>
         )}
         <div>
@@ -389,7 +389,7 @@ function SSOConfigPanel({
             {(['providers','policy','domains'] as const).map(tab => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
                 className={`px-3 py-1.5 text-sm rounded-md transition-colors capitalize ${
-                  activeTab === tab ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted/50'
+                  activeTab === tab ? 'bg-primary/10 text-primary-emphasis font-medium' : 'text-muted-foreground hover:bg-muted/50'
                 }`}>
                 {tab === 'providers' ? 'Providers' : tab === 'policy' ? 'Policy' : 'Email Domains'}
               </button>
@@ -456,7 +456,7 @@ function SSOConfigPanel({
                 <div className="grid grid-cols-2 gap-2">
                   {(['oidc', 'saml', 'oauth2'] as const).map(t => (
                     <button key={t} type="button" onClick={() => setProviderType(t)}
-                      className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                      className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
                       {t === 'oidc' ? 'OpenID Connect' : t === 'saml' ? 'SAML 2.0' : 'OAuth 2.0'}
                     </button>
                   ))}
@@ -532,7 +532,7 @@ function SSOConfigPanel({
               <div className="grid grid-cols-3 gap-2">
                 {([['disabled', 'Disabled', ShieldOff], ['optional', 'Optional', Shield], ['required', 'Required', Lock]] as const).map(([mode, label, Icon]) => (
                   <button key={mode} type="button" onClick={() => setSsoMode(mode)}
-                    className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                    className={`p-3 rounded-lg border text-sm font-medium flex items-center justify-center gap-2 transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
                     <Icon className="icon-sm" />{label}
                   </button>
                 ))}
@@ -634,7 +634,7 @@ function SSOConfigPanel({
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
                           ? <span className="text-xs text-green-600">✓ Verified</span>
-                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary hover:underline">Mark verified</button>}
+                          : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-emphasis hover:underline">Mark verified</button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
                       <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive">
@@ -664,7 +664,7 @@ function SSOConfigPanel({
                   </div>
                 ))}
                 <button type="button" onClick={() => setRoleMappingRules(r => [...r, {claim:'',value:'',role:'member'}])}
-                  className="text-xs text-primary hover:underline flex items-center gap-1">
+                  className="text-xs text-primary-emphasis hover:underline flex items-center gap-1">
                   <Plus className="icon-sm" aria-hidden="true" />Add rule
                 </button>
               </div>

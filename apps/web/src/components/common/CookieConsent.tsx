@@ -96,7 +96,7 @@ export function CookieConsent() {
             <div className="p-4 sm:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <Cookie className="icon-md text-primary" aria-hidden="true" />
+                  <Cookie className="icon-md text-primary-emphasis" aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-foreground mb-1">We value your privacy</h3>
@@ -104,7 +104,7 @@ export function CookieConsent() {
                     We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
                     By clicking "Accept All", you consent to our use of cookies. 
                     Read our{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
+                    <Link href="/privacy" className="text-primary-emphasis hover:underline">
                       Privacy Policy
                     </Link>{' '}
                     to learn more.
@@ -145,7 +145,7 @@ export function CookieConsent() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                    <Settings className="icon-sm text-primary" aria-hidden="true" />
+                    <Settings className="icon-sm text-primary-emphasis" aria-hidden="true" />
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-foreground">Cookie Preferences</h3>
@@ -239,7 +239,7 @@ export function CookieConsent() {
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-border/60">
-                <Link href="/privacy" className="text-xs text-primary hover:underline">
+                <Link href="/privacy" className="text-xs text-primary-emphasis hover:underline">
                   Learn more about cookies
                 </Link>
                 <div className="flex gap-2">

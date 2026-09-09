@@ -108,7 +108,7 @@ export function WorkspaceReadinessPanel({ workspaceId, compact = false }: Readin
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Target className="icon-sm text-primary" aria-hidden="true" />
+            <Target className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Startup Readiness
           </CardTitle>
           <div className="flex items-center gap-1.5">

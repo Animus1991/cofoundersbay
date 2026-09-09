@@ -62,7 +62,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <Link href={`/p/${relationship.menteeId}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={mentee?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -70,7 +70,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary transition-colors">
+                <Link href={`/p/${relationship.menteeId}`} className="font-medium hover:text-primary-emphasis transition-colors">
                   {displayName}
                 </Link>
                 {mentee?.headline && (
@@ -103,7 +103,7 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
                 {relationship.totalSessions} sessions
               </span>
               {nextSessionFormatted && (
-                <span className="flex items-center gap-1 text-primary">
+                <span className="flex items-center gap-1 text-primary-emphasis">
                   <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                   Next: {nextSessionFormatted}
                 </span>
@@ -204,7 +204,7 @@ export default function MenteesPage() {
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Users className="icon-md text-primary" aria-hidden="true" />
+                <Users className="icon-md text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">{activeRelationships.length}</p>

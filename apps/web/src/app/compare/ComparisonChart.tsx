@@ -43,7 +43,7 @@ export function ComparisonChart({ profiles }: { profiles: CompareProfileMin[] })
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="icon-md text-primary" aria-hidden="true" />
+          <BarChart3 className="icon-md text-primary-emphasis" aria-hidden="true" />
           Comparison Overview
         </CardTitle>
       </CardHeader>

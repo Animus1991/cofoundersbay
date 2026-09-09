@@ -371,7 +371,7 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="icon-sm text-primary" aria-hidden="true" />
+                        <CheckCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
                       ) : (
                         <Check className="icon-sm" aria-hidden="true" />
                       )

@@ -62,7 +62,7 @@ import { cn } from '@/lib/utils';
 const STATUS_COLORS: Record<string, string> = {
   requested: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30',
   confirmed: 'bg-green-500/15 text-green-500 border-green-500/30',
-  completed: 'bg-primary/15 text-primary border-primary/30',
+  completed: 'bg-primary/15 text-primary-emphasis border-primary/30',
   cancelled: 'bg-destructive/15 text-destructive border-destructive/30',
   declined: 'bg-muted text-muted-foreground border-border',
 };
@@ -137,7 +137,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="relative shrink-0">
             <Avatar className="h-11 w-11 ring-2 ring-primary/20">
               <AvatarImage src={mentor.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold text-sm">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold text-sm">
                 {mentor.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -146,10 +146,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+              <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                 {mentor.displayName}
               </Link>
-              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary shrink-0" aria-hidden="true" />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-emphasis shrink-0" aria-hidden="true" />}
               {mentor.isFeatured && (
                 <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
                   <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />Featured
@@ -176,7 +176,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="shrink-0 flex flex-col items-center gap-0.5">
             <div className={cn(
               'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
-              matchPct >= 85 ? 'bg-primary/15 text-primary ring-primary/30'
+              matchPct >= 85 ? 'bg-primary/15 text-primary-emphasis ring-primary/30'
               : matchPct >= 70 ? 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/30'
               : 'bg-muted text-muted-foreground ring-border',
             )}>
@@ -203,7 +203,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="h-3.5 w-3.5 text-primary" aria-hidden="true" />{mentor.hourlyRate}/hr
+                <DollarSign className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />{mentor.hourlyRate}/hr
               </span>
             ) : (
               <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
@@ -411,7 +411,7 @@ function BookingCard({
           <Link href={`/profiles/${otherUserId}`}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-primary/20">
               <AvatarImage src={other.avatarUrl ?? undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
                 {other.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -421,7 +421,7 @@ function BookingCard({
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <Link
                 href={`/profiles/${otherUserId}`}
-                className="font-semibold text-foreground hover:text-primary transition-colors"
+                className="font-semibold text-foreground hover:text-primary-emphasis transition-colors"
               >
                 {other.displayName}
               </Link>
@@ -464,7 +464,7 @@ function BookingCard({
                 <button
                   type="button"
                   onClick={() => setShowNotes(!showNotes)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-medium text-primary-emphasis hover:text-primary-emphasis/80 transition-colors"
                 >
                   <FileText className="h-3.5 w-3.5" aria-hidden="true" />
                   Session Notes & AI Summary
@@ -482,7 +482,7 @@ function BookingCard({
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-2 text-primary border-primary/30 hover:bg-primary/5"
+                      className="gap-2 text-primary-emphasis border-primary/30 hover:bg-primary/5"
                       onClick={handleSummarize}
                       disabled={summarizing || !sessionNotes.trim()}
                     >
@@ -492,8 +492,8 @@ function BookingCard({
                     {aiSummary && (
                       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                          <span className="text-xs font-semibold text-primary">AI Summary</span>
+                          <Sparkles className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />
+                          <span className="text-xs font-semibold text-primary-emphasis">AI Summary</span>
                         </div>
                         <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
                         {aiSummary.actionItems.length > 0 && (
@@ -502,7 +502,7 @@ function BookingCard({
                             <ul className="space-y-0.5">
                               {aiSummary.actionItems.map((item, i) => (
                                 <li key={i} className="flex items-start gap-1 text-xs text-foreground">
-                                  <CheckCircle className="icon-2xs text-primary mt-0.5 shrink-0" aria-hidden="true" />
+                                  <CheckCircle className="icon-2xs text-primary-emphasis mt-0.5 shrink-0" aria-hidden="true" />
                                   {item}
                                 </li>
                               ))}
@@ -531,7 +531,7 @@ function BookingCard({
                 href={booking.meetingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                className="mt-2 inline-flex items-center gap-1 text-xs text-primary-emphasis hover:underline"
               >
                 <ExternalLink className="icon-2xs" aria-hidden="true" />
                 Join meeting
@@ -771,7 +771,7 @@ export default function MentoringPage() {
                   className={cn(
                     'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                     priceFilter === pf
-                      ? 'border-primary bg-primary/15 text-primary'
+                      ? 'border-primary bg-primary/15 text-primary-emphasis'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >{pf}</button>
@@ -786,7 +786,7 @@ export default function MentoringPage() {
                   className={cn(
                     'rounded-full border px-4 py-1.5 text-xs font-medium transition-colors whitespace-nowrap',
                     selectedExpertise === expertise
-                      ? 'border-primary bg-primary/20 text-primary'
+                      ? 'border-primary bg-primary/20 text-primary-emphasis'
                       : 'border-border/60 text-muted-foreground hover:border-primary/40',
                   )}
                 >
@@ -809,7 +809,7 @@ export default function MentoringPage() {
               {featuredMentors.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Award className="icon-sm text-primary" aria-hidden="true" />
+                    <Award className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       Featured Mentors
                     </h2>

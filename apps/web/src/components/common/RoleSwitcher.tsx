@@ -121,7 +121,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                       <Icon className={`h-4 w-4 ${roleConfig?.color || 'text-foreground'}`} />
                     )}
                     <span className="flex-1 text-sm">{roleConfig?.label || role.roleType}</span>
-                    {isActive && <Check className="icon-sm text-primary" aria-hidden="true" />}
+                    {isActive && <Check className="icon-sm text-primary-emphasis" aria-hidden="true" />}
                     {role.isVerified && (
                       <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
                     )}
@@ -218,7 +218,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                       <div className="text-xs text-muted-foreground capitalize">{role.scope} scope</div>
                     )}
                   </div>
-                  {isActive && <Check className="icon-sm text-primary" aria-hidden="true" />}
+                  {isActive && <Check className="icon-sm text-primary-emphasis" aria-hidden="true" />}
                   {role.isVerified && (
                     <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
                   )}

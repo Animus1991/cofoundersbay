@@ -273,7 +273,7 @@ export default function CalendarPage() {
         {/* Stats strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'This Month', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary' },
+            { label: 'This Month', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-emphasis' },
             { label: 'Deadlines', value: deadlineCount, icon: Clock, color: 'text-red-600' },
             { label: 'Sessions', value: sessionCount, icon: Video, color: 'text-blue-600' },
             { label: 'Milestones', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
@@ -342,7 +342,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="icon-sm text-primary" aria-hidden="true" />
+                    <CalendarDays className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </CardTitle>
                 </CardHeader>
@@ -364,7 +364,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" aria-hidden="true" /> Upcoming
+                    <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" /> Upcoming
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

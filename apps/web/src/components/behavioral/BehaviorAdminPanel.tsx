@@ -196,7 +196,7 @@ export function BehaviorAdminPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="icon-md text-primary" aria-hidden="true" /> Behavioral AI Optimizer
+            <Brain className="icon-md text-primary-emphasis" aria-hidden="true" /> Behavioral AI Optimizer
           </h2>
           <p className="text-sm text-muted-foreground">
             Platform-wide nudge performance, user state classification, and fatigue signals.

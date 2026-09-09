@@ -261,7 +261,7 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
     { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
     { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
     { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, color: 'text-red-500' },
-    { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, color: 'text-primary' },
+    { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, color: 'text-primary-emphasis' },
   ];
 
   return (
@@ -419,7 +419,7 @@ export default function MilestonesPage() {
                 className={cn(
                   'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                   categoryFilter === cat
-                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    ? 'border-primary/40 bg-primary/10 text-primary-emphasis'
                     : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -440,7 +440,7 @@ export default function MilestonesPage() {
                 className={cn(
                   'inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
                   statusFilter === tab.value
-                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    ? 'border-primary/40 bg-primary/10 text-primary-emphasis'
                     : 'border-border/50 bg-secondary/30 text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -448,7 +448,7 @@ export default function MilestonesPage() {
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
                     'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
-                    statusFilter === tab.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+                    statusFilter === tab.value ? 'bg-primary/20 text-primary-emphasis' : 'bg-muted text-muted-foreground',
                   )}>
                     {tab.count}
                   </span>
@@ -502,7 +502,7 @@ export default function MilestonesPage() {
         ) : milestones.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <Target className="h-7 w-7 text-primary" aria-hidden="true" />
+              <Target className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium text-foreground">

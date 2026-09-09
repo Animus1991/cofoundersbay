@@ -87,7 +87,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="icon-md text-primary" aria-hidden="true" />
+                  <Users className="icon-md text-primary-emphasis" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>

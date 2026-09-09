@@ -451,13 +451,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
         {/* ── Phase 10: Builder Document link bar ── */}
         {(node.builderDocumentId || showLinkInput) && (
           <div className="flex-none flex items-center gap-2 px-4 py-1.5 border-b border-border bg-primary/5 text-xs">
-            <Link2 className="w-3.5 h-3.5 text-primary shrink-0" aria-hidden="true" />
+            <Link2 className="w-3.5 h-3.5 text-primary-emphasis shrink-0" aria-hidden="true" />
             {node.builderDocumentId ? (
               <>
-                <span className="text-primary font-medium">Linked to Builder document</span>
+                <span className="text-primary-emphasis font-medium">Linked to Builder document</span>
                 <button
                   onClick={() => router.push('/builder')}
-                  className="flex items-center gap-1 text-primary hover:underline ml-1"
+                  className="flex items-center gap-1 text-primary-emphasis hover:underline ml-1"
                 >
                   <ExternalLink className="icon-2xs" aria-hidden="true" /> Open
                 </button>
@@ -703,7 +703,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 href={node.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline break-all text-center"
+                className="text-primary-emphasis hover:underline break-all text-center"
               >
                 {node.url}
               </a>

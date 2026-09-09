@@ -152,7 +152,7 @@ export default function MentorAvailabilityPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="icon-lg text-primary" aria-hidden="true" />
+              <Calendar className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Availability Settings
             </h1>
             <p className="text-muted-foreground">
@@ -181,7 +181,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="icon-sm text-primary" aria-hidden="true" />
+                <Clock className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <span className="text-sm font-medium">Weekly Hours</span>
               </div>
               <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
@@ -191,7 +191,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="icon-sm text-primary" aria-hidden="true" />
+                <Globe className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <span className="text-sm font-medium">Timezone</span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>

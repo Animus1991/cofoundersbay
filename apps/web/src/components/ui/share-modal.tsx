@@ -46,7 +46,7 @@ const SHARE_CHANNELS = [
     id: 'email',
     label: 'Email',
     icon: Mail,
-    color: 'hover:bg-primary/10 hover:text-primary hover:border-primary/30',
+    color: 'hover:bg-primary/10 hover:text-primary-emphasis hover:border-primary/30',
     getUrl: (url: string, title: string, _: string[], desc: string) =>
       `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${desc ? desc + '\n\n' : ''}${url}`)}`,
   },
@@ -123,7 +123,7 @@ export function ShareModal({
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{title}</p>
                 {description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
-                <p className="text-xs text-primary truncate mt-1">{url}</p>
+                <p className="text-xs text-primary-emphasis truncate mt-1">{url}</p>
               </div>
             </div>
           )}

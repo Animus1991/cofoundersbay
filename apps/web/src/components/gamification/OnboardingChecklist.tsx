@@ -65,7 +65,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             onClick={() => setExpanded((v) => !v)}
           >
             <div className="rounded-lg bg-primary/10 p-1.5">
-              <Rocket className="icon-sm text-primary" aria-hidden="true" />
+              <Rocket className="icon-sm text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
               <CardTitle className="text-sm font-semibold text-foreground">
@@ -119,7 +119,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
               </div>
               {!step.done && (
                 <Link href={step.href} className="shrink-0">
-                  <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary px-2 hover:bg-primary/10">
+                  <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary-emphasis px-2 hover:bg-primary/10">
                     {step.cta} <ChevronRight className="icon-2xs" aria-hidden="true" />
                   </Button>
                 </Link>

@@ -153,7 +153,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           <div>
             <span className="text-sm font-semibold text-foreground">Notifications</span>
             {unread > 0 && (
-              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary">
+              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary-emphasis">
                 {unread} new
               </span>
             )}
@@ -252,7 +252,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             <DropdownMenuSeparator className="my-0" />
             <div className="flex-shrink-0 px-4 py-2.5">
               <button
-                className="w-full text-center text-xs text-primary hover:underline"
+                className="w-full text-center text-xs text-primary-emphasis hover:underline"
                 onClick={() => router.push('/notifications')}
               >
                 View all notifications

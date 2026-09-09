@@ -85,7 +85,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -108,7 +108,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Send className="icon-md text-primary" aria-hidden="true" />
+              <Send className="icon-md text-primary-emphasis" aria-hidden="true" />
               Create Post
             </DialogTitle>
           </DialogHeader>
@@ -136,7 +136,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/20 text-primary">
+              <AvatarFallback className="bg-primary/20 text-primary-emphasis">
                 {user.displayName[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>

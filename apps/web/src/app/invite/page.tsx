@@ -50,11 +50,11 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{label}</p>
-            <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary' : 'text-foreground')}>{value}</p>
+            <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary-emphasis' : 'text-foreground')}>{value}</p>
             {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
           </div>
           <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', accent ? 'bg-primary/15' : 'bg-secondary')}>
-            <Icon className={cn('h-4 w-4', accent ? 'text-primary' : 'text-muted-foreground')} />
+            <Icon className={cn('h-4 w-4', accent ? 'text-primary-emphasis' : 'text-muted-foreground')} />
           </div>
         </div>
       </CardContent>
@@ -182,7 +182,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="icon-md text-primary" aria-hidden="true" />
+              <Sparkles className="icon-md text-primary-emphasis" aria-hidden="true" />
               Send an Invitation
             </CardTitle>
             <CardDescription>

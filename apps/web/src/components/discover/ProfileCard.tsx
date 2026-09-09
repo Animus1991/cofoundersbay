@@ -125,7 +125,7 @@ function ProfileCardInner({
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-10 w-10">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-sm font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-sm font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -134,7 +134,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-2">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors truncate"
+                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors truncate"
                 >
                   {profile.displayName}
                 </Link>
@@ -161,7 +161,7 @@ function ProfileCardInner({
         
         {profile.matchScore && (
           <div className="absolute top-3 right-3 z-10">
-            <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+            <Badge variant="secondary" className="bg-primary/20 text-primary-emphasis border-primary/30">
               {profile.matchScore}% match
             </Badge>
           </div>
@@ -173,7 +173,7 @@ function ProfileCardInner({
             <Link href={`/profiles/${profile.userId}`}>
               <Avatar className="h-12 w-12 ring-2 ring-border/40 group-hover:ring-primary/40 transition-all">
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-base font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-base font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -182,7 +182,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="text-lg font-semibold text-foreground hover:text-primary transition-colors"
+                  className="text-lg font-semibold text-foreground hover:text-primary-emphasis transition-colors"
                 >
                   {profile.displayName}
                 </Link>
@@ -344,7 +344,7 @@ function ProfileCardInner({
             <div className="relative">
               <Avatar className={cn('h-10 w-10 ring-2', ROLE_RING_COLORS[profile.role] || 'ring-border/40')}>
                 <AvatarImage src={profile.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
                   {profile.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -362,7 +362,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors truncate"
+                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors truncate"
                 >
                   {profile.displayName}
                 </Link>
@@ -370,7 +370,7 @@ function ProfileCardInner({
               </div>
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
-                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                  <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary-emphasis">
                     <Star className="icon-2xs fill-current" aria-hidden="true" />
                     {profile.matchScore}%
                   </div>

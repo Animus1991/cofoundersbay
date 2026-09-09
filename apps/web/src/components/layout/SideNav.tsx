@@ -153,7 +153,7 @@ export function SideNav() {
                         'group relative flex items-center rounded-lg transition-all duration-150',
                         expanded ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
                         active
-                          ? 'bg-primary/8 text-primary font-medium'
+                          ? 'bg-primary/8 text-primary-emphasis font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
                       )}
                     >
@@ -170,7 +170,7 @@ export function SideNav() {
                         <Icon
                           className={cn(
                             'h-4 w-4',
-                            active ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground',
+                            active ? 'text-primary-emphasis' : 'text-muted-foreground/70 group-hover:text-foreground',
                           )}
                           aria-hidden="true"
                         />
@@ -217,7 +217,7 @@ export function SideNav() {
           >
             <Avatar className="h-7 w-7 flex-shrink-0">
               <AvatarImage src={user.avatarUrl ?? undefined} />
-              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary">
+              <AvatarFallback className="text-xs font-semibold bg-primary/15 text-primary-emphasis">
                 {initials}
               </AvatarFallback>
             </Avatar>

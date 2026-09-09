@@ -148,7 +148,7 @@ function DomainRow({
             <CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Verified
           </Badge>
         ) : (
-          <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary hover:underline">
+          <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary-emphasis hover:underline">
             Mark Verified
           </button>
         )}
@@ -176,7 +176,7 @@ function RoleMappingEditor({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium">Role Mapping Rules</label>
-        <button type="button" onClick={add} className="text-xs text-primary hover:underline flex items-center gap-1">
+        <button type="button" onClick={add} className="text-xs text-primary-emphasis hover:underline flex items-center gap-1">
           <Plus className="icon-sm" aria-hidden="true" />Add rule
         </button>
       </div>
@@ -362,7 +362,7 @@ export default function TenantSSOPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Lock className="icon-lg text-primary" aria-hidden="true" />
+              <Lock className="icon-lg text-primary-emphasis" aria-hidden="true" />
               SSO / Authentication
             </h1>
             <p className="text-muted-foreground">Configure single sign-on for your organization members</p>
@@ -430,7 +430,7 @@ export default function TenantSSOPage() {
                   <div className="grid grid-cols-3 gap-2">
                     {(['oidc', 'saml', 'oauth2'] as const).map(t => (
                       <button key={t} type="button" onClick={() => setProviderType(t)}
-                        className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:bg-muted/50'}`}>
+                        className={`p-2.5 rounded-lg border text-sm font-medium transition-colors ${providerType === t ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border hover:bg-muted/50'}`}>
                         {t === 'oidc' ? 'OpenID Connect' : t === 'saml' ? 'SAML 2.0' : 'OAuth 2.0'}
                       </button>
                     ))}
@@ -541,8 +541,8 @@ export default function TenantSSOPage() {
                   ] as const).map(([mode, label, Icon, desc]) => (
                     <button key={mode} type="button" onClick={() => setSsoMode(mode as SSOMode)}
                       className={`p-3 rounded-lg border text-left transition-colors ${ssoMode === mode ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/50'}`}>
-                      <Icon className={`h-4 w-4 mb-1 ${ssoMode === mode ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <p className={`text-sm font-medium ${ssoMode === mode ? 'text-primary' : ''}`}>{label}</p>
+                      <Icon className={`h-4 w-4 mb-1 ${ssoMode === mode ? 'text-primary-emphasis' : 'text-muted-foreground'}`} />
+                      <p className={`text-sm font-medium ${ssoMode === mode ? 'text-primary-emphasis' : ''}`}>{label}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
                     </button>
                   ))}

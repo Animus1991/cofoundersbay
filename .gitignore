@@ -8,6 +8,8 @@ dist
 out
 .open-next
 .wrangler
+test-results
+playwright-report
 .turbo
 tmp
 out-tsc

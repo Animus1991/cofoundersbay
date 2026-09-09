@@ -130,7 +130,7 @@ export function MilestoneFormModal({
       <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden p-0" size="md">
         {/* Header */}
         <div className="flex shrink-0 items-center gap-2 border-b border-border/50 px-5 py-4 pr-14">
-          <Flag className="icon-sm text-primary" aria-hidden="true" />
+          <Flag className="icon-sm text-primary-emphasis" aria-hidden="true" />
           <DialogTitle className="text-sm">
             {isEdit ? 'Edit milestone' : 'New milestone'}
           </DialogTitle>

@@ -51,7 +51,7 @@ function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
       <div className="flex items-center gap-3 mt-4">
         <Avatar className="h-10 w-10">
           <AvatarImage src={endorsement.fromUser.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+          <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm">
             {endorsement.fromUser.displayName[0]}
           </AvatarFallback>
         </Avatar>
@@ -195,7 +195,7 @@ export default function PublicProfilePage() {
                 <div className="flex flex-col sm:flex-row gap-6">
                   <Avatar className="h-20 w-20 shrink-0">
                     <AvatarImage src={profile.avatarUrl ?? undefined} />
-                    <AvatarFallback className="text-xl bg-primary/10 text-primary">
+                    <AvatarFallback className="text-xl bg-primary/10 text-primary-emphasis">
                       {firstName[0]}{lastName[0] || firstName[1] || ''}
                     </AvatarFallback>
                   </Avatar>
@@ -206,7 +206,7 @@ export default function PublicProfilePage() {
                           {firstName} {lastName}
                         </h1>
                         {isVerified && (
-                          <CheckCircle2 className="icon-md text-primary" aria-hidden="true" />
+                          <CheckCircle2 className="icon-md text-primary-emphasis" aria-hidden="true" />
                         )}
                         <RoleBadge role={profile.role} />
                       </div>
@@ -282,14 +282,14 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="icon-md text-primary" aria-hidden="true" />
+                    <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Looking For
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {lookingFor.map((role) => (
-                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+                      <Badge key={role} variant="outline" className="bg-primary/5 border-primary/20 text-primary-emphasis">
                         {role}
                       </Badge>
                     ))}

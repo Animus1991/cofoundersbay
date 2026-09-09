@@ -308,7 +308,7 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary" aria-hidden="true" />
+                <Folder className="icon-md text-primary-emphasis" aria-hidden="true" />
                 <CardTitle className="text-lg">Skills</CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>

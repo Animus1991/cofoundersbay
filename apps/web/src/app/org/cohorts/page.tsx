@@ -204,7 +204,7 @@ export default function OrgCohortsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total Cohorts', value: cohorts.length, icon: Award, color: 'text-primary' },
+            { label: 'Total Cohorts', value: cohorts.length, icon: Award, color: 'text-primary-emphasis' },
             { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, color: 'text-green-600' },
             { label: 'Total Startups', value: totalStartups, icon: Rocket, color: 'text-blue-600' },
             { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, color: 'text-purple-600' },

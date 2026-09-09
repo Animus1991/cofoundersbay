@@ -275,7 +275,7 @@ function PostCard({
           <div className="flex gap-3">
             <Avatar className="h-10 w-10">
               <AvatarImage src={post.author.avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -359,7 +359,7 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onLike}
-            className={cn(post.isLiked && 'text-primary')}
+            className={cn(post.isLiked && 'text-primary-emphasis')}
           >
             <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} aria-hidden="true" />
             Like
@@ -380,7 +380,7 @@ function PostCard({
             variant="ghost"
             size="sm"
             onClick={onBookmark}
-            className={cn(post.isBookmarked && 'text-primary')}
+            className={cn(post.isBookmarked && 'text-primary-emphasis')}
           >
             <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
@@ -448,7 +448,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
             >
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground w-4">{i + 1}</span>
-                <span className="font-medium text-foreground group-hover:text-primary transition-colors">
+                <span className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                   #{topic.tag}
                 </span>
                 {topic.growth > 0 && (
@@ -480,7 +480,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="icon-sm text-primary" aria-hidden="true" />
+          <Users className="icon-sm text-primary-emphasis" aria-hidden="true" />
           Suggested Connections
         </h3>
       </CardHeader>
@@ -489,7 +489,7 @@ function SuggestedConnections() {
           {suggestions.map((person) => (
             <div key={person.id} className="flex items-center gap-3">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">
                   {person.name.split(' ').map((n) => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>

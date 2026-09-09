@@ -102,7 +102,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="icon-sm text-primary" aria-hidden="true" />
+              <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Basic information
             </CardTitle>
           </CardHeader>
@@ -142,7 +142,7 @@ export default function CreateEventPage() {
                     className={cn(
                       'rounded-full border px-3 py-1 text-sm font-medium transition-colors',
                       form.type === value
-                        ? 'border-primary bg-primary/20 text-primary'
+                        ? 'border-primary bg-primary/20 text-primary-emphasis'
                         : 'border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground',
                     )}
                   >
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="icon-sm text-primary" aria-hidden="true" />
+              <Clock className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Date & time
             </CardTitle>
           </CardHeader>
@@ -204,7 +204,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="icon-sm text-primary" aria-hidden="true" />
+              <MapPin className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Location
             </CardTitle>
           </CardHeader>
@@ -216,7 +216,7 @@ export default function CreateEventPage() {
                 className={cn(
                   'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors',
                   form.isOnline
-                    ? 'border-primary bg-primary/20 text-primary'
+                    ? 'border-primary bg-primary/20 text-primary-emphasis'
                     : 'border-border/60 text-muted-foreground hover:border-primary/40',
                 )}
               >
@@ -260,7 +260,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="icon-sm text-primary" aria-hidden="true" />
+              <Users className="icon-sm text-primary-emphasis" aria-hidden="true" />
               Capacity (optional)
             </CardTitle>
           </CardHeader>

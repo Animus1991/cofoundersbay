@@ -59,7 +59,7 @@ function StatCard({
             {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-emphasis" />
           </div>
         </div>
       </CardContent>
@@ -74,7 +74,7 @@ function MenteeCard({ mentee }: { mentee: any }) {
     <div className="flex items-center gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <Avatar className="h-10 w-10">
         <AvatarImage src={mentee.avatarUrl} />
-        <AvatarFallback className="bg-primary/10 text-primary">
+        <AvatarFallback className="bg-primary/10 text-primary-emphasis">
           {mentee.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -106,7 +106,7 @@ function SessionCard({ session }: { session: any }) {
         'rounded-full p-2',
         isUpcoming ? 'bg-primary/10' : 'bg-muted'
       )}>
-        <Video className={cn('icon-sm', isUpcoming ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
+        <Video className={cn('icon-sm', isUpcoming ? 'text-primary-emphasis' : 'text-muted-foreground')} aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
@@ -302,10 +302,10 @@ export default function MentorDashboard() {
             </Link>
             <Link href="/mentor/sessions">
               <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
-                <Video className="icon-md text-primary shrink-0" aria-hidden="true" />
+                <Video className="icon-md text-primary-emphasis shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Hours this month</p>
-                  <p className="text-lg font-bold text-primary">{mentorStats.hoursThisMonth}h</p>
+                  <p className="text-lg font-bold text-primary-emphasis">{mentorStats.hoursThisMonth}h</p>
                 </div>
               </div>
             </Link>
@@ -344,7 +344,7 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="icon-sm text-primary" aria-hidden="true" />
+                    <Calendar className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Upcoming Sessions
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -371,7 +371,7 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <UserCheck className="icon-sm text-primary" aria-hidden="true" />
+                    <UserCheck className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Your Mentees
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>

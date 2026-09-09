@@ -275,7 +275,7 @@ function ReportCard({
             </Link>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${report.reported.id}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                   {report.reported.name || report.reported.email}
                 </Link>
                 <Badge variant="outline" className="text-xs">{report.reported.role}</Badge>
@@ -364,14 +364,14 @@ function UserRow({
       <Link href={`/profiles/${user.id}`}>
         <Avatar className="icon-md shrink-0">
           <AvatarImage src={user.profile?.avatarUrl ?? undefined} />
-          <AvatarFallback className="bg-primary/20 text-primary">
+          <AvatarFallback className="bg-primary/20 text-primary-emphasis">
             {displayName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+          <Link href={`/profiles/${user.id}`} className="font-medium text-foreground hover:text-primary-emphasis transition-colors">
             {displayName}
           </Link>
           <Badge
@@ -1155,7 +1155,7 @@ export default function AdminPage() {
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="icon-sm text-primary" aria-hidden="true" />
+                      <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

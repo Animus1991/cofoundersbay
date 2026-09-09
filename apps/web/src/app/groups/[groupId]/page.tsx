@@ -77,7 +77,7 @@ function PostCard({
   return (
     <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
-        <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
+        <div className="flex items-center gap-1.5 text-xs text-primary-emphasis font-medium">
           <Pin className="icon-2xs" aria-hidden="true" />
           Pinned post
         </div>
@@ -124,7 +124,7 @@ function PostCard({
             className={cn(
               'flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors',
               post.myReaction
-                ? 'bg-primary/15 text-primary'
+                ? 'bg-primary/15 text-primary-emphasis'
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
@@ -163,7 +163,7 @@ function PostCard({
       {showComments && (
         <div className="space-y-3 pt-1">
           {commentsQuery.isLoading && (
-            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary/50" aria-hidden="true" /></div>
+            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary-emphasis/50" aria-hidden="true" /></div>
           )}
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
@@ -299,7 +299,7 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="icon-xl animate-spin text-primary/50" aria-hidden="true" />
+          <Loader2 className="icon-xl animate-spin text-primary-emphasis/50" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -347,7 +347,7 @@ export default function GroupDetailPage() {
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary" aria-hidden="true" />
+                    <Users className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
                   )}
                 </div>
                 <div className="pb-1">
@@ -458,7 +458,7 @@ export default function GroupDetailPage() {
               {/* Posts */}
               {postsQuery.isLoading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="icon-lg animate-spin text-primary/50" aria-hidden="true" />
+                  <Loader2 className="icon-lg animate-spin text-primary-emphasis/50" aria-hidden="true" />
                 </div>
               )}
 
@@ -503,7 +503,7 @@ export default function GroupDetailPage() {
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-2xs font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary-emphasis text-2xs font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -530,7 +530,7 @@ export default function GroupDetailPage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-2xs text-primary capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary-emphasis capitalize">{m.role}</p>
                           )}
                         </div>
                       </div>
@@ -539,7 +539,7 @@ export default function GroupDetailPage() {
                   {group.memberCount > 6 && (
                     <button
                       onClick={() => setActiveSection('members')}
-                      className="text-xs text-primary hover:underline"
+                      className="text-xs text-primary-emphasis hover:underline"
                     >
                       View all {group.memberCount} members →
                     </button>
@@ -571,7 +571,7 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-2xs text-primary capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary-emphasis capitalize font-medium">{m.role}</span>
                     )}
                   </div>
                 </div>

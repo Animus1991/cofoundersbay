@@ -97,8 +97,9 @@ export function OfflineBanner() {
   }
 
   if (!isApiOnline) {
+    // orange-700, not -600: white on -600 is 3.56:1, below AA for body text.
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-orange-600 px-4 py-2 text-white">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-orange-700 px-4 py-2 text-white">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />
@@ -106,7 +107,7 @@ export function OfflineBanner() {
               API server is unavailable — pages will reload automatically when it recovers.
             </span>
           </div>
-          <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
+          <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-800" onClick={() => window.location.reload()}>
             <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
             Reload now
           </Button>

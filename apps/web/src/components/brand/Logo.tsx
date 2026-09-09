@@ -107,9 +107,9 @@ export function Logo({
         textClassName,
       )}
     >
-      <span className={inverted ? 'text-white/90' : 'text-primary'}>Co</span>
+      <span className={inverted ? 'text-white/90' : 'text-primary-emphasis'}>Co</span>
       <span className={inverted ? 'text-white' : 'text-foreground'}>Founder</span>
-      <span className={inverted ? 'text-white/90' : 'text-primary'}>Bay</span>
+      <span className={inverted ? 'text-white/90' : 'text-primary-emphasis'}>Bay</span>
     </span>
   );
 

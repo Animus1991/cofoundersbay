@@ -35,8 +35,8 @@ const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string;
   primary: {
     border: 'border-primary/30',
     bg:     'bg-primary/5',
-    icon:   'text-primary',
-    cta:    'text-primary hover:bg-primary/10',
+    icon:   'text-primary-emphasis',
+    cta:    'text-primary-emphasis hover:bg-primary/10',
   },
   amber: {
     border: 'border-amber-500/30',

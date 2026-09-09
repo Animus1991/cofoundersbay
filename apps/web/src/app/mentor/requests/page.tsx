@@ -66,7 +66,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
           <Link href={`/p/${request.requesterId}`}>
             <Avatar className="h-10 w-10">
               <AvatarImage src={request.requester?.avatarUrl || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary-emphasis font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -74,7 +74,7 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <Link href={`/p/${request.requesterId}`} className="font-medium hover:text-primary transition-colors">
+                <Link href={`/p/${request.requesterId}`} className="font-medium hover:text-primary-emphasis transition-colors">
                   {displayName}
                 </Link>
                 {request.requester?.headline && (

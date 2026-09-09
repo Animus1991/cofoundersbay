@@ -17,7 +17,7 @@ const sizeClasses = {
 
 export function Spinner({ size = 'md', className }: SpinnerProps) {
   return (
-    <Loader2 className={cn('animate-spin text-primary', sizeClasses[size], className)} aria-hidden="true" />
+    <Loader2 className={cn('animate-spin text-primary-emphasis', sizeClasses[size], className)} aria-hidden="true" />
   );
 }
 
@@ -33,7 +33,7 @@ export function PageLoader({ message }: { message?: string }) {
       className="flex min-h-[60vh] items-center justify-center"
     >
       <div className="flex flex-col items-center gap-3">
-        <Loader2 className="icon-xl animate-spin text-primary" aria-hidden="true" />
+        <Loader2 className="icon-xl animate-spin text-primary-emphasis" aria-hidden="true" />
         {message && (
           <p className="text-sm text-muted-foreground">{message}</p>
         )}

@@ -51,7 +51,7 @@ const DEMO_MILESTONES = [
 ];
 
 const DEMO_ACTIVITY = [
-  { id: '1', type: 'match', text: 'New 87% match — Nikos Papadakis, CTO', time: '2h ago', icon: Sparkles, color: 'text-primary' },
+  { id: '1', type: 'match', text: 'New 87% match — Nikos Papadakis, CTO', time: '2h ago', icon: Sparkles, color: 'text-primary-emphasis' },
   { id: '2', type: 'connection', text: 'Elena Papadopoulos accepted your request', time: '5h ago', icon: UserPlus, color: 'text-emerald-500' },
   { id: '3', type: 'message', text: 'New message from Marcus Chen', time: '8h ago', icon: MessageCircle, color: 'text-blue-500' },
   { id: '4', type: 'view', text: 'Your profile was viewed 12 times today', time: '1d ago', icon: Eye, color: 'text-amber-500' },
@@ -114,7 +114,7 @@ function StatCard({
             )}
           </div>
           <div className={cn('rounded-lg p-2', accent ?? 'bg-primary/10')}>
-            <Icon className={cn('icon-md', accent ? 'text-white' : 'text-primary')} />
+            <Icon className={cn('icon-md', accent ? 'text-white' : 'text-primary-emphasis')} />
           </div>
         </div>
       </CardContent>
@@ -130,7 +130,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
     <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+        <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-semibold">
           {match.displayName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -158,7 +158,7 @@ function MilestoneRow({ milestone }: { milestone: typeof DEMO_MILESTONES[0] }) {
           ? <CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" />
           : isOverdue
           ? <AlertCircle className="icon-sm text-red-500" aria-hidden="true" />
-          : <Circle className="icon-sm text-primary" aria-hidden="true" />}
+          : <Circle className="icon-sm text-primary-emphasis" aria-hidden="true" />}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export default function FounderDashboardContent() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Gauge className="icon-sm text-primary" aria-hidden="true" /> Startup Readiness
+                      <Gauge className="icon-sm text-primary-emphasis" aria-hidden="true" /> Startup Readiness
                     </CardTitle>
                     <Link href="/readiness">
                       <Button variant="ghost" size="sm">
@@ -426,7 +426,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" aria-hidden="true" /> Top Matches for You
+                    <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" /> Top Matches for You
                   </CardTitle>
                   <Link href="/matches">
                     <Button variant="ghost" size="sm">View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Button>
@@ -455,7 +455,7 @@ export default function FounderDashboardContent() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm text-primary" aria-hidden="true" /> Milestones
+                    <Flag className="icon-sm text-primary-emphasis" aria-hidden="true" /> Milestones
                   </CardTitle>
                   <Link href="/milestones">
                     <Button variant="ghost" size="sm">Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Button>
@@ -507,7 +507,7 @@ export default function FounderDashboardContent() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <Shield className="icon-sm text-primary" aria-hidden="true" /> Profile Strength
+                  <Shield className="icon-sm text-primary-emphasis" aria-hidden="true" /> Profile Strength
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -545,7 +545,7 @@ export default function FounderDashboardContent() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { href: '/discover', icon: Users, label: 'Find Co-founders', color: 'text-primary' },
+                    { href: '/discover', icon: Users, label: 'Find Co-founders', color: 'text-primary-emphasis' },
                     { href: '/mentoring', icon: GraduationCap, label: 'Find Mentors', color: 'text-blue-500' },
                     { href: '/coaching', icon: BrainCircuit, label: 'Coaching', color: 'text-purple-500' },
                     { href: '/expert-reviews', icon: Award, label: 'Expert Review', color: 'text-amber-500' },

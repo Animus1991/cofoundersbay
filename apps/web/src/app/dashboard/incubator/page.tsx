@@ -71,7 +71,7 @@ function StatCard({
             )}
           </div>
           <div className="rounded-lg bg-primary/10 p-2">
-            <Icon className="icon-md text-primary" />
+            <Icon className="icon-md text-primary-emphasis" />
           </div>
         </div>
       </CardContent>
@@ -95,7 +95,7 @@ function ProgramCard({ program }: { program: any }) {
       className="group flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <div className="rounded-lg bg-primary/10 p-2">
-        <Rocket className="icon-md text-primary" aria-hidden="true" />
+        <Rocket className="icon-md text-primary-emphasis" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ function StartupCard({ startup }: { startup: any }) {
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={startup.logoUrl} />
-        <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -344,7 +344,7 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <LayoutGrid className="icon-sm text-primary" aria-hidden="true" />
+                    <LayoutGrid className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Your Programs
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -366,7 +366,7 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
+                    <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     Top Performing Startups
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
@@ -464,7 +464,7 @@ export default function IncubatorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 text-sm">
-                    <Award className="icon-sm text-primary" aria-hidden="true" />
+                    <Award className="icon-sm text-primary-emphasis" aria-hidden="true" />
                     <span>12 startups graduated this year</span>
                   </div>
                 </div>

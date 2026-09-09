@@ -110,7 +110,7 @@ function ResultCard({ result }: { result: SearchResult }) {
             {result.imageUrl ? (
               <Avatar className="h-10 w-10 shrink-0">
                 <AvatarImage src={result.imageUrl} />
-                <AvatarFallback className="bg-primary/10 text-primary">
+                <AvatarFallback className="bg-primary/10 text-primary-emphasis">
                   {result.title[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -125,7 +125,7 @@ function ResultCard({ result }: { result: SearchResult }) {
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                <h3 className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors truncate">
                   {result.title}
                 </h3>
                 <Badge variant="secondary" className="text-2xs shrink-0">
@@ -471,7 +471,7 @@ export default function SearchPage() {
                       <Users className="icon-md text-blue-500" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                         Discover People
                       </p>
                       <p className="text-xs text-muted-foreground">Find co-founders and collaborators</p>
@@ -486,7 +486,7 @@ export default function SearchPage() {
                       <GraduationCap className="icon-md text-purple-500" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                         Find Mentors
                       </p>
                       <p className="text-xs text-muted-foreground">Connect with experienced advisors</p>
@@ -501,7 +501,7 @@ export default function SearchPage() {
                       <Briefcase className="icon-md text-emerald-500" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                         Browse Jobs
                       </p>
                       <p className="text-xs text-muted-foreground">Startup roles and opportunities</p>
@@ -516,7 +516,7 @@ export default function SearchPage() {
                       <Calendar className="icon-md text-orange-500" aria-hidden="true" />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground group-hover:text-primary transition-colors">
+                      <p className="font-medium text-foreground group-hover:text-primary-emphasis transition-colors">
                         Upcoming Events
                       </p>
                       <p className="text-xs text-muted-foreground">Meetups, webinars, and more</p>

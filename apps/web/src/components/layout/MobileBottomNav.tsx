@@ -41,7 +41,7 @@ export function MobileBottomNav() {
             className={cn(
               'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-xs font-medium transition-colors',
               isActive
-                ? 'text-primary'
+                ? 'text-primary-emphasis'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >

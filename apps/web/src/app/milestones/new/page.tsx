@@ -87,7 +87,7 @@ export default function NewMilestonePage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Target className="icon-md text-primary" aria-hidden="true" />
+                <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle>Create Milestone</CardTitle>

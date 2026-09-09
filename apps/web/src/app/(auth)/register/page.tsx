@@ -215,13 +215,13 @@ export default function RegisterPage() {
                       onClick={() => setRole(r.value)}
                       className={`flex items-start gap-2.5 rounded-xl border px-3 py-3 text-left text-sm transition-all ${
                         active
-                          ? 'border-primary/60 bg-primary/10 text-primary'
+                          ? 'border-primary/60 bg-primary/10 text-primary-emphasis'
                           : 'border-border/50 bg-secondary/30 text-muted-foreground hover:border-primary/30 hover:text-foreground'
                       }`}
                     >
                       <span
                         className={`mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold ${
-                          active ? 'bg-primary/15 text-primary' : 'bg-background text-muted-foreground'
+                          active ? 'bg-primary/15 text-primary-emphasis' : 'bg-background text-muted-foreground'
                         }`}
                       >
                         {r.badge}
@@ -246,7 +246,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-primary hover:underline">
+            <Link href="/login" className="font-medium text-primary-emphasis hover:underline">
               Sign in
             </Link>
           </p>

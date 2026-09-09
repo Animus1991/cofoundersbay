@@ -341,7 +341,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="icon-md text-primary" aria-hidden="true" />
+              <Bell className="icon-md text-primary-emphasis" aria-hidden="true" />
               Global Settings
             </CardTitle>
           </CardHeader>
@@ -421,7 +421,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="icon-md text-primary" aria-hidden="true" />
+              <Zap className="icon-md text-primary-emphasis" aria-hidden="true" />
               Automation Notifications
             </CardTitle>
             <CardDescription>
@@ -472,7 +472,7 @@ export default function NotificationPreferencesPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <CategoryIcon className="h-5 w-5 text-primary" />
+                      <CategoryIcon className="h-5 w-5 text-primary-emphasis" />
                     </div>
                     <div>
                       <CardTitle className="text-base">{category.title}</CardTitle>

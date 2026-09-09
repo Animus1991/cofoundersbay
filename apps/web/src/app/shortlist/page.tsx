@@ -126,7 +126,7 @@ function ShortlistCard({
         {compareMode && (
           <button onClick={() => onToggleSelect(item.userId)} className="mt-1 shrink-0">
             {isSelected
-              ? <CheckSquare className="icon-sm text-primary" aria-hidden="true" />
+              ? <CheckSquare className="icon-sm text-primary-emphasis" aria-hidden="true" />
               : <Square className="icon-sm text-muted-foreground" aria-hidden="true" />}
           </button>
         )}
@@ -147,7 +147,7 @@ function ShortlistCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/profiles/${item.userId}`} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${item.userId}`} className="text-sm font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                   {profile?.displayName ?? 'Unknown'}
                 </Link>
                 {/* Match score badge */}
@@ -353,7 +353,7 @@ export default function ShortlistPage() {
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary-emphasis', bg: 'bg-primary/10' },
             { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-amber-500', bg: 'bg-amber-500/10' },
             { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
             { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
@@ -462,7 +462,7 @@ export default function ShortlistPage() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <BookmarkX className="h-7 w-7 text-primary" aria-hidden="true" />
+              <BookmarkX className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium text-foreground">

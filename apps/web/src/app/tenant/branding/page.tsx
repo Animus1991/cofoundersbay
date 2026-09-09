@@ -235,7 +235,7 @@ export default function TenantBrandingPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Palette className="icon-lg text-primary" aria-hidden="true" />
+              <Palette className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Branding
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
@@ -341,7 +341,7 @@ export default function TenantBrandingPage() {
                           onClick={() => setField('backgroundStyle', s.value)}
                           className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                             form.backgroundStyle === s.value
-                              ? 'border-primary bg-primary/10 text-primary'
+                              ? 'border-primary bg-primary/10 text-primary-emphasis'
                               : 'border-border hover:border-primary/50'
                           }`}
                         >
@@ -397,7 +397,7 @@ export default function TenantBrandingPage() {
                             onClick={() => setField(key, font)}
                             className={`px-3 py-1.5 rounded-md border text-sm transition-colors ${
                               form[key] === font
-                                ? 'border-primary bg-primary/10 text-primary font-medium'
+                                ? 'border-primary bg-primary/10 text-primary-emphasis font-medium'
                                 : 'border-border hover:border-primary/50'
                             }`}
                           >

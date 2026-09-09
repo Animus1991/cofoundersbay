@@ -1204,7 +1204,7 @@ export default function ResearchBoardPage() {
         {/* Loading state — also rendered during SSR for consistent HTML */}
         {showLoading && (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="icon-xl animate-spin text-primary" aria-hidden="true" />
+            <Loader2 className="icon-xl animate-spin text-primary-emphasis" aria-hidden="true" />
           </div>
         )}
 
@@ -1223,7 +1223,7 @@ export default function ResearchBoardPage() {
           {/* Left: Brand + node count */}
           <div className="flex items-center gap-2.5 min-w-0">
             <Link href="/research" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Layers className="icon-md text-primary shrink-0" aria-hidden="true" />
+              <Layers className="icon-md text-primary-emphasis shrink-0" aria-hidden="true" />
               <span className="font-semibold text-sm text-foreground hidden sm:inline">Research Canvas</span>
             </Link>
             <span className="text-2xs text-muted-foreground bg-secondary/80 px-2 py-0.5 rounded-full tabular-nums shrink-0">
@@ -1797,7 +1797,7 @@ export default function ResearchBoardPage() {
         {isDragOver && (
           <div className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center bg-primary/5 backdrop-blur-[2px] transition-all duration-200">
             <div className="bg-card/95 border-2 border-dashed border-primary rounded-2xl p-10 text-center shadow-2xl">
-              <Upload className="h-14 w-14 text-primary mx-auto mb-4 animate-bounce" aria-hidden="true" />
+              <Upload className="h-14 w-14 text-primary-emphasis mx-auto mb-4 animate-bounce" aria-hidden="true" />
               <p className="text-lg font-semibold">Drop files here</p>
               <p className="text-sm text-muted-foreground mt-1">PDFs, images, documents, screenshots</p>
             </div>
@@ -2055,7 +2055,7 @@ export default function ResearchBoardPage() {
           >
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h2 id="board-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
-                <Keyboard className="icon-md text-primary" aria-hidden="true" />
+                <Keyboard className="icon-md text-primary-emphasis" aria-hidden="true" />
                 Keyboard Shortcuts
               </h2>
               <Button

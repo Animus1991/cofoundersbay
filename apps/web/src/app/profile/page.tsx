@@ -74,7 +74,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
       <CardContent className="p-5 space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-foreground">Profile completion</p>
-          <span className="text-sm font-bold text-primary">{pct}%</span>
+          <span className="text-sm font-bold text-primary-emphasis">{pct}%</span>
         </div>
         <div className="h-2 rounded-full bg-secondary overflow-hidden">
           <div
@@ -88,7 +88,7 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
               key={item.label}
               className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs ${
                 item.done
-                  ? 'bg-primary/10 text-primary'
+                  ? 'bg-primary/10 text-primary-emphasis'
                   : 'bg-secondary/60 text-muted-foreground'
               }`}
             >
@@ -128,11 +128,11 @@ function VerificationCard({ email }: { email?: string | null }) {
         {items.map(({ label, verified, icon: Icon }) => (
           <div key={label} className="flex items-center gap-2.5 text-xs">
             <div className={`flex h-6 w-6 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
-              <Icon className={`icon-sm ${verified ? 'text-primary' : 'text-muted-foreground'}`} />
+              <Icon className={`icon-sm ${verified ? 'text-primary-emphasis' : 'text-muted-foreground'}`} />
             </div>
             <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
             {verified
-              ? <CheckCircle className="ml-auto icon-sm text-primary" aria-hidden="true" />
+              ? <CheckCircle className="ml-auto icon-sm text-primary-emphasis" aria-hidden="true" />
               : <span className="ml-auto text-xs text-muted-foreground/60">Not connected</span>}
           </div>
         ))}
@@ -207,7 +207,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="icon-md text-primary" />
+          <Icon className="icon-md text-primary-emphasis" />
           {role.charAt(0).toUpperCase() + role.slice(1)} Details
         </CardTitle>
       </CardHeader>
@@ -335,7 +335,7 @@ export default function ProfilePage() {
               <div className="relative inline-block">
                 <Avatar className="h-32 w-32 md:h-40 md:w-40 ring-4 ring-background shadow-xl">
                   <AvatarImage src={profile.avatarUrl ?? undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-4xl font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary-emphasis text-4xl font-bold">
                     {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                   </AvatarFallback>
                 </Avatar>
@@ -407,7 +407,7 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <UserIcon className="icon-md text-primary" />
+                    <UserIcon className="icon-md text-primary-emphasis" />
                     About
                   </CardTitle>
                   <AIInsightButton
@@ -449,7 +449,7 @@ export default function ProfilePage() {
               <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary" aria-hidden="true" />
+                    <Target className="icon-md text-primary-emphasis" aria-hidden="true" />
                     What I&apos;m Looking For
                   </CardTitle>
                 </CardHeader>
@@ -457,7 +457,7 @@ export default function ProfilePage() {
                   {cards.map(({ icon: Icon, label, value }) => (
                     <div key={label} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="flex items-center gap-2.5 mb-2">
-                        <div className="p-1.5 rounded-md bg-primary/10 text-primary">
+                        <div className="p-1.5 rounded-md bg-primary/10 text-primary-emphasis">
                           <Icon className="icon-sm" />
                         </div>
                         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
@@ -483,11 +483,11 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="icon-md text-primary" aria-hidden="true" />
+                    <BarChart3 className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Top Skills & Proficiency
                   </CardTitle>
                   <Link href="/profile/edit">
-                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-emphasis">
                       <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add
                     </Button>
                   </Link>
@@ -530,17 +530,17 @@ export default function ProfilePage() {
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FolderOpen className="icon-md text-primary" aria-hidden="true" />
+                  <FolderOpen className="icon-md text-primary-emphasis" aria-hidden="true" />
                   Portfolio &amp; Showcase
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
+                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-emphasis">
                   <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-5">
               <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-emphasis">
                   <FolderOpen className="icon-lg" aria-hidden="true" />
                 </div>
                 <div>
@@ -561,7 +561,7 @@ export default function ProfilePage() {
             <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
-                  <Activity className="icon-xl text-primary" aria-hidden="true" />
+                  <Activity className="icon-xl text-primary-emphasis" aria-hidden="true" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-lg">Your profile is looking bare</h3>

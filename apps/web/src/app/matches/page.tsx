@@ -62,14 +62,14 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="icon-md text-primary" aria-hidden="true" />
+            <BarChart3 className="icon-md text-primary-emphasis" aria-hidden="true" />
             Compatibility with {hit.displayName}
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/8 p-4">
           <div className="text-center">
-            <p className="text-4xl font-extrabold tabular-nums text-primary">{score}%</p>
+            <p className="text-4xl font-extrabold tabular-nums text-primary-emphasis">{score}%</p>
             <p className="text-xs text-muted-foreground mt-0.5">Overall Match</p>
           </div>
         </div>
@@ -81,7 +81,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you match</p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <Zap className="h-3.5 w-3.5 text-primary-emphasis mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -206,7 +206,7 @@ function MatchListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -270,7 +270,7 @@ function MatchListRow({
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onBreakdown}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary-emphasis transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
               <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
@@ -771,7 +771,7 @@ export default function MatchesPage() {
                       <button key={key} onClick={() => setRoleFilter(key)}
                         className={cn(
                           'flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isActive ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                          isActive ? 'bg-primary/10 text-primary-emphasis border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                         )}>
                         <Icon className="h-3 w-3 shrink-0" />
                         {label}
@@ -810,7 +810,7 @@ export default function MatchesPage() {
                         const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next;
                       })}
                         className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                          isOn ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                          isOn ? 'bg-primary/10 text-primary-emphasis' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
                         <span className={cn('h-3.5 w-3.5 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
                           isOn ? 'bg-primary border-primary' : 'border-muted-foreground/40')}>
                           {isOn && <span className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />}
@@ -833,7 +833,7 @@ export default function MatchesPage() {
                   ]).map(({ key, label, icon: Icon }) => (
                     <button key={key} onClick={() => setSortBy(key)}
                       className={cn('flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
-                        sortBy === key ? 'bg-primary/10 text-primary border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
+                        sortBy === key ? 'bg-primary/10 text-primary-emphasis border border-primary/20' : 'text-muted-foreground hover:bg-secondary hover:text-foreground')}>
                       <Icon className="h-3 w-3 shrink-0" />
                       {label}
                     </button>
@@ -858,7 +858,7 @@ export default function MatchesPage() {
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide md:hidden -mx-1 px-1 pb-0.5">
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
                   className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
-                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
+                    showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary-emphasis' : 'border-border/60 text-muted-foreground')}>
                   <SlidersHorizontal className="icon-2xs" aria-hidden="true" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                 </button>

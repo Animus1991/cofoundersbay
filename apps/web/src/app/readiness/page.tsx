@@ -274,7 +274,7 @@ function DimensionCard({
               {dim.criteria.length > 3 && (
                 <button
                   onClick={() => setExpanded((e) => !e)}
-                  className="text-xs text-primary/70 hover:text-primary pl-6 transition-colors"
+                  className="text-xs text-primary-emphasis/70 hover:text-primary-emphasis pl-6 transition-colors"
                 >
                   {expanded ? 'Show less' : `+${dim.criteria.length - 3} more`}
                 </button>
@@ -308,7 +308,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Target className="icon-sm text-primary" aria-hidden="true" />
+          <Target className="icon-sm text-primary-emphasis" aria-hidden="true" />
           Readiness Radar
         </CardTitle>
       </CardHeader>
@@ -342,7 +342,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <History className="icon-sm text-primary" aria-hidden="true" />
+            <History className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Score Progression (7 weeks)
           </CardTitle>
           <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
@@ -557,7 +557,7 @@ export default function ReadinessPage() {
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <BrainCircuit className="icon-sm text-primary" aria-hidden="true" />
+                  <BrainCircuit className="icon-sm text-primary-emphasis" aria-hidden="true" />
                   AI Insight
                 </CardTitle>
               </CardHeader>
@@ -794,7 +794,7 @@ export default function ReadinessPage() {
                 <CardContent className="space-y-2">
                   {DEMO_HISTORY.slice().reverse().map((h, i) => (
                     <div key={i} className="flex items-center gap-3 py-2 border-b border-border/40 last:border-0">
-                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary-emphasis flex-shrink-0">
                         {h.week}
                       </div>
                       <div className="flex-1">

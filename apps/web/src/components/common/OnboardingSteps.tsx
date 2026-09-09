@@ -125,7 +125,7 @@ export function OnboardingProgress({ steps }: { steps: Step[] }) {
                 isCompleted
                   ? 'border-primary bg-primary text-primary-foreground'
                   : isCurrent
-                    ? 'border-primary bg-primary/10 text-primary'
+                    ? 'border-primary bg-primary/10 text-primary-emphasis'
                     : 'border-border bg-background text-muted-foreground'
               )}
             >

@@ -141,7 +141,7 @@ const HOW_IT_WORKS: Array<{ step: number; icon: LucideIcon; title: string; desc:
     icon: Rocket,
     title: 'Start building together',
     desc: 'Send a connection request, open a private conversation, set shared milestones, and access mentors, investors, and communities — all in one workspace.',
-    color: 'text-primary bg-primary/10',
+    color: 'text-primary-emphasis bg-primary/10',
   },
 ];
 
@@ -276,13 +276,15 @@ const PRICING_PLANS: Array<{
   },
 ];
 
+// The -400 steps rather than -500: at -500, dimmed by the row's opacity, every
+// one of these fell below 4.5:1 on the dark page background.
 const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
-  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-orange-500' },
-  { name: 'Techstars',       abbr: 'TS',  color: 'text-blue-500'   },
-  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-cyan-500'   },
-  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-green-500'  },
-  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary' },
-  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-red-500'    },
+  { name: 'Y Combinator',    abbr: 'YC',  color: 'text-orange-400' },
+  { name: 'Techstars',       abbr: 'TS',  color: 'text-blue-400'   },
+  { name: 'EIT Digital',     abbr: 'EIT', color: 'text-cyan-400'   },
+  { name: 'Innovate UK',     abbr: 'IUK', color: 'text-green-400'  },
+  { name: 'Google for Startups', abbr: 'GfS', color: 'text-primary-emphasis' },
+  { name: 'MIT Delta v',     abbr: 'MIT', color: 'text-red-400'    },
 ];
 
 export function LandingHome() {
@@ -320,7 +322,7 @@ export function LandingHome() {
         </div>
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-emphasis">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               The startup ecosystem, connected
             </span>
@@ -361,7 +363,7 @@ export function LandingHome() {
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
-                <Play className="icon-sm text-primary" aria-hidden="true" />
+                <Play className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 Try Demo
               </Button>
             </Link>
@@ -396,12 +398,15 @@ export function LandingHome() {
       {/* ── Trusted By ─────────────────────────────────────────────────────── */}
       <section className="border-t border-border/40 bg-secondary/10 px-6 py-10">
         <div className="mx-auto max-w-6xl">
-          <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground/60">
+          <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
             Trusted by founders from leading programs
           </p>
+          {/* The row was blanket `opacity-60`, which dropped every label and
+              wordmark in it below 4.5:1. The recessive feel now comes from a
+              muted text colour instead of dimming real content. */}
           <div className="flex flex-wrap items-center justify-center gap-8">
             {TRUSTED_BY.map(({ name, abbr, color }) => (
-              <div key={name} className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
+              <div key={name} className="flex items-center gap-2 transition-opacity hover:opacity-80">
                 <span className={`font-bold text-lg font-display ${color}`}>{abbr}</span>
                 <span className="text-sm text-muted-foreground hidden sm:block">{name}</span>
               </div>
@@ -414,7 +419,7 @@ export function LandingHome() {
       <section id="how-it-works" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-14 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">How it works</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">How it works</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               From profile to co-founder in 3 steps
             </h2>
@@ -453,7 +458,7 @@ export function LandingHome() {
       <section id="roles" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Roles</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Roles</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Built for every role in the ecosystem
             </h2>
@@ -497,7 +502,7 @@ export function LandingHome() {
       <section id="features" className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Platform</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Platform</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Everything your startup network needs
             </h2>
@@ -513,7 +518,7 @@ export function LandingHome() {
                 style={{ animationDelay: `${index * 70}ms` }}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
-                  <Icon className="h-5 w-5 text-primary" />
+                  <Icon className="h-5 w-5 text-primary-emphasis" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">{title}</h3>
@@ -529,7 +534,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 bg-gradient-to-br from-primary/5 via-background to-accent/5 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">By the numbers</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">By the numbers</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               A thriving ecosystem
             </h2>
@@ -544,7 +549,7 @@ export function LandingHome() {
                 className="animate-fade-in rounded-2xl border border-border/60 bg-card/80 p-6 text-center backdrop-blur-sm"
                 style={{ animationDelay: `${index * 60}ms` }}
               >
-                <p className="font-display text-4xl font-bold text-primary">{value}</p>
+                <p className="font-display text-4xl font-bold text-primary-emphasis">{value}</p>
                 <p className="mt-2 font-semibold text-foreground">{label}</p>
                 {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
               </div>
@@ -557,7 +562,7 @@ export function LandingHome() {
       <section className="border-t border-border/40 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Testimonials</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Testimonials</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Loved by founders, mentors & investors
             </h2>
@@ -584,7 +589,7 @@ export function LandingHome() {
                   &ldquo;{quote}&rdquo;
                 </p>
                 <div className="flex items-center gap-3 border-t border-border/40 pt-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-emphasis">
                     {avatar}
                   </div>
                   <div>
@@ -602,7 +607,7 @@ export function LandingHome() {
       <section id="pricing" className="border-t border-border/40 bg-secondary/20 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center animate-fade-in">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30">Pricing</Badge>
+            <Badge variant="outline" className="mb-3 text-primary-emphasis border-primary/30">Pricing</Badge>
             <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">
               Simple, transparent pricing
             </h2>
@@ -665,7 +670,7 @@ export function LandingHome() {
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Network className="h-7 w-7 text-primary" aria-hidden="true" />
+              <Network className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
             </div>
           </div>
           <h2 className="font-display text-4xl font-bold text-foreground">
@@ -691,7 +696,7 @@ export function LandingHome() {
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">Sign in</Link>
+            <Link href="/login" className="text-primary-emphasis hover:underline font-medium">Sign in</Link>
           </p>
         </div>
       </section>
@@ -708,18 +713,22 @@ export function LandingHome() {
               </p>
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer"
+                  aria-label="CoFounderBay on X (formerly Twitter) (opens in a new tab)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer"
+                  aria-label="CoFounderBay on LinkedIn (opens in a new tab)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer"
+                  aria-label="CoFounderBay on GitHub (opens in a new tab)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Github className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer"
+                  aria-label="CoFounderBay on our website (opens in a new tab)"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Globe className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
@@ -789,7 +798,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="icon-2xs text-primary" aria-hidden="true" />
+              <Zap className="icon-2xs text-primary-emphasis" aria-hidden="true" />
               Built for founders, by founders
             </div>
           </div>

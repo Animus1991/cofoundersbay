@@ -273,7 +273,7 @@ export default function DataExportPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Database className="icon-lg text-primary" aria-hidden="true" />
+              <Database className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Export Your Data</h1>
@@ -288,7 +288,7 @@ export default function DataExportPage() {
         <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="icon-md text-primary shrink-0 mt-0.5" aria-hidden="true" />
+              <Shield className="icon-md text-primary-emphasis shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -348,7 +348,7 @@ export default function DataExportPage() {
                     )}>
                       <Icon className={cn(
                         'h-4 w-4',
-                        isSelected ? 'text-primary' : 'text-muted-foreground'
+                        isSelected ? 'text-primary-emphasis' : 'text-muted-foreground'
                       )} />
                     </div>
                     <div className="flex-1 min-w-0">

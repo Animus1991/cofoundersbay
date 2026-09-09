@@ -106,7 +106,7 @@ export function InviteSystem() {
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/20">
-              <Gift className="icon-lg text-primary" aria-hidden="true" />
+              <Gift className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
               <h2 className="text-xl font-bold">Invite Friends & Earn Rewards</h2>

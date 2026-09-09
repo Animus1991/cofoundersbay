@@ -64,7 +64,7 @@ function VersionCard({
       {/* Version icon */}
       <div className={cn(
         'mt-0.5 p-1.5 rounded-md shrink-0',
-        current ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
+        current ? 'bg-primary/20 text-primary-emphasis' : 'bg-muted text-muted-foreground',
       )}>
         <GitCommitHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
       </div>
@@ -76,7 +76,7 @@ function VersionCard({
             {v.versionLabel ?? `v${v.version}`}
           </span>
           {current && (
-            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary">
+            <Badge variant="outline" className="text-2xs px-1.5 py-0 border-primary/40 text-primary-emphasis">
               Current
             </Badge>
           )}

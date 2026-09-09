@@ -423,7 +423,7 @@ export function BoardTemplatesDialog({
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold group-hover:text-primary transition-colors">
+                  <div className="font-semibold group-hover:text-primary-emphasis transition-colors">
                     {template.name}
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">

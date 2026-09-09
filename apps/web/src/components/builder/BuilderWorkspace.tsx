@@ -407,7 +407,7 @@ export function BuilderWorkspace() {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-primary">{collaborators.length}</div>
+            <div className="text-2xl font-bold text-primary-emphasis">{collaborators.length}</div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Collaborators</div>
             <div className="flex justify-center mt-2 -space-x-1.5">
               {collaborators.slice(0, 4).map(c => (
@@ -565,7 +565,7 @@ export function BuilderWorkspace() {
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
                     <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-sm">
-                      <ChevronRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" aria-hidden="true" />
+                      <ChevronRight className="h-3.5 w-3.5 text-primary-emphasis mt-0.5 shrink-0" aria-hidden="true" />
                       <span className="text-muted-foreground">{milestone}</span>
                     </div>
                   ))}
@@ -618,7 +618,7 @@ export function BuilderWorkspace() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 min-w-0">
                           <div className="p-1.5 rounded-md bg-primary/8 shrink-0">
-                            <Icon className="h-4 w-4 text-primary" />
+                            <Icon className="h-4 w-4 text-primary-emphasis" />
                           </div>
                           <CardTitle className="text-sm truncate">{doc.title}</CardTitle>
                         </div>
@@ -640,7 +640,7 @@ export function BuilderWorkspace() {
                         <Badge variant="secondary" className="text-xs">
                           v{doc.version}
                         </Badge>
-                        <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground group-hover:text-primary-emphasis transition-colors flex items-center gap-1">
                           Open <ArrowRight className="icon-2xs" aria-hidden="true" />
                         </span>
                       </div>
@@ -655,7 +655,7 @@ export function BuilderWorkspace() {
                 onClick={() => setShowCreateDocDialog(true)}
               >
                 <CardContent className="py-8 flex flex-col items-center justify-center text-center gap-2">
-                  <Plus className="icon-xl text-muted-foreground/40 group-hover:text-primary transition-colors" aria-hidden="true" />
+                  <Plus className="icon-xl text-muted-foreground/40 group-hover:text-primary-emphasis transition-colors" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">Add Document</p>
                 </CardContent>
               </Card>
@@ -860,7 +860,7 @@ export function BuilderWorkspace() {
                       <div className="space-y-1 pt-1 border-t border-border/40">
                         {dim.recommendations.slice(0, 2).map((r, i) => (
                           <div key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                            <ChevronRight className="icon-2xs text-primary mt-0.5 shrink-0" aria-hidden="true" />
+                            <ChevronRight className="icon-2xs text-primary-emphasis mt-0.5 shrink-0" aria-hidden="true" />
                             {r}
                           </div>
                         ))}

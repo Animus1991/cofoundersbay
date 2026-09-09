@@ -135,7 +135,7 @@ export default function OrgMembersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Users className="icon-lg text-primary" aria-hidden="true" />
+              <Users className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Team Members
             </h1>
             <p className="text-muted-foreground">Manage your organization's team and permissions</p>

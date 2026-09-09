@@ -116,7 +116,7 @@ function BreakdownModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="icon-sm text-primary" aria-hidden="true" />
+            <Star className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Match Score Breakdown
           </DialogTitle>
         </DialogHeader>
@@ -138,7 +138,7 @@ function BreakdownModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why We Matched You</p>
               <div className="flex flex-wrap gap-1.5">
                 {reasons.map((r, i) => (
-                  <span key={i} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
+                  <span key={i} className="text-xs bg-primary/10 text-primary-emphasis px-2 py-0.5 rounded-full border border-primary/20">{r}</span>
                 ))}
               </div>
             </div>
@@ -237,7 +237,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <Link href={`/profiles/${userId}`} onClick={() => recordBehavioralSignal({ signalType: 'profile_view', targetId: userId, targetType: 'user' })}>
             <Avatar className="h-10 w-10 shrink-0 ring-2 ring-border group-hover:ring-primary/20 transition-all">
               <AvatarImage src={avatarUrl ?? undefined} />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
+              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary-emphasis">
                 {displayName?.[0]?.toUpperCase() ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -246,7 +246,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary transition-colors">
+                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary-emphasis transition-colors">
                   {displayName}
                 </Link>
                 {headline && (
@@ -466,7 +466,7 @@ export default function RecommendationsPage() {
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Icon className="h-4 w-4 text-primary" />
+                  <Icon className="h-4 w-4 text-primary-emphasis" />
                 </div>
                 <div>
                   <p className="text-xl font-bold leading-none">{value}</p>
@@ -482,7 +482,7 @@ export default function RecommendationsPage() {
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+                <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
                   {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
@@ -495,7 +495,7 @@ export default function RecommendationsPage() {
                       <div className="relative">
                         <Avatar className="h-11 w-11 ring-2 ring-border group-hover:ring-primary transition-all">
                           <AvatarImage src={m.profile?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                          <AvatarFallback className="text-xs bg-primary/10 text-primary-emphasis">
                             {m.profile?.displayName?.[0] ?? '?'}
                           </AvatarFallback>
                         </Avatar>
@@ -524,7 +524,7 @@ export default function RecommendationsPage() {
           >
             <Filter className="h-3.5 w-3.5" aria-hidden="true" />
             Filter
-            {minScore > 0 && <span className="ml-1 text-xs text-primary font-semibold">≥{minScore}%</span>}
+            {minScore > 0 && <span className="ml-1 text-xs text-primary-emphasis font-semibold">≥{minScore}%</span>}
           </Button>
           {showFilter && (
             <div className="flex items-center gap-3 flex-1 bg-secondary/40 rounded-lg px-3 py-2">

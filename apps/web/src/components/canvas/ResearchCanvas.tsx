@@ -142,7 +142,7 @@ function fmtSize(bytes: number) {
 }
 
 function nodeIcon(type: NodeType, colorKey: string, size = "w-5 h-5") {
-  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary";
+  const col = NODE_COLORS[colorKey]?.icon ?? "text-primary-emphasis";
   switch (type) {
     case "image":    return <ImageIcon className={cn(size, col)} />;
     case "pdf":      return <FileType className={cn(size, col)} />;
@@ -247,7 +247,7 @@ function RichTextEditor({ value, onChange, readOnly = false }: RichTextEditorPro
           "prose prose-sm max-w-none",
           "[&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mb-1.5",
           "[&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4",
-          "[&_a]:text-primary [&_a]:underline",
+          "[&_a]:text-primary-emphasis [&_a]:underline",
           !readOnly && "cursor-text"
         )}
       />
@@ -375,13 +375,13 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             {tags.map(tag => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-2xs font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary-emphasis text-2xs font-medium"
               >
                 <Tag className="w-3 h-3" />
                 {tag}
                 <button
                   onClick={() => removeTag(tag)}
-                  className="ml-0.5 hover:text-primary/70 transition-colors"
+                  className="ml-0.5 hover:text-primary-emphasis/70 transition-colors"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
@@ -397,7 +397,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               />
               <button
                 onClick={addTag}
-                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded bg-primary/10 hover:bg-primary/20 text-primary-emphasis transition-colors"
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -1028,7 +1028,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Layers className="w-5 h-5 text-primary" />
+            <Layers className="w-5 h-5 text-primary-emphasis" />
             Research Canvas
           </h1>
           <span className="text-xs text-muted-foreground">
@@ -1110,7 +1110,7 @@ export default function ResearchCanvas() {
             onClick={() => setShowGrid(!showGrid)}
             className={cn(
               "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-              showGrid ? "bg-primary/10 text-primary" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              showGrid ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle grid"
           >
@@ -1120,7 +1120,7 @@ export default function ResearchCanvas() {
             onClick={() => setShowMinimap(!showMinimap)}
             className={cn(
               "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
-              showMinimap ? "bg-primary/10 text-primary" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
+              showMinimap ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle minimap"
           >
@@ -1230,7 +1230,7 @@ export default function ResearchCanvas() {
                   </span>
                 </div>
                 <div className="flex items-center gap-1 flex-none">
-                  {node.pinned && <Pin className="w-3 h-3 text-primary" />}
+                  {node.pinned && <Pin className="w-3 h-3 text-primary-emphasis" />}
                   {node.starred && <Star className="w-3 h-3 text-amber-500" fill="currentColor" />}
                   {node.locked && <Lock className="w-3 h-3 text-muted-foreground" />}
                 </div>
@@ -1257,7 +1257,7 @@ export default function ResearchCanvas() {
               {node.tags && node.tags.length > 0 && (
                 <div className="flex-none px-3 py-1.5 border-t border-border/50 bg-card/30 backdrop-blur-sm flex flex-wrap gap-1">
                   {node.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary">
+                    <span key={tag} className="px-1.5 py-0.5 rounded text-2xs bg-primary/10 text-primary-emphasis">
                       {tag}
                     </span>
                   ))}
@@ -1442,7 +1442,7 @@ export default function ResearchCanvas() {
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                 <h2 id="canvas-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="icon-md text-primary" aria-hidden="true" />
+                  <Keyboard className="icon-md text-primary-emphasis" aria-hidden="true" />
                   Keyboard Shortcuts
                 </h2>
                 <button
@@ -1488,7 +1488,7 @@ export default function ResearchCanvas() {
       <div className="flex-none px-4 py-2 border-t border-border bg-card/30 backdrop-blur-sm flex items-center justify-between text-xs text-muted-foreground">
         <div className="flex items-center gap-4">
           <span>{filteredNodes.length} nodes visible</span>
-          {selected.size > 0 && <span className="text-primary">{selected.size} selected</span>}
+          {selected.size > 0 && <span className="text-primary-emphasis">{selected.size} selected</span>}
           {connectionStart && <span className="text-amber-500">Drawing connection...</span>}
         </div>
         <div className="flex items-center gap-4">

@@ -88,7 +88,7 @@ const PLANS = [
     priceMonthly: 19,
     priceAnnual: 159,
     icon: Sparkles,
-    color: 'text-primary',
+    color: 'text-primary-emphasis',
     bgColor: 'bg-primary/10',
     popular: true,
     cta: 'Start Free Trial',
@@ -217,10 +217,17 @@ export default function PricingPage() {
 
           {/* Billing toggle */}
           <div className="mt-8 flex items-center justify-center gap-3">
-            <span className={cn('text-sm font-medium', !annual ? 'text-foreground' : 'text-muted-foreground')}>
+            <span
+              id="billing-monthly-label"
+              className={cn('text-sm font-medium', !annual ? 'text-foreground' : 'text-muted-foreground')}
+            >
               Monthly
             </span>
-            <Switch checked={annual} onCheckedChange={setAnnual} />
+            <Switch
+              checked={annual}
+              onCheckedChange={setAnnual}
+              aria-label="Bill annually instead of monthly"
+            />
             <span className={cn('text-sm font-medium', annual ? 'text-foreground' : 'text-muted-foreground')}>
               Annual
             </span>
@@ -318,13 +325,22 @@ export default function PricingPage() {
             Compare all features
           </h2>
 
-          <div className="overflow-x-auto">
+          {/* A scroll container that a keyboard user cannot reach is a WCAG 2.1.1
+              failure on narrow viewports, where this table is the only way to
+              read the comparison. tabIndex + a group role make it focusable and
+              scrollable with the arrow keys. */}
+          <div
+            className="focus-ring overflow-x-auto rounded-md"
+            tabIndex={0}
+            role="group"
+            aria-label="Plan feature comparison, scrolls horizontally"
+          >
             <table className="w-full min-w-[600px] border-collapse">
               <thead>
                 <tr className="border-b border-border/60">
                   <th className="py-4 text-left text-sm font-semibold text-foreground">Feature</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Free</th>
-                  <th className="py-4 text-center text-sm font-semibold text-primary">Pro</th>
+                  <th className="py-4 text-center text-sm font-semibold text-primary-emphasis">Pro</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Team</th>
                   <th className="py-4 text-center text-sm font-semibold text-foreground">Enterprise</th>
                 </tr>

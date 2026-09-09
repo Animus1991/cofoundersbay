@@ -14,7 +14,9 @@
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "test:a11y": "playwright test",
+    "test:a11y:ui": "playwright test --ui"
   },
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || ^25.0.0"
@@ -60,7 +62,9 @@
     "tldraw": "^4.5.4"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
     "@opennextjs/cloudflare": "^1.20.6",
+    "@playwright/test": "1.56.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",

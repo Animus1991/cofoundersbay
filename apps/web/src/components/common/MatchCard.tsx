@@ -172,7 +172,7 @@ function MatchCardInner({
           <div className="flex-1 min-w-0 pr-14">
             <Link
               href={`/profiles/${userId}`}
-              className="text-base font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+              className="text-base font-semibold text-foreground hover:text-primary-emphasis transition-colors line-clamp-1"
             >
               {displayName}
             </Link>

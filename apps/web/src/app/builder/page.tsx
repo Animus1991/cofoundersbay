@@ -165,7 +165,7 @@ function BuilderPageContent() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="icon-lg text-primary" aria-hidden="true" />
+                <Rocket className="icon-lg text-primary-emphasis" aria-hidden="true" />
               </div>
               {workspace?.name || 'Startup Builder'}
             </h1>

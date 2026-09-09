@@ -20,9 +20,15 @@
     --popover:          0 0% 100%;
     --popover-foreground: 220 26% 9%;
 
-    /* Primary: professional blue-violet — modern, trustworthy */
-    --primary:          236 72% 55%;
+    /* Primary: professional blue-violet — modern, trustworthy.
+       Two tokens, because one cannot serve both jobs: --primary is an
+       interactive SURFACE (its foreground must contrast against it), while
+       --primary-emphasis is TEXT drawn on a surface (it must contrast against
+       the background). Tuning a single token for one breaks the other.
+       Every pair below is verified at >= 4.5:1 (WCAG 1.4.3). */
+    --primary:          236 72% 55%;   /* #3a45df — white on it: 6.78 */
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 236 72% 48%;   /* #222ed3 — on white: 8.75 */
 
     /* Secondary: subtle gray for secondary actions */
     --secondary:        220 13% 94%;
@@ -96,8 +102,9 @@
     --card-foreground: 210 40% 96%;
     --popover: 222 30% 10%;
     --popover-foreground: 210 40% 96%;
-    --primary: 235 88% 66%;
+    --primary: 235 88% 64%;            /* #5260f4 — white on it: 4.84 (was 66%: 4.38, failed) */
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 235 88% 74%;   /* #828cf7 — on card: 5.78, on page: 6.29 */
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
@@ -120,8 +127,9 @@
     --card-foreground: 210 20% 98%;
     --popover: 215 25% 21%;
     --popover-foreground: 210 20% 98%;
-    --primary: 199 89% 48%;
+    --primary: 199 89% 36%;            /* #0a7aae — white on it: 4.76 (was 48%: 2.86, failed) */
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 199 89% 58%;   /* #35b7f3 — on card: 5.44 */
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
@@ -145,8 +153,12 @@
     --card-foreground: 220 100% 3%;
     --popover: 180 25% 98%;
     --popover-foreground: 220 100% 3%;
-    --primary: 34 100% 52%;
-    --primary-foreground: 0 0% 100%;
+    /* The brand orange cannot carry white text at any usable lightness
+       (2.20:1 at its brand value), so the foreground goes dark instead of
+       shifting the hue off-brand. */
+    --primary: 34 100% 52%;            /* #ff950a */
+    --primary-foreground: 24 60% 12%;  /* #311b0c — on the orange: 7.39 */
+    --primary-emphasis: 34 100% 30%;   /* #995700 — on white: 5.65 */
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
@@ -170,8 +182,9 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 8% 8%;
     --popover-foreground: 0 0% 98%;
-    --primary: 262 83% 58%;
+    --primary: 262 83% 58%;            /* #7c3bed — white on it: 5.67 */
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 262 83% 72%;   /* #a87cf3 — on card: 5.99 */
     --secondary: 240 6% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 15%;
@@ -188,28 +201,33 @@
   }
 
   .role-founder {
-    --primary: 235 88% 66%;
+    --primary: 235 88% 64%;
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 235 88% 74%;
     --accent: 292 84% 66%;
     --accent-foreground: 0 0% 100%;
   }
 
   .role-mentor {
-    --primary: 200 84% 55%;
+    --primary: 200 84% 38%;            /* white on it: 4.55 */
     --primary-foreground: 0 0% 100%;
+    --primary-emphasis: 200 84% 66%;
     --accent: 180 72% 52%;
     --accent-foreground: 0 0% 100%;
   }
 
   .role-investor {
+    /* Amber, like the alliance orange, cannot carry white text on brand. */
     --primary: 32 92% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 25 60% 12%;
+    --primary-emphasis: 32 92% 72%;
     --accent: 14 82% 54%;
     --accent-foreground: 0 0% 100%;
   }
 
   .role-org {
-    --primary: 268 84% 68%;
+    --primary: 268 84% 58%;            /* white on it: 5.06 */
+    --primary-emphasis: 268 84% 76%;
     --primary-foreground: 0 0% 100%;
     --accent: 248 70% 60%;
     --accent-foreground: 0 0% 100%;
@@ -506,8 +524,12 @@
     z-index: 9999;
     padding: 0.5rem 1.25rem;
     border-radius: var(--radius);
+    /* The foreground token is theme-aware (dark on the orange themes, white
+       elsewhere), so this pair clears 4.5:1 in every theme. */
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
+    outline: 2px solid hsl(var(--foreground));
+    outline-offset: 2px;
     font-size: 0.875rem;
     font-weight: 600;
     transition: transform 0.15s ease;

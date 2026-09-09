@@ -438,7 +438,7 @@ export default function AutomationsPage() {
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                 activeTab === tab
-                  ? 'border-primary text-primary'
+                  ? 'border-primary text-primary-emphasis'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >

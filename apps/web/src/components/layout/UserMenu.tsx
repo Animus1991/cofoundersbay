@@ -50,7 +50,7 @@ export function UserMenu() {
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/60 px-2.5 py-1.5 text-sm hover:bg-secondary/80 transition-colors outline-none">
         <Avatar className="h-7 w-7">
           <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.displayName ?? 'User'} />
-          <AvatarFallback className="text-xs font-bold bg-primary/20 text-primary">{initials}</AvatarFallback>
+          <AvatarFallback className="text-xs font-bold bg-primary/20 text-primary-emphasis">{initials}</AvatarFallback>
         </Avatar>
         <span className="hidden text-sm font-medium text-foreground md:inline max-w-[120px] truncate">
           {user?.displayName ?? 'Account'}
@@ -63,7 +63,7 @@ export function UserMenu() {
             <p className="text-sm font-medium leading-none">{user?.displayName ?? 'User'}</p>
             <p className="text-xs text-muted-foreground truncate">{user?.email ?? ''}</p>
             {user?.role && (
-              <p className="text-xs text-primary capitalize">{user.role}</p>
+              <p className="text-xs text-primary-emphasis capitalize">{user.role}</p>
             )}
           </div>
         </DropdownMenuLabel>

@@ -185,7 +185,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
         <div className="flex flex-col items-center gap-4 py-24 text-center">
           <p className="text-lg font-semibold text-foreground">Profile not found</p>
           <p className="text-sm text-muted-foreground">This profile may have been removed or is not publicly visible.</p>
-          <button onClick={() => router.back()} className="text-sm text-primary hover:underline">
+          <button onClick={() => router.back()} className="text-sm text-primary-emphasis hover:underline">
             ← Go back
           </button>
         </div>
@@ -242,7 +242,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
                 <AvatarImage src={profile.avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xl font-bold">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis text-xl font-bold">
                   {profile.displayName?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
@@ -365,7 +365,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
             <Card className="animate-fade-in stagger-3">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <RoleIcon className="icon-sm text-primary" />
+                  <RoleIcon className="icon-sm text-primary-emphasis" />
                   {profile.role.charAt(0).toUpperCase() + profile.role.slice(1)} details
                 </CardTitle>
               </CardHeader>

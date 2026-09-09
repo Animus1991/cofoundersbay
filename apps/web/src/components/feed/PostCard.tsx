@@ -130,7 +130,7 @@ export function PostCard({
             <Link href={`/profiles/${author.id}`}>
               <Avatar className="h-11 w-11 ring-2 ring-border/40">
                 <AvatarImage src={author.avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+                <AvatarFallback className="bg-primary/20 text-primary-emphasis font-semibold">
                   {author.displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -139,7 +139,7 @@ export function PostCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${author.id}`}
-                  className="font-semibold text-foreground hover:text-primary transition-colors"
+                  className="font-semibold text-foreground hover:text-primary-emphasis transition-colors"
                 >
                   {author.displayName}
                 </Link>
@@ -211,7 +211,7 @@ export function PostCard({
               <Link
                 key={tag}
                 href={`/discover?tag=${encodeURIComponent(tag)}`}
-                className="text-xs text-primary hover:underline"
+                className="text-xs text-primary-emphasis hover:underline"
               >
                 #{tag}
               </Link>
@@ -267,7 +267,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={onComment}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-emphasis"
             >
               <MessageCircle className="icon-sm" aria-hidden="true" />
               <span className="text-xs">{commentsCount > 0 ? commentsCount : ''}</span>
@@ -276,7 +276,7 @@ export function PostCard({
               variant="ghost"
               size="sm"
               onClick={onShare}
-              className="gap-1.5 h-8 text-muted-foreground hover:text-primary"
+              className="gap-1.5 h-8 text-muted-foreground hover:text-primary-emphasis"
             >
               <Share2 className="icon-sm" aria-hidden="true" />
             </Button>

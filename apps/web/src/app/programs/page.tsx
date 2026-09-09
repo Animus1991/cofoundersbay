@@ -106,7 +106,7 @@ function ApplyModal({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <TypeIcon className="h-5 w-5 text-primary" />
+            <TypeIcon className="h-5 w-5 text-primary-emphasis" />
             Apply to {program.title}
           </DialogTitle>
           <DialogDescription>
@@ -176,7 +176,7 @@ function ProgramCard({
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-xl flex-shrink-0 border border-border/60">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis">
               <TypeIcon className="h-6 w-6" />
             </AvatarFallback>
           </Avatar>
@@ -187,7 +187,7 @@ function ProgramCard({
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold truncate">{program.title}</h3>
                   {isEnrolled && (
-                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30 gap-1">
+                    <Badge variant="outline" className="text-xs bg-primary/10 text-primary-emphasis border-primary/30 gap-1">
                       <CheckCircle2 className="icon-2xs" aria-hidden="true" />Applied
                     </Badge>
                   )}
@@ -261,7 +261,7 @@ function ProgramCard({
                 </Button>
               )}
               {isEnrolled && (
-                <Button size="sm" variant="outline" className="text-primary border-primary/40">
+                <Button size="sm" variant="outline" className="text-primary-emphasis border-primary/40">
                   <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Applied
                 </Button>
               )}
@@ -378,7 +378,7 @@ export default function ProgramsPage() {
         {!isLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Programs', value: data?.total ?? 0, icon: Award, color: 'text-primary' },
+              { label: 'Total Programs', value: data?.total ?? 0, icon: Award, color: 'text-primary-emphasis' },
               { label: 'Open Applications', value: openPrograms.length, icon: Zap, color: 'text-green-600' },
               { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, color: 'text-blue-600' },
               { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, color: 'text-violet-600' },
@@ -450,7 +450,7 @@ export default function ProgramsPage() {
         {featuredPrograms.length > 0 && !hasFilters && (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-primary" aria-hidden="true" />Featured &amp; Closing Soon
+              <Zap className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />Featured &amp; Closing Soon
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {featuredPrograms.slice(0, 4).map((p) => {

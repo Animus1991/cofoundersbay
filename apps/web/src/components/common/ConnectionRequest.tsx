@@ -85,7 +85,7 @@ export function ConnectionRequestDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="icon-md text-primary" aria-hidden="true" />
+            <Send className="icon-md text-primary-emphasis" aria-hidden="true" />
             Request Connection
           </DialogTitle>
           <DialogDescription>
@@ -97,7 +97,7 @@ export function ConnectionRequestDialog({
         <div className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={recipient.avatarUrl || undefined} />
-            <AvatarFallback className="bg-primary/20 text-primary">
+            <AvatarFallback className="bg-primary/20 text-primary-emphasis">
               {recipient.displayName[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -117,7 +117,7 @@ export function ConnectionRequestDialog({
         {/* Suggested messages */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
+            <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Quick suggestions
           </div>
           <div className="flex flex-wrap gap-2">

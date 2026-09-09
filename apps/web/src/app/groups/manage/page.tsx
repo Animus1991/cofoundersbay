@@ -71,13 +71,13 @@ function GroupCard({ group }: { group: ManagedGroup }) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <Avatar className="h-10 w-10 rounded-xl shrink-0">
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold">
+              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold">
                 {group.name[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary transition-colors">
+                <Link href={`/groups/${group.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
                   {group.name}
                 </Link>
                 <Badge variant="secondary" className="text-xs">{group.category}</Badge>
@@ -143,7 +143,7 @@ export default function ManageGroupsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="icon-lg text-primary" aria-hidden="true" />
+              <Settings className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Manage Communities
             </h1>
             <p className="text-muted-foreground">Groups you own or administer</p>

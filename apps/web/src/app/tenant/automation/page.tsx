@@ -120,7 +120,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="icon-sm text-primary" aria-hidden="true" />
+          <Settings className="icon-sm text-primary-emphasis" aria-hidden="true" />
           Automation Settings
         </CardTitle>
         <CardDescription className="text-xs">
@@ -315,7 +315,7 @@ export default function TenantAutomationPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-                activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
+                activeTab === tab ? 'border-primary text-primary-emphasis' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {tab === 'rules' ? 'Rules' : 'Settings'}

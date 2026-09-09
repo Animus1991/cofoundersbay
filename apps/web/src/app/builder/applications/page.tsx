@@ -69,7 +69,7 @@ function ApplicationsPageContent() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <ClipboardList className="icon-lg text-primary" aria-hidden="true" />
+                <ClipboardList className="icon-lg text-primary-emphasis" aria-hidden="true" />
               </div>
               Application Generator
             </h1>

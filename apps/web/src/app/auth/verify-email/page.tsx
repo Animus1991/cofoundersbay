@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <Loader2 className="icon-xl text-primary animate-spin" aria-hidden="true" />
+                  <Loader2 className="icon-xl text-primary-emphasis animate-spin" aria-hidden="true" />
                 </div>
                 <CardTitle>Verifying your email</CardTitle>
                 <CardDescription>Please wait while we verify your email address...</CardDescription>
@@ -258,7 +258,7 @@ export default function VerifyEmailPage() {
                 )}
                 
                 <div className="text-center pt-2">
-                  <Link href="/login" className="text-sm text-primary hover:underline">
+                  <Link href="/login" className="text-sm text-primary-emphasis hover:underline">
                     Back to Login
                   </Link>
                 </div>
@@ -269,7 +269,7 @@ export default function VerifyEmailPage() {
 
         <p className="text-center text-xs text-muted-foreground mt-6">
           Need help?{' '}
-          <Link href="/help" className="text-primary hover:underline">
+          <Link href="/help" className="text-primary-emphasis hover:underline">
             Contact Support
           </Link>
         </p>

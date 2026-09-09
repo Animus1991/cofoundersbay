@@ -135,7 +135,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">
-            <Lightbulb className="icon-md text-primary" aria-hidden="true" />
+            <Lightbulb className="icon-md text-primary-emphasis" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Idea Core</h2>
@@ -337,7 +337,7 @@ export function IdeaCore({ onSave, initialData }: IdeaCoreProps) {
           {isGenerating && (
             <Card>
               <CardContent className="p-6 text-center">
-                <RefreshCw className="icon-xl animate-spin mx-auto mb-4 text-primary" aria-hidden="true" />
+                <RefreshCw className="icon-xl animate-spin mx-auto mb-4 text-primary-emphasis" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">
                   AI is analyzing your idea and generating insights...
                 </p>

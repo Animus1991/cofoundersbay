@@ -77,7 +77,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
         <div className="flex gap-4">
           <Avatar className="h-11 w-11 rounded-xl shrink-0">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary font-bold text-sm">
+            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold text-sm">
               {startup.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -85,17 +85,17 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary transition-colors">
+                  <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary-emphasis transition-colors">
                     {startup.name}
                   </Link>
                   {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 px-1.5">🔥 HOT</Badge>}
-                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary border-primary/30">Featured</Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary-emphasis border-primary/30">Featured</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button aria-label="Show" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
-                  <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary fill-primary/20' : 'text-muted-foreground')} aria-hidden="true" />
+                  <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary-emphasis fill-primary/20' : 'text-muted-foreground')} aria-hidden="true" />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -130,7 +130,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
             <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-muted-foreground">
               <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{startup.location}</span>
               <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{startup.teamSize} founders</span>
-              <span className="flex items-center gap-1 font-medium text-primary"><DollarSign className="icon-2xs" aria-hidden="true" />Raising {startup.raisingAmount}</span>
+              <span className="flex items-center gap-1 font-medium text-primary-emphasis"><DollarSign className="icon-2xs" aria-hidden="true" />Raising {startup.raisingAmount}</span>
               {startup.revenue !== 'Pre-revenue' && (
                 <span className="flex items-center gap-1 text-green-600"><TrendingUp className="icon-2xs" aria-hidden="true" />{startup.revenue}</span>
               )}
@@ -146,7 +146,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs text-muted-foreground">Match Score</p>
-                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-green-500' : startup.matchScore >= 70 ? 'text-primary' : 'text-muted-foreground')}>
+                <p className={cn('text-sm font-bold', startup.matchScore >= 85 ? 'text-green-500' : startup.matchScore >= 70 ? 'text-primary-emphasis' : 'text-muted-foreground')}>
                   {startup.matchScore}%
                 </p>
               </div>
@@ -219,7 +219,7 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Compass className="icon-lg text-primary" aria-hidden="true" />
+              <Compass className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Scout Startups
             </h1>
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
@@ -238,20 +238,20 @@ export default function InvestorScoutingPage() {
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary" aria-hidden="true" />Featured Startups</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-emphasis" aria-hidden="true" />Featured Startups</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2">
               {featured.map(s => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border bg-background">
                   <Avatar className="h-10 w-10 rounded-lg">
-                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary font-bold">{s.name[0]}</AvatarFallback>
+                    <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">{s.name[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{s.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{s.tagline}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-xs text-primary font-bold">{s.matchScore}% match</p>
+                    <p className="text-xs text-primary-emphasis font-bold">{s.matchScore}% match</p>
                     <p className="text-xs text-muted-foreground">{s.raisingAmount}</p>
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export default function InvestorScoutingPage() {
             <span className="font-medium text-foreground">{filtered.length}</span> startup{filtered.length !== 1 ? 's' : ''} found
             {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-orange-500">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
-          <Link href="/investor/pipeline" className="text-xs text-primary hover:underline flex items-center gap-1">
+          <Link href="/investor/pipeline" className="text-xs text-primary-emphasis hover:underline flex items-center gap-1">
             <GanttChart className="h-3.5 w-3.5" aria-hidden="true" />View Pipeline
           </Link>
         </div>

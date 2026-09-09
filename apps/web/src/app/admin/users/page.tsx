@@ -69,10 +69,10 @@ function UserRow({ user }: { user: User }) {
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary transition-colors">
+          <Link href={`/p/${user.id}`} className="font-medium hover:text-primary-emphasis transition-colors">
             {user.name}
           </Link>
-          {user.verified && <CheckCircle2 className="icon-sm text-primary" aria-hidden="true" />}
+          {user.verified && <CheckCircle2 className="icon-sm text-primary-emphasis" aria-hidden="true" />}
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
