@@ -32,6 +32,7 @@ function TabLabel({ en, el }: { en: string; el: string }) {
       en={en}
       el={el}
       stacked
+      keepSecondaryOnMobile
       className="w-full text-center"
       primaryClassName="truncate"
       secondaryClassName="truncate"

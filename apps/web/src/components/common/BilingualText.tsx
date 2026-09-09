@@ -24,6 +24,16 @@ type BilingualTextProps = {
    * second line costs a few pixels of height and keeps the whole word.
    */
   wrap?: boolean;
+  /**
+   * Keep the second language on phones. Off by default so a phone shows one
+   * language everywhere — mixing "one language here, two there" on the same
+   * screen reads as noise, and the second line is what pushed stat-card labels
+   * past their column.
+   *
+   * The mobile bottom nav opts in: its labels are short, each tab owns a fixed
+   * cell, and the two-line label is the design rather than an overflow risk.
+   */
+  keepSecondaryOnMobile?: boolean;
   primaryClassName?: string;
   secondaryClassName?: string;
 };
@@ -49,11 +59,14 @@ export function BilingualText({
   stacked = false,
   compact = false,
   wrap = false,
+  keepSecondaryOnMobile = false,
   primaryClassName,
   secondaryClassName,
 }: BilingualTextProps) {
   const { primary, showSecondary } = useLanguagePreference();
   const resolved = resolveBilingualPair(en, el, primary, showSecondary);
+  // The class the phone-only display:none rule keys off (see globals.css).
+  const hideOnMobile = keepSecondaryOnMobile ? '' : 'bilingual-secondary--inline';
 
   if (!resolved.secondaryText) {
     return (
@@ -100,6 +113,7 @@ export function BilingualText({
           lang={resolved.secondaryLang ?? undefined}
           className={cn(
             'bilingual-secondary text-muted-foreground',
+            hideOnMobile,
             wrap ? 'break-words' : 'truncate',
             secondaryClassName,
           )}
