@@ -505,7 +505,11 @@ function InvestorListView({
                   {lead.isVerified && <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} />}
                 </div>
                 <p className="text-2xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
-                {lead.notes && <p className="mt-0.5 truncate text-2xs text-muted-foreground">{lead.notes}</p>}
+                {/* Two lines, not one. On a 360px row this column is ~40px wide after
+                    the avatar and the status controls, and `truncate` cut a 44-character
+                    note down to "Interes…" — 80% lost, which tells the reader nothing.
+                    line-clamp keeps the note useful on a phone and still bounds it. */}
+                {lead.notes && <p className="mt-0.5 line-clamp-2 text-2xs text-muted-foreground">{lead.notes}</p>}
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 {lead.lastContact && (

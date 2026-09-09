@@ -304,7 +304,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </div>
             )}
 
-            <div className="flex items-center gap-3 text-xs">
+            {/* flex-wrap: four items (two badges, the rarity note and the unlock
+                date) needed 375px on a 334px card and had nowhere to go, so this
+                row was what made /achievements the one page that scrolled
+                horizontally on a phone — the fixed bottom nav then stretched with
+                the grown layout viewport, which made it look like the nav's fault. */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs">
               <Badge variant="outline" className="gap-1">
                 <CategoryIcon className="icon-sm" />
                 {achievement.category}
@@ -544,7 +549,12 @@ export default function AchievementsPage() {
 
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
+                {/* min-w-0/max-w-full are what let the overflow-x-auto engage. As a
+                    flex child this defaults to min-width:auto, so it refused to
+                    shrink below its content, never scrolled, and pushed the document
+                    76px wide instead — achievements was the one page in the sweep
+                    that scrolled horizontally on a phone. */}
+                <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto scrollbar-hide min-w-0 max-w-full">
                   <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
                     <Award className="icon-sm" /> <BilingualText en={`All (${achievements?.length})`} el={`Όλα (${achievements?.length})`} compact />
                   </TabsTrigger>

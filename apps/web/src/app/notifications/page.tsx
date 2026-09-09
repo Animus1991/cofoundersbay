@@ -158,10 +158,16 @@ const NotificationRow = memo(function NotificationRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <p className={cn('text-sm leading-snug truncate', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
+            {/* The title is the notification. On a 360px row it was sharing space
+                with this badge and the timestamp and losing 57% of itself —
+                "Elena Papadopoulos sent a connection reque…". Two lines on a phone,
+                one from sm up. */}
+            <p className={cn('text-sm leading-snug line-clamp-2 sm:truncate', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
               {item.title}
             </p>
-            <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4 shrink-0 capitalize">
+            {/* Redundant on a phone: the coloured icon to the left already encodes
+                the type. Shown again from sm, where there is room for both. */}
+            <Badge variant="secondary" className="hidden sm:inline-flex text-2xs px-1.5 py-0 h-4 shrink-0 capitalize">
               {typeLabel}
             </Badge>
           </div>
