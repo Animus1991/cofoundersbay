@@ -5,9 +5,12 @@
 @layer base {
   :root {
     /* ── Font family CSS variables (set here since next/font/google is not used) ── */
-    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-sora: 'Sora', system-ui, sans-serif;
-    --font-space-grotesk: 'Space Grotesk', system-ui, sans-serif;
+    /* Bound to the self-hosted next/font faces loaded in app/layout.tsx.
+       The `-loaded` variables are injected on <html>; the fallbacks keep the
+       stack valid if a face fails to load. */
+    --font-inter: var(--font-inter-loaded), 'Inter', system-ui, -apple-system, sans-serif;
+    --font-sora: var(--font-space-grotesk-loaded), 'Sora', system-ui, sans-serif;
+    --font-space-grotesk: var(--font-space-grotesk-loaded), 'Space Grotesk', system-ui, sans-serif;
 
     /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
     --background:       220 16% 96%;
@@ -41,6 +44,9 @@
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
     --radius:           8px;
+
+    /* Native UI (scrollbars, autofill, date pickers) follows the theme */
+    color-scheme: light;
 
     /* Typography scale — refined for readability */
     --font-size-xs:     0.75rem;    /* 12px */
@@ -101,6 +107,7 @@
     --border: 220 18% 20%;
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
+    color-scheme: dark;
   }
 
   /* ── System theme: distinct slate-blue palette ── */
@@ -125,6 +132,7 @@
     --input: 215 20% 30%;
     --ring: 199 89% 48%;
     --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
+    color-scheme: dark;
   }
 
   /* ── Alliance theme: warm cream & amber ── */
@@ -149,6 +157,7 @@
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
     --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
+    color-scheme: light;
   }
 
   /* ── Cofounder theme: dark purple/cyan ── */
@@ -173,6 +182,7 @@
     --input: 240 6% 18%;
     --ring: 262 83% 58%;
     --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
+    color-scheme: dark;
   }
 
   .role-founder {
@@ -420,15 +430,6 @@
   .blur-backdrop-md { backdrop-filter: blur(16px); }
   .blur-backdrop-lg { backdrop-filter: blur(24px); }
 
-  /* Hero radial background — very subtle, works in both themes */
-  .bg-hero-radial {
-    background: radial-gradient(
-      ellipse 80% 50% at 50% -5%,
-      hsl(var(--primary) / 0.06) 0%,
-      transparent 60%
-    );
-  }
-
   /* Subtle shadow — replaces glow in light mode */
   .shadow-glow-sm {
     box-shadow: var(--shadow-card);
@@ -638,6 +639,7 @@
   }
 
   /* ── Standardized icon sizes ── */
+  .icon-xs { @apply h-3.5 w-3.5; } /* 14px - dense meta rows, chips */
   .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
@@ -661,3 +663,93 @@
   }
 }
 
+
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Accessibility: honour the OS "reduce motion" preference.
+   WCAG 2.3.3 — animation from interactions must be disable-able.
+   Everything decorative collapses to an instant state change; nothing that
+   conveys meaning (opacity end-states, transforms' final position) is lost
+   because animations are forced to their last frame rather than removed.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Infinite ambient motion is purely decorative — stop it outright. */
+  .animate-bounce-subtle,
+  .animate-pulse-glow,
+  .animate-float,
+  .animate-spin-slow,
+  .shimmer {
+    animation: none !important;
+  }
+
+  /* Hover lifts and card translations become no-ops. */
+  .hover-lift:hover,
+  .hover-lift-sm:hover,
+  .card-interactive:hover {
+    transform: none !important;
+  }
+
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none !important;
+    }
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Forced-colors (Windows High Contrast) — keep focus and borders visible.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+  }
+  .shimmer {
+    animation: none;
+    background: Canvas;
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Print — strip the app chrome so any page prints as a clean document.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media print {
+  aside,
+  nav,
+  [data-print-hidden],
+  .skip-to-content {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.75em;
+    word-break: break-all;
+  }
+}

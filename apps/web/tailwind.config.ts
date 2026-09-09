@@ -142,13 +142,22 @@ const config: Config = {
       },
       backgroundImage: {
         'hero-radial':
-          'radial-gradient(circle at 10% 20%, rgba(99,102,241,0.28), transparent 55%), radial-gradient(circle at 80% 0%, rgba(236,72,153,0.22), transparent 40%)',
+          'radial-gradient(ellipse 80% 50% at 50% -5%, hsl(var(--primary) / 0.10) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 85% 0%, hsl(var(--accent) / 0.08) 0%, transparent 55%)',
         'glass-sheen':
           'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02))',
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         display: ['var(--font-space-grotesk)', 'var(--font-sora)', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // 11px step — the documented home for the 548 arbitrary `text-[10px]` /
+        // `text-[11px]` values scattered through the app.
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+      },
+      screens: {
+        // Tall-and-narrow breakpoint used by the split-pane layouts.
+        xs: '480px',
       },
     },
   },
