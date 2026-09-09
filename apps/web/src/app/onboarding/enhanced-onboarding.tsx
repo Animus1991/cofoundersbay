@@ -37,7 +37,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/toast';
-import { createProfile, uploadAvatar, listSkills } from '@/lib/api';
+import { createProfile, uploadAvatar, listSkills,
+  type Skill,
+} from '@/lib/api';
 import { analytics } from '@/lib/analytics';
 import { cn } from '@/lib/utils';
 
@@ -255,7 +257,7 @@ export default function EnhancedOnboardingPage() {
       success('Profile created successfully!', 'Welcome to CoFounderBay');
       router.push('/dashboard');
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       showError('Failed to create profile', err.message || 'Please try again');
     },
   });
@@ -745,7 +747,7 @@ function SkillsStep({
 }: {
   selectedSkills: string[];
   onSkillToggle: (skillId: string) => void;
-  skillsData?: any;
+  skillsData?: Skill[];
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');

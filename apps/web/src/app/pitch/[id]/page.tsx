@@ -175,9 +175,43 @@ const DEMO_DECK: PublicPitchDeck = {
   updatedAt: '2026-03-25T14:00:00Z',
 };
 
+
+// ─── Slide content shapes ─────────────────────────────────────────────────────
+/**
+ * A deck slide's `content` is a JSON blob whose shape depends on `slide.type`.
+ * Each renderer used to reach into it through `slide.content as any`, so a
+ * renamed field surfaced as a blank slide rather than a build error. These
+ * types name the fields each renderer actually reads.
+ */
+type SlideBase = (typeof DEMO_DECK.slides)[number];
+
+type CoverContent = { tagline: string; founded: string; stage: string; raising: string };
+type PointsContent = { headline: string; points: string[]; stat?: string; statLabel?: string };
+type TractionContent = { metrics: { value: string; label: string; growth: string }[] };
+type MarketContent = {
+  tam: string; tamLabel: string;
+  sam: string; samLabel: string;
+  som: string; somLabel: string;
+};
+type BusinessModelContent = {
+  headline?: string;
+  streams: { name: string; percent: number; amount: string }[];
+};
+type TeamContent = { members: { name: string; role: string; background: string }[] };
+type AskContent = {
+  amount: string;
+  valuation: string;
+  use: { label: string; percent: number }[];
+};
+
+/** Narrows a slide's `content` to the shape its renderer expects. */
+function contentOf<T>(slide: SlideBase): T {
+  return slide.content as T;
+}
+
 // ─── Slide renderers ──────────────────────────────────────────────────────────
-function CoverSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function CoverSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<CoverContent>(slide);
   return (
     <div className="flex flex-col items-center justify-center h-full text-center px-8 py-12 bg-gradient-to-br from-primary/10 via-background to-primary/5">
       <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-emphasis font-medium">
@@ -190,8 +224,8 @@ function CoverSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function ProblemSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<PointsContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
@@ -202,7 +236,7 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       </div>
       <p className="text-2xl font-semibold text-foreground mb-8">{c.headline}</p>
       <div className="space-y-4 mb-10">
-        {(c.points as string[]).map((point, i) => (
+        {c.points.map((point, i) => (
           <div key={i} className="flex items-start gap-3">
             <div className="mt-1 h-5 w-5 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-red-600">{i + 1}</span>
@@ -221,8 +255,8 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function SolutionSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<PointsContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
@@ -244,8 +278,8 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function TractionSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<TractionContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -255,7 +289,7 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-2 gap-6">
-        {(c.metrics as any[]).map((m, i) => (
+        {c.metrics.map((m, i) => (
           <div key={i} className="rounded-2xl border bg-card p-6">
             <p className="text-4xl font-bold text-foreground">{m.value}</p>
             <p className="text-muted-foreground mt-1">{m.label}</p>
@@ -267,8 +301,8 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function MarketSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<MarketContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -295,8 +329,8 @@ function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function BusinessModelSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<BusinessModelContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -306,7 +340,7 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
       <div className="space-y-5">
-        {(c.streams as any[]).map((stream, i) => (
+        {c.streams.map((stream, i) => (
           <div key={i}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium">{stream.name}</span>
@@ -323,8 +357,8 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
   );
 }
 
-function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function TeamSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<TeamContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
@@ -334,11 +368,11 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
       <div className="grid grid-cols-3 gap-6">
-        {(c.members as any[]).map((member, i) => (
+        {c.members.map((member, i) => (
           <div key={i} className="rounded-2xl border bg-card p-6 text-center">
             <Avatar className="h-16 w-16 mx-auto mb-4">
               <AvatarFallback className="text-xl">
-                {member.name.split(' ').map((n: string) => n[0]).join('')}
+                {member.name.split(' ').map((n) => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
             <p className="font-semibold">{member.name}</p>
@@ -351,8 +385,8 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
-  const c = slide.content as any;
+function AskSlide({ slide }: { slide: SlideBase }) {
+  const c = contentOf<AskContent>(slide);
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
@@ -374,7 +408,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       </div>
       <p className="text-lg font-medium mb-4">Use of Funds</p>
       <div className="space-y-3">
-        {(c.use as any[]).map((item, i) => (
+        {c.use.map((item, i) => (
           <div key={i}>
             <div className="flex justify-between text-sm mb-1">
               <span>{item.label}</span>
@@ -388,7 +422,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function GenericSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
+function GenericSlide({ slide }: { slide: SlideBase }) {
   return (
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <h2 className="text-3xl font-bold mb-6">{slide.title}</h2>
@@ -399,7 +433,7 @@ function GenericSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
   );
 }
 
-function SlideRenderer({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
+function SlideRenderer({ slide }: { slide: SlideBase }) {
   switch (slide.type) {
     case 'cover': return <CoverSlide slide={slide} />;
     case 'problem': return <ProblemSlide slide={slide} />;

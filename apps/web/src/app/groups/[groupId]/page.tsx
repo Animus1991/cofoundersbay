@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { errorMessage } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -65,8 +66,8 @@ function PostCard({
       await createGroupComment(groupId, post.id, newComment.trim());
       setNewComment('');
       commentsQuery.refetch();
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to add comment');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to add comment'));
     } finally {
       setSubmittingComment(false);
     }
@@ -255,8 +256,8 @@ export default function GroupDetailPage() {
       }
       queryClient.invalidateQueries({ queryKey: ['group', groupId] });
       queryClient.invalidateQueries({ queryKey: ['groups'] });
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Something went wrong.');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Something went wrong.'));
     } finally {
       setTogglingMembership(false);
     }
@@ -269,8 +270,8 @@ export default function GroupDetailPage() {
       await createGroupPost(group.id, { content: newPost.trim() });
       setNewPost('');
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to create post.');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to create post.'));
     } finally {
       setSubmittingPost(false);
     }
@@ -282,8 +283,8 @@ export default function GroupDetailPage() {
       await deleteGroupPost(group.id, postId);
       queryClient.invalidateQueries({ queryKey: ['group-posts', groupId] });
       success('Post deleted', '');
-    } catch (e: any) {
-      toastError('Error', e?.message ?? 'Failed to delete post.');
+    } catch (e: unknown) {
+      toastError('Error', errorMessage(e, 'Failed to delete post.'));
     }
   };
 

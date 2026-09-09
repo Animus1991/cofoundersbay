@@ -220,7 +220,7 @@ export default function FounderDashboardContent() {
   });
 
   const displayName = profile?.profile?.displayName || 'Founder';
-  const pendingRequests = connectionRequests?.connections?.filter((r: any) => r.status === 'pending')?.length ?? 0;
+  const pendingRequests = connectionRequests?.connections?.filter((r) => r.status === 'pending')?.length ?? 0;
   const profilePct = profile?.hasCompletedOnboarding ? 100 : 52;
   const avgReadiness = vrs?.overall ?? 0;
   const fundingPct = Math.round((FUNDRAISING_DEMO.raisedAmount / FUNDRAISING_DEMO.targetAmount) * 100);

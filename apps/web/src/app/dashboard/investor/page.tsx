@@ -79,7 +79,37 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-function StartupCard({ startup }: { startup: any }) {
+type TrendingStartup = {
+  id: string;
+  name: string;
+  description: string;
+  stage: string;
+  industry: string;
+  raising: string;
+  matchScore: number;
+  isHot: boolean;
+  logoUrl: string | null;
+};
+
+type Deal = {
+  id: string;
+  name: string;
+  stage: string;
+  amount: string;
+  status: string;
+  logoUrl: string | null;
+};
+
+type PortfolioCompany = {
+  id: string;
+  name: string;
+  investedDate: string;
+  returnMultiple: number;
+  currentValue: string;
+  logoUrl: string | null;
+};
+
+function StartupCard({ startup }: { startup: TrendingStartup }) {
   const stageColors: Record<string, string> = {
     'pre-seed': 'bg-purple-500/10 text-purple-600 border-purple-500/20',
     'seed': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
@@ -93,7 +123,7 @@ function StartupCard({ startup }: { startup: any }) {
       className="group flex items-start gap-3 rounded-lg border p-3 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={startup.logoUrl} />
+        <AvatarImage src={startup.logoUrl ?? undefined} />
         <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -121,7 +151,7 @@ function StartupCard({ startup }: { startup: any }) {
   );
 }
 
-function DealCard({ deal }: { deal: any }) {
+function DealCard({ deal }: { deal: Deal }) {
   const statusColors: Record<string, string> = {
     'reviewing': 'bg-blue-500/10 text-blue-600',
     'due-diligence': 'bg-amber-500/10 text-amber-600',
@@ -133,7 +163,7 @@ function DealCard({ deal }: { deal: any }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={deal.logoUrl} />
+        <AvatarImage src={deal.logoUrl ?? undefined} />
         <AvatarFallback className="rounded-lg bg-muted">
           {deal.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -149,11 +179,11 @@ function DealCard({ deal }: { deal: any }) {
   );
 }
 
-function PortfolioItem({ company }: { company: any }) {
+function PortfolioItem({ company }: { company: PortfolioCompany }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={company.logoUrl} />
+        <AvatarImage src={company.logoUrl ?? undefined} />
         <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
           {company.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>

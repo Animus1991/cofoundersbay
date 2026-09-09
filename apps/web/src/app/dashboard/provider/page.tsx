@@ -79,7 +79,42 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-function ServiceCard({ service }: { service: any }) {
+type Service = {
+  id: string;
+  name: string;
+  category: string;
+  bookings: number;
+  price: string;
+  isActive: boolean;
+};
+
+type ProviderProject = {
+  id: string;
+  title: string;
+  clientName: string;
+  status: string;
+  value: string;
+  clientAvatar: string | null;
+};
+
+type Inquiry = {
+  id: string;
+  name: string;
+  service: string;
+  message: string;
+  avatarUrl: string | null;
+};
+
+type Review = {
+  id: string;
+  name: string;
+  rating: number;
+  comment: string;
+  date: string;
+  avatarUrl: string | null;
+};
+
+function ServiceCard({ service }: { service: Service }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <div className="rounded-lg bg-primary/10 p-2">
@@ -105,7 +140,7 @@ function ServiceCard({ service }: { service: any }) {
   );
 }
 
-function ProjectCard({ project }: { project: any }) {
+function ProjectCard({ project }: { project: ProviderProject }) {
   const statusColors: Record<string, string> = {
     'active': 'bg-green-500/10 text-green-600',
     'pending': 'bg-amber-500/10 text-amber-600',
@@ -116,7 +151,7 @@ function ProjectCard({ project }: { project: any }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={project.clientAvatar} />
+        <AvatarImage src={project.clientAvatar ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-emphasis">
           {project.clientName?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -135,11 +170,11 @@ function ProjectCard({ project }: { project: any }) {
   );
 }
 
-function InquiryCard({ inquiry }: { inquiry: any }) {
+function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={inquiry.avatarUrl} />
+        <AvatarImage src={inquiry.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-amber-500/10 text-amber-600">
           {inquiry.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -161,12 +196,12 @@ function InquiryCard({ inquiry }: { inquiry: any }) {
   );
 }
 
-function ReviewCard({ review }: { review: any }) {
+function ReviewCard({ review }: { review: Review }) {
   return (
     <div className="rounded-lg border p-3">
       <div className="flex items-center gap-2 mb-2">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={review.avatarUrl} />
+          <AvatarImage src={review.avatarUrl ?? undefined} />
           <AvatarFallback className="bg-muted text-xs">
             {review.name?.[0]?.toUpperCase() ?? '?'}
           </AvatarFallback>

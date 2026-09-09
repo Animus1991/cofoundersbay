@@ -81,7 +81,41 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-function ProgramCard({ program }: { program: any }) {
+type Program = {
+  id: string;
+  name: string;
+  cohort: string;
+  status: string;
+  startups: number;
+  mentors: number;
+};
+
+type CohortStartup = {
+  id: string;
+  name: string;
+  program: string;
+  progress: number;
+  logoUrl: string | null;
+};
+
+type Application = {
+  id: string;
+  name: string;
+  industry: string;
+  stage: string;
+  program: string;
+  logoUrl: string | null;
+};
+
+type UpcomingMilestone = {
+  id: string;
+  title: string;
+  startup: string;
+  date: string;
+  completed: boolean;
+};
+
+function ProgramCard({ program }: { program: Program }) {
   const statusColors: Record<string, string> = {
     'active': 'bg-green-500/10 text-green-600 border-green-500/20',
     'upcoming': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
@@ -121,11 +155,11 @@ function ProgramCard({ program }: { program: any }) {
   );
 }
 
-function StartupCard({ startup }: { startup: any }) {
+function StartupCard({ startup }: { startup: CohortStartup }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={startup.logoUrl} />
+        <AvatarImage src={startup.logoUrl ?? undefined} />
         <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
           {startup.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -144,11 +178,11 @@ function StartupCard({ startup }: { startup: any }) {
   );
 }
 
-function ApplicationCard({ application }: { application: any }) {
+function ApplicationCard({ application }: { application: Application }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10 rounded-lg">
-        <AvatarImage src={application.logoUrl} />
+        <AvatarImage src={application.logoUrl ?? undefined} />
         <AvatarFallback className="rounded-lg bg-amber-500/10 text-amber-600">
           {application.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -170,7 +204,7 @@ function ApplicationCard({ application }: { application: any }) {
   );
 }
 
-function MilestoneItem({ milestone }: { milestone: any }) {
+function MilestoneItem({ milestone }: { milestone: UpcomingMilestone }) {
   return (
     <div className="flex items-center gap-3 py-2">
       <div className={cn(

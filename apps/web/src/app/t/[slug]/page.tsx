@@ -48,21 +48,22 @@ function hexToHsl(hex: string): string | null {
 function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryResult | null }) {
   const b = tenant.branding;
 
-  const cssVars: React.CSSProperties = {};
+  const cssVars: React.CSSProperties & Record<`--${string}`, string> = {} as React.CSSProperties &
+    Record<`--${string}`, string>;
   if (b?.primaryColor) {
     const h = hexToHsl(b.primaryColor);
     if (h) {
-      (cssVars as any)['--primary'] = h;
-      (cssVars as any)['--primary-foreground'] = '0 0% 100%';
+      cssVars['--primary'] = h;
+      cssVars['--primary-foreground'] = '0 0% 100%';
     }
   }
   if (b?.secondaryColor) {
     const h = hexToHsl(b.secondaryColor);
-    if (h) (cssVars as any)['--secondary'] = h;
+    if (h) cssVars['--secondary'] = h;
   }
   if (b?.accentColor) {
     const h = hexToHsl(b.accentColor);
-    if (h) (cssVars as any)['--accent'] = h;
+    if (h) cssVars['--accent'] = h;
   }
 
   const handleSSOLogin = () => {

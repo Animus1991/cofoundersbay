@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import { useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Users,
@@ -153,7 +154,7 @@ function BreakdownModal({
 }
 
 // Rich feedback dropdown
-const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: any; color?: string }[] = [
+const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: LucideIcon; color?: string }[] = [
   { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },
@@ -198,24 +199,69 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
   );
 }
 
+/** Either payload the recommendations endpoint can return. */
+type RecommendationHit = (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
+
+/** The MatchSuggestion branch is the one that carries a nested `profile`. */
+function isMatchSuggestion(hit: RecommendationHit): hit is MatchSuggestion {
+  return 'profile' in hit;
+}
+
+/**
+ * Flattens the two shapes into one view model. Previously each field was read
+ * through a separate `as any`, so a rename on either side of the API would have
+ * silently produced `undefined` at runtime rather than failing the build.
+ */
+function normaliseHit(hit: RecommendationHit) {
+  if (isMatchSuggestion(hit)) {
+    return {
+      userId: hit.userId,
+      displayName: hit.profile?.displayName ?? 'Unknown',
+      headline: hit.profile?.headline ?? null,
+      avatarUrl: hit.profile?.avatarUrl ?? null,
+      location: hit.profile?.location ?? null,
+      role: null as string | null,
+      skills: (hit.profile?.skills ?? []).map((s) => s.skill?.name ?? s.skillId),
+      score: hit.score,
+      confidence: hit.confidence as number | null,
+      reasons: hit.reasons ?? [],
+      explanation: hit.explanation ?? [],
+    };
+  }
+  return {
+    userId: hit.userId,
+    displayName: hit.displayName ?? 'Unknown',
+    headline: hit.headline ?? null,
+    avatarUrl: hit.avatarUrl ?? null,
+    location: hit.location ?? null,
+    role: hit.role ?? null,
+    skills: hit.skills ?? hit.skillNames ?? [],
+    score: hit.matchScore ?? 0,
+    confidence: null as number | null,
+    reasons: hit.matchReasons ?? [],
+    explanation: [] as MatchExplanationItem[],
+  };
+}
+
 function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
-  hit: (SearchHit & { matchScore?: number; matchReasons?: string[] }) | MatchSuggestion;
+  hit: RecommendationHit;
   onConnect: (userId: string) => void;
   onFeedback: (userId: string, fb: MatchFeedbackType) => void;
   onSave?: (userId: string) => void;
 }) {
-  // Support both old SearchHit shape and new MatchSuggestion shape
-  const userId = (hit as any).userId;
-  const displayName = (hit as any).profile?.displayName ?? (hit as any).displayName ?? 'Unknown';
-  const headline = (hit as any).profile?.headline ?? (hit as any).headline ?? null;
-  const avatarUrl = (hit as any).profile?.avatarUrl ?? (hit as any).avatarUrl ?? null;
-  const location = (hit as any).profile?.location ?? (hit as any).location ?? null;
-  const role = (hit as any).role ?? null;
-  const skills = (hit as any).profile?.skills ?? (hit as any).skills ?? [];
-  const score = (hit as any).score ?? (hit as any).matchScore ?? 0;
-  const confidence = (hit as any).confidence ?? null;
-  const reasons: string[] = (hit as any).reasons ?? (hit as any).matchReasons ?? [];
-  const explanation: MatchExplanationItem[] = (hit as any).explanation ?? [];
+  const {
+    userId,
+    displayName,
+    headline,
+    avatarUrl,
+    location,
+    role,
+    skills,
+    score,
+    confidence,
+    reasons,
+    explanation,
+  } = normaliseHit(hit);
 
   const RoleIcon = ROLE_ICON[role ?? 'founder'] ?? Users;
   const [showExplanation, setShowExplanation] = useState(false);
@@ -300,9 +346,9 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
             {/* Skills */}
             {skills.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
-                {(skills as any[]).slice(0, 4).map((s: any, i: number) => (
-                  <span key={i} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
-                    {s.skill?.name ?? s}
+                {skills.slice(0, 4).map((skill) => (
+                  <span key={skill} className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-md">
+                    {skill}
                   </span>
                 ))}
                 {skills.length > 4 && (
@@ -428,8 +474,8 @@ export default function RecommendationsPage() {
 
   const allRecommendations = recsData?.suggestions ?? [];
   const recommendations = activeTab === 'saved'
-    ? allRecommendations.filter((h) => savedIds.has((h as any).userId))
-    : allRecommendations.filter((h) => ((h as any).score ?? (h as any).matchScore ?? 0) >= minScore);
+    ? allRecommendations.filter((h) => savedIds.has(h.userId))
+    : allRecommendations.filter((h) => normaliseHit(h).score >= minScore);
   const weeklyRecs = digestData?.recommendations ?? [];
   const stats = digestData?.stats ?? statsData;
 
@@ -599,8 +645,8 @@ export default function RecommendationsPage() {
             ) : recommendations.length > 0 ? (
               recommendations.map((hit) => (
                 <RecommendationCard
-                  key={(hit as any).userId}
-                  hit={hit as any}
+                  key={hit.userId}
+                  hit={hit}
                   onConnect={(uid) => connectMutation.mutate(uid)}
                   onFeedback={(uid, fb) => feedbackMutation.mutate({ userId: uid, fb })}
                   onSave={handleSave}

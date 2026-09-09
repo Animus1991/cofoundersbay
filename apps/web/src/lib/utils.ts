@@ -23,3 +23,26 @@ export function formatRelativeTime(dateStr: string | Date): string {
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
 }
+
+/**
+ * Reads a message off a caught value. `catch` binds `unknown`, and the app's
+ * API errors are plain Errors or `{ message }` objects; this keeps call sites
+ * from reaching for `any`.
+ */
+export function errorMessage(error: unknown, fallback = 'Something went wrong'): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message) return message;
+  }
+  return fallback;
+}
+
+/** HTTP status carried by API errors thrown from lib/api. */
+export function errorStatus(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    const status = (error as { status?: unknown }).status;
+    if (typeof status === 'number') return status;
+  }
+  return undefined;
+}

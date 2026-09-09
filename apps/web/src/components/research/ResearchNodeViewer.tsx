@@ -258,18 +258,21 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
   });
 
   // ── Task metadata state ────────────────────────────────────────────────
+  // `metadata` is an untyped JSON bag on the node record; read it once
+  // through a Record instead of casting at each field.
+  const metadata: Record<string, unknown> = (node.metadata ?? {}) as Record<string, unknown>;
   const [taskMeta, setTaskMeta] = useState({
-    status:   ((node.metadata as any)?.status   as string) || 'todo',
-    priority: ((node.metadata as any)?.priority as string) || 'medium',
-    dueDate:  ((node.metadata as any)?.dueDate  as string) || '',
+    status:   (metadata.status as string) || 'todo',
+    priority: (metadata.priority as string) || 'medium',
+    dueDate:  (metadata.dueDate as string) || '',
   });
 
   // ── SWOT state ─────────────────────────────────────────────────────────
   const [swot, setSwot] = useState({
-    strengths:     ((node.metadata as any)?.strengths     as string) || '',
-    weaknesses:    ((node.metadata as any)?.weaknesses    as string) || '',
-    opportunities: ((node.metadata as any)?.opportunities as string) || '',
-    threats:       ((node.metadata as any)?.threats       as string) || '',
+    strengths:     (metadata.strengths as string) || '',
+    weaknesses:    (metadata.weaknesses as string) || '',
+    opportunities: (metadata.opportunities as string) || '',
+    threats:       (metadata.threats as string) || '',
   });
 
   // ── Phase 10: Builder Document Link state ─────────────────────────────

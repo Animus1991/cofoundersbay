@@ -265,7 +265,7 @@ export default function AISettingsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {models.length > 0 ? (
-                        models.map((m: any) => (
+                        models.map((m) => (
                           <SelectItem key={m.name} value={m.name}>
                             {m.name}
                           </SelectItem>
@@ -519,7 +519,7 @@ export default function AISettingsPage() {
                   { id: 'research', name: 'Research Assistant', description: 'Market research & analysis' },
                   { id: 'fundraising', name: 'Fundraising Advisor', description: 'Raise capital effectively' },
                   { id: 'growth-strategist', name: 'Growth Strategist', description: 'Scale your startup' },
-                ]).map((agent: any) => (
+                ]).map((agent) => (
                   <div
                     key={agent.id}
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"

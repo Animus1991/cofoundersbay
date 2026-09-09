@@ -69,11 +69,40 @@ function StatCard({
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-function MenteeCard({ mentee }: { mentee: any }) {
+/**
+ * Shapes for the role-dashboard cards. These mirror the demo fixtures below and
+ * the API payloads they stand in for; the cards were previously typed `any`,
+ * which hid every field rename behind a runtime undefined.
+ */
+type Mentee = {
+  id: string;
+  name: string;
+  startup: string | null;
+  sessionsCompleted: number;
+  avatarUrl: string | null;
+};
+
+type MentorSession = {
+  id: string;
+  menteeName: string;
+  /** ISO 8601 */
+  scheduledAt: string;
+  /** minutes */
+  duration: number;
+};
+
+type MentorRequest = {
+  id: string;
+  name: string;
+  message: string;
+  avatarUrl: string | null;
+};
+
+function MenteeCard({ mentee }: { mentee: Mentee }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={mentee.avatarUrl} />
+        <AvatarImage src={mentee.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-emphasis">
           {mentee.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
@@ -94,7 +123,7 @@ function MenteeCard({ mentee }: { mentee: any }) {
   );
 }
 
-function SessionCard({ session }: { session: any }) {
+function SessionCard({ session }: { session: MentorSession }) {
   const isUpcoming = new Date(session.scheduledAt) > new Date();
   
   return (
@@ -129,11 +158,11 @@ function SessionCard({ session }: { session: any }) {
   );
 }
 
-function RequestCard({ request }: { request: any }) {
+function RequestCard({ request }: { request: MentorRequest }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={request.avatarUrl} />
+        <AvatarImage src={request.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-amber-500/10 text-amber-600">
           {request.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>

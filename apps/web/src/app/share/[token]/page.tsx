@@ -13,7 +13,7 @@ import {
   FileText, Lock, AlertCircle, Eye, MessageSquare, Edit3,
   Loader2, ExternalLink, Calendar, User, Rocket, CheckCircle2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, errorStatus } from '@/lib/utils';
 import { apiRequest } from '@/lib/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -192,14 +192,15 @@ export default function SharePage() {
         setStep('error');
         setErrorMessage('Document content could not be loaded.');
       }
-    } catch (err: any) {
-      if (err?.status === 401 || err?.status === 403) {
+    } catch (err: unknown) {
+      const status = errorStatus(err);
+      if (status === 401 || status === 403) {
         setPasswordError('Incorrect password. Please try again.');
         setStep('password');
-      } else if (err?.status === 404) {
+      } else if (status === 404) {
         setStep('error');
         setErrorMessage('This share link does not exist or has been revoked.');
-      } else if (err?.status === 410) {
+      } else if (status === 410) {
         setStep('error');
         setErrorMessage('This share link has expired.');
       } else {
