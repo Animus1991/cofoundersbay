@@ -115,6 +115,18 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
   const { labelEn: tierEn, labelEl: tierEl, color: tierColor } = scoreTier(vrs.overall);
   const dimensionCount = vrs.dimensions.length;
 
+  // `weight` arrives as a *relative* weight, not a percentage — the three demo
+  // dimensions each carry weight 1, meaning they count equally. Printing it raw
+  // rendered "weight 1%" three times, which reads as though each dimension were
+  // worth one percent. Express it as its share of the total instead, which is
+  // correct whether the API sends 1/1/1 or 40/35/25.
+  const weightTotal = vrs.dimensions.reduce((sum, d) => sum + (Number(d.weight) || 0), 0);
+  const weightShare = (weight: number): number | null => {
+    const w = Number(weight);
+    if (!Number.isFinite(w) || weightTotal <= 0) return null;
+    return Math.round((w / weightTotal) * 100);
+  };
+
   return (
     <Card className={cn('min-w-0 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-indigo-500/5', className)}>
       <CardHeader className="pb-2">
@@ -168,9 +180,16 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                   <div className="mb-0.5 flex items-center justify-between gap-2 text-xs">
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                       {dim.label}
-                      <span className="ml-1 text-muted-foreground/60">
-                        · <BilingualText en={`weight ${dim.weight}%`} el={`βάρος ${dim.weight}%`} compact />
-                      </span>
+                      {weightShare(dim.weight) !== null && (
+                        <span className="ml-1 hidden text-muted-foreground/60 sm:inline">
+                          ·{' '}
+                          <BilingualText
+                            en={`weight ${weightShare(dim.weight)}%`}
+                            el={`βάρος ${weightShare(dim.weight)}%`}
+                            compact
+                          />
+                        </span>
+                      )}
                     </span>
                     <span className={cn('shrink-0 font-semibold tabular-nums', color)}>{dim.score}%</span>
                   </div>

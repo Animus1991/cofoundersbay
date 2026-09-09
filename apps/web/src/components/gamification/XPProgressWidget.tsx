@@ -10,7 +10,19 @@ import { CfbGlyph } from '@/components/icons/CfbGlyph';
 
 export function XPProgressWidget() {
   const { data: xp, isLoading: xpLoading } = useMyXP();
-  const { data: streak, isLoading: streakLoading } = useMyStreak();
+  const { data: streakData, isLoading: streakLoading } = useMyStreak();
+
+  // Render the streak only when the response actually carries the numbers.
+  // A truthy object with missing fields used to reach the copy verbatim, and the
+  // dashboard showed "undefined day streak · Best: undefined days". Treat a
+  // malformed payload as "no streak" rather than interpolating it into a string.
+  const currentStreak = Number.isFinite(streakData?.currentStreak as number)
+    ? (streakData!.currentStreak as number)
+    : null;
+  const longestStreak = Number.isFinite(streakData?.longestStreak as number)
+    ? (streakData!.longestStreak as number)
+    : null;
+  const streak = currentStreak === null ? null : { currentStreak, longestStreak: longestStreak ?? currentStreak };
 
   if (xpLoading || streakLoading) {
     return (

@@ -873,9 +873,40 @@ html {
     font-size: max(0.6875rem, 0.85em);
   }
 
-  /* ── Card padding standards ── */
-  .card-compact { @apply p-4; }      /* Compact cards - lists, dense info */
-  .card-comfortable { @apply p-6; }  /* Comfortable cards - default */
+  /* ── Phones: one language on the inline variants ──
+     Both languages on a single line makes every string roughly twice as long.
+     Measured on a 360px viewport, that was the single biggest source of broken
+     layout on this product: 35 clipped text nodes and 48 elements past the
+     viewport edge on the founder dashboard alone. Milestone titles were losing
+     ~94% of their width — "Complete MVP v1" rendered as "C…" — and
+     "Open tracker · Άνοιγμα παρακολούθησης" ran to x=539 in a 360px window.
+     Hiding the secondary here takes those to 4 and 10.
+
+     Only the inline variants are affected. `stacked` puts the second language on
+     its own line, which fits and is what the mobile bottom nav uses, so it keeps
+     both. No information is lost either way: the primary line is already the
+     reader's chosen language, and the top-bar switcher changes which one that is.
+
+     !important because a call site may pass a display utility through
+     secondaryClassName; the intent here is not overridable per-site. */
+  @media (max-width: 639.98px) {
+    .bilingual-secondary--inline,
+    .bilingual-separator--inline {
+      display: none !important;
+    }
+  }
+
+  /* ── Card padding standards ──
+     Responsive on purpose. CardContent/CardFooter apply .card-comfortable
+     unconditionally, and because these are declared in @layer utilities *after*
+     Tailwind emits .p-3/.p-4, they also beat a per-card `p-3` passed at the call
+     site — so this rule alone decided the padding of every card in the product.
+     At 24px a side on a 360px phone, a stat card in a two-column grid spent 48 of
+     its 160px on padding and left the label 72px, which truncated
+     "Κορυφαίες αντιστοιχίσεις" by 47%. Stepping down to 16px on phones returns
+     that space and keeps the roomier desktop rhythm above sm. */
+  .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
+  .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
 
   /* ── Spacing rhythm ── */
   .section-spacing { @apply space-y-8; }    /* Major sections */

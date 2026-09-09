@@ -166,7 +166,7 @@ function StatCard({
     <Card className="relative h-full overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
             <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
@@ -347,12 +347,15 @@ export default function FounderDashboardContent() {
   return (
     <AppShell
       showHelp
+      // One Ask AI in the header, not three. AppShell renders its own whenever the
+      // page has a title, and this page was additionally passing an AIInsightButton
+      // and an AskAiButton through `actions` — on a 360px screen that stacked into
+      // three near-identical buttons. Handing AppShell the specific prompt keeps the
+      // most useful of the three in the standard position; the prompt-less "open the
+      // assistant" affordance is unchanged and still reachable from the chat bubble.
+      askAi="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
       actions={
         <>
-          <AIInsightButton
-            prompt="Summarize my founder graph and tell me the next action: intros, matches, messages, or profile gaps."
-          />
-          <AskAiButton variant="outline" />
           <Badge variant="outline" className="gap-1.5">
             <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
           </Badge>
@@ -389,10 +392,10 @@ export default function FounderDashboardContent() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
-          <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
-          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked />} value={unreadMessages} href="/messages" />
-          <StatCard glyph="flag" label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
+          <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
+          <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
+          <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />} value={unreadMessages} href="/messages" />
+          <StatCard glyph="flag" label={<BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} stacked wrap />} value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
         <div className="grid min-w-0 gap-6 lg:grid-cols-3">

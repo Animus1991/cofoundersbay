@@ -1034,6 +1034,13 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
       streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
     };
   }
+  // useMyStreak() fetches the streak on its own endpoint, not from the XP payload
+  // above. Without this branch it fell through to the generic fallback, whose
+  // object has no currentStreak/longestStreak — which is why the dashboard read
+  // "undefined day streak · Best: undefined days" in demo mode.
+  if (pathname === '/api/gamification/users/me/streak' || pathname.endsWith('/streak')) {
+    return { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW };
+  }
   if (pathname === '/api/gamification/users/me/badges' || pathname.endsWith('/badges')) {
     return [
       {

@@ -21,14 +21,20 @@ const PRIMARY_TABS = [
 const tabClasses = 'relative flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 text-xs font-medium focus-ring';
 
 function TabLabel({ en, el }: { en: string; el: string }) {
+  // Truncate rather than wrap. `break-words` split the longest Greek label
+  // mid-word ("Εξερεύνηση" -> "Εξερεύνησ" / "η"), which reads badly and made that
+  // one tab two lines tall while the others stayed at one, leaving the whole bar
+  // visibly uneven. Each tab is ~72px at 360px; an ellipsis keeps every tab the
+  // same height, and the full label is still announced through the link's
+  // aria-label, so nothing is lost to assistive tech.
   return (
     <BilingualText
       en={en}
       el={el}
       stacked
       className="w-full text-center"
-      primaryClassName="whitespace-normal break-words"
-      secondaryClassName="whitespace-normal break-words"
+      primaryClassName="truncate"
+      secondaryClassName="truncate"
     />
   );
 }
