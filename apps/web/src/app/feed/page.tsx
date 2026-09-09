@@ -203,7 +203,7 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                           className="gap-1"
                         >
                           <Icon className={cn('h-4 w-4', config.color)} />
-                          <span className="hidden sm:inline">{config.label}</span>
+                          <span className="sr-only sm:not-sr-only sm:inline">{config.label}</span>
                         </Button>
                       );
                     }
@@ -667,7 +667,7 @@ export default function FeedPage() {
             className="gap-1"
           >
             <Settings className="icon-sm" aria-hidden="true" />
-            <span className="hidden sm:inline">Preferences</span>
+            <span className="sr-only sm:not-sr-only sm:inline">Preferences</span>
           </Button>
         </div>
       }

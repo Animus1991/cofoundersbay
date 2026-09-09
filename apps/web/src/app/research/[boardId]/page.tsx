@@ -1243,7 +1243,7 @@ export default function ResearchBoardPage() {
             title="Click canvas to place note (N)"
           >
             <StickyNote className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
-            <span className="hidden md:inline">Note</span>
+            <span className="sr-only md:not-sr-only md:inline">Note</span>
           </Button>
 
           {/* Categorised Add Node mega-dropdown */}
@@ -1251,7 +1251,7 @@ export default function ResearchBoardPage() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden md:inline">Add Node</span>
+                <span className="sr-only md:not-sr-only md:inline">Add Node</span>
                 <ChevronDown className="icon-2xs opacity-60" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
@@ -1320,7 +1320,7 @@ export default function ResearchBoardPage() {
             className="gap-1.5 h-8 text-xs"
           >
             <Upload className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="hidden md:inline">Upload</span>
+            <span className="sr-only md:not-sr-only md:inline">Upload</span>
           </Button>
 
           {/* Connect tool */}
@@ -1332,7 +1332,7 @@ export default function ResearchBoardPage() {
             title="Draw connection (C)"
           >
             <GitBranch className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />
-            <span className="hidden md:inline">Connect</span>
+            <span className="sr-only md:not-sr-only md:inline">Connect</span>
           </Button>
 
           <div className="h-5 w-px bg-border/60" />

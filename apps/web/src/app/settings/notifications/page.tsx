@@ -318,8 +318,8 @@ export default function NotificationPreferencesPage() {
       description="Control how and when you receive notifications"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+          <Link href="/settings" className="hidden sm:block">
+            <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
               Settings
             </Button>

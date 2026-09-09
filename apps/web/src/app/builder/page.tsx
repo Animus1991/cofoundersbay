@@ -227,7 +227,7 @@ function BuilderPageContent() {
                   title={tab.label}
                 >
                   <Icon className="icon-sm" />
-                  <span className="hidden lg:inline">{tab.label}</span>
+                  <span className="sr-only lg:not-sr-only lg:inline">{tab.label}</span>
                 </TabsTrigger>
               );
             })}

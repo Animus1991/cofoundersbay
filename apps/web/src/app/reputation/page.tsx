@@ -439,8 +439,8 @@ export default function ReputationPage() {
       description="Your trust and credibility on CoFounderBay"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+          <Link href="/profile" className="hidden sm:block">
+            <Button variant="outline" size="sm" className="gap-2">
               <Shield className="icon-sm" aria-hidden="true" />
               My Profile
             </Button>

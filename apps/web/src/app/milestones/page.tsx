@@ -471,6 +471,7 @@ export default function MilestonesPage() {
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
+                aria-label="Filter milestones by priority"
                 className="bg-transparent text-xs text-foreground outline-none cursor-pointer"
               >
                 <option value="all">All priorities</option>
@@ -482,12 +483,16 @@ export default function MilestonesPage() {
             <div className="flex items-center rounded-lg border border-border/50 bg-secondary/30 p-0.5 gap-0.5">
               <button
                 onClick={() => setViewMode('list')}
-                className={cn('rounded p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutList className="h-3.5 w-3.5" aria-hidden="true" /></button>
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
+                className={cn('focus-ring rounded p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              ><LayoutList className="icon-xs" aria-hidden="true" /></button>
               <button
                 onClick={() => setViewMode('grid')}
-                className={cn('rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" /></button>
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'grid'}
+                className={cn('focus-ring rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+              ><LayoutGrid className="icon-xs" aria-hidden="true" /></button>
             </div>
             <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} aria-hidden="true" />

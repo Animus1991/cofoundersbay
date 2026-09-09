@@ -925,7 +925,7 @@ export default function MatchesPage() {
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
                     <CheckSquare className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span className="hidden sm:inline">Select</span>
+                    <span className="sr-only sm:not-sr-only sm:inline">Select</span>
                     {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
 

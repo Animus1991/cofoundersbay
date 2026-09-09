@@ -41,12 +41,12 @@ export function DemoDataToggle({ className }: { className?: string }) {
             {showDemoData ? (
               <>
                 <Eye className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden sm:inline">Demo</span>
+                <span className="sr-only sm:not-sr-only sm:inline">Demo</span>
               </>
             ) : (
               <>
                 <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="hidden sm:inline">Demo</span>
+                <span className="sr-only sm:not-sr-only sm:inline">Demo</span>
               </>
             )}
           </Button>

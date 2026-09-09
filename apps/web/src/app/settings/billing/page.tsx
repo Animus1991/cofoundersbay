@@ -161,8 +161,8 @@ export default function UserBillingPage() {
       description="Manage your plan, invoices, and billing details"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+          <Link href="/settings" className="hidden sm:block">
+            <Button variant="outline" size="sm" className="gap-2">
               Settings
             </Button>
           </Link>

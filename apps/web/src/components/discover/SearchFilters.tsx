@@ -242,7 +242,7 @@ export function SearchFilters({
           <SheetTrigger asChild>
             <Button variant="outline" className="gap-2 relative">
               <Filter className="icon-sm" aria-hidden="true" />
-              <span className="hidden sm:inline">Filters</span>
+              <span className="sr-only sm:not-sr-only sm:inline">Filters</span>
               {activeFiltersCount > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-2xs">
                   {activeFiltersCount}

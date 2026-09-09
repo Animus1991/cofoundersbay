@@ -530,8 +530,8 @@ export default function ProfileEditPage() {
       description="Update your personal details and how you appear to others"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+          <Link href="/profile" className="hidden sm:block">
+            <Button variant="outline" size="sm" className="gap-2">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
               Cancel
             </Button>

@@ -212,7 +212,7 @@ export function ConversationValidationMenu({
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
             <Icon className={cn('h-3.5 w-3.5', config.color)} />
-            <span className="hidden sm:inline">{config.label}</span>
+            <span className="sr-only sm:not-sr-only sm:inline">{config.label}</span>
             <ChevronDown className="icon-2xs text-muted-foreground" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
