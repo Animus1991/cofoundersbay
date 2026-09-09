@@ -169,7 +169,7 @@ interface AgentSelectorProps {
 
 function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const current = agents.find((a) => a.id === currentAgent);
+  const current = agents?.find((a) => a.id === currentAgent);
 
   return (
     <div className="relative">
@@ -186,7 +186,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
         <>
           <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-2">
-            {agents.map((agent) => (
+            {(agents ?? []).map((agent) => (
               <button
                 key={agent.id}
                 onClick={() => { onSelect(agent.id); setIsOpen(false); }}
@@ -613,7 +613,7 @@ export function UnifiedChatPopup() {
   }, [selected, close, router]);
 
   // Derived
-  const currentAgentConfig = agents.find((a) => a.id === currentAgent);
+  const currentAgentConfig = agents?.find((a) => a.id === currentAgent);
   const selectedId = selected?.id ?? null;
   const filteredConvos = conversations.filter(
     c => !c.isArchived && c.recipientName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -733,7 +733,7 @@ export function UnifiedChatPopup() {
       {activeTab === 'ai' && (
         <>
           <div className="flex items-center justify-between px-3 py-2 border-b border-border/40 bg-muted/30 shrink-0">
-            <AgentSelector agents={agents} currentAgent={currentAgent} onSelect={setAgent} />
+            <AgentSelector agents={agents ?? []} currentAgent={currentAgent} onSelect={setAgent} />
             <div className="flex items-center gap-1">
               {aiMessages.length > 0 && (
                 <>

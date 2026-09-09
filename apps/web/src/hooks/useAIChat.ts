@@ -67,11 +67,18 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           getAIHealth().catch(() => ({ available: false, models: [] })),
           getAIAgents().catch(() => ({ agents: [] })),
         ]);
-        
-        setIsAIAvailable(health.available);
-        setAgents(agentsData.agents);
+
+        setIsAIAvailable(Boolean(health?.available));
+        // The `.catch` above only covers a rejection. A 200 whose body is
+        // missing `agents` — a partial rollout, a proxy interstitial, an older
+        // API build — used to put `undefined` into state, and the consumers
+        // call `agents.find(...)` unguarded. Because UnifiedChatPopup is
+        // mounted globally, that single undefined took down every
+        // authenticated page in the product.
+        setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents : []);
       } catch {
         setIsAIAvailable(false);
+        setAgents([]);
       }
     };
 
