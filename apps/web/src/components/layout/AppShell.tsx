@@ -80,8 +80,16 @@ export function AppShell({
         {fullHeight ? (
           <main
             id="main-content"
+            // Keeps both sides: our tabIndex/focus styling (this is the skip-link
+            // target, so it must be focusable without painting an outline ring),
+            // plus their min-h-0 flex fix and the mobile clearance that stops the
+            // last row hiding behind MobileBottomNav.
             tabIndex={-1}
-            className={cn('flex flex-col flex-1 overflow-hidden focus:outline-none', contentClassName)}
+            className={cn(
+              'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
+              'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0',
+              contentClassName,
+            )}
           >
             {children}
           </main>

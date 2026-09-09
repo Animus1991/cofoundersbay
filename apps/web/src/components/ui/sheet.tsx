@@ -60,8 +60,11 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
+      {/* Their 44px tap target, with our bilingual label and focus-ring token.
+          Their sr-only "Close" is deliberately not carried over: alongside an
+          aria-label it would be a second, conflicting accessible name. */}
       <DialogPrimitive.Close
-        className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-colors hover:bg-secondary hover:text-foreground hover:opacity-100 focus-ring disabled:pointer-events-none"
+        className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground opacity-80 transition-colors hover:bg-secondary hover:text-foreground hover:opacity-100 focus-ring disabled:pointer-events-none"
         aria-label={bilingualAria('Close panel', 'Κλείσιμο πλαισίου')}
       >
         <X className="icon-sm" aria-hidden="true" />

@@ -344,7 +344,7 @@ export default function ProfilePage() {
         {/* Cover Photo & Basic Identity Header */}
         <div className="relative rounded-2xl overflow-hidden border bg-card shadow-sm animate-fade-in">
           {/* Cover Photo */}
-          <div className="h-48 md:h-64 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary w-full relative">
+          <div className="h-28 bg-gradient-to-br from-primary/10 via-primary/5 to-secondary w-full relative sm:h-48 md:h-64">
             <div className="absolute inset-0 bg-grid-white/10" style={{ backgroundImage: 'radial-gradient(circle at center, rgba(var(--primary-rgb), 0.1) 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
           </div>
           

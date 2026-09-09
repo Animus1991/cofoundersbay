@@ -548,7 +548,7 @@ export default function ProfileEditPage() {
         </div>
       }
     >
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px] pb-10">
+      <div className="grid gap-6 pb-24 lg:grid-cols-[1fr_320px] lg:pb-10">
         {/* Main content */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -1205,6 +1205,12 @@ export default function ProfileEditPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-30 border-t border-border/60 bg-card/95 p-3 backdrop-blur-md lg:hidden">
+        <Button onClick={handleSave} disabled={saving} className="min-h-11 w-full gap-2">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          Save changes
+        </Button>
       </div>
     </AppShell>
   );

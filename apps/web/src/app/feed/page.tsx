@@ -29,6 +29,7 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { isPreviewDemo } from '@/lib/preview-demo';
+import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import {
   getPersonalizedFeed,
   getFeedPreferences,
@@ -657,7 +658,7 @@ export default function FeedPage() {
       title="Feed"
       description="Stay updated with your network"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
             <TabsList>
               <TabsTrigger value="all"><BilingualText en="All" el="Όλα" compact /></TabsTrigger>
@@ -678,6 +679,14 @@ export default function FeedPage() {
       }
     >
       <div className="pb-10">
+        {isPreviewDemo() && (!feedData?.posts?.length) && (
+          <SampleDataNotice
+            className="mb-6"
+            surface="Feed"
+            detail="There is no live Feed module yet. These posts are sample network activity so you can review the layout."
+            askAiPrompt="The feed is showing sample posts. What should I do next on Discover, Matches, or Messages instead?"
+          />
+        )}
         <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Main Feed */}
           <div className="space-y-6">

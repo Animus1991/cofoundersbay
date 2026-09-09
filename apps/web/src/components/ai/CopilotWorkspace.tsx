@@ -148,7 +148,7 @@ export function CopilotWorkspace({
               type="button"
               size="sm"
               variant="ghost"
-              className="h-8 gap-1.5"
+              className="min-h-11 gap-1.5"
               onClick={() => chat.clearMessages()}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -168,7 +168,7 @@ export function CopilotWorkspace({
                       type="button"
                       onClick={() => void chat.loadConversation(conv.id)}
                       className={cn(
-                        'w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted/70',
+                        'tap-target min-h-11 w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted/70',
                         chat.conversationId === conv.id && 'bg-primary/10 text-primary',
                       )}
                     >
@@ -226,16 +226,16 @@ export function CopilotWorkspace({
             )}
             {chat.messages.length > 0 && (
               <>
-                <button type="button" onClick={chat.retryLastMessage} className="rounded-md p-1.5 hover:bg-muted" title="Retry">
+                <button type="button" onClick={chat.retryLastMessage} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Retry">
                   <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
-                <button type="button" onClick={chat.clearMessages} className="rounded-md p-1.5 hover:bg-muted" title="Clear">
+                <button type="button" onClick={chat.clearMessages} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Clear">
                   <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               </>
             )}
             {onExpand && (
-              <button type="button" onClick={onExpand} className="rounded-md p-1.5 hover:bg-muted" title="Open full page">
+              <button type="button" onClick={onExpand} className="tap-target flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted" title="Open full page">
                 <Maximize2 className="h-3.5 w-3.5 text-muted-foreground" />
               </button>
             )}
@@ -259,7 +259,7 @@ export function CopilotWorkspace({
                     key={q}
                     type="button"
                     onClick={() => void chat.sendMessage(q)}
-                    className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
+                    className="min-h-11 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/40 dark:text-violet-300"
                   >
                     {q}
                   </button>
@@ -306,21 +306,21 @@ export function CopilotWorkspace({
           <p className="px-3 text-xs text-destructive">{chat.error}</p>
         )}
 
-        <form onSubmit={onSubmit} className="border-t border-border/60 p-3">
+        <form onSubmit={onSubmit} className="shrink-0 border-t border-border/60 p-3">
           <div className="flex items-center gap-2">
             <Input
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask AI to search, intro, message, or navigate…"
-              className="h-10 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
+              className="h-11 min-h-11 flex-1 rounded-full border-0 bg-muted/50 px-4 text-sm focus-visible:ring-1 focus-visible:ring-violet-500"
               disabled={chat.isStreaming}
             />
             <Button
               type="submit"
               size="icon"
               disabled={!input.trim() || chat.isStreaming}
-              className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+              className="h-11 w-11 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
               aria-label="Send"
             >
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

@@ -43,10 +43,10 @@ function AIPageInner() {
   return (
     <AppShell fullHeight contentClassName="min-h-0 flex flex-col">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden border-b border-border/60 lg:border-b-0">
-        <div className="hidden border-b border-border/60 px-4 py-2.5 lg:block">
+        <div className="border-b border-border/60 px-4 py-2.5">
           <h1 className="text-base font-semibold tracking-tight">AI Assistant</h1>
           <p className="text-xs text-muted-foreground">
-            Full workspace · same tools as the popup · writes confirm before they hit the API
+            Same tools as the popup · writes wait for your confirm
           </p>
         </div>
         <CopilotWorkspace variant="page" initialPrompt={initialPrompt ?? undefined} />

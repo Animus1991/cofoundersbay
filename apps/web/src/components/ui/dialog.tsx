@@ -37,7 +37,9 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed left-[50%] top-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg translate-x-[-50%] translate-y-[-50%]',
+        'fixed left-[50%] z-50 grid w-[calc(100vw-1.5rem)] max-w-lg translate-x-[-50%]',
+        'top-[max(0.75rem,env(safe-area-inset-top))] translate-y-0',
+        'md:top-[50%] md:translate-y-[-50%]',
         'max-h-[min(92dvh,720px)] overflow-y-auto overscroll-contain',
         'rounded-xl border border-border/60 bg-card p-5 sm:p-6 text-card-foreground shadow-modal',
         'data-[state=open]:animate-in data-[state=closed]:animate-out motion-reduce:animate-none',
@@ -53,7 +55,10 @@ const DialogContent = React.forwardRef<
       {children}
       {!hideClose && (
         <DialogPrimitive.Close
-          className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
+          // 44px tap target (WCAG 2.5.8) from the incoming branch, kept with our
+          // colour-based hover and bilingual label — theirs had regressed the
+          // accessible name to English-only.
+          className="absolute right-3 top-3 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary/70 focus-ring disabled:pointer-events-none"
           aria-label={bilingualAria('Close dialog', 'Κλείσιμο παραθύρου')}
         >
           <X className="icon-sm" aria-hidden="true" />
