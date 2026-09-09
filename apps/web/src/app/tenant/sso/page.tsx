@@ -36,8 +36,8 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 type RoleMappingRule = { claim: string; value: string; role: string };
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30">Optional</Badge>;
+  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30">Required</Badge>;
+  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30">Optional</Badge>;
   return <Badge variant="secondary">Disabled</Badge>;
 }
 
@@ -76,11 +76,11 @@ function ProviderCard({
               <h3 className="font-semibold">{provider.providerName}</h3>
               <Badge variant="secondary" size="sm" className="uppercase">{provider.providerType}</Badge>
               {isConfigured ? (
-                <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20">
+                <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
                   <CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Configured
                 </Badge>
               ) : (
-                <Badge variant="outline" size="sm" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                <Badge variant="outline" size="sm" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
                   <AlertCircle className="mr-1 icon-sm" aria-hidden="true" />Needs configuration
                 </Badge>
               )}
@@ -111,7 +111,7 @@ function ProviderCard({
                 });
                 if (ok) onDelete(provider.id);
               }}
-              className="text-muted-foreground hover:text-destructive transition-colors"
+              className="text-muted-foreground hover:text-destructive-emphasis transition-colors"
             >
               <Trash2 className="icon-sm" aria-hidden="true" />
             </button>
@@ -144,7 +144,7 @@ function DomainRow({
       </div>
       <div className="flex items-center gap-2">
         {mapping.isVerified ? (
-          <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
+          <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20">
             <CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Verified
           </Badge>
         ) : (
@@ -152,7 +152,7 @@ function DomainRow({
             Mark Verified
           </button>
         )}
-        <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive transition-colors ml-1">
+        <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive-emphasis transition-colors ml-1">
           <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
@@ -194,7 +194,7 @@ function RoleMappingEditor({
                   <option key={role} value={role}>{role}</option>
                 )}
               </select>
-              <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive">
+              <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive-emphasis">
                 <X className="icon-sm" aria-hidden="true" />
               </button>
             </div>
@@ -399,7 +399,7 @@ export default function TenantSSOPage() {
         )}
 
         {saveError && (
-          <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+          <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-emphasis flex items-center gap-2">
             <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />{saveError}
           </div>
         )}
@@ -632,7 +632,7 @@ export default function TenantSSOPage() {
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="icon-sm" aria-hidden="true" />Saved</span>}
+              {saveOk && <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1"><Check className="icon-sm" aria-hidden="true" />Saved</span>}
               <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="gap-2">
                 <Check className="icon-sm" aria-hidden="true" />
                 {saveMut.isPending ? 'Saving…' : 'Save Policy'}

@@ -1211,7 +1211,7 @@ export default function ResearchBoardPage() {
         {/* Error state — only after mount to avoid hydration mismatch */}
         {!showLoading && (error || !board) && (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <p className="text-destructive mb-4">Failed to load board</p>
+            <p className="text-destructive-emphasis mb-4">Failed to load board</p>
             <Button onClick={() => router.push('/research')}>Back to Boards</Button>
           </div>
         )}
@@ -1562,7 +1562,7 @@ export default function ResearchBoardPage() {
       {/* Canvas → Builder synthesis prompt banner */}
       {!synthDismissed && board.nodes.length >= 10 && (
         <div className="flex items-center gap-3 px-4 py-2.5 border-b bg-violet-500/5 border-violet-500/20 shrink-0 z-40">
-          <Sparkles className="icon-sm shrink-0 text-violet-600" aria-hidden="true" />
+          <Sparkles className="icon-sm shrink-0 text-violet-600 dark:text-violet-400" aria-hidden="true" />
           <div className="flex-1 min-w-0">
             <span className="text-xs font-semibold text-foreground">
               {board.nodes.length} research nodes — ready to synthesise?
@@ -1572,7 +1572,7 @@ export default function ResearchBoardPage() {
             </span>
           </div>
           <Link href="/builder">
-            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0">
+            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0">
               Open Builder <ArrowRight className="icon-2xs" aria-hidden="true" />
             </Button>
           </Link>
@@ -1949,7 +1949,7 @@ export default function ResearchBoardPage() {
               <div className="h-px bg-border my-1" />
               <button
                 onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
-                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-2"
+                className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-emphasis transition-colors flex items-center gap-2"
               >
                 <Trash2 className="icon-sm" aria-hidden="true" /> Delete
               </button>

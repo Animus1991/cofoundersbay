@@ -48,18 +48,18 @@ type OrgEvent = {
 };
 
 const TYPE_CONFIG: Record<OrgEvent['type'], { label: string; color: string }> = {
-  workshop: { label: 'Workshop', color: 'bg-blue-500/10 text-blue-600' },
-  demo_day: { label: 'Demo Day', color: 'bg-purple-500/10 text-purple-600' },
-  networking: { label: 'Networking', color: 'bg-green-500/10 text-green-600' },
-  mentorship: { label: 'Mentorship', color: 'bg-amber-500/10 text-amber-600' },
-  keynote: { label: 'Keynote', color: 'bg-red-500/10 text-red-600' },
+  workshop: { label: 'Workshop', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  demo_day: { label: 'Demo Day', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  networking: { label: 'Networking', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+  mentorship: { label: 'Mentorship', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  keynote: { label: 'Keynote', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
 };
 
 const STATUS_CONFIG: Record<OrgEvent['status'], { label: string; color: string }> = {
-  upcoming: { label: 'Upcoming', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  ongoing: { label: 'Live', color: 'bg-green-500/10 text-green-600 border-green-500/20' },
+  upcoming: { label: 'Upcoming', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
+  ongoing: { label: 'Live', color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' },
   completed: { label: 'Completed', color: 'bg-gray-500/10 text-gray-600 border-gray-500/20' },
-  cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 border-red-500/20' },
+  cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' },
 };
 
 const MOCK_EVENTS: OrgEvent[] = [
@@ -178,7 +178,7 @@ function EventCard({ event }: { event: OrgEvent }) {
               <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit</DropdownMenuItem>
               <DropdownMenuItem><Copy className="mr-2 icon-sm" aria-hidden="true" />Duplicate</DropdownMenuItem>
               <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" aria-hidden="true" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

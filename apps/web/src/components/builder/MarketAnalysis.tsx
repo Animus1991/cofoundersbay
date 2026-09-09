@@ -250,7 +250,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-500/10 rounded-lg">
-            <TrendingUp className="icon-md text-green-600" aria-hidden="true" />
+            <TrendingUp className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Market Analysis</h2>
@@ -470,19 +470,19 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                 <div className="flex items-end justify-center gap-8 h-48">
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-blue-500/20 border-2 border-blue-500 rounded-t-lg flex items-end justify-center" style={{ height: '160px' }}>
-                      <span className="text-lg font-bold text-blue-600 mb-2">{data.tam.value || '—'}</span>
+                      <span className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">{data.tam.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">TAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-green-500/20 border-2 border-green-500 rounded-t-lg flex items-end justify-center" style={{ height: '100px' }}>
-                      <span className="text-lg font-bold text-green-600 mb-2">{data.sam.value || '—'}</span>
+                      <span className="text-lg font-bold text-green-600 dark:text-green-400 mb-2">{data.sam.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SAM</span>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="w-32 bg-orange-500/20 border-2 border-orange-500 rounded-t-lg flex items-end justify-center" style={{ height: '40px' }}>
-                      <span className="text-lg font-bold text-orange-600 mb-2">{data.som.value || '—'}</span>
+                      <span className="text-lg font-bold text-orange-600 dark:text-orange-400 mb-2">{data.som.value || '—'}</span>
                     </div>
                     <span className="mt-2 text-sm font-medium">SOM</span>
                   </div>

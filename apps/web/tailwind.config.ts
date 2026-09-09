@@ -50,6 +50,9 @@ const config: Config = {
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
+          // Text-on-surface variant, for the same reason as primary.emphasis:
+          // the step that carries white text is too dark to BE text.
+          emphasis: 'hsl(var(--destructive-emphasis))',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',

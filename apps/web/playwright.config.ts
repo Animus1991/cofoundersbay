@@ -2,6 +2,12 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.A11Y_PORT ?? 3100);
 const BASE_URL = process.env.A11Y_BASE_URL ?? `http://localhost:${PORT}`;
+/**
+ * Must match the NEXT_PUBLIC_API_URL the app was built with — that value is
+ * inlined at build time and is also interpolated into the CSP connect-src, so a
+ * mismatch here means the browser blocks every request the app makes.
+ */
+const MOCK_API_PORT = Number(process.env.MOCK_API_PORT ?? 3001);
 
 /**
  * Accessibility regression suite.
@@ -31,12 +37,22 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
 
+  // The authenticated suite needs an API to render at all, so both servers come
+  // up together. The stub is a fixture (e2e/mock-api.mjs), not a mock framework.
   webServer: process.env.A11Y_BASE_URL
     ? undefined
-    : {
-        command: `npx next start --port ${PORT}`,
-        port: PORT,
-        reuseExistingServer: !process.env.CI,
-        timeout: 180_000,
-      },
+    : [
+        {
+          command: `node e2e/mock-api.mjs ${MOCK_API_PORT}`,
+          port: MOCK_API_PORT,
+          reuseExistingServer: !process.env.CI,
+          timeout: 30_000,
+        },
+        {
+          command: `npx next start --port ${PORT}`,
+          port: PORT,
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000,
+        },
+      ],
 });

@@ -466,7 +466,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 </button>
                 <button
                   onClick={() => { onUpdate({ builderDocumentId: null }); }}
-                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive transition-colors"
+                  className="flex items-center gap-1 ml-auto text-muted-foreground hover:text-destructive-emphasis transition-colors"
                   title="Remove link"
                 >
                   <Link2Off className="w-3.5 h-3.5" aria-hidden="true" />
@@ -598,7 +598,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   />
                   <button
                     onClick={() => removeChecklistItem(item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-emphasis"
                   >
                     <X className="icon-2xs" aria-hidden="true" />
                   </button>

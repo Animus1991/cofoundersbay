@@ -151,7 +151,7 @@ export function ConnectionRequestDialog({
           <div className="flex items-center justify-between text-xs">
             <span className={cn(
               'text-muted-foreground',
-              charCount > 500 && 'text-destructive'
+              charCount > 500 && 'text-destructive-emphasis'
             )}>
               {charCount}/500 characters
             </span>
@@ -165,7 +165,7 @@ export function ConnectionRequestDialog({
 
         {/* Error message */}
         {error && (
-          <div className="flex items-center gap-2 text-sm text-destructive animate-fade-in">
+          <div className="flex items-center gap-2 text-sm text-destructive-emphasis animate-fade-in">
             <AlertCircle className="icon-sm" aria-hidden="true" />
             {error}
           </div>

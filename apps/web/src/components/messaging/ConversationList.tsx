@@ -142,7 +142,7 @@ function ConversationItem({
             <Archive className="icon-sm mr-2" aria-hidden="true" />
             Archive
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={onDelete} className="text-destructive">
+          <DropdownMenuItem onClick={onDelete} className="text-destructive-emphasis">
             <Trash2 className="icon-sm mr-2" aria-hidden="true" />
             Delete
           </DropdownMenuItem>

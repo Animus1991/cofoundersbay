@@ -80,11 +80,11 @@ export default function TenantsAdminPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">Active</Badge>;
+        return <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30">Active</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500/15 text-yellow-600 border-yellow-500/30">Pending</Badge>;
+        return <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30">Pending</Badge>;
       case 'suspended':
-        return <Badge className="bg-red-500/15 text-red-600 border-red-500/30">Suspended</Badge>;
+        return <Badge className="bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30">Suspended</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -161,7 +161,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive" aria-hidden="true" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-emphasis" aria-hidden="true" />
               <p>Failed to load tenants</p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 Retry
@@ -405,7 +405,7 @@ function TenantEditor({
               </TabsList>
 
               {saveError && (
-                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+                <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-emphasis flex items-center gap-2">
                   <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                   {saveError}
                 </div>
@@ -716,7 +716,7 @@ function TenantEditor({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-destructive hover:text-destructive"
+                className="gap-2 text-destructive-emphasis hover:text-destructive-emphasis"
                 onClick={async () => {
                   const ok = await confirm({
                     title: `Delete "${tenant.name}"?`,

@@ -156,9 +156,9 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                  <XCircle className="icon-xl text-destructive" aria-hidden="true" />
+                  <XCircle className="icon-xl text-destructive-emphasis" aria-hidden="true" />
                 </div>
-                <CardTitle className="text-destructive">Verification Failed</CardTitle>
+                <CardTitle className="text-destructive-emphasis">Verification Failed</CardTitle>
                 <CardDescription>
                   {errorMessage || 'The verification link is invalid or has expired.'}
                 </CardDescription>

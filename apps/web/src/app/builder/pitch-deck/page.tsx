@@ -57,8 +57,8 @@ function PitchDeckPageContent() {
       <div className="space-y-6">
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" aria-hidden="true" />
-            <p className="text-sm text-destructive">{error}</p>
+            <AlertCircle className="icon-md text-destructive-emphasis" aria-hidden="true" />
+            <p className="text-sm text-destructive-emphasis">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
             </Button>

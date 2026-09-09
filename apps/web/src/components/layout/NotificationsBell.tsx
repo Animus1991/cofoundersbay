@@ -252,7 +252,7 @@ export function NotificationsBell({ className }: { className?: string }) {
             <DropdownMenuSeparator className="my-0" />
             <div className="flex-shrink-0 px-4 py-2.5">
               <button
-                className="w-full text-center text-xs text-primary-emphasis hover:underline"
+                className="w-full text-center text-xs text-primary-emphasis underline underline-offset-2"
                 onClick={() => router.push('/notifications')}
               >
                 View all notifications

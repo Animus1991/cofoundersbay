@@ -525,21 +525,21 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950">
-            <Users className="icon-xl text-blue-600 mb-2 mx-auto" aria-hidden="true" />
+            <Users className="icon-xl text-blue-600 dark:text-blue-400 mb-2 mx-auto" aria-hidden="true" />
             <h3 className="font-semibold mb-1">Smart Matching</h3>
             <p className="text-sm text-muted-foreground">
               AI-powered connections based on skills and goals
             </p>
           </div>
           <div className="p-4 rounded-lg bg-green-50 dark:bg-green-950">
-            <Shield className="icon-xl text-green-600 mb-2 mx-auto" aria-hidden="true" />
+            <Shield className="icon-xl text-green-600 dark:text-green-400 mb-2 mx-auto" aria-hidden="true" />
             <h3 className="font-semibold mb-1">Verified Profiles</h3>
             <p className="text-sm text-muted-foreground">
               Trust and quality through verification system
             </p>
           </div>
           <div className="p-4 rounded-lg bg-purple-50 dark:bg-purple-950">
-            <Zap className="icon-xl text-purple-600 mb-2 mx-auto" aria-hidden="true" />
+            <Zap className="icon-xl text-purple-600 dark:text-purple-400 mb-2 mx-auto" aria-hidden="true" />
             <h3 className="font-semibold mb-1">Real-time Chat</h3>
             <p className="text-sm text-muted-foreground">
               Instant communication with potential partners

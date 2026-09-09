@@ -198,7 +198,7 @@ export function FlowDiagramNode({
 
             <button
               onMouseDown={(e) => { e.stopPropagation(); deleteSelected(); }}
-              className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive-emphasis transition-colors"
               title="Delete selected"
             >
               <Trash2 className="icon-2xs" aria-hidden="true" />
@@ -208,7 +208,7 @@ export function FlowDiagramNode({
         {!readOnly && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 ml-0.5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors"
+            className="w-5 h-5 ml-0.5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-emphasis transition-colors"
             title="Delete node"
           >
             ✕

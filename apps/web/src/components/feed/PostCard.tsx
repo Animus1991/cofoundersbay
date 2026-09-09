@@ -80,7 +80,7 @@ function formatTimeAgo(date: Date): string {
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function PostCard({
@@ -145,7 +145,7 @@ export function PostCard({
                 </Link>
                 <RoleBadge role={author.role} size="sm" />
                 <span className="text-xs text-muted-foreground">·</span>
-                <span className="text-xs text-muted-foreground">{formatTimeAgo(createdAt)}</span>
+                <span suppressHydrationWarning className="text-xs text-muted-foreground">{formatTimeAgo(createdAt)}</span>
               </div>
               {author.headline && (
                 <p className="text-xs text-muted-foreground truncate">{author.headline}</p>
@@ -176,7 +176,7 @@ export function PostCard({
                       <Edit className="icon-sm mr-2" aria-hidden="true" />
                       Edit post
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                    <DropdownMenuItem onClick={onDelete} className="text-destructive-emphasis">
                       <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                       Delete post
                     </DropdownMenuItem>

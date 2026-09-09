@@ -51,24 +51,24 @@ const TRIGGER_LABELS: Record<string, string> = {
 };
 
 const TRIGGER_CATEGORY: Record<string, { label: string; color: string }> = {
-  user_signup: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  onboarding_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  profile_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600' },
-  connection_not_answered: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  connection_accepted: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_not_viewed: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  match_generated: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600' },
-  mentor_request_submitted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_request_accepted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  mentor_session_idle: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600' },
-  community_join: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  community_inactive: { label: 'Community', color: 'bg-green-500/10 text-green-600' },
-  subscription_trial_ending: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_failed_payment: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  subscription_canceled: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600' },
-  user_inactive: { label: 'Engagement', color: 'bg-rose-500/10 text-rose-600' },
-  content_reported_threshold: { label: 'Moderation', color: 'bg-red-500/10 text-red-600' },
-  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-indigo-500/10 text-indigo-600' },
+  user_signup: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  onboarding_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  profile_incomplete: { label: 'Onboarding', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  connection_not_answered: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  connection_accepted: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  match_not_viewed: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  match_generated: { label: 'Matching', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  mentor_request_submitted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
+  mentor_request_accepted: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
+  mentor_session_idle: { label: 'Mentorship', color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400' },
+  community_join: { label: 'Community', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+  community_inactive: { label: 'Community', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+  subscription_trial_ending: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  subscription_failed_payment: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  subscription_canceled: { label: 'Billing', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  user_inactive: { label: 'Engagement', color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
+  content_reported_threshold: { label: 'Moderation', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
+  tenant_setup_incomplete: { label: 'Tenant', color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' },
 };
 
 // ── Config toggle panel ──────────────────────────────────────────────────────
@@ -200,10 +200,10 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Zap className="icon-2xs" aria-hidden="true" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="icon-2xs" aria-hidden="true" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><AlertTriangle className="icon-2xs" aria-hidden="true" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{new Date(rule.lastRunAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>
@@ -219,13 +219,13 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
             </Button>
           ) : rule.status !== 'archived' ? (
             <Button aria-label="Activate" variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+              <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
             <Button aria-label="Delete"
               variant="ghost" size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive"
+              className="h-8 w-8 text-destructive-emphasis hover:text-destructive-emphasis"
               onClick={async () => {
                 const ok = await confirm({
                   title: `Delete rule "${rule.name}"?`,
@@ -295,9 +295,9 @@ export default function TenantAutomationPage() {
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: 'Active Rules', value: activeCount, color: 'text-emerald-600' },
-            { label: 'Total Runs', value: totalRuns, color: 'text-blue-600' },
-            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-amber-600' : 'text-muted-foreground' },
+            { label: 'Active Rules', value: activeCount, color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Total Runs', value: totalRuns, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Rules with Failures', value: failureRules, color: failureRules > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' },
           ].map(s => (
             <Card key={s.label} className="border-border/60">
               <CardContent className="py-3 px-4">

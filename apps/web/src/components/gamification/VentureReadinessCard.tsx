@@ -13,9 +13,9 @@ import { getVentureReadiness, type VentureReadiness } from '@/lib/api';
 /* ── Helpers ─────────────────────────────────────────────────────────────── */
 
 function scoreTier(score: number): { label: string; color: string; ring: string } {
-  if (score >= 80) return { label: 'High',    color: 'text-emerald-600', ring: 'stroke-emerald-500' };
-  if (score >= 55) return { label: 'Growing', color: 'text-amber-600',   ring: 'stroke-amber-500'   };
-  if (score >= 30) return { label: 'Early',   color: 'text-blue-600',    ring: 'stroke-blue-500'    };
+  if (score >= 80) return { label: 'High',    color: 'text-emerald-600 dark:text-emerald-400', ring: 'stroke-emerald-500' };
+  if (score >= 55) return { label: 'Growing', color: 'text-amber-600 dark:text-amber-400',   ring: 'stroke-amber-500'   };
+  if (score >= 30) return { label: 'Early',   color: 'text-blue-600 dark:text-blue-400',    ring: 'stroke-blue-500'    };
   return               { label: 'Building', color: 'text-muted-foreground', ring: 'stroke-muted-foreground' };
 }
 
@@ -105,7 +105,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
               Weighted across 6 dimensions of founder progress
             </p>
             {vrs.lowestDimension && (
-              <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600">
+              <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600 dark:text-amber-400">
                 <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
                   Lowest: <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">

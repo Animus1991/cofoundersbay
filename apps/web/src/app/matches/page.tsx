@@ -133,9 +133,9 @@ const TIER_COLORS = {
 };
 
 const TIER_CLASSES: Record<string, string> = {
-  excellent: 'bg-green-500/10 text-green-600 border-green-500/20',
-  strong:    'bg-cyan-500/10 text-cyan-600 border-cyan-500/20',
-  good:      'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  excellent: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  strong:    'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+  good:      'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   potential: 'bg-red-500/10 text-red-500 border-red-500/20',
 };
 
@@ -258,7 +258,7 @@ function MatchListRow({
         <div className="mt-3 pt-3 border-t border-border/40 flex items-center gap-2 justify-between">
           <div className="flex items-center gap-1.5">
             <button onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-emphasis hover:border-destructive/40 transition-colors"
               title="Pass">
               <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
@@ -400,7 +400,7 @@ function MatchPreviewPanel({
                 {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" /> : <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
+              <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive-emphasis" onClick={onPass}>
                 <X className="h-3.5 w-3.5" aria-hidden="true" /> Pass
               </Button>
             </div>
@@ -663,9 +663,9 @@ export default function MatchesPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
-              { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600',   bg: 'bg-green-500/10',   icon: Star },
-              { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
-              { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600',  bg: 'bg-violet-500/10',  icon: Award },
+              { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600 dark:text-green-400',   bg: 'bg-green-500/10',   icon: Star },
+              { label: 'Avg Score',      value: `${avgScore}%`,   color: 'text-cyan-600 dark:text-cyan-400',    bg: 'bg-cyan-500/10',    icon: TrendingUp },
+              { label: 'Top Score',      value: `${topScore}%`,   color: 'text-violet-600 dark:text-violet-400',  bg: 'bg-violet-500/10',  icon: Award },
             ].map(({ label, value, color, bg, icon: Icon }) => (
               <Card key={label} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-3 p-3.5">
@@ -687,7 +687,7 @@ export default function MatchesPage() {
           <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-green-500/10 p-2 shrink-0">
-                <Award className="icon-md text-green-600" aria-hidden="true" />
+                <Award className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
               </div>
               <div>
                 <p className="font-semibold text-sm text-foreground">
@@ -1111,7 +1111,7 @@ export default function MatchesPage() {
             }}>
             <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Compare
           </Button>
-          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive"
+          <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive-emphasis"
             onClick={() => {
               filtered.forEach(h => {
                 if (selectedIds.has(h.id)) handlePass(h.id, h.displayName, h.userId);

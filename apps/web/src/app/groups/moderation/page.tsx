@@ -46,17 +46,17 @@ type ModerationReport = {
 };
 
 const TYPE_CONFIG: Record<ModerationReport['type'], { label: string; color: string }> = {
-  spam: { label: 'Spam', color: 'bg-orange-500/10 text-orange-600' },
-  harassment: { label: 'Harassment', color: 'bg-red-500/10 text-red-600' },
-  misinformation: { label: 'Misinformation', color: 'bg-yellow-500/10 text-yellow-600' },
-  inappropriate: { label: 'Inappropriate', color: 'bg-purple-500/10 text-purple-600' },
+  spam: { label: 'Spam', color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400' },
+  harassment: { label: 'Harassment', color: 'bg-red-500/10 text-red-600 dark:text-red-400' },
+  misinformation: { label: 'Misinformation', color: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400' },
+  inappropriate: { label: 'Inappropriate', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
   'off-topic': { label: 'Off-topic', color: 'bg-gray-500/10 text-gray-600' },
 };
 
 const STATUS_CONFIG: Record<ReportStatus, { label: string; color: string; icon: React.ElementType }> = {
-  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Clock },
-  reviewed: { label: 'Reviewed', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: Eye },
-  resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: CheckCircle },
+  pending: { label: 'Pending', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Clock },
+  reviewed: { label: 'Reviewed', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: Eye },
+  resolved: { label: 'Resolved', color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: CheckCircle },
   dismissed: { label: 'Dismissed', color: 'bg-gray-500/10 text-gray-500 border-gray-500/20', icon: XCircle },
 };
 
@@ -113,7 +113,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
               <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" aria-hidden="true" />Mark Resolved</DropdownMenuItem>
               <DropdownMenuItem><XCircle className="mr-2 icon-sm" aria-hidden="true" />Dismiss</DropdownMenuItem>
               <DropdownMenuItem><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Ban className="mr-2 icon-sm" aria-hidden="true" />Ban User</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-emphasis"><Ban className="mr-2 icon-sm" aria-hidden="true" />Ban User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -121,7 +121,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
           <div className="flex gap-2 mt-3">
             <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Resolve</Button>
             <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-2xs" aria-hidden="true" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive border-destructive/30"><Ban className="mr-1 icon-2xs" aria-hidden="true" />Ban User</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive-emphasis border-destructive/30"><Ban className="mr-1 icon-2xs" aria-hidden="true" />Ban User</Button>
           </div>
         )}
       </CardContent>

@@ -558,7 +558,7 @@ export function ResearchNodeCard({
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive">
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-emphasis">
               <Trash2 className="icon-2xs" aria-hidden="true" />
             </button>
           </div>
@@ -645,7 +645,7 @@ export function ResearchNodeCard({
               onClick={handleDelete}
               className="w-4 h-4 flex items-center justify-center rounded hover:bg-red-200/50"
             >
-              <X className="w-2.5 h-2.5 text-destructive" aria-hidden="true" />
+              <X className="w-2.5 h-2.5 text-destructive-emphasis" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -802,7 +802,7 @@ export function ResearchNodeCard({
               <div className="my-1 border-t border-border/60" />
               <button
                 onClick={(e) => { handleDelete(e); setShowMenu(false); }}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/10 w-full text-left transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive-emphasis hover:bg-destructive/10 w-full text-left transition-colors"
                 disabled={node.locked}
               >
                 <Trash2 className="w-3.5 h-3.5" aria-hidden="true" /> Delete
@@ -879,7 +879,7 @@ export function ResearchNodeCard({
             const priority = (meta?.priority as string) || 'medium';
             const dueDate = meta?.dueDate as string | undefined;
             const STATUS_COLORS: Record<string, string> = { todo: 'bg-slate-100 text-slate-600', in_progress: 'bg-blue-100 text-blue-700', done: 'bg-green-100 text-green-700', blocked: 'bg-red-100 text-red-700' };
-            const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600' };
+            const PRIORITY_COLORS: Record<string, string> = { low: 'text-slate-400', medium: 'text-amber-500', high: 'text-orange-500', urgent: 'text-red-600 dark:text-red-400' };
             return (
               <div className="flex flex-wrap gap-1 items-center">
                 <span className={cn('text-2xs px-1.5 py-0.5 rounded-full font-medium', STATUS_COLORS[status] || STATUS_COLORS['todo'])}>

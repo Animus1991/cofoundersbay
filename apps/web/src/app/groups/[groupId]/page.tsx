@@ -98,7 +98,7 @@ function PostCard({
             {isOwn && (
               <button
                 onClick={() => onDelete(post.id)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-emphasis transition-colors"
               >
                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>

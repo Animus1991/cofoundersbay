@@ -63,9 +63,9 @@ type Member = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active:    'bg-green-500/10 text-green-600 border-green-500/20',
-  pending:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  suspended: 'bg-red-500/10 text-red-600 border-red-500/20',
+  active:    'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  pending:   'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  suspended: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
 };
 
 function EngagementBar({ score }: { score: number }) {
@@ -118,7 +118,7 @@ function MemberCard({ member }: { member: Member }) {
                   <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
                   <DropdownMenuItem><Shield className="mr-2 icon-sm" aria-hidden="true" />Change Role</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive-emphasis"><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -131,7 +131,7 @@ function MemberCard({ member }: { member: Member }) {
                 <Activity className="icon-sm" aria-hidden="true" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-2xs text-emerald-600 flex items-center gap-0.5">
+                <span className="text-2xs text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
                   <CheckCircle2 className="icon-sm" aria-hidden="true" />{member.milestonesCompleted} milestones
                 </span>
               )}
@@ -252,9 +252,9 @@ export default function TenantMembersPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Members', value: members.length, icon: Users, color: 'text-primary-emphasis' },
-            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600' },
-            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600' },
+            { label: 'Online Now', value: onlineCount, icon: Activity, color: 'text-green-600 dark:text-green-400' },
+            { label: 'Avg Engagement', value: `${avgEngagement}%`, icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Pending Approval', value: members.filter((m) => m.status === 'pending').length, icon: Clock, color: 'text-amber-600 dark:text-amber-400' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">

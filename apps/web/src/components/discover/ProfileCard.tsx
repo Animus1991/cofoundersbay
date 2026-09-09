@@ -321,7 +321,7 @@ function ProfileCardInner({
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem className="text-destructive-emphasis">
                     <Flag className="icon-sm mr-2" aria-hidden="true" />
                     Report
                   </DropdownMenuItem>

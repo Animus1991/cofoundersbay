@@ -187,9 +187,9 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Badge
                 variant="outline"
                 className={cn('text-2xs px-1 py-0 mt-0.5 capitalize', {
-                  'border-purple-300 text-purple-600': comment.commentType === 'suggestion',
-                  'border-blue-300 text-blue-600': comment.commentType === 'question',
-                  'border-green-300 text-green-600': comment.resolved,
+                  'border-purple-300 text-purple-600 dark:text-purple-400': comment.commentType === 'suggestion',
+                  'border-blue-300 text-blue-600 dark:text-blue-400': comment.commentType === 'question',
+                  'border-green-300 text-green-600 dark:text-green-400': comment.resolved,
                 })}
               >
                 {comment.resolved ? 'resolved' : comment.commentType}

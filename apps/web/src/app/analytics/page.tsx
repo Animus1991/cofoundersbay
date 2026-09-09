@@ -257,7 +257,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
                     <Heart className="icon-2xs" aria-hidden="true" />
                     {item.engagement} engagements
                   </span>
-                  <span>{new Date(item.date).toLocaleDateString()}</span>
+                  <span>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                 </div>
               </div>
               <Badge variant="secondary" className="shrink-0">

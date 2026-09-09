@@ -54,8 +54,8 @@ function StatCard({
             {change && (
               <div className={cn(
                 'flex items-center gap-1 text-xs mt-1',
-                changeType === 'positive' && 'text-green-600',
-                changeType === 'negative' && 'text-red-600',
+                changeType === 'positive' && 'text-green-600 dark:text-green-400',
+                changeType === 'negative' && 'text-red-600 dark:text-red-400',
                 changeType === 'neutral' && 'text-muted-foreground'
               )}>
                 {changeType === 'positive' && <ArrowUpRight className="icon-sm" aria-hidden="true" />}

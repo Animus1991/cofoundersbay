@@ -40,9 +40,9 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 gap-1"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-200 gap-1"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
     case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
   }
 }
@@ -147,13 +147,13 @@ function DomainRow({
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
-              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs">SSL</Badge>}
+              {domain.sslStatus === 'active' && <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 text-xs">SSL</Badge>}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             )}
           </div>
@@ -184,7 +184,7 @@ function DomainRow({
             variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 dark:text-yellow-400 hover:text-yellow-700' : 'text-green-600 dark:text-green-400 hover:text-green-700'}`}
           >
             <Power className="icon-sm" aria-hidden="true" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
@@ -202,7 +202,7 @@ function DomainRow({
               if (ok) remove.mutate();
             }}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+            className="gap-1 h-7 text-xs text-destructive-emphasis hover:text-destructive-emphasis"
           >
             <Trash2 className="icon-sm" aria-hidden="true" />
           </Button>
@@ -276,7 +276,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             Add
           </Button>
         </div>
-        {addSub.isError && <p className="text-xs text-destructive">{(addSub.error as Error).message}</p>}
+        {addSub.isError && <p className="text-xs text-destructive-emphasis">{(addSub.error as Error).message}</p>}
       </div>
 
       {/* Add custom domain */}
@@ -300,7 +300,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             Add
           </Button>
         </div>
-        {addCustom.isError && <p className="text-xs text-destructive">{(addCustom.error as Error).message}</p>}
+        {addCustom.isError && <p className="text-xs text-destructive-emphasis">{(addCustom.error as Error).message}</p>}
       </div>
     </div>
   );

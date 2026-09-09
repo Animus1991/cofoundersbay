@@ -218,7 +218,7 @@ export default function ResearchBoardsPage() {
       )}
       {!isLoading && error && (
         <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
-          <p className="text-destructive mb-4">Failed to load research boards</p>
+          <p className="text-destructive-emphasis mb-4">Failed to load research boards</p>
           <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['research-boards'] })}>
             Retry
           </Button>
@@ -508,7 +508,7 @@ function BoardCard({
                 Archive
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onDelete} className="text-destructive">
+              <DropdownMenuItem onClick={onDelete} className="text-destructive-emphasis">
                 <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                 Delete
               </DropdownMenuItem>
@@ -555,7 +555,7 @@ function BoardCard({
                   Archive
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onDelete} className="text-destructive">
+                <DropdownMenuItem onClick={onDelete} className="text-destructive-emphasis">
                   <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                   Delete
                 </DropdownMenuItem>

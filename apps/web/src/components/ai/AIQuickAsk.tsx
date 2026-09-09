@@ -106,7 +106,7 @@ export function AIQuickAsk({
 
         {/* Error */}
         {error && (
-          <div className="px-3 py-2 text-xs text-destructive bg-destructive/10 border-b border-border/60">
+          <div className="px-3 py-2 text-xs text-destructive-emphasis bg-destructive/10 border-b border-border/60">
             {error}
           </div>
         )}

@@ -156,7 +156,7 @@ function EndorsementCard({
               <Badge variant="secondary" className="text-xs">{endorsement.skill}</Badge>
             )}
             {!endorsement.isApproved && type === 'received' && (
-              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
+              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
                 <Clock className="icon-sm mr-1" aria-hidden="true" />Pending
               </Badge>
             )}
@@ -388,8 +388,8 @@ export default function EndorsementsPage() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Star, label: 'Received', value: !showDemoData ? (statsData?.stats?.total ?? received.length) : received.length, color: 'text-primary-emphasis' },
-              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600' },
-              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600' },
+              { icon: Handshake, label: 'Given', value: !showDemoData ? (statsData?.stats?.given ?? given.length) : GIVEN.length, color: 'text-green-600 dark:text-green-400' },
+              { icon: Clock, label: 'Pending', value: pendingCount, color: 'text-amber-600 dark:text-amber-400' },
             ].map(s => (
               <Card key={s.label}>
                 <CardContent className="p-3 flex items-center gap-2">

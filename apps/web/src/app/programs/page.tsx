@@ -54,9 +54,9 @@ import {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 const STATUS_COLORS: Record<string, string> = {
-  open:     'bg-green-500/10 text-green-600 border-green-500/20',
-  upcoming: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-  active:   'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  open:     'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  upcoming: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  active:   'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   closed:   'bg-gray-500/10 text-gray-500 border-gray-500/20',
   draft:    'bg-gray-500/10 text-gray-500 border-gray-500/20',
 };
@@ -213,7 +213,7 @@ function ProgramCard({
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
               {program.applicationDeadline && program.status === 'open' && deadline !== null && (
-                <span className={cn('flex items-center gap-1', deadline <= 7 && 'text-red-600 font-medium')}>
+                <span className={cn('flex items-center gap-1', deadline <= 7 && 'text-red-600 dark:text-red-400 font-medium')}>
                   <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                   {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
                 </span>
@@ -229,7 +229,7 @@ function ProgramCard({
                 {program.isRemote ? 'Remote' : (program.location ?? 'On-site')}
               </span>
               {spotsLeft !== null && (
-                <span className={cn('flex items-center gap-1', isFull && 'text-red-500', spotsLeft <= 3 && !isFull && 'text-amber-600')}>
+                <span className={cn('flex items-center gap-1', isFull && 'text-red-500', spotsLeft <= 3 && !isFull && 'text-amber-600 dark:text-amber-400')}>
                   <Users className="h-3.5 w-3.5" aria-hidden="true" />
                   {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
@@ -379,9 +379,9 @@ export default function ProgramsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Total Programs', value: data?.total ?? 0, icon: Award, color: 'text-primary-emphasis' },
-              { label: 'Open Applications', value: openPrograms.length, icon: Zap, color: 'text-green-600' },
-              { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, color: 'text-blue-600' },
-              { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, color: 'text-violet-600' },
+              { label: 'Open Applications', value: openPrograms.length, icon: Zap, color: 'text-green-600 dark:text-green-400' },
+              { label: 'Applied To', value: myPrograms.length, icon: CheckCircle2, color: 'text-blue-600 dark:text-blue-400' },
+              { label: 'Remote Options', value: filtered.filter((p) => p.isRemote).length, icon: Globe, color: 'text-violet-600 dark:text-violet-400' },
             ].map(({ label, value, icon: Icon, color }) => (
               <Card key={label}>
                 <CardContent className="p-4 flex items-center gap-3">
@@ -461,7 +461,7 @@ export default function ProgramsPage() {
                     <p className="text-2xs text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
                     <div className="mt-2 flex items-center justify-between">
                       {d !== null && d >= 0 ? (
-                        <span className={cn('text-2xs font-medium', d <= 3 ? 'text-red-500' : 'text-amber-600')}>
+                        <span className={cn('text-2xs font-medium', d <= 3 ? 'text-red-500' : 'text-amber-600 dark:text-amber-400')}>
                           {d === 0 ? 'Today!' : `${d}d left`}
                         </span>
                       ) : <span />}

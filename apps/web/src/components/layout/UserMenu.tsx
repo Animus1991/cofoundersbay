@@ -84,7 +84,7 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem onClick={handleLogout} className="text-destructive-emphasis focus:text-destructive-emphasis">
           <LogOut className="mr-2 icon-sm" aria-hidden="true" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

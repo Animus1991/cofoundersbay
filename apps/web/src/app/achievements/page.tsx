@@ -59,7 +59,7 @@ interface UserStats {
 }
 
 const TIER_COLORS = {
-  bronze: 'text-orange-600',
+  bronze: 'text-orange-600 dark:text-orange-400',
   silver: 'text-gray-400',
   gold: 'text-yellow-500',
   platinum: 'text-cyan-400',
@@ -318,7 +318,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </span>
               {achievement.unlocked && achievement.unlockedAt && (
                 <span className="text-muted-foreground ml-auto">
-                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </span>
               )}
             </div>
@@ -523,7 +523,7 @@ export default function AchievementsPage() {
     { rank: 5, name: 'You', points: stats.totalPoints, level: stats.level, badge: stats.rank, avatar: '', isMe: true },
   ].sort((a, b) => b.points - a.points).map((u, i) => ({ ...u, rank: i + 1 }));
 
-  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600' };
+  const RANK_COLORS: Record<number, string> = { 1: 'text-yellow-500', 2: 'text-gray-400', 3: 'text-orange-600 dark:text-orange-400' };
 
   const RECENT_UNLOCKS = achievements.filter((a) => a.unlocked && a.unlockedAt).sort((a, b) => (b.unlockedAt?.getTime() ?? 0) - (a.unlockedAt?.getTime() ?? 0)).slice(0, 5);
 

@@ -56,8 +56,8 @@ type Cohort = {
 
 function CohortCard({ cohort }: { cohort: Cohort }) {
   const statusColors: Record<string, string> = {
-    recruiting: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
+    recruiting: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     completed: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
   };
 
@@ -107,7 +107,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 )}
                 <div className="flex items-center gap-3 text-2xs">
                   {cohort.mentorCoverage != null && (
-                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600' : 'text-amber-600')}>
+                    <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400')}>
                       <CheckCircle2 className="icon-sm" aria-hidden="true" /> {cohort.mentorCoverage}% mentor coverage
                     </span>
                   )}
@@ -132,7 +132,7 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                 <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Cohort
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-emphasis">
                 <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                 Archive
               </DropdownMenuItem>
@@ -205,9 +205,9 @@ export default function OrgCohortsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Cohorts', value: cohorts.length, icon: Award, color: 'text-primary-emphasis' },
-            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, color: 'text-green-600' },
-            { label: 'Total Startups', value: totalStartups, icon: Rocket, color: 'text-blue-600' },
-            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, color: 'text-purple-600' },
+            { label: 'Active', value: cohorts.filter((c) => c.status === 'active').length, icon: TrendingUp, color: 'text-green-600 dark:text-green-400' },
+            { label: 'Total Startups', value: totalStartups, icon: Rocket, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Total Mentors', value: totalMentors, icon: GraduationCap, color: 'text-purple-600 dark:text-purple-400' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">

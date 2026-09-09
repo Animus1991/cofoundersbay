@@ -89,7 +89,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                   <Badge variant="secondary" className="text-xs">{job.role}</Badge>
                 )}
                 {job.isRemote && (
-                  <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
+                  <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
                     <Wifi className="mr-1 icon-2xs" aria-hidden="true" />Remote
                   </Badge>
                 )}
@@ -104,7 +104,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 <span className="flex items-center gap-1"><Building2 className="icon-2xs" aria-hidden="true" />Location not specified</span>
               )}
               <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />Full-time</span>
-              <span className="flex items-center gap-1 text-emerald-600">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                 <DollarSign className="icon-2xs" aria-hidden="true" />Equity available
               </span>
             </div>

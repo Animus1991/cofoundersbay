@@ -131,7 +131,7 @@ export function SideNav() {
         {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
+              <p className="mx-3 mb-1 mt-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground first:mt-1">
                 {section}
               </p>
             ) : (

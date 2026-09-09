@@ -297,7 +297,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-cyan-500/10 rounded-lg">
-            <Target className="icon-md text-cyan-600" aria-hidden="true" />
+            <Target className="icon-md text-cyan-600 dark:text-cyan-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Readiness Assessment</h2>
@@ -402,9 +402,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                     <span>{dim.name}</span>
                     <span className={cn(
                       "font-medium",
-                      dim.status === 'excellent' ? 'text-green-600' :
-                      dim.status === 'good' ? 'text-blue-600' :
-                      dim.status === 'needs-work' ? 'text-yellow-600' : 'text-red-600'
+                      dim.status === 'excellent' ? 'text-green-600 dark:text-green-400' :
+                      dim.status === 'good' ? 'text-blue-600 dark:text-blue-400' :
+                      dim.status === 'needs-work' ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'
                     )}>
                       {dim.score}%
                     </span>
@@ -422,7 +422,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
           {data.blockers.length > 0 && (
             <Card className="border-red-200">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-red-600">
+                <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <XCircle className="icon-md" aria-hidden="true" />
                   Critical Blockers
                 </CardTitle>
@@ -443,7 +443,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
           {data.nextMilestones.length > 0 && (
             <Card className="border-green-200">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-green-600">
+                <CardTitle className="flex items-center gap-2 text-green-600 dark:text-green-400">
                   <Lightbulb className="icon-md" aria-hidden="true" />
                   Recommended Next Steps
                 </CardTitle>
@@ -534,7 +534,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                           <div className="flex items-center justify-between">
                             <span className={cn(
                               "font-medium text-sm",
-                              criterion.completed && "text-green-600"
+                              criterion.completed && "text-green-600 dark:text-green-400"
                             )}>
                               {criterion.name}
                             </span>

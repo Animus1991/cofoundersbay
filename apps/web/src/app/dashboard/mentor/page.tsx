@@ -140,7 +140,7 @@ function SessionCard({ session }: { session: MentorSession }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
         <p className="text-xs text-muted-foreground">
-          {new Date(session.scheduledAt).toLocaleDateString()} at{' '}
+          {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at{' '}
           {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
@@ -163,7 +163,7 @@ function RequestCard({ request }: { request: MentorRequest }) {
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10">
         <AvatarImage src={request.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600">
+        <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400">
           {request.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -273,7 +273,7 @@ export default function MentorDashboard() {
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
-              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 hover:bg-blue-500/10 transition-colors">
+              <button className="rounded-md border border-blue-500/30 px-3 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors">
                 Join Now
               </button>
             </Link>
@@ -316,7 +316,7 @@ export default function MentorDashboard() {
                 <DollarSign className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
-                  <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
+                  <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{mentorStats.earningsThisMonth}</p>
                 </div>
               </div>
             </Link>
@@ -325,7 +325,7 @@ export default function MentorDashboard() {
                 <Star className="icon-md text-amber-500 shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Average rating</p>
-                  <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
+                  <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
                 </div>
               </div>
             </Link>
@@ -496,7 +496,7 @@ export default function MentorDashboard() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Accepting requests</span>
-                  <Badge variant="default" className="bg-green-500">Active</Badge>
+                  <Badge variant="success">Active</Badge>
                 </div>
                 <div className="text-xs text-muted-foreground">
                   You have 4 slots available this week

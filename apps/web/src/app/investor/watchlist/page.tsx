@@ -163,10 +163,10 @@ const MOCK_ACTIVITY: ActivityItem[] = [
 ];
 
 const ACTIVITY_TYPE_CONFIG: Record<ActivityItem['type'], { label: string; color: string }> = {
-  milestone: { label: 'Milestone', color: 'bg-green-500/10 text-green-600' },
-  fundraise: { label: 'Fundraise', color: 'bg-blue-500/10 text-blue-600' },
-  team: { label: 'Team', color: 'bg-purple-500/10 text-purple-600' },
-  deck: { label: 'Deck', color: 'bg-amber-500/10 text-amber-600' },
+  milestone: { label: 'Milestone', color: 'bg-green-500/10 text-green-600 dark:text-green-400' },
+  fundraise: { label: 'Fundraise', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+  team: { label: 'Team', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400' },
+  deck: { label: 'Deck', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   update: { label: 'Update', color: 'bg-gray-500/10 text-gray-600' },
 };
 
@@ -230,7 +230,7 @@ function WatchlistCard({ startup }: { startup: WatchedStartup }) {
                     <DropdownMenuItem>
                       <GitCompare className="mr-2 icon-sm" aria-hidden="true" /> Compare
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem className="text-destructive-emphasis">
                       <Trash2 className="mr-2 icon-sm" aria-hidden="true" /> Remove from Watchlist
                     </DropdownMenuItem>
                   </DropdownMenuContent>

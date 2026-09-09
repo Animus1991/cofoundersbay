@@ -279,7 +279,7 @@ export default function TenantBrandingPage() {
         </div>
 
         {saveMutation.isError && (
-          <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-emphasis">
             <AlertCircle className="icon-sm shrink-0" aria-hidden="true" />
             Failed to save changes. Please try again.
           </div>
@@ -804,7 +804,7 @@ export default function TenantBrandingPage() {
                       <p className="font-medium">Branding Status</p>
                       <p className="text-sm text-muted-foreground">
                         {branding?.isBrandingActive
-                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString()}` : ''}`
+                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}`
                           : 'Not yet published — save changes first, then publish.'}
                       </p>
                     </div>
@@ -822,19 +822,19 @@ export default function TenantBrandingPage() {
                     <p className="text-sm font-medium">Safeguards</p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Primary color defined
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Hero title set
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Support email configured
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
+                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Legal links provided
                       </li>
                     </ul>

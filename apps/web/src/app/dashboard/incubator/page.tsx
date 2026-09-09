@@ -117,10 +117,10 @@ type UpcomingMilestone = {
 
 function ProgramCard({ program }: { program: Program }) {
   const statusColors: Record<string, string> = {
-    'active': 'bg-green-500/10 text-green-600 border-green-500/20',
-    'upcoming': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    'active': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    'upcoming': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
     'completed': 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    'draft': 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    'draft': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   return (
@@ -183,7 +183,7 @@ function ApplicationCard({ application }: { application: Application }) {
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10 rounded-lg">
         <AvatarImage src={application.logoUrl ?? undefined} />
-        <AvatarFallback className="rounded-lg bg-amber-500/10 text-amber-600">
+        <AvatarFallback className="rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
           {application.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>

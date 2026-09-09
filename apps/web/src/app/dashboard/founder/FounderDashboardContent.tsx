@@ -79,10 +79,10 @@ const FUNDRAISING_DEMO = {
 
 type EventType = 'mentorship' | 'deadline' | 'event' | 'pitch';
 const EVENT_CONFIG: Record<EventType, { color: string; bg: string }> = {
-  mentorship: { color: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/30' },
-  deadline: { color: 'text-rose-600', bg: 'bg-rose-100 dark:bg-rose-900/30' },
-  event: { color: 'text-blue-600', bg: 'bg-blue-100 dark:bg-blue-900/30' },
-  pitch: { color: 'text-emerald-600', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
+  mentorship: { color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-900/30' },
+  deadline: { color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-100 dark:bg-rose-900/30' },
+  event: { color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+  pitch: { color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-900/30' },
 };
 
 const DEMO_EVENTS = [
@@ -629,7 +629,7 @@ export default function FounderDashboardContent() {
                             </span>
                             <span className={cn(
                               'text-xs font-medium',
-                              isUrgent ? 'text-rose-600' : event.daysLeft <= 7 ? 'text-amber-600' : 'text-muted-foreground'
+                              isUrgent ? 'text-rose-600 dark:text-rose-400' : event.daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
                             )}>
                               {event.daysLeft === 0 ? 'Today' : event.daysLeft === 1 ? 'Tomorrow' : `In ${event.daysLeft}d`}
                             </span>

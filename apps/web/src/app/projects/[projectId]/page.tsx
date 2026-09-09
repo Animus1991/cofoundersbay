@@ -29,11 +29,11 @@ import { cn } from '@/lib/utils';
 type ProjectStatus = 'idea' | 'validating' | 'building' | 'launched' | 'scaling';
 
 const STATUS_CONFIG: Record<ProjectStatus, { label: string; color: string; icon: React.ElementType }> = {
-  idea: { label: 'Idea Stage', color: 'bg-violet-500/10 text-violet-600 border-violet-500/30', icon: Zap },
-  validating: { label: 'Validating', color: 'bg-amber-500/10 text-amber-600 border-amber-500/30', icon: Target },
-  building: { label: 'Building', color: 'bg-blue-500/10 text-blue-600 border-blue-500/30', icon: Rocket },
-  launched: { label: 'Launched', color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30', icon: TrendingUp },
-  scaling: { label: 'Scaling', color: 'bg-cyan-500/10 text-cyan-600 border-cyan-500/30', icon: Briefcase },
+  idea: { label: 'Idea Stage', color: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30', icon: Zap },
+  validating: { label: 'Validating', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30', icon: Target },
+  building: { label: 'Building', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30', icon: Rocket },
+  launched: { label: 'Launched', color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30', icon: TrendingUp },
+  scaling: { label: 'Scaling', color: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30', icon: Briefcase },
 };
 
 const MOCK_PROJECT = {
@@ -133,7 +133,7 @@ export default function ProjectDetailPage() {
                   View Public Page
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem className="text-destructive-emphasis">
                   <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                   Delete Project
                 </DropdownMenuItem>
@@ -276,7 +276,7 @@ export default function ProjectDetailPage() {
                                 {milestone.title}
                               </h4>
                               <span className="text-sm text-muted-foreground">
-                                {milestone.date.toLocaleDateString()}
+                                {milestone.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </span>
                             </div>
                           </div>
@@ -299,7 +299,7 @@ export default function ProjectDetailPage() {
                         <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                           <span>{update.author}</span>
                           <span>•</span>
-                          <span>{update.date.toLocaleDateString()}</span>
+                          <span>{update.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                         </div>
                       </div>
                     ))}
@@ -381,7 +381,7 @@ export default function ProjectDetailPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Founded</p>
-                    <p className="text-sm font-medium">{project.createdAt.toLocaleDateString()}</p>
+                    <p className="text-sm font-medium">{project.createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                 </div>
               </CardContent>

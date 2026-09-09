@@ -41,13 +41,13 @@ function SeatRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{seat.user.email}</p>
         <p className="text-xs text-muted-foreground">
-          Allocated {new Date(seat.allocatedAt).toLocaleDateString()}
+          Allocated {new Date(seat.allocatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-destructive hover:text-destructive gap-1.5 shrink-0"
+        className="h-7 text-destructive-emphasis hover:text-destructive-emphasis gap-1.5 shrink-0"
         onClick={() => onRevoke(seat.userId)}
         disabled={revoking}
       >
@@ -164,7 +164,7 @@ export default function TenantBillingPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}
+                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
@@ -179,7 +179,7 @@ export default function TenantBillingPage() {
                 </div>
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700 dark:text-red-400">
                     <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                     Payment overdue. Update your payment method to avoid service interruption.
                   </div>
@@ -235,9 +235,9 @@ export default function TenantBillingPage() {
                     variant="outline"
                     className={cn(
                       'text-xs',
-                      (seatPct ?? 0) >= 90 ? 'bg-red-500/10 text-red-700 border-red-500/20' :
-                      (seatPct ?? 0) >= 70 ? 'bg-amber-500/10 text-amber-700 border-amber-500/20' :
-                      'bg-green-500/10 text-green-700 border-green-500/20',
+                      (seatPct ?? 0) >= 90 ? 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20' :
+                      (seatPct ?? 0) >= 70 ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' :
+                      'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
                     )}
                   >
                     {seatPct}% used
@@ -260,7 +260,7 @@ export default function TenantBillingPage() {
               )}
 
               {seatLimit && seatUsage >= seatLimit && (
-                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
+                <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700 dark:text-amber-400">
                   <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                   Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
                 </div>

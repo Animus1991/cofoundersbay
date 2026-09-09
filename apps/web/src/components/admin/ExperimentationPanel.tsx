@@ -42,7 +42,7 @@ function MetricDiff({
       </div>
       <div className="w-1/3 text-right">
         <p className="text-xs text-gray-400">Δ</p>
-        <p className={`font-semibold ${diff >= 0 ? 'text-green-600' : 'text-rose-600'}`}>
+        <p className={`font-semibold ${diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400'}`}>
           {diff >= 0 ? '+' : ''}{diff.toFixed(1)}{unit}
           {' '}
           {pct !== '—' && (
@@ -122,7 +122,7 @@ function ExperimentCard({
           <div className="flex items-center gap-4 mt-1.5 text-xs text-gray-400">
             <span>Split {Math.round(exp.splitRatio * 100)}% B</span>
             <span>A: {exp.variantACounts} users · B: {exp.variantBCounts} users</span>
-            {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString()}</span>}
+            {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -196,7 +196,7 @@ function ExperimentCard({
           ) : (
             <button
               onClick={loadMetrics}
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
             >
               Load metrics
             </button>
@@ -294,7 +294,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
             )}
           </FormField>
           {error && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-destructive-emphasis">
               {error}
             </p>
           )}
@@ -384,7 +384,7 @@ function ConfigEditor() {
             <option value="">All categories</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
-          <button onClick={load} className="text-gray-400 hover:text-indigo-600">
+          <button onClick={load} className="text-gray-400 hover:text-indigo-600 dark:text-indigo-400">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </button>
         </div>
@@ -497,7 +497,7 @@ export function ExperimentationPanel() {
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-all ${
               tab === key
-                ? 'bg-white text-indigo-700 shadow-sm'
+                ? 'bg-white text-indigo-700 dark:text-indigo-400 shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -513,7 +513,7 @@ export function ExperimentationPanel() {
             <div className="flex gap-2">
               <button
                 onClick={loadExperiments}
-                className="text-gray-400 hover:text-indigo-600"
+                className="text-gray-400 hover:text-indigo-600 dark:text-indigo-400"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               </button>
@@ -536,7 +536,7 @@ export function ExperimentationPanel() {
               <p className="text-sm">No experiments yet. Create one to start A/B testing.</p>
               <button
                 onClick={() => setShowCreate(true)}
-                className="mt-3 text-sm text-indigo-600 hover:underline"
+                className="mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 + Create first experiment
               </button>

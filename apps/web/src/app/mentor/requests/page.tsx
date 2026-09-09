@@ -45,9 +45,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    accepted: 'bg-green-500/10 text-green-600 border-green-500/20',
-    declined: 'bg-red-500/10 text-red-600 border-red-500/20',
+    pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    accepted: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    declined: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
   };
 
   const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', {
@@ -209,7 +209,7 @@ export default function MentorRequestsPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
               <h3 className="font-medium">Failed to load requests</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}

@@ -323,8 +323,8 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         <div>
                           <div className="font-medium">{activity.action}</div>
                           <div className="text-sm text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString()} at{' '}
-                            {new Date(activity.timestamp).toLocaleTimeString()}
+                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} at{' '}
+                            {new Date(activity.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
                       </div>

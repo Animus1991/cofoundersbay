@@ -124,7 +124,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-ring resize-none"
               placeholder='{"title": "Hello", "body": "Message"}'
             />
-            {paramsError && <p className="text-xs text-destructive">{paramsError}</p>}
+            {paramsError && <p className="text-xs text-destructive-emphasis">{paramsError}</p>}
             <p className="text-xs text-muted-foreground">
               Keys depend on action type: <code>title</code>/<code>body</code> for notifications, <code>subject</code>/<code>bodyHtml</code> for emails, <code>url</code>/<code>method</code> for webhooks.
             </p>
@@ -297,7 +297,7 @@ function statusBadge(status: string) {
 
 function execStatusIcon(status: string) {
   if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />;
+  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive-emphasis" aria-hidden="true" />;
   if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" aria-hidden="true" />;
   if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
   return <Clock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
@@ -317,11 +317,11 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" aria-hidden="true" />}
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive-emphasis mt-0.5 shrink-0" aria-hidden="true" />}
           {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" aria-hidden="true" />}
           {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />}
-          <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
-            [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
+          <span className={log.level === 'error' ? 'text-destructive-emphasis' : log.level === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}>
+            [{new Date(log.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}] {log.message}
           </span>
         </div>
       ))}
@@ -416,9 +416,9 @@ export default function AutomationsPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: ListChecks, label: 'Total Rules', value: total, color: 'text-foreground' },
-            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600' },
-            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600' },
-            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600' },
+            { icon: Zap, label: 'Active', value: activeCount, color: 'text-emerald-600 dark:text-emerald-400' },
+            { icon: Activity, label: 'Executions (recent)', value: executions.length, color: 'text-blue-600 dark:text-blue-400' },
+            { icon: AlertTriangle, label: 'Rules with Failures', value: failureCount, color: 'text-amber-600 dark:text-amber-400' },
           ].map(stat => (
             <Card key={stat.label} className="p-4 flex items-center gap-3">
               <stat.icon className={`icon-md ${stat.color}`} />
@@ -478,10 +478,10 @@ export default function AutomationsPage() {
                       <span>Priority: {rule.priority}</span>
                       <span>Runs: {rule.executionCount}</span>
                       {rule.failureCount > 0 && (
-                        <span className="text-amber-600 font-medium">⚠ {rule.failureCount} failures</span>
+                        <span className="text-amber-600 dark:text-amber-400 font-medium">⚠ {rule.failureCount} failures</span>
                       )}
                       {rule.lastRunAt && (
-                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString()}</span>
+                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       )}
                       {rule.delaySeconds > 0 && (
                         <span>Delay: {rule.delaySeconds}s</span>
@@ -526,13 +526,13 @@ export default function AutomationsPage() {
                         title="Activate"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
+                        <Zap className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                       </Button>
                     ) : null}
                     <Button aria-label="Delete"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="h-8 w-8 text-destructive-emphasis hover:text-destructive-emphasis"
                       title="Delete"
                       onClick={async () => {
                         const ok = await confirm({
@@ -588,7 +588,7 @@ export default function AutomationsPage() {
                 {selectedExecution === exec.id && (
                   <Card className="p-3 border-t-0 rounded-t-none bg-muted/20">
                     {exec.errorMessage && (
-                      <p className="text-xs text-destructive mb-2 font-mono">{exec.errorMessage}</p>
+                      <p className="text-xs text-destructive-emphasis mb-2 font-mono">{exec.errorMessage}</p>
                     )}
                     <LogPanel executionId={exec.id} />
                   </Card>

@@ -355,7 +355,7 @@ export default function NotificationPreferencesPage() {
                 </p>
               </div>
               <Select value={emailDigestFrequency} onValueChange={(v) => setEmailDigestFrequency(v as 'daily' | 'weekly' | 'never')}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px]" aria-label="Notification digest frequency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -379,14 +379,18 @@ export default function NotificationPreferencesPage() {
                     Pause push notifications during specific hours
                   </p>
                 </div>
-                <Switch checked={quietHoursEnabled} onCheckedChange={setQuietHoursEnabled} />
+                <Switch
+                  checked={quietHoursEnabled}
+                  onCheckedChange={setQuietHoursEnabled}
+                  aria-label="Enable quiet hours"
+                />
               </div>
               {quietHoursEnabled && (
                 <div className="flex items-center gap-4 pl-6">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm text-muted-foreground">From</Label>
                     <Select value={quietHoursStart} onValueChange={setQuietHoursStart}>
-                      <SelectTrigger className="w-[100px]">
+                      <SelectTrigger className="w-[100px]" aria-label="Quiet hours start time">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -400,7 +404,7 @@ export default function NotificationPreferencesPage() {
                   <div className="flex items-center gap-2">
                     <Label className="text-sm text-muted-foreground">To</Label>
                     <Select value={quietHoursEnd} onValueChange={setQuietHoursEnd}>
-                      <SelectTrigger className="w-[100px]">
+                      <SelectTrigger className="w-[100px]" aria-label="Quiet hours end time">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -441,6 +445,7 @@ export default function NotificationPreferencesPage() {
                 <Switch
                   checked={automationPrefs[key]}
                   onCheckedChange={(val) => toggleAutomationPref(key, val)}
+                  aria-label={label}
                 />
               </div>
             ))}
@@ -501,6 +506,7 @@ export default function NotificationPreferencesPage() {
                           <Switch
                             checked={setting.channels.push}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'push')}
+                            aria-label={`${setting.label} — push notifications`}
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -508,6 +514,7 @@ export default function NotificationPreferencesPage() {
                           <Switch
                             checked={setting.channels.email}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'email')}
+                            aria-label={`${setting.label} — email notifications`}
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -515,6 +522,7 @@ export default function NotificationPreferencesPage() {
                           <Switch
                             checked={setting.channels.inApp}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'inApp')}
+                            aria-label={`${setting.label} — in-app notifications`}
                           />
                         </div>
                       </div>

@@ -110,7 +110,7 @@ export default function NewMilestonePage() {
               {/* Title */}
               <div className="space-y-1.5">
                 <Label htmlFor="title">
-                  Milestone title <span className="text-destructive">*</span>
+                  Milestone title <span className="text-destructive-emphasis">*</span>
                 </Label>
                 <Input
                   id="title"

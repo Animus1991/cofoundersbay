@@ -104,7 +104,7 @@ export function CookieConsent() {
                     We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. 
                     By clicking "Accept All", you consent to our use of cookies. 
                     Read our{' '}
-                    <Link href="/privacy" className="text-primary-emphasis hover:underline">
+                    <Link href="/privacy" className="text-primary-emphasis underline underline-offset-2">
                       Privacy Policy
                     </Link>{' '}
                     to learn more.
@@ -239,7 +239,7 @@ export function CookieConsent() {
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-border/60">
-                <Link href="/privacy" className="text-xs text-primary-emphasis hover:underline">
+                <Link href="/privacy" className="text-xs text-primary-emphasis underline underline-offset-2">
                   Learn more about cookies
                 </Link>
                 <div className="flex gap-2">

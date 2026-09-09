@@ -207,7 +207,7 @@ export function VersionHistoryDrawer({
               </div>
             ) : error ? (
               <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
-                <AlertCircle className="icon-xl text-destructive/50" aria-hidden="true" />
+                <AlertCircle className="icon-xl text-destructive-emphasis/50" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Failed to load version history</p>
               </div>
             ) : versions.length === 0 ? (

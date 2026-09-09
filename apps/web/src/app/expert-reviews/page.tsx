@@ -63,23 +63,23 @@ interface ExpertProfile {
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const REVIEW_TYPE_CONFIG: Record<ReviewType, { label: string; icon: React.ElementType; color: string }> = {
-  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-  business_model:         { label: 'Business Model',        icon: Target,      color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
-  financial_model:        { label: 'Financial Model',       icon: DollarSign,  color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-  legal_structure:        { label: 'Legal Structure',       icon: Scale,       color: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   color: 'bg-teal-500/10 text-teal-600 border-teal-500/20' },
-  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  color: 'bg-orange-500/10 text-orange-600 border-orange-500/20' },
-  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' },
-  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   color: 'bg-pink-500/10 text-pink-600 border-pink-500/20' },
+  pitch_deck:             { label: 'Pitch Deck',            icon: FileText,    color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' },
+  business_model:         { label: 'Business Model',        icon: Target,      color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20' },
+  financial_model:        { label: 'Financial Model',       icon: DollarSign,  color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' },
+  legal_structure:        { label: 'Legal Structure',       icon: Scale,       color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+  market_analysis:        { label: 'Market Analysis',       icon: BarChart3,   color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20' },
+  go_to_market:           { label: 'Go-to-Market',          icon: TrendingUp,  color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20' },
+  technical_architecture: { label: 'Tech Architecture',     icon: Code2,       color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20' },
+  product_strategy:       { label: 'Product Strategy',      icon: Lightbulb,   color: 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20' },
   general:                { label: 'General Review',        icon: Eye,         color: 'bg-muted text-muted-foreground border-border' },
 };
 
 const STATUS_CONFIG: Record<ReviewStatus, { label: string; color: string; icon: React.ElementType }> = {
-  requested:   { label: 'Requested',   color: 'bg-blue-500/10 text-blue-600',    icon: Clock },
-  accepted:    { label: 'Accepted',    color: 'bg-teal-500/10 text-teal-600',    icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600',  icon: RefreshCw },
-  submitted:   { label: 'Submitted',   color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle2 },
-  declined:    { label: 'Declined',    color: 'bg-destructive/10 text-destructive', icon: XCircle },
+  requested:   { label: 'Requested',   color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',    icon: Clock },
+  accepted:    { label: 'Accepted',    color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400',    icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',  icon: RefreshCw },
+  submitted:   { label: 'Submitted',   color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
+  declined:    { label: 'Declined',    color: 'bg-destructive/10 text-destructive-emphasis', icon: XCircle },
   expired:     { label: 'Expired',     color: 'bg-muted text-muted-foreground',  icon: AlertTriangle },
 };
 
@@ -230,7 +230,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <Badge variant="outline" className="text-2xs h-4 px-1.5">Free</Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className="text-2xs text-amber-600 flex items-center gap-1">
+                <span className="text-2xs text-amber-600 dark:text-amber-400 flex items-center gap-1">
                   <Clock className="icon-2xs" aria-hidden="true" />
                   Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
@@ -244,9 +244,9 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   <span className="text-xs text-muted-foreground">Overall score:</span>
                   <span className={cn(
                     'text-sm font-bold',
-                    review.scoreOverall >= 8 ? 'text-emerald-600'
-                      : review.scoreOverall >= 6 ? 'text-amber-600'
-                      : 'text-destructive',
+                    review.scoreOverall >= 8 ? 'text-emerald-600 dark:text-emerald-400'
+                      : review.scoreOverall >= 6 ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-destructive-emphasis',
                   )}>
                     {review.scoreOverall}/10
                   </span>
@@ -304,7 +304,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                   <div key={area} className="flex items-center gap-2">
                     <span className="text-2xs text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
-                    <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive')}>
+                    <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600 dark:text-emerald-400' : score >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-destructive-emphasis')}>
                       {score}/10
                     </span>
                   </div>
@@ -316,7 +316,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-emerald-600 mb-2">✅ Strengths</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">✅ Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -331,7 +331,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className="text-2xs font-semibold uppercase tracking-wider text-amber-600 mb-2">⚡ Recommendations</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -578,7 +578,7 @@ export default function ExpertReviewsPage() {
                           <Progress value={score * 10} className="flex-1 h-2" />
                           <span className={cn(
                             'text-xs font-bold w-8 text-right',
-                            score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive',
+                            score >= 8 ? 'text-emerald-600 dark:text-emerald-400' : score >= 6 ? 'text-amber-600 dark:text-amber-400' : 'text-destructive-emphasis',
                           )}>
                             {score}/10
                           </span>

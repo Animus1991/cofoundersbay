@@ -42,7 +42,7 @@ export function VideoCallDemo() {
             </div>
             
             {isCallActive && (
-              <p className="text-xs text-green-600 mt-2">
+              <p className="text-xs text-green-600 dark:text-green-400 mt-2">
                 Call is active - check for the video call window
               </p>
             )}

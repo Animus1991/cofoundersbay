@@ -431,7 +431,7 @@ export default function SearchPage() {
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                <X className="h-7 w-7 text-destructive" aria-hidden="true" />
+                <X className="h-7 w-7 text-destructive-emphasis" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Search failed</h3>
               <p className="text-sm text-muted-foreground mb-4">

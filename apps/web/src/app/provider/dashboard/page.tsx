@@ -49,9 +49,9 @@ type Project = {
 
 function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
   const statusColors: Record<string, string> = {
-    new: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    replied: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    converted: 'bg-green-500/10 text-green-600 border-green-500/20',
+    new: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    replied: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    converted: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
   };
 
   return (
@@ -82,9 +82,9 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
 
 function ProjectCard({ project }: { project: Project }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    on_hold: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    on_hold: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   return (
@@ -222,7 +222,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
-                  <MessageSquare className="icon-md text-blue-600" aria-hidden="true" />
+                  <MessageSquare className="icon-md text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending Inquiries</p>
@@ -235,7 +235,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-green-500/10">
-                  <DollarSign className="icon-md text-green-600" aria-hidden="true" />
+                  <DollarSign className="icon-md text-green-600 dark:text-green-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Monthly Revenue</p>
@@ -248,7 +248,7 @@ export default function ProviderDashboardPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Star className="icon-md text-amber-600" aria-hidden="true" />
+                  <Star className="icon-md text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Avg Rating</p>

@@ -70,18 +70,18 @@ function fmt(n: number) {
 
 const ROUND_STATUS_STYLE: Record<RoundStatus, string> = {
   planning: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-  active: 'bg-green-500/10 text-green-600 border-green-500/20',
-  closing: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  closed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  closing: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  closed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
 };
 
 const INVESTOR_STATUS_STYLE: Record<InvestorStatus, { color: string; label: string }> = {
   prospect:  { color: 'bg-gray-500/10 text-gray-600', label: 'Prospect' },
-  contacted: { color: 'bg-blue-500/10 text-blue-600', label: 'Contacted' },
-  meeting:   { color: 'bg-violet-500/10 text-violet-600', label: 'Meeting' },
-  dd:        { color: 'bg-amber-500/10 text-amber-600', label: 'Due Diligence' },
-  committed: { color: 'bg-green-500/10 text-green-600', label: 'Committed' },
-  passed:    { color: 'bg-red-500/10 text-red-600', label: 'Passed' },
+  contacted: { color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', label: 'Contacted' },
+  meeting:   { color: 'bg-violet-500/10 text-violet-600 dark:text-violet-400', label: 'Meeting' },
+  dd:        { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', label: 'Due Diligence' },
+  committed: { color: 'bg-green-500/10 text-green-600 dark:text-green-400', label: 'Committed' },
+  passed:    { color: 'bg-red-500/10 text-red-600 dark:text-red-400', label: 'Passed' },
 };
 
 // ── Mock Data ──────────────────────────────────────────────────────────────────
@@ -249,9 +249,9 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
 // ── Data Room ─────────────────────────────────────────────────────────────────
 
 const DOC_STATUS_STYLE: Record<DocStatus, { color: string; icon: React.ElementType; label: string }> = {
-  draft:  { color: 'text-amber-600', icon: AlertCircle, label: 'Draft' },
-  ready:  { color: 'text-green-600', icon: CheckCircle2, label: 'Ready' },
-  shared: { color: 'text-blue-600', icon: Globe, label: 'Shared' },
+  draft:  { color: 'text-amber-600 dark:text-amber-400', icon: AlertCircle, label: 'Draft' },
+  ready:  { color: 'text-green-600 dark:text-green-400', icon: CheckCircle2, label: 'Ready' },
+  shared: { color: 'text-blue-600 dark:text-blue-400', icon: Globe, label: 'Shared' },
 };
 
 const DOC_CATEGORIES = ['All', 'Pitch', 'Financials', 'Legal', 'Product', 'Market', 'Team', 'Traction'];
@@ -319,7 +319,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-sm truncate">{doc.name}</p>
-                    {doc.isRequired && <Badge variant="secondary" size="sm" className="bg-red-500/10 text-red-600">Required</Badge>}
+                    {doc.isRequired && <Badge variant="secondary" size="sm" className="bg-red-500/10 text-red-600 dark:text-red-400">Required</Badge>}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                     <span>{doc.category}</span>
@@ -413,9 +413,9 @@ export default function FundraisingPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Users, label: 'Total Leads', value: totalLeads, color: 'text-primary-emphasis' },
-            { icon: Zap, label: 'Active Conversations', value: activeLeads, color: 'text-amber-600' },
-            { icon: CheckCircle2, label: 'Committed', value: committed, color: 'text-green-600' },
-            { icon: BarChart3, label: 'Conversion Rate', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', color: 'text-blue-600' },
+            { icon: Zap, label: 'Active Conversations', value: activeLeads, color: 'text-amber-600 dark:text-amber-400' },
+            { icon: CheckCircle2, label: 'Committed', value: committed, color: 'text-green-600 dark:text-green-400' },
+            { icon: BarChart3, label: 'Conversion Rate', value: totalLeads ? `${Math.round((committed / totalLeads) * 100)}%` : '—', color: 'text-blue-600 dark:text-blue-400' },
           ].map(s => (
             <Card key={s.label}>
               <CardContent className="p-4 flex items-center gap-3">

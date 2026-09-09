@@ -61,7 +61,7 @@ export default function OAuthCallbackPage() {
 
           {status === 'success' && (
             <>
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold uppercase tracking-wide text-emerald-600">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
                 OK
               </div>
               <h2 className="text-lg font-semibold">Welcome!</h2>
@@ -72,7 +72,7 @@ export default function OAuthCallbackPage() {
 
           {status === 'error' && (
             <>
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive-emphasis">
                 !
               </div>
               <h2 className="text-lg font-semibold">Authentication Failed</h2>

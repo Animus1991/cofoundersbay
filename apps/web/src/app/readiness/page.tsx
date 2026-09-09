@@ -163,10 +163,10 @@ function scoreToStatus(pct: number): 'excellent' | 'good' | 'needs-work' | 'crit
 }
 
 const STATUS_COLORS = {
-  excellent:   { bg: 'bg-green-500/10',  text: 'text-green-600',  border: 'border-green-500/20',  bar: 'bg-green-500'  },
-  good:        { bg: 'bg-blue-500/10',   text: 'text-blue-600',   border: 'border-blue-500/20',   bar: 'bg-blue-500'   },
-  'needs-work':{ bg: 'bg-amber-500/10',  text: 'text-amber-600',  border: 'border-amber-500/20',  bar: 'bg-amber-500'  },
-  critical:    { bg: 'bg-red-500/10',    text: 'text-red-600',    border: 'border-red-500/20',    bar: 'bg-red-500'    },
+  excellent:   { bg: 'bg-green-500/10',  text: 'text-green-600 dark:text-green-400',  border: 'border-green-500/20',  bar: 'bg-green-500'  },
+  good:        { bg: 'bg-blue-500/10',   text: 'text-blue-600 dark:text-blue-400',   border: 'border-blue-500/20',   bar: 'bg-blue-500'   },
+  'needs-work':{ bg: 'bg-amber-500/10',  text: 'text-amber-600 dark:text-amber-400',  border: 'border-amber-500/20',  bar: 'bg-amber-500'  },
+  critical:    { bg: 'bg-red-500/10',    text: 'text-red-600 dark:text-red-400',    border: 'border-red-500/20',    bar: 'bg-red-500'    },
 };
 
 function buildDimensions(apiData?: ReadinessOverall): DimData[] {
@@ -445,7 +445,7 @@ export default function ReadinessPage() {
             <p className="text-muted-foreground text-sm">
               Assess your startup&apos;s readiness across 6 key dimensions
               {apiData?.lastAssessedAt && (
-                <span className="ml-2 text-muted-foreground/60">· Last assessed {new Date(apiData.lastAssessedAt).toLocaleDateString()}</span>
+                <span className="ml-2 text-muted-foreground/60">· Last assessed {new Date(apiData.lastAssessedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
               )}
             </p>
           </div>
@@ -489,7 +489,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className="rounded-lg p-2 bg-violet-500/10">
-                  <Building2 className="icon-sm text-violet-600" aria-hidden="true" />
+                  <Building2 className="icon-sm text-violet-600 dark:text-violet-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Accelerator Readiness</p>
@@ -499,10 +499,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Ready to apply</span>
+                  ? <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Ready to apply</span>
                   : accelScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Almost ready</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Not ready yet</span>
+                  ? <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Almost ready</span>
+                  : <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Not ready yet</span>
                 }
               </div>
               <Progress value={accelScore} className="h-2" />
@@ -520,7 +520,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className="rounded-lg p-2 bg-emerald-500/10">
-                  <DollarSign className="icon-sm text-emerald-600" aria-hidden="true" />
+                  <DollarSign className="icon-sm text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Investor Readiness</p>
@@ -530,10 +530,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Fundable signal</span>
+                  ? <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Fundable signal</span>
                   : investScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Building traction</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Pre-investment stage</span>
+                  ? <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Building traction</span>
+                  : <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Pre-investment stage</span>
                 }
               </div>
               <Progress value={investScore} className="h-2" />
@@ -585,7 +585,7 @@ export default function ReadinessPage() {
                 <p className="text-xs text-muted-foreground mb-2">Score change (7 weeks)</p>
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
-                  <span className="text-xs text-green-600 flex items-center gap-0.5 mb-1">
+                  <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-0.5 mb-1">
                     <TrendingUp className="icon-2xs" aria-hidden="true" />+{overallScore - DEMO_HISTORY[0].score} pts
                   </span>
                 </div>
@@ -615,7 +615,7 @@ export default function ReadinessPage() {
           <TabsContent value="dimensions" className="mt-4">
             {!workspaceId && (
               <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-                <AlertCircle className="icon-sm text-amber-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <AlertCircle className="icon-sm text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-400">No workspace connected</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -692,7 +692,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Building2 className="icon-sm text-violet-600" aria-hidden="true" />
+                    <Building2 className="icon-sm text-violet-600 dark:text-violet-400" aria-hidden="true" />
                     Accelerator Benchmark
                   </CardTitle>
                 </CardHeader>
@@ -723,7 +723,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Shield className="icon-sm text-emerald-600" aria-hidden="true" />
+                    <Shield className="icon-sm text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                     Investor Benchmark
                   </CardTitle>
                 </CardHeader>
@@ -770,8 +770,8 @@ export default function ReadinessPage() {
                           <p className="text-xs text-muted-foreground">Score: {pct}%</p>
                         </div>
                         <div className="text-right text-xs space-y-0.5">
-                          <p className="text-violet-600 font-medium">+{accelContrib} <span className="text-muted-foreground font-normal">accel</span></p>
-                          <p className="text-emerald-600 font-medium">+{investContrib} <span className="text-muted-foreground font-normal">invest</span></p>
+                          <p className="text-violet-600 dark:text-violet-400 font-medium">+{accelContrib} <span className="text-muted-foreground font-normal">accel</span></p>
+                          <p className="text-emerald-600 dark:text-emerald-400 font-medium">+{investContrib} <span className="text-muted-foreground font-normal">invest</span></p>
                         </div>
                       </div>
                     );
@@ -801,7 +801,7 @@ export default function ReadinessPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium">{h.score}% overall</span>
                           {i < DEMO_HISTORY.length - 1 && (
-                            <span className="text-xs text-green-600 flex items-center gap-0.5">
+                            <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-0.5">
                               <TrendingUp className="icon-2xs" aria-hidden="true" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
                             </span>
                           )}

@@ -152,7 +152,7 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             </div>
           )}
           {!loading && error && (
-            <div className="flex flex-col items-center gap-2 text-destructive p-3 text-center">
+            <div className="flex flex-col items-center gap-2 text-destructive-emphasis p-3 text-center">
               <AlertTriangle className="icon-md" aria-hidden="true" />
               <p className="text-2xs font-medium">Syntax error</p>
               <p className="text-2xs text-muted-foreground max-w-[200px] leading-relaxed">{error}</p>

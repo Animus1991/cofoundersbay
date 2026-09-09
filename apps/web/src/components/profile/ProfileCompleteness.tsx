@@ -122,7 +122,7 @@ export function ProfileCompleteness({
   const getStatusColor = (pct: number) => {
     if (pct >= 80) return 'text-emerald-500';
     if (pct >= 50) return 'text-amber-500';
-    return 'text-destructive';
+    return 'text-destructive-emphasis';
   };
 
   const getProgressColor = (pct: number) => {

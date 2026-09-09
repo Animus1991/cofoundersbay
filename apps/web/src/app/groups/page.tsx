@@ -45,10 +45,10 @@ const COVER_GRADIENTS = [
 ];
 
 const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  industry: { bg: 'bg-blue-500/15', text: 'text-blue-600' },
-  stage:    { bg: 'bg-amber-500/15', text: 'text-amber-600' },
-  role:     { bg: 'bg-violet-500/15', text: 'text-violet-600' },
-  learning: { bg: 'bg-emerald-500/15', text: 'text-emerald-600' },
+  industry: { bg: 'bg-blue-500/15', text: 'text-blue-600 dark:text-blue-400' },
+  stage:    { bg: 'bg-amber-500/15', text: 'text-amber-600 dark:text-amber-400' },
+  role:     { bg: 'bg-violet-500/15', text: 'text-violet-600 dark:text-violet-400' },
+  learning: { bg: 'bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400' },
 };
 
 function GroupCard({
@@ -434,13 +434,13 @@ export default function GroupsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">
-                  🔥 Trending: <span className="text-amber-600">{trendingGroup.name}</span>
+                  🔥 Trending: <span className="text-amber-600 dark:text-amber-400">{trendingGroup.name}</span>
                 </p>
                 <p className="text-2xs text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
               </div>
               <button
                 onClick={() => {/* navigate */}}
-                className="shrink-0 text-xs text-amber-600 hover:underline flex items-center gap-1"
+                className="shrink-0 text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
               >
                 View <ArrowRight className="icon-2xs" aria-hidden="true" />
               </button>

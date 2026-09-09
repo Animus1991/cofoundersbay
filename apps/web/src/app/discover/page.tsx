@@ -355,7 +355,7 @@ export default function DiscoverPage() {
                     {h.matchScore !== undefined && (
                       <span className={cn(
                         'ml-1 rounded-full px-1.5 py-0.5 text-xs font-bold',
-                        h.matchScore >= 80 ? 'bg-emerald-500/15 text-emerald-600' : h.matchScore >= 60 ? 'bg-blue-500/15 text-blue-600' : 'bg-muted text-muted-foreground',
+                        h.matchScore >= 80 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : h.matchScore >= 60 ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground',
                       )}>{h.matchScore}%</span>
                     )}
                   </Link>

@@ -268,7 +268,7 @@ function ReportCard({
           <div className="flex items-start gap-3">
             <Link href={`/profiles/${report.reported.id}`}>
               <Avatar className="icon-md">
-                <AvatarFallback className="bg-destructive/20 text-destructive">
+                <AvatarFallback className="bg-destructive/20 text-destructive-emphasis">
                   {report.reported.name?.[0]?.toUpperCase() ?? '?'}
                 </AvatarFallback>
               </Avatar>
@@ -316,7 +316,7 @@ function ReportCard({
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onBanUser} className="text-destructive">
+                <DropdownMenuItem onClick={onBanUser} className="text-destructive-emphasis">
                   <Ban className="icon-sm mr-2" aria-hidden="true" />
                   Ban user
                 </DropdownMenuItem>
@@ -427,7 +427,7 @@ function UserRow({
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
-            <DropdownMenuItem onClick={onBan} className="text-destructive">
+            <DropdownMenuItem onClick={onBan} className="text-destructive-emphasis">
               <Ban className="mr-2 icon-sm" aria-hidden="true" />
               Ban permanently
             </DropdownMenuItem>
@@ -837,7 +837,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : eventsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-emphasis">Failed to load events. <button className="underline" onClick={() => void refetchEvents()}>Retry</button></CardContent></Card>
             ) : (eventsData?.events ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No events found</CardContent></Card>
             ) : (
@@ -860,7 +860,7 @@ export default function AdminPage() {
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-emphasis"
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
@@ -893,7 +893,7 @@ export default function AdminPage() {
                 </div>
               ))
             ) : jobsError ? (
-              <Card><CardContent className="py-8 text-center text-sm text-destructive">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
+              <Card><CardContent className="py-8 text-center text-sm text-destructive-emphasis">Failed to load jobs. <button className="underline" onClick={() => void refetchJobs()}>Retry</button></CardContent></Card>
             ) : (jobsData?.jobs ?? []).length === 0 ? (
               <Card><CardContent className="py-8 text-center text-sm text-muted-foreground">No job postings found</CardContent></Card>
             ) : (
@@ -916,7 +916,7 @@ export default function AdminPage() {
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
-                          variant="ghost" size="sm" className="text-destructive"
+                          variant="ghost" size="sm" className="text-destructive-emphasis"
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
@@ -1032,7 +1032,7 @@ export default function AdminPage() {
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
                               <Calendar className="icon-2xs" aria-hidden="true" />
-                              {new Date(cohort.startDate).toLocaleDateString()}
+                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </Badge>
                           )}
                           {cohort.capacity && (
@@ -1043,7 +1043,7 @@ export default function AdminPage() {
                       <Button aria-label="Delete"
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 shrink-0 text-destructive opacity-0 group-hover:opacity-100"
+                        className="h-8 w-8 shrink-0 text-destructive-emphasis opacity-0 group-hover:opacity-100"
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >

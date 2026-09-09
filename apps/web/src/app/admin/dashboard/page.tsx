@@ -227,7 +227,7 @@ export default function AdminDashboardPage() {
       <div className="p-8">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" aria-hidden="true" />
-          <h2 className="text-xl font-bold text-red-600 mb-2">Dashboard Error</h2>
+          <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Dashboard Error</h2>
           <p className="text-muted-foreground">Failed to load admin metrics</p>
           <Button onClick={() => refetchMetrics()} className="mt-4">
             Retry

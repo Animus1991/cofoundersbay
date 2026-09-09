@@ -82,7 +82,8 @@ const ROUTES = {
 
   'GET /api/gamification/users/me/xp': { xp: 1000, level: 5, nextLevelXp: 1200, rank: 30 },
   'GET /api/gamification/users/me/streak': { current: 6, longest: 14, lastActiveAt: now() },
-  'GET /api/gamification/users/me/badges': { badges: [] },
+  // getMyBadges() is typed Promise<GamificationBadge[]> — a bare array.
+  'GET /api/gamification/users/me/badges': [],
 
   'GET /api/ai/health': { available: true, models: [{ id: 'default', name: 'Default' }] },
   'GET /api/ai/agents': {

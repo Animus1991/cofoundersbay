@@ -37,10 +37,10 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    paused: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 border-red-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    paused: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    cancelled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
   };
 
   const nextSessionFormatted = relationship.nextSessionAt
@@ -164,7 +164,7 @@ export default function MenteesPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
               <h3 className="font-medium">Failed to load mentees</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}

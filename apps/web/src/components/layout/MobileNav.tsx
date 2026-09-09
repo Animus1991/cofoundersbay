@@ -137,7 +137,7 @@ export function MobileNav() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive-emphasis hover:bg-destructive/10 transition-all"
               >
                 <LogOut className="icon-md" aria-hidden="true" />
                 Sign out

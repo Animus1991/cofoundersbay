@@ -158,7 +158,7 @@ export function WriteEndorsementModal({
           {/* Content */}
           <div className="space-y-1.5">
             <Label htmlFor="content">
-              Your endorsement <span className="text-destructive">*</span>
+              Your endorsement <span className="text-destructive-emphasis">*</span>
             </Label>
             <Textarea
               id="content"

@@ -95,7 +95,7 @@ export function FormField({
           {label}
           {required && (
             <>
-              <span aria-hidden="true" className="ml-0.5 text-destructive">
+              <span aria-hidden="true" className="ml-0.5 text-destructive-emphasis">
                 *
               </span>
               <span className="sr-only"> (required)</span>
@@ -116,7 +116,7 @@ export function FormField({
             id={errorId}
             // Announced when validation fails without stealing focus.
             role="alert"
-            className="flex items-start gap-1.5 text-xs font-medium text-destructive"
+            className="flex items-start gap-1.5 text-xs font-medium text-destructive-emphasis"
           >
             <AlertCircle className="icon-xs mt-px shrink-0" aria-hidden="true" />
             <span>{error}</span>

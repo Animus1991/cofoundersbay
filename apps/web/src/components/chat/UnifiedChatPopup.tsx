@@ -695,7 +695,7 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('messages')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'messages' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'messages' ? 'bg-white text-violet-600 dark:text-violet-400' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
             <MessageSquare className="icon-2xs" aria-hidden="true" />
@@ -710,7 +710,7 @@ export function UnifiedChatPopup() {
             onClick={() => setActiveTab('ai')}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all',
-              activeTab === 'ai' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
+              activeTab === 'ai' ? 'bg-white text-violet-600 dark:text-violet-400' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
             <Bot className="icon-2xs" aria-hidden="true" />

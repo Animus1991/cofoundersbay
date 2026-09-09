@@ -277,7 +277,7 @@ export default function MentorAvailabilityPage() {
                               <Button aria-label="Delete"
                                 size="icon"
                                 variant="ghost"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive-emphasis"
                                 onClick={() => removeSlot(slot.id)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />

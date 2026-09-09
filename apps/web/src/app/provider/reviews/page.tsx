@@ -225,7 +225,7 @@ export default function ProviderReviewsPage() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">5-Star Reviews</p>
-                  <p className="text-xl font-bold text-amber-600">
+                  <p className="text-xl font-bold text-amber-600 dark:text-amber-400">
                     {reviews.filter((r) => r.rating === 5).length}
                   </p>
                 </div>

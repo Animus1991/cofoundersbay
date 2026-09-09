@@ -115,9 +115,9 @@ function dimensionLabel(d: string) {
 }
 
 function dimensionColor(score: number) {
-  if (score >= 80) return 'text-green-600';
-  if (score >= 60) return 'text-blue-600';
-  if (score >= 40) return 'text-yellow-600';
+  if (score >= 80) return 'text-green-600 dark:text-green-400';
+  if (score >= 60) return 'text-blue-600 dark:text-blue-400';
+  if (score >= 40) return 'text-yellow-600 dark:text-yellow-400';
   return 'text-red-500';
 }
 
@@ -399,7 +399,7 @@ export function BuilderWorkspace() {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{completedDocs}</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{completedDocs}</div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Completed</div>
             <div className="text-xs text-muted-foreground mt-1.5">{inProgressDocs} in progress</div>
           </CardContent>
@@ -541,7 +541,7 @@ export function BuilderWorkspace() {
                   <div className="pt-2 border-t mt-2 space-y-1.5">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Gaps</p>
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
-                      <div key={i} className="flex items-start gap-1.5 text-xs text-red-600">
+                      <div key={i} className="flex items-start gap-1.5 text-xs text-red-600 dark:text-red-400">
                         <AlertCircle className="icon-2xs mt-0.5 shrink-0" aria-hidden="true" />
                         {b}
                       </div>
@@ -726,7 +726,7 @@ export function BuilderWorkspace() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
-                                  className="text-destructive"
+                                  className="text-destructive-emphasis"
                                   onClick={() => handleRemoveCollaborator(collab.id)}
                                 >
                                   <Trash2 className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
@@ -849,9 +849,9 @@ export function BuilderWorkspace() {
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
-                        'border-green-200 text-green-700': dim.status === 'excellent' || dim.status === 'good',
-                        'border-yellow-200 text-yellow-700': dim.status === 'needs-work',
-                        'border-red-200 text-red-700': dim.status === 'critical',
+                        'border-green-200 text-green-700 dark:text-green-400': dim.status === 'excellent' || dim.status === 'good',
+                        'border-yellow-200 text-yellow-700 dark:text-yellow-400': dim.status === 'needs-work',
+                        'border-red-200 text-red-700 dark:text-red-400': dim.status === 'critical',
                       })}
                     >
                       {dim.status?.replace('-', ' ')}

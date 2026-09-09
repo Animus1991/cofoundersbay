@@ -268,8 +268,8 @@ export const StatsCard = React.forwardRef<
   }
 >(({ title, value, change, icon, trend, className, ...props }, ref) => {
   const getTrendColor = () => {
-    if (trend === 'up') return 'text-green-600';
-    if (trend === 'down') return 'text-red-600';
+    if (trend === 'up') return 'text-green-600 dark:text-green-400';
+    if (trend === 'down') return 'text-red-600 dark:text-red-400';
     return 'text-muted-foreground';
   };
 
@@ -296,7 +296,7 @@ export const StatsCard = React.forwardRef<
               <span
                 className={cn(
                   'text-xs font-medium',
-                  change.type === 'increase' ? 'text-green-600' : 'text-red-600'
+                  change.type === 'increase' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 )}
               >
                 {change.type === 'increase' ? '+' : '-'}{change.value}%

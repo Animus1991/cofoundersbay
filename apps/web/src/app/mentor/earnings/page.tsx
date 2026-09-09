@@ -230,7 +230,7 @@ export default function MentorEarningsPage() {
                         variant={tx.status === 'paid' ? 'secondary' : 'outline'}
                         className={cn(
                           'text-xs shrink-0',
-                          tx.status === 'paid' ? 'text-green-600 bg-green-500/10' : 'text-amber-600 bg-amber-500/10'
+                          tx.status === 'paid' ? 'text-green-600 dark:text-green-400 bg-green-500/10' : 'text-amber-600 dark:text-amber-400 bg-amber-500/10'
                         )}
                       >
                         {tx.status === 'paid' ? (

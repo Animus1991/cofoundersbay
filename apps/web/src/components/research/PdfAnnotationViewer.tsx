@@ -330,7 +330,7 @@ export function PdfAnnotationViewer({
                       </div>
                       <button
                         onClick={() => removeAnnotation(a.id)}
-                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-destructive/20 text-muted-foreground hover:text-destructive-emphasis transition-colors"
                       >
                         <X className="w-2.5 h-2.5" aria-hidden="true" />
                       </button>

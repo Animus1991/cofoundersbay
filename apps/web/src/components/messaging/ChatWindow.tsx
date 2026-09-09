@@ -441,7 +441,7 @@ export function ChatWindow({
                   <Flag className="icon-sm mr-2" aria-hidden="true" />
                   Report
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onBlock} className="text-destructive">
+                <DropdownMenuItem onClick={onBlock} className="text-destructive-emphasis">
                   <Ban className="icon-sm mr-2" aria-hidden="true" />
                   Block
                 </DropdownMenuItem>
@@ -566,7 +566,7 @@ export function ChatWindow({
                 <span className="max-w-[220px] truncate">{f.name}</span>
                 <button
                   type="button"
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-muted-foreground hover:text-destructive-emphasis"
                   onClick={() =>
                     setPendingFiles((prev) =>
                       prev.filter((x) => !(x.name === f.name && x.size === f.size && x.lastModified === f.lastModified)),

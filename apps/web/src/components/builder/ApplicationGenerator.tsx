@@ -243,9 +243,9 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       case 'draft':
         return <Badge variant="secondary">Draft</Badge>;
       case 'in-progress':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">In Progress</Badge>;
+        return <Badge variant="outline" className="text-yellow-600 dark:text-yellow-400 border-yellow-600">In Progress</Badge>;
       case 'completed':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Completed</Badge>;
+        return <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600">Completed</Badge>;
       case 'submitted':
         return <Badge className="bg-green-600">Submitted</Badge>;
     }
@@ -257,7 +257,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-500/10 rounded-lg">
-            <FileText className="icon-md text-orange-600" aria-hidden="true" />
+            <FileText className="icon-md text-orange-600 dark:text-orange-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Application Generator</h2>

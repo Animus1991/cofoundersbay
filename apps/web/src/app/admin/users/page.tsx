@@ -52,10 +52,10 @@ type User = {
 
 function UserRow({ user }: { user: User }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
-    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
+    active: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    suspended: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
     pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: null },
-    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="icon-sm" aria-hidden="true" /> },
+    banned: { color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: <Ban className="icon-sm" aria-hidden="true" /> },
   };
 
   const config = statusConfig[user.status];
@@ -109,18 +109,18 @@ function UserRow({ user }: { user: User }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.status === 'active' && (
-            <DropdownMenuItem className="text-amber-600">
+            <DropdownMenuItem className="text-amber-600 dark:text-amber-400">
               <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
               Suspend User
             </DropdownMenuItem>
           )}
           {user.status === 'suspended' && (
-            <DropdownMenuItem className="text-green-600">
+            <DropdownMenuItem className="text-green-600 dark:text-green-400">
               <CheckCircle2 className="mr-2 icon-sm" aria-hidden="true" />
               Reactivate User
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem className="text-destructive-emphasis">
             <UserX className="mr-2 icon-sm" aria-hidden="true" />
             Ban User
           </DropdownMenuItem>
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">{statusCounts.active}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{statusCounts.active}</p>
             </CardContent>
           </Card>
           <Card>
@@ -244,7 +244,7 @@ export default function AdminUsersPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Suspended</p>
-              <p className="text-xl font-bold text-amber-600">{statusCounts.suspended}</p>
+              <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.suspended}</p>
             </CardContent>
           </Card>
         </div>

@@ -40,9 +40,9 @@ type Program = {
 function ProgramCard({ program }: { program: Program }) {
   const statusColors: Record<string, string> = {
     draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    completed: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    archived: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    completed: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    archived: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   return (
@@ -92,7 +92,7 @@ function ProgramCard({ program }: { program: Program }) {
                 <Link href={`/org/programs/${program.id}/participants`}>Manage Participants</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-emphasis">Archive</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -188,7 +188,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">
                 {programs.filter((p) => p.status === 'active').length}
               </p>
             </CardContent>
@@ -204,7 +204,7 @@ export default function OrgProgramsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Completed</p>
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {programs.filter((p) => p.status === 'completed').length}
               </p>
             </CardContent>

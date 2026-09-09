@@ -51,10 +51,10 @@ type Startup = {
 
 function StartupCard({ startup }: { startup: Startup }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    graduated: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    paused: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-    dropped: 'bg-red-500/10 text-red-600 border-red-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    graduated: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    paused: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+    dropped: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
   };
 
   return (
@@ -238,7 +238,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">
                 {startups.filter((s) => s.status === 'active').length}
               </p>
             </CardContent>
@@ -246,7 +246,7 @@ export default function OrgStartupsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Graduated</p>
-              <p className="text-xl font-bold text-blue-600">
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {startups.filter((s) => s.status === 'graduated').length}
               </p>
             </CardContent>

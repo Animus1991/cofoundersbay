@@ -246,7 +246,7 @@ function MatchCardInner({
           {onPass && (
             <button
               onClick={onPass}
-              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive-emphasis hover:border-destructive/40 transition-colors"
             >
               <X className="icon-sm" aria-hidden="true" />
             </button>

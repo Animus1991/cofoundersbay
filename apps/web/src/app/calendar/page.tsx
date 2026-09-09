@@ -51,11 +51,11 @@ interface CalendarEvent {
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<EventType, { label: string; color: string; icon: React.ElementType; bg: string }> = {
-  milestone:  { label: 'Milestone',  color: 'text-amber-600',   icon: Flag,           bg: 'bg-amber-500/10 border-amber-500/20' },
-  session:    { label: 'Session',    color: 'text-blue-600',    icon: Video,          bg: 'bg-blue-500/10 border-blue-500/20' },
-  event:      { label: 'Event',      color: 'text-purple-600',  icon: CalendarDays,   bg: 'bg-purple-500/10 border-purple-500/20' },
-  deadline:   { label: 'Deadline',   color: 'text-red-600',     icon: Clock,          bg: 'bg-red-500/10 border-red-500/20' },
-  meeting:    { label: 'Meeting',    color: 'text-emerald-600', icon: Users,          bg: 'bg-emerald-500/10 border-emerald-500/20' },
+  milestone:  { label: 'Milestone',  color: 'text-amber-600 dark:text-amber-400',   icon: Flag,           bg: 'bg-amber-500/10 border-amber-500/20' },
+  session:    { label: 'Session',    color: 'text-blue-600 dark:text-blue-400',    icon: Video,          bg: 'bg-blue-500/10 border-blue-500/20' },
+  event:      { label: 'Event',      color: 'text-purple-600 dark:text-purple-400',  icon: CalendarDays,   bg: 'bg-purple-500/10 border-purple-500/20' },
+  deadline:   { label: 'Deadline',   color: 'text-red-600 dark:text-red-400',     icon: Clock,          bg: 'bg-red-500/10 border-red-500/20' },
+  meeting:    { label: 'Meeting',    color: 'text-emerald-600 dark:text-emerald-400', icon: Users,          bg: 'bg-emerald-500/10 border-emerald-500/20' },
 };
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -274,9 +274,9 @@ export default function CalendarPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'This Month', value: thisMonthEvents.length, icon: CalendarIcon, color: 'text-primary-emphasis' },
-            { label: 'Deadlines', value: deadlineCount, icon: Clock, color: 'text-red-600' },
-            { label: 'Sessions', value: sessionCount, icon: Video, color: 'text-blue-600' },
-            { label: 'Milestones', value: milestoneCount, icon: Flag, color: 'text-amber-600' },
+            { label: 'Deadlines', value: deadlineCount, icon: Clock, color: 'text-red-600 dark:text-red-400' },
+            { label: 'Sessions', value: sessionCount, icon: Video, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Milestones', value: milestoneCount, icon: Flag, color: 'text-amber-600 dark:text-amber-400' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-3 flex items-center gap-3">

@@ -205,7 +205,7 @@ export function EnhancedMessageThread({
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-emphasis">
                 <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                 Delete conversation
               </DropdownMenuItem>
@@ -350,7 +350,7 @@ export function EnhancedMessageThread({
                           <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-destructive"
+                              className="text-destructive-emphasis"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
                               <Trash2 className="icon-sm mr-2" aria-hidden="true" />

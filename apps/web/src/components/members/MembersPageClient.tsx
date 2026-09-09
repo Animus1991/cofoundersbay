@@ -68,8 +68,8 @@ const SKILL_PILLS = [
 ];
 
 function scoreColor(score: number) {
-  if (score >= 80) return 'text-emerald-600';
-  if (score >= 50) return 'text-amber-600';
+  if (score >= 80) return 'text-emerald-600 dark:text-emerald-400';
+  if (score >= 50) return 'text-amber-600 dark:text-amber-400';
   return 'text-muted-foreground';
 }
 
@@ -151,7 +151,7 @@ function MemberCard({ member, viewMode, onConnect, onMessage }: MemberCardProps)
                 </div>
               )}
               {isOnline && (
-                <span className="flex items-center gap-1 text-emerald-600">
+                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Online
                 </span>

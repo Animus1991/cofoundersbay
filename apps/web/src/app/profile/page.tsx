@@ -363,7 +363,7 @@ export default function ProfilePage() {
                   
                   <div className="flex items-center gap-3 shrink-0">
                     <RoleBadge role={profile.role} className="text-sm px-3 py-1" />
-                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20">
+                    <Badge variant="secondary" className="gap-1.5 px-3 py-1 font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 border-emerald-500/20">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                       Open to work
                     </Badge>

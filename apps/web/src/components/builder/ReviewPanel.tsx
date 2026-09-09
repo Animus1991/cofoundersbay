@@ -149,7 +149,7 @@ function ReviewDecisionDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Feedback {decision !== 'approved' && <span className="text-destructive">*</span>}</Label>
+            <Label>Feedback {decision !== 'approved' && <span className="text-destructive-emphasis">*</span>}</Label>
             <Textarea
               placeholder={
                 decision === 'approved'

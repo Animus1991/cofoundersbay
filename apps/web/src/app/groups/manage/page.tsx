@@ -116,7 +116,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
                 <DropdownMenuItem><UserPlus className="mr-2 icon-sm" aria-hidden="true" />Invite Members</DropdownMenuItem>
                 <DropdownMenuItem><Settings className="mr-2 icon-sm" aria-hidden="true" />Group Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

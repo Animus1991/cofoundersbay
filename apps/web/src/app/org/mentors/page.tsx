@@ -50,9 +50,9 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
     .toUpperCase() || '??';
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     inactive: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    pending: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    pending: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   return (
@@ -99,7 +99,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     <DropdownMenuItem>Assign to Startup</DropdownMenuItem>
                     <DropdownMenuItem>View Sessions</DropdownMenuItem>
                     <DropdownMenuItem>Send Message</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Remove from Pool</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-emphasis">Remove from Pool</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -239,7 +239,7 @@ export default function OrgMentorsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">{activeMentors.length}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{activeMentors.length}</p>
             </CardContent>
           </Card>
           <Card>

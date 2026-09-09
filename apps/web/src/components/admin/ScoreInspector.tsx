@@ -162,7 +162,7 @@ export function ScoreInspector() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-indigo-600">{report.totalXp} XP</div>
+                <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{report.totalXp} XP</div>
                 <div className="text-sm text-gray-500">
                   Level {report.level} · {report.levelLabel}
                 </div>
@@ -284,7 +284,7 @@ export function ScoreInspector() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p className="text-gray-400 text-xs">Current Streak</p>
-                  <p className="font-bold text-2xl text-indigo-600">{report.streak.currentStreak}d</p>
+                  <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-400">{report.streak.currentStreak}d</p>
                 </div>
                 <div>
                   <p className="text-gray-400 text-xs">Longest</p>
@@ -294,7 +294,7 @@ export function ScoreInspector() {
                   <p className="text-gray-400 text-xs">Last Active</p>
                   <p className="text-gray-700">
                     {report.streak.lastActiveDate
-                      ? new Date(report.streak.lastActiveDate).toLocaleDateString()
+                      ? new Date(report.streak.lastActiveDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                       : '—'}
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export function ScoreInspector() {
                   <p className="text-gray-400 text-xs">Grace Used</p>
                   <p className="text-gray-700">
                     {report.streak.graceUsedAt
-                      ? new Date(report.streak.graceUsedAt).toLocaleDateString()
+                      ? new Date(report.streak.graceUsedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                       : 'No'}
                   </p>
                 </div>

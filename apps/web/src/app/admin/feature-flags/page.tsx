@@ -41,18 +41,18 @@ type FeatureFlag = {
 };
 
 const STATUS_CONFIG: Record<FlagStatus, { label: string; color: string; icon: React.ElementType }> = {
-  enabled:    { label: 'Enabled',    color: 'bg-green-500/10 text-green-600 border-green-500/20',  icon: CheckCircle2 },
+  enabled:    { label: 'Enabled',    color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',  icon: CheckCircle2 },
   disabled:   { label: 'Disabled',   color: 'bg-gray-500/10 text-gray-500 border-gray-500/20',     icon: XCircle },
-  rollout:    { label: 'Rollout',    color: 'bg-blue-500/10 text-blue-600 border-blue-500/20',     icon: Percent },
-  experiment: { label: 'Experiment', color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: FlaskConical },
+  rollout:    { label: 'Rollout',    color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',     icon: Percent },
+  experiment: { label: 'Experiment', color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: FlaskConical },
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  ui:         'bg-sky-500/10 text-sky-600',
-  backend:    'bg-orange-500/10 text-orange-600',
-  experiment: 'bg-purple-500/10 text-purple-600',
-  infra:      'bg-red-500/10 text-red-600',
-  billing:    'bg-emerald-500/10 text-emerald-600',
+  ui:         'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+  backend:    'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  experiment: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+  infra:      'bg-red-500/10 text-red-600 dark:text-red-400',
+  billing:    'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
 };
 
 const MOCK_FLAGS: FeatureFlag[] = [
@@ -155,7 +155,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
               <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Flag</DropdownMenuItem>
               <DropdownMenuItem><Percent className="mr-2 icon-sm" aria-hidden="true" />Set Rollout %</DropdownMenuItem>
               <DropdownMenuItem><Copy className="mr-2 icon-sm" aria-hidden="true" />Copy Key</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -226,9 +226,9 @@ export default function AdminFeatureFlagsPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-green-600' },
-            { label: 'In Rollout', value: stats.rollout, icon: Percent, color: 'text-blue-600' },
-            { label: 'Experiments', value: stats.experiment, icon: FlaskConical, color: 'text-purple-600' },
+            { label: 'Enabled', value: stats.enabled, icon: CheckCircle2, color: 'text-green-600 dark:text-green-400' },
+            { label: 'In Rollout', value: stats.rollout, icon: Percent, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Experiments', value: stats.experiment, icon: FlaskConical, color: 'text-purple-600 dark:text-purple-400' },
             { label: 'Disabled', value: stats.disabled, icon: XCircle, color: 'text-muted-foreground' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>

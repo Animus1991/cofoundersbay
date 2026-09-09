@@ -42,19 +42,19 @@ const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string;
     border: 'border-amber-500/30',
     bg:     'bg-amber-500/5',
     icon:   'text-amber-500',
-    cta:    'text-amber-600 hover:bg-amber-500/10',
+    cta:    'text-amber-600 dark:text-amber-400 hover:bg-amber-500/10',
   },
   emerald: {
     border: 'border-emerald-500/30',
     bg:     'bg-emerald-500/5',
-    icon:   'text-emerald-600',
-    cta:    'text-emerald-600 hover:bg-emerald-500/10',
+    icon:   'text-emerald-600 dark:text-emerald-400',
+    cta:    'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10',
   },
   violet: {
     border: 'border-violet-500/30',
     bg:     'bg-violet-500/5',
-    icon:   'text-violet-600',
-    cta:    'text-violet-600 hover:bg-violet-500/10',
+    icon:   'text-violet-600 dark:text-violet-400',
+    cta:    'text-violet-600 dark:text-violet-400 hover:bg-violet-500/10',
   },
 };
 

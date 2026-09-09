@@ -58,7 +58,7 @@ function SubRow({
           <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
         </div>
         <p className="text-xs text-muted-foreground capitalize">
-          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString()}` : ''}
+          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
           {sub.seatLimit ? ` · ${sub.activeSeatCount}/${sub.seatLimit} seats` : ''}
         </p>
       </div>
@@ -78,7 +78,7 @@ function SubRow({
           </Button>
         )}
         {sub.status !== 'canceled' && (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => onCancel(sub.id, false)}>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive-emphasis hover:text-destructive-emphasis" onClick={() => onCancel(sub.id, false)}>
             <XCircle className="icon-sm mr-1" aria-hidden="true" />Cancel
           </Button>
         )}
@@ -89,11 +89,11 @@ function SubRow({
 
 function InvRow({ inv }: { inv: BillingInvoice }) {
   const statusColors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+    paid: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+    open: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
     draft: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
     void: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    uncollectible: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
   };
   const sub = (inv as Record<string, unknown>).subscription as { user?: { email?: string }; tenant?: { name?: string } } | null;
   const ownerLabel = sub?.user?.email ?? sub?.tenant?.name ?? inv.subscriptionId.slice(0, 8);
@@ -106,7 +106,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
           <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}>{inv.status}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString()}</p>
+        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
       </div>
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
@@ -224,10 +224,10 @@ export default function AdminBillingPage() {
         {/* Revenue Metrics */}
         <div className="grid gap-4 md:grid-cols-4">
           {[
-            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600' },
-            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600' },
-            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-violet-600' },
-            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-amber-600' },
+            { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600 dark:text-green-400' },
+            { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Active Subs', value: statsData?.activeSubs ?? '—', icon: CheckCircle2, color: 'text-violet-600 dark:text-violet-400' },
+            { label: 'Past Due', value: statsData?.pastDueSubs ?? '—', icon: AlertTriangle, color: 'text-amber-600 dark:text-amber-400' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4">
@@ -452,14 +452,14 @@ export default function AdminBillingPage() {
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
                             {coupon.timesRedeemed}/{coupon.maxRedemptions ?? '∞'} used
-                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString()}` : ''}
+                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
                           </p>
                         </div>
                         {coupon.isActive && (
                           <Button aria-label="Delete"
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
+                            className="h-7 w-7 text-destructive-emphasis hover:text-destructive-emphasis shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
                             <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />

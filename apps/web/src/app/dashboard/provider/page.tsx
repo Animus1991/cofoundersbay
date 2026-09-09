@@ -142,10 +142,10 @@ function ServiceCard({ service }: { service: Service }) {
 
 function ProjectCard({ project }: { project: ProviderProject }) {
   const statusColors: Record<string, string> = {
-    'active': 'bg-green-500/10 text-green-600',
-    'pending': 'bg-amber-500/10 text-amber-600',
-    'completed': 'bg-blue-500/10 text-blue-600',
-    'cancelled': 'bg-red-500/10 text-red-600',
+    'active': 'bg-green-500/10 text-green-600 dark:text-green-400',
+    'pending': 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    'completed': 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    'cancelled': 'bg-red-500/10 text-red-600 dark:text-red-400',
   };
 
   return (
@@ -175,7 +175,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
     <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
       <Avatar className="h-10 w-10">
         <AvatarImage src={inquiry.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-amber-500/10 text-amber-600">
+        <AvatarFallback className="bg-amber-500/10 text-amber-600 dark:text-amber-400">
           {inquiry.name?.[0]?.toUpperCase() ?? '?'}
         </AvatarFallback>
       </Avatar>
@@ -499,7 +499,7 @@ export default function ProviderDashboard() {
                   <Progress value={95} className="h-2" />
                 </div>
                 <div className="pt-2 border-t">
-                  <div className="flex items-center gap-2 text-sm text-green-600">
+                  <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
                     <CheckCircle className="icon-sm" aria-hidden="true" />
                     <span>Top Rated Provider</span>
                   </div>

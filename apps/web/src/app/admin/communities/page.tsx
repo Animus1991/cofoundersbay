@@ -55,9 +55,9 @@ function CommunityCard({ community }: { community: Community }) {
   };
 
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
     archived: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    flagged: 'bg-red-500/10 text-red-600 border-red-500/20',
+    flagged: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
   };
 
   return (
@@ -100,8 +100,8 @@ function CommunityCard({ community }: { community: Community }) {
                     <DropdownMenuItem>Edit Settings</DropdownMenuItem>
                     <DropdownMenuItem>Manage Members</DropdownMenuItem>
                     <DropdownMenuItem>View Reports</DropdownMenuItem>
-                    <DropdownMenuItem className="text-amber-600">Archive</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                    <DropdownMenuItem className="text-amber-600 dark:text-amber-400">Archive</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-emphasis">Delete</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -248,7 +248,7 @@ export default function AdminCommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Flagged</p>
-              <p className="text-xl font-bold text-red-600">
+              <p className="text-xl font-bold text-red-600 dark:text-red-400">
                 {communities.filter((c) => c.status === 'flagged').length}
               </p>
             </CardContent>

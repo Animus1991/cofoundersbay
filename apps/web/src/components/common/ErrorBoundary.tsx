@@ -86,7 +86,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return (
           <div className="flex items-center justify-center p-4 rounded-lg bg-destructive/5 border border-destructive/20">
             <div className="flex items-center gap-3">
-              <AlertTriangle className="icon-md text-destructive shrink-0" aria-hidden="true" />
+              <AlertTriangle className="icon-md text-destructive-emphasis shrink-0" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">Failed to load content</p>
               <Button onClick={this.handleRetry} size="sm" variant="ghost" className="gap-1.5">
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
@@ -103,7 +103,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <CardContent className="pt-6 text-center">
               {/* Error illustration */}
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="icon-xl text-destructive" aria-hidden="true" />
+                <AlertTriangle className="icon-xl text-destructive-emphasis" aria-hidden="true" />
               </div>
               
               <h2 className="mb-2 text-xl font-semibold text-foreground">
@@ -171,7 +171,7 @@ export function ErrorFallback({
   return (
     <div className="flex min-h-[300px] items-center justify-center p-6">
       <div className="text-center">
-        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" aria-hidden="true" />
+        <AlertTriangle className="mx-auto h-12 w-12 text-destructive-emphasis mb-4" aria-hidden="true" />
         <h3 className="text-lg font-semibold mb-2">Error loading content</h3>
         <p className="text-sm text-muted-foreground mb-4">
           {error.message || 'An unexpected error occurred'}

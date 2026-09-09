@@ -232,7 +232,7 @@ export default function PricingPage() {
               Annual
             </span>
             {annual && (
-              <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600">
+              <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600 dark:text-green-400">
                 Save up to {Math.max(...PLANS.filter(p => p.priceMonthly).map(p => getSavings(p)))}%
               </Badge>
             )}
@@ -284,7 +284,7 @@ export default function PricingPage() {
                       </div>
                     )}
                     {!isEnterprise && !isFree && annual && savings > 0 && (
-                      <p className="mt-1 text-xs text-green-600 font-medium">{savings}% off vs monthly</p>
+                      <p className="mt-1 text-xs text-green-600 dark:text-green-400 font-medium">{savings}% off vs monthly</p>
                     )}
                     {!isEnterprise && !isFree && !annual && (
                       <p className="mt-1 text-xs text-muted-foreground">Save {savings}% with annual billing</p>

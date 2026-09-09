@@ -56,12 +56,23 @@ const DEFAULT_PREFS: NotifPrefs = {
   emailDigest: false,
 };
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  /** Required: role="switch" renders no text, so without this the control is
+   *  announced as an unnamed switch. */
+  label: string;
+}) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
         checked ? 'bg-primary' : 'bg-secondary'
@@ -108,7 +119,11 @@ function PrivacyCard() {
                 <p className="text-xs text-muted-foreground">{desc}</p>
               </div>
             </div>
-            <Toggle checked={flags[id] ?? false} onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))} />
+            <Toggle
+              checked={flags[id] ?? false}
+              label={label}
+              onChange={(v) => setFlags((p) => ({ ...p, [id]: v }))}
+            />
           </div>
         ))}
       </CardContent>
@@ -257,7 +272,7 @@ export default function SettingsPage() {
                   </Badge>
                   {subscription?.currentPeriodEnd && (
                     <span className="text-xs text-muted-foreground">
-                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   )}
                 </div>
@@ -358,6 +373,7 @@ export default function SettingsPage() {
                     </div>
                     <Toggle
                       checked={prefs[key]}
+                      label={`${label} notifications`}
                       onChange={(v) => {
                         updatePref(key, v);
                         success('Saved', `${label} notifications ${v ? 'enabled' : 'disabled'}.`);
@@ -532,7 +548,7 @@ export default function SettingsPage() {
                 </Link>
                 <Button
                   variant="ghost"
-                  className="gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="gap-2 text-destructive-emphasis hover:text-destructive-emphasis hover:bg-destructive/10"
                   onClick={handleLogout}
                 >
                   <LogOut className="icon-sm" aria-hidden="true" />
@@ -548,7 +564,7 @@ export default function SettingsPage() {
           {/* Danger Zone */}
           <Card className="border-destructive/30">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+              <CardTitle className="text-lg flex items-center gap-2 text-destructive-emphasis">
                 <AlertTriangle className="icon-md" aria-hidden="true" />
                 Danger Zone
               </CardTitle>
@@ -566,7 +582,7 @@ export default function SettingsPage() {
               </div>
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-medium text-destructive">Delete account</p>
+                  <p className="text-sm font-medium text-destructive-emphasis">Delete account</p>
                   <p className="text-xs text-muted-foreground">Permanently remove your account and all associated data. This cannot be undone.</p>
                 </div>
                 <Button variant="destructive" size="sm" className="shrink-0 gap-2" onClick={() => success('Contact support', 'Email support@cofounderbay.com to request account deletion.')}

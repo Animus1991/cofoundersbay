@@ -69,11 +69,11 @@ export default function SSOCompletePage() {
 
         {status === 'success' && (
           <div className="space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 text-xs font-semibold uppercase tracking-wide text-green-600">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 text-xs font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">
               OK
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-green-600">Sign in successful!</h1>
+              <h1 className="text-xl font-semibold text-green-600 dark:text-green-400">Sign in successful!</h1>
               <p className="text-muted-foreground mt-1">
                 Redirecting you now...
               </p>
@@ -83,11 +83,11 @@ export default function SSOCompletePage() {
 
         {status === 'error' && (
           <div className="space-y-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-sm font-semibold text-destructive-emphasis">
               !
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-destructive">Sign in failed</h1>
+              <h1 className="text-xl font-semibold text-destructive-emphasis">Sign in failed</h1>
               <p className="text-muted-foreground mt-1">
                 {error || 'An unexpected error occurred'}
               </p>

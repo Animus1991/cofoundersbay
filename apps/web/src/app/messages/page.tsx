@@ -622,7 +622,7 @@ export default function MessagesPage() {
                             {req.requester.displayName}
                           </span>
                           <span className="text-xs text-muted-foreground shrink-0">
-                            {new Date(req.createdAt).toLocaleDateString()}
+                            {new Date(req.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
                         </div>
                         <RoleBadge role={req.requester.role} size="sm" className="mt-0.5" />

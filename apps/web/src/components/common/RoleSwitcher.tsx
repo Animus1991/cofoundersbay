@@ -38,11 +38,11 @@ const ROLE_DISPLAY: Record<UserRoleType, { label: string; icon: React.ElementTyp
   angel_investor: { label: 'Angel Investor', icon: TrendingUp, color: 'text-emerald-500' },
   vc_scout: { label: 'VC Scout', icon: UserSearch, color: 'text-lime-500' },
   vc_analyst: { label: 'VC Analyst', icon: TrendingUp, color: 'text-sky-500' },
-  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-blue-600' },
+  syndicate_manager: { label: 'Syndicate Manager', icon: Users, color: 'text-blue-600 dark:text-blue-400' },
   service_provider: { label: 'Service Provider', icon: Wrench, color: 'text-slate-500' },
   legal_partner: { label: 'Legal Partner', icon: Scale, color: 'text-gray-600' },
-  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-green-600' },
-  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-orange-600' },
+  finance_advisor: { label: 'Finance Advisor', icon: Calculator, color: 'text-green-600 dark:text-green-400' },
+  recruiter: { label: 'Recruiter', icon: UserSearch, color: 'text-orange-600 dark:text-orange-400' },
   platform_admin: { label: 'Platform Admin', icon: Shield, color: 'text-red-500' },
 };
 

@@ -235,7 +235,7 @@ export function ReportBlockModal({
                 className="w-full flex items-start gap-3 rounded-lg border border-border/60 p-4 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-                  <Ban className="icon-md text-destructive" aria-hidden="true" />
+                  <Ban className="icon-md text-destructive-emphasis" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">Block user</p>
@@ -355,7 +355,7 @@ export function ReportBlockModal({
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Ban className="icon-md text-destructive" aria-hidden="true" />
+                <Ban className="icon-md text-destructive-emphasis" aria-hidden="true" />
                 Block {userName}?
               </DialogTitle>
               <DialogDescription>
@@ -368,15 +368,15 @@ export function ReportBlockModal({
                 <p className="text-sm text-foreground">When you block someone:</p>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <X className="icon-sm shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-emphasis" aria-hidden="true" />
                     They won't be able to message you
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="icon-sm shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-emphasis" aria-hidden="true" />
                     They won't see your profile
                   </li>
                   <li className="flex items-start gap-2">
-                    <X className="icon-sm shrink-0 mt-0.5 text-destructive" aria-hidden="true" />
+                    <X className="icon-sm shrink-0 mt-0.5 text-destructive-emphasis" aria-hidden="true" />
                     They won't appear in your matches
                   </li>
                   <li className="flex items-start gap-2">

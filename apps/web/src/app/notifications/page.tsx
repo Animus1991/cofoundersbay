@@ -187,7 +187,7 @@ const NotificationRow = memo(function NotificationRow({
           )}
           <button
             onClick={() => onDelete(item.id)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive-emphasis transition-colors"
           >
             <Trash2 className="icon-2xs" aria-hidden="true" /> Delete
           </button>
@@ -345,7 +345,7 @@ export default function NotificationsPage() {
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
                   <Check className="icon-2xs" aria-hidden="true" />Mark read ({selectedIds.size})
                 </Button>
-                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive hover:text-destructive" onClick={handleBulkDelete}>
+                <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive-emphasis hover:text-destructive-emphasis" onClick={handleBulkDelete}>
                   <Trash2 className="icon-2xs" aria-hidden="true" />Delete ({selectedIds.size})
                 </Button>
               </>

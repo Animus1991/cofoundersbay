@@ -42,8 +42,9 @@
     --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 60%;
+    --destructive:      0 84% 60%;   /* surface — white on it: 3.78 (large text / icons) */
     --destructive-foreground: 0 0% 100%;
+    --destructive-emphasis: 0 84% 45%; /* text on a light surface — 5.43 on white */
 
     /* Borders: subtle, consistent */
     --border:           220 13% 90%;
@@ -104,15 +105,16 @@
     --popover-foreground: 210 40% 96%;
     --primary: 235 88% 64%;            /* #5260f4 — white on it: 4.84 (was 66%: 4.38, failed) */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 235 88% 74%;   /* #828cf7 — on card: 5.78, on page: 6.29 */
+    --primary-emphasis: 235 88% 78%;   /* #969ef8 — on card 7.01, on page 7.62, and 5.10 on a bg-primary/20 tint (74% gave only 4.20 there) */
     --secondary: 218 18% 18%;
     --secondary-foreground: 210 40% 96%;
     --muted: 218 18% 16%;
     --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
     --accent: 292 84% 66%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 46%;
+    --destructive: 0 62% 46%;          /* surface */
     --destructive-foreground: 0 0% 100%;
+    --destructive-emphasis: 0 62% 66%; /* text on a dark surface — 5.58 on card, 5.10 on a destructive/15 tint (46% gave 2.95, a fail) */
     --border: 220 18% 20%;
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
@@ -129,7 +131,7 @@
     --popover-foreground: 210 20% 98%;
     --primary: 199 89% 36%;            /* #0a7aae — white on it: 4.76 (was 48%: 2.86, failed) */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 199 89% 58%;   /* #35b7f3 — on card: 5.44 */
+    --primary-emphasis: 199 89% 62%;   /* clears a bg-primary/20 tint as well as the card */
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
@@ -138,6 +140,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-emphasis: 0 70% 68%;
     --border: 215 20% 30%;
     --input: 215 20% 30%;
     --ring: 199 89% 48%;
@@ -167,6 +170,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-emphasis: 0 84% 45%;
     --border: 200 15% 88%;
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
@@ -184,7 +188,7 @@
     --popover-foreground: 0 0% 98%;
     --primary: 262 83% 58%;            /* #7c3bed — white on it: 5.67 */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 262 83% 72%;   /* #a87cf3 — on card: 5.99 */
+    --primary-emphasis: 262 83% 76%;   /* clears a bg-primary/20 tint as well as the card */
     --secondary: 240 6% 15%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 6% 15%;
@@ -193,6 +197,7 @@
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-emphasis: 0 72% 70%;
     --border: 240 6% 18%;
     --input: 240 6% 18%;
     --ring: 262 83% 58%;
@@ -203,7 +208,7 @@
   .role-founder {
     --primary: 235 88% 64%;
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 235 88% 74%;
+    --primary-emphasis: 235 88% 78%;
     --accent: 292 84% 66%;
     --accent-foreground: 0 0% 100%;
   }

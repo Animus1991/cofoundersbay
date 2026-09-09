@@ -184,7 +184,7 @@ export function CreatePost({ user, onSubmit, placeholder = "What's on your mind?
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary" className="gap-1">
                     #{tag}
-                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+                    <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-emphasis">
                       <X className="icon-2xs" aria-hidden="true" />
                     </button>
                   </Badge>

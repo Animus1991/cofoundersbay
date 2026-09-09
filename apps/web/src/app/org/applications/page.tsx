@@ -54,10 +54,10 @@ type Application = {
 function ApplicationCard({ application }: { application: Application }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" aria-hidden="true" /> },
-    under_review: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Eye className="icon-sm" aria-hidden="true" /> },
-    shortlisted: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Star className="icon-sm" aria-hidden="true" /> },
-    accepted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
-    rejected: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
+    under_review: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <Eye className="icon-sm" aria-hidden="true" /> },
+    shortlisted: { color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: <Star className="icon-sm" aria-hidden="true" /> },
+    accepted: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    rejected: { color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
   };
 
   const config = statusConfig[application.status];
@@ -100,8 +100,8 @@ function ApplicationCard({ application }: { application: Application }) {
                     </DropdownMenuItem>
                     <DropdownMenuItem>Mark as Shortlisted</DropdownMenuItem>
                     <DropdownMenuItem>Schedule Interview</DropdownMenuItem>
-                    <DropdownMenuItem className="text-green-600">Accept</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">Reject</DropdownMenuItem>
+                    <DropdownMenuItem className="text-green-600 dark:text-green-400">Accept</DropdownMenuItem>
+                    <DropdownMenuItem className="text-destructive-emphasis">Reject</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -242,19 +242,19 @@ export default function OrgApplicationsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-xl font-bold text-amber-600">{statusCounts.under_review}</p>
+              <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.under_review}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Shortlisted</p>
-              <p className="text-xl font-bold text-blue-600">{statusCounts.shortlisted}</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{statusCounts.shortlisted}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Accepted</p>
-              <p className="text-xl font-bold text-green-600">{statusCounts.accepted}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{statusCounts.accepted}</p>
             </CardContent>
           </Card>
         </div>

@@ -42,7 +42,7 @@ export function RouteError({
       role="alert"
       className="mx-auto flex w-full max-w-lg flex-col items-center rounded-xl border border-border bg-card px-6 py-10 text-center shadow-sm"
     >
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-emphasis">
         <AlertTriangle className="icon-md" aria-hidden="true" />
       </span>
 

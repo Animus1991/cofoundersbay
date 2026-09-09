@@ -129,7 +129,7 @@ export function WhiteboardNode({
         {!readOnly && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-emphasis transition-colors"
             title="Delete node"
           >
             <Trash2 className="icon-2xs" aria-hidden="true" />
@@ -140,7 +140,7 @@ export function WhiteboardNode({
       {/* Body */}
       <div style={{ height: height - toolbarH }}>
         {loadError && (
-          <div className="flex items-center justify-center h-full text-destructive/60 text-xs">
+          <div className="flex items-center justify-center h-full text-destructive-emphasis/60 text-xs">
             Failed to load whiteboard
           </div>
         )}

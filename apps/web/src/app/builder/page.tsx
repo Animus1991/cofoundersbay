@@ -122,8 +122,8 @@ function BuilderPageContent() {
         {/* Error Alert */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" aria-hidden="true" />
-            <p className="text-sm text-destructive">{error}</p>
+            <AlertCircle className="icon-md text-destructive-emphasis" aria-hidden="true" />
+            <p className="text-sm text-destructive-emphasis">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
             </Button>
@@ -146,7 +146,7 @@ function BuilderPageContent() {
               </p>
             </div>
             <a href="/expert-reviews" className="shrink-0">
-              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10">
+              <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10">
                 Get review <ArrowRight className="icon-2xs" aria-hidden="true" />
               </Button>
             </a>

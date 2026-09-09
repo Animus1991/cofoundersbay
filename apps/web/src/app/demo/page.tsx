@@ -32,7 +32,7 @@ export default function DemoPage() {
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="max-w-sm w-full text-center space-y-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 mx-auto">
-            <AlertCircle className="h-7 w-7 text-destructive" aria-hidden="true" />
+            <AlertCircle className="h-7 w-7 text-destructive-emphasis" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Demo unavailable</h2>
           <p className="text-sm text-muted-foreground">{error}</p>

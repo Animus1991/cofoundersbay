@@ -263,7 +263,7 @@ export function AIAnalysisPanel({
 
       {/* Error banner */}
       {errorMsg && (
-        <div className="flex-none flex items-start gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/20 text-2xs text-destructive overflow-hidden">
+        <div className="flex-none flex items-start gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/20 text-2xs text-destructive-emphasis overflow-hidden">
           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
           <span className="flex-1">{errorMsg}</span>
           <button onClick={() => setErrorMsg(null)} className="shrink-0"><X className="icon-2xs" aria-hidden="true" /></button>

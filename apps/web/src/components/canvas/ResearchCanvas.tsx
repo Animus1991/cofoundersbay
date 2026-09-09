@@ -1388,7 +1388,7 @@ export default function ResearchCanvas() {
                 <div className="h-px bg-border my-1" />
                 <button
                   onClick={() => { deleteNodes([contextMenu.nodeId!]); setContextMenu(null); }}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-2"
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-emphasis transition-colors flex items-center gap-2"
                 >
                   <Trash className="w-4 h-4" /> Delete
                 </button>

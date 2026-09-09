@@ -124,7 +124,7 @@ function ConnectionCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1 text-muted-foreground hover:text-destructive"
+                className="gap-1 text-muted-foreground hover:text-destructive-emphasis"
                 onClick={onDecline}
                 disabled={isPending}
               >
@@ -199,7 +199,7 @@ function IntroRequestCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 text-muted-foreground hover:text-destructive"
+                className="gap-1.5 text-muted-foreground hover:text-destructive-emphasis"
                 onClick={onDecline}
                 disabled={isPending}
               >
@@ -207,7 +207,7 @@ function IntroRequestCard({
                 Decline
               </Button>
               <p className="ml-auto text-xs text-muted-foreground">
-                {new Date(connection.createdAt).toLocaleDateString()}
+                {new Date(connection.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
           </div>

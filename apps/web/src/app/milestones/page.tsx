@@ -174,7 +174,7 @@ function MilestoneCard({
                       )}
                       <div className="my-1 border-t border-border/40" />
                       <button
-                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive-emphasis hover:bg-destructive/10"
                         onClick={() => { setMenuOpen(false); onDelete(item.id); }}
                       >
                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
@@ -229,6 +229,11 @@ function MilestoneCard({
 
               {item.dueDate && (
                 <div
+                  // "Overdue" / "Due soon" is derived from Date.now(), so the
+                  // server and the client can legitimately disagree across the
+                  // hydration boundary. Without this React reports a mismatch
+                  // (#418) and re-renders the subtree on the client.
+                  suppressHydrationWarning
                   className={cn(
                     'flex items-center gap-1 text-2xs',
                     overdue ? 'font-medium text-red-500' : dueSoon ? 'font-medium text-amber-500' : 'text-muted-foreground',
@@ -254,12 +259,14 @@ function MilestoneCard({
 }
 
 // ── Summary card ─────────────────────────────────────────────────────────────
-function SummaryBar({ summary }: { summary: { counts: Record<string, number>; total: number; overdue: number; dueSoon: number; completionRate: number } | undefined }) {
+function SummaryBar({ summary }: { summary: { counts?: Record<string, number>; total: number; overdue: number; dueSoon: number; completionRate: number } | undefined }) {
   if (!summary) return null;
   const stats = [
     { label: 'Total', value: summary.total, icon: Target, color: 'text-foreground' },
-    { label: 'In Progress', value: summary.counts.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
-    { label: 'Completed', value: summary.counts.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
+    // `counts` is optional in practice: the endpoint can answer 200 with the
+    // envelope but no breakdown, and `if (!summary)` above does not cover that.
+    { label: 'In Progress', value: summary.counts?.in_progress ?? 0, icon: Clock, color: 'text-blue-500' },
+    { label: 'Completed', value: summary.counts?.completed ?? 0, icon: CheckCircle2, color: 'text-emerald-500' },
     { label: 'Overdue', value: summary.overdue, icon: AlertTriangle, color: 'text-red-500' },
     { label: 'Completion rate', value: `${summary.completionRate}%`, icon: TrendingUp, color: 'text-primary-emphasis' },
   ];

@@ -109,7 +109,7 @@ export default function CreateEventPage() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">
-                Event title <span className="text-destructive">*</span>
+                Event title <span className="text-destructive-emphasis">*</span>
               </label>
               <Input
                 placeholder="e.g. Founder Meetup Athens Q2"
@@ -166,7 +166,7 @@ export default function CreateEventPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
-                  Start <span className="text-destructive">*</span>
+                  Start <span className="text-destructive-emphasis">*</span>
                 </label>
                 <Input
                   type="datetime-local"

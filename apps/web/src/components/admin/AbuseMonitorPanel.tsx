@@ -82,7 +82,7 @@ export function AbuseMonitorPanel() {
           <h2 className="text-xl font-semibold text-gray-900">Abuse Monitor</h2>
           <p className="text-sm text-gray-500 mt-0.5">Review and action detected anti-gaming signals.</p>
         </div>
-        <button onClick={load} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600">
+        <button onClick={load} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 dark:text-indigo-400">
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /> Refresh
         </button>
       </div>
@@ -92,8 +92,8 @@ export function AbuseMonitorPanel() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: 'Total Flags', value: stats.totalFlags, color: 'text-gray-800' },
-            { label: 'Pending', value: stats.pendingFlags, color: 'text-amber-600' },
-            { label: 'Actioned', value: stats.actionedFlags, color: 'text-rose-600' },
+            { label: 'Pending', value: stats.pendingFlags, color: 'text-amber-600 dark:text-amber-400' },
+            { label: 'Actioned', value: stats.actionedFlags, color: 'text-rose-600 dark:text-rose-400' },
             { label: 'Dismissed', value: stats.dismissedFlags, color: 'text-gray-400' },
           ].map((s) => (
             <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4">

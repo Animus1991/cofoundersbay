@@ -33,11 +33,11 @@ const PLAN_ICONS: Record<string, React.ElementType> = {
 
 function InvoiceStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    paid: 'bg-green-500/10 text-green-700 border-green-500/20',
-    open: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+    paid: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+    open: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
     draft: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
     void: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
-    uncollectible: 'bg-red-500/10 text-red-700 border-red-500/20',
+    uncollectible: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
   };
   return (
     <Badge variant="outline" className={cn('text-xs capitalize', colors[status] ?? 'bg-gray-500/10 text-gray-600')}>
@@ -58,13 +58,13 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           <InvoiceStatusBadge status={invoice.status} />
         </div>
         <p className="text-xs text-muted-foreground">
-          {new Date(invoice.periodStart).toLocaleDateString()} – {new Date(invoice.periodEnd).toLocaleDateString()}
+          {new Date(invoice.periodStart).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} – {new Date(invoice.periodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>
       <div className="text-right shrink-0">
         <p className="text-sm font-semibold">{formatCents(invoice.total, invoice.currency)}</p>
         {invoice.paidAt && (
-          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString()}</p>
+          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
         )}
       </div>
       {invoice.hostedInvoiceUrl && (
@@ -144,14 +144,14 @@ export default function UserBillingPage() {
   const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
 
   const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="icon-sm text-green-600" aria-hidden="true" />,
-    trialing: <Clock className="icon-sm text-blue-600" aria-hidden="true" />,
-    past_due: <AlertTriangle className="icon-sm text-amber-600" aria-hidden="true" />,
+    active: <CheckCircle2 className="icon-sm text-green-600 dark:text-green-400" aria-hidden="true" />,
+    trialing: <Clock className="icon-sm text-blue-600 dark:text-blue-400" aria-hidden="true" />,
+    past_due: <AlertTriangle className="icon-sm text-amber-600 dark:text-amber-400" aria-hidden="true" />,
     canceled: <XCircle className="icon-sm text-gray-500" aria-hidden="true" />,
-    incomplete: <AlertTriangle className="icon-sm text-amber-600" aria-hidden="true" />,
+    incomplete: <AlertTriangle className="icon-sm text-amber-600 dark:text-amber-400" aria-hidden="true" />,
     incomplete_expired: <XCircle className="icon-sm text-gray-500" aria-hidden="true" />,
     paused: <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />,
-    unpaid: <AlertTriangle className="icon-sm text-red-600" aria-hidden="true" />,
+    unpaid: <AlertTriangle className="icon-sm text-red-600 dark:text-red-400" aria-hidden="true" />,
   };
   const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />;
 
@@ -208,7 +208,7 @@ export default function UserBillingPage() {
                     <p className="text-sm text-muted-foreground capitalize">
                       {sub.billingCycle} billing
                       {sub.currentPeriodEnd && (
-                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}</>
+                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</>
                       )}
                     </p>
                   </div>
@@ -221,22 +221,22 @@ export default function UserBillingPage() {
                 </div>
 
                 {sub.cancelAtPeriodEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700 dark:text-amber-400">
                     <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
-                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
+                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.
                     Reactivate in the billing portal to continue.
                   </div>
                 )}
 
                 {sub.status === 'trialing' && sub.trialEnd && (
-                  <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-700 dark:text-blue-400">
                     <Clock className="icon-sm shrink-0" aria-hidden="true" />
-                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
+                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. Add a payment method to continue.
                   </div>
                 )}
 
                 {sub.status === 'past_due' && (
-                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
+                  <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700 dark:text-red-400">
                     <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                     Payment failed. Please update your payment method to avoid service interruption.
                   </div>

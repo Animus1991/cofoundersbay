@@ -55,7 +55,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex items-center gap-2">
             <p className="font-medium">{apiKey.name}</p>
             {apiKey.isActive ? (
-              <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Active</Badge>
+              <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"><CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Active</Badge>
             ) : (
               <Badge variant="outline" size="sm" className="bg-gray-500/10 text-gray-500">Inactive</Badge>
             )}
@@ -75,7 +75,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />Created {apiKey.createdAt}</span>
             {apiKey.lastUsed && <span>Last used {apiKey.lastUsed}</span>}
-            {apiKey.expiresAt && <span className="text-amber-600">Expires {apiKey.expiresAt}</span>}
+            {apiKey.expiresAt && <span className="text-amber-600 dark:text-amber-400">Expires {apiKey.expiresAt}</span>}
           </div>
         </div>
         <DropdownMenu>
@@ -87,7 +87,7 @@ function KeyRow({ apiKey }: { apiKey: ApiKey }) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit Scopes</DropdownMenuItem>
             <DropdownMenuItem>Regenerate</DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Revoke</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Revoke</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

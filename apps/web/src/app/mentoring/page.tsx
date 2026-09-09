@@ -63,7 +63,7 @@ const STATUS_COLORS: Record<string, string> = {
   requested: 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30',
   confirmed: 'bg-green-500/15 text-green-500 border-green-500/30',
   completed: 'bg-primary/15 text-primary-emphasis border-primary/30',
-  cancelled: 'bg-destructive/15 text-destructive border-destructive/30',
+  cancelled: 'bg-destructive/15 text-destructive-emphasis border-destructive/30',
   declined: 'bg-muted text-muted-foreground border-border',
 };
 
@@ -177,7 +177,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             <div className={cn(
               'flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold ring-2',
               matchPct >= 85 ? 'bg-primary/15 text-primary-emphasis ring-primary/30'
-              : matchPct >= 70 ? 'bg-emerald-500/15 text-emerald-600 ring-emerald-500/30'
+              : matchPct >= 70 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 ring-emerald-500/30'
               : 'bg-muted text-muted-foreground ring-border',
             )}>
               {matchPct}%
@@ -206,7 +206,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
                 <DollarSign className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />{mentor.hourlyRate}/hr
               </span>
             ) : (
-              <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
+              <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">Free</Badge>
             )}
             <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
               {availCfg.label}
@@ -548,20 +548,20 @@ function BookingCard({
                     Confirm
                   </Button>
                   <Button size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
-                    className="text-muted-foreground hover:text-destructive">
+                    className="text-muted-foreground hover:text-destructive-emphasis">
                     <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 </>
               )}
               {!isMentor && booking.status === 'requested' && (
                 <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive">
+                  className="text-muted-foreground hover:text-destructive-emphasis">
                   Cancel
                 </Button>
               )}
               {booking.status === 'confirmed' && (
                 <Button size="sm" variant="ghost" onClick={onCancel} disabled={isActing}
-                  className="text-muted-foreground hover:text-destructive">
+                  className="text-muted-foreground hover:text-destructive-emphasis">
                   Cancel
                 </Button>
               )}

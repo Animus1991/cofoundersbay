@@ -256,7 +256,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg">
-            <DollarSign className="icon-md text-emerald-600" aria-hidden="true" />
+            <DollarSign className="icon-md text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Financial Planning</h2>
@@ -298,7 +298,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <TrendingDown className="icon-sm text-red-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Monthly Burn</span>
             </div>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
               {formatCurrency(data.burnRate > 0 ? data.burnRate : totalMonthlyOperating - totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -309,7 +309,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <PiggyBank className="icon-sm text-blue-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Runway</span>
             </div>
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {data.runway > 0 ? `${data.runway} months` : 'N/A'}
             </div>
           </CardContent>
@@ -320,7 +320,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <TrendingUp className="icon-sm text-green-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Monthly Revenue</span>
             </div>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {formatCurrency(totalMonthlyRevenue)}
             </div>
           </CardContent>
@@ -333,8 +333,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             </div>
             <div className={cn(
               "text-2xl font-bold",
-              data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-              data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+              data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600 dark:text-green-400" :
+              data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600 dark:text-yellow-400" : "text-red-600 dark:text-red-400"
             )}>
               {data.unitEconomics.ltvCacRatio.toFixed(1)}x
             </div>
@@ -573,7 +573,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               
               <div className="pt-3 border-t flex justify-between">
                 <span className="font-medium">Total Monthly Revenue</span>
-                <span className="font-bold text-green-600">{formatCurrency(totalMonthlyRevenue)}</span>
+                <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(totalMonthlyRevenue)}</span>
               </div>
             </CardContent>
           </Card>
@@ -677,8 +677,8 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(
                     "text-3xl font-bold mb-2",
-                    data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600" :
-                    data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600" : "text-red-600"
+                    data.unitEconomics.ltvCacRatio >= 3 ? "text-green-600 dark:text-green-400" :
+                    data.unitEconomics.ltvCacRatio >= 1 ? "text-yellow-600 dark:text-yellow-400" : "text-red-600 dark:text-red-400"
                   )}>
                     {data.unitEconomics.ltvCacRatio.toFixed(1)}x
                   </div>
@@ -689,7 +689,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-blue-600">
+                  <div className="text-3xl font-bold mb-2 text-blue-600 dark:text-blue-400">
                     {data.unitEconomics.paybackPeriod} mo
                   </div>
                   <div className="text-sm text-muted-foreground">Payback Period</div>
@@ -698,7 +698,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                   </div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-3xl font-bold mb-2 text-purple-600">
+                  <div className="text-3xl font-bold mb-2 text-purple-600 dark:text-purple-400">
                     {data.unitEconomics.grossMargin}%
                   </div>
                   <div className="text-sm text-muted-foreground">Gross Margin</div>
@@ -836,7 +836,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                     )}>
                       {formatCurrency(data.scenarios.conservative.revenue12m - data.scenarios.conservative.costs12m)}
                     </span>
@@ -890,7 +890,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                     )}>
                       {formatCurrency(data.scenarios.realistic.revenue12m - data.scenarios.realistic.costs12m)}
                     </span>
@@ -944,7 +944,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
                     <span className={cn(
                       "font-bold",
                       data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m >= 0
-                        ? "text-green-600" : "text-red-600"
+                        ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                     )}>
                       {formatCurrency(data.scenarios.aggressive.revenue12m - data.scenarios.aggressive.costs12m)}
                     </span>

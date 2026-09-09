@@ -345,7 +345,7 @@ export function BranchPanel({
                               )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                className="text-destructive"
+                                className="text-destructive-emphasis"
                                 onClick={() => handleClose(branch.id)}
                               >
                                 <XCircle className="h-3.5 w-3.5 mr-2" aria-hidden="true" />

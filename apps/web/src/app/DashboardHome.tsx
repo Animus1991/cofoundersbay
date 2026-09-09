@@ -77,7 +77,7 @@ function ActionItem({
   const colors = {
     default: 'bg-secondary/60 text-foreground hover:bg-secondary',
     primary: 'bg-primary/10 text-primary-emphasis hover:bg-primary/20 border-primary/20',
-    warning: 'bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border-amber-500/20',
+    warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-amber-500/20',
   };
 
   return (
@@ -141,7 +141,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
     >
       <Avatar className="h-9 w-9 shrink-0">
         <AvatarImage src={mentor.avatarUrl ?? undefined} />
-        <AvatarFallback className="bg-emerald-500/10 text-emerald-600 text-sm font-semibold">
+        <AvatarFallback className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
           {mentor.displayName?.[0]?.toUpperCase() ?? 'M'}
         </AvatarFallback>
       </Avatar>
@@ -150,7 +150,7 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
         <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
       </div>
       {mentor.isFree ? (
-        <span className="shrink-0 text-2xs font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
+        <span className="shrink-0 text-2xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
       ) : mentor.hourlyRate ? (
         <span className="shrink-0 text-2xs text-muted-foreground">${mentor.hourlyRate}/h</span>
       ) : null}
@@ -662,12 +662,12 @@ export function DashboardHome() {
                       </div>
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">In Progress</span>
-                        <span className="font-medium text-amber-600">{milestoneSummary.counts.in_progress ?? 0}</span>
+                        <span className="font-medium text-amber-600 dark:text-amber-400">{milestoneSummary.counts.in_progress ?? 0}</span>
                       </div>
                       {milestoneSummary.overdue > 0 && (
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">Overdue</span>
-                          <span className="font-medium text-red-600">{milestoneSummary.overdue}</span>
+                          <span className="font-medium text-red-600 dark:text-red-400">{milestoneSummary.overdue}</span>
                         </div>
                       )}
                     </div>

@@ -21,7 +21,7 @@ export default function Error({
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="w-full max-w-md rounded-2xl border border-border/60 bg-card p-6 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-emphasis">
           <AlertTriangle className="icon-md" aria-hidden="true" />
         </div>
         <h1 className="mt-4 text-xl font-semibold text-foreground">This page hit an unexpected error</h1>

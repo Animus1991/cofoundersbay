@@ -266,7 +266,7 @@ export default function SharePage() {
                 className={cn(passwordError && 'border-destructive')}
               />
               {passwordError && (
-                <p className="text-xs text-destructive">{passwordError}</p>
+                <p className="text-xs text-destructive-emphasis">{passwordError}</p>
               )}
             </div>
             <Button
@@ -290,7 +290,7 @@ export default function SharePage() {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-sm text-center">
           <CardContent className="py-8">
-            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive" aria-hidden="true" />
+            <AlertCircle className="h-10 w-10 mx-auto mb-3 text-destructive-emphasis" aria-hidden="true" />
             <h2 className="font-semibold mb-2">Link Unavailable</h2>
             <p className="text-sm text-muted-foreground mb-4">{errorMessage}</p>
             <Button variant="outline" onClick={() => window.location.href = '/'}>
@@ -326,7 +326,7 @@ export default function SharePage() {
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
                 <Calendar className="icon-2xs" aria-hidden="true" />
-                Expires {new Date(linkInfo.expiresAt).toLocaleDateString()}
+                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             )}
             <Button
@@ -357,9 +357,9 @@ export default function SharePage() {
                     <Badge
                       variant="outline"
                       className={cn('text-xs capitalize', {
-                        'text-green-600': document.status === 'approved',
-                        'text-blue-600': document.status === 'review',
-                        'text-yellow-600': document.status === 'in_progress',
+                        'text-green-600 dark:text-green-400': document.status === 'approved',
+                        'text-blue-600 dark:text-blue-400': document.status === 'review',
+                        'text-yellow-600 dark:text-yellow-400': document.status === 'in_progress',
                       })}
                     >
                       {document.status.replace('_', ' ')}
@@ -425,7 +425,7 @@ export default function SharePage() {
                     Document Content
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString()}
+                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
               </CardHeader>

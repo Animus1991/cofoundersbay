@@ -156,18 +156,18 @@ const DEMO_COACHES: CoachProfile[] = [
 // ── Configs ───────────────────────────────────────────────────────────────────
 
 const SESSION_TYPE_CONFIG: Record<SessionType, { label: string; color: string; icon: React.ElementType }> = {
-  accountability: { label: 'Accountability', color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: ListChecks },
-  clarity:        { label: 'Clarity',        color: 'bg-purple-500/10 text-purple-600 border-purple-500/20', icon: Lightbulb },
-  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-teal-500/10 text-teal-600 border-teal-500/20', icon: Users },
-  execution:      { label: 'Execution',      color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: Zap },
-  strategy:       { label: 'Strategy',       color: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20', icon: Target },
-  wellbeing:      { label: 'Wellbeing',      color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', icon: BrainCircuit },
+  accountability: { label: 'Accountability', color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20', icon: ListChecks },
+  clarity:        { label: 'Clarity',        color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20', icon: Lightbulb },
+  team_dynamics:  { label: 'Team Dynamics',  color: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20', icon: Users },
+  execution:      { label: 'Execution',      color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: Zap },
+  strategy:       { label: 'Strategy',       color: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20', icon: Target },
+  wellbeing:      { label: 'Wellbeing',      color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', icon: BrainCircuit },
 };
 
 const STATUS_CONFIG: Record<SessionStatus, { label: string; color: string; icon: React.ElementType }> = {
-  scheduled:   { label: 'Scheduled',   color: 'bg-blue-500/10 text-blue-600',    icon: Calendar },
-  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600',  icon: Clock },
-  completed:   { label: 'Completed',   color: 'bg-emerald-500/10 text-emerald-600', icon: CheckCircle2 },
+  scheduled:   { label: 'Scheduled',   color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',    icon: Calendar },
+  in_progress: { label: 'In Progress', color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',  icon: Clock },
+  completed:   { label: 'Completed',   color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', icon: CheckCircle2 },
   cancelled:   { label: 'Cancelled',   color: 'bg-muted text-muted-foreground',  icon: XCircle },
 };
 
@@ -416,7 +416,7 @@ export default function CoachingPage() {
           <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 mb-1">Next Session</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">Next Session</p>
                 <p className="text-sm font-semibold text-foreground">{upcoming[0].title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   with {upcoming[0].coachName} ·{' '}
@@ -576,7 +576,7 @@ export default function CoachingPage() {
                     <div className="space-y-1">
                       <p className="text-sm font-semibold text-foreground">Action completion</p>
                       <p className="text-xs text-muted-foreground">{completedActions} of {totalActionItems.length} items done</p>
-                      <p className="text-xs text-emerald-600 font-medium">Keep the momentum going!</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Keep the momentum going!</p>
                     </div>
                   </div>
                 </CardContent>

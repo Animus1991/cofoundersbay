@@ -140,7 +140,7 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-start gap-2">
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive-emphasis flex items-start gap-2">
                 <span className="mt-0.5 shrink-0 font-semibold">!</span>
                 <span>{error}</span>
               </div>

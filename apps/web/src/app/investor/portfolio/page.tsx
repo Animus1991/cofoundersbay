@@ -65,8 +65,8 @@ const MOCK_INVESTMENTS: Investment[] = [
 
 function InvestmentCard({ investment }: { investment: Investment }) {
   const statusColors: Record<string, string> = {
-    active: 'bg-green-500/10 text-green-600 border-green-500/20',
-    exited: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+    active: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    exited: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
     written_off: 'bg-gray-500/10 text-gray-600 border-gray-500/20',
   };
 
@@ -123,7 +123,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Return</p>
-                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-green-600' : 'text-red-600')}>
+                <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
                   {isPositive ? <TrendingUp className="icon-2xs" aria-hidden="true" /> : <TrendingDown className="icon-2xs" aria-hidden="true" />}
                   {isPositive ? '+' : ''}{investment.returnPct}%
                 </p>
@@ -188,8 +188,8 @@ export default function InvestorPortfolioPage() {
           {[
             { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
             { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-emphasis' },
-            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600' },
-            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600' },
+            { label: 'Total Return', value: `+${totalReturn.toFixed(0)}%`, icon: PieChart, color: 'text-green-600 dark:text-green-400' },
+            { label: 'Companies', value: investments.length, icon: Briefcase, color: 'text-blue-600 dark:text-blue-400' },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label}>
               <CardContent className="p-4 flex items-center gap-3">

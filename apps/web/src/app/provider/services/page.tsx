@@ -106,7 +106,7 @@ function ServiceCard({ service }: { service: Service }) {
                   <Eye className="mr-2 icon-sm" aria-hidden="true" />
                   Preview
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive">
+                <DropdownMenuItem className="text-destructive-emphasis">
                   <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                   Delete
                 </DropdownMenuItem>
@@ -221,7 +221,7 @@ export default function ProviderServicesPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-xl font-bold text-green-600">
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">
                 {services.filter((s) => s.isActive).length}
               </p>
             </CardContent>

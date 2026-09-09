@@ -70,7 +70,7 @@ export function LinkedAccounts() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-destructive">
+          <div className="flex items-center gap-2 text-destructive-emphasis">
             <AlertCircle className="icon-md" aria-hidden="true" />
             <span>Failed to load linked accounts</span>
           </div>

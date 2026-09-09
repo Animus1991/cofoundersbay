@@ -30,10 +30,10 @@ import {
 
 function SessionCard({ session }: { session: MentorshipSessionItem }) {
   const statusColors: Record<string, string> = {
-    scheduled: 'bg-blue-500/10 text-blue-600 border-blue-500/20',
-    completed: 'bg-green-500/10 text-green-600 border-green-500/20',
-    cancelled: 'bg-red-500/10 text-red-600 border-red-500/20',
-    no_show: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+    scheduled: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+    completed: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+    cancelled: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+    no_show: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
   };
 
   const meetingIcons: Record<string, React.ElementType> = {
@@ -110,7 +110,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
                 <Button size="sm" variant="outline" className="h-7 text-xs">
                   Reschedule
                 </Button>
-                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive">
+                <Button size="sm" variant="ghost" className="h-7 text-xs text-destructive-emphasis">
                   Cancel
                 </Button>
               </div>
@@ -162,7 +162,7 @@ export default function MentorSessionsPage() {
         <div className="py-6">
           <Card>
             <CardContent className="py-12 text-center">
-              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-4" aria-hidden="true" />
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive-emphasis mb-4" aria-hidden="true" />
               <h3 className="font-medium">Failed to load sessions</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {error instanceof Error ? error.message : 'An error occurred'}

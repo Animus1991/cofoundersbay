@@ -38,8 +38,8 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
-  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">SSO Required</Badge>;
-  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 border-blue-500/30">SSO Optional</Badge>;
+  if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/30">SSO Required</Badge>;
+  if (mode === 'optional') return <Badge className="bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30">SSO Optional</Badge>;
   return <Badge variant="secondary">SSO Disabled</Badge>;
 }
 
@@ -102,7 +102,7 @@ export default function SSOAdminPage() {
             </div>
           ) : tenantsError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive" aria-hidden="true" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive-emphasis" aria-hidden="true" />
               <p>Failed to load tenants</p>
             </div>
           ) : !tenants?.length ? (
@@ -208,14 +208,14 @@ function SSOEventRow({ event }: { event: SSOAuthEvent }) {
     <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-muted/30 text-sm">
       {isSuccess
         ? <ShieldCheck className="icon-sm text-green-500 shrink-0" aria-hidden="true" />
-        : <ShieldOff className="icon-sm text-destructive shrink-0" aria-hidden="true" />}
+        : <ShieldOff className="icon-sm text-destructive-emphasis shrink-0" aria-hidden="true" />}
       <div className="flex-1 min-w-0">
         <span className="font-medium">{event.eventType}</span>
         {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
       </div>
       <span className="text-xs text-muted-foreground shrink-0">{event.identityProvider.tenant.name}</span>
       <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString()}</span>
-      {event.errorMessage && <span className="text-xs text-destructive truncate max-w-[160px]">{event.errorMessage}</span>}
+      {event.errorMessage && <span className="text-xs text-destructive-emphasis truncate max-w-[160px]">{event.errorMessage}</span>}
     </div>
   );
 }
@@ -379,7 +379,7 @@ function SSOConfigPanel({
 
         <CardContent className="space-y-6 pt-6">
           {saveError && (
-            <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
+            <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive-emphasis flex items-center gap-2">
               <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />{saveError}
             </div>
           )}
@@ -439,7 +439,7 @@ function SSOConfigPanel({
                           });
                           if (ok) deleteProviderMut.mutate(p.id);
                         }}
-                        className="focus-ring rounded text-xs text-destructive hover:opacity-70"
+                        className="focus-ring rounded text-xs text-destructive-emphasis hover:opacity-70"
                       >
                         <Trash2 className="icon-xs" aria-hidden="true" />
                       </button>
@@ -633,11 +633,11 @@ function SSOConfigPanel({
                         <Globe className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                         <span className="text-sm font-medium">@{m.domain}</span>
                         {m.isVerified
-                          ? <span className="text-xs text-green-600">✓ Verified</span>
+                          ? <span className="text-xs text-green-600 dark:text-green-400">✓ Verified</span>
                           : <button onClick={() => verifyDomainMut.mutate(m.id)} className="text-xs text-primary-emphasis hover:underline">Mark verified</button>}
                         {m.autoRedirectToSSO && <span className="text-xs text-muted-foreground">auto-redirect</span>}
                       </div>
-                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive">
+                      <button onClick={() => deleteDomainMut.mutate(m.id)} className="text-muted-foreground hover:text-destructive-emphasis">
                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                       </button>
                     </div>
@@ -658,7 +658,7 @@ function SSOConfigPanel({
                       className="h-8 rounded-md border border-input bg-background px-2 text-xs">
                       {['founder','investor','mentor','member','admin'].map(role => <option key={role} value={role}>{role}</option>)}
                     </select>
-                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive">
+                    <button onClick={() => setRoleMappingRules(rules => rules.filter((_,idx) => idx !== i))} className="text-muted-foreground hover:text-destructive-emphasis">
                       <X className="h-3.5 w-3.5" aria-hidden="true" />
                     </button>
                   </div>

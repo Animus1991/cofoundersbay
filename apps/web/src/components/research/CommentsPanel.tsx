@@ -80,7 +80,7 @@ function CommentBubble({
           {isOwn && (
             <button
               onClick={() => onDelete(comment.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-destructive-emphasis transition-colors"
               title="Delete comment"
             >
               <Trash2 className="icon-2xs" aria-hidden="true" />

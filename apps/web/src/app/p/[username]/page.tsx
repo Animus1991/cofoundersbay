@@ -235,7 +235,7 @@ export default function PublicProfilePage() {
                     </div>
 
                     {isAvailable && (
-                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                      <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
                         <Zap className="icon-2xs mr-1" aria-hidden="true" />
                         Open to Opportunities
                       </Badge>

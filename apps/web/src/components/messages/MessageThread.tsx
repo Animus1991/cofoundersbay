@@ -225,7 +225,7 @@ export function MessageThread({ conversationId, currentUserId }: MessageThreadPr
                         {isOwn && (
                           <DropdownMenuItem
                             onClick={() => deleteMessageMutation.mutate(message.id)}
-                            className="text-destructive"
+                            className="text-destructive-emphasis"
                           >
                             <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                             Delete

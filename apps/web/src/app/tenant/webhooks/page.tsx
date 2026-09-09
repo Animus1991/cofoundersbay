@@ -114,7 +114,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
                 <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit</DropdownMenuItem>
                 <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" aria-hidden="true" />Resend Last</DropdownMenuItem>
                 <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" aria-hidden="true" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive-emphasis"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

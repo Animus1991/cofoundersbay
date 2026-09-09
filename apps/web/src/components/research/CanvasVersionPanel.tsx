@@ -120,8 +120,8 @@ function triggerMeta(type: string) {
 
 function branchStatusColor(status: string) {
   switch (status) {
-    case 'active':   return 'bg-emerald-500/15 text-emerald-700 border-emerald-200';
-    case 'merged':   return 'bg-violet-500/15 text-violet-700 border-violet-200';
+    case 'active':   return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-200';
+    case 'merged':   return 'bg-violet-500/15 text-violet-700 dark:text-violet-400 border-violet-200';
     case 'archived': return 'bg-muted text-muted-foreground border-border';
     default:         return 'bg-muted text-muted-foreground border-border';
   }
@@ -188,7 +188,7 @@ function DiffDetailDialog({
 
           {diff.added.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1">
                 <Plus className="icon-2xs" aria-hidden="true" /> Added ({diff.added.length})
               </p>
               {diff.added.map((n) => (
@@ -202,7 +202,7 @@ function DiffDetailDialog({
 
           {diff.removed.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-red-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide flex items-center gap-1">
                 <Minus className="icon-2xs" aria-hidden="true" /> Removed ({diff.removed.length})
               </p>
               {diff.removed.map((n) => (
@@ -216,7 +216,7 @@ function DiffDetailDialog({
 
           {diff.modified.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
                 <Edit2 className="icon-2xs" aria-hidden="true" /> Modified ({diff.modified.length})
               </p>
               {diff.modified.map((n) => (
@@ -240,7 +240,7 @@ function DiffDetailDialog({
 
           {diff.moved.length > 0 && (
             <div className="space-y-1">
-              <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1">
+              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wide flex items-center gap-1">
                 <Move className="icon-2xs" aria-hidden="true" /> Moved ({diff.moved.length})
               </p>
               {diff.moved.map((n) => (
@@ -456,7 +456,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
                         <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(snap)}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700 dark:text-amber-400" title="Restore" onClick={() => setRestoreTarget(snap)}>
                         <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
@@ -642,7 +642,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
                     <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 )}
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(v)}>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700 dark:text-amber-400" title="Restore" onClick={() => setRestoreTarget(v)}>
                   <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
@@ -813,7 +813,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                 )}
                 <Button
                   variant="ghost" size="sm"
-                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive hover:text-destructive"
+                  className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-destructive-emphasis hover:text-destructive-emphasis"
                   title="Delete"
                   onClick={() => setDeletingId(b.id)}
                 >
@@ -829,7 +829,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="icon-sm text-destructive" aria-hidden="true" />Delete branch?
+              <AlertTriangle className="icon-sm text-destructive-emphasis" aria-hidden="true" />Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.

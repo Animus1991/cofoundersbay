@@ -147,7 +147,7 @@ export function AdminAnalyticsDashboard() {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 dark:text-indigo-400 transition-colors"
         >
           <RefreshCw className="icon-sm" aria-hidden="true" />
           Refresh

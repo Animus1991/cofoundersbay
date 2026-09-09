@@ -103,7 +103,7 @@ export function CanvasBranchSelector({
                     )}
                     <span className="text-sm truncate">{b.name}</span>
                     {b.status === 'merged' && (
-                      <Badge variant="outline" className="text-2xs px-1 py-0 h-3.5 shrink-0 text-violet-600 border-violet-200">merged</Badge>
+                      <Badge variant="outline" className="text-2xs px-1 py-0 h-3.5 shrink-0 text-violet-600 dark:text-violet-400 border-violet-200">merged</Badge>
                     )}
                   </div>
                   {activeBranchId === b.id && <Check className="h-3.5 w-3.5 text-primary-emphasis shrink-0" aria-hidden="true" />}

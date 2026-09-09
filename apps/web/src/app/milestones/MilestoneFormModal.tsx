@@ -140,7 +140,7 @@ export function MilestoneFormModal({
             stay reachable however long the form gets. */}
         <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
           {error && (
-            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive-emphasis">
               <AlertTriangle className="mt-0.5 icon-sm shrink-0" aria-hidden="true" />
               {error}
             </div>
@@ -149,7 +149,7 @@ export function MilestoneFormModal({
           {/* Title */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Title <span className="text-destructive">*</span>
+              Title <span className="text-destructive-emphasis">*</span>
             </label>
             <Input
               value={form.title}

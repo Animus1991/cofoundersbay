@@ -299,7 +299,10 @@ function PostCard({
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{post.author.headline}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{timeAgo}</p>
+              {/* Relative to Date.now(), so server and client can differ. */}
+              <p suppressHydrationWarning className="text-xs text-muted-foreground mt-0.5">
+                {timeAgo}
+              </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   <span className="font-medium">Why you're seeing this:</span> {post.relevanceReasons.join(', ')}
@@ -324,7 +327,7 @@ function PostCard({
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem className="text-destructive-emphasis">
                 <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>

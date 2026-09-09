@@ -365,19 +365,19 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {sections.filter(s => getConfidenceLevel(s.content) === 'high').length}
               </div>
               <div className="text-xs text-muted-foreground">Well-defined sections</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                 {sections.filter(s => getConfidenceLevel(s.content) === 'medium').length}
               </div>
               <div className="text-xs text-muted-foreground">Needs refinement</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {sections.filter(s => getConfidenceLevel(s.content) === 'low').length}
               </div>
               <div className="text-xs text-muted-foreground">Missing content</div>

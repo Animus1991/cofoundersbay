@@ -77,7 +77,7 @@ function MemberRow({ member }: { member: OrgMember }) {
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium">{member.name}</p>
           {member.status === 'invited' && (
-            <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">Invited</Badge>
+            <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">Invited</Badge>
           )}
         </div>
         <p className="text-xs text-muted-foreground">{member.email}</p>
@@ -103,7 +103,7 @@ function MemberRow({ member }: { member: OrgMember }) {
           <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
           <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem className="text-destructive-emphasis">
             <UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member
           </DropdownMenuItem>
         </DropdownMenuContent>

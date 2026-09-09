@@ -292,9 +292,9 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
   const getComplexityColor = (complexity: Feature['complexity']) => {
     switch (complexity) {
-      case 'low': return 'text-green-600';
-      case 'medium': return 'text-yellow-600';
-      case 'high': return 'text-red-600';
+      case 'low': return 'text-green-600 dark:text-green-400';
+      case 'medium': return 'text-yellow-600 dark:text-yellow-400';
+      case 'high': return 'text-red-600 dark:text-red-400';
     }
   };
 
@@ -304,7 +304,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-500/10 rounded-lg">
-            <Rocket className="icon-md text-purple-600" aria-hidden="true" />
+            <Rocket className="icon-md text-purple-600 dark:text-purple-400" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">MVP Planner</h2>
@@ -550,7 +550,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             <div className="grid gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                     {data.features.filter(f => f.priority === 'must-have').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Must Have</div>
@@ -558,7 +558,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-orange-600">
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                     {data.features.filter(f => f.priority === 'should-have').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Should Have</div>
@@ -566,7 +566,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               </Card>
               <Card>
                 <CardContent className="p-4 text-center">
-                  <div className="text-2xl font-bold text-yellow-600">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {data.features.filter(f => f.priority === 'could-have').length}
                   </div>
                   <div className="text-xs text-muted-foreground">Could Have</div>
@@ -644,7 +644,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                                       };
                                       setData(prev => ({ ...prev, sprints: newSprints }));
                                     }}
-                                    className="ml-1 hover:text-destructive"
+                                    className="ml-1 hover:text-destructive-emphasis"
                                   >
                                     ×
                                   </button>

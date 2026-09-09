@@ -132,7 +132,7 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
               <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{startup.teamSize} founders</span>
               <span className="flex items-center gap-1 font-medium text-primary-emphasis"><DollarSign className="icon-2xs" aria-hidden="true" />Raising {startup.raisingAmount}</span>
               {startup.revenue !== 'Pre-revenue' && (
-                <span className="flex items-center gap-1 text-green-600"><TrendingUp className="icon-2xs" aria-hidden="true" />{startup.revenue}</span>
+                <span className="flex items-center gap-1 text-green-600 dark:text-green-400"><TrendingUp className="icon-2xs" aria-hidden="true" />{startup.revenue}</span>
               )}
             </div>
 

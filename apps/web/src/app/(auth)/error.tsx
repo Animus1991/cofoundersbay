@@ -27,7 +27,7 @@ export default function AuthError({
         </Link>
         <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-4">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-            <AlertTriangle className="icon-md text-destructive" aria-hidden="true" />
+            <AlertTriangle className="icon-md text-destructive-emphasis" aria-hidden="true" />
           </div>
           <div className="space-y-1">
             <h1 className="text-lg font-semibold text-foreground">Authentication error</h1>

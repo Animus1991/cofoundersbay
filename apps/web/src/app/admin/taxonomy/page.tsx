@@ -94,7 +94,7 @@ function SkillRow({
             <Edit className="mr-2 icon-sm" aria-hidden="true" />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive" onClick={() => onDelete(skill)}>
+          <DropdownMenuItem className="text-destructive-emphasis" onClick={() => onDelete(skill)}>
             <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
             Delete
           </DropdownMenuItem>
@@ -348,7 +348,7 @@ export default function AdminTaxonomyPage() {
 
             <div className="border-t">
               {isError && (
-                <div className="flex items-center gap-2 p-6 text-destructive justify-center">
+                <div className="flex items-center gap-2 p-6 text-destructive-emphasis justify-center">
                   <AlertCircle className="icon-md" aria-hidden="true" />
                   <span className="text-sm">Failed to load skills.</span>
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>

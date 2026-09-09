@@ -92,7 +92,7 @@ export function BoardExport({ board, canvasRef }: BoardExportProps) {
       }
 
       markdown += `---\n\n`;
-      markdown += `*Exported on ${new Date().toLocaleDateString()}*\n\n`;
+      markdown += `*Exported on ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}*\n\n`;
 
       // Group nodes by type
       const nodesByType: Record<string, typeof board.nodes> = {};

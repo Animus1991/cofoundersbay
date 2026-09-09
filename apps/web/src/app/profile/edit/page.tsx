@@ -220,7 +220,7 @@ function TagInput({
         {value.map((tag) => (
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
-            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
+            <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive-emphasis">
               <X className="icon-2xs" aria-hidden="true" />
             </button>
           </Badge>
@@ -675,7 +675,7 @@ export default function ProfileEditPage() {
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Display Name <span className="text-destructive">*</span></label>
+                    <label className="text-sm font-medium">Display Name <span className="text-destructive-emphasis">*</span></label>
                     <Input
                       value={form.displayName}
                       onChange={(e) => updateField('displayName', e.target.value)}
@@ -1078,7 +1078,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="icon-sm text-blue-600" aria-hidden="true" /> LinkedIn
+                        <Linkedin className="icon-sm text-blue-600 dark:text-blue-400" aria-hidden="true" /> LinkedIn
                       </label>
                       <Input
                         value={form.linkedinUrl}
@@ -1162,7 +1162,7 @@ export default function ProfileEditPage() {
                 <p className="text-sm font-medium text-foreground">Missing items:</p>
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
-                    <li className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/10 p-2 rounded-md">
+                    <li className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 p-2 rounded-md">
                       <CheckCircle2 className="icon-sm" aria-hidden="true" /> Your profile is fully complete!
                     </li>
                   ) : (

@@ -76,8 +76,8 @@ function InviteRow({ invite, onCancel, cancelling }: {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{invite.email}</p>
         <p className="text-xs text-muted-foreground">
-          Sent {new Date(invite.createdAt).toLocaleDateString()}
-          {invite.acceptedAt && ` · Joined ${new Date(invite.acceptedAt).toLocaleDateString()}`}
+          Sent {new Date(invite.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          {invite.acceptedAt && ` · Joined ${new Date(invite.acceptedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`}
         </p>
       </div>
       <Badge className={cn('shrink-0 text-xs', cfg.color)}>{cfg.label}</Badge>
@@ -85,7 +85,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
         <Button aria-label="Close"
           variant="ghost"
           size="icon"
-          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+          className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive-emphasis"
           onClick={() => onCancel(invite.id)}
           disabled={cancelling}
         >
@@ -200,7 +200,7 @@ export default function InvitePage() {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="invite-email">Email address <span className="text-destructive">*</span></Label>
+              <Label htmlFor="invite-email">Email address <span className="text-destructive-emphasis">*</span></Label>
               <Input
                 id="invite-email"
                 type="email"

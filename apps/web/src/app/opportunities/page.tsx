@@ -289,7 +289,7 @@ function ProposalCard({
   const PROPOSAL_STATUS: Record<string, { label: string; className: string }> = {
     pending: { label: 'Pending', className: 'bg-muted text-muted-foreground' },
     accepted: { label: 'Accepted', className: 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' },
-    declined: { label: 'Declined', className: 'bg-destructive/20 text-red-700 dark:text-destructive' },
+    declined: { label: 'Declined', className: 'bg-destructive/20 text-destructive-emphasis' },
   };
   const statusCfg = PROPOSAL_STATUS[proposal.status] ?? PROPOSAL_STATUS.pending;
 

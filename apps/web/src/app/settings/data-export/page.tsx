@@ -135,7 +135,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
     idle: { label: 'Pending', color: 'text-muted-foreground', icon: Clock },
     processing: { label: 'Processing', color: 'text-amber-500', icon: Loader2 },
     ready: { label: 'Ready', color: 'text-emerald-500', icon: Check },
-    expired: { label: 'Expired', color: 'text-destructive', icon: AlertTriangle },
+    expired: { label: 'Expired', color: 'text-destructive-emphasis', icon: AlertTriangle },
   };
 
   const config = statusConfig[exportReq.status];
@@ -398,7 +398,7 @@ export default function DataExportPage() {
         {/* Delete Account Link */}
         <div className="mt-8 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <div className="flex items-start gap-3">
-            <Trash2 className="icon-md text-destructive shrink-0 mt-0.5" aria-hidden="true" />
+            <Trash2 className="icon-md text-destructive-emphasis shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
               <p className="text-xs text-muted-foreground mb-3">
@@ -406,7 +406,7 @@ export default function DataExportPage() {
                 you can do so from your account settings.
               </p>
               <Link href="/settings">
-                <Button variant="outline" size="sm" className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                <Button variant="outline" size="sm" className="text-destructive-emphasis border-destructive/30 hover:bg-destructive/10">
                   Go to Account Settings
                 </Button>
               </Link>

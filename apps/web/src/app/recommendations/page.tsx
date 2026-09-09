@@ -111,7 +111,7 @@ function BreakdownModal({
   explanation: MatchExplanationItem[];
   reasons: string[];
 }) {
-  const color = score >= 80 ? 'text-emerald-600' : score >= 60 ? 'text-blue-600' : 'text-amber-600';
+  const color = score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : score >= 60 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400';
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
@@ -155,7 +155,7 @@ function BreakdownModal({
 
 // Rich feedback dropdown
 const FEEDBACK_OPTIONS: { label: string; value: MatchFeedbackType; icon: LucideIcon; color?: string }[] = [
-  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600' },
+  { label: 'Great match!', value: 'accepted', icon: ThumbsUp, color: 'text-emerald-600 dark:text-emerald-400' },
   { label: 'Not relevant', value: 'not_relevant', icon: EyeOff },
   { label: 'Not now', value: 'not_now', icon: Clock },
   { label: 'Better fit wanted', value: 'better_fit_wanted', icon: Search },
@@ -371,7 +371,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   <Button aria-label="Save match"
                     size="icon"
                     variant="ghost"
-                    className="h-7 w-7 text-muted-foreground hover:text-blue-600"
+                    className="h-7 w-7 text-muted-foreground hover:text-blue-600 dark:text-blue-400"
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
@@ -381,7 +381,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 <Button aria-label="Good match"
                   size="icon"
                   variant="ghost"
-                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600"
+                  className="h-7 w-7 text-muted-foreground hover:text-emerald-600 dark:text-emerald-400"
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >
@@ -531,7 +531,7 @@ export default function RecommendationsPage() {
                 <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
-                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
+                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today'}
                 </Badge>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1">

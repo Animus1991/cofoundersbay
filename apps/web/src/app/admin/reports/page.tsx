@@ -53,15 +53,15 @@ type Report = {
 function ReportCard({ report }: { report: Report }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
     pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" aria-hidden="true" /> },
-    reviewing: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
-    resolved: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    reviewing: { color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
+    resolved: { color: 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
     dismissed: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
   };
 
   const priorityColors: Record<string, string> = {
     low: 'bg-gray-500/10 text-gray-600',
-    medium: 'bg-amber-500/10 text-amber-600',
-    high: 'bg-red-500/10 text-red-600',
+    medium: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    high: 'bg-red-500/10 text-red-600 dark:text-red-400',
   };
 
   const typeIcons: Record<string, React.ReactNode> = {
@@ -113,7 +113,7 @@ function ReportCard({ report }: { report: Report }) {
                     <DropdownMenuItem>View Details</DropdownMenuItem>
                     <DropdownMenuItem>View Target</DropdownMenuItem>
                     <DropdownMenuItem>Contact Reporter</DropdownMenuItem>
-                    <DropdownMenuItem className="text-green-600">Mark Resolved</DropdownMenuItem>
+                    <DropdownMenuItem className="text-green-600 dark:text-green-400">Mark Resolved</DropdownMenuItem>
                     <DropdownMenuItem className="text-muted-foreground">Dismiss</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -234,19 +234,19 @@ export default function AdminReportsPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Pending</p>
-              <p className="text-xl font-bold text-amber-600">{statusCounts.pending}</p>
+              <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{statusCounts.pending}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">In Review</p>
-              <p className="text-xl font-bold text-blue-600">{statusCounts.reviewing}</p>
+              <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{statusCounts.reviewing}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Resolved</p>
-              <p className="text-xl font-bold text-green-600">{statusCounts.resolved}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{statusCounts.resolved}</p>
             </CardContent>
           </Card>
         </div>

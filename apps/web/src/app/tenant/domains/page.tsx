@@ -32,9 +32,9 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 dark:text-green-400 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 dark:text-red-400 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
     case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
   }
 }
@@ -48,7 +48,7 @@ function CopyButton({ value }: { value: string }) {
   };
   return (
     <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-      {copied ? <CheckCircle2 className="icon-sm text-green-600" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
+      {copied ? <CheckCircle2 className="icon-sm text-green-600 dark:text-green-400" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
     </button>
   );
 }
@@ -57,7 +57,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
   return (
     <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 space-y-4 text-sm">
       <div className="flex items-start gap-2">
-        <Info className="icon-sm text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
+        <Info className="icon-sm text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" aria-hidden="true" />
         <div>
           <p className="font-semibold text-foreground">DNS Configuration Required</p>
           <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
@@ -211,17 +211,17 @@ function DomainRow({
               <Badge variant="outline" className="text-xs capitalize">{domain.domainType}</Badge>
               {statusBadge(domain.verificationStatus)}
               {domain.isActive
-                ? <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs">Active</Badge>
+                ? <Badge className="bg-green-500/10 text-green-700 dark:text-green-400 border-green-200 text-xs">Active</Badge>
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
               {domain.sslStatus === 'active' && (
-                <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs gap-1">
+                <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 text-xs gap-1">
                   <Shield className="h-2.5 w-2.5" aria-hidden="true" />SSL
                 </Badge>
               )}
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             )}
             {domain.lastVerificationCheck && domain.verificationStatus === 'failed' && (
@@ -270,7 +270,7 @@ function DomainRow({
             size="sm" variant="ghost"
             onClick={() => toggle.mutate(!domain.isActive)}
             disabled={toggle.isPending || (domain.verificationStatus !== 'verified' && !domain.isActive)}
-            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}`}
+            className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700 dark:text-amber-400' : 'text-green-600 dark:text-green-400 hover:text-green-700'}`}
           >
             <Power className="icon-2xs" aria-hidden="true" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
@@ -287,7 +287,7 @@ function DomainRow({
               if (ok) remove.mutate();
             }}
             disabled={remove.isPending}
-            className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
+            className="gap-1 h-7 text-xs text-destructive-emphasis hover:text-destructive-emphasis"
           >
             <Trash2 className="icon-2xs" aria-hidden="true" />
           </Button>
@@ -372,7 +372,7 @@ export default function TenantDomainsPage() {
           <Card className="border-border/60">
             <CardContent className="py-3 px-4">
               <p className="text-xs text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold mt-0.5 text-green-600">{activeDomains.length}</p>
+              <p className="text-2xl font-bold mt-0.5 text-green-600 dark:text-green-400">{activeDomains.length}</p>
             </CardContent>
           </Card>
           <Card className="border-border/60">
@@ -450,7 +450,7 @@ export default function TenantDomainsPage() {
               </Button>
             </div>
             {addSub.isError && (
-              <p className="text-xs text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive-emphasis flex items-center gap-1">
                 <XCircle className="icon-sm" aria-hidden="true" />{(addSub.error as Error).message}
               </p>
             )}
@@ -490,7 +490,7 @@ export default function TenantDomainsPage() {
               </Button>
             </div>
             {addCustom.isError && (
-              <p className="text-xs text-destructive flex items-center gap-1">
+              <p className="text-xs text-destructive-emphasis flex items-center gap-1">
                 <XCircle className="icon-sm" aria-hidden="true" />{(addCustom.error as Error).message}
               </p>
             )}
