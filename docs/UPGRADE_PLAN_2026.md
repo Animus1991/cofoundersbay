@@ -176,12 +176,57 @@ Ordered by leverage: every item in Phase 1–3 changes **one file and fixes ever
   no-referrer policy and explicit dimensions — which is what actually removes
   their layout shift. Moving to `next/image` needs an image proxy first.
 
-### Remaining follow-ups (not blockers)
+---
 
-1. Hoist `AppShell` from the 130 pages that mount it into segment layouts, so
-   the shell persists across navigation instead of remounting per page.
-2. Add an image proxy so avatars and tenant logos can go through `next/image`.
-3. Replace the 82 remaining `: any` annotations, concentrated in the dashboard
-   and research modules.
-4. Add automated axe-core assertions in CI so the accessibility work stays
-   fixed.
+## 4. Follow-up round (also landed)
+
+| Item | State | Commit |
+|---|---|---|
+| axe-core suite in CI + the 9 violations it found | ✅ | `f02f81d` |
+| AppShell hoisted into segment layouts | ✅ | `029642e`, `7c9c97d` |
+| `any` annotations replaced with real types | ✅ | `fea0b5b` |
+| CSP could silently block all API calls | ✅ | `87d78b7` |
+
+### What the test suite caught that review had not
+
+Adding `apps/web/e2e/a11y.spec.ts` was worth more than the fixes in it. On its
+first run it failed with nine real defects, including two the whole audit had
+missed:
+
+- **`--primary` could not do both jobs.** White on it was 4.38:1 and the same
+  token used as link text was 3.93:1 on a card — tuning it for one broke the
+  other. Split into `--primary` (interactive surface) and `--primary-emphasis`
+  (text on a surface), computed and verified per theme. **The `system` theme's
+  primary was failing at 2.86:1**, which nobody had noticed.
+- **The `alliance` brand orange cannot carry white text at any usable
+  lightness** (2.20:1). Its `--primary-foreground` is now dark rather than the
+  hue being shifted off-brand.
+- The four footer social links had no accessible text at all.
+- The plan comparison table was a scroll container with no keyboard access —
+  on a phone it is the only way to read the comparison.
+
+Loading the built Worker in a browser likewise caught a defect in this branch's
+own CSP: an unset `NEXT_PUBLIC_API_URL` collapsed `connect-src` to `'self'`, so
+a deploy that forgot the variable would have shipped an app that renders
+perfectly and does nothing. It now warns at build time.
+
+### Shell persistence, verified
+
+Tagging the live `<aside>` and `<main>` nodes and then navigating
+`/investor/pipeline → /investor/scouting` client-side finds both tags still on
+the same DOM nodes. The chrome genuinely stops remounting; 44 segments were
+converted, three (`admin` handled separately, `dashboard`, `research`) were
+excluded because a page in them is full-bleed by design.
+
+### Still open
+
+1. An image proxy, so avatars and tenant logos can go through `next/image`.
+   They currently come from arbitrary tenant-supplied hosts, which
+   `remotePatterns` cannot enumerate.
+2. The remaining 85 `any` occurrences, two or three per file across ~35 files.
+   Mostly the `(...args: any[]) => any` generic idiom and enum-narrowing casts.
+3. Extending the axe suite past the public routes, which needs a seeded test
+   session against a running API.
+4. A visual check of the admin section against a real backend — `AdminGuard`
+   needs a live admin session, so the shell change there is typecheck- and
+   build-verified only.
