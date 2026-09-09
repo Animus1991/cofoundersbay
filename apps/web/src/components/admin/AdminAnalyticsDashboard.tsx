@@ -14,7 +14,13 @@ import {
   XPDistributionBucket,
   BadgeUnlockRate,
 } from '@/lib/api';
+import { useChartTheme } from '@/lib/chart-theme';
 
+/**
+ * Badge rarity is an ordinal domain ramp, not a chart series: the tiers carry
+ * fixed meaning across the gamification surface, so they stay pinned rather
+ * than drawing from the categorical palette in lib/chart-theme.
+ */
 const RARITY_COLORS: Record<string, string> = {
   common: '#6b7280',
   uncommon: '#22c55e',
@@ -57,6 +63,7 @@ function StatCard({
 }
 
 export function AdminAnalyticsDashboard() {
+  const theme = useChartTheme();
   const [xpDist, setXpDist] = useState<XPDistributionBucket[]>([]);
   const [badgeRates, setBadgeRates] = useState<BadgeUnlockRate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -184,7 +191,7 @@ export function AdminAnalyticsDashboard() {
               formatter={(v: number) => [`${v} users`, 'Count']}
               contentStyle={{ fontSize: 12 }}
             />
-            <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="count" fill={theme.series[0]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
         <p className="text-xs text-gray-400 mt-2">
@@ -219,7 +226,7 @@ export function AdminAnalyticsDashboard() {
                       key={b.badgeId}
                       fill={
                         RARITY_COLORS[b.rarity] ??
-                        ['#6366f1', '#22c55e', '#f59e0b', '#3b82f6', '#a855f7', '#ef4444'][i % 6]
+                        theme.series[i % theme.series.length]
                       }
                     />
                   ))}

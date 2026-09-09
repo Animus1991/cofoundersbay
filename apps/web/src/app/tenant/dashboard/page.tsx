@@ -28,6 +28,7 @@ import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { useChartTheme } from '@/lib/chart-theme';
 
 const MEMBER_GROWTH = [
   { month: 'Oct', members: 98 },
@@ -78,6 +79,7 @@ function StatCard({
 }
 
 export default function TenantDashboardPage() {
+  const theme = useChartTheme();
   // Mock data
   const stats = {
     totalMembers: 156,
@@ -252,7 +254,7 @@ export default function TenantDashboardPage() {
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
                   <Bar dataKey="sessions" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Sessions" />
-                  <Bar dataKey="milestones" fill="#4ade80" radius={[4, 4, 0, 0]} name="Milestones" />
+                  <Bar dataKey="milestones" fill={theme.series[2]} radius={[4, 4, 0, 0]} name="Milestones" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

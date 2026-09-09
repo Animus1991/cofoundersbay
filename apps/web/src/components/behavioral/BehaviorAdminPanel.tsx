@@ -23,6 +23,7 @@ import {
   type BehaviorPlatformStats,
   type BehavioralStateResponse,
 } from '@/lib/api';
+import { useChartTheme } from '@/lib/chart-theme';
 
 const STATE_LABELS: Record<string, { label: string; color: string }> = {
   newly_onboarded:    { label: 'New Onboard',      color: 'bg-blue-500' },
@@ -58,6 +59,7 @@ function KPICard({ title, value, sub, icon: Icon, color }: {
 }
 
 function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; isLoading: boolean }) {
+  const theme = useChartTheme();
   if (isLoading) return <Skeleton className="h-64 w-full" />;
   if (!stats) return <div className="py-8 text-center text-sm text-muted-foreground">No stats yet.</div>;
 
@@ -86,9 +88,9 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={140} />
                 <Tooltip />
-                <Bar dataKey="shown" name="Shown" fill="#6366f1" radius={[0, 2, 2, 0]} />
-                <Bar dataKey="converted" name="Converted" fill="#10b981" radius={[0, 2, 2, 0]} />
-                <Bar dataKey="dismissed" name="Dismissed" fill="#f43f5e" radius={[0, 2, 2, 0]} />
+                <Bar dataKey="shown" name="Shown" fill={theme.series[0]} radius={[0, 2, 2, 0]} />
+                <Bar dataKey="converted" name="Converted" fill={theme.series[2]} radius={[0, 2, 2, 0]} />
+                <Bar dataKey="dismissed" name="Dismissed" fill={theme.status.critical} radius={[0, 2, 2, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

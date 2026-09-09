@@ -13,6 +13,7 @@ import {
   AdminScoreInspectReport,
   AdminXPBreakdownItem,
 } from '@/lib/api';
+import { useChartTheme } from '@/lib/chart-theme';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:  'bg-amber-100 text-amber-700',
@@ -69,6 +70,7 @@ function XPEventRow({ e }: { e: AdminXPBreakdownItem }) {
 }
 
 export function ScoreInspector() {
+  const theme = useChartTheme();
   const [userId, setUserId] = useState('');
   const [query, setQuery] = useState('');
   const [report, setReport] = useState<AdminScoreInspectReport | null>(null);
@@ -203,7 +205,7 @@ export function ScoreInspector() {
                   }
                   contentStyle={{ fontSize: 12 }}
                 />
-                <Bar dataKey="xp" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="xp" fill={theme.series[0]} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
             <div className="mt-3 overflow-auto max-h-40">

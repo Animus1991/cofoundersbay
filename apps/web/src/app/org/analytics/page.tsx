@@ -29,6 +29,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { useChartTheme } from '@/lib/chart-theme';
 
 function StatCard({
   title,
@@ -104,14 +105,17 @@ const SESSIONS_BY_MONTH = [
 ];
 
 const INDUSTRY_PIE = [
-  { name: 'AI/ML',          value: 14, color: '#6366f1' },
-  { name: 'FinTech',        value: 10, color: '#22d3ee' },
-  { name: 'HealthTech',     value: 8,  color: '#4ade80' },
-  { name: 'CleanTech',      value: 7,  color: '#fb923c' },
-  { name: 'SaaS',           value: 6,  color: '#f472b6' },
+  // Colour comes from the shared categorical palette by slot order, so the
+  // same sector keeps the same hue on every screen that charts it.
+  { name: 'AI/ML',          value: 14 },
+  { name: 'FinTech',        value: 10 },
+  { name: 'HealthTech',     value: 8  },
+  { name: 'CleanTech',      value: 7  },
+  { name: 'SaaS',           value: 6  },
 ];
 
 export default function OrgAnalyticsPage() {
+  const theme = useChartTheme();
   const [period, setPeriod] = useState('30d');
   // Mock data
   const stats = {
@@ -235,8 +239,8 @@ export default function OrgAnalyticsPage() {
                       <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="accFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4ade80" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#4ade80" stopOpacity={0} />
+                      <stop offset="5%" stopColor={theme.series[2]} stopOpacity={0.25} />
+                      <stop offset="95%" stopColor={theme.series[2]} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -244,7 +248,7 @@ export default function OrgAnalyticsPage() {
                   <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
                   <Area type="monotone" dataKey="applications" stroke="hsl(var(--primary))" fill="url(#appFill)" strokeWidth={2} name="Applications" />
-                  <Area type="monotone" dataKey="accepted" stroke="#4ade80" fill="url(#accFill)" strokeWidth={2} name="Accepted" />
+                  <Area type="monotone" dataKey="accepted" stroke={theme.series[2]} fill="url(#accFill)" strokeWidth={2} name="Accepted" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -320,18 +324,18 @@ export default function OrgAnalyticsPage() {
                 <ResponsiveContainer width={140} height={140}>
                   <PieChart>
                     <Pie data={INDUSTRY_PIE} dataKey="value" cx="50%" cy="50%" innerRadius={40} outerRadius={60} strokeWidth={2}>
-                      {INDUSTRY_PIE.map((entry) => (
-                        <Cell key={entry.name} fill={entry.color} />
+                      {INDUSTRY_PIE.map((entry, i) => (
+                        <Cell key={entry.name} fill={theme.series[i % theme.series.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }} />
+                    <Tooltip contentStyle={theme.tooltipStyle} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex-1 space-y-2">
-                  {INDUSTRY_PIE.map((item) => (
+                  {INDUSTRY_PIE.map((item, i) => (
                     <div key={item.name} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
+                        <span className="h-2 w-2 rounded-full flex-shrink-0" style={{ background: theme.series[i % theme.series.length] }} />
                         <span className="text-muted-foreground">{item.name}</span>
                       </div>
                       <span className="font-medium tabular-nums">{item.value}</span>

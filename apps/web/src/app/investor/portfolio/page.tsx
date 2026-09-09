@@ -23,6 +23,7 @@ import {
 import { EmptyState } from '@/components/common/EmptyState';
 import { useDemoData } from '@/contexts/DemoDataContext';
 import { cn } from '@/lib/utils';
+import { useChartTheme } from '@/lib/chart-theme';
 
 const PORTFOLIO_VALUE_HISTORY = [
   { month: 'Oct', value: 200 },
@@ -34,10 +35,10 @@ const PORTFOLIO_VALUE_HISTORY = [
 ];
 
 const SECTOR_DISTRIBUTION = [
-  { name: 'FoodTech', value: 50, color: '#f97316' },
-  { name: 'Cybersecurity', value: 100, color: '#6366f1' },
-  { name: 'Enterprise', value: 75, color: '#0ea5e9' },
-  { name: 'Logistics', value: 50, color: '#22c55e' },
+  { name: 'FoodTech', value: 50 },
+  { name: 'Cybersecurity', value: 100 },
+  { name: 'Enterprise', value: 75 },
+  { name: 'Logistics', value: 50 },
 ];
 
 type Investment = {
@@ -148,6 +149,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 }
 
 export default function InvestorPortfolioPage() {
+  const theme = useChartTheme();
   const { showDemoData } = useDemoData();
   const investments = showDemoData ? MOCK_INVESTMENTS : [];
   const valueHistory = showDemoData ? PORTFOLIO_VALUE_HISTORY : [];
@@ -241,7 +243,7 @@ export default function InvestorPortfolioPage() {
                   <RPieChart>
                     <Pie data={sectorData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: $${value}K`} labelLine={false}>
                       {sectorData.map((entry, i) => (
-                        <Cell key={i} fill={entry.color} />
+                        <Cell key={entry.name} fill={theme.series[i % theme.series.length]} />
                       ))}
                     </Pie>
                     <Legend />

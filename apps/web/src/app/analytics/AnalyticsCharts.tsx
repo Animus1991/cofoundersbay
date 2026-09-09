@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, PieChart, Download } from 'lucide-react';
 import type { AnalyticsEngagement } from '@/lib/api';
+import { useChartTheme } from '@/lib/chart-theme';
 
 interface ProfileView {
   date: string;
@@ -33,7 +34,7 @@ const DEMO_BAR_DATA = [
   { name: 'Shares',      value: 5  },
 ];
 
-const PIE_COLORS = ['#8b5cf6', '#22d3ee', '#4ade80', '#fb923c', '#f87171'];
+
 
 const TOOLTIP_STYLE = {
   background: 'hsl(var(--card))',
@@ -43,6 +44,7 @@ const TOOLTIP_STYLE = {
 };
 
 export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
+  const theme = useChartTheme();
   const chartData = data.length > 0
     ? data.map((d) => ({
         date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
@@ -73,8 +75,8 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
                 <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorUnique" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor="#22d3ee" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
+                <stop offset="5%"  stopColor={theme.series[0]} stopOpacity={0.25} />
+                <stop offset="95%" stopColor={theme.series[0]} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -82,7 +84,7 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
             <YAxis tick={{ fontSize: 11 }} className="text-muted-foreground" />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
             <Area type="monotone" dataKey="views"  stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#colorViews)"  name="Views" />
-            <Area type="monotone" dataKey="unique" stroke="#22d3ee"             strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
+            <Area type="monotone" dataKey="unique" stroke={theme.series[0]}             strokeWidth={2} fill="url(#colorUnique)" name="Unique" />
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>
@@ -91,6 +93,7 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
 }
 
 export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEngagement }) {
+  const theme = useChartTheme();
   const barData = [
     { name: 'Connections', value: engagement?.connections ?? DEMO_BAR_DATA[0].value },
     { name: 'Messages',    value: engagement?.messages    ?? DEMO_BAR_DATA[1].value },
@@ -117,7 +120,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                 {barData.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  <Cell key={i} fill={theme.series[i % theme.series.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -144,7 +147,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
                 dataKey="value"
               >
                 {pieData.map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  <Cell key={i} fill={theme.series[i % theme.series.length]} />
                 ))}
               </Pie>
               <Tooltip contentStyle={TOOLTIP_STYLE} />

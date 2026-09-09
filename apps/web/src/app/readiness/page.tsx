@@ -55,6 +55,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { assessReadiness, updateReadinessCriterion, type ReadinessOverall } from '@/lib/api';
+import { useChartTheme, CHART_SERIES_LIGHT, CHART_STATUS_LIGHT } from '@/lib/chart-theme';
 
 // ── Static dimension metadata ─────────────────────────────────────────────────
 const DIMENSION_META: Record<string, {
@@ -184,7 +185,13 @@ function ScoreRing({ score, size = 128 }: { score: number; size?: number }) {
   const r = size / 2 - 10;
   const circ = 2 * Math.PI * r;
   const status = scoreToStatus(score);
-  const colorMap = { excellent: '#22c55e', good: '#3b82f6', 'needs-work': '#f59e0b', critical: '#ef4444' };
+  // Status colours are reserved for state and always paired with a text label.
+  const colorMap = {
+    excellent: CHART_STATUS_LIGHT.good,
+    good: CHART_SERIES_LIGHT[0],
+    'needs-work': CHART_STATUS_LIGHT.warning,
+    critical: CHART_STATUS_LIGHT.critical,
+  };
   return (
     <svg width={size} height={size} className="-rotate-90" aria-hidden>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="currentColor" strokeWidth={8} className="text-muted/20" />
@@ -291,6 +298,7 @@ function DimensionCard({
 }
 
 function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
+  const theme = useChartTheme();
   const data = dimensions.map((d) => ({
     dimension: d.label,
     score: Math.round((d.score / d.maxScore) * 100),
@@ -311,7 +319,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
             <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} tickCount={4} />
             <Radar name="Your Score" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} strokeWidth={2} />
-            <Radar name="Benchmark" dataKey="benchmark" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 2" />
+            <Radar name="Benchmark" dataKey="benchmark" stroke={theme.status.neutral} fill={theme.status.neutral} fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 2" />
             <RechartsTooltip
               contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
               formatter={(val: number, name: string) => [`${val}%`, name]}
@@ -328,6 +336,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
 }
 
 function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
+  const theme = useChartTheme();
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -352,8 +361,8 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
               formatter={(val: number, name: string) => [`${val}%`, name]}
             />
             <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name="Overall" />
-            <Line type="monotone" dataKey="accel" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 2.5 }} name="Accelerator" strokeDasharray="4 2" />
-            <Line type="monotone" dataKey="invest" stroke="#22c55e" strokeWidth={2} dot={{ r: 2.5 }} name="Investor" strokeDasharray="4 2" />
+            <Line type="monotone" dataKey="accel" stroke={theme.series[4]} strokeWidth={2} dot={{ r: 2.5 }} name="Accelerator" strokeDasharray="4 2" />
+            <Line type="monotone" dataKey="invest" stroke={theme.series[2]} strokeWidth={2} dot={{ r: 2.5 }} name="Investor" strokeDasharray="4 2" />
           </LineChart>
         </ResponsiveContainer>
         <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground justify-center">
