@@ -218,15 +218,83 @@ the same DOM nodes. The chrome genuinely stops remounting; 44 segments were
 converted, three (`admin` handled separately, `dashboard`, `research`) were
 excluded because a page in them is full-bleed by design.
 
+---
+
+## 5. Third round — closing the caveats
+
+The three items left open above are now done, and closing them surfaced two
+crash-class bugs that no amount of code reading had found.
+
+| Item | State | Commit |
+|---|---|---|
+| Mock API fixture + the app-wide crash it exposed | ✅ | `1a309c6` |
+| Admin section visually verified | ✅ | `1a309c6` |
+| axe suite extended to the authenticated app | ✅ | `b7eb266` |
+| Responsive (mobile) naming defects | ✅ | `5c1fa95` |
+| Second `any` pass | ✅ | `f94ec30` |
+
+### The two bugs that only a running app could reveal
+
+**Every authenticated page could be blanked by one malformed response.**
+`useAIChat` did `setAgents(agentsData.agents)`. Its `.catch(() => ({ agents: [] }))`
+covers a *rejection*, not a 200 whose body lacks `agents` — that put `undefined`
+into state, and `UnifiedChatPopup` calls `agents.find(...)` unguarded. Because
+that popup is mounted globally from the root layout, the throw escaped every
+route boundary and hit the global error boundary. An older API build, a partial
+rollout or a proxy interstitial would have taken down the whole product. Found
+by pointing the new fixture at the app and watching `/admin`, `/discover` and
+`/settings` all go white.
+
+**`/milestones` crashed on a partial summary.** `SummaryBar` guarded `!summary`
+but not a summary without `counts`, then read `summary.counts.in_progress`.
+
+### Defect classes the tests found that review had not
+
+- **Responsive naming.** A control whose only label is `hidden sm:inline` has no
+  accessible name below that breakpoint — the icon beside it is `aria-hidden`.
+  Twelve of these, plus four "back" links that wrapped a button which was itself
+  `hidden sm:flex`, leaving a focusable `<a>` with no content at all on a phone.
+  A desktop-only scan passes every one of them.
+- **Surface-vs-text token conflicts**, twice. `--primary` cleared the card and
+  page backgrounds but not a `bg-primary/20` tint (4.20:1) — which is what the
+  active nav item and 69 chips use. `--destructive` had the same problem as
+  text (2.95:1). Both now have an `-emphasis` counterpart.
+- **671 raw Tailwind `-600/-700/-800` steps used as text.** Chosen against a
+  light surface; the product renders dark by default. The corrective pass then
+  reverted 103 of them, because on a *fixed* light background (`bg-X-50/100`)
+  the dark-mode text drops to 1.66:1 — the codemod had to learn that
+  distinction.
+- **50 `toLocaleDateString()` calls with no locale**, resolving against Node's
+  default on the server and the browser's on the client.
+
+### Known, tracked, not fixed
+
+React **#418** (a text-content hydration mismatch) still occurs intermittently
+on pages that render relative timestamps: the server formats "2 minutes ago" at
+render time and the client re-formats at hydration time, and when the clock
+crosses a boundary between those instants the text differs. It is recoverable —
+the page is correct after the client re-render — so it costs a re-render and a
+flash, not correctness. Locale, timezone, `localStorage` and theme were each
+ruled out by bisecting the browser context.
+
+Fixing it properly means routing all ~50 relative-time renders through one
+component that emits a stable value on the server and upgrades after mount.
+`e2e/authenticated-a11y.spec.ts` excludes hydration from its "no uncaught
+errors" gate with that explanation, and a dedicated test **asserts the bug still
+exists** — so the day it is fixed, that test fails and forces the exclusion to
+be deleted with it.
+
 ### Still open
 
-1. An image proxy, so avatars and tenant logos can go through `next/image`.
-   They currently come from arbitrary tenant-supplied hosts, which
-   `remotePatterns` cannot enumerate.
-2. The remaining 85 `any` occurrences, two or three per file across ~35 files.
-   Mostly the `(...args: any[]) => any` generic idiom and enum-narrowing casts.
-3. Extending the axe suite past the public routes, which needs a seeded test
-   session against a running API.
-4. A visual check of the admin section against a real backend — `AdminGuard`
-   needs a live admin session, so the shell change there is typecheck- and
-   build-verified only.
+1. The relative-time hydration fix described above.
+2. An image proxy, so avatars and tenant logos can go through `next/image`.
+   They come from arbitrary tenant-supplied hosts, which `remotePatterns`
+   cannot enumerate.
+3. The remaining 56 `any` occurrences — mostly enum-narrowing casts on values
+   that arrive as plain strings, third-party SDK refs (tldraw, Daily) and JSON
+   metadata bags with no schema to narrow to.
+4. `AdminGuard` gates the admin UI on `localStorage.user.role` alone. The API
+   is the real boundary, but any signed-in user can currently render the admin
+   shell. The middleware already reads a `cfb_primary_role` cookie for
+   dashboard routing and could gate `/admin` on it — not done here because the
+   cookie is not guaranteed present and getting it wrong locks admins out.
