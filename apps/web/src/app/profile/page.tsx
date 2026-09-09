@@ -276,7 +276,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { success } = useToast();
 
-  const { data: meData, isLoading, error } = useQuery({
+  const { data: meData, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.me.profile(),
     queryFn: getMeProfile,
     staleTime: 5 * 60_000,
@@ -309,11 +309,38 @@ export default function ProfilePage() {
       </div>
     );
   if (!profile) {
+    // Reached when the query has settled but carries no profile. This used to be a
+    // permanent dead end: a centred "Preparing your profile…" with no retry, no
+    // error and no way out, on a query that was never going to run again inside
+    // its 5-minute staleTime. It is a real state (a hydrated cache entry can hold
+    // null, and an unreachable API resolves to nothing), so it needs an exit —
+    // never a label that implies work still in progress when none is.
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          <BilingualText en={profileEn('preparing_profile')} el={profileEl('preparing_profile')} />
-        </p>
+      <div className="flex min-h-screen items-center justify-center px-6">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isFetching ? (
+              <BilingualText en={profileEn('preparing_profile')} el={profileEl('preparing_profile')} />
+            ) : (
+              <BilingualText
+                en="We could not load your profile."
+                el="Δεν μπορέσαμε να φορτώσουμε το προφίλ σας."
+              />
+            )}
+          </p>
+          {!isFetching && (
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                <BilingualText en="Try again" el="Δοκιμάστε ξανά" compact />
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/profile/edit">
+                  <BilingualText en="Complete your profile" el="Ολοκληρώστε το προφίλ σας" compact />
+                </Link>
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
