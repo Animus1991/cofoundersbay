@@ -128,7 +128,60 @@ Ordered by leverage: every item in Phase 1–3 changes **one file and fixes ever
 
 ---
 
-## 3. Status
+## 3. Status — all six phases landed
 
-Progress is tracked inline in this file as each phase lands. See `docs/UPGRADE_CHANGELOG.md`
-for the per-file record of what changed.
+| Phase | State | Commit |
+|---|---|---|
+| 1 — Global foundation | ✅ | `819b4a1` |
+| 2 — Primitive upgrades | ✅ | `7721bc0` |
+| 3a — alert/confirm removal | ✅ | `9f91a79` |
+| 4 — Security, SEO, delivery | ✅ | `6a9e740` |
+| 3b — Error/loading boundaries | ✅ | `5e31c12` |
+| 5a — Token normalisation | ✅ | `d68caf5` |
+| 5b — Chart palette | ✅ | `b906dc0` |
+| 3c — Modal & overlay a11y | ✅ | `5d6d50f` |
+| 6 — Cloudflare deployment | ✅ | `440c2eb` |
+
+### Before / after
+
+| Metric | Before | After |
+|---|---|---|
+| WCAG blockers (zoom lock, no skip link, silent toasts, unnamed icon buttons, no reduced motion) | 5 | 0 |
+| Icon-only buttons with an accessible name | 0 / 175 | **175 / 175** (enforced by the type system) |
+| Decorative icons hidden from assistive tech | 0 | 3 126 |
+| Route segments with an error boundary | 2 / 147 | **64 / 64 segments**, covering all 147 routes |
+| Route segments with a loading skeleton | 41 | **64 / 64** |
+| Overlays with focus trap + Escape + scroll lock | Radix only (47) | **all 61** |
+| Native `alert()` / `confirm()` | 19 | 0 |
+| Arbitrary `text-[Npx]` sizes | 548 | 0 |
+| Off-scale icon dimensions | 1 496 | 1 769 rewritten to tokens |
+| Unsanitised HTML sinks | 4 | 0 |
+| Security headers | 6 (one deprecated) | 10, incl. CSP + Permissions-Policy |
+| Pages with metadata | 1 | 9 segments + a complete root (OG, Twitter, robots, canonical) |
+| `robots.txt` / `sitemap.xml` | none | both generated |
+| Web fonts actually loaded | 0 (declared but never fetched) | 2, self-hosted with fallback metrics |
+| Distinct chart palettes | 4 unvalidated | 1, CVD- and contrast-validated in both modes |
+| Production build | ✅ | ✅ (138 static pages, typecheck clean) |
+
+### Deliberately not changed, and why
+
+- **Research-canvas node and shape colours** (~200 hex values) are a
+  user-selectable sticky-note palette, not theme drift. Re-theming them would
+  remove a feature.
+- **Badge rarity tiers** are an ordinal domain ramp with fixed meaning across
+  the gamification surface, not a chart series.
+- **The 28 `<img>` tags** render user- and tenant-supplied URLs from arbitrary
+  hosts, which `next/image` rejects unless every host is enumerated in
+  `remotePatterns`. They instead gained lazy loading, async decoding, a
+  no-referrer policy and explicit dimensions — which is what actually removes
+  their layout shift. Moving to `next/image` needs an image proxy first.
+
+### Remaining follow-ups (not blockers)
+
+1. Hoist `AppShell` from the 130 pages that mount it into segment layouts, so
+   the shell persists across navigation instead of remounting per page.
+2. Add an image proxy so avatars and tenant logos can go through `next/image`.
+3. Replace the 82 remaining `: any` annotations, concentrated in the dashboard
+   and research modules.
+4. Add automated axe-core assertions in CI so the accessibility work stays
+   fixed.
