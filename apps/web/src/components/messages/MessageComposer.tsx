@@ -5,6 +5,7 @@ import { Send, Paperclip, Smile, X, Image as ImageIcon, File } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 
 interface MessageComposerProps {
   onSend: (content: string, attachments?: File[]) => Promise<void>;
@@ -19,6 +20,7 @@ export function MessageComposer({
   disabled = false,
   className,
 }: MessageComposerProps) {
+  const toast = useToast();
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
@@ -64,7 +66,7 @@ export function MessageComposer({
     const validFiles = files.filter((file) => {
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert(`${file.name} is too large. Max size is 10MB.`);
+        toast.error('Attachment too large', `${file.name} exceeds the 10 MB limit.`);
         return false;
       }
       return true;

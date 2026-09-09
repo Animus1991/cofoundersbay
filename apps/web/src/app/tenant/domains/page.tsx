@@ -26,6 +26,7 @@ import {
   Star, Power, Copy, ChevronDown, ChevronRight, Link2, AlertTriangle,
   Shield, Info,
 } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +141,7 @@ function DomainRow({
   tenantId: string;
   onRefresh: () => void;
 }) {
+  const confirm = useConfirm();
   const { success: toastSuccess, error: toastError } = useToast();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
@@ -275,7 +277,15 @@ function DomainRow({
           </Button>
           <Button
             size="sm" variant="ghost"
-            onClick={() => { if (confirm(`Remove ${domain.domainName}?`)) remove.mutate(); }}
+            onClick={async () => {
+              const ok = await confirm({
+                title: `Remove ${domain.domainName}?`,
+                description: 'Traffic on this domain will stop resolving to your workspace.',
+                confirmLabel: 'Remove domain',
+                intent: 'destructive',
+              });
+              if (ok) remove.mutate();
+            }}
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
           >

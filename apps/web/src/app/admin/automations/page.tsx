@@ -26,6 +26,7 @@ import {
   CheckCircle2, XCircle, Clock, SkipForward, AlertTriangle,
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -318,6 +319,7 @@ function LogPanel({ executionId }: { executionId: string }) {
 }
 
 export default function AutomationsPage() {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
   const [activeTab, setActiveTab] = useState<'rules' | 'executions'>('rules');
@@ -521,8 +523,14 @@ export default function AutomationsPage() {
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       title="Delete"
-                      onClick={() => {
-                        if (confirm(`Delete rule "${rule.name}"?`)) deleteMutation.mutate(rule.id);
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: `Delete rule "${rule.name}"?`,
+                          description: 'This automation will stop running immediately. This cannot be undone.',
+                          confirmLabel: 'Delete rule',
+                          intent: 'destructive',
+                        });
+                        if (ok) deleteMutation.mutate(rule.id);
                       }}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

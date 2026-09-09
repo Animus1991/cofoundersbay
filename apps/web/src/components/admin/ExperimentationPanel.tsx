@@ -11,6 +11,8 @@ import {
   adminGetExperimentMetrics, adminListConfigs, adminUpsertConfig, adminSeedDefaultConfigs,
   ExperimentRecord, ExperimentMetrics, SystemConfigRecord,
 } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -55,6 +57,7 @@ function ExperimentCard({
   exp: ExperimentRecord;
   onRefresh: () => void;
 }) {
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [metrics, setMetrics] = useState<ExperimentMetrics | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
@@ -82,7 +85,13 @@ function ExperimentCard({
   };
 
   const del = async () => {
-    if (!confirm(`Delete experiment "${exp.name}"?`)) return;
+    const ok = await confirm({
+      title: `Delete experiment "${exp.name}"?`,
+      description: 'Its variants and collected results will be removed. This cannot be undone.',
+      confirmLabel: 'Delete experiment',
+      intent: 'destructive',
+    });
+    if (!ok) return;
     await adminDeleteExperiment(exp.id);
     onRefresh();
   };
@@ -297,6 +306,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
 // ── System Config Editor ────────────────────────────────────────────────────────
 
 function ConfigEditor() {
+  const toast = useToast();
   const [configs, setConfigs] = useState<SystemConfigRecord[]>([]);
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
@@ -322,7 +332,10 @@ function ConfigEditor() {
   const save = async (cfg: SystemConfigRecord) => {
     let value: unknown;
     try { value = JSON.parse(editValues[cfg.key] ?? ''); }
-    catch { alert('Invalid JSON'); return; }
+    catch {
+      toast.error('Invalid JSON', `The value for "${cfg.key}" could not be parsed.`);
+      return;
+    }
     setSaving(cfg.key);
     try {
       await adminUpsertConfig(cfg.key, { value, description: cfg.description ?? undefined, category: cfg.category ?? undefined });
@@ -337,7 +350,7 @@ function ConfigEditor() {
     try {
       const res = await adminSeedDefaultConfigs();
       await load();
-      alert(`Seeded ${res.seeded} default config keys.`);
+      toast.success('Defaults seeded', `${res.seeded} config key${res.seeded === 1 ? '' : 's'} added.`);
     } finally {
       setSeedLoading(false);
     }

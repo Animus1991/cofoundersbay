@@ -34,6 +34,7 @@ import {
   type SSOAuthEvent,
   type SSODomainMapping,
 } from '@/lib/api';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
   if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">SSO Required</Badge>;
@@ -225,6 +226,7 @@ function SSOConfigPanel({
   tenantName: string;
   onClose: () => void;
 }) {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [saveError, setSaveError] = useState('');
 
@@ -418,8 +420,21 @@ function SSOConfigPanel({
                       <button type="button" onClick={() => toggleActive(p)} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                         {p.isActive ? 'Disable' : 'Enable'}
                       </button>
-                      <button type="button" onClick={() => { if (confirm(`Delete "${p.providerName}"?`)) deleteProviderMut.mutate(p.id); }} className="text-xs text-destructive hover:opacity-70">
-                        <Trash2 className="h-3.5 w-3.5" />
+                      <button
+                        type="button"
+                        aria-label={`Delete ${p.providerName}`}
+                        onClick={async () => {
+                          const ok = await confirm({
+                            title: `Delete "${p.providerName}"?`,
+                            description: 'Members who sign in through this provider will lose access.',
+                            confirmLabel: 'Delete provider',
+                            intent: 'destructive',
+                          });
+                          if (ok) deleteProviderMut.mutate(p.id);
+                        }}
+                        className="focus-ring rounded text-xs text-destructive hover:opacity-70"
+                      >
+                        <Trash2 className="icon-xs" aria-hidden="true" />
                       </button>
                     </div>
                   </div>

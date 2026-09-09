@@ -36,6 +36,7 @@ import {
   ChevronRight,
   Link2,
 } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
@@ -98,6 +99,7 @@ function DomainRow({
   tenantId: string;
   onRefresh: () => void;
 }) {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const [showDns, setShowDns] = useState(false);
   const [dnsInstructions, setDnsInstructions] = useState<DnsInstructions | null>(null);
@@ -190,7 +192,15 @@ function DomainRow({
           <Button
             size="sm"
             variant="ghost"
-            onClick={() => { if (confirm('Delete this domain?')) remove.mutate(); }}
+            onClick={async () => {
+              const ok = await confirm({
+                title: 'Delete this domain?',
+                description: `${domain.domainName} will stop resolving to this tenant.`,
+                confirmLabel: 'Delete domain',
+                intent: 'destructive',
+              });
+              if (ok) remove.mutate();
+            }}
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
           >

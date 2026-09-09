@@ -25,6 +25,7 @@ import {
   type MilestonePriority,
 } from '@/lib/api';
 import { MilestoneFormModal } from './MilestoneFormModal';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 // ── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<MilestoneStatus, { label: string; icon: React.ElementType; color: string; bg: string }> = {
@@ -278,6 +279,7 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function MilestonesPage() {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<MilestoneStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<MilestonePriority | 'all'>('all');
@@ -348,12 +350,18 @@ export default function MilestonesPage() {
   );
 
   const handleDelete = useCallback(
-    (id: string) => {
-      if (window.confirm('Delete this milestone? This cannot be undone.')) {
+    async (id: string) => {
+      const ok = await confirm({
+        title: 'Delete this milestone?',
+        description: 'Progress recorded against it will be removed. This cannot be undone.',
+        confirmLabel: 'Delete milestone',
+        intent: 'destructive',
+      });
+      if (ok) {
         deleteMut.mutate(id);
       }
     },
-    [deleteMut],
+    [deleteMut, confirm],
   );
 
   const statusCounts = (summaryData as any)?.counts ?? {};

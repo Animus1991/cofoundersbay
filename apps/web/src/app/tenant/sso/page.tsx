@@ -31,6 +31,7 @@ import {
   type IdentityProviderItem,
   type SSODomainMapping,
 } from '@/lib/api';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 type RoleMappingRule = { claim: string; value: string; role: string };
 
@@ -51,6 +52,7 @@ function ProviderCard({
   onDelete: (id: string) => void;
   callbackBase: string;
 }) {
+  const confirm = useConfirm();
   const [copied, setCopied] = useState(false);
   const callbackUrl = `${callbackBase}/api/sso/callback/${provider.id}`;
 
@@ -100,7 +102,15 @@ function ProviderCard({
           <div className="flex items-center gap-3 shrink-0">
             <Switch checked={provider.isActive} onCheckedChange={() => onToggle(provider)} />
             <button
-              onClick={() => { if (confirm(`Delete "${provider.providerName}"?`)) onDelete(provider.id); }}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete "${provider.providerName}"?`,
+                  description: 'Members who sign in through this provider will lose access.',
+                  confirmLabel: 'Delete provider',
+                  intent: 'destructive',
+                });
+                if (ok) onDelete(provider.id);
+              }}
               className="text-muted-foreground hover:text-destructive transition-colors"
             >
               <Trash2 className="h-4 w-4" />

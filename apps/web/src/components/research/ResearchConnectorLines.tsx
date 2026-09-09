@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useCallback } from 'react';
 import { ResearchConnector, ResearchNode } from '@/lib/api';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface ResearchConnectorLinesProps {
   connectors: ResearchConnector[];
@@ -86,6 +87,7 @@ function cubicPath(from: EdgePoint, to: EdgePoint): { d: string; midX: number; m
 }
 
 export function ResearchConnectorLines({ connectors, nodes, onDeleteConnector }: ResearchConnectorLinesProps) {
+  const confirm = useConfirm();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const nodeMap = useMemo(() => {
@@ -123,12 +125,17 @@ export function ResearchConnectorLines({ connectors, nodes, onDeleteConnector }:
     }).filter((p): p is NonNullable<typeof p> => p !== null);
   }, [connectors, nodeMap]);
 
-  const handleClick = useCallback((e: React.MouseEvent, connectorId: string) => {
+  const handleClick = useCallback(async (e: React.MouseEvent, connectorId: string) => {
     e.stopPropagation();
-    if (onDeleteConnector && confirm('Delete this connection?')) {
-      onDeleteConnector(connectorId);
-    }
-  }, [onDeleteConnector]);
+    if (!onDeleteConnector) return;
+    const ok = await confirm({
+      title: 'Delete this connection?',
+      description: 'The two nodes stay on the board; only the link between them is removed.',
+      confirmLabel: 'Delete connection',
+      intent: 'destructive',
+    });
+    if (ok) onDeleteConnector(connectorId);
+  }, [onDeleteConnector, confirm]);
 
   if (svgPaths.length === 0) return null;
 

@@ -20,8 +20,10 @@ import {
 } from '@/lib/api';
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
 import { analytics } from '@/lib/analytics';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export default function TenantsAdminPage() {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const [selectedTenant, setSelectedTenant] = useState<TenantItem | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -59,7 +61,14 @@ export default function TenantsAdminPage() {
       label: 'Delete',
       variant: 'destructive' as const,
       onClick: async (ids: string[]) => {
-        if (!confirm(`Delete ${ids.length} tenant(s)? This cannot be undone.`)) return;
+        const ok = await confirm({
+          title: `Delete ${ids.length} tenant${ids.length === 1 ? '' : 's'}?`,
+          description:
+            'Every workspace, member and program under the selected tenants will be removed. This cannot be undone.',
+          confirmLabel: `Delete ${ids.length} tenant${ids.length === 1 ? '' : 's'}`,
+          intent: 'destructive',
+        });
+        if (!ok) return;
         await Promise.all(ids.map(id => deleteTenant(id)));
         queryClient.invalidateQueries({ queryKey: ['admin', 'tenants'] });
         void analytics.track('tenant_bulk_delete', { count: ids.length });
@@ -244,6 +253,7 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const isNew = !tenant;
   const [activeTab, setActiveTab] = useState('general');
@@ -692,7 +702,21 @@ function TenantEditor({
           </div>
           <div className="flex gap-2">
             {tenant && (
-              <Button variant="ghost" size="sm" className="gap-2 text-destructive hover:text-destructive" onClick={() => { if (confirm(`Delete "${tenant.name}"? This cannot be undone.`)) deleteMut.mutate(); }}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-destructive hover:text-destructive"
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: `Delete "${tenant.name}"?`,
+                    description:
+                      'Every workspace, member and program under this tenant will be removed. This cannot be undone.',
+                    confirmLabel: 'Delete tenant',
+                    intent: 'destructive',
+                  });
+                  if (ok) deleteMut.mutate();
+                }}
+              >
                 <Trash2 className="h-4 w-4" />
                 Delete
               </Button>

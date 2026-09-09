@@ -40,6 +40,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { BoardTemplatesDialog, type BoardTemplate } from '@/components/research/BoardTemplates';
 import { BehavioralNudge } from '@/components/behavioral/BehavioralNudge';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 const BOARD_COLORS = [
   { name: 'Default', value: null },
@@ -65,6 +66,7 @@ function getIconComponent(iconValue: string | null) {
 }
 
 export default function ResearchBoardsPage() {
+  const confirm = useConfirm();
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success, error: showError } = useToast();
@@ -148,8 +150,14 @@ export default function ResearchBoardsPage() {
     success('Board archived', `"${board.title}" has been archived`);
   };
 
-  const handleDelete = (board: ResearchBoard) => {
-    if (confirm(`Delete "${board.title}"? This cannot be undone.`)) {
+  const handleDelete = async (board: ResearchBoard) => {
+    const ok = await confirm({
+      title: `Delete "${board.title}"?`,
+      description: 'The board and everything on it will be permanently removed. This cannot be undone.',
+      confirmLabel: 'Delete board',
+      intent: 'destructive',
+    });
+    if (ok) {
       deleteMutation.mutate(board.id);
     }
   };

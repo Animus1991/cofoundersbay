@@ -24,6 +24,7 @@ import {
   CheckCircle2, XCircle, AlertTriangle,
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -152,6 +153,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
 
 function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tenantId: string; onRefresh: () => void }) {
   const { success, error: toastError } = useToast();
+  const confirm = useConfirm();
 
   const setStatus = useMutation({
     mutationFn: (status: 'active' | 'paused') => setAutomationRuleStatus(rule.id, status),
@@ -224,7 +226,15 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
             <Button aria-label="Delete"
               variant="ghost" size="icon"
               className="h-8 w-8 text-destructive hover:text-destructive"
-              onClick={() => { if (confirm(`Delete rule "${rule.name}"?`)) remove.mutate(); }}
+              onClick={async () => {
+                const ok = await confirm({
+                  title: `Delete rule "${rule.name}"?`,
+                  description: 'This automation will stop running immediately. This cannot be undone.',
+                  confirmLabel: 'Delete rule',
+                  intent: 'destructive',
+                });
+                if (ok) remove.mutate();
+              }}
               disabled={remove.isPending}
             >
               <Trash2 className="h-3.5 w-3.5" />
