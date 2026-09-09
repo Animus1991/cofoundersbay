@@ -28,6 +28,8 @@ function deriveProfileFields(profile: PublicProfile) {
   const experience = (rp.experience as Array<{ title: string; company: string; period: string; description?: string }> | undefined) ?? [];
   const education = (rp.education as Array<{ degree: string; school: string; year?: string }> | undefined) ?? [];
   const achievements = (rp.achievements as string[] | undefined) ?? [];
+  const connectionsCount = rp.connectionsCount as number | undefined;
+  const projectsCount = rp.projectsCount as number | undefined;
   const lookingFor = (rp.lookingFor as string[] | undefined) ?? [];
   const isVerified = Boolean(rp.isVerified ?? rp.verified);
   const isAvailable = Boolean(rp.isAvailable ?? rp.available ?? rp.openToOpportunities);
@@ -36,7 +38,7 @@ function deriveProfileFields(profile: PublicProfile) {
   const twitter = (rp.twitter ?? rp.twitterUrl) as string | undefined;
   const github = (rp.github ?? rp.githubUrl) as string | undefined;
   const joinedAt = new Date(profile.createdAt);
-  return { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt };
+  return { firstName, lastName, skills, interests, experience, education, achievements, lookingFor, isVerified, isAvailable, website, linkedin, twitter, github, joinedAt, connectionsCount, projectsCount };
 }
 
 function EndorsementCard({ endorsement }: { endorsement: EndorsementItem }) {
@@ -400,11 +402,11 @@ export default function PublicProfilePage() {
               <CardContent className="pt-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="text-xl font-bold text-foreground">{(profile.rolePayload as any)?.connectionsCount ?? '—'}</div>
+                    <div className="text-xl font-bold text-foreground">{derived?.connectionsCount ?? '—'}</div>
                     <div className="text-xs text-muted-foreground">Connections</div>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-foreground">{(profile.rolePayload as any)?.projectsCount ?? '—'}</div>
+                    <div className="text-xl font-bold text-foreground">{derived?.projectsCount ?? '—'}</div>
                     <div className="text-xs text-muted-foreground">Projects</div>
                   </div>
                   <div>

@@ -158,7 +158,7 @@ function genId() {
   return `node_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`; 
 }
 
-function saveToLocalStorage(key: string, data: any) {
+function saveToLocalStorage(key: string, data: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (e) {

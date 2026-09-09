@@ -46,3 +46,14 @@ export function errorStatus(error: unknown): number | undefined {
   }
   return undefined;
 }
+
+/** True for the DOMException thrown when a fetch/stream is aborted. */
+export function isAbortError(error: unknown): boolean {
+  return (
+    (error instanceof DOMException && error.name === 'AbortError') ||
+    (typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      (error as { name?: unknown }).name === 'AbortError')
+  );
+}

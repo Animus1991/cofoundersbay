@@ -17,11 +17,12 @@ import {
   Key
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 interface BMCSection {
   id: string;
   title: string;
-  icon: any;
+  icon: LucideIcon;
   description: string;
   content: string;
   color: string;

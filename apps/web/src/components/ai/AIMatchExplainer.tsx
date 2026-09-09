@@ -5,6 +5,7 @@ import { Sparkles, Loader2, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { sendAIChat } from '@/lib/ai-api';
+import { errorMessage } from '@/lib/utils';
 
 interface MatchUser {
   id: string;
@@ -67,8 +68,8 @@ export function AIMatchExplainer({
         context,
       });
       setExplanation(result.message);
-    } catch (err: any) {
-      setError(err.message || 'Failed to analyze match');
+    } catch (err: unknown) {
+      setError(errorMessage(err) || 'Failed to analyze match');
     } finally {
       setIsLoading(false);
     }

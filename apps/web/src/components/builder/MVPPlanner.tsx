@@ -259,7 +259,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
     setData(prev => ({ ...prev, features: [...prev.features, newFeature] }));
   };
 
-  const updateFeature = (id: string, field: keyof Feature, value: any) => {
+  const updateFeature = (id: string, field: keyof Feature, value: Feature[keyof Feature]) => {
     setData(prev => ({
       ...prev,
       features: prev.features.map(f => f.id === id ? { ...f, [field]: value } : f)

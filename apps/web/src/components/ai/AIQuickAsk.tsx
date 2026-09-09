@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { sendAIChat, getAgentIcon } from '@/lib/ai-api';
+import { errorMessage } from '@/lib/utils';
 
 interface AIQuickAskProps {
   agentId?: string;
@@ -48,8 +49,8 @@ export function AIQuickAsk({
       setResponse(result.message);
       onResponse?.(result.message);
       setInput('');
-    } catch (err: any) {
-      setError(err.message || 'Failed to get AI response');
+    } catch (err: unknown) {
+      setError(errorMessage(err) || 'Failed to get AI response');
     } finally {
       setIsLoading(false);
     }

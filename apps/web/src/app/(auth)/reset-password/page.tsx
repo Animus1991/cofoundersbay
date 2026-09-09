@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { errorMessage } from '@/lib/utils';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle2, Loader2 } from 'lucide-react';
@@ -61,8 +62,8 @@ export default function ResetPasswordPage() {
       await resetPassword(token, password);
       setDone(true);
       setTimeout(() => router.replace('/login'), 3000);
-    } catch (err: any) {
-      setError(err?.message ?? 'The reset link is invalid or has expired. Please request a new one.');
+    } catch (err: unknown) {
+      setError(errorMessage(err, 'The reset link is invalid or has expired. Please request a new one.'));
     } finally {
       setLoading(false);
     }

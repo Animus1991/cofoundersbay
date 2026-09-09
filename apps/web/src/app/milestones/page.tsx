@@ -371,7 +371,7 @@ export default function MilestonesPage() {
     [deleteMut, confirm],
   );
 
-  const statusCounts = (summaryData as any)?.counts ?? {};
+  const statusCounts: Record<string, number> = summaryData?.counts ?? {};
   const statusTabs: Array<{ value: MilestoneStatus | 'all'; label: string; count?: number }> = [
     { value: 'all', label: 'All', count: summaryData?.total },
     { value: 'todo', label: 'To Do', count: statusCounts.todo },

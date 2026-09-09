@@ -486,15 +486,15 @@ function TenantEditor({
                       <div key={key} className="space-y-2">
                         <label className="text-sm font-medium">{label}</label>
                         <div className="flex gap-2">
-                          <input type="color" value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
-                          <Input value={(branding as any)[key]} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
+                          <input type="color" value={branding[key as keyof typeof branding] as string} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="h-10 w-14 rounded border cursor-pointer p-1" />
+                          <Input value={branding[key as keyof typeof branding] as string} onChange={e => setBranding(p => ({ ...p, [key]: e.target.value }))} className="flex-1 font-mono text-sm" />
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="p-3 rounded-lg border flex gap-2">
                     {['primaryColor', 'secondaryColor', 'accentColor'].map(k => (
-                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: (branding as any)[k] }} />
+                      <div key={k} className="flex-1 h-10 rounded-md" style={{ backgroundColor: branding[k as keyof typeof branding] as string }} />
                     ))}
                   </div>
                 </div>

@@ -167,7 +167,7 @@ function UserClassifyTab() {
           <CardHeader><CardTitle className="text-sm">Recent Nudge Logs</CardTitle></CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {(logs as any[]).map((log: any) => (
+              {logs.map((log) => (
                 <div key={log.id} className="flex items-center gap-3 px-4 py-2 text-xs">
                   <span className="font-mono text-muted-foreground">{log.nudgeKey}</span>
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>

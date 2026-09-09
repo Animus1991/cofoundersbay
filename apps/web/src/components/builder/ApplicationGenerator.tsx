@@ -24,6 +24,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 interface ApplicationQuestion {
   id: string;
@@ -38,7 +39,7 @@ interface ApplicationTemplate {
   id: string;
   name: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   deadline?: string;
   questions: ApplicationQuestion[];
   status: 'draft' | 'in-progress' | 'completed' | 'submitted';

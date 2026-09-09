@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSession } from '@/hooks/useSession';
+import { errorMessage, isAbortError } from '@/lib/utils';
 import {
   ChatMessage,
   AgentConfig,
@@ -161,9 +162,9 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             break;
           }
         }
-      } catch (streamError: any) {
+      } catch (streamError: unknown) {
         // If streaming fails, fall back to non-streaming
-        if (streamError.name !== 'AbortError') {
+        if (!isAbortError(streamError)) {
           const response = await sendAIChat({
             message: content,
             agentId: currentAgent,
@@ -185,14 +186,14 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             : m
         )
       );
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
+    } catch (err: unknown) {
+      if (isAbortError(err)) {
         // Remove the empty assistant message on abort
         setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId));
         return;
       }
 
-      setError(err.message || 'Failed to get AI response');
+      setError(errorMessage(err) || 'Failed to get AI response');
       // Update assistant message with error
       setMessages((prev) =>
         prev.map((m) =>

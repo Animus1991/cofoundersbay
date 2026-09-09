@@ -22,11 +22,12 @@ import {
   Code
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 interface ReadinessDimension {
   id: string;
   name: string;
-  icon: any;
+  icon: LucideIcon;
   score: number;
   maxScore: number;
   status: 'excellent' | 'good' | 'needs-work' | 'critical';

@@ -156,10 +156,10 @@ export function NotificationCenter() {
       const result = await listNotifications();
       let items = result?.notifications ?? [];
       if (filter === 'unread') {
-        items = items.filter((n: any) => !n.readAt);
+        items = items.filter((n) => !n.readAt);
       }
       if (categoryFilter !== 'all') {
-        items = items.filter((n: any) => n.type === categoryFilter);
+        items = items.filter((n) => n.type === categoryFilter);
       }
       return items;
     },

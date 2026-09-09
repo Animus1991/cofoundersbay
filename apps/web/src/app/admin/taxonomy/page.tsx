@@ -217,7 +217,7 @@ export default function AdminTaxonomyPage() {
       qc.invalidateQueries({ queryKey: ['admin-skills'] });
       setEditTarget(null);
     },
-    onError: (e: any) => showError('Failed to create skill', e.message),
+    onError: (e: Error) => showError('Failed to create skill', e.message),
   });
 
   const updateMutation = useMutation({
@@ -228,7 +228,7 @@ export default function AdminTaxonomyPage() {
       qc.invalidateQueries({ queryKey: ['admin-skills'] });
       setEditTarget(null);
     },
-    onError: (e: any) => showError('Failed to update skill', e.message),
+    onError: (e: Error) => showError('Failed to update skill', e.message),
   });
 
   const deleteMutation = useMutation({
@@ -238,7 +238,7 @@ export default function AdminTaxonomyPage() {
       qc.invalidateQueries({ queryKey: ['admin-skills'] });
       setDeleteTarget(null);
     },
-    onError: (e: any) => showError('Failed to delete skill', e.message),
+    onError: (e: Error) => showError('Failed to delete skill', e.message),
   });
 
   const handleSave = (formData: { name: string; slug: string; category: string }) => {

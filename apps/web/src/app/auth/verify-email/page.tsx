@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast';
+import { errorMessage as readErrorMessage } from '@/lib/utils';
 
 type VerificationStatus = 'loading' | 'success' | 'error' | 'no-token';
 
@@ -70,7 +71,7 @@ export default function VerifyEmailPage() {
       })
       .catch((err) => {
         setStatus('error');
-        setErrorMessage(err.message || 'Verification failed');
+        setErrorMessage(readErrorMessage(err, 'Verification failed'));
       });
   }, [token]);
 
@@ -83,8 +84,8 @@ export default function VerifyEmailPage() {
       await resendVerification(resendEmail.trim());
       setResendSent(true);
       success('Verification email sent', 'Check your inbox for the verification link.');
-    } catch (err: any) {
-      showError('Failed to send', err.message || 'Please try again later.');
+    } catch (err: unknown) {
+      showError('Failed to send', readErrorMessage(err, 'Please try again later.'));
     } finally {
       setIsResending(false);
     }

@@ -216,7 +216,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
     }
   };
 
-  const updateCompetitor = (type: 'direct' | 'indirect', index: number, field: keyof Competitor, value: any) => {
+  const updateCompetitor = (type: 'direct' | 'indirect', index: number, field: keyof Competitor, value: Competitor[keyof Competitor]) => {
     const key = type === 'direct' ? 'directCompetitors' : 'indirectCompetitors';
     setData(prev => ({
       ...prev,
