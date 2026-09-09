@@ -2,8 +2,14 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { X, Star, Loader2, Send } from 'lucide-react';
+import { Star, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -75,34 +81,22 @@ export function WriteEndorsementModal({
 
   const canSubmit = content.trim().length >= 10 && !mutation.isPending;
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-lg rounded-xl border border-border/60 bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="p-0" size="md">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/60 px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 pr-14">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
               <Star className="icon-sm text-amber-500" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Write Endorsement</h2>
-              <p className="text-xs text-muted-foreground">
+              <DialogTitle>Write Endorsement</DialogTitle>
+              <DialogDescription className="text-xs">
                 Share your experience working with {targetUser.displayName}
-              </p>
+              </DialogDescription>
             </div>
           </div>
-          <Button aria-label="Close" variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="icon-sm" aria-hidden="true" />
-          </Button>
         </div>
 
         {/* Target user info */}
@@ -193,17 +187,15 @@ export function WriteEndorsementModal({
           <Button
             onClick={() => mutation.mutate()}
             disabled={!canSubmit}
+            loading={mutation.isPending}
+            loadingText="Sending endorsement"
             className="gap-2"
           >
-            {mutation.isPending ? (
-              <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
-            ) : (
-              <Send className="icon-sm" aria-hidden="true" />
-            )}
-            {mutation.isPending ? 'Sending…' : 'Send Endorsement'}
+            <Send className="icon-sm" aria-hidden="true" />
+            Send Endorsement
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

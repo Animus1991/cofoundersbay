@@ -170,6 +170,7 @@ function getDefaultContent(type: string): string {
 /* ─── Categorised node types for the "Add Node" mega-menu ───────────── */
 import type { ResearchNodeType } from '@/lib/api';
 import type { LucideIcon } from 'lucide-react';
+import { useModalA11y } from '@/hooks/useModalA11y';
 
 interface NodeTypeItem { type: ResearchNodeType; label: string; icon: LucideIcon; color: string }
 interface NodeCategory { category: string; items: NodeTypeItem[] }
@@ -358,6 +359,8 @@ export default function ResearchBoardPage() {
 
   // Keyboard shortcuts help dialog
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, closeShortcuts);
 
   // Right-click context menu
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string } | null>(null);
@@ -2042,13 +2045,25 @@ export default function ResearchBoardPage() {
       {/* Keyboard Shortcuts Dialog */}
       {showShortcuts && (
         <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+          <div
+            ref={shortcutsRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="board-shortcuts-title"
+            tabIndex={-1}
+            className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden focus:outline-none"
+          >
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 id="board-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
                 <Keyboard className="icon-md text-primary" aria-hidden="true" />
                 Keyboard Shortcuts
               </h2>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setShowShortcuts(false)}>
+              <Button
+                aria-label="Close keyboard shortcuts"
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowShortcuts(false)}
+              >
                 <X className="icon-sm" aria-hidden="true" />
               </Button>
             </div>

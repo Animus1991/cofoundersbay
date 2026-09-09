@@ -104,7 +104,7 @@ function LoginPageContent() {
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             {activeTenant?.logoUrl ? (
-              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" />
+              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
               <Logo size="sm" />
             )}
@@ -160,7 +160,7 @@ function LoginPageContent() {
                   style={ssoDiscovery.provider.loginButtonColor ? { backgroundColor: ssoDiscovery.provider.loginButtonColor } : undefined}
                 >
                   {ssoDiscovery.provider.logoUrl && (
-                    <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" />
+                    <img src={ssoDiscovery.provider.logoUrl} alt="" className="h-4 w-4" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={16} height={16} />
                   )}
                   {ssoDiscovery.provider.loginButtonText || 'Continue with SSO'}
                 </Button>
@@ -232,7 +232,7 @@ function LoginPageContent() {
         <div className="relative z-10 max-w-md text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
             {activeTenant?.logoUrl ? (
-              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 object-contain" />
+              <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
               <LogoIcon size={72} />
             )}

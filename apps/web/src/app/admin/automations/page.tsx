@@ -27,6 +27,7 @@ import {
   Activity, Settings, Layers, ListChecks, Plus, X, Pencil,
 } from 'lucide-react';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const TRIGGER_TYPES = [
   'user_signup','onboarding_incomplete','profile_incomplete','match_generated','match_not_viewed',
@@ -76,17 +77,16 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
     onError: (e: Error) => toastError(e.message),
   });
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Create Automation Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" aria-hidden="true" /></button>
-        </div>
-        <div className="p-5 space-y-4 flex-1">
+    <Sheet open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <SheetContent
+        side="right"
+        className="flex w-full max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+      >
+        <SheetHeader className="shrink-0 border-b p-5 text-left">
+          <SheetTitle>Create Automation Rule</SheetTitle>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Rule Name *</label>
             <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Welcome New User" />
@@ -140,14 +140,19 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
             </div>
           </div>
         </div>
-        <div className="p-5 border-t flex justify-end gap-2">
+        <SheetFooter className="shrink-0 gap-2 border-t p-5 sm:justify-end">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => create.mutate()} disabled={create.isPending || !name.trim()}>
-            {create.isPending ? 'Creating…' : 'Create Rule'}
+          <Button
+            onClick={() => create.mutate()}
+            disabled={!name.trim()}
+            loading={create.isPending}
+            loadingText="Creating rule"
+          >
+            Create Rule
           </Button>
-        </div>
-      </div>
-    </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -179,14 +184,15 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Edit Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" aria-hidden="true" /></button>
-        </div>
-        <div className="p-5 space-y-4 flex-1">
+    <Sheet open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <SheetContent
+        side="right"
+        className="flex w-full max-w-lg flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+      >
+        <SheetHeader className="shrink-0 border-b p-5 text-left">
+          <SheetTitle>Edit Rule</SheetTitle>
+        </SheetHeader>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">Rule Name *</label>
             <Input value={name} onChange={e => setName(e.target.value)} />
@@ -235,14 +241,19 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
             </div>
           </div>
         </div>
-        <div className="p-5 border-t flex justify-end gap-2">
+        <SheetFooter className="shrink-0 gap-2 border-t p-5 sm:justify-end">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={() => save.mutate()} disabled={save.isPending || !name.trim()}>
-            {save.isPending ? 'Saving…' : 'Save Changes'}
+          <Button
+            onClick={() => save.mutate()}
+            disabled={!name.trim()}
+            loading={save.isPending}
+            loadingText="Saving rule"
+          >
+            Save Changes
           </Button>
-        </div>
-      </div>
-    </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

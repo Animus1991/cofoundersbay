@@ -30,7 +30,7 @@ export function CollaboratorsBar({ collaborators, isConnected, className }: Coll
             title={collab.displayName ?? 'Collaborator'}
           >
             {collab.avatarUrl ? (
-              <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" />
+              <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
               <span className="text-2xs font-bold" style={{ color: collab.color }}>
                 {(collab.displayName ?? '?')[0].toUpperCase()}

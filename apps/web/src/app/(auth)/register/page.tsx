@@ -101,7 +101,7 @@ export default function RegisterPage() {
         <div className="relative z-10 max-w-md text-center">
           <div className="mx-auto mb-8 flex items-center justify-center">
             {activeTenant?.logoUrl
-              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" />
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-16 w-auto object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <LogoIcon size={72} />}
           </div>
           <h2 className="font-display text-3xl font-bold text-white">
@@ -127,7 +127,7 @@ export default function RegisterPage() {
         <div className="mx-auto w-full max-w-md animate-fade-in">
           <Link href="/" className="mb-10 inline-block hover:opacity-80 transition-opacity">
             {activeTenant?.logoUrl
-              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" />
+              ? <img src={activeTenant.logoUrl} alt={activeTenant.name} className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <Logo size="sm" />}
           </Link>
 

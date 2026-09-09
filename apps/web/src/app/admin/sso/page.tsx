@@ -35,6 +35,7 @@ import {
   type SSODomainMapping,
 } from '@/lib/api';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 function SSOModeBadge({ mode }: { mode?: SSOMode | null }) {
   if (mode === 'required') return <Badge className="bg-green-500/15 text-green-600 border-green-500/30">SSO Required</Badge>;
@@ -179,7 +180,7 @@ function TenantSSORow({ tenant, onClick }: { tenant: TenantItem; onClick: () => 
     >
       <div className="flex items-center gap-4">
         {tenant.logoUrl ? (
-          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+          <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
         ) : (
           <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
             <Building2 className="icon-md text-primary" aria-hidden="true" />
@@ -360,14 +361,20 @@ function SSOConfigPanel({
     );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent
+        size="lg"
+        // The panel's own Card provides the chrome and internal scrolling.
+        showCloseButton={false}
+        className="max-h-[90dvh] overflow-hidden border-0 bg-transparent p-0 shadow-none"
+      >
+      <Card className="max-h-[90dvh] w-full overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between border-b sticky top-0 bg-card z-10">
           <div>
-            <CardTitle>SSO — {tenantName}</CardTitle>
+            <DialogTitle>SSO — {tenantName}</DialogTitle>
             <CardDescription>Configure providers and authentication policy</CardDescription>
           </div>
-          <Button aria-label="Close" variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" aria-hidden="true" /></Button>
+          <Button aria-label="Close SSO configuration" variant="ghost" size="icon" onClick={onClose}><X className="icon-sm" aria-hidden="true" /></Button>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
@@ -666,13 +673,14 @@ function SSOConfigPanel({
 
           <div className="flex justify-end gap-3 pt-2 border-t">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={() => configMut.mutate()} disabled={configMut.isPending} className="gap-2">
+            <Button onClick={() => configMut.mutate()} loading={configMut.isPending} loadingText="Saving SSO configuration" className="gap-2">
               <Check className="icon-sm" aria-hidden="true" />
-              {configMut.isPending ? 'Saving…' : 'Save SSO Config'}
+              Save SSO Config
             </Button>
           </div>
         </CardContent>
       </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

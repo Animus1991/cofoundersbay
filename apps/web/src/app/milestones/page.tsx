@@ -148,7 +148,7 @@ function MilestoneCard({
                 </button>
                 {menuOpen && (
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                    <div aria-hidden="true" className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                     <div className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-lg border border-border/60 bg-popover shadow-lg">
                       <button
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"

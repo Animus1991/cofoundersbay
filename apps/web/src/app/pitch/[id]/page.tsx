@@ -471,7 +471,7 @@ export default function PitchDeckPage() {
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {deck.logoUrl ? (
-              <img src={deck.logoUrl} alt={deck.companyName} className="h-7 w-auto" />
+              <img src={deck.logoUrl} alt={deck.companyName} className="h-7 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
             ) : (
               <div className="h-7 w-7 rounded bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
                 {deck.companyName[0]}

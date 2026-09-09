@@ -99,7 +99,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
 
         {isOpen && allRoles.length > 1 && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+            <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
             <div className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-popover border border-border rounded-lg shadow-lg py-1">
               {allRoles.map((role) => {
                 const roleConfig = ROLE_DISPLAY[role.roleType];
@@ -188,7 +188,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
 
       {isOpen && allRoles.length > 1 && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 max-h-[300px] overflow-y-auto">
             <div className="px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Switch Role

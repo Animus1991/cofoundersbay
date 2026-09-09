@@ -349,7 +349,7 @@ export default function DomainsAdminPage() {
                     }`}
                   >
                     {t.logoUrl
-                      ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
+                      ? <img src={t.logoUrl} alt="" className="icon-lg rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                       : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" aria-hidden="true" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
@@ -375,7 +375,7 @@ export default function DomainsAdminPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" />}
+                  {selectedTenant.logoUrl && <img src={selectedTenant.logoUrl} alt="" className="h-8 w-8 rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />}
                   <div>
                     <CardTitle>{selectedTenant.displayName || selectedTenant.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">/{selectedTenant.slug}</p>

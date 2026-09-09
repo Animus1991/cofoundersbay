@@ -118,7 +118,7 @@ export function ShareModal({
           {(title || description || imageUrl) && (
             <div className="flex gap-3 p-3 rounded-lg border border-border/60 bg-muted/30">
               {imageUrl && (
-                <img src={imageUrl} alt="" className="h-14 w-14 rounded object-cover shrink-0" />
+                <img src={imageUrl} alt="" className="h-14 w-14 rounded object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={56} height={56} />
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{title}</p>

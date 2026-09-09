@@ -146,7 +146,7 @@ export function ScoreInspector() {
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4">
                 {report.avatarUrl ? (
-                  <img src={report.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" />
+                  <img src={report.avatarUrl} alt="" className="w-12 h-12 rounded-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={48} height={48} />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg">
                     {(report.displayName ?? report.email)[0]?.toUpperCase()}

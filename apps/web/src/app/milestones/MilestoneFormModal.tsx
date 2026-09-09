@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Flag, Calendar, Users, FileText, AlertTriangle } from 'lucide-react';
+import { Flag, Calendar, Users, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { Milestone, MilestoneStatus, MilestonePriority } from '@/lib/api';
@@ -124,33 +125,20 @@ export function MilestoneFormModal({
     onSubmit(payload);
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-
-      {/* Panel */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl animate-fade-in">
+    <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden p-0" size="md">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <Flag className="icon-sm text-primary" aria-hidden="true" />
-            <h2 className="text-sm font-semibold text-foreground">
-              {isEdit ? 'Edit milestone' : 'New milestone'}
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <X className="icon-sm" aria-hidden="true" />
-          </button>
+        <div className="flex shrink-0 items-center gap-2 border-b border-border/50 px-5 py-4 pr-14">
+          <Flag className="icon-sm text-primary" aria-hidden="true" />
+          <DialogTitle className="text-sm">
+            {isEdit ? 'Edit milestone' : 'New milestone'}
+          </DialogTitle>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="max-h-[80vh] overflow-y-auto p-5 space-y-4">
+        {/* Form — the only scrolling region, so the header and the submit row
+            stay reachable however long the form gets. */}
+        <form onSubmit={handleSubmit} className="min-h-0 flex-1 overflow-y-auto p-5 space-y-4">
           {error && (
             <div className="flex items-start gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
               <AlertTriangle className="mt-0.5 icon-sm shrink-0" aria-hidden="true" />
@@ -306,14 +294,16 @@ export function MilestoneFormModal({
             <Button
               type="submit"
               size="sm"
-              disabled={isSubmitting || !form.title.trim()}
+              disabled={!form.title.trim()}
+              loading={isSubmitting}
+              loadingText="Saving milestone"
               className="min-w-[100px]"
             >
-              {isSubmitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create milestone'}
+              {isEdit ? 'Save changes' : 'Create milestone'}
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

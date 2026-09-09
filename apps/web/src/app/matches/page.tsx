@@ -308,7 +308,7 @@ function MatchPreviewPanel({
   return (
     <>
       {/* Backdrop (mobile) */}
-      <div className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
+      <div aria-hidden="true" className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden" onClick={onClose} />
 
       {/* Slide panel */}
       <div className="fixed right-0 top-0 h-full w-full max-w-[360px] z-50 border-l border-border/60 bg-card shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">

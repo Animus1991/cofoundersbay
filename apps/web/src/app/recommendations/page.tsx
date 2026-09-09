@@ -176,7 +176,7 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
       </Button>
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 bottom-8 z-50 bg-popover border border-border rounded-lg shadow-lg py-1 min-w-[160px]">
             {FEEDBACK_OPTIONS.map(opt => (
               <button

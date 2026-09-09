@@ -111,7 +111,7 @@ function PostCard({
       {post.mediaUrls.length > 0 && (
         <div className={cn('grid gap-2', post.mediaUrls.length > 1 ? 'grid-cols-2' : 'grid-cols-1')}>
           {post.mediaUrls.map((url, i) => (
-            <img key={i} src={url} alt="" className="rounded-lg object-cover max-h-64 w-full" />
+            <img key={i} src={url} alt="" className="rounded-lg object-cover max-h-64 w-full" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           ))}
         </div>
       )}
@@ -345,7 +345,7 @@ export default function GroupDetailPage() {
               <div className="flex items-end gap-4">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
                   {group.avatarUrl ? (
-                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" />
+                    <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (
                     <Users className="h-7 w-7 text-primary" aria-hidden="true" />
                   )}

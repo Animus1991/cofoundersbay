@@ -13,6 +13,11 @@ import {
 } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { FormField } from '@/components/ui/form-field';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -240,66 +245,75 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">New Experiment</h3>
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent size="md">
+        <DialogTitle className="mb-4">New Experiment</DialogTitle>
         <div className="space-y-3">
           {[
             { label: 'Name', key: 'name', placeholder: 'e.g. Higher XP for artifacts' },
             { label: 'Key (slug)', key: 'key', placeholder: 'e.g. xp_artifact_boost_v1' },
             { label: 'Description', key: 'description', placeholder: 'Optional context…' },
           ].map(({ label, key, placeholder }) => (
-            <div key={key}>
-              <label className="block text-xs text-gray-500 mb-1">{label}</label>
-              <input
-                value={(form as Record<string, string>)[key]}
-                onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                placeholder={placeholder}
-                className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              />
-            </div>
+            <FormField key={key} label={label}>
+              {(field) => (
+                <Input
+                  {...field}
+                  value={(form as Record<string, string>)[key]}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                  placeholder={placeholder}
+                />
+              )}
+            </FormField>
           ))}
           <div className="grid grid-cols-2 gap-3">
             {[{ label: 'Variant A (control)', key: 'variantA' }, { label: 'Variant B (treatment)', key: 'variantB' }].map(({ label, key }) => (
-              <div key={key}>
-                <label className="block text-xs text-gray-500 mb-1">{label}</label>
-                <textarea
-                  value={(form as Record<string, string>)[key]}
-                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                  rows={4}
-                  className="w-full text-xs font-mono border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
-                />
-              </div>
+              <FormField key={key} label={label}>
+                {(field) => (
+                  <Textarea
+                    {...field}
+                    value={(form as Record<string, string>)[key]}
+                    onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                    rows={4}
+                    className="resize-none font-mono text-xs"
+                  />
+                )}
+              </FormField>
             ))}
           </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Split Ratio (% assigned to B): {Math.round(parseFloat(form.splitRatio) * 100)}%</label>
-            <input
-              type="range" min="0.1" max="0.9" step="0.05"
-              value={form.splitRatio}
-              onChange={(e) => setForm((f) => ({ ...f, splitRatio: e.target.value }))}
-              className="w-full accent-indigo-600"
-            />
-          </div>
-          {error && <p className="text-sm text-rose-600">{error}</p>}
-        </div>
-        <div className="flex gap-3 mt-5">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50"
+          <FormField
+            label={`Split ratio (% assigned to B): ${Math.round(parseFloat(form.splitRatio) * 100)}%`}
           >
+            {(field) => (
+              <input
+                {...field}
+                type="range" min="0.1" max="0.9" step="0.05"
+                value={form.splitRatio}
+                onChange={(e) => setForm((f) => ({ ...f, splitRatio: e.target.value }))}
+                className="w-full accent-primary"
+              />
+            )}
+          </FormField>
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+        </div>
+        <DialogFooter className="mt-5">
+          <Button variant="secondary" onClick={onClose} fullWidth>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => void submit()}
-            disabled={loading}
-            className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+            loading={loading}
+            loadingText="Creating experiment"
+            fullWidth
           >
-            {loading ? 'Creating…' : 'Create'}
-          </button>
-        </div>
-      </div>
-    </div>
+            Create
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

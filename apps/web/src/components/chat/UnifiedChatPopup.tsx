@@ -184,7 +184,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div aria-hidden="true" className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
           <div className="absolute top-full left-0 mt-1 w-64 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 animate-in fade-in slide-in-from-top-2">
             {agents.map((agent) => (
               <button

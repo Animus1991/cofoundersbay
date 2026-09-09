@@ -21,6 +21,7 @@ import {
 import { BulkActionBar, useBulkSelection, BulkCheckbox } from '@/components/ui/bulk-action-bar';
 import { analytics } from '@/lib/analytics';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 export default function TenantsAdminPage() {
   const confirm = useConfirm();
@@ -190,7 +191,7 @@ export default function TenantsAdminPage() {
                       className="shrink-0"
                     />
                     {tenant.logoUrl ? (
-                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                      <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={40} height={40} />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Building2 className="icon-md text-primary" aria-hidden="true" />
@@ -352,8 +353,18 @@ function TenantEditor({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <Dialog open onOpenChange={(next) => { if (!next) onClose(); }}>
+      <DialogContent
+        size="xl"
+        // The editor supplies its own header row with a close control, and its
+        // Card body handles the internal scrolling.
+        showCloseButton={false}
+        className="max-h-[90dvh] overflow-hidden border-0 bg-transparent p-0 shadow-none"
+      >
+        <DialogTitle className="sr-only">
+          {isNew ? 'Create tenant' : `Edit ${general.displayName || general.name}`}
+        </DialogTitle>
+      <Card className="flex max-h-[90dvh] w-full flex-col overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between border-b shrink-0">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -538,7 +549,7 @@ function TenantEditor({
                 </div>
                 {branding.heroImageUrl && (
                   <div className="rounded-lg overflow-hidden border">
-                    <img src={branding.heroImageUrl} alt="Hero preview" className="w-full h-40 object-cover" />
+                    <img src={branding.heroImageUrl} alt="Hero preview" className="w-full h-40 object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   </div>
                 )}
                 {!isNew && (
@@ -731,7 +742,8 @@ function TenantEditor({
           </div>
         </div>
       </Card>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -749,7 +761,7 @@ function TenantPreview({
         {/* Preview Header */}
         <div className="p-4 flex items-center justify-between" style={{ backgroundColor: branding.primaryColor }}>
           {general.logoUrl ? (
-            <img src={general.logoUrl} alt="" className="h-8 object-contain" />
+            <img src={general.logoUrl} alt="" className="h-8 object-contain" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           ) : (
             <span className="text-white font-semibold">{displayName}</span>
           )}

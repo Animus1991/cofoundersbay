@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
+import { useModalA11y } from '@/hooks/useModalA11y';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -304,16 +305,26 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
   const isText = node.type === "text" || node.type === "note";
   const isDoc = node.type === "document" && !isPdf && !isImage;
 
+  // Focus trap, Escape, scroll lock and focus restore for this hand-rolled
+  // overlay. It stays hand-rolled rather than moving to the Dialog primitive
+  // because of the framer-motion exit animation it shares with the canvas.
+  const viewerRef = useModalA11y<HTMLDivElement>(true, onClose);
+
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
       <motion.div
+        ref={viewerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${node.title || "Untitled"} — node details`}
+        tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         className={cn(
-          "flex flex-col gap-0 p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl",
+          "flex flex-col gap-0 p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl focus:outline-none",
           isImage ? "max-w-5xl" : "max-w-4xl",
-          "h-[90vh] w-full"
+          "h-[90dvh] w-full"
         )}
       >
         {/* Header */}
@@ -419,8 +430,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                   alt={node.title}
                   style={{ transform: `scale(${imgZoom})`, transformOrigin: "top center", transition: "transform 0.2s" }}
                   className="max-w-full rounded-lg shadow-md"
-                  draggable={false}
-                />
+                  draggable={false} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               </div>
             </div>
           )}
@@ -505,6 +515,8 @@ export default function ResearchCanvas() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const closeShortcuts = useCallback(() => setShowShortcuts(false), []);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, closeShortcuts);
   
   // History for undo/redo
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -1226,7 +1238,7 @@ export default function ResearchCanvas() {
 
               <div className="flex-1 p-3 overflow-hidden text-xs text-muted-foreground leading-relaxed">
                 {node.type === "image" && node.url && (
-                  <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" />
+                  <img src={node.url} alt={node.title} className="w-full h-full object-cover rounded" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                 )}
                 {node.type === "pdf" && (
                   <div className="flex flex-col items-center justify-center h-full gap-2">
@@ -1418,21 +1430,27 @@ export default function ResearchCanvas() {
         {showShortcuts && (
           <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
+              ref={shortcutsRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="canvas-shortcuts-title"
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+              className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden focus:outline-none"
             >
               <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Keyboard className="w-5 h-5 text-primary" />
+                <h2 id="canvas-shortcuts-title" className="text-lg font-semibold flex items-center gap-2">
+                  <Keyboard className="icon-md text-primary" aria-hidden="true" />
                   Keyboard Shortcuts
                 </h2>
                 <button
                   onClick={() => setShowShortcuts(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
+                  aria-label="Close keyboard shortcuts"
+                  className="focus-ring w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="icon-sm" aria-hidden="true" />
                 </button>
               </div>
               <div className="p-6 grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto">

@@ -91,7 +91,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
 
         <div className="relative mx-auto max-w-5xl px-6 py-24 text-center">
           {tenant.logoUrl && (
-            <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" />
+            <img src={tenant.logoUrl} alt={tenant.name} className="mx-auto mb-6 h-16 w-auto rounded-xl shadow-lg" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
           )}
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl mb-4 drop-shadow">
             {b?.heroTitle || tenant.displayName || tenant.name}
@@ -208,7 +208,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
         <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <div className="flex items-center gap-3">
             {tenant.logoUrl
-              ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" />
+              ? <img src={tenant.logoUrl} alt="" className="h-6 w-auto" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
               : <Badge variant="secondary" className="text-xs">{tenant.status}</Badge>}
             <span className="text-sm font-medium">{tenant.displayName || tenant.name}</span>
           </div>

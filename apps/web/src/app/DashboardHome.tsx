@@ -166,7 +166,7 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
     >
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
         {group.avatarUrl ? (
-          <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
+          <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />
         ) : (
           <Building2 className="icon-sm text-primary" aria-hidden="true" />
         )}

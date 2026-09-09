@@ -87,7 +87,7 @@ function CollaboratorRow({
     <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
       <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center overflow-hidden shrink-0">
         {collab.avatarUrl ? (
-          <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" />
+          <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         ) : (
           <span className="text-xs font-semibold text-primary">
             {(collab.displayName ?? collab.email)[0].toUpperCase()}
@@ -233,7 +233,7 @@ function OrgOwnershipSection({
                 )}
               >
                 {m.organization.avatarUrl ? (
-                  <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" />
+                  <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                 ) : (
                   <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
                     <Building2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
@@ -418,7 +418,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                               onClick={() => { addCollabMutation.mutate(hit.userId); }}
                             >
                               {hit.avatarUrl ? (
-                                <img src={hit.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                <img src={hit.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                               ) : (
                                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                                   <span className="text-xs font-bold text-primary">{(hit.displayName ?? 'U')[0]}</span>

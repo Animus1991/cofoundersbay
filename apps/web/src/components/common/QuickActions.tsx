@@ -150,6 +150,7 @@ export function QuickActions({
       {/* Backdrop */}
       {isOpen && (
         <div
+          aria-hidden="true"
           className="fixed inset-0 bg-background/60 backdrop-blur-sm -z-10"
           onClick={() => setIsOpen(false)}
         />

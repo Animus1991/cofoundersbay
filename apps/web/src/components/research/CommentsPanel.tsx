@@ -37,7 +37,7 @@ function CommentBubble({
     <div className={cn('group flex gap-2', isOwn ? 'flex-row-reverse' : 'flex-row')}>
       <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
         {comment.authorAvatar ? (
-          <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" />
+          <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
         ) : (
           <span className="text-2xs font-semibold text-primary">
             {(comment.authorName ?? 'U')[0].toUpperCase()}

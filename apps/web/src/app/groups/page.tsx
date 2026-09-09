@@ -105,7 +105,7 @@ function GroupCard({
           <div className="flex items-start gap-3 flex-1 min-w-0">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary">
               {group.avatarUrl ? (
-                <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" />
+                <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={44} height={44} />
               ) : (
                 <Users className="icon-md" aria-hidden="true" />
               )}
