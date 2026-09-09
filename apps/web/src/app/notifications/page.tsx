@@ -137,7 +137,7 @@ const NotificationRow = memo(function NotificationRow({
     >
       {selectable && (
         <button onClick={() => onSelect?.(item.id)} className="mt-1 shrink-0 text-muted-foreground/60 hover:text-primary transition-colors">
-          {selected ? <SquareCheck className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4" />}
+          {selected ? <SquareCheck className="icon-sm text-primary" aria-hidden="true" /> : <Square className="icon-sm" aria-hidden="true" />}
         </button>
       )}
 
@@ -158,11 +158,11 @@ const NotificationRow = memo(function NotificationRow({
             <p className={cn('text-sm leading-snug truncate', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
               {item.title}
             </p>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 shrink-0 capitalize">
+            <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4 shrink-0 capitalize">
               {typeLabel}
             </Badge>
           </div>
-          <span className="shrink-0 text-[11px] text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
+          <span className="shrink-0 text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
         </div>
         {item.body && (
           <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>
@@ -174,7 +174,7 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
-              View <ExternalLink className="h-3 w-3" />
+              View <ExternalLink className="icon-2xs" aria-hidden="true" />
             </Link>
           )}
           {isUnread && (
@@ -182,14 +182,14 @@ const NotificationRow = memo(function NotificationRow({
               onClick={() => onRead(item.id)}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Check className="h-3 w-3" /> Mark read
+              <Check className="icon-2xs" aria-hidden="true" /> Mark read
             </button>
           )}
           <button
             onClick={() => onDelete(item.id)}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
           >
-            <Trash2 className="h-3 w-3" /> Delete
+            <Trash2 className="icon-2xs" aria-hidden="true" /> Delete
           </button>
         </div>
       </div>
@@ -330,7 +330,7 @@ export default function NotificationsPage() {
                   <TabsTrigger key={t.value} value={t.value} className="h-7 px-3 text-xs shrink-0">
                     {t.label}
                     {catCounts[t.value] ? (
-                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-[9px] font-bold text-primary">
+                      <span className="ml-1 rounded-full bg-primary/20 px-1 text-2xs font-bold text-primary">
                         {catCounts[t.value]}
                       </span>
                     ) : null}
@@ -343,10 +343,10 @@ export default function NotificationsPage() {
             {bulkMode && selectedIds.size > 0 && (
               <>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs" onClick={handleBulkRead}>
-                  <Check className="h-3 w-3" />Mark read ({selectedIds.size})
+                  <Check className="icon-2xs" aria-hidden="true" />Mark read ({selectedIds.size})
                 </Button>
                 <Button variant="outline" size="sm" className="h-8 gap-1 text-xs text-destructive hover:text-destructive" onClick={handleBulkDelete}>
-                  <Trash2 className="h-3 w-3" />Delete ({selectedIds.size})
+                  <Trash2 className="icon-2xs" aria-hidden="true" />Delete ({selectedIds.size})
                 </Button>
               </>
             )}
@@ -362,7 +362,7 @@ export default function NotificationsPage() {
                 bulkMode ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
-              <SquareCheck className="h-3.5 w-3.5" />
+              <SquareCheck className="h-3.5 w-3.5" aria-hidden="true" />
               {bulkMode ? 'Exit select' : 'Select'}
             </button>
             <button
@@ -372,23 +372,23 @@ export default function NotificationsPage() {
                 showUnreadOnly ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border/60 bg-secondary/40 text-muted-foreground hover:text-foreground',
               )}
             >
-              <Filter className="h-3.5 w-3.5" />
+              <Filter className="h-3.5 w-3.5" aria-hidden="true" />
               Unread
               {unreadCount > 0 && (
-                <Badge className="h-4 min-w-[1rem] px-1 text-[10px]" variant="default">{unreadCount}</Badge>
+                <Badge className="h-4 min-w-[1rem] px-1 text-2xs" variant="default">{unreadCount}</Badge>
               )}
             </button>
             {unreadCount > 0 && (
               <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
-                <CheckCheck className="h-3.5 w-3.5" />Mark all read
+                <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />Mark all read
               </Button>
             )}
             <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
-              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} aria-hidden="true" />
             </Button>
             <Link href="/settings" title="Notification settings">
               <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-3.5 w-3.5" />
+                <Settings className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             </Link>
           </div>
@@ -398,10 +398,10 @@ export default function NotificationsPage() {
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
           {isError ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
-              <BellOff className="h-8 w-8 text-muted-foreground/50" />
+              <BellOff className="icon-xl text-muted-foreground/50" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">Failed to load notifications.</p>
               <Button variant="secondary" size="sm" onClick={() => refetch()}>
-                <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
+                <RefreshCw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" /> Retry
               </Button>
             </div>
           ) : isLoading ? (
@@ -409,7 +409,7 @@ export default function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-                <Bell className="h-6 w-6 text-muted-foreground" />
+                <Bell className="icon-lg text-muted-foreground" aria-hidden="true" />
               </div>
               <div>
                 <p className="font-medium text-foreground">{showUnreadOnly ? 'No unread notifications' : 'All caught up!'}</p>
@@ -425,7 +425,7 @@ export default function NotificationsPage() {
             grouped.map(({ label, items }) => (
               <div key={label}>
                 <div className="px-4 py-2 border-b border-border/40 bg-muted/30">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">{label}</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">{label}</p>
                 </div>
                 {items.map((item) => (
                   <NotificationRow

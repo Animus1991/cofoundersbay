@@ -64,7 +64,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 {org.location && (
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="icon-sm shrink-0" />
+                    <MapPin className="icon-sm shrink-0" aria-hidden="true" />
                     <span>{org.location}</span>
                   </div>
                 )}
@@ -75,9 +75,9 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 hover:text-foreground transition-colors"
                   >
-                    <Globe className="icon-sm shrink-0" />
+                    <Globe className="icon-sm shrink-0" aria-hidden="true" />
                     <span>{(() => { try { return new URL(org.website).hostname; } catch { return org.website; } })()}</span>
-                    <ExternalLink className="icon-sm" />
+                    <ExternalLink className="icon-sm" aria-hidden="true" />
                   </a>
                 )}
                 {org.email && (
@@ -85,12 +85,12 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                     href={`mailto:${org.email}`}
                     className="flex items-center gap-1.5 hover:text-foreground transition-colors"
                   >
-                    <Mail className="icon-sm shrink-0" />
+                    <Mail className="icon-sm shrink-0" aria-hidden="true" />
                     <span>{org.email}</span>
                   </a>
                 )}
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="icon-sm shrink-0" />
+                  <Calendar className="icon-sm shrink-0" aria-hidden="true" />
                   <span>Joined {formatRelativeTime(org.createdAt)}</span>
                 </div>
               </div>
@@ -103,11 +103,11 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
               <div className="flex gap-2 pt-1">
                 <Button size="sm" className="h-8 px-4 text-xs font-medium gap-1.5">
-                  <Users className="icon-sm" />
+                  <Users className="icon-sm" aria-hidden="true" />
                   Follow
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 px-4 text-xs font-medium gap-1.5">
-                  <Mail className="icon-sm" />
+                  <Mail className="icon-sm" aria-hidden="true" />
                   Contact
                 </Button>
               </div>
@@ -136,28 +136,28 @@ export function OrgContent({ org, slug }: OrgContentProps) {
         <Tabs defaultValue="opportunities" className="space-y-6">
           <TabsList className="h-9">
             <TabsTrigger value="opportunities" className="text-sm gap-1.5">
-              <Briefcase className="icon-sm" />
+              <Briefcase className="icon-sm" aria-hidden="true" />
               Opportunities
               {opportunities.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{opportunities.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="programs" className="text-sm gap-1.5">
-              <GraduationCap className="icon-sm" />
+              <GraduationCap className="icon-sm" aria-hidden="true" />
               Programs
               {cohorts.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{cohorts.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="members" className="text-sm gap-1.5">
-              <Users className="icon-sm" />
+              <Users className="icon-sm" aria-hidden="true" />
               Members
               {members.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-xs">{members.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="about" className="text-sm gap-1.5">
-              <Building2 className="icon-sm" />
+              <Building2 className="icon-sm" aria-hidden="true" />
               About
             </TabsTrigger>
           </TabsList>
@@ -180,7 +180,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
             ) : opportunities.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Briefcase className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+                  <Briefcase className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" aria-hidden="true" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">No opportunities yet</h3>
                   <p className="text-xs text-muted-foreground">Check back soon.</p>
                 </CardContent>
@@ -242,7 +242,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
             ) : cohorts.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+                  <GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" aria-hidden="true" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">No programs yet</h3>
                   <p className="text-xs text-muted-foreground">Check back soon.</p>
                 </CardContent>
@@ -269,7 +269,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                         )}
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
+                            <Users className="icon-2xs" aria-hidden="true" />
                             {cohort._count.members} members
                           </span>
                           {cohort.capacity && <span>Cap: {cohort.capacity}</span>}
@@ -306,7 +306,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
             ) : members.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+                  <Users className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" aria-hidden="true" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">No members yet</h3>
                   <p className="text-xs text-muted-foreground">Members will appear here when they join programs.</p>
                 </CardContent>
@@ -334,12 +334,12 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                             <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{member.headline}</p>
                           )}
                           <div className="flex flex-wrap gap-2 mt-2">
-                            <Badge variant="outline" className="text-[10px] h-5">
+                            <Badge variant="outline" className="text-2xs h-5">
                               {member.cohortName}
                             </Badge>
                             {member.location && (
-                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                <MapPin className="h-2.5 w-2.5" />
+                              <span className="flex items-center gap-1 text-2xs text-muted-foreground">
+                                <MapPin className="h-2.5 w-2.5" aria-hidden="true" />
                                 {member.location}
                               </span>
                             )}

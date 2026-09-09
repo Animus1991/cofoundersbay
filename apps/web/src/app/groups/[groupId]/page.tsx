@@ -78,7 +78,7 @@ function PostCard({
     <div className="rounded-xl border border-border/60 bg-card/70 p-4 space-y-3 backdrop-blur">
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-          <Pin className="h-3 w-3" />
+          <Pin className="icon-2xs" aria-hidden="true" />
           Pinned post
         </div>
       )}
@@ -99,7 +99,7 @@ function PostCard({
                 onClick={() => onDelete(post.id)}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -128,7 +128,7 @@ function PostCard({
                 : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
             )}
           >
-            {post.myReaction ?? <Heart className="h-3.5 w-3.5" />}
+            {post.myReaction ?? <Heart className="h-3.5 w-3.5" aria-hidden="true" />}
             {post.reactionCount > 0 && <span>{post.reactionCount}</span>}
           </button>
           {showReactions && (
@@ -153,7 +153,7 @@ function PostCard({
           onClick={() => setShowComments((p) => !p)}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors"
         >
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
           {post.commentCount > 0 && <span>{post.commentCount}</span>}
           {showComments ? 'Hide' : 'Comment'}
         </button>
@@ -163,17 +163,17 @@ function PostCard({
       {showComments && (
         <div className="space-y-3 pt-1">
           {commentsQuery.isLoading && (
-            <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary/50" /></div>
+            <div className="flex justify-center py-4"><Loader2 className="icon-md animate-spin text-primary/50" aria-hidden="true" /></div>
           )}
           {(commentsQuery.data?.comments ?? []).map((c) => (
             <div key={c.id} className="flex items-start gap-2.5">
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={c.author.avatarUrl ?? undefined} />
-                <AvatarFallback className="text-[10px]">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                <AvatarFallback className="text-2xs">{c.author.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="flex-1 rounded-xl bg-secondary/40 px-3 py-2">
                 <span className="text-xs font-semibold">{c.author.displayName}</span>
-                <span className="ml-2 text-[10px] text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
+                <span className="ml-2 text-2xs text-muted-foreground">{formatRelativeTime(c.createdAt)}</span>
                 <p className="mt-0.5 text-xs text-foreground/90">{c.content}</p>
               </div>
             </div>
@@ -193,7 +193,7 @@ function PostCard({
                 disabled={submittingComment || !newComment.trim()}
                 onClick={handleAddComment}
               >
-                {submittingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                {submittingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Send className="h-3.5 w-3.5" aria-hidden="true" />}
               </Button>
             </div>
           )}
@@ -299,7 +299,7 @@ export default function GroupDetailPage() {
     return (
       <AppShell>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+          <Loader2 className="icon-xl animate-spin text-primary/50" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -326,7 +326,7 @@ export default function GroupDetailPage() {
           onClick={() => router.push('/groups')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="icon-sm" aria-hidden="true" />
           Back to Groups
         </button>
 
@@ -347,22 +347,22 @@ export default function GroupDetailPage() {
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" />
                   ) : (
-                    <Users className="h-7 w-7 text-primary" />
+                    <Users className="h-7 w-7 text-primary" aria-hidden="true" />
                   )}
                 </div>
                 <div className="pb-1">
                   <h1 className="font-display text-xl font-bold">{group.name}</h1>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      {group.privacy === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      {group.privacy === 'public' ? <Globe className="icon-2xs" aria-hidden="true" /> : <Lock className="icon-2xs" aria-hidden="true" />}
                       <span className="capitalize">{group.privacy}</span>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
+                      <Users className="icon-2xs" aria-hidden="true" />
                       {group.memberCount.toLocaleString()} members
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MessageCircle className="h-3 w-3" />
+                      <MessageCircle className="icon-2xs" aria-hidden="true" />
                       {group.postCount.toLocaleString()} posts
                     </span>
                   </div>
@@ -376,11 +376,11 @@ export default function GroupDetailPage() {
                 onClick={handleToggleMembership}
               >
                 {togglingMembership ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 ) : isMember ? (
-                  <><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Joined</>
+                  <><CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" /> Joined</>
                 ) : (
-                  <><UserPlus className="h-4 w-4" /> Join Group</>
+                  <><UserPlus className="icon-sm" aria-hidden="true" /> Join Group</>
                 )}
               </Button>
             </div>
@@ -448,7 +448,7 @@ export default function GroupDetailPage() {
                       disabled={submittingPost || !newPost.trim()}
                       onClick={handleCreatePost}
                     >
-                      {submittingPost ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {submittingPost ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Send className="icon-sm" aria-hidden="true" />}
                       Post
                     </Button>
                   </div>
@@ -458,7 +458,7 @@ export default function GroupDetailPage() {
               {/* Posts */}
               {postsQuery.isLoading && (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary/50" />
+                  <Loader2 className="icon-lg animate-spin text-primary/50" aria-hidden="true" />
                 </div>
               )}
 
@@ -466,14 +466,14 @@ export default function GroupDetailPage() {
                 <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <p className="text-sm text-muted-foreground">Failed to load posts</p>
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => postsQuery.refetch()}>
-                    <RefreshCw className="h-3.5 w-3.5" /> Retry
+                    <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" /> Retry
                   </Button>
                 </div>
               )}
 
               {!postsQuery.isLoading && posts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <MessageCircle className="h-10 w-10 mb-3 text-muted-foreground/20" />
+                  <MessageCircle className="h-10 w-10 mb-3 text-muted-foreground/20" aria-hidden="true" />
                   <p className="text-sm font-medium">No posts yet</p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {isMember ? 'Be the first to post in this group!' : 'Join to start posting.'}
@@ -503,7 +503,7 @@ export default function GroupDetailPage() {
                   <ol className="space-y-2">
                     {group.rules.map((rule, i) => (
                       <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary text-2xs font-bold">
                           {i + 1}
                         </span>
                         <div>
@@ -525,12 +525,12 @@ export default function GroupDetailPage() {
                       <div key={m.userId} className="flex items-center gap-2">
                         <Avatar className="h-7 w-7 shrink-0">
                           <AvatarImage src={m.user?.avatarUrl ?? undefined} />
-                          <AvatarFallback className="text-[10px]">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
+                          <AvatarFallback className="text-2xs">{m.user?.displayName?.[0]?.toUpperCase() ?? 'U'}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium truncate">{m.user?.displayName ?? 'Member'}</p>
                           {m.role !== 'member' && (
-                            <p className="text-[10px] text-primary capitalize">{m.role}</p>
+                            <p className="text-2xs text-primary capitalize">{m.role}</p>
                           )}
                         </div>
                       </div>
@@ -571,7 +571,7 @@ export default function GroupDetailPage() {
                       <p className="text-xs text-muted-foreground truncate">{m.user.headline}</p>
                     )}
                     {m.role !== 'member' && (
-                      <span className="text-[10px] text-primary capitalize font-medium">{m.role}</span>
+                      <span className="text-2xs text-primary capitalize font-medium">{m.role}</span>
                     )}
                   </div>
                 </div>

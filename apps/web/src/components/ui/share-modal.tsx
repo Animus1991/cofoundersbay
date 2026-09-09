@@ -108,7 +108,7 @@ export function ShareModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-4 w-4" />
+            <Share2 className="icon-sm" aria-hidden="true" />
             Share
           </DialogTitle>
         </DialogHeader>
@@ -139,7 +139,7 @@ export function ShareModal({
                 onClick={handleCopy}
                 className={cn('shrink-0 gap-1.5 transition-all', copied && 'bg-green-600 hover:bg-green-600 border-green-600')}
               >
-                {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+                {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Link2 className="h-3.5 w-3.5" aria-hidden="true" />}
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
@@ -169,7 +169,7 @@ export function ShareModal({
           {/* Native share (mobile) */}
           {typeof navigator !== 'undefined' && !!navigator.share && (
             <Button variant="outline" className="w-full gap-2" onClick={handleNativeShare}>
-              <ExternalLink className="h-4 w-4" />
+              <ExternalLink className="icon-sm" aria-hidden="true" />
               More options…
             </Button>
           )}
@@ -205,7 +205,7 @@ export function ShareButton({ url, title, description, imageUrl, hashtags, child
       >
         {children ?? (
           <>
-            <Share2 className="h-4 w-4 mr-1.5" aria-hidden="true" />
+            <Share2 className="icon-sm mr-1.5" aria-hidden="true" />
             Share
           </>
         )}

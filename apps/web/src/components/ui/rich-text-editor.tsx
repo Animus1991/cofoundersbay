@@ -177,7 +177,7 @@ export function RichTextEditor({
           onMouseDown={(e) => { e.preventDefault(); openLinkDialog(); }}
           className="p-1.5 rounded hover:bg-accent transition-colors disabled:opacity-40"
         >
-          <Link2 className="h-3.5 w-3.5" />
+          <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
 
         {showWordCount && (

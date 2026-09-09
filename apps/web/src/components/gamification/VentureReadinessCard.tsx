@@ -40,7 +40,7 @@ function RadialGauge({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-sm font-bold text-foreground tabular-nums">{score}</span>
-        <span className={cn('text-[10px] font-medium', color)}>{label}</span>
+        <span className={cn('text-2xs font-medium', color)}>{label}</span>
       </div>
     </div>
   );
@@ -86,12 +86,12 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className={cn('flex items-center gap-2', compact ? 'text-sm' : 'text-base')}>
-            <TrendingUp className="h-4 w-4 text-primary" />
+            <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
             Venture Readiness Score
           </CardTitle>
           <Link href="/achievements">
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
-              History <ArrowRight className="h-3 w-3" />
+              History <ArrowRight className="icon-2xs" aria-hidden="true" />
             </Button>
           </Link>
         </div>
@@ -106,7 +106,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             </p>
             {vrs.lowestDimension && (
               <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600">
-                <Zap className="h-3.5 w-3.5 shrink-0" />
+                <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
                   Lowest: <Link href={vrs.lowestDimension.href} className="font-medium underline underline-offset-2">
                     {vrs.lowestDimension.label}

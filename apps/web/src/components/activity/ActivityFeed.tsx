@@ -147,7 +147,7 @@ export function ActivityFeed() {
                       </span>
                     </div>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                      <MoreHorizontal className="icon-sm" aria-hidden="true" />
                     </Button>
                   </div>
 
@@ -210,17 +210,17 @@ export function ActivityFeed() {
                         activity.isLiked && 'text-red-500'
                       )}
                     >
-                      <Heart className={cn('h-4 w-4 mr-2', activity.isLiked && 'fill-current')} />
+                      <Heart className={cn('h-4 w-4 mr-2', activity.isLiked && 'fill-current')} aria-hidden="true" />
                       {activity.metadata?.stats?.likes || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <MessageSquare className="icon-sm mr-2" aria-hidden="true" />
                       {activity.metadata?.stats?.comments || 0}
                     </Button>
 
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="h-4 w-4 mr-2" />
+                      <Share2 className="icon-sm mr-2" aria-hidden="true" />
                       {activity.metadata?.stats?.shares || 0}
                     </Button>
                   </div>
@@ -234,7 +234,7 @@ export function ActivityFeed() {
       {activities.length === 0 && (
         <Card>
           <CardContent className="py-16 text-center">
-            <Users className="mx-auto h-16 w-16 text-muted-foreground/40 mb-4" />
+            <Users className="mx-auto h-16 w-16 text-muted-foreground/40 mb-4" aria-hidden="true" />
             <h3 className="text-lg font-semibold mb-2">No activity yet</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Start connecting with people to see their activity

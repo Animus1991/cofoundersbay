@@ -110,7 +110,7 @@ function BuilderPageContent() {
     return (
       <AppShell>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -122,7 +122,7 @@ function BuilderPageContent() {
         {/* Error Alert */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" />
+            <AlertCircle className="icon-md text-destructive" aria-hidden="true" />
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
@@ -136,7 +136,7 @@ function BuilderPageContent() {
         {/* Expert Review CTA — surfaces when artifacts exist */}
         {!reviewBannerDismissed && documents.length >= 2 && (
           <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-            <Sparkles className="h-4 w-4 shrink-0 text-amber-500" />
+            <Sparkles className="icon-sm shrink-0 text-amber-500" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">
                 Your artifacts are ready for expert review
@@ -147,7 +147,7 @@ function BuilderPageContent() {
             </div>
             <a href="/expert-reviews" className="shrink-0">
               <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-amber-600 hover:bg-amber-500/10">
-                Get review <ArrowRight className="h-3 w-3" />
+                Get review <ArrowRight className="icon-2xs" aria-hidden="true" />
               </Button>
             </a>
             <button
@@ -155,7 +155,7 @@ function BuilderPageContent() {
               className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
               title="Dismiss"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -165,7 +165,7 @@ function BuilderPageContent() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Rocket className="icon-lg text-primary" />
+                <Rocket className="icon-lg text-primary" aria-hidden="true" />
               </div>
               {workspace?.name || 'Startup Builder'}
             </h1>
@@ -177,7 +177,7 @@ function BuilderPageContent() {
             {/* Online Collaborators */}
             {onlineCollaborators.length > 0 && (
               <div className="flex items-center gap-1">
-                <Users className="icon-sm text-muted-foreground" />
+                <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                 <div className="flex -space-x-2">
                   {onlineCollaborators.slice(0, 3).map((c) => (
                     <Avatar key={c.odId} className="h-6 w-6 border-2 border-background">
@@ -197,7 +197,7 @@ function BuilderPageContent() {
             {/* AI Generating Indicator */}
             {isGenerating && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="icon-sm animate-spin" />
+                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 <span>AI generating...</span>
               </div>
             )}

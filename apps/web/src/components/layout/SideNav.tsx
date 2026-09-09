@@ -118,7 +118,7 @@ export function SideNav() {
             className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
             aria-label="Collapse sidebar"
           >
-            <PanelLeftClose className="h-4 w-4" />
+            <PanelLeftClose className="icon-sm" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -131,7 +131,7 @@ export function SideNav() {
         {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
+              <p className="mx-3 mb-1 mt-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/40 first:mt-1">
                 {section}
               </p>
             ) : (
@@ -175,7 +175,7 @@ export function SideNav() {
                           aria-hidden="true"
                         />
                         {badge > 0 && !expanded && (
-                          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-primary px-0.5 text-[8px] font-bold leading-none text-primary-foreground">
+                          <span className="absolute -right-1 -top-1 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold leading-none text-primary-foreground">
                             {badge > 9 ? '9+' : badge}
                           </span>
                         )}
@@ -187,7 +187,7 @@ export function SideNav() {
                           <span className="truncate text-sm leading-none">{label}</span>
                           {badge > 0 && (
                             <span
-                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground"
+                              className="ml-auto flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold leading-none text-primary-foreground"
                               aria-label={`${badge} unread`}
                             >
                               {badge > 99 ? '99+' : badge}
@@ -245,7 +245,7 @@ export function SideNav() {
             className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
             aria-label="Expand sidebar"
           >
-            <PanelLeftOpen className="h-4 w-4" />
+            <PanelLeftOpen className="icon-sm" aria-hidden="true" />
           </button>
         )}
       </div>

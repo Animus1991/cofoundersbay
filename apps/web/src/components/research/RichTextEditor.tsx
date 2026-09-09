@@ -126,10 +126,10 @@ export function RichTextEditor({
         <ToolBtn onClick={() => execCommand('underline')} icon={Underline} title="Underline (Ctrl+U)" />
         <ToolBtn onClick={() => execCommand('strikeThrough')} icon={Strikethrough} title="Strikethrough" />
         <div className="w-px h-5 bg-border mx-1 self-center" />
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h2')} title="Heading 1"><span className="text-[11px] font-bold">H1</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h3')} title="Heading 2"><span className="text-[11px] font-bold">H2</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'h4')} title="Heading 3"><span className="text-[11px] font-bold">H3</span></ToolBtn>
-        <ToolBtn onClick={() => execCommand('formatBlock', 'p')} title="Paragraph"><span className="text-[11px]">P</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h2')} title="Heading 1"><span className="text-2xs font-bold">H1</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h3')} title="Heading 2"><span className="text-2xs font-bold">H2</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'h4')} title="Heading 3"><span className="text-2xs font-bold">H3</span></ToolBtn>
+        <ToolBtn onClick={() => execCommand('formatBlock', 'p')} title="Paragraph"><span className="text-2xs">P</span></ToolBtn>
         <div className="w-px h-5 bg-border mx-1 self-center" />
         <ToolBtn onClick={() => execCommand('insertUnorderedList')} icon={List} title="Bullet List" />
         <ToolBtn onClick={() => execCommand('insertOrderedList')} icon={ListOrdered} title="Numbered List" />

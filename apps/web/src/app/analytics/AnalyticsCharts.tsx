@@ -57,10 +57,10 @@ export function ProfileViewsChart({ data }: { data: ProfileView[] }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <BarChart3 className="h-4 w-4" />Profile Views Trend
+            <BarChart3 className="icon-sm" aria-hidden="true" />Profile Views Trend
           </CardTitle>
           <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-            <Download className="h-3 w-3" />Export
+            <Download className="icon-2xs" aria-hidden="true" />Export
           </Button>
         </div>
       </CardHeader>
@@ -105,7 +105,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <BarChart3 className="h-4 w-4" />Engagement by Type
+            <BarChart3 className="icon-sm" aria-hidden="true" />Engagement by Type
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -128,7 +128,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-            <PieChart className="h-4 w-4" />Engagement Distribution
+            <PieChart className="icon-sm" aria-hidden="true" />Engagement Distribution
           </CardTitle>
         </CardHeader>
         <CardContent>

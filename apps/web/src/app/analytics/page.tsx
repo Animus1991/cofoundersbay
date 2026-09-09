@@ -165,7 +165,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-          <Network className="h-4 w-4" />Profile Funnel
+          <Network className="icon-sm" aria-hidden="true" />Profile Funnel
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -198,9 +198,9 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     <Card className="border-primary/20 bg-primary/[0.02]">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Zap className="h-4 w-4 text-primary" />
+          <Zap className="icon-sm text-primary" aria-hidden="true" />
           <span className="text-sm font-semibold">Network Velocity</span>
-          <Badge variant="secondary" className="text-[10px] ml-auto">vs prev period</Badge>
+          <Badge variant="secondary" className="text-2xs ml-auto">vs prev period</Badge>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {items.map((item) => {
@@ -217,7 +217,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                 )}>
                   {item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}{Math.abs(item.change)}%
                 </p>
-                <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
+                <p className="text-2xs text-muted-foreground leading-tight mt-0.5">{item.label.replace(' ', '\n')}</p>
               </div>
             );
           })}
@@ -232,7 +232,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TrendingUp className="h-5 w-5" />
+          <TrendingUp className="icon-md" aria-hidden="true" />
           Top Performing Content
         </CardTitle>
       </CardHeader>
@@ -250,11 +250,11 @@ function TopContentList({ content }: { content: TopContent[] }) {
                 <h4 className="font-medium text-sm mb-1 line-clamp-1">{item.title}</h4>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
+                    <Eye className="icon-2xs" aria-hidden="true" />
                     {item.views.toLocaleString()} views
                   </span>
                   <span className="flex items-center gap-1">
-                    <Heart className="h-3 w-3" />
+                    <Heart className="icon-2xs" aria-hidden="true" />
                     {item.engagement} engagements
                   </span>
                   <span>{new Date(item.date).toLocaleDateString()}</span>
@@ -287,7 +287,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5" />
+          <Award className="icon-md" aria-hidden="true" />
           Achievements
         </CardTitle>
       </CardHeader>
@@ -392,22 +392,22 @@ export default function AnalyticsPage() {
           ))}
         </div>
         <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => refetch()}>
-          <Activity className="h-3.5 w-3.5" />Refresh
+          <Activity className="h-3.5 w-3.5" aria-hidden="true" />Refresh
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="grid w-full max-w-md grid-cols-3">
           <TabsTrigger value="overview" className="gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="icon-sm" aria-hidden="true" />
             Overview
           </TabsTrigger>
           <TabsTrigger value="engagement" className="gap-2">
-            <Activity className="h-4 w-4" />
+            <Activity className="icon-sm" aria-hidden="true" />
             Engagement
           </TabsTrigger>
           <TabsTrigger value="growth" className="gap-2">
-            <TrendingUp className="h-4 w-4" />
+            <TrendingUp className="icon-sm" aria-hidden="true" />
             Growth
           </TabsTrigger>
         </TabsList>
@@ -447,9 +447,9 @@ export default function AnalyticsPage() {
                           </div>
                           <Badge
                             variant={metric.changeType === 'increase' ? 'default' : metric.changeType === 'decrease' ? 'destructive' : 'secondary'}
-                            className="gap-1 text-[10px]"
+                            className="gap-1 text-2xs"
                           >
-                            {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" /> : <Minus className="h-2.5 w-2.5" />}
+                            {metric.changeType === 'increase' ? <ArrowUp className="h-2.5 w-2.5" aria-hidden="true" /> : metric.changeType === 'decrease' ? <ArrowDown className="h-2.5 w-2.5" aria-hidden="true" /> : <Minus className="h-2.5 w-2.5" aria-hidden="true" />}
                             {Math.abs(metric.change)}%
                           </Badge>
                         </div>
@@ -474,7 +474,7 @@ export default function AnalyticsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
+                      <Calendar className="icon-md" aria-hidden="true" />
                       Weekly Summary
                     </CardTitle>
                   </CardHeader>

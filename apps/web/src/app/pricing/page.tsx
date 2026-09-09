@@ -150,10 +150,10 @@ const PLANS = [
 
 function FeatureCheck({ value }: { value: boolean | string }) {
   if (value === true) {
-    return <Check className="h-4 w-4 text-green-500" />;
+    return <Check className="icon-sm text-green-500" aria-hidden="true" />;
   }
   if (value === false) {
-    return <X className="h-4 w-4 text-muted-foreground/40" />;
+    return <X className="icon-sm text-muted-foreground/40" aria-hidden="true" />;
   }
   return <span className="text-xs font-medium text-foreground">{value}</span>;
 }
@@ -205,7 +205,7 @@ export default function PricingPage() {
       <div className="border-b border-border/50 bg-gradient-to-b from-primary/5 to-transparent">
         <div className="mx-auto max-w-7xl px-6 py-16 text-center">
           <Badge variant="secondary" className="mb-4">
-            <Crown className="mr-1.5 h-3 w-3" />
+            <Crown className="mr-1.5 icon-2xs" aria-hidden="true" />
             Simple, transparent pricing
           </Badge>
           <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
@@ -288,7 +288,7 @@ export default function PricingPage() {
                   <ul className="mb-6 flex-1 space-y-2.5">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                        <Check className="mt-0.5 icon-sm shrink-0 text-green-500" aria-hidden="true" />
                         <span className="text-muted-foreground">{feature}</span>
                       </li>
                     ))}
@@ -302,7 +302,7 @@ export default function PricingPage() {
                     onClick={() => handleCheckout(plan)}
                   >
                     {checkoutLoading === plan.id ? 'Redirecting…' : plan.cta}
-                    {checkoutLoading !== plan.id && <ArrowRight className="h-4 w-4" />}
+                    {checkoutLoading !== plan.id && <ArrowRight className="icon-sm" aria-hidden="true" />}
                   </Button>
                 </CardContent>
               </Card>
@@ -415,7 +415,7 @@ export default function PricingPage() {
             <Button size="lg" className="gap-2" asChild>
               <Link href="/register">
                 Start free trial
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" aria-hidden="true" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>

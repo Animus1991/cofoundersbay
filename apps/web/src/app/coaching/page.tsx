@@ -209,16 +209,16 @@ function SessionCard({ session }: { session: CoachingSession }) {
                 <TypeIcon className="icon-sm" />{type.label}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="icon-sm" />
+                <Clock className="icon-sm" aria-hidden="true" />
                 {new Date(session.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
               <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {session.durationMinutes} min
               </span>
               {session.meetingUrl && (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Video className="icon-sm" /> Video
+                  <Video className="icon-sm" aria-hidden="true" /> Video
                 </span>
               )}
             </div>
@@ -228,7 +228,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
               <div className="mt-2 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground flex items-center gap-1">
-                    <ListChecks className="icon-sm" /> Action items
+                    <ListChecks className="icon-sm" aria-hidden="true" /> Action items
                   </span>
                   <span className="font-medium text-foreground">{completedActions}/{totalActions}</span>
                 </div>
@@ -240,7 +240,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             {session.rating && (
               <div className="mt-2 flex items-center gap-1">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                  <Star key={i} className={cn('icon-sm', i < session.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} aria-hidden="true" />
                 ))}
                 <span className="text-xs text-muted-foreground ml-1">Your rating</span>
               </div>
@@ -253,16 +253,16 @@ function SessionCard({ session }: { session: CoachingSession }) {
           <div className="flex gap-2">
             {session.status === 'scheduled' && session.meetingUrl && (
               <Button size="sm" className="gap-1">
-                <Video className="icon-sm" /> Join session
+                <Video className="icon-sm" aria-hidden="true" /> Join session
               </Button>
             )}
             {session.status === 'completed' && !session.rating && (
               <Button size="sm" variant="outline" className="gap-1">
-                <Star className="icon-sm" /> Rate session
+                <Star className="icon-sm" aria-hidden="true" /> Rate session
               </Button>
             )}
             <Button size="sm" variant="ghost" className="gap-1">
-              <MessageCircle className="icon-sm" /> Message coach
+              <MessageCircle className="icon-sm" aria-hidden="true" /> Message coach
             </Button>
           </div>
           <button
@@ -270,7 +270,7 @@ function SessionCard({ session }: { session: CoachingSession }) {
             className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
           >
             {expanded ? 'Collapse' : 'Details'}
-            <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} />
+            <ChevronRight className={cn('icon-sm transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -286,17 +286,17 @@ function SessionCard({ session }: { session: CoachingSession }) {
           )}
           {session.keyInsights && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Key Insights</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Key Insights</p>
               <p className="text-xs text-foreground/80 italic">"{session.keyInsights}"</p>
             </div>
           )}
           {session.actionItems && session.actionItems.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Action Items</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Action Items</p>
               <ul className="space-y-1.5">
                 {session.actionItems.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-xs">
-                    <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/40')} />
+                    <CheckCircle2 className={cn('h-3.5 w-3.5 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/40')} aria-hidden="true" />
                     <span className={item.done ? 'line-through text-muted-foreground' : 'text-foreground'}>{item.task}</span>
                   </li>
                 ))}
@@ -350,19 +350,19 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
 
           <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="icon-sm fill-amber-400 text-amber-400" /> {coach.rating} ({coach.sessionCount} sessions)
+              <Star className="icon-sm fill-amber-400 text-amber-400" aria-hidden="true" /> {coach.rating} ({coach.sessionCount} sessions)
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Responds {coach.responseTime}
+              <Clock className="icon-2xs" aria-hidden="true" /> Responds {coach.responseTime}
             </span>
           </div>
 
           <div className="mt-3 flex gap-2">
             <Button size="sm" className="gap-1 flex-1">
-              <Calendar className="icon-sm" /> Book session
+              <Calendar className="icon-sm" aria-hidden="true" /> Book session
             </Button>
             <Button size="sm" variant="outline" className="gap-1">
-              <MessageCircle className="icon-sm" /> Message
+              <MessageCircle className="icon-sm" aria-hidden="true" /> Message
             </Button>
           </div>
         </div>
@@ -426,7 +426,7 @@ export default function CoachingPage() {
               </div>
               {upcoming[0].meetingUrl && (
                 <Button size="sm" className="gap-1.5 shrink-0">
-                  <Video className="h-3.5 w-3.5" /> Join
+                  <Video className="h-3.5 w-3.5" aria-hidden="true" /> Join
                 </Button>
               )}
             </div>
@@ -442,7 +442,7 @@ export default function CoachingPage() {
               <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs">
-              <Plus className="h-3.5 w-3.5" /> Book session
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Book session
             </Button>
           </div>
 
@@ -451,7 +451,7 @@ export default function CoachingPage() {
             {sessions.length === 0 ? (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <BrainCircuit className="h-7 w-7 text-primary" />
+                  <BrainCircuit className="h-7 w-7 text-primary" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">No coaching sessions yet</p>
@@ -493,7 +493,7 @@ export default function CoachingPage() {
             </div>
 
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <BookOpen className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+              <BookOpen className="icon-xl text-muted-foreground/50 mx-auto mb-3" aria-hidden="true" />
               <p className="text-sm font-medium text-foreground mb-1">Become a coach on CoFounderBay</p>
               <p className="text-xs text-muted-foreground mb-3">Share your expertise and earn while helping founders grow.</p>
               <Button variant="outline" size="sm">Apply as coach</Button>
@@ -510,13 +510,13 @@ export default function CoachingPage() {
                 {sessions.flatMap((session) =>
                   (session.actionItems ?? []).map((item, idx) => (
                     <div key={`${session.id}-${idx}`} className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-muted/50 transition-colors">
-                      <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} />
+                      <CheckCircle2 className={cn('mt-0.5 h-4 w-4 shrink-0', item.done ? 'text-emerald-500' : 'text-muted-foreground/30')} aria-hidden="true" />
                       <div className="flex-1 min-w-0">
                         <p className={cn('text-sm', item.done ? 'line-through text-muted-foreground' : 'text-foreground')}>{item.task}</p>
-                        <p className="text-[11px] text-muted-foreground">From: {session.title}</p>
+                        <p className="text-2xs text-muted-foreground">From: {session.title}</p>
                       </div>
                       {!item.done && (
-                        <Badge variant="outline" className="shrink-0 text-[10px]">Pending</Badge>
+                        <Badge variant="outline" className="shrink-0 text-2xs">Pending</Badge>
                       )}
                     </div>
                   ))
@@ -531,7 +531,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-primary" /> Session Themes
+                    <TrendingUp className="icon-sm text-primary" aria-hidden="true" /> Session Themes
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -541,7 +541,7 @@ export default function CoachingPage() {
                     const cfg = SESSION_TYPE_CONFIG[type];
                     return (
                       <div key={type} className="flex items-center gap-2">
-                        <span className={cn('rounded-full border px-2 py-0.5 text-[10px] w-32', cfg.color)}>{cfg.label}</span>
+                        <span className={cn('rounded-full border px-2 py-0.5 text-2xs w-32', cfg.color)}>{cfg.label}</span>
                         <Progress value={(count / sessions.length) * 100} className="flex-1 h-1.5" />
                         <span className="text-xs text-muted-foreground w-4">{count}</span>
                       </div>
@@ -553,7 +553,7 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <ListChecks className="h-4 w-4 text-emerald-500" /> Execution Rate
+                    <ListChecks className="icon-sm text-emerald-500" aria-hidden="true" /> Execution Rate
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -588,14 +588,14 @@ export default function CoachingPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-amber-500" /> Key Insights
+                    <Lightbulb className="icon-sm text-amber-500" aria-hidden="true" /> Key Insights
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {sessions.filter((s) => s.keyInsights).map((s) => (
                     <div key={s.id} className="rounded-lg bg-muted/50 px-3 py-2 border-l-2 border-amber-400">
                       <p className="text-xs text-foreground/80 italic">"{s.keyInsights}"</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">— {s.title}</p>
+                      <p className="text-2xs text-muted-foreground mt-1">— {s.title}</p>
                     </div>
                   ))}
                 </CardContent>

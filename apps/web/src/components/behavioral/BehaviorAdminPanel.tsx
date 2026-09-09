@@ -128,7 +128,7 @@ function UserClassifyTab() {
           className="flex-1"
         />
         <Button onClick={() => setQueried(userId)} disabled={!userId.trim()}>
-          <Search className="mr-2 h-4 w-4" /> Classify
+          <Search className="mr-2 icon-sm" aria-hidden="true" /> Classify
         </Button>
       </div>
 
@@ -194,14 +194,14 @@ export function BehaviorAdminPanel() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" /> Behavioral AI Optimizer
+            <Brain className="icon-md text-primary" aria-hidden="true" /> Behavioral AI Optimizer
           </h2>
           <p className="text-sm text-muted-foreground">
             Platform-wide nudge performance, user state classification, and fatigue signals.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('mr-2 h-4 w-4', isFetching && 'animate-spin')} />
+          <RefreshCw className={cn('mr-2 h-4 w-4', isFetching && 'animate-spin')} aria-hidden="true" />
           Refresh
         </Button>
       </div>
@@ -209,10 +209,10 @@ export function BehaviorAdminPanel() {
       <Tabs defaultValue="stats">
         <TabsList>
           <TabsTrigger value="stats" className="gap-2">
-            <TrendingUp className="h-4 w-4" /> Nudge Stats
+            <TrendingUp className="icon-sm" aria-hidden="true" /> Nudge Stats
           </TabsTrigger>
           <TabsTrigger value="classify" className="gap-2">
-            <Search className="h-4 w-4" /> Classify User
+            <Search className="icon-sm" aria-hidden="true" /> Classify User
           </TabsTrigger>
         </TabsList>
 

@@ -122,8 +122,7 @@ export function ResearchGroupFrame({
         {/* Drag grip */}
         <GripVertical
           className="w-3.5 h-3.5 opacity-0 group-hover:opacity-60 transition-opacity shrink-0"
-          style={{ color: group.color }}
-        />
+          style={{ color: group.color }} aria-hidden="true" />
 
         {/* Label — inline editable */}
         {editingLabel ? (
@@ -139,12 +138,12 @@ export function ResearchGroupFrame({
             }}
             onClick={(e) => e.stopPropagation()}
             onMouseDown={(e) => e.stopPropagation()}
-            className="flex-1 min-w-0 text-[12px] font-bold bg-transparent outline-none border-b-2 px-0 py-0"
+            className="flex-1 min-w-0 text-xs font-bold bg-transparent outline-none border-b-2 px-0 py-0"
             style={{ color: group.color, borderColor: group.color }}
           />
         ) : (
           <span
-            className="flex-1 min-w-0 text-[12px] font-bold uppercase tracking-wider truncate cursor-text"
+            className="flex-1 min-w-0 text-xs font-bold uppercase tracking-wider truncate cursor-text"
             style={{ color: group.color }}
             onDoubleClick={(e) => {
               if (group.locked) return;
@@ -166,7 +165,7 @@ export function ResearchGroupFrame({
               className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
               title="Change color"
             >
-              <Palette className="w-3 h-3" style={{ color: group.color }} />
+              <Palette className="icon-2xs" style={{ color: group.color }} aria-hidden="true" />
             </button>
             {showColorPicker && (
               <div
@@ -196,8 +195,8 @@ export function ResearchGroupFrame({
             title={group.collapsed ? 'Expand' : 'Collapse'}
           >
             {group.collapsed
-              ? <Maximize2 className="w-3 h-3 text-muted-foreground" />
-              : <Minimize2 className="w-3 h-3 text-muted-foreground" />
+              ? <Maximize2 className="icon-2xs text-muted-foreground" aria-hidden="true" />
+              : <Minimize2 className="icon-2xs text-muted-foreground" aria-hidden="true" />
             }
           </button>
 
@@ -208,8 +207,8 @@ export function ResearchGroupFrame({
             title={group.locked ? 'Unlock' : 'Lock'}
           >
             {group.locked
-              ? <Lock className="w-3 h-3 text-muted-foreground" />
-              : <Unlock className="w-3 h-3 text-muted-foreground" />
+              ? <Lock className="icon-2xs text-muted-foreground" aria-hidden="true" />
+              : <Unlock className="icon-2xs text-muted-foreground" aria-hidden="true" />
             }
           </button>
 
@@ -219,7 +218,7 @@ export function ResearchGroupFrame({
             className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
-            <X className="w-3 h-3 text-destructive" />
+            <X className="icon-2xs text-destructive" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -227,7 +226,7 @@ export function ResearchGroupFrame({
       {/* Collapsed body hint */}
       {group.collapsed && (
         <div className="px-3 pb-2">
-          <span className="text-[10px] text-muted-foreground italic">Group collapsed — nodes still visible</span>
+          <span className="text-2xs text-muted-foreground italic">Group collapsed — nodes still visible</span>
         </div>
       )}
 

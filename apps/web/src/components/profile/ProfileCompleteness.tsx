@@ -151,7 +151,7 @@ export function ProfileCompleteness({
         {percentage < 100 && (
           <Link href="/profile/edit">
             <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7">
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </Link>
         )}
@@ -174,7 +174,7 @@ export function ProfileCompleteness({
 
         {percentage >= 100 ? (
           <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+            <CheckCircle2 className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
             <div>
               <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
                 Profile Complete!
@@ -188,7 +188,7 @@ export function ProfileCompleteness({
           <>
             {percentage < 50 && (
               <div className="flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                <AlertCircle className="icon-md text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
                     Complete your profile
@@ -220,7 +220,7 @@ export function ProfileCompleteness({
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         <p className="text-xs text-muted-foreground truncate">{field.description}</p>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
                     </Link>
                   );
                 })}
@@ -240,7 +240,7 @@ export function ProfileCompleteness({
           <Link href="/profile/edit" className="block">
             <Button className="w-full gap-2">
               Complete Your Profile
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="icon-sm" aria-hidden="true" />
             </Button>
           </Link>
         )}

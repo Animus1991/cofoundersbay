@@ -52,10 +52,10 @@ type Report = {
 
 function ReportCard({ report }: { report: Report }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" /> },
-    reviewing: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" /> },
-    resolved: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
-    dismissed: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <XCircle className="icon-sm" /> },
+    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" aria-hidden="true" /> },
+    reviewing: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
+    resolved: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    dismissed: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
   };
 
   const priorityColors: Record<string, string> = {
@@ -65,10 +65,10 @@ function ReportCard({ report }: { report: Report }) {
   };
 
   const typeIcons: Record<string, React.ReactNode> = {
-    user: <User className="icon-sm" />,
-    message: <MessageSquare className="icon-sm" />,
-    content: <FileText className="icon-sm" />,
-    spam: <AlertTriangle className="icon-sm" />,
+    user: <User className="icon-sm" aria-hidden="true" />,
+    message: <MessageSquare className="icon-sm" aria-hidden="true" />,
+    content: <FileText className="icon-sm" aria-hidden="true" />,
+    spam: <AlertTriangle className="icon-sm" aria-hidden="true" />,
   };
 
   const config = statusConfig[report.status];
@@ -106,7 +106,7 @@ function ReportCard({ report }: { report: Report }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -124,7 +124,7 @@ function ReportCard({ report }: { report: Report }) {
               <span className="flex items-center gap-1">
                 <Avatar className="icon-sm">
                   <AvatarImage src={report.reporterAvatar} />
-                  <AvatarFallback className="text-[8px]">{report.reporterName[0]}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{report.reporterName[0]}</AvatarFallback>
                 </Avatar>
                 {report.reporterName}
               </span>
@@ -264,7 +264,7 @@ export default function AdminReportsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search reports..."
               value={search}
@@ -294,7 +294,7 @@ export default function AdminReportsPage() {
           {filteredReports.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Flag className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Flag className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No reports found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   All caught up!

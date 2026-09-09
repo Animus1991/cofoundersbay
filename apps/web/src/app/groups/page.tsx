@@ -78,23 +78,23 @@ function GroupCard({
           style={{ backgroundImage: `url(${group.coverImageUrl})` }}
         >
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.bg, typeColor.text)}>
               {groupType}
             </span>
           </div>
           {group.privacy === 'private' && (
             <div className="absolute top-2 right-2">
-              <Globe className="h-3.5 w-3.5 text-white/80" />
+              <Globe className="h-3.5 w-3.5 text-white/80" aria-hidden="true" />
             </div>
           )}
         </div>
       ) : (
         <div className={cn('h-28 w-full rounded-t-xl bg-gradient-to-br relative', gradientClass)}>
           <div className="absolute inset-0 flex items-center justify-center">
-            <Users className="h-10 w-10 text-white/20" />
+            <Users className="h-10 w-10 text-white/20" aria-hidden="true" />
           </div>
           <div className="absolute top-2 left-2">
-            <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize', typeColor.bg, typeColor.text)}>
+            <span className={cn('rounded-full px-2 py-0.5 text-2xs font-semibold capitalize', typeColor.bg, typeColor.text)}>
               {groupType}
             </span>
           </div>
@@ -107,7 +107,7 @@ function GroupCard({
               {group.avatarUrl ? (
                 <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" />
               ) : (
-                <Users className="h-5 w-5" />
+                <Users className="icon-md" aria-hidden="true" />
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -116,16 +116,16 @@ function GroupCard({
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 {group.category && (
-                  <Badge variant="secondary" className="text-[10px]">{group.category}</Badge>
+                  <Badge variant="secondary" className="text-2xs">{group.category}</Badge>
                 )}
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  {group.privacy === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                  {group.privacy === 'public' ? <Globe className="icon-2xs" aria-hidden="true" /> : <Lock className="icon-2xs" aria-hidden="true" />}
                   <span className="capitalize">{group.privacy}</span>
                 </div>
               </div>
             </div>
           </div>
-          {group.isMember && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />}
+          {group.isMember && <CheckCircle2 className="icon-sm text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />}
         </div>
 
         {group.description && (
@@ -135,7 +135,7 @@ function GroupCard({
         {group.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {group.tags.slice(0, 4).map((tag) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -148,11 +148,11 @@ function GroupCard({
         >
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Users className="h-3.5 w-3.5" />
+              <Users className="h-3.5 w-3.5" aria-hidden="true" />
               {group.memberCount.toLocaleString()}
             </span>
             <span className="flex items-center gap-1">
-              <MessageCircle className="h-3.5 w-3.5" />
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               {group.postCount.toLocaleString()}
             </span>
           </div>
@@ -164,11 +164,11 @@ function GroupCard({
             onClick={() => onToggle(group.id, group.isMember)}
           >
             {loading ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
             ) : group.isMember ? (
-              <><LogOut className="h-3 w-3" /> Leave</>
+              <><LogOut className="icon-2xs" aria-hidden="true" /> Leave</>
             ) : (
-              <><UserPlus className="h-3 w-3" /> Join</>
+              <><UserPlus className="icon-2xs" aria-hidden="true" /> Join</>
             )}
           </Button>
         </div>
@@ -270,7 +270,7 @@ export default function GroupsPage() {
       description="Join industry and stage-specific communities to learn and connect"
       actions={
         <Button className="gap-2" onClick={() => setShowCreateModal(true)}>
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" aria-hidden="true" />
           Create Community
         </Button>
       }
@@ -302,7 +302,7 @@ export default function GroupsPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground truncate">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground truncate">{s.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -317,7 +317,7 @@ export default function GroupsPage() {
             <TabsTrigger value="my-groups">
               My Communities
               {myGroups.length > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-[10px] text-primary">
+                <span className="ml-1.5 rounded-full bg-primary/20 px-1.5 py-0.5 text-2xs text-primary">
                   {myGroups.length}
                 </span>
               )}
@@ -337,7 +337,7 @@ export default function GroupsPage() {
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60',
                   )}
                 >
-                  {s === 'trending' ? <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />{s}</span> : s}
+                  {s === 'trending' ? <span className="flex items-center gap-1"><TrendingUp className="icon-2xs" aria-hidden="true" />{s}</span> : s}
                 </button>
               ))}
             </div>
@@ -349,7 +349,7 @@ export default function GroupsPage() {
           {activeTab === 'discover' && (
             <div className="space-y-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search communities by name, topic, or tags..."
                   value={searchQuery}
@@ -402,7 +402,7 @@ export default function GroupsPage() {
           {/* Loading */}
           {(activeTab === 'discover' ? discoverQuery.isLoading : myGroupsQuery.isLoading) && (
             <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+              <Loader2 className="icon-xl animate-spin text-primary/50" aria-hidden="true" />
             </div>
           )}
 
@@ -420,7 +420,7 @@ export default function GroupsPage() {
                     : myGroupsQuery.refetch()
                 }
               >
-                <RefreshCw className="h-3.5 w-3.5" />
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
                 Retry
               </Button>
             </div>
@@ -430,19 +430,19 @@ export default function GroupsPage() {
           {activeTab === 'discover' && !discoverQuery.isLoading && trendingGroup && (
             <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5 px-4 py-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/15">
-                <Star className="h-4 w-4 text-amber-500" />
+                <Star className="icon-sm text-amber-500" aria-hidden="true" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">
                   🔥 Trending: <span className="text-amber-600">{trendingGroup.name}</span>
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
+                <p className="text-2xs text-muted-foreground truncate">{trendingGroup.memberCount} members · {trendingGroup.postCount} posts</p>
               </div>
               <button
                 onClick={() => {/* navigate */}}
                 className="shrink-0 text-xs text-amber-600 hover:underline flex items-center gap-1"
               >
-                View <ArrowRight className="h-3 w-3" />
+                View <ArrowRight className="icon-2xs" aria-hidden="true" />
               </button>
             </div>
           )}
@@ -456,7 +456,7 @@ export default function GroupsPage() {
           {!discoverQuery.isLoading && topGroups.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="icon-sm text-primary" aria-hidden="true" />
                 <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
                 </h2>
@@ -482,7 +482,7 @@ export default function GroupsPage() {
           {/* Empty State */}
           {!discoverQuery.isLoading && !myGroupsQuery.isLoading && displayGroups.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Users className="h-12 w-12 mb-4 text-muted-foreground/20" />
+              <Users className="h-12 w-12 mb-4 text-muted-foreground/20" aria-hidden="true" />
               <p className="font-medium text-foreground">
                 {activeTab === 'my-groups' ? "You haven't joined any groups yet" : 'No groups found'}
               </p>
@@ -493,7 +493,7 @@ export default function GroupsPage() {
               </p>
               {activeTab === 'my-groups' && (
                 <Button className="mt-4 gap-2" onClick={() => setActiveTab('discover')}>
-                  <Search className="h-4 w-4" />
+                  <Search className="icon-sm" aria-hidden="true" />
                   Browse Groups
                 </Button>
               )}

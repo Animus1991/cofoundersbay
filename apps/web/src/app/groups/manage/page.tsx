@@ -90,9 +90,9 @@ function GroupCard({ group }: { group: ManagedGroup }) {
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="h-3 w-3" />{group.memberCount.toLocaleString()} members</span>
-                <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{group.postCount} posts</span>
-                <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" />Active {group.lastActivity}</span>
+                <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{group.memberCount.toLocaleString()} members</span>
+                <span className="flex items-center gap-1"><MessageSquare className="icon-2xs" aria-hidden="true" />{group.postCount} posts</span>
+                <span className="flex items-center gap-1"><TrendingUp className="icon-2xs" aria-hidden="true" />Active {group.lastActivity}</span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
                   <Badge variant="destructive" className="text-xs">{group.pendingRequests} pending</Badge>
                 )}
@@ -102,21 +102,21 @@ function GroupCard({ group }: { group: ManagedGroup }) {
           <div className="flex items-center gap-2 shrink-0">
             <Button variant="outline" size="sm" asChild>
               <Link href={`/groups/${group.id}`}>
-                <Eye className="mr-1.5 h-3.5 w-3.5" />View
+                <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />View
               </Link>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 h-4 w-4" />Edit Group</DropdownMenuItem>
-                <DropdownMenuItem><UserPlus className="mr-2 h-4 w-4" />Invite Members</DropdownMenuItem>
-                <DropdownMenuItem><Settings className="mr-2 h-4 w-4" />Group Settings</DropdownMenuItem>
+                <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Group</DropdownMenuItem>
+                <DropdownMenuItem><UserPlus className="mr-2 icon-sm" aria-hidden="true" />Invite Members</DropdownMenuItem>
+                <DropdownMenuItem><Settings className="mr-2 icon-sm" aria-hidden="true" />Group Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete Group</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete Group</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -143,14 +143,14 @@ export default function ManageGroupsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Settings className="h-6 w-6 text-primary" />
+              <Settings className="icon-lg text-primary" aria-hidden="true" />
               Manage Communities
             </h1>
             <p className="text-muted-foreground">Groups you own or administer</p>
           </div>
           <Button asChild>
             <Link href="/groups">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
               Create Group
             </Link>
           </Button>
@@ -174,7 +174,7 @@ export default function ManageGroupsPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input placeholder="Search groups..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -186,7 +186,7 @@ export default function ManageGroupsPage() {
           {filtered.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <p className="font-medium">No groups found</p>
                 <p className="text-sm text-muted-foreground mt-1">Create a community to get started</p>
               </CardContent>

@@ -231,7 +231,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
+                <Trophy className="icon-md text-primary" aria-hidden="true" />
                 Achievements & Badges
               </CardTitle>
               <CardDescription>
@@ -260,19 +260,19 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="engagement">
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
             Engage
           </TabsTrigger>
           <TabsTrigger value="achievement">
-            <Trophy className="h-4 w-4 mr-1" />
+            <Trophy className="icon-sm mr-1" aria-hidden="true" />
             Achieve
           </TabsTrigger>
           <TabsTrigger value="social">
-            <Users className="h-4 w-4 mr-1" />
+            <Users className="icon-sm mr-1" aria-hidden="true" />
             Social
           </TabsTrigger>
           <TabsTrigger value="professional">
-            <Briefcase className="h-4 w-4 mr-1" />
+            <Briefcase className="icon-sm mr-1" aria-hidden="true" />
             Pro
           </TabsTrigger>
         </TabsList>
@@ -298,7 +298,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   {badge.earned && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="default" className="gap-1">
-                        <Award className="h-3 w-3" />
+                        <Award className="icon-2xs" aria-hidden="true" />
                         Earned
                       </Badge>
                     </div>
@@ -314,8 +314,8 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                     
                     <CardTitle className="text-lg flex items-center gap-2">
                       {badge.name}
-                      {badge.tier === 'platinum' && <Crown className="h-4 w-4 text-cyan-400" />}
-                      {badge.tier === 'gold' && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                      {badge.tier === 'platinum' && <Crown className="icon-sm text-cyan-400" aria-hidden="true" />}
+                      {badge.tier === 'gold' && <Sparkles className="icon-sm text-yellow-500" aria-hidden="true" />}
                     </CardTitle>
                     <CardDescription>{badge.description}</CardDescription>
                   </CardHeader>

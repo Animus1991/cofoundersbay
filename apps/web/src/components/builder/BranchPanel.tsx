@@ -140,7 +140,7 @@ function CreateBranchDialog({ open, onClose, documentId, currentVersion, onCreat
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleCreate} disabled={loading || !name.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
             Create Variant
           </Button>
         </DialogFooter>
@@ -210,7 +210,7 @@ function SubmitProposalDialog({ open, onClose, branch, onSubmitted }: SubmitProp
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
             Submit Proposal
           </Button>
         </DialogFooter>
@@ -272,7 +272,7 @@ export function BranchPanel({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-primary" />
+              <GitBranch className="icon-sm text-primary" aria-hidden="true" />
               Draft Variants
             </SheetTitle>
             <SheetDescription>
@@ -283,7 +283,7 @@ export function BranchPanel({
           <div className="flex-1 overflow-y-auto mt-4 space-y-4">
             {/* Main branch indicator */}
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/20">
-              <GitBranch className="h-3.5 w-3.5 text-primary" />
+              <GitBranch className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
               <span className="text-sm font-medium">main</span>
               <Badge variant="secondary" className="text-xs ml-auto">v{currentDocVersion} · current</Badge>
             </div>
@@ -309,7 +309,7 @@ export function BranchPanel({
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 mb-1">
-                            <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <GitBranch className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
                             <span className="text-sm font-medium truncate">{branch.name}</span>
                           </div>
                           {branch.description && (
@@ -333,13 +333,13 @@ export function BranchPanel({
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 shrink-0">
-                                <MoreHorizontal className="h-3.5 w-3.5" />
+                                <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               {branch.status === 'open' && (
                                 <DropdownMenuItem onClick={() => setProposalBranch(branch)}>
-                                  <GitPullRequest className="h-3.5 w-3.5 mr-2" />
+                                  <GitPullRequest className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
                                   Submit Proposal
                                 </DropdownMenuItem>
                               )}
@@ -348,7 +348,7 @@ export function BranchPanel({
                                 className="text-destructive"
                                 onClick={() => handleClose(branch.id)}
                               >
-                                <XCircle className="h-3.5 w-3.5 mr-2" />
+                                <XCircle className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
                                 Close Variant
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -363,7 +363,7 @@ export function BranchPanel({
                           className="mt-3 w-full text-xs h-7"
                           onClick={() => setProposalBranch(branch)}
                         >
-                          <GitPullRequest className="h-3 w-3 mr-1.5" />
+                          <GitPullRequest className="icon-2xs mr-1.5" aria-hidden="true" />
                           Submit as Change Proposal
                         </Button>
                       )}
@@ -373,7 +373,7 @@ export function BranchPanel({
               </div>
             ) : (
               <div className="text-center py-6 text-muted-foreground">
-                <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                <GitBranch className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
                 <p className="text-sm">No active variants</p>
                 <p className="text-xs mt-1">Create a variant to experiment without affecting the main document.</p>
               </div>
@@ -391,7 +391,7 @@ export function BranchPanel({
                   return (
                     <div key={branch.id} className="px-3 py-2 rounded-lg border border-border/40 bg-muted/20">
                       <div className="flex items-center gap-2">
-                        <GitBranch className="h-3 w-3 text-muted-foreground/50" />
+                        <GitBranch className="icon-2xs text-muted-foreground/50" aria-hidden="true" />
                         <span className="text-xs text-muted-foreground truncate flex-1">{branch.name}</span>
                         <Badge variant="outline" className={cn('text-xs', meta.color)}>
                           <StatusIcon className="h-2.5 w-2.5 mr-1" />
@@ -412,7 +412,7 @@ export function BranchPanel({
                 className="w-full"
                 onClick={() => setShowCreateDialog(true)}
               >
-                <Plus className="h-3.5 w-3.5 mr-2" />
+                <Plus className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
                 New Draft Variant
               </Button>
             </div>

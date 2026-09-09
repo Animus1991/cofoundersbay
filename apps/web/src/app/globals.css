@@ -77,6 +77,8 @@
     --spacing-section-xs: 1rem;         /* 16px - space-y-4 */
 
     /* ── Standardized icon sizes ── */
+    --icon-2xs: 12px; /* h-3 w-3 */
+    --icon-xs: 14px;  /* h-3.5 w-3.5 */
     --icon-sm: 16px;  /* h-4 w-4 */
     --icon-md: 20px;  /* h-5 w-5 */
     --icon-lg: 24px;  /* h-6 w-6 */
@@ -639,6 +641,7 @@
   }
 
   /* ── Standardized icon sizes ── */
+  .icon-2xs { @apply h-3 w-3; }    /* 12px - inline chip glyphs, counters */
   .icon-xs { @apply h-3.5 w-3.5; } /* 14px - dense meta rows, chips */
   .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */

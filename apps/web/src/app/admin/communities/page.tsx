@@ -49,9 +49,9 @@ type Community = {
 
 function CommunityCard({ community }: { community: Community }) {
   const visibilityIcons: Record<string, React.ReactNode> = {
-    public: <Globe className="h-3.5 w-3.5" />,
-    private: <Lock className="h-3.5 w-3.5" />,
-    tenant: <Shield className="h-3.5 w-3.5" />,
+    public: <Globe className="h-3.5 w-3.5" aria-hidden="true" />,
+    private: <Lock className="h-3.5 w-3.5" aria-hidden="true" />,
+    tenant: <Shield className="h-3.5 w-3.5" aria-hidden="true" />,
   };
 
   const statusColors: Record<string, string> = {
@@ -90,7 +90,7 @@ function CommunityCard({ community }: { community: Community }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="icon-sm" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -115,20 +115,20 @@ function CommunityCard({ community }: { community: Community }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users2 className="h-3.5 w-3.5" />
+                <Users2 className="h-3.5 w-3.5" aria-hidden="true" />
                 {community.memberCount} members
               </span>
               <span className="flex items-center gap-1">
-                <MessageSquare className="h-3.5 w-3.5" />
+                <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
                 {community.postCount} posts
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                 {community.createdAt}
               </span>
               {community.tenant && (
                 <span className="flex items-center gap-1">
-                  <Shield className="h-3.5 w-3.5" />
+                  <Shield className="h-3.5 w-3.5" aria-hidden="true" />
                   {community.tenant}
                 </span>
               )}
@@ -216,7 +216,7 @@ export default function AdminCommunitiesPage() {
             </p>
           </div>
           <Button>
-            <Plus className="mr-2 icon-sm" />
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
             Create Community
           </Button>
         </div>
@@ -258,7 +258,7 @@ export default function AdminCommunitiesPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search communities..."
               value={search}
@@ -298,7 +298,7 @@ export default function AdminCommunitiesPage() {
           {filteredCommunities.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Users2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Users2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No communities found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters

@@ -122,7 +122,7 @@ export function ActivityTimeline({
   if (activities.length === 0) {
     return (
       <div className={cn('text-center py-8 text-muted-foreground', className)}>
-        <History className="h-8 w-8 mx-auto mb-2 opacity-30" />
+        <History className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
         <p className="text-sm">No activity yet</p>
       </div>
     );
@@ -139,7 +139,7 @@ export function ActivityTimeline({
           onClick={() => refetch()}
           disabled={isFetching}
         >
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />
+          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />
           Refresh
         </Button>
       </div>
@@ -192,7 +192,7 @@ export function ActivityTimeline({
                           {activity.user && (
                             <Avatar className="h-5 w-5 shrink-0">
                               <AvatarImage src={activity.user.avatarUrl} />
-                              <AvatarFallback className="text-[9px]">
+                              <AvatarFallback className="text-2xs">
                                 {(activity.user.displayName ?? 'U').charAt(0)}
                               </AvatarFallback>
                             </Avatar>
@@ -212,7 +212,7 @@ export function ActivityTimeline({
                       {activity.entityType && (
                         <Badge
                           variant="secondary"
-                          className="text-[10px] h-4 px-1.5 mt-1.5 capitalize"
+                          className="text-2xs h-4 px-1.5 mt-1.5 capitalize"
                         >
                           {activity.entityType}
                         </Badge>

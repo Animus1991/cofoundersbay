@@ -121,7 +121,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
           )}>
             {conv.recipientName}
           </span>
-          <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+          <span className="text-2xs text-muted-foreground shrink-0 tabular-nums">
             {formatRelativeTime(conv.lastMessageTime)}
           </span>
         </div>
@@ -133,7 +133,7 @@ function ConvoItem({ conv, selected, onClick }: { conv: Conversation; selected: 
             {conv.lastMessage || <span className="italic">No messages yet</span>}
           </p>
           {conv.unreadCount > 0 && (
-            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shrink-0">
+            <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground shrink-0">
               {conv.unreadCount > 99 ? '99+' : conv.unreadCount}
             </span>
           )}
@@ -179,7 +179,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
       >
         <span>{getAgentIcon(currentAgent)}</span>
         <span>{current?.name || 'Assistant'}</span>
-        <ChevronDown className={cn('h-3 w-3 transition-transform', isOpen && 'rotate-180')} />
+        <ChevronDown className={cn('h-3 w-3 transition-transform', isOpen && 'rotate-180')} aria-hidden="true" />
       </button>
 
       {isOpen && (
@@ -201,7 +201,7 @@ function AgentSelector({ agents, currentAgent, onSelect }: AgentSelectorProps) {
                   <div className="text-xs text-muted-foreground line-clamp-1">{agent.description}</div>
                 </div>
                 {agent.id === currentAgent && (
-                  <ChevronRight className="h-4 w-4 text-violet-500 mt-0.5" />
+                  <ChevronRight className="icon-sm text-violet-500 mt-0.5" aria-hidden="true" />
                 )}
               </button>
             ))}
@@ -228,7 +228,7 @@ function AIMessageBubble({ message }: { message: AIMessage }) {
       )}>
         {message.isStreaming && !message.content ? (
           <div className="flex items-center gap-1.5">
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">Thinking...</span>
           </div>
         ) : (
@@ -239,7 +239,7 @@ function AIMessageBubble({ message }: { message: AIMessage }) {
           </div>
         )}
         {message.model && !message.isStreaming && (
-          <div className="text-[10px] text-muted-foreground mt-1 opacity-60">{message.model}</div>
+          <div className="text-2xs text-muted-foreground mt-1 opacity-60">{message.model}</div>
         )}
       </div>
     </div>
@@ -639,16 +639,16 @@ export function UnifiedChatPopup() {
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="h-3 w-3" />
+          <GripVertical className="icon-2xs" aria-hidden="true" />
         </div>
         <div
           className="flex items-center gap-2 cursor-pointer rounded-full bg-gradient-to-r from-violet-500 to-purple-600 shadow-lg px-4 py-2.5 hover:shadow-xl transition-all"
           onClick={restore}
         >
-          <Bot className="h-4 w-4 text-white" />
+          <Bot className="icon-sm text-white" aria-hidden="true" />
           <span className="text-sm font-medium text-white">Chat</span>
           {(totalMsgUnread > 0 || aiMessages.length > 0) && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-[10px] font-bold text-white">
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white/20 px-1.5 text-2xs font-bold text-white">
               {totalMsgUnread > 0 ? totalMsgUnread : aiMessages.length}
             </span>
           )}
@@ -656,7 +656,7 @@ export function UnifiedChatPopup() {
             onClick={(e) => { e.stopPropagation(); close(); }}
             className="ml-1 rounded-full p-0.5 hover:bg-white/20 transition-colors"
           >
-            <X className="h-3.5 w-3.5 text-white/80" />
+            <X className="h-3.5 w-3.5 text-white/80" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -687,7 +687,7 @@ export function UnifiedChatPopup() {
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="h-4 w-4" />
+          <GripVertical className="icon-sm" aria-hidden="true" />
         </div>
 
         <div className="flex-1 flex items-center gap-1 bg-white/10 rounded-full p-0.5">
@@ -698,10 +698,10 @@ export function UnifiedChatPopup() {
               activeTab === 'messages' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <MessageSquare className="h-3 w-3" />
+            <MessageSquare className="icon-2xs" aria-hidden="true" />
             Messages
             {totalMsgUnread > 0 && (
-              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-[9px] font-bold px-1">
+              <span className="flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 text-white text-2xs font-bold px-1">
                 {totalMsgUnread > 99 ? '99+' : totalMsgUnread}
               </span>
             )}
@@ -713,7 +713,7 @@ export function UnifiedChatPopup() {
               activeTab === 'ai' ? 'bg-white text-violet-600' : 'text-white/80 hover:text-white hover:bg-white/10'
             )}
           >
-            <Bot className="h-3 w-3" />
+            <Bot className="icon-2xs" aria-hidden="true" />
             AI Assistant
             {!isAIAvailable && (
               <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" title="Limited mode" />
@@ -722,10 +722,10 @@ export function UnifiedChatPopup() {
         </div>
 
         <button onClick={minimize} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <ChevronDown className="h-4 w-4 text-white" />
+          <ChevronDown className="icon-sm text-white" aria-hidden="true" />
         </button>
         <button onClick={close} className="rounded-full p-1.5 hover:bg-white/20 transition-colors">
-          <X className="h-4 w-4 text-white" />
+          <X className="icon-sm text-white" aria-hidden="true" />
         </button>
       </div>
 
@@ -738,10 +738,10 @@ export function UnifiedChatPopup() {
               {aiMessages.length > 0 && (
                 <>
                   <button onClick={retryLastMessage} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Retry last message">
-                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+                    <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   </button>
                   <button onClick={clearMessages} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Clear conversation">
-                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   </button>
                 </>
               )}
@@ -790,10 +790,10 @@ export function UnifiedChatPopup() {
                 disabled={!aiInput.trim() || isStreaming}
                 className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
               >
-                {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {isStreaming ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Send className="icon-sm" aria-hidden="true" />}
               </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-2">
+            <p className="text-2xs text-muted-foreground text-center mt-2">
               {isAIAvailable ? <>Powered by local AI • Your data stays private</> : <>AI running in limited mode</>}
             </p>
           </form>
@@ -810,12 +810,12 @@ export function UnifiedChatPopup() {
                 onClick={() => { setSelected(null); setActiveConversationId(null); }}
                 className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="icon-sm" aria-hidden="true" />
               </button>
               <div className="relative shrink-0">
                 <Avatar className="h-7 w-7">
                   <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                  <AvatarFallback className="text-[10px] font-semibold bg-primary/15 text-primary">
+                  <AvatarFallback className="text-2xs font-semibold bg-primary/15 text-primary">
                     {selected.recipientName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -825,21 +825,21 @@ export function UnifiedChatPopup() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate leading-tight">{selected.recipientName}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight">{selected.isOnline ? 'Online' : 'Offline'}</p>
+                <p className="text-2xs text-muted-foreground leading-tight">{selected.isOnline ? 'Online' : 'Offline'}</p>
               </div>
               <button
                 onClick={handleExpandToFullPage}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 title="Open full chat"
               >
-                <Maximize2 className="h-3.5 w-3.5" />
+                <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           )}
 
           {isInitializing ? (
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
+              <Loader2 className="icon-md text-muted-foreground animate-spin" aria-hidden="true" />
             </div>
           ) : selected ? (
             /* Message thread */
@@ -847,12 +847,12 @@ export function UnifiedChatPopup() {
               <div className="flex-1 overflow-y-auto py-3 px-3 space-y-1 scroll-smooth">
                 {loadingMessages ? (
                   <div className="flex justify-center pt-8">
-                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+                    <Loader2 className="icon-sm text-muted-foreground animate-spin" aria-hidden="true" />
                   </div>
                 ) : msgMessages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <MessageCircle className="icon-md text-primary" aria-hidden="true" />
                     </div>
                     <p className="text-sm font-medium">Say hello!</p>
                     <p className="text-xs text-muted-foreground">Start a conversation with {selected.recipientName}</p>
@@ -867,7 +867,7 @@ export function UnifiedChatPopup() {
                         <React.Fragment key={msg.id}>
                           {showTime && (
                             <div className="text-center py-1">
-                              <span className="text-[10px] text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
+                              <span className="text-2xs text-muted-foreground bg-muted/60 rounded-full px-2 py-0.5">
                                 {formatTime(msg.timestamp)}
                               </span>
                             </div>
@@ -876,7 +876,7 @@ export function UnifiedChatPopup() {
                             {!isMe && (
                               <Avatar className="h-6 w-6 shrink-0 mb-0.5">
                                 <AvatarImage src={selected.recipientAvatar ?? undefined} />
-                                <AvatarFallback className="text-[9px] bg-primary/15 text-primary">
+                                <AvatarFallback className="text-2xs bg-primary/15 text-primary">
                                   {selected.recipientName[0]?.toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
@@ -890,11 +890,11 @@ export function UnifiedChatPopup() {
                             {isMe && (
                               <span className="text-muted-foreground mb-0.5">
                                 {msg.status === 'sending' ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                  <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
                                 ) : msg.status === 'read' ? (
-                                  <CheckCheck className="h-3 w-3 text-primary" />
+                                  <CheckCheck className="icon-2xs text-primary" aria-hidden="true" />
                                 ) : (
-                                  <Check className="h-3 w-3" />
+                                  <Check className="icon-2xs" aria-hidden="true" />
                                 )}
                               </span>
                             )}
@@ -924,7 +924,7 @@ export function UnifiedChatPopup() {
                     size="sm"
                     className="h-9 w-9 p-0 rounded-xl shrink-0"
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="icon-sm" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
@@ -934,7 +934,7 @@ export function UnifiedChatPopup() {
             <div className="flex-1 flex flex-col min-h-0">
               <div className="px-3 pt-2.5 pb-2 shrink-0">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   <Input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
@@ -948,7 +948,7 @@ export function UnifiedChatPopup() {
                 {filteredConvos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full gap-2 text-center px-4">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <MessageCircle className="h-5 w-5 text-primary" />
+                      <MessageCircle className="icon-md text-primary" aria-hidden="true" />
                     </div>
                     <p className="text-sm font-medium">
                       {searchQuery ? 'No results' : 'No messages yet'}
@@ -974,7 +974,7 @@ export function UnifiedChatPopup() {
                   onClick={handleExpandToFullPage}
                   className="w-full flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1 rounded-lg hover:bg-muted/40"
                 >
-                  <Maximize2 className="h-3.5 w-3.5" />
+                  <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
                   Open full messaging view
                 </button>
               </div>

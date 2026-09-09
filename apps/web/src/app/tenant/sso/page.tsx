@@ -72,16 +72,16 @@ function ProviderCard({
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <Key className="icon-sm text-muted-foreground shrink-0" />
+              <Key className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
               <h3 className="font-semibold">{provider.providerName}</h3>
               <Badge variant="secondary" size="sm" className="uppercase">{provider.providerType}</Badge>
               {isConfigured ? (
                 <Badge variant="outline" size="sm" className="bg-green-500/10 text-green-600 border-green-500/20">
-                  <CheckCircle className="mr-1 icon-sm" />Configured
+                  <CheckCircle className="mr-1 icon-sm" aria-hidden="true" />Configured
                 </Badge>
               ) : (
                 <Badge variant="outline" size="sm" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                  <AlertCircle className="mr-1 icon-sm" />Needs configuration
+                  <AlertCircle className="mr-1 icon-sm" aria-hidden="true" />Needs configuration
                 </Badge>
               )}
             </div>
@@ -89,7 +89,7 @@ function ProviderCard({
               <span className="text-xs text-muted-foreground">Callback URL:</span>
               <code className="text-xs bg-muted px-1.5 py-0.5 rounded font-mono truncate max-w-xs">{callbackUrl}</code>
               <button onClick={copy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-                {copied ? <Check className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
+                {copied ? <Check className="icon-sm text-green-500" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
               </button>
             </div>
             {provider.oidcIssuerUrl && (
@@ -113,7 +113,7 @@ function ProviderCard({
               }}
               className="text-muted-foreground hover:text-destructive transition-colors"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="icon-sm" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -134,7 +134,7 @@ function DomainRow({
   return (
     <div className="flex items-center justify-between p-3 rounded-lg border">
       <div className="flex items-center gap-3">
-        <Globe className="h-4 w-4 text-muted-foreground" />
+        <Globe className="icon-sm text-muted-foreground" aria-hidden="true" />
         <div>
           <p className="text-sm font-medium">@{mapping.domain}</p>
           <p className="text-xs text-muted-foreground">
@@ -145,7 +145,7 @@ function DomainRow({
       <div className="flex items-center gap-2">
         {mapping.isVerified ? (
           <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/20">
-            <CheckCircle className="mr-1 h-3 w-3" />Verified
+            <CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Verified
           </Badge>
         ) : (
           <button onClick={() => onVerify(mapping.id)} className="text-xs text-primary hover:underline">
@@ -153,7 +153,7 @@ function DomainRow({
           </button>
         )}
         <button onClick={() => onDelete(mapping.id)} className="text-muted-foreground hover:text-destructive transition-colors ml-1">
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       </div>
     </div>
@@ -177,7 +177,7 @@ function RoleMappingEditor({
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium">Role Mapping Rules</label>
         <button type="button" onClick={add} className="text-xs text-primary hover:underline flex items-center gap-1">
-          <Plus className="icon-sm" />Add rule
+          <Plus className="icon-sm" aria-hidden="true" />Add rule
         </button>
       </div>
       {rules.length === 0 ? (
@@ -195,7 +195,7 @@ function RoleMappingEditor({
                 )}
               </select>
               <button type="button" onClick={() => remove(i)} className="text-muted-foreground hover:text-destructive">
-                <X className="icon-sm" />
+                <X className="icon-sm" aria-hidden="true" />
               </button>
             </div>
           ))}
@@ -345,7 +345,7 @@ export default function TenantSSOPage() {
     return (
       <AppShell>
         <div className="py-12 text-center text-muted-foreground">
-          <Shield className="h-10 w-10 mx-auto mb-3" />
+          <Shield className="h-10 w-10 mx-auto mb-3" aria-hidden="true" />
           <p>No organization context. Please access this page via your organization.</p>
         </div>
       </AppShell>
@@ -362,7 +362,7 @@ export default function TenantSSOPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Lock className="h-6 w-6 text-primary" />
+              <Lock className="icon-lg text-primary" aria-hidden="true" />
               SSO / Authentication
             </h1>
             <p className="text-muted-foreground">Configure single sign-on for your organization members</p>
@@ -376,7 +376,7 @@ export default function TenantSSOPage() {
         {ssoMode !== 'disabled' && activeProviderCount > 0 ? (
           <Card className="border-green-500/30 bg-green-500/5">
             <CardContent className="p-4 flex items-center gap-3">
-              <Shield className="h-5 w-5 text-green-500 shrink-0" />
+              <Shield className="icon-md text-green-500 shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium">SSO is active</p>
                 <p className="text-xs text-muted-foreground">
@@ -389,7 +389,7 @@ export default function TenantSSOPage() {
         ) : (
           <Card className="border-amber-500/30 bg-amber-500/5">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+              <AlertCircle className="icon-md text-amber-500 shrink-0" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium">SSO not configured</p>
                 <p className="text-xs text-muted-foreground">Add an identity provider and set SSO mode to enable org sign-on.</p>
@@ -400,7 +400,7 @@ export default function TenantSSOPage() {
 
         {saveError && (
           <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0" />{saveError}
+            <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />{saveError}
           </div>
         )}
 
@@ -416,7 +416,7 @@ export default function TenantSSOPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">{providers?.length ?? 0} provider{(providers?.length ?? 0) !== 1 ? 's' : ''} configured</p>
               <Button variant="outline" size="sm" onClick={() => setShowNewProvider(v => !v)} className="gap-2">
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 {showNewProvider ? 'Cancel' : 'Add Provider'}
               </Button>
             </div>
@@ -497,7 +497,7 @@ export default function TenantSSOPage() {
 
                   <div className="flex justify-end">
                     <Button size="sm" onClick={() => createProviderMut.mutate()} disabled={createProviderMut.isPending || !newProvider.providerName} className="gap-2">
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                       {createProviderMut.isPending ? 'Creating…' : 'Create Provider'}
                     </Button>
                   </div>
@@ -509,7 +509,7 @@ export default function TenantSSOPage() {
               <div className="space-y-3">{[1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/50 animate-pulse" />)}</div>
             ) : !providers?.length ? (
               <div className="py-10 text-center text-muted-foreground border border-dashed rounded-xl">
-                <Key className="h-8 w-8 mx-auto mb-2" />
+                <Key className="icon-xl mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm">No identity providers yet</p>
                 <p className="text-xs mt-1">Click "Add Provider" above to configure OIDC or SAML.</p>
               </div>
@@ -602,7 +602,7 @@ export default function TenantSSOPage() {
                 </Card>
 
                 <button type="button" onClick={() => setShowAdvanced(v => !v)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  {showAdvanced ? <ChevronUp className="icon-sm" /> : <ChevronDown className="icon-sm" />}
+                  {showAdvanced ? <ChevronUp className="icon-sm" aria-hidden="true" /> : <ChevronDown className="icon-sm" aria-hidden="true" />}
                   Advanced settings
                 </button>
 
@@ -632,9 +632,9 @@ export default function TenantSSOPage() {
             )}
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="icon-sm" />Saved</span>}
+              {saveOk && <span className="text-xs text-green-600 flex items-center gap-1"><Check className="icon-sm" aria-hidden="true" />Saved</span>}
               <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending} className="gap-2">
-                <Check className="icon-sm" />
+                <Check className="icon-sm" aria-hidden="true" />
                 {saveMut.isPending ? 'Saving…' : 'Save Policy'}
               </Button>
             </div>
@@ -658,7 +658,7 @@ export default function TenantSSOPage() {
                     <label htmlFor="auto-redirect">Auto-redirect</label>
                   </div>
                   <Button size="sm" onClick={() => addDomainMut.mutate()} disabled={!newDomain.trim() || addDomainMut.isPending} className="gap-1.5 shrink-0">
-                    <Plus className="h-3.5 w-3.5" />Add
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />Add
                   </Button>
                 </div>
 
@@ -666,7 +666,7 @@ export default function TenantSSOPage() {
                   <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-12 rounded-lg bg-muted/50 animate-pulse" />)}</div>
                 ) : !domainMappings?.length ? (
                   <div className="py-8 text-center text-muted-foreground border border-dashed rounded-xl">
-                    <Globe className="h-7 w-7 mx-auto mb-2" />
+                    <Globe className="h-7 w-7 mx-auto mb-2" aria-hidden="true" />
                     <p className="text-sm">No email domains mapped</p>
                     <p className="text-xs mt-1">Add your organization&apos;s email domain to enable SSO discovery.</p>
                   </div>

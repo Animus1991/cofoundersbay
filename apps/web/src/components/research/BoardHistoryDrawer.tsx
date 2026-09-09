@@ -122,7 +122,7 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <History className="h-4 w-4 text-primary" />
+            <History className="icon-sm text-primary" aria-hidden="true" />
             {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString()}`}
           </DialogTitle>
           <DialogDescription>
@@ -141,12 +141,12 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
           <div className="py-2 space-y-3">
             <div className="flex gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Layers className="h-3.5 w-3.5" />
+                <Layers className="h-3.5 w-3.5" aria-hidden="true" />
                 {data.nodeCount} nodes
               </span>
               {Array.isArray(data.connectors) && (
                 <span className="flex items-center gap-1.5">
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                   {(data.connectors as unknown[]).length} connectors
                 </span>
               )}
@@ -244,7 +244,7 @@ export function BoardHistoryDrawer({
         <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
-              <History className="h-4 w-4 text-primary" />
+              <History className="icon-sm text-primary" aria-hidden="true" />
               Canvas History
             </SheetTitle>
             <SheetDescription>
@@ -270,8 +270,8 @@ export function BoardHistoryDrawer({
                 disabled={creatingSnapshot}
               >
                 {creatingSnapshot
-                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  : <Camera className="h-3.5 w-3.5" />
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                  : <Camera className="h-3.5 w-3.5" aria-hidden="true" />
                 }
               </Button>
             </div>
@@ -289,7 +289,7 @@ export function BoardHistoryDrawer({
               onClick={() => refetch()}
               disabled={isFetching}
             >
-              <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />
+              <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />
               Refresh
             </Button>
           </div>
@@ -302,7 +302,7 @@ export function BoardHistoryDrawer({
               </div>
             ) : snapshots.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <History className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                <History className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
                 <p className="text-sm">No snapshots yet</p>
                 <p className="text-xs mt-1">Save your first snapshot to start tracking history.</p>
               </div>
@@ -346,7 +346,7 @@ export function BoardHistoryDrawer({
                                 <div className="flex items-center gap-1">
                                   <Avatar className="h-3.5 w-3.5">
                                     <AvatarImage src={snap.createdBy.avatarUrl} />
-                                    <AvatarFallback className="text-[8px]">
+                                    <AvatarFallback className="text-2xs">
                                       {snap.createdBy.displayName.charAt(0)}
                                     </AvatarFallback>
                                   </Avatar>
@@ -365,7 +365,7 @@ export function BoardHistoryDrawer({
                           className="h-7 w-7 p-0 shrink-0 opacity-60 hover:opacity-100"
                           onClick={(e) => { e.stopPropagation(); setPreviewSnapshot(snap); }}
                         >
-                          <Eye className="h-3.5 w-3.5" />
+                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                         </Button>
                       </div>
                     );

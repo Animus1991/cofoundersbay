@@ -55,7 +55,7 @@ export function UserMenu() {
         <span className="hidden text-sm font-medium text-foreground md:inline max-w-[120px] truncate">
           {user?.displayName ?? 'Account'}
         </span>
-        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" />
+        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" aria-hidden="true" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">
@@ -70,22 +70,22 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/profile">
-            <User className="mr-2 h-4 w-4" /> My Profile
+            <User className="mr-2 icon-sm" aria-hidden="true" /> My Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/profile/edit">
-            <Edit className="mr-2 h-4 w-4" /> Edit Profile
+            <Edit className="mr-2 icon-sm" aria-hidden="true" /> Edit Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings">
-            <Settings className="mr-2 h-4 w-4" /> Settings
+            <Settings className="mr-2 icon-sm" aria-hidden="true" /> Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
-          <LogOut className="mr-2 h-4 w-4" /> Sign out
+          <LogOut className="mr-2 icon-sm" aria-hidden="true" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

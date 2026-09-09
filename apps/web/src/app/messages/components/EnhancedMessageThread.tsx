@@ -166,47 +166,47 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => setShowSearch(!showSearch)}
           >
-            <Search className="icon-md" />
+            <Search className="icon-md" aria-hidden="true" />
           </Button>
           <Button aria-label="Call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('audio')}
           >
-            <Phone className="icon-md" />
+            <Phone className="icon-md" aria-hidden="true" />
           </Button>
           <Button aria-label="Start video call"
             variant="ghost"
             size="icon"
             onClick={() => onStartCall?.('video')}
           >
-            <Video className="icon-md" />
+            <Video className="icon-md" aria-hidden="true" />
           </Button>
           <Button aria-label="More information"
             variant="ghost"
             size="icon"
             onClick={() => setShowInfo(!showInfo)}
           >
-            <Info className="icon-md" />
+            <Info className="icon-md" aria-hidden="true" />
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-md" />
+                <MoreVertical className="icon-md" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onArchiveConversation}>
-                <Archive className="icon-sm mr-2" />
+                <Archive className="icon-sm mr-2" aria-hidden="true" />
                 Archive conversation
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Flag className="icon-sm mr-2" />
+                <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="icon-sm mr-2" />
+                <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                 Delete conversation
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -299,7 +299,7 @@ export function EnhancedMessageThread({
                             />
                           ) : (
                             <>
-                              <Paperclip className="icon-sm" />
+                              <Paperclip className="icon-sm" aria-hidden="true" />
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium truncate">
                                   {attachment.name}
@@ -309,7 +309,7 @@ export function EnhancedMessageThread({
                                 </p>
                               </div>
                               <Button aria-label="Download" size="icon" variant="ghost" className="h-8 w-8">
-                                <Download className="icon-sm" />
+                                <Download className="icon-sm" aria-hidden="true" />
                               </Button>
                             </>
                           )}
@@ -329,21 +329,21 @@ export function EnhancedMessageThread({
                       className="h-7 w-7"
                       onClick={() => setReplyingTo(message)}
                     >
-                      <Reply className="icon-sm" />
+                      <Reply className="icon-sm" aria-hidden="true" />
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button aria-label="More options" size="icon" variant="secondary" className="h-7 w-7">
-                          <MoreVertical className="icon-sm" />
+                          <MoreVertical className="icon-sm" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem>
-                          <Copy className="icon-sm mr-2" />
+                          <Copy className="icon-sm mr-2" aria-hidden="true" />
                           Copy
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Forward className="icon-sm mr-2" />
+                          <Forward className="icon-sm mr-2" aria-hidden="true" />
                           Forward
                         </DropdownMenuItem>
                         {isOwn && (
@@ -353,7 +353,7 @@ export function EnhancedMessageThread({
                               className="text-destructive"
                               onClick={() => onDeleteMessage?.(message.id)}
                             >
-                              <Trash2 className="icon-sm mr-2" />
+                              <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                               Delete
                             </DropdownMenuItem>
                           </>
@@ -371,9 +371,9 @@ export function EnhancedMessageThread({
                     <span>{format(new Date(message.createdAt), 'HH:mm')}</span>
                     {isOwn && (
                       message.readAt ? (
-                        <CheckCheck className="icon-sm text-primary" />
+                        <CheckCheck className="icon-sm text-primary" aria-hidden="true" />
                       ) : (
-                        <Check className="icon-sm" />
+                        <Check className="icon-sm" aria-hidden="true" />
                       )
                     )}
                   </div>
@@ -401,7 +401,7 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => setReplyingTo(null)}
           >
-            <MoreVertical className="h-4 w-4 rotate-45" />
+            <MoreVertical className="icon-sm rotate-45" aria-hidden="true" />
           </Button>
         </div>
       )}
@@ -416,9 +416,9 @@ export function EnhancedMessageThread({
                 className="flex items-center gap-2 px-3 py-2 bg-background rounded-lg"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="h-4 w-4" />
+                  <ImageIcon className="icon-sm" aria-hidden="true" />
                 ) : (
-                  <Paperclip className="h-4 w-4" />
+                  <Paperclip className="icon-sm" aria-hidden="true" />
                 )}
                 <span className="text-sm truncate max-w-[150px]">
                   {file.name}
@@ -429,7 +429,7 @@ export function EnhancedMessageThread({
                   className="h-6 w-6"
                   onClick={() => removeAttachment(index)}
                 >
-                  <MoreVertical className="h-3 w-3 rotate-45" />
+                  <MoreVertical className="icon-2xs rotate-45" aria-hidden="true" />
                 </Button>
               </div>
             ))}
@@ -452,10 +452,10 @@ export function EnhancedMessageThread({
             size="icon"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="icon-md" aria-hidden="true" />
           </Button>
           <Button aria-label="Add image" variant="ghost" size="icon">
-            <ImageIcon className="h-5 w-5" />
+            <ImageIcon className="icon-md" aria-hidden="true" />
           </Button>
           
           <div className="flex-1 relative">
@@ -473,7 +473,7 @@ export function EnhancedMessageThread({
               size="icon"
               className="absolute right-2 bottom-2"
             >
-              <Smile className="h-5 w-5" />
+              <Smile className="icon-md" aria-hidden="true" />
             </Button>
           </div>
 
@@ -482,7 +482,7 @@ export function EnhancedMessageThread({
             disabled={!messageText.trim() && attachments.length === 0}
             className="rounded-full h-12 w-12"
           >
-            <Send className="h-5 w-5" />
+            <Send className="icon-md" aria-hidden="true" />
           </Button>
         </div>
       </div>

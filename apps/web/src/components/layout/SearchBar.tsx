@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 export function SearchBar() {
   return (
     <div className="relative hidden w-full max-w-md lg:block">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
       <Input
         placeholder="Search founders, mentors, skills…"
         className="pl-9"

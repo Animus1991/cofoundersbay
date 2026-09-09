@@ -44,7 +44,7 @@ export default function TenantSettingsPage() {
             </p>
           </div>
           <Button>
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-2 icon-sm" aria-hidden="true" />
             Save Changes
           </Button>
         </div>
@@ -251,7 +251,7 @@ export default function TenantSettingsPage() {
                     <Input value="sk_live_xxxxxxxxxxxxxxxxxxxxx" readOnly className="font-mono text-sm" />
                   </div>
                   <Button variant="outline" size="sm">
-                    <Key className="mr-2 h-4 w-4" />
+                    <Key className="mr-2 icon-sm" aria-hidden="true" />
                     Regenerate
                   </Button>
                 </div>
@@ -294,7 +294,7 @@ export default function TenantSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 p-3 rounded-lg border">
-                  <CreditCard className="h-8 w-8 text-muted-foreground" />
+                  <CreditCard className="icon-xl text-muted-foreground" aria-hidden="true" />
                   <div className="flex-1">
                     <p className="font-medium">•••• •••• •••• 4242</p>
                     <p className="text-sm text-muted-foreground">Expires 12/2026</p>

@@ -60,7 +60,7 @@ export function LinkedAccounts() {
     return (
       <Card>
         <CardContent className="pt-6 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-lg animate-spin text-muted-foreground" aria-hidden="true" />
         </CardContent>
       </Card>
     );
@@ -71,7 +71,7 @@ export function LinkedAccounts() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
+            <AlertCircle className="icon-md" aria-hidden="true" />
             <span>Failed to load linked accounts</span>
           </div>
         </CardContent>
@@ -127,7 +127,7 @@ export function LinkedAccounts() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Link2 className="h-5 w-5" />
+          <Link2 className="icon-md" aria-hidden="true" />
           Linked Accounts
         </CardTitle>
         <CardDescription>
@@ -159,9 +159,9 @@ export function LinkedAccounts() {
                 className="gap-2"
               >
                 {unlinkingProvider === provider.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 ) : (
-                  <Unlink className="h-4 w-4" />
+                  <Unlink className="icon-sm" aria-hidden="true" />
                 )}
                 Disconnect
               </Button>
@@ -172,7 +172,7 @@ export function LinkedAccounts() {
                 onClick={() => handleLink(provider.id)}
                 className="gap-2"
               >
-                <Link2 className="h-4 w-4" />
+                <Link2 className="icon-sm" aria-hidden="true" />
                 Connect
               </Button>
             )}

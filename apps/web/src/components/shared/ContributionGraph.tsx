@@ -65,8 +65,8 @@ const LEVEL_COLORS = {
 };
 
 const SIZE_CONFIG = {
-  sm: { cell: 'w-2 h-2', gap: 'gap-[2px]', text: 'text-[9px]' },
-  md: { cell: 'w-2.5 h-2.5', gap: 'gap-[3px]', text: 'text-[10px]' },
+  sm: { cell: 'w-2 h-2', gap: 'gap-[2px]', text: 'text-2xs' },
+  md: { cell: 'w-2.5 h-2.5', gap: 'gap-[3px]', text: 'text-2xs' },
   lg: { cell: 'w-3 h-3', gap: 'gap-1', text: 'text-xs' },
 };
 

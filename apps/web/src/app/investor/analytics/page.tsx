@@ -161,7 +161,7 @@ export default function InvestorAnalyticsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <BarChart3 className="icon-lg text-primary" aria-hidden="true" />
               Investment Analytics
             </h1>
             <p className="text-muted-foreground">Deal flow performance and portfolio insights</p>
@@ -190,7 +190,7 @@ export default function InvestorAnalyticsPage() {
                       <kpi.icon className="h-4 w-4 text-primary" />
                     </div>
                     <span className={cn('text-xs flex items-center gap-0.5', kpi.trend > 0 ? 'text-green-500' : 'text-red-500')}>
-                      {kpi.trend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {kpi.trend > 0 ? <TrendingUp className="icon-2xs" aria-hidden="true" /> : <TrendingDown className="icon-2xs" aria-hidden="true" />}
                       {Math.abs(kpi.trend)}{kpi.label.includes('Rate') || kpi.label.includes('Time') ? 'pp' : '%'}
                     </span>
                   </div>
@@ -239,7 +239,7 @@ export default function InvestorAnalyticsPage() {
                         <div className="h-6 bg-muted rounded overflow-hidden">
                           <div className={cn('h-full rounded flex items-center justify-end pr-2', stage.color)}
                             style={{ width: `${pct}%`, opacity: 0.8 }}>
-                            {pct > 15 && <span className="text-[10px] text-white font-medium">{stage.count}</span>}
+                            {pct > 15 && <span className="text-2xs text-white font-medium">{stage.count}</span>}
                           </div>
                         </div>
                       </div>
@@ -247,7 +247,7 @@ export default function InvestorAnalyticsPage() {
                   })}
                   <div className="pt-2 flex justify-end">
                     <Button variant="ghost" size="sm" className="text-xs h-7" asChild>
-                      <Link href="/investor/pipeline">View Pipeline <ArrowUpRight className="ml-1 h-3 w-3" /></Link>
+                      <Link href="/investor/pipeline">View Pipeline <ArrowUpRight className="ml-1 icon-2xs" aria-hidden="true" /></Link>
                     </Button>
                   </div>
                 </CardContent>
@@ -295,7 +295,7 @@ export default function InvestorAnalyticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
+                  <MapPin className="icon-sm text-primary" aria-hidden="true" />
                   Geographic Distribution
                 </CardTitle>
               </CardHeader>
@@ -318,7 +318,7 @@ export default function InvestorAnalyticsPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-primary" />
+                  <Zap className="icon-sm text-primary" aria-hidden="true" />
                   Portfolio Returns
                 </CardTitle>
               </CardHeader>
@@ -350,7 +350,7 @@ export default function InvestorAnalyticsPage() {
                   </div>
                 </div>
                 <Button variant="outline" size="sm" className="w-full mt-2" asChild>
-                  <Link href="/investor/portfolio">Full Portfolio <ArrowUpRight className="ml-1 h-3 w-3" /></Link>
+                  <Link href="/investor/portfolio">Full Portfolio <ArrowUpRight className="ml-1 icon-2xs" aria-hidden="true" /></Link>
                 </Button>
               </CardContent>
             </Card>

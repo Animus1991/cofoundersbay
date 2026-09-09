@@ -47,19 +47,19 @@ export function AppShell({
         <div
           className={cn(
             'fixed top-0 right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
-            'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
+            'bg-amber-500/95 text-amber-950 text-sm font-medium backdrop-blur-sm shadow-sm',
             'transition-[margin-left] duration-200 ease-out',
             (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
             'left-0 lg:left-auto',
           )}
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <Sparkles className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span>Demo mode — changes are not saved and data resets periodically.</span>
           </div>
           <Link
             href="/register"
-            className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-[12px] font-semibold hover:bg-amber-900/25 transition-colors"
+            className="shrink-0 rounded-md bg-amber-900/15 px-2.5 py-0.5 text-xs font-semibold hover:bg-amber-900/25 transition-colors"
           >
             Create free account
           </Link>

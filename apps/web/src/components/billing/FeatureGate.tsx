@@ -43,7 +43,7 @@ function UpgradePrompt({ feature }: { feature: PlanFeatureKey }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 bg-muted/30 p-6 text-center">
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-        <Lock className="h-5 w-5 text-primary" />
+        <Lock className="icon-md text-primary" aria-hidden="true" />
       </div>
       <div className="space-y-1">
         <p className="text-sm font-semibold text-foreground">{label} requires an upgrade</p>

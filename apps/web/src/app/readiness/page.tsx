@@ -229,7 +229,7 @@ function DimensionCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-muted-foreground/50 cursor-help" />
+                      <Info className="h-3.5 w-3.5 text-muted-foreground/50 cursor-help" aria-hidden="true" />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[220px] text-xs">{dim.description}</TooltipContent>
                   </Tooltip>
@@ -258,8 +258,8 @@ function DimensionCard({
                   )}
                 >
                   {c.completed
-                    ? <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    : <AlertCircle className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />}
+                    ? <CheckCircle2 className="icon-sm text-green-500 flex-shrink-0" aria-hidden="true" />
+                    : <AlertCircle className="icon-sm text-muted-foreground/50 flex-shrink-0" aria-hidden="true" />}
                   <span className={cn('truncate', c.completed && 'text-muted-foreground line-through')}>{c.name}</span>
                   <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">{c.weight}%</span>
                 </button>
@@ -277,7 +277,7 @@ function DimensionCard({
             {dim.recommendations.length > 0 && status !== 'excellent' && (
               <div className="mt-3 p-3 rounded-lg bg-secondary/50 border border-border/60">
                 <p className="text-xs font-medium flex items-center gap-1.5 mb-1">
-                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
                   Recommendation
                 </p>
                 <p className="text-xs text-muted-foreground">{dim.recommendations[0]}</p>
@@ -300,7 +300,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Target className="h-4 w-4 text-primary" />
+          <Target className="icon-sm text-primary" aria-hidden="true" />
           Readiness Radar
         </CardTitle>
       </CardHeader>
@@ -333,11 +333,11 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <History className="h-4 w-4 text-primary" />
+            <History className="icon-sm text-primary" aria-hidden="true" />
             Score Progression (7 weeks)
           </CardTitle>
           <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors">
-            <Download className="h-3.5 w-3.5" />Export
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />Export
           </button>
         </div>
       </CardHeader>
@@ -441,7 +441,7 @@ export default function ReadinessPage() {
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-            {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+            {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" aria-hidden="true" /> : <RefreshCw className="icon-sm mr-1.5" aria-hidden="true" />}
             Reassess
           </Button>
         </div>
@@ -467,7 +467,7 @@ export default function ReadinessPage() {
               <div className="flex gap-2 flex-wrap justify-center">
                 {weakDims.slice(0, 3).map((d) => (
                   <Badge key={d.key} variant="outline" className="text-xs gap-1">
-                    <AlertCircle className="h-3 w-3" />
+                    <AlertCircle className="icon-2xs" aria-hidden="true" />
                     {d.label}
                   </Badge>
                 ))}
@@ -480,7 +480,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className="rounded-lg p-2 bg-violet-500/10">
-                  <Building2 className="h-4 w-4 text-violet-600" />
+                  <Building2 className="icon-sm text-violet-600" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Accelerator Readiness</p>
@@ -490,10 +490,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{accelScore}%</span>
                 {accelScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Ready to apply</span>
+                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Ready to apply</span>
                   : accelScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Almost ready</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Not ready yet</span>
+                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Almost ready</span>
+                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Not ready yet</span>
                 }
               </div>
               <Progress value={accelScore} className="h-2" />
@@ -501,7 +501,7 @@ export default function ReadinessPage() {
                 Most accelerators expect 65–75%+ readiness. Focus on team, market, and product dimensions.
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" />Browse Programs</Link>
+                <Link href="/programs"><Zap className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Browse Programs</Link>
               </Button>
             </CardContent>
           </Card>
@@ -511,7 +511,7 @@ export default function ReadinessPage() {
             <CardContent className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <div className="rounded-lg p-2 bg-emerald-500/10">
-                  <DollarSign className="h-4 w-4 text-emerald-600" />
+                  <DollarSign className="icon-sm text-emerald-600" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Investor Readiness</p>
@@ -521,10 +521,10 @@ export default function ReadinessPage() {
               <div className="flex items-end gap-3">
                 <span className="text-2xl font-bold tabular-nums">{investScore}%</span>
                 {investScore >= 70
-                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="h-3 w-3" /> Fundable signal</span>
+                  ? <span className="text-xs text-green-600 flex items-center gap-1 mb-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> Fundable signal</span>
                   : investScore >= 50
-                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="h-3 w-3" /> Building traction</span>
-                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="h-3 w-3" /> Pre-investment stage</span>
+                  ? <span className="text-xs text-amber-600 flex items-center gap-1 mb-1"><Minus className="icon-2xs" aria-hidden="true" /> Building traction</span>
+                  : <span className="text-xs text-red-600 flex items-center gap-1 mb-1"><TrendingDown className="icon-2xs" aria-hidden="true" /> Pre-investment stage</span>
                 }
               </div>
               <Progress value={investScore} className="h-2" />
@@ -532,7 +532,7 @@ export default function ReadinessPage() {
                 Investors weight team (30%) and market (25%) most heavily. Build strong validation first.
               </p>
               <Button size="sm" variant="outline" asChild className="mt-auto">
-                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" />Find Investors</Link>
+                <Link href="/investors"><Star className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Find Investors</Link>
               </Button>
             </CardContent>
           </Card>
@@ -548,14 +548,14 @@ export default function ReadinessPage() {
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <BrainCircuit className="h-4 w-4 text-primary" />
+                  <BrainCircuit className="icon-sm text-primary" aria-hidden="true" />
                   AI Insight
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2.5">
                 {weakDims.slice(0, 3).map((d) => (
                   <div key={d.key} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-card border border-border/60">
-                    <Sparkles className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground">{d.label} — {Math.round((d.score / d.maxScore) * 100)}%</p>
                       <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{d.recommendations[0]}</p>
@@ -564,7 +564,7 @@ export default function ReadinessPage() {
                 ))}
                 {weakDims.length === 0 && (
                   <div className="flex items-center gap-2 p-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <CheckCircle2 className="icon-sm text-green-500 flex-shrink-0" aria-hidden="true" />
                     <p className="text-xs text-muted-foreground">All dimensions look strong. Keep up the momentum!</p>
                   </div>
                 )}
@@ -577,7 +577,7 @@ export default function ReadinessPage() {
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className="text-xs text-green-600 flex items-center gap-0.5 mb-1">
-                    <TrendingUp className="h-3 w-3" />+{overallScore - DEMO_HISTORY[0].score} pts
+                    <TrendingUp className="icon-2xs" aria-hidden="true" />+{overallScore - DEMO_HISTORY[0].score} pts
                   </span>
                 </div>
                 <div className="flex gap-0.5 mt-2 h-6 items-end">
@@ -606,7 +606,7 @@ export default function ReadinessPage() {
           <TabsContent value="dimensions" className="mt-4">
             {!workspaceId && (
               <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
-                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <AlertCircle className="icon-sm text-amber-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-400">No workspace connected</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -632,14 +632,14 @@ export default function ReadinessPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <Lightbulb className="icon-sm text-amber-500" aria-hidden="true" />
                   Priority Action Plan
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {weakDims.length === 0 ? (
                   <div className="text-center py-8">
-                    <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" />
+                    <CheckCircle2 className="h-10 w-10 text-green-500 mx-auto mb-3" aria-hidden="true" />
                     <p className="font-medium">Excellent! All dimensions are strong.</p>
                     <p className="text-sm text-muted-foreground mt-1">Keep iterating and maintain your momentum.</p>
                   </div>
@@ -659,7 +659,7 @@ export default function ReadinessPage() {
                     .map((item) => (
                       <div key={item.key} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50 border border-border/40">
                         <div className={cn('rounded-full p-1.5 mt-0.5', STATUS_COLORS[item.status].bg)}>
-                          <ChevronRight className={cn('h-3 w-3', STATUS_COLORS[item.status].text)} />
+                          <ChevronRight className={cn('h-3 w-3', STATUS_COLORS[item.status].text)} aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -683,7 +683,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-violet-600" />
+                    <Building2 className="icon-sm text-violet-600" aria-hidden="true" />
                     Accelerator Benchmark
                   </CardTitle>
                 </CardHeader>
@@ -714,7 +714,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-emerald-600" />
+                    <Shield className="icon-sm text-emerald-600" aria-hidden="true" />
                     Investor Benchmark
                   </CardTitle>
                 </CardHeader>
@@ -778,7 +778,7 @@ export default function ReadinessPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <History className="h-4 w-4 text-muted-foreground" />
+                    <History className="icon-sm text-muted-foreground" aria-hidden="true" />
                     Assessment Log
                   </CardTitle>
                 </CardHeader>
@@ -793,7 +793,7 @@ export default function ReadinessPage() {
                           <span className="text-sm font-medium">{h.score}% overall</span>
                           {i < DEMO_HISTORY.length - 1 && (
                             <span className="text-xs text-green-600 flex items-center gap-0.5">
-                              <TrendingUp className="h-3 w-3" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
+                              <TrendingUp className="icon-2xs" aria-hidden="true" />+{h.score - DEMO_HISTORY[DEMO_HISTORY.length - 2 - i].score}
                             </span>
                           )}
                         </div>
@@ -814,21 +814,21 @@ export default function ReadinessPage() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Button asChild className="h-auto py-3 flex-col gap-1">
             <Link href="/builder">
-              <Rocket className="h-4 w-4" />
+              <Rocket className="icon-sm" aria-hidden="true" />
               <span className="text-sm font-medium">Open Builder</span>
               <span className="text-xs opacity-70">Build your workspace</span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/mentoring">
-              <Lightbulb className="h-4 w-4" />
+              <Lightbulb className="icon-sm" aria-hidden="true" />
               <span className="text-sm font-medium">Find a Mentor</span>
               <span className="text-xs opacity-70">Get expert guidance</span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto py-3 flex-col gap-1">
             <Link href="/programs">
-              <Building2 className="h-4 w-4" />
+              <Building2 className="icon-sm" aria-hidden="true" />
               <span className="text-sm font-medium">Browse Programs</span>
               <span className="text-xs opacity-70">Accelerators & cohorts</span>
             </Link>

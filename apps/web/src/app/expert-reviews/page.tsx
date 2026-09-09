@@ -211,27 +211,27 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 <p className="text-sm font-semibold text-foreground">{review.expertName}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{review.expertTitle}</p>
               </div>
-              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0', status.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium shrink-0', status.color)}>
                 <StatusIcon className="h-3 w-3" />
                 {status.label}
               </span>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium', type.color)}>
+              <span className={cn('flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-medium', type.color)}>
                 <TypeIcon className="h-3 w-3" />{type.label}
               </span>
               {review.isPaid && review.agreedFee && (
-                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" /> €{review.agreedFee}
+                <span className="text-2xs text-muted-foreground flex items-center gap-1">
+                  <DollarSign className="icon-2xs" aria-hidden="true" /> €{review.agreedFee}
                 </span>
               )}
               {!review.isPaid && (
-                <Badge variant="outline" className="text-[10px] h-4 px-1.5">Free</Badge>
+                <Badge variant="outline" className="text-2xs h-4 px-1.5">Free</Badge>
               )}
               {review.dueDate && review.status !== 'submitted' && (
-                <span className="text-[11px] text-amber-600 flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
+                <span className="text-2xs text-amber-600 flex items-center gap-1">
+                  <Clock className="icon-2xs" aria-hidden="true" />
                   Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                 </span>
               )}
@@ -254,7 +254,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
                 {review.rating && (
                   <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} />
+                      <Star key={i} className={cn('h-3 w-3', i < review.rating! ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')} aria-hidden="true" />
                     ))}
                   </div>
                 )}
@@ -270,21 +270,21 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             <div className="mt-3 flex items-center justify-between">
               <div className="flex gap-2">
                 <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                  <MessageCircle className="h-3 w-3" /> Message expert
+                  <MessageCircle className="icon-2xs" aria-hidden="true" /> Message expert
                 </Button>
                 {review.status === 'submitted' && (
                   <Button size="sm" variant="ghost" className="h-7 gap-1 text-xs">
-                    <ExternalLink className="h-3 w-3" /> View full review
+                    <ExternalLink className="icon-2xs" aria-hidden="true" /> View full review
                   </Button>
                 )}
               </div>
               {review.strengthsJson || review.improvementsJson ? (
                 <button
                   onClick={() => setExpanded((v) => !v)}
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
+                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5"
                 >
                   {expanded ? 'Collapse' : 'See feedback'}
-                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} />
+                  <ChevronRight className={cn('h-3 w-3 transition-transform', expanded && 'rotate-90')} aria-hidden="true" />
                 </button>
               ) : null}
             </div>
@@ -298,11 +298,11 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Scores by area */}
           {review.scoresByArea && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Scores by Area</p>
               <div className="space-y-1.5">
                 {Object.entries(review.scoresByArea).map(([area, score]) => (
                   <div key={area} className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground capitalize w-24 shrink-0">{area}</span>
+                    <span className="text-2xs text-muted-foreground capitalize w-24 shrink-0">{area}</span>
                     <Progress value={score * 10} className="flex-1 h-1.5" />
                     <span className={cn('text-xs font-semibold w-8 text-right', score >= 8 ? 'text-emerald-600' : score >= 6 ? 'text-amber-600' : 'text-destructive')}>
                       {score}/10
@@ -316,7 +316,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Strengths */}
           {review.strengthsJson && review.strengthsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 mb-2">✅ Strengths</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-emerald-600 mb-2">✅ Strengths</p>
               <ul className="space-y-2">
                 {review.strengthsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -331,7 +331,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
           {/* Improvements */}
           {review.improvementsJson && review.improvementsJson.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-600 mb-2">⚡ Recommendations</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-amber-600 mb-2">⚡ Recommendations</p>
               <ul className="space-y-2">
                 {review.improvementsJson.map((s, i) => (
                   <li key={i} className="flex gap-2 text-xs">
@@ -363,10 +363,10 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-sm font-semibold text-foreground">{expert.name}</p>
                 {expert.isVerified && (
-                  <Badge className="h-4 rounded-full px-1.5 text-[10px] bg-primary/10 text-primary border-primary/20">Verified</Badge>
+                  <Badge className="h-4 rounded-full px-1.5 text-2xs bg-primary/10 text-primary border-primary/20">Verified</Badge>
                 )}
                 {expert.badges?.map((b) => (
-                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-[10px]">{b}</Badge>
+                  <Badge key={b} variant="secondary" className="h-4 rounded-full px-1.5 text-2xs">{b}</Badge>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{expert.title}</p>
@@ -382,28 +382,28 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             {expert.domains.slice(0, 3).map((d) => {
               const cfg = REVIEW_TYPE_CONFIG[d];
               return (
-                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', cfg.color)}>
+                <span key={d} className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', cfg.color)}>
                   {cfg.label}
                 </span>
               );
             })}
           </div>
 
-          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex items-center gap-3 text-2xs text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400" /> {expert.rating} ({expert.completedReviews} reviews)
+              <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" /> {expert.rating} ({expert.completedReviews} reviews)
             </span>
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" /> Turnaround: {expert.responseTime}
+              <Clock className="icon-2xs" aria-hidden="true" /> Turnaround: {expert.responseTime}
             </span>
           </div>
 
           <div className="mt-3 flex gap-2">
             <Button size="sm" className="h-7 gap-1 text-xs flex-1">
-              <Plus className="h-3 w-3" /> Request review
+              <Plus className="icon-2xs" aria-hidden="true" /> Request review
             </Button>
             <Button size="sm" variant="outline" className="h-7 gap-1 text-xs">
-              <MessageCircle className="h-3 w-3" /> Message
+              <MessageCircle className="icon-2xs" aria-hidden="true" /> Message
             </Button>
           </div>
         </div>
@@ -457,7 +457,7 @@ export default function ExpertReviewsPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -472,7 +472,7 @@ export default function ExpertReviewsPage() {
               <TabsTrigger value="insights" className="text-xs">Insights</TabsTrigger>
             </TabsList>
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setActiveTab('find-experts')}>
-              <Plus className="h-3.5 w-3.5" /> Request review
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Request review
             </Button>
           </div>
 
@@ -493,7 +493,7 @@ export default function ExpertReviewsPage() {
             {myReviews.length === 0 && (
               <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 py-16 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                  <Award className="h-7 w-7 text-primary" />
+                  <Award className="h-7 w-7 text-primary" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">No reviews yet</p>
@@ -509,7 +509,7 @@ export default function ExpertReviewsPage() {
             {/* Search + domain filter */}
             <div className="flex gap-2 flex-wrap">
               <div className="relative flex-1 min-w-48">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <Input placeholder="Search experts…" value={searchExperts} onChange={(e) => setSearchExperts(e.target.value)} className="pl-8 h-9 text-sm" />
               </div>
             </div>
@@ -547,7 +547,7 @@ export default function ExpertReviewsPage() {
 
             {/* CTA for becoming an expert */}
             <div className="rounded-xl border border-dashed border-border/60 bg-card/50 p-6 text-center">
-              <Award className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+              <Award className="icon-xl text-muted-foreground/50 mx-auto mb-3" aria-hidden="true" />
               <p className="text-sm font-medium text-foreground mb-1">Are you a domain expert?</p>
               <p className="text-xs text-muted-foreground mb-3">Join as an expert reviewer and earn while helping founders.</p>
               <Button variant="outline" size="sm">Apply as expert</Button>
@@ -567,7 +567,7 @@ export default function ExpertReviewsPage() {
                   <Card key={r.id}>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary" />
+                        <BarChart3 className="icon-sm text-primary" aria-hidden="true" />
                         {REVIEW_TYPE_CONFIG[r.reviewType].label} — Detailed Scores
                       </CardTitle>
                     </CardHeader>
@@ -593,13 +593,13 @@ export default function ExpertReviewsPage() {
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2">
-                        <Lightbulb className="h-4 w-4 text-amber-500" /> Top Recommendations
+                        <Lightbulb className="icon-sm text-amber-500" aria-hidden="true" /> Top Recommendations
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {submitted.flatMap((r) => (r.improvementsJson ?? []).slice(0, 2).map((imp, i) => (
                         <div key={`${r.id}-${i}`} className="flex gap-2 rounded-lg bg-amber-500/5 border border-amber-500/10 px-3 py-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                          <AlertTriangle className="icon-sm text-amber-500 shrink-0 mt-0.5" aria-hidden="true" />
                           <div>
                             <p className="text-xs font-semibold text-foreground">{imp.area}</p>
                             <p className="text-xs text-muted-foreground">{imp.recommendation}</p>

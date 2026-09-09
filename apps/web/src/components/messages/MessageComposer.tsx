@@ -101,16 +101,16 @@ export function MessageComposer({
                 className="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg text-sm"
               >
                 {file.type.startsWith('image/') ? (
-                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  <ImageIcon className="icon-sm text-muted-foreground" aria-hidden="true" />
                 ) : (
-                  <File className="h-4 w-4 text-muted-foreground" />
+                  <File className="icon-sm text-muted-foreground" aria-hidden="true" />
                 )}
                 <span className="max-w-[150px] truncate">{file.name}</span>
                 <button
                   onClick={() => removeAttachment(index)}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="icon-2xs" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -156,7 +156,7 @@ export function MessageComposer({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={disabled || sending || attachments.length >= 5}
               >
-                <Paperclip className="h-4 w-4" />
+                <Paperclip className="icon-sm" aria-hidden="true" />
               </Button>
               <Button
                 type="button"
@@ -166,7 +166,7 @@ export function MessageComposer({
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 disabled={disabled || sending}
               >
-                <Smile className="h-4 w-4" />
+                <Smile className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -180,7 +180,7 @@ export function MessageComposer({
               <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="icon-sm mr-2" aria-hidden="true" />
                 Send
               </>
             )}

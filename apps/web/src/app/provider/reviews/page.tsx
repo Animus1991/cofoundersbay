@@ -55,8 +55,7 @@ function ReviewCard({ review }: { review: Review }) {
                           i < review.rating
                             ? 'fill-amber-500 text-amber-500'
                             : 'text-muted-foreground/30'
-                        )}
-                      />
+                        )} aria-hidden="true" />
                     ))}
                   </div>
                 </div>
@@ -82,12 +81,12 @@ function ReviewCard({ review }: { review: Review }) {
 
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-8 text-xs">
-                <ThumbsUp className="mr-1 h-3 w-3" />
+                <ThumbsUp className="mr-1 icon-2xs" aria-hidden="true" />
                 Helpful ({review.helpful})
               </Button>
               {!review.response && (
                 <Button variant="ghost" size="sm" className="h-8 text-xs">
-                  <MessageSquare className="mr-1 h-3 w-3" />
+                  <MessageSquare className="mr-1 icon-2xs" aria-hidden="true" />
                   Respond
                 </Button>
               )}
@@ -195,8 +194,7 @@ export default function ProviderReviewsPage() {
                           i < Math.round(avgRating)
                             ? 'fill-amber-500 text-amber-500'
                             : 'text-muted-foreground/30'
-                        )}
-                      />
+                        )} aria-hidden="true" />
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -207,7 +205,7 @@ export default function ProviderReviewsPage() {
                   {ratingDistribution.map((dist) => (
                     <div key={dist.rating} className="flex items-center gap-2">
                       <span className="text-xs w-3">{dist.rating}</span>
-                      <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
+                      <Star className="icon-2xs fill-amber-500 text-amber-500" aria-hidden="true" />
                       <Progress value={dist.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">
                         {dist.count}
@@ -250,7 +248,7 @@ export default function ProviderReviewsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search reviews..."
             value={search}
@@ -267,7 +265,7 @@ export default function ProviderReviewsPage() {
           {filteredReviews.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No reviews found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your search

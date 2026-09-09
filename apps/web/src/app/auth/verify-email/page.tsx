@@ -107,7 +107,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                  <Loader2 className="icon-xl text-primary animate-spin" aria-hidden="true" />
                 </div>
                 <CardTitle>Verifying your email</CardTitle>
                 <CardDescription>Please wait while we verify your email address...</CardDescription>
@@ -124,7 +124,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <CheckCircle2 className="icon-xl text-emerald-500" aria-hidden="true" />
                 </div>
                 <CardTitle className="text-emerald-600 dark:text-emerald-400">Email Verified!</CardTitle>
                 <CardDescription>
@@ -142,7 +142,7 @@ export default function VerifyEmailPage() {
                 <div className="flex flex-col gap-2">
                   <Button onClick={() => router.push('/')} className="w-full gap-2">
                     Go to Dashboard
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="icon-sm" aria-hidden="true" />
                   </Button>
                   <Button variant="outline" onClick={() => router.push('/profile')} className="w-full">
                     Complete Your Profile
@@ -156,7 +156,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-                  <XCircle className="h-8 w-8 text-destructive" />
+                  <XCircle className="icon-xl text-destructive" aria-hidden="true" />
                 </div>
                 <CardTitle className="text-destructive">Verification Failed</CardTitle>
                 <CardDescription>
@@ -177,7 +177,7 @@ export default function VerifyEmailPage() {
                   <p className="text-sm font-medium text-foreground mb-3">Request a new verification link:</p>
                   {resendSent ? (
                     <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
+                      <CheckCircle2 className="icon-md text-emerald-500 mx-auto mb-2" aria-hidden="true" />
                       <p className="text-sm text-emerald-600 dark:text-emerald-400">
                         Verification email sent! Check your inbox.
                       </p>
@@ -197,9 +197,9 @@ export default function VerifyEmailPage() {
                       </div>
                       <Button type="submit" className="w-full gap-2" disabled={isResending}>
                         {isResending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                         ) : (
-                          <Mail className="h-4 w-4" />
+                          <Mail className="icon-sm" aria-hidden="true" />
                         )}
                         Resend Verification Email
                       </Button>
@@ -214,7 +214,7 @@ export default function VerifyEmailPage() {
             <>
               <CardHeader className="text-center pb-2">
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10">
-                  <Mail className="h-8 w-8 text-amber-500" />
+                  <Mail className="icon-xl text-amber-500" aria-hidden="true" />
                 </div>
                 <CardTitle>Verify Your Email</CardTitle>
                 <CardDescription>
@@ -224,7 +224,7 @@ export default function VerifyEmailPage() {
               <CardContent className="pt-4 space-y-4">
                 {resendSent ? (
                   <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-center">
-                    <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
+                    <CheckCircle2 className="icon-lg text-emerald-500 mx-auto mb-2" aria-hidden="true" />
                     <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-1">
                       Verification email sent!
                     </p>
@@ -248,9 +248,9 @@ export default function VerifyEmailPage() {
                     </div>
                     <Button type="submit" className="w-full gap-2" disabled={isResending}>
                       {isResending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                       ) : (
-                        <Mail className="h-4 w-4" />
+                        <Mail className="icon-sm" aria-hidden="true" />
                       )}
                       Send Verification Email
                     </Button>

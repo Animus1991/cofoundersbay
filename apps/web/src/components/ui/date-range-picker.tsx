@@ -58,7 +58,7 @@ function CalendarMonth({
     <div className="p-3 min-w-[240px]">
       <div className="grid grid-cols-7 mb-1">
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
-          <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
+          <div key={d} className="text-center text-2xs font-medium text-muted-foreground py-1">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -180,13 +180,13 @@ export function DateRangePicker({
           open && 'ring-2 ring-ring',
         )}
       >
-        <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+        <CalendarIcon className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
         <span className={cn('flex-1 truncate', !display && 'text-muted-foreground')}>
           {display ?? placeholder}
         </span>
         {display && (
           <button type="button" onClick={clear} className="ml-1 p-0.5 rounded hover:bg-muted">
-            <X className="h-3.5 w-3.5 text-muted-foreground" />
+            <X className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
           </button>
         )}
       </button>
@@ -214,11 +214,11 @@ export function DateRangePicker({
             <div>
               <div className="flex items-center justify-between px-3 pt-3 pb-1">
                 <button type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent">
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="icon-sm" aria-hidden="true" />
                 </button>
                 <span className="text-sm font-medium">{format(leftMonth, 'MMMM yyyy')}</span>
                 <button type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent sm:invisible">
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="icon-sm" aria-hidden="true" />
                 </button>
               </div>
               <CalendarMonth
@@ -234,11 +234,11 @@ export function DateRangePicker({
             <div className="hidden sm:block border-l border-border/60">
               <div className="flex items-center justify-between px-3 pt-3 pb-1">
                 <button type="button" onClick={() => setLeftMonth(subMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent invisible">
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="icon-sm" aria-hidden="true" />
                 </button>
                 <span className="text-sm font-medium">{format(rightMonth, 'MMMM yyyy')}</span>
                 <button type="button" onClick={() => setLeftMonth(addMonths(leftMonth, 1))} className="p-1 rounded hover:bg-accent">
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="icon-sm" aria-hidden="true" />
                 </button>
               </div>
               <CalendarMonth

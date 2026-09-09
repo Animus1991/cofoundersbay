@@ -52,7 +52,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
       <>
         <div className="flex items-start gap-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/20">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <ShieldCheck className="icon-md text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
           </div>
           <div className="flex-1">
             <h4 className="font-medium text-emerald-700 dark:text-emerald-400">
@@ -67,7 +67,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
             onClick={() => setShowDisable(true)}
             className="shrink-0"
           >
-            <ShieldOff className="mr-2 h-4 w-4" />
+            <ShieldOff className="mr-2 icon-sm" aria-hidden="true" />
             Disable
           </Button>
         </div>
@@ -83,7 +83,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
 
             <div className="space-y-4 py-4">
               <div className="flex items-start gap-3 rounded-lg bg-amber-500/10 p-3 text-sm text-amber-700 dark:text-amber-400">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
+                <AlertTriangle className="icon-md shrink-0" aria-hidden="true" />
                 <p>
                   Disabling 2FA will make your account less secure. You&apos;ll only need your
                   password to sign in.
@@ -126,7 +126,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
     <>
       <div className="flex items-start gap-4 rounded-lg border p-4">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary">
-          <Shield className="h-5 w-5 text-muted-foreground" />
+          <Shield className="icon-md text-muted-foreground" aria-hidden="true" />
         </div>
         <div className="flex-1">
           <h4 className="font-medium">Two-factor authentication is disabled</h4>
@@ -136,7 +136,7 @@ export function TwoFactorManagement({ isEnabled, onStatusChange }: TwoFactorMana
           </p>
         </div>
         <Button onClick={() => setShowSetup(true)} className="shrink-0">
-          <Shield className="mr-2 h-4 w-4" />
+          <Shield className="mr-2 icon-sm" aria-hidden="true" />
           Enable
         </Button>
       </div>

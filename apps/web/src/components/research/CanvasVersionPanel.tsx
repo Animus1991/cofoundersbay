@@ -134,23 +134,23 @@ function DiffChips({ diff }: { diff: CanvasDiff }) {
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {diff.added.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <Plus className="h-2.5 w-2.5" />{diff.added.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <Plus className="h-2.5 w-2.5" aria-hidden="true" />{diff.added.length}
         </span>
       )}
       {diff.removed.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-          <Minus className="h-2.5 w-2.5" />{diff.removed.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+          <Minus className="h-2.5 w-2.5" aria-hidden="true" />{diff.removed.length}
         </span>
       )}
       {diff.modified.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-          <Edit2 className="h-2.5 w-2.5" />{diff.modified.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+          <Edit2 className="h-2.5 w-2.5" aria-hidden="true" />{diff.modified.length}
         </span>
       )}
       {diff.moved.length > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-          <Move className="h-2.5 w-2.5" />{diff.moved.length}
+        <span className="inline-flex items-center gap-0.5 text-2xs px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+          <Move className="h-2.5 w-2.5" aria-hidden="true" />{diff.moved.length}
         </span>
       )}
     </div>
@@ -173,7 +173,7 @@ function DiffDetailDialog({
       <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <GitCommit className="h-4 w-4 text-primary" />
+            <GitCommit className="icon-sm text-primary" aria-hidden="true" />
             Diff: {labelA} → {labelB}
           </DialogTitle>
           <DialogDescription className="text-xs">
@@ -189,11 +189,11 @@ function DiffDetailDialog({
           {diff.added.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide flex items-center gap-1">
-                <Plus className="h-3 w-3" /> Added ({diff.added.length})
+                <Plus className="icon-2xs" aria-hidden="true" /> Added ({diff.added.length})
               </p>
               {diff.added.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-emerald-50 border border-emerald-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -203,11 +203,11 @@ function DiffDetailDialog({
           {diff.removed.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-red-700 uppercase tracking-wide flex items-center gap-1">
-                <Minus className="h-3 w-3" /> Removed ({diff.removed.length})
+                <Minus className="icon-2xs" aria-hidden="true" /> Removed ({diff.removed.length})
               </p>
               {diff.removed.map((n) => (
                 <div key={n.id} className="flex items-center gap-2 p-1.5 rounded bg-red-50 border border-red-100">
-                  <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                  <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                   <span className="text-xs truncate line-through text-muted-foreground">{n.title ?? '(untitled)'}</span>
                 </div>
               ))}
@@ -217,16 +217,16 @@ function DiffDetailDialog({
           {diff.modified.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide flex items-center gap-1">
-                <Edit2 className="h-3 w-3" /> Modified ({diff.modified.length})
+                <Edit2 className="icon-2xs" aria-hidden="true" /> Modified ({diff.modified.length})
               </p>
               {diff.modified.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-amber-50 border border-amber-100 space-y-0.5">
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-[10px] capitalize">{n.type}</Badge>
+                    <Badge variant="secondary" className="text-2xs capitalize">{n.type}</Badge>
                     <span className="text-xs font-medium truncate">{n.title ?? '(untitled)'}</span>
                   </div>
                   {n.changes.map((c, i) => (
-                    <div key={i} className="text-[10px] text-muted-foreground pl-2">
+                    <div key={i} className="text-2xs text-muted-foreground pl-2">
                       <span className="font-medium capitalize">{c.field}:</span>{' '}
                       <span className="line-through">{String(c.before ?? '–').slice(0, 30)}</span>
                       {' → '}
@@ -241,12 +241,12 @@ function DiffDetailDialog({
           {diff.moved.length > 0 && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide flex items-center gap-1">
-                <Move className="h-3 w-3" /> Moved ({diff.moved.length})
+                <Move className="icon-2xs" aria-hidden="true" /> Moved ({diff.moved.length})
               </p>
               {diff.moved.map((n) => (
                 <div key={n.id} className="p-1.5 rounded bg-blue-50 border border-blue-100">
                   <span className="text-xs truncate">{n.title ?? '(untitled)'}</span>
-                  <div className="text-[10px] text-muted-foreground">
+                  <div className="text-2xs text-muted-foreground">
                     ({Math.round(n.before.posX)}, {Math.round(n.before.posY)}) → ({Math.round(n.after.posX)}, {Math.round(n.after.posY)})
                   </div>
                 </div>
@@ -257,15 +257,15 @@ function DiffDetailDialog({
           {(diff.edgeDiff.added.length > 0 || diff.edgeDiff.removed.length > 0) && (
             <div className="space-y-1">
               <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-1">
-                <ArrowRight className="h-3 w-3" /> Edges
+                <ArrowRight className="icon-2xs" aria-hidden="true" /> Edges
               </p>
               {diff.edgeDiff.added.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-emerald-50 border border-emerald-100 text-emerald-700">
                   + edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
               {diff.edgeDiff.removed.map((e) => (
-                <div key={e.id} className="text-[10px] p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
+                <div key={e.id} className="text-2xs p-1.5 rounded bg-red-50 border border-red-100 text-red-700">
                   − edge {e.fromNodeId.slice(0, 6)}→{e.toNodeId.slice(0, 6)}
                 </div>
               ))}
@@ -297,7 +297,7 @@ function RestoreConfirmDialog({
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertTriangle className="icon-sm text-amber-500" aria-hidden="true" />
             Restore canvas?
           </DialogTitle>
           <DialogDescription className="text-sm">
@@ -308,7 +308,7 @@ function RestoreConfirmDialog({
         <DialogFooter className="flex gap-2 justify-end">
           <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}>Cancel</Button>
           <Button variant="destructive" size="sm" onClick={onConfirm} disabled={isPending}>
-            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RotateCcw className="h-3.5 w-3.5 mr-1" />}
+            {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" aria-hidden="true" /> : <RotateCcw className="h-3.5 w-3.5 mr-1" aria-hidden="true" />}
             Restore
           </Button>
         </DialogFooter>
@@ -397,7 +397,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Camera className="h-3.5 w-3.5" aria-hidden="true" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Captures all nodes and connectors.</p>
@@ -406,7 +406,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
       {/* Refresh */}
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
         </Button>
       </div>
 
@@ -416,7 +416,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : snapshots.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <History className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <History className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
             <p className="text-sm">No snapshots yet</p>
             <p className="text-xs mt-1">Save your first snapshot to track history.</p>
           </div>
@@ -444,7 +444,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                             <div className="flex items-center gap-1">
                               <Avatar className="h-3.5 w-3.5">
                                 <AvatarImage src={snap.createdBy.avatarUrl} />
-                                <AvatarFallback className="text-[8px]">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-2xs">{snap.createdBy.displayName.charAt(0)}</AvatarFallback>
                               </Avatar>
                               <span className="text-xs text-muted-foreground">{snap.createdBy.displayName}</span>
                             </div>
@@ -454,10 +454,10 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="Preview" onClick={() => handlePreview(snap)}>
-                        <Eye className="h-3.5 w-3.5" />
+                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(snap)}>
-                        <RotateCcw className="h-3.5 w-3.5" />
+                        <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -474,15 +474,15 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-sm">
-                <History className="h-4 w-4 text-primary" />
+                <History className="icon-sm text-primary" aria-hidden="true" />
                 {snapshots.find((s) => s.id === previewId)?.label ?? 'Snapshot'}
               </DialogTitle>
             </DialogHeader>
             <div className="py-2 space-y-3">
               <div className="flex gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" />{previewData.nodeCount} nodes</span>
+                <span className="flex items-center gap-1.5"><Layers className="h-3.5 w-3.5" aria-hidden="true" />{previewData.nodeCount} nodes</span>
                 {Array.isArray(previewData.connectors) && (
-                  <span className="flex items-center gap-1.5"><ChevronRight className="h-3.5 w-3.5" />{(previewData.connectors as unknown[]).length} connectors</span>
+                  <span className="flex items-center gap-1.5"><ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />{(previewData.connectors as unknown[]).length} connectors</span>
                 )}
               </div>
               {Array.isArray(previewData.nodeData) && previewData.nodeData.length > 0 && (
@@ -501,7 +501,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
             <DialogFooter className="gap-2">
               <Button variant="outline" size="sm" onClick={() => { setPreviewId(null); setPreviewData(null); }}>Close</Button>
               <Button variant="default" size="sm" onClick={() => { setRestoreTarget(snapshots.find((s) => s.id === previewId) ?? null); setPreviewId(null); setPreviewData(null); }}>
-                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Restore this
+                <RotateCcw className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> Restore this
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -582,7 +582,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
             className="text-sm h-8"
           />
           <Button size="sm" className="h-8 shrink-0" onClick={handleCreate} disabled={creating}>
-            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <GitCommit className="h-3.5 w-3.5" />}
+            {creating ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <GitCommit className="h-3.5 w-3.5" aria-hidden="true" />}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">Records a diff-tracked version with change summary.</p>
@@ -590,7 +590,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
         </Button>
       </div>
 
@@ -599,7 +599,7 @@ function VersionsTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
         ) : versions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitCommit className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <GitCommit className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
             <p className="text-sm">No versions yet</p>
             <p className="text-xs mt-1">Commit your first version to track diffs.</p>
           </div>
@@ -615,8 +615,8 @@ function VersionsTab({ boardId }: { boardId: string }) {
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium truncate">{v.label ?? 'Version'}</p>
                   {v.branchName && (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
-                      <GitBranch className="h-2.5 w-2.5 mr-0.5" />{v.branchName}
+                    <Badge variant="outline" className="text-2xs px-1.5 py-0 h-4 shrink-0">
+                      <GitBranch className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{v.branchName}
                     </Badge>
                   )}
                 </div>
@@ -639,11 +639,11 @@ function VersionsTab({ boardId }: { boardId: string }) {
               <div className="flex items-center gap-1 shrink-0">
                 {v.diffData && !v.diffData.isEmpty && (
                   <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100" title="View diff" onClick={() => setDiffVersion(v)}>
-                    <Eye className="h-3.5 w-3.5" />
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 )}
                 <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-60 hover:opacity-100 text-amber-600 hover:text-amber-700" title="Restore" onClick={() => setRestoreTarget(v)}>
-                  <RotateCcw className="h-3.5 w-3.5" />
+                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -730,7 +730,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">Manage isolated canvas branches</p>
         <Button size="sm" variant="outline" className="h-7 px-2 text-xs gap-1" onClick={() => setShowCreate(!showCreate)}>
-          <Plus className="h-3 w-3" />New
+          <Plus className="icon-2xs" aria-hidden="true" />New
         </Button>
       </div>
 
@@ -752,7 +752,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setShowCreate(false); setName(''); setDesc(''); }}>Cancel</Button>
             <Button size="sm" className="h-7 text-xs" onClick={handleCreate} disabled={creating || !name.trim()}>
-              {creating ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <GitBranch className="h-3 w-3 mr-1" />}
+              {creating ? <Loader2 className="icon-2xs animate-spin mr-1" aria-hidden="true" /> : <GitBranch className="icon-2xs mr-1" aria-hidden="true" />}
               Create
             </Button>
           </div>
@@ -761,7 +761,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
 
       <div className="flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => refetch()} disabled={isFetching}>
-          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} />Refresh
+          <RefreshCw className={cn('h-3 w-3 mr-1.5', isFetching && 'animate-spin')} aria-hidden="true" />Refresh
         </Button>
       </div>
 
@@ -770,20 +770,20 @@ function BranchesTab({ boardId }: { boardId: string }) {
           <div className="space-y-3">{[1, 2].map((i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}</div>
         ) : branches.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <GitBranch className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <GitBranch className="icon-xl mx-auto mb-2 opacity-30" aria-hidden="true" />
             <p className="text-sm">No branches yet</p>
             <p className="text-xs mt-1">Create a branch to experiment safely.</p>
           </div>
         ) : branches.map((b) => (
           <div key={b.id} className="flex items-start gap-3 p-3 rounded-lg border border-border/60 bg-card hover:bg-muted/30 transition-colors">
             <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 border bg-violet-50 border-violet-200 text-violet-600">
-              <GitBranch className="h-3.5 w-3.5" />
+              <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p className="text-sm font-medium truncate">{b.name}</p>
-                {b.isDefault && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">default</Badge>}
-                <Badge variant="outline" className={cn('text-[10px] px-1.5 py-0 h-4', branchStatusColor(b.status))}>
+                {b.isDefault && <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4">default</Badge>}
+                <Badge variant="outline" className={cn('text-2xs px-1.5 py-0 h-4', branchStatusColor(b.status))}>
                   {b.status}
                 </Badge>
               </div>
@@ -808,7 +808,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                     disabled={archiveMutation.isPending}
                     onClick={() => archiveMutation.mutate({ branchId: b.id })}
                   >
-                    <Archive className="h-3.5 w-3.5" />
+                    <Archive className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 )}
                 <Button
@@ -817,7 +817,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
                   title="Delete"
                   onClick={() => setDeletingId(b.id)}
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
             )}
@@ -829,7 +829,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="h-4 w-4 text-destructive" />Delete branch?
+              <AlertTriangle className="icon-sm text-destructive" aria-hidden="true" />Delete branch?
             </DialogTitle>
             <DialogDescription className="text-sm">
               All versions on this branch will be deleted. This cannot be undone.
@@ -842,7 +842,7 @@ function BranchesTab({ boardId }: { boardId: string }) {
               disabled={deleteMutation.isPending}
               onClick={() => deletingId && deleteMutation.mutate({ branchId: deletingId })}
             >
-              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5 mr-1" aria-hidden="true" />}
               Delete
             </Button>
           </DialogFooter>
@@ -867,7 +867,7 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
       <SheetContent className="w-full sm:max-w-md flex flex-col gap-0 p-0">
         <SheetHeader className="px-4 pt-4 pb-3 border-b border-border/60">
           <SheetTitle className="flex items-center gap-2 text-base">
-            <History className="h-4 w-4 text-primary" />
+            <History className="icon-sm text-primary" aria-hidden="true" />
             Canvas History
           </SheetTitle>
           <SheetDescription className="text-xs">
@@ -878,13 +878,13 @@ export function CanvasVersionPanel({ open, onClose, boardId, boardTitle }: Canva
         <Tabs defaultValue="snapshots" className="flex flex-col flex-1 overflow-hidden px-4 pt-3">
           <TabsList className="grid grid-cols-3 h-8 mb-3 shrink-0">
             <TabsTrigger value="snapshots" className="text-xs flex items-center gap-1">
-              <Camera className="h-3 w-3" />Snapshots
+              <Camera className="icon-2xs" aria-hidden="true" />Snapshots
             </TabsTrigger>
             <TabsTrigger value="versions" className="text-xs flex items-center gap-1">
-              <GitCommit className="h-3 w-3" />Versions
+              <GitCommit className="icon-2xs" aria-hidden="true" />Versions
             </TabsTrigger>
             <TabsTrigger value="branches" className="text-xs flex items-center gap-1">
-              <GitBranch className="h-3 w-3" />Branches
+              <GitBranch className="icon-2xs" aria-hidden="true" />Branches
             </TabsTrigger>
           </TabsList>
 

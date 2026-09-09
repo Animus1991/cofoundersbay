@@ -67,11 +67,11 @@ function ProgramCard({ program }: { program: Program }) {
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <Badge variant="secondary" className="text-xs">{program.type}</Badge>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {program.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {program.startDate} - {program.endDate}
               </span>
             </div>
@@ -88,22 +88,22 @@ function ProgramCard({ program }: { program: Program }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link href={`/tenant/programs/${program.id}`}>
-                  <Eye className="mr-2 icon-sm" />
+                  <Eye className="mr-2 icon-sm" aria-hidden="true" />
                   View Details
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 icon-sm" />
+                <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Program
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 icon-sm" />
+                <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -200,14 +200,14 @@ export default function TenantProgramsPage() {
             </p>
           </div>
           <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
             Create Program
           </Button>
         </div>
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search programs..."
             value={search}
@@ -258,7 +258,7 @@ export default function TenantProgramsPage() {
           {filteredPrograms.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No programs found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your search or create a new program

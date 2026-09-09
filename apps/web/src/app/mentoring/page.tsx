@@ -149,25 +149,25 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
               <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary transition-colors">
                 {mentor.displayName}
               </Link>
-              {mentor.isVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" />}
+              {mentor.isVerified && <BadgeCheck className="icon-sm text-primary shrink-0" aria-hidden="true" />}
               {mentor.isFeatured && (
-                <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0.5">
-                  <TrendingUp className="h-2.5 w-2.5" />Featured
+                <Badge variant="secondary" className="gap-1 text-2xs px-1.5 py-0.5">
+                  <TrendingUp className="h-2.5 w-2.5" aria-hidden="true" />Featured
                 </Badge>
               )}
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-0.5">
-                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" aria-hidden="true" />
                 <span className="font-medium text-foreground">{mentor.rating > 0 ? mentor.rating.toFixed(1) : 'New'}</span>
                 {mentor.totalSessions > 0 && <span>({mentor.totalSessions})</span>}
               </span>
               {mentor.location && (
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{mentor.location}</span>
+                <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{mentor.location}</span>
               )}
               {mentor.isRemote && (
-                <span className="flex items-center gap-1"><Globe className="h-3 w-3 text-blue-500" />Remote</span>
+                <span className="flex items-center gap-1"><Globe className="icon-2xs text-blue-500" aria-hidden="true" />Remote</span>
               )}
             </div>
           </div>
@@ -182,7 +182,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
             )}>
               {matchPct}%
             </div>
-            <span className="text-[9px] text-muted-foreground">match</span>
+            <span className="text-2xs text-muted-foreground">match</span>
           </div>
         </div>
 
@@ -191,10 +191,10 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         {/* Expertise tags */}
         <div className="flex flex-wrap gap-1">
           {mentor.expertise.slice(0, 4).map((skill) => (
-            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{skill}</span>
+            <span key={skill} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">{skill}</span>
           ))}
           {mentor.expertise.length > 4 && (
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">+{mentor.expertise.length - 4}</span>
+            <span className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">+{mentor.expertise.length - 4}</span>
           )}
         </div>
 
@@ -203,17 +203,17 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           <div className="flex items-center gap-2">
             {mentor.hourlyRate ? (
               <span className="flex items-center gap-0.5 text-sm font-semibold text-foreground">
-                <DollarSign className="h-3.5 w-3.5 text-primary" />{mentor.hourlyRate}/hr
+                <DollarSign className="h-3.5 w-3.5 text-primary" aria-hidden="true" />{mentor.hourlyRate}/hr
               </span>
             ) : (
-              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
+              <Badge variant="outline" className="text-2xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">Free</Badge>
             )}
-            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium', availCfg.bg, availCfg.color)}>
+            <span className={cn('flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-medium', availCfg.bg, availCfg.color)}>
               {availCfg.label}
             </span>
           </div>
           <Button size="sm" onClick={onBook} className="gap-1.5 h-8 text-xs">
-            <Calendar className="h-3.5 w-3.5" />Book
+            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />Book
           </Button>
         </div>
       </CardContent>
@@ -353,7 +353,7 @@ function BookingModal({
               Cancel
             </Button>
             <Button type="submit" disabled={submitting} className="gap-2">
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {submitting && <Loader2 className="icon-sm animate-spin" aria-hidden="true" />}
               Request Booking
             </Button>
           </DialogFooter>
@@ -438,17 +438,17 @@ function BookingCard({
 
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
+                <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                 {start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                 {start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                 {' – '}
                 {end.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
               </span>
               <span className="flex items-center gap-1">
-                <Video className="h-3.5 w-3.5" />
+                <Video className="h-3.5 w-3.5" aria-hidden="true" />
                 {booking.meetingType}
               </span>
             </div>
@@ -466,9 +466,9 @@ function BookingCard({
                   onClick={() => setShowNotes(!showNotes)}
                   className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                 >
-                  <FileText className="h-3.5 w-3.5" />
+                  <FileText className="h-3.5 w-3.5" aria-hidden="true" />
                   Session Notes & AI Summary
-                  {showNotes ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  {showNotes ? <ChevronUp className="icon-2xs" aria-hidden="true" /> : <ChevronDown className="icon-2xs" aria-hidden="true" />}
                 </button>
                 {showNotes && (
                   <div className="mt-2 space-y-2">
@@ -486,13 +486,13 @@ function BookingCard({
                       onClick={handleSummarize}
                       disabled={summarizing || !sessionNotes.trim()}
                     >
-                      {summarizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {summarizing ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />}
                       {summarizing ? 'Summarizing...' : 'Summarize with AI'}
                     </Button>
                     {aiSummary && (
                       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
                         <div className="flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                           <span className="text-xs font-semibold text-primary">AI Summary</span>
                         </div>
                         <p className="text-xs text-foreground leading-relaxed">{aiSummary.summary}</p>
@@ -502,7 +502,7 @@ function BookingCard({
                             <ul className="space-y-0.5">
                               {aiSummary.actionItems.map((item, i) => (
                                 <li key={i} className="flex items-start gap-1 text-xs text-foreground">
-                                  <CheckCircle className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                                  <CheckCircle className="icon-2xs text-primary mt-0.5 shrink-0" aria-hidden="true" />
                                   {item}
                                 </li>
                               ))}
@@ -533,7 +533,7 @@ function BookingCard({
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="icon-2xs" aria-hidden="true" />
                 Join meeting
               </a>
             )}
@@ -544,12 +544,12 @@ function BookingCard({
               {isMentor && booking.status === 'requested' && (
                 <>
                   <Button size="sm" className="gap-1" onClick={onConfirm} disabled={isActing}>
-                    {isActing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                    {isActing ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <CheckCircle className="h-3.5 w-3.5" aria-hidden="true" />}
                     Confirm
                   </Button>
                   <Button size="sm" variant="ghost" onClick={onDecline} disabled={isActing}
                     className="text-muted-foreground hover:text-destructive">
-                    <XCircle className="h-3.5 w-3.5" />
+                    <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 </>
               )}
@@ -711,11 +711,11 @@ export default function MentoringPage() {
       <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-4">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="find" className="gap-2">
-            <Search className="h-4 w-4" />
+            <Search className="icon-sm" aria-hidden="true" />
             Find Mentors
           </TabsTrigger>
           <TabsTrigger value="sessions" className="gap-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="icon-sm" aria-hidden="true" />
             My Sessions
             {upcomingCount > 0 && (
               <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
@@ -742,7 +742,7 @@ export default function MentoringPage() {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                      <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -752,7 +752,7 @@ export default function MentoringPage() {
 
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search mentors by name, expertise, or bio..."
                 value={searchQuery}
@@ -763,7 +763,7 @@ export default function MentoringPage() {
 
             {/* Price filter */}
             <div className="flex items-center gap-2">
-              <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
               {PRICE_FILTERS.map((pf) => (
                 <button
                   key={pf}
@@ -809,7 +809,7 @@ export default function MentoringPage() {
               {featuredMentors.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Award className="h-4 w-4 text-primary" />
+                    <Award className="icon-sm text-primary" aria-hidden="true" />
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       Featured Mentors
                     </h2>
@@ -850,7 +850,7 @@ export default function MentoringPage() {
           <Tabs value={sessionsTab} onValueChange={(v) => setSessionsTab(v as typeof sessionsTab)}>
             <TabsList>
               <TabsTrigger value="upcoming" className="gap-2">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 Upcoming
                 {upcomingCount > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
@@ -859,7 +859,7 @@ export default function MentoringPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="past" className="gap-2">
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="icon-sm" aria-hidden="true" />
                 Past
               </TabsTrigger>
               <TabsTrigger value="all">All</TabsTrigger>
@@ -881,7 +881,7 @@ export default function MentoringPage() {
                     action={
                       t === 'upcoming' ? (
                         <Button variant="secondary" className="gap-2" onClick={() => setMainTab('find')}>
-                          <GraduationCap className="h-4 w-4" />
+                          <GraduationCap className="icon-sm" aria-hidden="true" />
                           Find a mentor
                         </Button>
                       ) : undefined

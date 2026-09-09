@@ -40,7 +40,7 @@ function Section({
           <Icon className="w-4 h-4" />
           {title}
         </div>
-        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+        {open ? <ChevronUp className="icon-sm text-gray-400" aria-hidden="true" /> : <ChevronDown className="icon-sm text-gray-400" aria-hidden="true" />}
       </button>
       {open && <div className="p-5 bg-white">{children}</div>}
     </div>
@@ -113,7 +113,7 @@ export function ScoreInspector() {
       {/* Search bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-gray-400" aria-hidden="true" />
           <input
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
@@ -169,14 +169,14 @@ export function ScoreInspector() {
 
             {/* Human summary */}
             <div className="mt-4 bg-indigo-50 rounded-lg px-4 py-3 text-sm text-indigo-800">
-              <Shield className="inline w-3.5 h-3.5 mr-1 opacity-70" />
+              <Shield className="inline w-3.5 h-3.5 mr-1 opacity-70" aria-hidden="true" />
               {report.humanSummary}
             </div>
 
             {/* Suppression warning */}
             {report.suppressedUntil && (
               <div className="mt-3 bg-rose-50 border border-rose-200 rounded-lg px-4 py-2.5 text-sm text-rose-700 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                 Burst suppression active until{' '}
                 <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString()}</span>
               </div>
@@ -185,7 +185,7 @@ export function ScoreInspector() {
             {/* Open flags warning */}
             {pendingFlags.length > 0 && (
               <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-700 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                 {pendingFlags.length} open abuse flag{pendingFlags.length > 1 ? 's' : ''} pending review
               </div>
             )}
@@ -264,7 +264,7 @@ export function ScoreInspector() {
                     key={b.badgeId}
                     className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-3 py-1.5 text-sm"
                   >
-                    <Award className="w-3.5 h-3.5 text-amber-500" />
+                    <Award className="w-3.5 h-3.5 text-amber-500" aria-hidden="true" />
                     <span className="font-medium text-gray-800">{b.name}</span>
                     <span className="text-xs text-gray-400">· {b.category}</span>
                     {!b.seen && (
@@ -375,7 +375,7 @@ export function ScoreInspector() {
 
       {!report && !loading && !error && (
         <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-          <Search className="w-10 h-10 mb-3 opacity-30" />
+          <Search className="w-10 h-10 mb-3 opacity-30" aria-hidden="true" />
           <p className="text-sm">Enter a user ID above to inspect their scoring profile.</p>
         </div>
       )}

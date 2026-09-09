@@ -32,7 +32,7 @@ export function CollaboratorsBar({ collaborators, isConnected, className }: Coll
             {collab.avatarUrl ? (
               <img src={collab.avatarUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-[10px] font-bold" style={{ color: collab.color }}>
+              <span className="text-2xs font-bold" style={{ color: collab.color }}>
                 {(collab.displayName ?? '?')[0].toUpperCase()}
               </span>
             )}
@@ -40,7 +40,7 @@ export function CollaboratorsBar({ collaborators, isConnected, className }: Coll
         ))}
         {collaborators.length > 5 && (
           <div className="w-7 h-7 rounded-full border-2 border-background bg-secondary flex items-center justify-center">
-            <span className="text-[9px] font-semibold text-muted-foreground">+{collaborators.length - 5}</span>
+            <span className="text-2xs font-semibold text-muted-foreground">+{collaborators.length - 5}</span>
           </div>
         )}
       </div>
@@ -88,7 +88,7 @@ export function LiveCursors({ collaborators, pan, zoom }: LiveCursorsProps) {
               </svg>
               {/* Name label */}
               <div
-                className="absolute top-4 left-2 whitespace-nowrap text-[10px] font-semibold text-white px-1.5 py-0.5 rounded"
+                className="absolute top-4 left-2 whitespace-nowrap text-2xs font-semibold text-white px-1.5 py-0.5 rounded"
                 style={{ backgroundColor: collab.color }}
               >
                 {collab.displayName ?? 'Collaborator'}

@@ -50,7 +50,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-        <FileText className="h-4 w-4 text-muted-foreground" />
+        <FileText className="icon-sm text-muted-foreground" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           className="shrink-0"
         >
           <Button aria-label="Download" variant="ghost" size="icon" className="h-8 w-8">
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </a>
       )}
@@ -144,16 +144,16 @@ export default function UserBillingPage() {
   const PlanIcon = PLAN_ICONS[sub?.plan?.name ?? 'free'] ?? Crown;
 
   const statusIconMap: Record<string, React.ReactElement> = {
-    active: <CheckCircle2 className="h-4 w-4 text-green-600" />,
-    trialing: <Clock className="h-4 w-4 text-blue-600" />,
-    past_due: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    canceled: <XCircle className="h-4 w-4 text-gray-500" />,
-    incomplete: <AlertTriangle className="h-4 w-4 text-amber-600" />,
-    incomplete_expired: <XCircle className="h-4 w-4 text-gray-500" />,
-    paused: <Clock className="h-4 w-4 text-muted-foreground" />,
-    unpaid: <AlertTriangle className="h-4 w-4 text-red-600" />,
+    active: <CheckCircle2 className="icon-sm text-green-600" aria-hidden="true" />,
+    trialing: <Clock className="icon-sm text-blue-600" aria-hidden="true" />,
+    past_due: <AlertTriangle className="icon-sm text-amber-600" aria-hidden="true" />,
+    canceled: <XCircle className="icon-sm text-gray-500" aria-hidden="true" />,
+    incomplete: <AlertTriangle className="icon-sm text-amber-600" aria-hidden="true" />,
+    incomplete_expired: <XCircle className="icon-sm text-gray-500" aria-hidden="true" />,
+    paused: <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />,
+    unpaid: <AlertTriangle className="icon-sm text-red-600" aria-hidden="true" />,
   };
-  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="h-4 w-4 text-muted-foreground" />;
+  const statusIcon = statusIconMap[sub?.status ?? ''] ?? <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />;
 
   return (
     <AppShell
@@ -169,7 +169,7 @@ export default function UserBillingPage() {
           <Link href="/pricing">
             <Button variant="outline" size="sm" className="gap-2">
               View plans
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </Link>
         </div>
@@ -185,7 +185,7 @@ export default function UserBillingPage() {
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 <span className="text-sm">Loading subscription…</span>
               </div>
             ) : sub ? (
@@ -222,7 +222,7 @@ export default function UserBillingPage() {
 
                 {sub.cancelAtPeriodEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                     Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
                     Reactivate in the billing portal to continue.
                   </div>
@@ -230,14 +230,14 @@ export default function UserBillingPage() {
 
                 {sub.status === 'trialing' && sub.trialEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-blue-500/10 border border-blue-500/20 p-3 text-sm text-blue-700">
-                    <Clock className="h-4 w-4 shrink-0" />
+                    <Clock className="icon-sm shrink-0" aria-hidden="true" />
                     Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
                   </div>
                 )}
 
                 {sub.status === 'past_due' && (
                   <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                     Payment failed. Please update your payment method to avoid service interruption.
                   </div>
                 )}
@@ -250,14 +250,14 @@ export default function UserBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />}
                     Manage payment &amp; billing
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="icon-2xs" aria-hidden="true" />
                   </Button>
                   {(sub.plan?.name === 'free' || !sub) && (
                     <Link href="/pricing">
                       <Button size="sm" className="gap-2">
-                        <Crown className="h-3.5 w-3.5" />
+                        <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                         Upgrade plan
                       </Button>
                     </Link>
@@ -269,7 +269,7 @@ export default function UserBillingPage() {
                 <p className="text-sm text-muted-foreground">You are on the free plan.</p>
                 <Link href="/pricing">
                   <Button size="sm" className="gap-2">
-                    <Crown className="h-3.5 w-3.5" />
+                    <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                     Upgrade to Pro
                   </Button>
                 </Link>
@@ -290,7 +290,7 @@ export default function UserBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" aria-hidden="true" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}
@@ -396,7 +396,7 @@ export default function UserBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
                     Save contact
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -414,12 +414,12 @@ export default function UserBillingPage() {
           <CardContent className="p-0">
             {invoicesLoading ? (
               <div className="flex items-center justify-center p-8 gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 <span className="text-sm">Loading invoices…</span>
               </div>
             ) : invoices.length === 0 ? (
               <div className="p-8 text-center">
-                <FileText className="h-8 w-8 mx-auto text-muted-foreground/40 mb-2" />
+                <FileText className="icon-xl mx-auto text-muted-foreground/40 mb-2" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">No invoices yet</p>
               </div>
             ) : (

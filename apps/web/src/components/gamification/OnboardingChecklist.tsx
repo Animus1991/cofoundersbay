@@ -65,7 +65,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             onClick={() => setExpanded((v) => !v)}
           >
             <div className="rounded-lg bg-primary/10 p-1.5">
-              <Rocket className="h-4 w-4 text-primary" />
+              <Rocket className="icon-sm text-primary" aria-hidden="true" />
             </div>
             <div>
               <CardTitle className="text-sm font-semibold text-foreground">
@@ -76,8 +76,8 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
               </p>
             </div>
             {expanded
-              ? <ChevronDown className="ml-2 h-4 w-4 text-muted-foreground" />
-              : <ChevronRight className="ml-2 h-4 w-4 text-muted-foreground" />
+              ? <ChevronDown className="ml-2 icon-sm text-muted-foreground" aria-hidden="true" />
+              : <ChevronRight className="ml-2 icon-sm text-muted-foreground" aria-hidden="true" />
             }
           </button>
           <button
@@ -85,7 +85,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground/60 hover:text-muted-foreground"
             title="Dismiss checklist"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
         <Progress value={pct} className="h-1.5 mt-2" />
@@ -105,8 +105,8 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             >
               <div className="mt-0.5 shrink-0">
                 {step.done
-                  ? <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                  : <Circle className="h-4 w-4 text-muted-foreground/40" />
+                  ? <CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" />
+                  : <Circle className="icon-sm text-muted-foreground/40" aria-hidden="true" />
                 }
               </div>
               <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
               {!step.done && (
                 <Link href={step.href} className="shrink-0">
                   <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary px-2 hover:bg-primary/10">
-                    {step.cta} <ChevronRight className="h-3 w-3" />
+                    {step.cta} <ChevronRight className="icon-2xs" aria-hidden="true" />
                   </Button>
                 </Link>
               )}

@@ -40,12 +40,12 @@ export function DemoDataToggle({ className }: { className?: string }) {
           >
             {showDemoData ? (
               <>
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Demo</span>
               </>
             ) : (
               <>
-                <EyeOff className="h-3.5 w-3.5" />
+                <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Demo</span>
               </>
             )}
@@ -55,7 +55,7 @@ export function DemoDataToggle({ className }: { className?: string }) {
           <p className="text-xs font-medium mb-1">
             {showDemoData ? 'Sample Data: ON' : 'Sample Data: OFF'}
           </p>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-2xs text-muted-foreground">
             {showDemoData 
               ? 'Click to hide sample data and see empty component states' 
               : 'Click to show sample data across all pages'}

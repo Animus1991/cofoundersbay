@@ -80,7 +80,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                   <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                     {job.title}
                   </h3>
-                  {featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />}
+                  {featured && <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" aria-hidden="true" />}
                 </div>
                 <p className="text-sm text-muted-foreground">{job.creator.displayName}</p>
               </div>
@@ -90,7 +90,7 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
                 )}
                 {job.isRemote && (
                   <Badge variant="outline" className="text-xs border-emerald-500/30 text-emerald-600 bg-emerald-500/10">
-                    <Wifi className="mr-1 h-3 w-3" />Remote
+                    <Wifi className="mr-1 icon-2xs" aria-hidden="true" />Remote
                   </Badge>
                 )}
               </div>
@@ -98,21 +98,21 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {job.location && (
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location}</span>
+                <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{job.location}</span>
               )}
               {!job.location && !job.isRemote && (
-                <span className="flex items-center gap-1"><Building2 className="h-3 w-3" />Location not specified</span>
+                <span className="flex items-center gap-1"><Building2 className="icon-2xs" aria-hidden="true" />Location not specified</span>
               )}
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Full-time</span>
+              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />Full-time</span>
               <span className="flex items-center gap-1 text-emerald-600">
-                <DollarSign className="h-3 w-3" />Equity available
+                <DollarSign className="icon-2xs" aria-hidden="true" />Equity available
               </span>
             </div>
           </div>
 
           <Link href={job.href ?? `/jobs`} className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8">
-              <ExternalLink className="h-3.5 w-3.5" />View
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />View
             </Button>
           </Link>
         </div>
@@ -121,10 +121,10 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-3">
           <div className="flex flex-wrap gap-1.5">
             {['React', 'TypeScript', 'Node.js'].slice(0, 3).map((skill) => (
-              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{skill}</span>
+              <span key={skill} className="rounded-md bg-muted px-2 py-0.5 text-2xs text-muted-foreground">{skill}</span>
             ))}
           </div>
-          <span className="text-[11px] text-muted-foreground">Posted today</span>
+          <span className="text-2xs text-muted-foreground">Posted today</span>
         </div>
       </CardContent>
     </Card>
@@ -219,7 +219,7 @@ function PostJobForm({ onClose, onCreated }: { onClose: () => void; onCreated: (
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Briefcase className="h-4 w-4" />}
+              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Briefcase className="icon-sm" aria-hidden="true" />}
               Post job
             </Button>
         </DialogFooter>
@@ -272,7 +272,7 @@ export default function JobsPage() {
       description="Equity & early-stage opportunities from startups in the CoFounderBay ecosystem"
       actions={
         <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" aria-hidden="true" />
           Post a Role
         </Button>
       }
@@ -294,7 +294,7 @@ export default function JobsPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -305,7 +305,7 @@ export default function JobsPage() {
       {/* Search + filters */}
       <div className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search jobs, roles, companies…"
             value={search}
@@ -315,7 +315,7 @@ export default function JobsPage() {
         </div>
         {/* Role filter chips */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <Filter className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
           {ROLE_FILTERS.map((rf) => {
             const RIcon = rf.icon;
             const isActive = roleFilter === rf.value;
@@ -354,7 +354,7 @@ export default function JobsPage() {
 
       {isError ? (
         <Card><CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+          <AlertCircle className="icon-xl text-muted-foreground" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">Failed to load jobs. Please check your connection.</p>
           <Button variant="secondary" size="sm" onClick={() => refetch()}>Try again</Button>
         </CardContent></Card>
@@ -376,7 +376,7 @@ export default function JobsPage() {
           action={
             !search ? (
               <Button className="gap-2" onClick={() => {}}>
-                <Plus className="h-4 w-4" />
+                <Plus className="icon-sm" aria-hidden="true" />
                 Post a job
               </Button>
             ) : (
@@ -397,7 +397,7 @@ export default function JobsPage() {
           {!search && roleFilter === 'all' && featuredJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="icon-sm text-primary" aria-hidden="true" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Featured Roles</h2>
               </div>
               {featuredJobs.map((job) => <JobCard key={job.id} job={job} featured />)}
@@ -408,7 +408,7 @@ export default function JobsPage() {
           {remoteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <Wifi className="h-4 w-4 text-emerald-500" />
+                <Wifi className="icon-sm text-emerald-500" aria-hidden="true" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Remote Opportunities</h2>
               </div>
               {remoteJobs.map((job) => <JobCard key={job.id} job={job} />)}
@@ -418,7 +418,7 @@ export default function JobsPage() {
           {onsiteJobs.length > 0 && (
             <section className="space-y-3">
               <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-blue-500" />
+                <MapPin className="icon-sm text-blue-500" aria-hidden="true" />
                 <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">On-site / Hybrid</h2>
               </div>
               {onsiteJobs.map((job) => <JobCard key={job.id} job={job} />)}

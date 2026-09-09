@@ -95,9 +95,9 @@ export function AIInsightButton({
           title={label}
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
           ) : (
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="icon-sm" aria-hidden="true" />
           )}
         </button>
 
@@ -109,7 +109,7 @@ export function AIInsightButton({
                 AI Insight
               </span>
               <button onClick={clearResponse} className="text-muted-foreground hover:text-foreground">
-                <X className="h-3 w-3" />
+                <X className="icon-2xs" aria-hidden="true" />
               </button>
             </div>
             <div className="p-3 text-sm max-h-48 overflow-y-auto">
@@ -138,13 +138,13 @@ export function AIInsightButton({
         )}
       >
         {isLoading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
         ) : (
-          <Sparkles className="h-3.5 w-3.5 text-violet-500" />
+          <Sparkles className="h-3.5 w-3.5 text-violet-500" aria-hidden="true" />
         )}
         {label}
         {response && (
-          isExpanded ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />
+          isExpanded ? <ChevronUp className="icon-2xs ml-1" aria-hidden="true" /> : <ChevronDown className="icon-2xs ml-1" aria-hidden="true" />
         )}
       </Button>
 
@@ -160,7 +160,7 @@ export function AIInsightButton({
             onClick={clearResponse}
             className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
           <div className="flex items-start gap-2">
             <span className="text-lg">{getAgentIcon(agentId)}</span>

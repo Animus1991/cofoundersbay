@@ -89,11 +89,11 @@ export default function ApiStatusPage() {
   const getStatusIcon = (status: EndpointStatus['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="icon-sm text-green-500" aria-hidden="true" />;
       case 'error':
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="icon-sm text-red-500" aria-hidden="true" />;
       case 'loading':
-        return <RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />;
+        return <RefreshCw className="icon-sm text-blue-500 animate-spin" aria-hidden="true" />;
     }
   };
 
@@ -119,7 +119,7 @@ export default function ApiStatusPage() {
 
       <div className="mb-6">
         <Button onClick={checkAllEndpoints} disabled={isChecking} className="gap-2">
-          <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} aria-hidden="true" />
           {isChecking ? 'Checking...' : 'Check All Endpoints'}
         </Button>
       </div>
@@ -144,7 +144,7 @@ export default function ApiStatusPage() {
             {endpoint.error && (
               <CardContent>
                 <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 rounded-lg">
-                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <AlertCircle className="icon-sm text-red-500" aria-hidden="true" />
                   <code className="text-sm text-red-700 dark:text-red-400">
                     {endpoint.error}
                   </code>

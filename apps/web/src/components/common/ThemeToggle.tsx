@@ -31,15 +31,15 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme('light')} className="gap-2">
-          <Sun className="h-4 w-4" />
+          <Sun className="icon-sm" aria-hidden="true" />
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('dark')} className="gap-2">
-          <Moon className="h-4 w-4" />
+          <Moon className="icon-sm" aria-hidden="true" />
           Dark
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme('system')} className="gap-2">
-          <Monitor className="h-4 w-4" />
+          <Monitor className="icon-sm" aria-hidden="true" />
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

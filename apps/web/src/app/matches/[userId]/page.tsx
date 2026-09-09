@@ -23,7 +23,7 @@ import {
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+    <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {label}
     </p>
@@ -39,7 +39,7 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
         <span className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {item.label}
         </span>
-        <span className="text-[10px] font-semibold tabular-nums text-foreground"
+        <span className="text-2xs font-semibold tabular-nums text-foreground"
           style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {item.score}%
         </span>
@@ -58,9 +58,9 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
 
 function CompatBadge({ label }: { label: string }) {
   const icon = label.toLowerCase().includes('vision') ? (
-    <Brain className="h-3.5 w-3.5" />
+    <Brain className="h-3.5 w-3.5" aria-hidden="true" />
   ) : (
-    <Zap className="h-3.5 w-3.5" />
+    <Zap className="h-3.5 w-3.5" aria-hidden="true" />
   );
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded"
@@ -84,7 +84,7 @@ function TraitChip({ item }: { item: MatchVsStrength }) {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border bg-card">
       <span style={{ color: '#4ADE80', fontSize: 10 }}>■</span>
-      <span className="text-[11px] font-medium text-foreground"
+      <span className="text-2xs font-medium text-foreground"
         style={{ fontFamily: "'JetBrains Mono', monospace" }}>
         {item.label}
       </span>
@@ -96,9 +96,9 @@ function TraitChip({ item }: { item: MatchVsStrength }) {
 
 function FrictionIcon({ icon }: { icon: string }) {
   const cls = "h-5 w-5";
-  if (icon === 'schedule') return <Clock className={cls} />;
-  if (icon === 'trending_up') return <TrendingUp className={cls} />;
-  return <AlertTriangle className={cls} />;
+  if (icon === 'schedule') return <Clock className={cls} aria-hidden="true" />;
+  if (icon === 'trending_up') return <TrendingUp className={cls} aria-hidden="true" />;
+  return <AlertTriangle className={cls} aria-hidden="true" />;
 }
 
 // ── Friction Points — single unified card with dividers ───────────────────────
@@ -325,7 +325,7 @@ export default function MatchDetailPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <Info className="h-8 w-8 text-muted-foreground" />
+          <Info className="icon-xl text-muted-foreground" aria-hidden="true" />
           <p className="text-muted-foreground">Could not load compatibility data.</p>
           <Button variant="outline" onClick={() => router.back()}>Go Back</Button>
         </div>
@@ -346,7 +346,7 @@ export default function MatchDetailPage() {
             className="p-1.5 -ml-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="Back"
           >
-            <ArrowLeft className="h-5 w-5 text-foreground" />
+            <ArrowLeft className="icon-md text-foreground" aria-hidden="true" />
           </button>
           <span className="text-sm font-semibold"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}>
@@ -356,7 +356,7 @@ export default function MatchDetailPage() {
             className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors"
             aria-label="More options"
           >
-            <MoreVertical className="h-5 w-5 text-foreground" />
+            <MoreVertical className="icon-md text-foreground" aria-hidden="true" />
           </button>
         </div>
 
@@ -376,7 +376,7 @@ export default function MatchDetailPage() {
                 <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
                   {sourceProfile.displayName}
                 </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
+                <span className="text-2xs text-muted-foreground capitalize"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {sourceProfile.role}
                 </span>
@@ -400,14 +400,14 @@ export default function MatchDetailPage() {
                 <span className="text-sm font-bold text-foreground max-w-[88px] text-center leading-tight truncate">
                   {targetProfile.displayName}
                 </span>
-                <span className="text-[10px] text-muted-foreground capitalize"
+                <span className="text-2xs text-muted-foreground capitalize"
                   style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                   {targetProfile.role}
                 </span>
                 <Link href={`/profiles/${targetProfile.id}`}
-                  className="flex items-center gap-0.5 text-[10px] mt-0.5 transition-colors"
+                  className="flex items-center gap-0.5 text-2xs mt-0.5 transition-colors"
                   style={{ color: '#22D3EE' }}>
-                  <ExternalLink className="h-2.5 w-2.5" />
+                  <ExternalLink className="h-2.5 w-2.5" aria-hidden="true" />
                   View profile
                 </Link>
               </div>
@@ -416,7 +416,7 @@ export default function MatchDetailPage() {
 
           {/* Confidence indicator */}
           <div className="flex flex-col items-center gap-1.5 mt-4">
-            <span className="text-[10px] text-muted-foreground"
+            <span className="text-2xs text-muted-foreground"
               style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {overall.confidence}% CONFIDENCE
             </span>
@@ -478,7 +478,7 @@ export default function MatchDetailPage() {
               <div className="bg-card border border-border rounded-lg p-4 space-y-3">
                 {data.reasons.map(r => (
                   <div key={r} className="flex items-start gap-2.5">
-                    <CheckCircle className="h-4 w-4 mt-0.5 shrink-0" style={{ color: '#4ADE80' }} />
+                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: '#4ADE80' }} aria-hidden="true" />
                     <span className="text-sm text-muted-foreground leading-relaxed">{r}</span>
                   </div>
                 ))}
@@ -497,12 +497,12 @@ export default function MatchDetailPage() {
             className="gap-1.5 text-sm"
             onClick={handleShortlist}
           >
-            <Bookmark className={`h-4 w-4 ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
+            <Bookmark className={`h-4 w-4 ${shortlisted ? 'fill-current text-amber-400' : ''}`} aria-hidden="true" />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
           <Link href={`/messages?to=${targetUserId}`} className="contents">
             <Button variant="outline" className="gap-1.5 text-sm w-full">
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="icon-sm" aria-hidden="true" />
               Message
             </Button>
           </Link>
@@ -512,7 +512,7 @@ export default function MatchDetailPage() {
             onClick={handlePropose}
             disabled={connectMutation.isPending}
           >
-            <Send className="h-4 w-4" />
+            <Send className="icon-sm" aria-hidden="true" />
             Collaborate
           </Button>
         </div>

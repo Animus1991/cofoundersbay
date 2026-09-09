@@ -138,7 +138,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {flag.affectedUsers?.toLocaleString() ?? 0} affected
               </span>
               <span>Updated {flag.updatedAt}</span>
@@ -148,14 +148,14 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Flag</DropdownMenuItem>
-              <DropdownMenuItem><Percent className="mr-2 icon-sm" />Set Rollout %</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Copy Key</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Flag</DropdownMenuItem>
+              <DropdownMenuItem><Percent className="mr-2 icon-sm" aria-hidden="true" />Set Rollout %</DropdownMenuItem>
+              <DropdownMenuItem><Copy className="mr-2 icon-sm" aria-hidden="true" />Copy Key</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -207,7 +207,7 @@ export default function AdminFeatureFlagsPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <Info className="icon-sm" />
+                  <Info className="icon-sm" aria-hidden="true" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -216,7 +216,7 @@ export default function AdminFeatureFlagsPage() {
             </Tooltip>
           </TooltipProvider>
           <Button size="sm">
-            <Plus className="mr-2 icon-sm" />
+            <Plus className="mr-2 icon-sm" aria-hidden="true" />
             New Flag
           </Button>
         </div>
@@ -247,7 +247,7 @@ export default function AdminFeatureFlagsPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search flags by name or key..."
             value={search}
@@ -270,7 +270,7 @@ export default function AdminFeatureFlagsPage() {
             {filtered.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                   <p className="font-medium">No flags found</p>
                   <p className="text-sm text-muted-foreground mt-1">Try adjusting your search</p>
                 </CardContent>

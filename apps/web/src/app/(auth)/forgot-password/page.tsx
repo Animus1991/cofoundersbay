@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/20 px-6 py-8 text-center space-y-3">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15">
-              <MailCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              <MailCheck className="icon-lg text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
             </div>
             <h2 className="font-semibold text-foreground">Check your inbox</h2>
             <p className="text-sm text-muted-foreground">
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
             </div>
             <Button type="submit" disabled={loading} className="w-full" size="lg">
               {loading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending…</>
+                <><Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />Sending…</>
               ) : 'Send reset link'}
             </Button>
           </form>

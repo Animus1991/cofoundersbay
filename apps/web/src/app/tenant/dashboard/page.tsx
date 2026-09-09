@@ -111,10 +111,10 @@ export default function TenantDashboardPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/tenant/branding"><Building2 className="mr-1.5 h-4 w-4" /> Branding</Link>
+            <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" aria-hidden="true" /> Branding</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/tenant/settings"><Settings className="mr-1.5 h-4 w-4" /> Settings</Link>
+            <Link href="/tenant/settings"><Settings className="mr-1.5 icon-sm" aria-hidden="true" /> Settings</Link>
           </Button>
         </div>
       }
@@ -158,7 +158,7 @@ export default function TenantDashboardPage() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/tenant/programs">
                   View All
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  <ChevronRight className="ml-1 icon-sm" aria-hidden="true" />
                 </Link>
               </Button>
             </CardHeader>
@@ -215,7 +215,7 @@ export default function TenantDashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Member Growth</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">6 months</Badge>
+                <Badge variant="secondary" className="text-2xs">6 months</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -241,7 +241,7 @@ export default function TenantDashboardPage() {
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Program Engagement</CardTitle>
-                <Badge variant="secondary" className="text-[10px]">Active programs</Badge>
+                <Badge variant="secondary" className="text-2xs">Active programs</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -264,7 +264,7 @@ export default function TenantDashboardPage() {
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm">Upcoming Events</CardTitle>
             <Button variant="ghost" size="sm" className="gap-1.5">
-              <Calendar className="h-3.5 w-3.5" /> Add Event
+              <Calendar className="h-3.5 w-3.5" aria-hidden="true" /> Add Event
             </Button>
           </CardHeader>
           <CardContent>
@@ -272,7 +272,7 @@ export default function TenantDashboardPage() {
               {upcomingEvents.map((event) => (
                 <div key={event.id} className="p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
                     <span className="text-xs text-muted-foreground">{event.date}</span>
                   </div>
                   <p className="font-medium text-sm">{event.name}</p>

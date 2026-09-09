@@ -153,7 +153,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
               <Archive className={cn(
                 'h-5 w-5',
                 exportReq.status === 'ready' ? 'text-emerald-500' : 'text-muted-foreground'
-              )} />
+              )} aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -188,7 +188,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
           {exportReq.status === 'ready' && exportReq.downloadUrl && (
             <a href={exportReq.downloadUrl} download>
               <Button size="sm" className="gap-2">
-                <Download className="h-4 w-4" />
+                <Download className="icon-sm" aria-hidden="true" />
                 Download
               </Button>
             </a>
@@ -206,7 +206,7 @@ function ExportCard({ exportReq }: { exportReq: ExportRequest }) {
 
         {exportReq.expiresAt && exportReq.status === 'ready' && (
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+            <Clock className="icon-2xs" aria-hidden="true" />
             Download expires {formatDate(exportReq.expiresAt)}
           </p>
         )}
@@ -265,7 +265,7 @@ export default function DataExportPage() {
           href="/settings"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="icon-sm" aria-hidden="true" />
           Back to Settings
         </Link>
 
@@ -273,7 +273,7 @@ export default function DataExportPage() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <Database className="h-6 w-6 text-primary" />
+              <Database className="icon-lg text-primary" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Export Your Data</h1>
@@ -288,7 +288,7 @@ export default function DataExportPage() {
         <Card className="mb-6 border-primary/20 bg-primary/5 shadow-sm">
           <CardContent className="pt-5">
             <div className="flex items-start gap-3">
-              <Shield className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <Shield className="icon-md text-primary shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <p className="text-sm font-medium text-foreground mb-1">Your Data Rights</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -361,7 +361,7 @@ export default function DataExportPage() {
                         ? 'border-primary bg-primary'
                         : 'border-border'
                     )}>
-                      {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                      {isSelected && <Check className="icon-2xs text-primary-foreground" aria-hidden="true" />}
                     </div>
                   </label>
                 );
@@ -378,9 +378,9 @@ export default function DataExportPage() {
                 className="gap-2"
               >
                 {exportMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 ) : (
-                  <Download className="h-4 w-4" />
+                  <Download className="icon-sm" aria-hidden="true" />
                 )}
                 {hasActiveExport ? 'Export in Progress' : 'Request Export'}
               </Button>
@@ -388,7 +388,7 @@ export default function DataExportPage() {
 
             {hasActiveExport && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 flex items-center gap-1">
-                <AlertTriangle className="h-3 w-3" />
+                <AlertTriangle className="icon-2xs" aria-hidden="true" />
                 Please wait for the current export to complete before requesting a new one.
               </p>
             )}
@@ -398,7 +398,7 @@ export default function DataExportPage() {
         {/* Delete Account Link */}
         <div className="mt-8 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
           <div className="flex items-start gap-3">
-            <Trash2 className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <Trash2 className="icon-md text-destructive shrink-0 mt-0.5" aria-hidden="true" />
             <div>
               <p className="text-sm font-medium text-foreground mb-1">Delete Your Account</p>
               <p className="text-xs text-muted-foreground mb-3">

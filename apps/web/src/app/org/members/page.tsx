@@ -90,21 +90,21 @@ function MemberRow({ member }: { member: OrgMember }) {
         <p className="text-xs text-muted-foreground">{member.department ?? '—'}</p>
       </div>
       <div className="hidden sm:flex items-center gap-1 w-24 shrink-0">
-        <Clock className="icon-sm text-muted-foreground" />
+        <Clock className="icon-sm text-muted-foreground" aria-hidden="true" />
         <span className="text-xs text-muted-foreground">{member.lastActive}</span>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
-            <MoreVertical className="icon-sm" />
+            <MoreVertical className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit Role</DropdownMenuItem>
-          <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
+          <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit Role</DropdownMenuItem>
+          <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="text-destructive">
-            <UserMinus className="mr-2 icon-sm" />Remove Member
+            <UserMinus className="mr-2 icon-sm" aria-hidden="true" />Remove Member
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -135,13 +135,13 @@ export default function OrgMembersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Users className="h-6 w-6 text-primary" />
+              <Users className="icon-lg text-primary" aria-hidden="true" />
               Team Members
             </h1>
             <p className="text-muted-foreground">Manage your organization's team and permissions</p>
           </div>
           <Button>
-            <UserPlus className="mr-2 h-4 w-4" />
+            <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
             Invite Member
           </Button>
         </div>
@@ -165,7 +165,7 @@ export default function OrgMembersPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -194,7 +194,7 @@ export default function OrgMembersPage() {
                 ))}
                 {filtered.length === 0 && (
                   <div className="py-12 text-center">
-                    <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                    <Users className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                     <p className="font-medium text-sm">No members found</p>
                   </div>
                 )}

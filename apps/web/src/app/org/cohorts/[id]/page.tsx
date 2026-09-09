@@ -316,15 +316,15 @@ export default function CohortDetailPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
-            <Share2 className="icon-sm mr-2" />
+            <Share2 className="icon-sm mr-2" aria-hidden="true" />
             Share
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="icon-sm mr-2" />
+            <Download className="icon-sm mr-2" aria-hidden="true" />
             Export
           </Button>
           <Button size="sm">
-            <Mail className="icon-sm mr-2" />
+            <Mail className="icon-sm mr-2" aria-hidden="true" />
             Message All
           </Button>
         </div>
@@ -356,7 +356,7 @@ export default function CohortDetailPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">{stats.totalParticipants}</div>
-                  <Users className="icon-sm text-muted-foreground" />
+                  <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {stats.activeStartups} active startups • {stats.totalMentors} mentors
@@ -373,7 +373,7 @@ export default function CohortDetailPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">{stats.completedSessions}</div>
-                  <GraduationCap className="icon-sm text-muted-foreground" />
+                  <GraduationCap className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {stats.upcomingSessions} upcoming sessions
@@ -392,7 +392,7 @@ export default function CohortDetailPage() {
                   <div className="text-2xl font-bold">
                     {stats.successfulMatches}/{stats.totalMatches}
                   </div>
-                  <Target className="icon-sm text-muted-foreground" />
+                  <Target className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Avg. score: {stats.averageMatchScore}%
@@ -409,7 +409,7 @@ export default function CohortDetailPage() {
               <CardContent>
                 <div className="flex items-center justify-between">
                   <div className="text-2xl font-bold">67%</div>
-                  <TrendingUp className="icon-sm text-green-500" />
+                  <TrendingUp className="icon-sm text-green-500" aria-hidden="true" />
                 </div>
                 <Progress value={67} className="mt-2" />
               </CardContent>
@@ -426,17 +426,17 @@ export default function CohortDetailPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
                 <div className="flex items-center gap-2">
-                  <Calendar className="icon-sm text-muted-foreground" />
+                  <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm">
                     {formatDate(cohort.startDate)} - {formatDate(cohort.endDate)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="icon-sm text-muted-foreground" />
+                  <MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm">{cohort.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Award className="icon-sm text-muted-foreground" />
+                  <Award className="icon-sm text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm">{cohort.program}</span>
                 </div>
               </div>
@@ -519,7 +519,7 @@ export default function CohortDetailPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>All Participants</CardTitle>
               <Button size="sm">
-                <Users className="icon-sm mr-2" />
+                <Users className="icon-sm mr-2" aria-hidden="true" />
                 Add Participant
               </Button>
             </CardHeader>
@@ -556,7 +556,7 @@ export default function CohortDetailPage() {
                       <TableCell>{getStatusBadge(participant.status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <MapPin className="icon-sm" />
+                          <MapPin className="icon-sm" aria-hidden="true" />
                           {participant.location}
                         </div>
                       </TableCell>
@@ -575,7 +575,7 @@ export default function CohortDetailPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-label="More options" variant="ghost" size="icon">
-                              <MoreVertical className="icon-sm" />
+                              <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
@@ -598,7 +598,7 @@ export default function CohortDetailPage() {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Matches</CardTitle>
               <Button size="sm">
-                <Target className="icon-sm mr-2" />
+                <Target className="icon-sm mr-2" aria-hidden="true" />
                 Generate Matches
               </Button>
             </CardHeader>
@@ -694,7 +694,7 @@ export default function CohortDetailPage() {
                 <CardContent>
                   <div className="flex items-center gap-1">
                     <div className="text-2xl font-bold">4.8</div>
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                    <Star className="icon-sm text-yellow-500 fill-yellow-500" aria-hidden="true" />
                   </div>
                 </CardContent>
               </Card>
@@ -705,7 +705,7 @@ export default function CohortDetailPage() {
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>All Sessions</CardTitle>
                 <Button size="sm">
-                  <Calendar className="icon-sm mr-2" />
+                  <Calendar className="icon-sm mr-2" aria-hidden="true" />
                   Schedule Session
                 </Button>
               </CardHeader>
@@ -752,7 +752,7 @@ export default function CohortDetailPage() {
                         <TableCell>
                           {session.rating ? (
                             <div className="flex items-center gap-1">
-                              <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                              <Star className="icon-sm text-yellow-500 fill-yellow-500" aria-hidden="true" />
                               <span>{session.rating}/5</span>
                             </div>
                           ) : (

@@ -104,7 +104,7 @@ export function EntityReferenceSelector({
             {selectedType ? (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={handleBack} className="h-8 w-8 p-0">
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" aria-hidden="true" />
                 </Button>
                 Add {ENTITY_TYPES.find((t) => t.type === selectedType)?.label} Reference
               </div>
@@ -147,7 +147,7 @@ export function EntityReferenceSelector({
         ) : (
           <div className="space-y-4 py-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder={`Search ${ENTITY_TYPES.find((t) => t.type === selectedType)?.label.toLowerCase()}...`}
                 value={searchQuery}
@@ -160,7 +160,7 @@ export function EntityReferenceSelector({
             <div className="max-h-[300px] overflow-y-auto space-y-2">
               {isLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <Loader2 className="icon-lg animate-spin text-primary" aria-hidden="true" />
                 </div>
               )}
 
@@ -205,7 +205,7 @@ export function EntityReferenceSelector({
                         <div className="text-sm text-muted-foreground truncate">{entity.subtitle}</div>
                       )}
                     </div>
-                    <Check className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100" />
+                    <Check className="icon-sm text-primary opacity-0 group-hover:opacity-100" aria-hidden="true" />
                   </button>
                 );
               })}

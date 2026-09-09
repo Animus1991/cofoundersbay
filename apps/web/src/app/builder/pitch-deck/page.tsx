@@ -46,7 +46,7 @@ function PitchDeckPageContent() {
     return (
       <AppShell>
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -57,7 +57,7 @@ function PitchDeckPageContent() {
       <div className="space-y-6">
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 flex items-center gap-3">
-            <AlertCircle className="icon-md text-destructive" />
+            <AlertCircle className="icon-md text-destructive" aria-hidden="true" />
             <p className="text-sm text-destructive">{error}</p>
             <Button variant="ghost" size="sm" onClick={clearError} className="ml-auto">
               Dismiss
@@ -68,13 +68,13 @@ function PitchDeckPageContent() {
         <div className="flex items-center gap-4">
           <Link href="/builder">
             <Button aria-label="Go back" variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowLeft className="icon-sm" />
+              <ArrowLeft className="icon-sm" aria-hidden="true" />
             </Button>
           </Link>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <Presentation className="icon-lg text-primary" />
+                <Presentation className="icon-lg text-primary" aria-hidden="true" />
               </div>
               Pitch Deck Builder
             </h1>

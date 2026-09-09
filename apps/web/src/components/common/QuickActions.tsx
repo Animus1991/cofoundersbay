@@ -144,7 +144,7 @@ export function QuickActions({
         )}
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6" />}
+        {isOpen ? <X className="icon-lg" aria-hidden="true" /> : <Plus className="icon-lg" aria-hidden="true" />}
       </Button>
 
       {/* Backdrop */}

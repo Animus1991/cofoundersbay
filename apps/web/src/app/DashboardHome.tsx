@@ -96,7 +96,7 @@ function ActionItem({
         <span className="rounded-full bg-background/80 px-2 py-0.5 text-xs font-semibold tabular-nums">
           {count}
         </span>
-        <ChevronRight className="h-4 w-4 opacity-50" />
+        <ChevronRight className="icon-sm opacity-50" aria-hidden="true" />
       </div>
     </Link>
   );
@@ -127,7 +127,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
         <span className="text-xs font-bold tabular-nums" style={{ color: tierColor }}>
           {score}%
         </span>
-        <span className="text-[10px] text-muted-foreground">match</span>
+        <span className="text-2xs text-muted-foreground">match</span>
       </div>
     </Link>
   );
@@ -150,9 +150,9 @@ function MentorSuggestionCard({ mentor }: { mentor: MentorProfileItem }) {
         <p className="truncate text-xs text-muted-foreground">{mentor.headline ?? 'Mentor'}</p>
       </div>
       {mentor.isFree ? (
-        <span className="shrink-0 text-[10px] font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
+        <span className="shrink-0 text-2xs font-medium text-emerald-600 bg-emerald-500/10 px-1.5 py-0.5 rounded">Free</span>
       ) : mentor.hourlyRate ? (
-        <span className="shrink-0 text-[10px] text-muted-foreground">${mentor.hourlyRate}/h</span>
+        <span className="shrink-0 text-2xs text-muted-foreground">${mentor.hourlyRate}/h</span>
       ) : null}
     </Link>
   );
@@ -168,14 +168,14 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
         ) : (
-          <Building2 className="h-4 w-4 text-primary" />
+          <Building2 className="icon-sm text-primary" aria-hidden="true" />
         )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground group-hover:text-primary transition-colors">{group.name}</p>
         <p className="text-xs text-muted-foreground">{group.memberCount} members</p>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 opacity-40" />
+      <ChevronRight className="icon-sm shrink-0 opacity-40" aria-hidden="true" />
     </Link>
   );
 }
@@ -197,16 +197,16 @@ function ActivityRow({
         )}
       >
         {item.type === 'connection' ? (
-          <UserPlus className="h-3.5 w-3.5" />
+          <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
         ) : (
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
         )}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm text-foreground">{item.title}</p>
         {item.author && <p className="text-xs text-muted-foreground">{item.author}</p>}
       </div>
-      <span className="shrink-0 text-[11px] text-muted-foreground">{item.timeAgo}</span>
+      <span className="shrink-0 text-2xs text-muted-foreground">{item.timeAgo}</span>
     </Link>
   );
 }
@@ -362,13 +362,13 @@ export function DashboardHome() {
           <div className="flex items-center gap-2">
             <Link href="/matches">
               <Button variant="outline" size="sm" className="gap-2">
-                <Heart className="h-4 w-4" />
+                <Heart className="icon-sm" aria-hidden="true" />
                 View Matches
               </Button>
             </Link>
             <Link href="/discover">
               <Button size="sm" className="gap-2">
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="icon-sm" aria-hidden="true" />
                 Explore
               </Button>
             </Link>
@@ -384,7 +384,7 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-primary" />
+                    <Zap className="icon-sm text-primary" aria-hidden="true" />
                     Priority Actions
                   </h2>
                   {totalActions > 0 && (
@@ -423,7 +423,7 @@ export function DashboardHome() {
                   )}
                   {totalActions === 0 && (
                     <div className="flex flex-col items-center gap-2 py-6 text-center">
-                      <CheckCircle className="h-8 w-8 text-emerald-500" />
+                      <CheckCircle className="icon-xl text-emerald-500" aria-hidden="true" />
                       <p className="text-sm text-muted-foreground">All caught up!</p>
                     </div>
                   )}
@@ -459,11 +459,11 @@ export function DashboardHome() {
               <CardContent className="p-4">
                 <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                    <Heart className="h-4 w-4 text-rose-500" />
+                    <Heart className="icon-sm text-rose-500" aria-hidden="true" />
                     Top Matches
                   </h2>
                   <Link href="/matches" className="flex items-center gap-1 text-xs text-primary hover:underline">
-                    See all <ArrowRight className="h-3 w-3" />
+                    See all <ArrowRight className="icon-2xs" aria-hidden="true" />
                   </Link>
                 </div>
                 {matchesLoading ? (
@@ -486,7 +486,7 @@ export function DashboardHome() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3 py-8 text-center">
-                    <Users className="h-10 w-10 text-muted-foreground/30" />
+                    <Users className="h-10 w-10 text-muted-foreground/30" aria-hidden="true" />
                     <div>
                       <p className="text-sm font-medium text-foreground">No matches yet</p>
                       <p className="text-xs text-muted-foreground">Complete your profile to get matched</p>
@@ -507,11 +507,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-emerald-500" />
+                      <GraduationCap className="icon-sm text-emerald-500" aria-hidden="true" />
                       Mentor Suggestions
                     </h2>
                     <Link href="/mentoring" className="flex items-center gap-1 text-xs text-primary hover:underline">
-                      Browse all <ArrowRight className="h-3 w-3" />
+                      Browse all <ArrowRight className="icon-2xs" aria-hidden="true" />
                     </Link>
                   </div>
                   <div className="space-y-2">
@@ -529,11 +529,11 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Users className="h-4 w-4 text-blue-500" />
+                      <Users className="icon-sm text-blue-500" aria-hidden="true" />
                       My Communities
                     </h2>
                     <Link href="/groups" className="flex items-center gap-1 text-xs text-primary hover:underline">
-                      All groups <ArrowRight className="h-3 w-3" />
+                      All groups <ArrowRight className="icon-2xs" aria-hidden="true" />
                     </Link>
                   </div>
                   <div className="space-y-1">
@@ -551,7 +551,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-purple-500" />
+                      <Calendar className="icon-sm text-purple-500" aria-hidden="true" />
                       Upcoming Events
                     </h2>
                     <Link href="/events" className="text-xs text-primary hover:underline">
@@ -598,7 +598,7 @@ export function DashboardHome() {
                     <Link href="/profile/edit">
                       <Button variant="outline" size="sm" className="w-full gap-2">
                         Complete Profile
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="icon-2xs" aria-hidden="true" />
                       </Button>
                     </Link>
                   </div>
@@ -610,7 +610,7 @@ export function DashboardHome() {
             <Card>
               <CardContent className="p-4">
                 <h2 className="mb-3 text-sm font-semibold text-foreground flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                  <TrendingUp className="icon-sm text-emerald-500" aria-hidden="true" />
                   Ecosystem Pulse
                 </h2>
                 <div className="grid grid-cols-2 gap-3">
@@ -618,13 +618,13 @@ export function DashboardHome() {
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.activeProfiles?.toLocaleString() ?? '—'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Active Members</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Active Members</p>
                   </div>
                   <div className="rounded-lg bg-secondary/40 p-3 text-center">
                     <p className="text-lg font-bold text-foreground tabular-nums">
                       {statsData?.matchesThisWeek ?? '—'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Matches/Week</p>
+                    <p className="text-2xs text-muted-foreground uppercase tracking-wide">Matches/Week</p>
                   </div>
                 </div>
                 {statsData?.trendPercent !== undefined && statsData.trendPercent > 0 && (
@@ -641,7 +641,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Gauge className="h-4 w-4 text-primary" />
+                      <Gauge className="icon-sm text-primary" aria-hidden="true" />
                       Milestone Progress
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary hover:underline">Details</Link>
@@ -674,7 +674,7 @@ export function DashboardHome() {
                   </div>
                   <Link href="/readiness">
                     <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
-                      <Target className="h-3.5 w-3.5" />
+                      <Target className="h-3.5 w-3.5" aria-hidden="true" />
                       View Readiness
                     </Button>
                   </Link>
@@ -688,7 +688,7 @@ export function DashboardHome() {
                 <CardContent className="p-4">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-amber-500" />
+                      <Flag className="icon-sm text-amber-500" aria-hidden="true" />
                       Active Milestones
                     </h2>
                     <Link href="/milestones" className="text-xs text-primary hover:underline">View all</Link>
@@ -701,7 +701,7 @@ export function DashboardHome() {
                         <div className={cn('h-1.5 w-1.5 shrink-0 rounded-full', m.priority === 'high' ? 'bg-red-500' : m.priority === 'medium' ? 'bg-amber-500' : 'bg-muted-foreground')} />
                         <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
                         {m.dueDate && (
-                          <span className="shrink-0 text-[10px] text-muted-foreground">
+                          <span className="shrink-0 text-2xs text-muted-foreground">
                             {new Date(m.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
                           </span>
                         )}

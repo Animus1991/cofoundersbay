@@ -71,7 +71,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
   return (
     <div className="flex items-center gap-3 border-b border-border/40 py-3 last:border-0">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-secondary">
-        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+        <Mail className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{invite.email}</p>
@@ -89,7 +89,7 @@ function InviteRow({ invite, onCancel, cancelling }: {
           onClick={() => onCancel(invite.id)}
           disabled={cancelling}
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
       )}
     </div>
@@ -182,7 +182,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Sparkles className="icon-md text-primary" aria-hidden="true" />
               Send an Invitation
             </CardTitle>
             <CardDescription>
@@ -192,7 +192,7 @@ export default function InvitePage() {
           <CardContent className="space-y-4">
             {!canInvite && (
               <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/8 px-4 py-3">
-                <Trophy className="h-4 w-4 shrink-0 text-amber-500" />
+                <Trophy className="icon-sm shrink-0 text-amber-500" aria-hidden="true" />
                 <p className="text-sm text-foreground">
                   You&apos;ve used all your invites for now. They refresh periodically.
                 </p>
@@ -231,15 +231,15 @@ export default function InvitePage() {
                 onClick={() => createMutation.mutate()}
               >
                 {createMutation.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 ) : (
-                  <Mail className="h-4 w-4" />
+                  <Mail className="icon-sm" aria-hidden="true" />
                 )}
                 {createMutation.isPending ? 'Sending…' : 'Send Invitation'}
               </Button>
 
               <Button variant="outline" className="gap-2" onClick={handleCopyLink}>
-                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Link2 className="h-4 w-4" />}
+                {copied ? <Check className="icon-sm text-emerald-500" aria-hidden="true" /> : <Link2 className="icon-sm" aria-hidden="true" />}
                 {copied ? 'Copied!' : 'Copy link'}
               </Button>
             </div>
@@ -250,7 +250,7 @@ export default function InvitePage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-muted-foreground" />
+              <Clock className="icon-md text-muted-foreground" aria-hidden="true" />
               Invite History
             </CardTitle>
           </CardHeader>
@@ -270,7 +270,7 @@ export default function InvitePage() {
             ) : invites.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-10 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
-                  <Users className="h-6 w-6 text-muted-foreground" />
+                  <Users className="icon-lg text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-sm font-medium text-foreground">No invitations yet</p>
                 <p className="text-xs text-muted-foreground max-w-xs">

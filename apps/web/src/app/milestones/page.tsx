@@ -144,7 +144,7 @@ function MilestoneCard({
                   onClick={() => setMenuOpen((v) => !v)}
                   className="rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100"
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
                 </button>
                 {menuOpen && (
                   <>
@@ -154,14 +154,14 @@ function MilestoneCard({
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                         onClick={() => { setMenuOpen(false); onEdit(item); }}
                       >
-                        <Edit2 className="h-3.5 w-3.5 text-muted-foreground" /> Edit
+                        <Edit2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" /> Edit
                       </button>
                       {item.status !== 'completed' && (
                         <button
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'completed'); }}
                         >
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Mark complete
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" /> Mark complete
                         </button>
                       )}
                       {item.status === 'completed' && (
@@ -169,7 +169,7 @@ function MilestoneCard({
                           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
                           onClick={() => { setMenuOpen(false); onStatusChange(item.id, 'in_progress'); }}
                         >
-                          <Clock className="h-3.5 w-3.5 text-blue-500" /> Reopen
+                          <Clock className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" /> Reopen
                         </button>
                       )}
                       <div className="my-1 border-t border-border/40" />
@@ -177,7 +177,7 @@ function MilestoneCard({
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
                         onClick={() => { setMenuOpen(false); onDelete(item.id); }}
                       >
-                        <Trash2 className="h-3.5 w-3.5" /> Delete
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Delete
                       </button>
                     </div>
                   </>
@@ -201,7 +201,7 @@ function MilestoneCard({
                     style={{ width: `${item.progress}%` }}
                   />
                 </div>
-                <span className="min-w-[2.5rem] text-right text-[11px] tabular-nums text-muted-foreground">
+                <span className="min-w-[2.5rem] text-right text-2xs tabular-nums text-muted-foreground">
                   {item.progress}%
                 </span>
               </div>
@@ -211,18 +211,18 @@ function MilestoneCard({
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <Badge
                 variant="outline"
-                className={cn('h-5 gap-1 rounded-full px-2 text-[10px] font-medium', status.color, status.bg, 'border-0')}
+                className={cn('h-5 gap-1 rounded-full px-2 text-2xs font-medium', status.color, status.bg, 'border-0')}
               >
                 {status.label}
               </Badge>
 
-              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <div className="flex items-center gap-1 text-2xs text-muted-foreground">
                 <span className={cn('h-1.5 w-1.5 rounded-full', priority.dot)} />
                 {priority.label}
               </div>
 
               {item.category && (
-                <span className="rounded-full border border-border/50 px-2 py-0.5 text-[10px] text-muted-foreground">
+                <span className="rounded-full border border-border/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {CATEGORY_LABELS[item.category] ?? item.category}
                 </span>
               )}
@@ -230,18 +230,18 @@ function MilestoneCard({
               {item.dueDate && (
                 <div
                   className={cn(
-                    'flex items-center gap-1 text-[11px]',
+                    'flex items-center gap-1 text-2xs',
                     overdue ? 'font-medium text-red-500' : dueSoon ? 'font-medium text-amber-500' : 'text-muted-foreground',
                   )}
                 >
-                  <Calendar className="h-3 w-3" />
+                  <Calendar className="icon-2xs" aria-hidden="true" />
                   {overdue ? 'Overdue · ' : dueSoon ? 'Due soon · ' : ''}{formatDate(item.dueDate)}
                 </div>
               )}
 
               {item.collaborator && (
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Users className="h-3 w-3" />
+                <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                  <Users className="icon-2xs" aria-hidden="true" />
                   {item.collaborator.displayName}
                 </div>
               )}
@@ -270,7 +270,7 @@ function SummaryBar({ summary }: { summary: { counts: Record<string, number>; to
         <div key={s.label} className="rounded-xl border border-border/60 bg-card/70 px-4 py-3 text-center">
           <s.icon className={cn('mx-auto mb-1 h-4 w-4', s.color)} />
           <p className={cn('text-xl font-semibold tabular-nums', s.color)}>{s.value}</p>
-          <p className="text-[11px] text-muted-foreground">{s.label}</p>
+          <p className="text-2xs text-muted-foreground">{s.label}</p>
         </div>
       ))}
     </div>
@@ -379,7 +379,7 @@ export default function MilestonesPage() {
       description="Track your startup progress, goals, and collaboration checkpoints"
       actions={
         <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> New milestone
+          <Plus className="icon-sm" aria-hidden="true" /> New milestone
         </Button>
       }
     >
@@ -398,7 +398,7 @@ export default function MilestonesPage() {
         {/* Search + Category filter */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative flex-1 min-w-48">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search milestones..."
               value={searchQuery}
@@ -407,7 +407,7 @@ export default function MilestonesPage() {
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -417,7 +417,7 @@ export default function MilestonesPage() {
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
                 className={cn(
-                  'inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
+                  'inline-flex items-center rounded-full border px-2.5 py-1 text-2xs font-medium transition-colors',
                   categoryFilter === cat
                     ? 'border-primary/40 bg-primary/10 text-primary'
                     : 'border-border/40 bg-secondary/30 text-muted-foreground hover:text-foreground',
@@ -447,7 +447,7 @@ export default function MilestonesPage() {
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
                   <span className={cn(
-                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-[10px]',
+                    'flex h-4 min-w-[1rem] items-center justify-center rounded-full px-1 text-2xs',
                     statusFilter === tab.value ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground',
                   )}>
                     {tab.count}
@@ -460,7 +460,7 @@ export default function MilestonesPage() {
           {/* Priority + View + Refresh */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-secondary/30 px-3 py-1.5">
-              <Filter className="h-3.5 w-3.5 text-muted-foreground" />
+              <Filter className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
@@ -476,14 +476,14 @@ export default function MilestonesPage() {
               <button
                 onClick={() => setViewMode('list')}
                 className={cn('rounded p-1.5 transition-colors', viewMode === 'list' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutList className="h-3.5 w-3.5" /></button>
+              ><LayoutList className="h-3.5 w-3.5" aria-hidden="true" /></button>
               <button
                 onClick={() => setViewMode('grid')}
                 className={cn('rounded p-1.5 transition-colors', viewMode === 'grid' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
-              ><LayoutGrid className="h-3.5 w-3.5" /></button>
+              ><LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" /></button>
             </div>
             <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()}>
-              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
+              <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -491,7 +491,7 @@ export default function MilestonesPage() {
         {/* List */}
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
+            <AlertTriangle className="icon-xl text-muted-foreground/50" aria-hidden="true" />
             <p className="text-sm text-muted-foreground">Failed to load milestones.</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </div>
@@ -502,7 +502,7 @@ export default function MilestonesPage() {
         ) : milestones.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <Target className="h-7 w-7 text-primary" />
+              <Target className="h-7 w-7 text-primary" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium text-foreground">
@@ -517,7 +517,7 @@ export default function MilestonesPage() {
               </p>
             </div>
             <Button size="sm" className="gap-1.5" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" /> Add your first milestone
+              <Plus className="icon-sm" aria-hidden="true" /> Add your first milestone
             </Button>
           </div>
         ) : (

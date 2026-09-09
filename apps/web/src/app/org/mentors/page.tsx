@@ -75,7 +75,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                     {mentor.name}
                   </Link>
                   {mentor.isVerified && (
-                    <CheckCircle2 className="icon-sm text-primary" />
+                    <CheckCircle2 className="icon-sm text-primary" aria-hidden="true" />
                   )}
                 </div>
                 {mentor.headline && (
@@ -89,7 +89,7 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon">
-                      <MoreVertical className="icon-sm" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -120,16 +120,16 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
 
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {mentor.activeMentees}/{mentor.maxMentees} mentees
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {mentor.totalSessions} sessions
               </span>
               {mentor.rating && (
                 <span className="flex items-center gap-1">
-                  <Star className="icon-sm text-amber-500" />
+                  <Star className="icon-sm text-amber-500" aria-hidden="true" />
                   {mentor.rating.toFixed(1)}
                 </span>
               )}
@@ -222,7 +222,7 @@ export default function OrgMentorsPage() {
           </div>
           <Button asChild>
             <Link href="/org/mentors/invite">
-              <Plus className="mr-2 icon-sm" />
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
               Invite Mentor
             </Link>
           </Button>
@@ -260,7 +260,7 @@ export default function OrgMentorsPage() {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search mentors by name or expertise..."
             value={search}
@@ -277,14 +277,14 @@ export default function OrgMentorsPage() {
           {filteredMentors.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <GraduationCap className="icon-lg mx-auto text-muted-foreground/50 mb-4" />
+                <GraduationCap className="icon-lg mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No mentors found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Invite mentors to join your organization
                 </p>
                 <Button className="mt-4" asChild>
                   <Link href="/org/mentors/invite">
-                    <Plus className="mr-2 icon-sm" />
+                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
                     Invite Mentor
                   </Link>
                 </Button>

@@ -233,18 +233,18 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
             )}
             AI Generate
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
+            <Download className="icon-sm mr-2" aria-hidden="true" />
             Export
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" aria-hidden="true" />
             Save
           </Button>
         </div>
@@ -326,16 +326,16 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
           {data.slides.length === 0 ? (
             <Card className="h-[500px] flex items-center justify-center">
               <div className="text-center">
-                <Presentation className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                <Presentation className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" aria-hidden="true" />
                 <h3 className="text-lg font-semibold mb-2">No slides yet</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Click "AI Generate" to create a complete deck, or add slides manually
                 </p>
                 <Button onClick={generateWithAI} disabled={isGenerating}>
                   {isGenerating ? (
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
                   ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
+                    <Sparkles className="icon-sm mr-2" aria-hidden="true" />
                   )}
                   Generate Full Deck
                 </Button>
@@ -351,7 +351,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     onClick={() => setCurrentSlideIndex(Math.max(0, currentSlideIndex - 1))}
                     disabled={currentSlideIndex === 0}
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className="icon-sm" aria-hidden="true" />
                   </Button>
                   <div>
                     <CardTitle className="flex items-center gap-2">
@@ -371,7 +371,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     onClick={() => setCurrentSlideIndex(Math.min(data.slides.length - 1, currentSlideIndex + 1))}
                     disabled={currentSlideIndex === data.slides.length - 1}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="icon-sm" aria-hidden="true" />
                   </Button>
                 </div>
                 <div className="flex items-center gap-2">
@@ -396,7 +396,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
                     size="sm"
                     onClick={() => setViewMode(viewMode === 'edit' ? 'preview' : 'edit')}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
+                    <Eye className="icon-sm mr-1" aria-hidden="true" />
                     {viewMode === 'edit' ? 'Preview' : 'Edit'}
                   </Button>
                   <Button

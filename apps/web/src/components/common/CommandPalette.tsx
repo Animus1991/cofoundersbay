@@ -256,7 +256,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         {/* Search input */}
         <div className="border-b border-border/60 p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Type a command or search..."
               value={search}
@@ -265,7 +265,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               className="pl-9 border-0 bg-transparent focus-visible:ring-0"
               autoFocus
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground">
               ESC
             </kbd>
           </div>
@@ -315,7 +315,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                             {cmd.shortcut.map((key, i) => (
                               <kbd
                                 key={i}
-                                className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border bg-muted px-1 font-mono text-[10px] text-muted-foreground"
+                                className="inline-flex h-5 min-w-[20px] items-center justify-center rounded border bg-muted px-1 font-mono text-2xs text-muted-foreground"
                               >
                                 {key}
                               </kbd>

@@ -203,13 +203,13 @@ export default function TestOnboardingPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
                       {step.status === 'success' ? (
-                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        <CheckCircle className="icon-lg text-green-500" aria-hidden="true" />
                       ) : step.status === 'error' ? (
-                        <AlertCircle className="h-6 w-6 text-red-500" />
+                        <AlertCircle className="icon-lg text-red-500" aria-hidden="true" />
                       ) : step.status === 'running' ? (
                         <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       ) : (
-                        <Circle className="h-6 w-6 text-muted-foreground" />
+                        <Circle className="icon-lg text-muted-foreground" aria-hidden="true" />
                       )}
                       
                       <div>
@@ -261,7 +261,7 @@ export default function TestOnboardingPage() {
               </>
             ) : (
               <>
-                <Play className="h-4 w-4" />
+                <Play className="icon-sm" aria-hidden="true" />
                 Run All Tests
               </>
             )}
@@ -306,7 +306,7 @@ export default function TestOnboardingPage() {
               {progress === 100 && !hasErrors && (
                 <div className="mt-6 text-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-950 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <CheckCircle className="icon-md text-green-600" aria-hidden="true" />
                     <span className="text-green-700 dark:text-green-400 font-medium">
                       All tests passed! Ready for production.
                     </span>
@@ -317,7 +317,7 @@ export default function TestOnboardingPage() {
               {hasErrors && (
                 <div className="mt-6 text-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-950 rounded-lg">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    <AlertCircle className="icon-md text-red-600" aria-hidden="true" />
                     <span className="text-red-700 dark:text-red-400 font-medium">
                       Some tests failed. Please check the errors above.
                     </span>
@@ -339,7 +339,7 @@ export default function TestOnboardingPage() {
           {progress === 100 && !hasErrors && (
             <Button asChild>
               <Link href="/onboarding/enhanced-onboarding">
-                <Rocket className="h-4 w-4 mr-2" />
+                <Rocket className="icon-sm mr-2" aria-hidden="true" />
                 Try Enhanced Onboarding
               </Link>
             </Button>

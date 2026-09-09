@@ -220,7 +220,7 @@ export default function OrgAdminPage() {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button aria-label="Go back" variant="ghost" size="icon" onClick={() => router.push(`/org/${slug}`)}>
-            <ArrowLeft className="icon-md" />
+            <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           <div className="flex items-center gap-4 flex-1">
             <Avatar className="h-12 w-12">
@@ -236,7 +236,7 @@ export default function OrgAdminPage() {
           </div>
           <Button variant="outline" asChild>
             <Link href={`/org/${slug}/settings`}>
-              <Settings className="icon-sm mr-2" />
+              <Settings className="icon-sm mr-2" aria-hidden="true" />
               Settings
             </Link>
           </Button>
@@ -276,19 +276,19 @@ export default function OrgAdminPage() {
         <Tabs defaultValue="members" className="space-y-4">
           <TabsList>
             <TabsTrigger value="members" className="gap-2">
-              <Users className="icon-sm" />
+              <Users className="icon-sm" aria-hidden="true" />
               Members
             </TabsTrigger>
             <TabsTrigger value="invites" className="gap-2">
-              <Mail className="icon-sm" />
+              <Mail className="icon-sm" aria-hidden="true" />
               Invites
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
-              <BarChart3 className="icon-sm" />
+              <BarChart3 className="icon-sm" aria-hidden="true" />
               Analytics
             </TabsTrigger>
             <TabsTrigger value="permissions" className="gap-2">
-              <Shield className="icon-sm" />
+              <Shield className="icon-sm" aria-hidden="true" />
               Permissions
             </TabsTrigger>
           </TabsList>
@@ -297,7 +297,7 @@ export default function OrgAdminPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search members..."
                   value={searchQuery}
@@ -328,11 +328,11 @@ export default function OrgAdminPage() {
                 </SelectContent>
               </Select>
               <Button>
-                <UserPlus className="icon-sm mr-2" />
+                <UserPlus className="icon-sm mr-2" aria-hidden="true" />
                 Invite Member
               </Button>
               <Button variant="outline">
-                <Download className="icon-sm mr-2" />
+                <Download className="icon-sm mr-2" aria-hidden="true" />
                 Export
               </Button>
             </div>
@@ -369,7 +369,7 @@ export default function OrgAdminPage() {
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[member.role])}>
-                          {member.role === 'owner' && <Crown className="icon-sm mr-1" />}
+                          {member.role === 'owner' && <Crown className="icon-sm mr-1" aria-hidden="true" />}
                           {member.role}
                         </Badge>
                       </TableCell>
@@ -390,27 +390,27 @@ export default function OrgAdminPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button aria-label="More options" variant="ghost" size="icon">
-                              <MoreVertical className="icon-sm" />
+                              <MoreVertical className="icon-sm" aria-hidden="true" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'admin')}>
-                              <Shield className="icon-sm mr-2" />
+                              <Shield className="icon-sm mr-2" aria-hidden="true" />
                               Make Admin
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleRoleChange(member.id, 'member')}>
-                              <Users className="icon-sm mr-2" />
+                              <Users className="icon-sm mr-2" aria-hidden="true" />
                               Make Member
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             {member.status === 'active' ? (
                               <DropdownMenuItem onClick={() => handleSuspendMember(member.id)}>
-                                <XCircle className="icon-sm mr-2" />
+                                <XCircle className="icon-sm mr-2" aria-hidden="true" />
                                 Suspend
                               </DropdownMenuItem>
                             ) : member.status === 'suspended' ? (
                               <DropdownMenuItem>
-                                <CheckCircle2 className="icon-sm mr-2" />
+                                <CheckCircle2 className="icon-sm mr-2" aria-hidden="true" />
                                 Reactivate
                               </DropdownMenuItem>
                             ) : null}
@@ -418,7 +418,7 @@ export default function OrgAdminPage() {
                               onClick={() => handleRemoveMember(member.id)}
                               className="text-destructive"
                             >
-                              <UserMinus className="icon-sm mr-2" />
+                              <UserMinus className="icon-sm mr-2" aria-hidden="true" />
                               Remove
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -439,10 +439,10 @@ export default function OrgAdminPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center py-8 text-muted-foreground">
-                  <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <Mail className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
                   <p>No pending invitations</p>
                   <Button className="mt-4">
-                    <UserPlus className="icon-sm mr-2" />
+                    <UserPlus className="icon-sm mr-2" aria-hidden="true" />
                     Invite Members
                   </Button>
                 </div>
@@ -458,7 +458,7 @@ export default function OrgAdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                    <BarChart3 className="h-12 w-12 opacity-50" />
+                    <BarChart3 className="h-12 w-12 opacity-50" aria-hidden="true" />
                   </div>
                 </CardContent>
               </Card>
@@ -468,7 +468,7 @@ export default function OrgAdminPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-                    <TrendingUp className="h-12 w-12 opacity-50" />
+                    <TrendingUp className="h-12 w-12 opacity-50" aria-hidden="true" />
                   </div>
                 </CardContent>
               </Card>
@@ -486,7 +486,7 @@ export default function OrgAdminPage() {
                   <div key={role} className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn('capitalize', ROLE_COLORS[role])}>
-                        {role === 'owner' && <Crown className="h-3 w-3 mr-1" />}
+                        {role === 'owner' && <Crown className="icon-2xs mr-1" aria-hidden="true" />}
                         {role}
                       </Badge>
                     </div>
@@ -501,9 +501,9 @@ export default function OrgAdminPage() {
                       ].map((perm, i) => (
                         <div key={perm} className="flex items-center gap-2">
                           {(role === 'owner' || (role === 'admin' && i < 5) || (role === 'member' && i > 3)) ? (
-                            <CheckCircle2 className="icon-sm text-emerald-500" />
+                            <CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" />
                           ) : (
-                            <XCircle className="icon-sm text-muted-foreground" />
+                            <XCircle className="icon-sm text-muted-foreground" aria-hidden="true" />
                           )}
                           <span className="text-muted-foreground">{perm}</span>
                         </div>

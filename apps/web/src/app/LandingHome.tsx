@@ -305,7 +305,7 @@ export function LandingHome() {
               <Button variant="ghost" size="sm">Log in</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm" className="gap-1.5">Join free <ArrowRight className="h-3.5 w-3.5" /></Button>
+              <Button size="sm" className="gap-1.5">Join free <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>
             </Link>
           </div>
         </div>
@@ -321,7 +321,7 @@ export function LandingHome() {
         <div className="relative mx-auto max-w-4xl px-6 py-24 text-center">
           <div className="mb-6 animate-fade-in" style={{ animationDelay: '0ms' }}>
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               The startup ecosystem, connected
             </span>
           </div>
@@ -356,12 +356,12 @@ export function LandingHome() {
             <Link href="/register">
               <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25">
                 Get started free
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" aria-hidden="true" />
               </Button>
             </Link>
             <Link href="/demo">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
-                <Play className="h-4 w-4 text-primary" />
+                <Play className="icon-sm text-primary" aria-hidden="true" />
                 Try Demo
               </Button>
             </Link>
@@ -435,7 +435,7 @@ export function LandingHome() {
                   <div className={`flex h-20 w-20 items-center justify-center rounded-2xl ${color} ring-4 ring-background`}>
                     <Icon className="h-9 w-9" />
                   </div>
-                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground shadow">
+                  <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground shadow">
                     {step}
                   </span>
                 </div>
@@ -481,7 +481,7 @@ export function LandingHome() {
                   <CardContent className="space-y-2 pt-0">
                     {bullets.map((bullet) => (
                       <div key={bullet} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${color}`} />
+                        <CheckCircle className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${color}`} aria-hidden="true" />
                         {bullet}
                       </div>
                     ))}
@@ -575,7 +575,7 @@ export function LandingHome() {
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: rating }).map((_, i) => (
-                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" aria-hidden="true" />
                     ))}
                   </div>
                   <Badge variant="secondary" className="text-xs">{tag}</Badge>
@@ -637,7 +637,7 @@ export function LandingHome() {
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                      <CheckCircle className="mt-0.5 icon-sm shrink-0 text-emerald-500" aria-hidden="true" />
                       {f}
                     </li>
                   ))}
@@ -648,7 +648,7 @@ export function LandingHome() {
                     className="w-full"
                   >
                     {cta}
-                    {highlight && <ArrowRight className="ml-1.5 h-4 w-4" />}
+                    {highlight && <ArrowRight className="ml-1.5 icon-sm" aria-hidden="true" />}
                   </Button>
                 </Link>
               </div>
@@ -665,7 +665,7 @@ export function LandingHome() {
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-              <Network className="h-7 w-7 text-primary" />
+              <Network className="h-7 w-7 text-primary" aria-hidden="true" />
             </div>
           </div>
           <h2 className="font-display text-4xl font-bold text-foreground">
@@ -679,12 +679,12 @@ export function LandingHome() {
             <Link href="/register">
               <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25">
                 Create free account
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="icon-sm" aria-hidden="true" />
               </Button>
             </Link>
             <Link href="/discover">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base">
-                <Users className="h-4 w-4" />
+                <Users className="icon-sm" aria-hidden="true" />
                 Browse profiles
               </Button>
             </Link>
@@ -709,19 +709,19 @@ export function LandingHome() {
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Twitter className="h-3.5 w-3.5" />
+                  <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Linkedin className="h-3.5 w-3.5" />
+                  <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Github className="h-3.5 w-3.5" />
+                  <Github className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer"
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
-                  <Globe className="h-3.5 w-3.5" />
+                  <Globe className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               </div>
             </div>
@@ -789,7 +789,7 @@ export function LandingHome() {
               © {new Date().getFullYear()} CoFounderBay. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Zap className="h-3 w-3 text-primary" />
+              <Zap className="icon-2xs text-primary" aria-hidden="true" />
               Built for founders, by founders
             </div>
           </div>

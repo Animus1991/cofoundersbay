@@ -67,7 +67,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
     <Card className={cn('', className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-medium flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-primary" />
+          <BarChart3 className="icon-sm text-primary" aria-hidden="true" />
           Active poll
         </CardTitle>
       </CardHeader>
@@ -93,7 +93,7 @@ export function DashboardPoll({ poll: apiPoll, className }: DashboardPollProps) 
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="flex items-center gap-2">
-                      {isSelected && <Check className="h-4 w-4" />}
+                      {isSelected && <Check className="icon-sm" aria-hidden="true" />}
                       {opt.label}
                     </span>
                     <span className="text-muted-foreground tabular-nums">{pct}%</span>

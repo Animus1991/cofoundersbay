@@ -88,51 +88,51 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
                   <Link href={`/startups/${startup.id}`} className="font-semibold hover:text-primary transition-colors">
                     {startup.name}
                   </Link>
-                  {startup.isHot && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">🔥 HOT</Badge>}
-                  {startup.isFeatured && <Badge className="text-[10px] h-4 px-1.5 bg-primary/20 text-primary border-primary/30">Featured</Badge>}
+                  {startup.isHot && <Badge variant="destructive" className="text-2xs h-4 px-1.5">🔥 HOT</Badge>}
+                  {startup.isFeatured && <Badge className="text-2xs h-4 px-1.5 bg-primary/20 text-primary border-primary/30">Featured</Badge>}
                 </div>
                 <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">{startup.tagline}</p>
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <Button aria-label="Show" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setInWatchlist(!inWatchlist)} title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}>
-                  <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary fill-primary/20' : 'text-muted-foreground')} />
+                  <Eye className={cn('h-3.5 w-3.5', inWatchlist ? 'text-primary fill-primary/20' : 'text-muted-foreground')} aria-hidden="true" />
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon" className="h-7 w-7">
-                      <MoreVertical className="h-3.5 w-3.5" />
+                      <MoreVertical className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/startups/${startup.id}`}><Eye className="mr-2 h-4 w-4" />View Details</Link>
+                      <Link href={`/startups/${startup.id}`}><Eye className="mr-2 icon-sm" aria-hidden="true" />View Details</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem><GanttChart className="mr-2 h-4 w-4" />Add to Pipeline</DropdownMenuItem>
+                    <DropdownMenuItem><GanttChart className="mr-2 icon-sm" aria-hidden="true" />Add to Pipeline</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setInWatchlist(!inWatchlist)}>
-                      <Eye className="mr-2 h-4 w-4" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
+                      <Eye className="mr-2 icon-sm" aria-hidden="true" />{inWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem><MessageCircle className="mr-2 h-4 w-4" />Request Intro</DropdownMenuItem>
-                    <DropdownMenuItem><GitCompare className="mr-2 h-4 w-4" />Compare</DropdownMenuItem>
+                    <DropdownMenuItem><MessageCircle className="mr-2 icon-sm" aria-hidden="true" />Request Intro</DropdownMenuItem>
+                    <DropdownMenuItem><GitCompare className="mr-2 icon-sm" aria-hidden="true" />Compare</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-1.5 mt-2">
-              <Badge variant="outline" className="text-[10px] h-4 px-1.5">{startup.stage}</Badge>
-              <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{startup.businessModel}</Badge>
+              <Badge variant="outline" className="text-2xs h-4 px-1.5">{startup.stage}</Badge>
+              <Badge variant="secondary" className="text-2xs h-4 px-1.5">{startup.businessModel}</Badge>
               {startup.tags.slice(0, 2).map((tag) => (
-                <Badge key={tag} variant="secondary" className="text-[10px] h-4 px-1.5">{tag}</Badge>
+                <Badge key={tag} variant="secondary" className="text-2xs h-4 px-1.5">{tag}</Badge>
               ))}
             </div>
 
             <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{startup.location}</span>
-              <span className="flex items-center gap-1"><Users className="h-3 w-3" />{startup.teamSize} founders</span>
-              <span className="flex items-center gap-1 font-medium text-primary"><DollarSign className="h-3 w-3" />Raising {startup.raisingAmount}</span>
+              <span className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{startup.location}</span>
+              <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{startup.teamSize} founders</span>
+              <span className="flex items-center gap-1 font-medium text-primary"><DollarSign className="icon-2xs" aria-hidden="true" />Raising {startup.raisingAmount}</span>
               {startup.revenue !== 'Pre-revenue' && (
-                <span className="flex items-center gap-1 text-green-600"><TrendingUp className="h-3 w-3" />{startup.revenue}</span>
+                <span className="flex items-center gap-1 text-green-600"><TrendingUp className="icon-2xs" aria-hidden="true" />{startup.revenue}</span>
               )}
             </div>
 
@@ -154,13 +154,13 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
 
             <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border">
               <Button size="sm" variant="default" className="h-7 text-xs flex-1" asChild>
-                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 h-3 w-3" />View</Link>
+                <Link href={`/startups/${startup.id}`}><Eye className="mr-1 icon-2xs" aria-hidden="true" />View</Link>
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <GanttChart className="mr-1 h-3 w-3" />Pipeline
+                <GanttChart className="mr-1 icon-2xs" aria-hidden="true" />Pipeline
               </Button>
               <Button size="sm" variant="outline" className="h-7 text-xs flex-1">
-                <MessageCircle className="mr-1 h-3 w-3" />Intro
+                <MessageCircle className="mr-1 icon-2xs" aria-hidden="true" />Intro
               </Button>
             </div>
           </div>
@@ -219,17 +219,17 @@ export default function InvestorScoutingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Compass className="h-6 w-6 text-primary" />
+              <Compass className="icon-lg text-primary" aria-hidden="true" />
               Scout Startups
             </h1>
             <p className="text-muted-foreground">Discover startups that match your investment thesis</p>
           </div>
           <div className="flex items-center gap-2">
             <Button aria-label="List view" variant={viewMode === 'list' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('list')}>
-              <List className="h-4 w-4" />
+              <List className="icon-sm" aria-hidden="true" />
             </Button>
             <Button aria-label="Grid view" variant={viewMode === 'grid' ? 'default' : 'outline'} size="icon" className="h-8 w-8" onClick={() => setViewMode('grid')}>
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -238,7 +238,7 @@ export default function InvestorScoutingPage() {
         {featured.length > 0 && (
           <Card className="border-primary/20 bg-primary/2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-primary" />Featured Startups</CardTitle>
+              <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary" aria-hidden="true" />Featured Startups</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2">
               {featured.map(s => (
@@ -264,7 +264,7 @@ export default function InvestorScoutingPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input placeholder="Search by name, industry, or keyword..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={industry} onValueChange={setIndustry}>
@@ -287,7 +287,7 @@ export default function InvestorScoutingPage() {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 h-3.5 w-3.5" /><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-[130px]"><ArrowUpDown className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" /><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="match">Best Match</SelectItem>
                 <SelectItem value="readiness">Readiness</SelectItem>
@@ -302,7 +302,7 @@ export default function InvestorScoutingPage() {
                 <Badge key={f} variant="secondary" className="gap-1 text-xs">
                   {f}
                   <button onClick={() => { if (f === industry) setIndustry('all'); else if (f === stage) setStage('all'); else setModel('all'); }}>
-                    <X className="h-3 w-3" />
+                    <X className="icon-2xs" aria-hidden="true" />
                   </button>
                 </Badge>
               ))}
@@ -318,7 +318,7 @@ export default function InvestorScoutingPage() {
             {ALL_STARTUPS.filter(s => s.isHot).length > 0 && <span className="ml-2 text-orange-500">🔥 {ALL_STARTUPS.filter(s => s.isHot).length} trending</span>}
           </p>
           <Link href="/investor/pipeline" className="text-xs text-primary hover:underline flex items-center gap-1">
-            <GanttChart className="h-3.5 w-3.5" />View Pipeline
+            <GanttChart className="h-3.5 w-3.5" aria-hidden="true" />View Pipeline
           </Link>
         </div>
 
@@ -330,7 +330,7 @@ export default function InvestorScoutingPage() {
           {filtered.length === 0 && (
             <Card className="col-span-2">
               <CardContent className="py-12 text-center">
-                <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                <Compass className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <h3 className="font-medium">No startups found</h3>
                 <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search term</p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => { setIndustry('all'); setStage('all'); setModel('all'); setSearch(''); }}>Clear Filters</Button>

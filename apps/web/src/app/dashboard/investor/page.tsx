@@ -250,7 +250,7 @@ export default function InvestorDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <DollarSign className="icon-sm" />
+            <DollarSign className="icon-sm" aria-hidden="true" />
             Investor
           </Badge>
         </div>
@@ -292,17 +292,17 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Rocket className="icon-sm text-primary" />
+                    <Rocket className="icon-sm text-primary" aria-hidden="true" />
                     Trending Startups
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">
-                      <Filter className="mr-1.5 icon-sm" />
+                      <Filter className="mr-1.5 icon-sm" aria-hidden="true" />
                       Filter
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/discover">
-                        View all <ArrowRight className="ml-1 icon-sm" />
+                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                       </Link>
                     </Button>
                   </div>
@@ -320,12 +320,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BarChart3 className="icon-sm text-primary" />
+                    <BarChart3 className="icon-sm text-primary" aria-hidden="true" />
                     Active Deals
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/pipeline">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -347,12 +347,12 @@ export default function InvestorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <PieChart className="icon-sm text-primary" />
+                    <PieChart className="icon-sm text-primary" aria-hidden="true" />
                     Portfolio Companies
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/investor/portfolio">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -375,31 +375,31 @@ export default function InvestorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/scouting">
-                    <Search className="mr-2 icon-sm" />
+                    <Search className="mr-2 icon-sm" aria-hidden="true" />
                     Scout Startups
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/watchlist">
-                    <Star className="mr-2 icon-sm" />
+                    <Star className="mr-2 icon-sm" aria-hidden="true" />
                     My Watchlist
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/pipeline">
-                    <Target className="mr-2 icon-sm" />
+                    <Target className="mr-2 icon-sm" aria-hidden="true" />
                     Deal Pipeline
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/portfolio">
-                    <LineChart className="mr-2 icon-sm" />
+                    <LineChart className="mr-2 icon-sm" aria-hidden="true" />
                     Portfolio
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/investor/analytics">
-                    <BarChart3 className="mr-2 icon-sm" />
+                    <BarChart3 className="mr-2 icon-sm" aria-hidden="true" />
                     Analytics
                   </Link>
                 </Button>
@@ -443,7 +443,7 @@ export default function InvestorDashboard() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Eye className="icon-sm" />
+                  <Eye className="icon-sm" aria-hidden="true" />
                   Recent Activity
                 </CardTitle>
               </CardHeader>

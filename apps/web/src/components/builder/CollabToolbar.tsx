@@ -141,10 +141,10 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
         {generatedUrl ? (
           <div className="space-y-4 py-2">
             <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
-              <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+              <ExternalLink className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
               <span className="text-sm truncate flex-1 font-mono">{generatedUrl}</span>
               <Button size="sm" variant="ghost" onClick={handleCopy}>
-                <Copy className="h-3.5 w-3.5" />
+                <Copy className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -203,7 +203,7 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
           </Button>
           {!generatedUrl && (
             <Button onClick={handleCreate} disabled={loading}>
-              {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+              {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
               Generate Link
             </Button>
           )}
@@ -218,13 +218,13 @@ function ShareLinkDialog({ open, onClose, documentId, workspaceId }: ShareDialog
 function ProposalStatusIcon({ status }: { status: string }) {
   switch (status) {
     case 'approved':
-      return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />;
+      return <CheckCircle2 className="h-3.5 w-3.5 text-green-500" aria-hidden="true" />;
     case 'changes_requested':
-      return <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />;
+      return <AlertCircle className="h-3.5 w-3.5 text-yellow-500" aria-hidden="true" />;
     case 'closed':
-      return <XCircle className="h-3.5 w-3.5 text-gray-400" />;
+      return <XCircle className="h-3.5 w-3.5 text-gray-400" aria-hidden="true" />;
     default:
-      return <Clock className="h-3.5 w-3.5 text-blue-500" />;
+      return <Clock className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />;
   }
 }
 
@@ -281,7 +281,7 @@ export function CollabToolbar({
                 className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
                 onClick={onHistoryClick}
               >
-                <History className="h-3.5 w-3.5 mr-1.5" />
+                <History className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
                 <span className="text-xs hidden sm:inline">History</span>
               </Button>
             </TooltipTrigger>
@@ -298,10 +298,10 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowBranchPanel(true)}
             >
-              <GitBranch className="h-3.5 w-3.5 mr-1.5" />
+              <GitBranch className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">Variants</span>
               {openBranches.length > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-[9px] text-primary-foreground flex items-center justify-center font-medium">
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary text-2xs text-primary-foreground flex items-center justify-center font-medium">
                   {openBranches.length}
                 </span>
               )}
@@ -319,12 +319,12 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground relative"
               onClick={() => setShowReviewPanel(true)}
             >
-              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
+              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">Proposals</span>
               {openProposals.length > 0 && (
                 <Badge
                   variant="secondary"
-                  className="ml-1 h-4 px-1.5 text-[10px] bg-orange-100 text-orange-700 border-orange-200"
+                  className="ml-1 h-4 px-1.5 text-2xs bg-orange-100 text-orange-700 border-orange-200"
                 >
                   {openProposals.length}
                 </Badge>
@@ -343,7 +343,7 @@ export function CollabToolbar({
               className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowShareDialog(true)}
             >
-              <Share2 className="h-3.5 w-3.5 mr-1.5" />
+              <Share2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">Share</span>
             </Button>
           </TooltipTrigger>

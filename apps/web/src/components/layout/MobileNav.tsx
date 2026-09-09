@@ -53,7 +53,7 @@ export function MobileNav() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button aria-label="Open menu" variant="secondary" size="icon" className="lg:hidden">
-          <Menu className="h-5 w-5" />
+          <Menu className="icon-md" aria-hidden="true" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0">
@@ -89,7 +89,7 @@ export function MobileNav() {
             .filter((s) => s.section !== 'Account')
             .map(({ section, links }) => (
             <div key={section}>
-              <p className="px-1 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              <p className="px-1 pb-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                 {section}
               </p>
               {links.map(({ href, label, icon: Icon }) => {
@@ -125,21 +125,21 @@ export function MobileNav() {
                 href="/profile"
                 className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
               >
-                <User className="h-5 w-5" />
+                <User className="icon-md" aria-hidden="true" />
                 My Profile
               </Link>
               <Link
                 href="/settings"
                 className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-all"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="icon-md" aria-hidden="true" />
                 Settings
               </Link>
               <button
                 onClick={handleLogout}
                 className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-all"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="icon-md" aria-hidden="true" />
                 Sign out
               </button>
             </>

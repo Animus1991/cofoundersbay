@@ -257,7 +257,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-orange-500/10 rounded-lg">
-            <FileText className="h-5 w-5 text-orange-600" />
+            <FileText className="icon-md text-orange-600" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Application Generator</h2>
@@ -274,14 +274,14 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
             )}
             AI Generate
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" aria-hidden="true" />
             Save All
           </Button>
         </div>
@@ -320,7 +320,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
                 </div>
                 {app.deadline && (
                   <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
+                    <Clock className="icon-2xs" aria-hidden="true" />
                     {app.deadline}
                   </div>
                 )}
@@ -349,7 +349,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm">
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink className="icon-sm mr-2" aria-hidden="true" />
                   View Program
                 </Button>
               </div>
@@ -376,9 +376,9 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
                         onClick={() => copyToClipboard(question.answer, question.id)}
                       >
                         {copiedId === question.id ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          <CheckCircle2 className="icon-sm text-green-500" aria-hidden="true" />
                         ) : (
-                          <Copy className="h-4 w-4" />
+                          <Copy className="icon-sm" aria-hidden="true" />
                         )}
                       </Button>
                     )}
@@ -403,7 +403,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
                 
                 {question.tips && (
                   <p className="text-xs text-muted-foreground flex items-start gap-1">
-                    <Sparkles className="h-3 w-3 mt-0.5 shrink-0" />
+                    <Sparkles className="icon-2xs mt-0.5 shrink-0" aria-hidden="true" />
                     {question.tips}
                   </p>
                 )}

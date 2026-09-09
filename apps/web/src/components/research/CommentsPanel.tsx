@@ -39,7 +39,7 @@ function CommentBubble({
         {comment.authorAvatar ? (
           <img src={comment.authorAvatar} alt="" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-[10px] font-semibold text-primary">
+          <span className="text-2xs font-semibold text-primary">
             {(comment.authorName ?? 'U')[0].toUpperCase()}
           </span>
         )}
@@ -74,7 +74,7 @@ function CommentBubble({
               className="p-0.5 rounded text-muted-foreground hover:text-green-500 transition-colors"
               title="Mark as resolved"
             >
-              <Check className="h-3 w-3" />
+              <Check className="icon-2xs" aria-hidden="true" />
             </button>
           )}
           {isOwn && (
@@ -83,7 +83,7 @@ function CommentBubble({
               className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors"
               title="Delete comment"
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="icon-2xs" aria-hidden="true" />
             </button>
           )}
         </div>
@@ -137,7 +137,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-card/80 backdrop-blur-sm">
         <div className="flex items-center gap-2">
-          <MessageCircle className="h-4 w-4 text-primary" />
+          <MessageCircle className="icon-sm text-primary" aria-hidden="true" />
           <span className="text-sm font-semibold truncate max-w-[180px]">
             {nodeTitle ? `Comments: ${nodeTitle}` : 'Comments'}
           </span>
@@ -157,7 +157,7 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             </button>
           )}
           <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -166,11 +166,11 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
       <div className="flex-1 overflow-y-auto p-3 space-y-3 min-h-0" style={{ maxHeight: '360px' }}>
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" />
           </div>
         ) : displayed.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <MessageCircle className="h-8 w-8 text-muted-foreground/40 mb-2" />
+            <MessageCircle className="icon-xl text-muted-foreground/40 mb-2" aria-hidden="true" />
             <p className="text-sm text-muted-foreground">No comments yet</p>
             <p className="text-xs text-muted-foreground/60 mt-1">Start the conversation below</p>
           </div>
@@ -211,8 +211,8 @@ export function CommentsPanel({ nodeId, nodeTitle, currentUserId, onClose, class
             className="h-9 w-9 p-0 shrink-0"
           >
             {createMutation.isPending
-              ? <Loader2 className="h-4 w-4 animate-spin" />
-              : <Send className="h-4 w-4" />
+              ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
+              : <Send className="icon-sm" aria-hidden="true" />
             }
           </Button>
         </div>

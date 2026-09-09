@@ -146,7 +146,7 @@ function RoundCard({ round }: { round: Round }) {
             </p>
           </div>
           <Button size="sm" variant="outline" className="shrink-0">
-            <Plus className="icon-sm mr-1.5" />Add Investor
+            <Plus className="icon-sm mr-1.5" aria-hidden="true" />Add Investor
           </Button>
         </div>
 
@@ -221,21 +221,21 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
                           <p className="text-xs font-semibold truncate">{lead.name}</p>
                           {lead.firm && <p className="text-xs text-muted-foreground truncate">{lead.firm}</p>}
                         </div>
-                        {lead.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0 ml-auto" />}
+                        {lead.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0 ml-auto" aria-hidden="true" />}
                       </div>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <DollarSign className="icon-sm" />{lead.checkSize}
+                        <DollarSign className="icon-sm" aria-hidden="true" />{lead.checkSize}
                       </div>
                       {lead.lastContact && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Clock className="icon-sm" />Last contact: {lead.lastContact}
+                          <Clock className="icon-sm" aria-hidden="true" />Last contact: {lead.lastContact}
                         </p>
                       )}
                     </CardContent>
                   </Card>
                 ))}
                 <Button variant="ghost" size="sm" className="w-full h-7 text-xs text-muted-foreground border border-dashed border-border/60">
-                  <Plus className="icon-sm mr-1" />Add
+                  <Plus className="icon-sm mr-1" aria-hidden="true" />Add
                 </Button>
               </div>
             </div>
@@ -281,7 +281,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                 <p className="text-xs text-muted-foreground">complete</p>
               </div>
               <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
-                <Globe className="h-3.5 w-3.5" />Share Room
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />Share Room
               </Button>
             </div>
           </div>
@@ -314,7 +314,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
             <Card key={doc.id} className="hover:border-primary/20 transition-colors">
               <CardContent className="p-3.5 flex items-center gap-3">
                 <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                  <FileText className="icon-sm text-muted-foreground" />
+                  <FileText className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -331,8 +331,8 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
                     <StatusIcon className="h-3.5 w-3.5" />{cfg.label}
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Upload className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Download className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Upload className="h-3.5 w-3.5" aria-hidden="true" /></Button>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Download className="h-3.5 w-3.5" aria-hidden="true" /></Button>
                   </div>
                 </div>
               </CardContent>
@@ -360,7 +360,7 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="font-semibold text-sm">{lead.name}</p>
-                  {lead.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500" />}
+                  {lead.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500" aria-hidden="true" />}
                 </div>
                 <p className="text-xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
                 {lead.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{lead.notes}</p>}
@@ -368,15 +368,15 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
               <div className="flex items-center gap-3 shrink-0">
                 {lead.lastContact && (
                   <p className="text-xs text-muted-foreground hidden sm:block">
-                    <Clock className="icon-sm inline mr-1" />{lead.lastContact}
+                    <Clock className="icon-sm inline mr-1" aria-hidden="true" />{lead.lastContact}
                   </p>
                 )}
                 <Badge variant="outline" className={cn('text-xs border-0', cfg.color)}>
                   {cfg.label}
                 </Badge>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><MessageCircle className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /></Button>
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="h-3.5 w-3.5" aria-hidden="true" /></Button>
                 </div>
               </div>
             </CardContent>
@@ -448,11 +448,11 @@ export default function FundraisingPage() {
             <div className="flex gap-2">
               <Button size="sm" variant="outline" className="h-8 text-xs gap-1.5" asChild>
                 <Link href="/investors">
-                  <Users className="h-3.5 w-3.5" />Find Investors
+                  <Users className="h-3.5 w-3.5" aria-hidden="true" />Find Investors
                 </Link>
               </Button>
               <Button size="sm" className="h-8 text-xs gap-1.5">
-                <Plus className="h-3.5 w-3.5" />Add Lead
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />Add Lead
               </Button>
             </div>
           </div>
@@ -487,7 +487,7 @@ export default function FundraisingPage() {
                   <p className="text-sm font-medium group-hover:text-primary transition-colors">{r.title}</p>
                   <p className="text-xs text-muted-foreground">{r.desc}</p>
                 </div>
-                <ChevronRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
               </Link>
             ))}
           </CardContent>

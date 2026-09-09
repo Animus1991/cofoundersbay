@@ -130,7 +130,7 @@ function ExperimentCard({
                 : 'bg-green-50 text-green-700 hover:bg-green-100'
             }`}
           >
-            {exp.active ? <Square className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+            {exp.active ? <Square className="w-3.5 h-3.5" aria-hidden="true" /> : <Play className="w-3.5 h-3.5" aria-hidden="true" />}
             {exp.active ? 'Stop' : 'Start'}
           </button>
           <button
@@ -140,11 +140,11 @@ function ExperimentCard({
             }}
             className="text-xs flex items-center gap-1 text-gray-400 hover:text-gray-600 px-2"
           >
-            <BarChart2 className="w-3.5 h-3.5" />
-            {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            <BarChart2 className="w-3.5 h-3.5" aria-hidden="true" />
+            {expanded ? <ChevronUp className="icon-2xs" aria-hidden="true" /> : <ChevronDown className="icon-2xs" aria-hidden="true" />}
           </button>
           <button onClick={del} className="text-gray-300 hover:text-rose-500">
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="icon-sm" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -153,7 +153,7 @@ function ExperimentCard({
         <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
           {metricsLoading ? (
             <div className="flex items-center gap-2 text-sm text-gray-400">
-              <RefreshCw className="w-4 h-4 animate-spin" /> Loading metrics…
+              <RefreshCw className="icon-sm animate-spin" aria-hidden="true" /> Loading metrics…
             </div>
           ) : metrics ? (
             <div className="space-y-4">
@@ -371,7 +371,7 @@ function ConfigEditor() {
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
           <button onClick={load} className="text-gray-400 hover:text-indigo-600">
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           </button>
         </div>
         <button
@@ -379,18 +379,18 @@ function ConfigEditor() {
           disabled={seedLoading}
           className="text-xs flex items-center gap-1.5 border border-dashed border-indigo-300 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
         >
-          <Settings className="w-3.5 h-3.5" />
+          <Settings className="w-3.5 h-3.5" aria-hidden="true" />
           {seedLoading ? 'Seeding…' : 'Seed Defaults'}
         </button>
       </div>
 
       {loading && configs.length === 0 ? (
         <div className="flex items-center justify-center h-32 text-gray-400">
-          <RefreshCw className="w-4 h-4 animate-spin mr-2" /> Loading…
+          <RefreshCw className="icon-sm animate-spin mr-2" aria-hidden="true" /> Loading…
         </div>
       ) : configs.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-32 text-gray-400">
-          <Settings className="w-8 h-8 mb-2 opacity-30" />
+          <Settings className="icon-xl mb-2 opacity-30" aria-hidden="true" />
           <p className="text-sm">No config keys found. Seed defaults to get started.</p>
         </div>
       ) : (
@@ -424,7 +424,7 @@ function ConfigEditor() {
                   onClick={() => void save(cfg)}
                   className="shrink-0 flex items-center gap-1.5 text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 disabled:opacity-50"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-3.5 h-3.5" aria-hidden="true" />
                   {saving === cfg.key ? 'Saving…' : 'Save'}
                 </button>
               </div>
@@ -501,24 +501,24 @@ export function ExperimentationPanel() {
                 onClick={loadExperiments}
                 className="text-gray-400 hover:text-indigo-600"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               </button>
               <button
                 onClick={() => setShowCreate(true)}
                 className="flex items-center gap-1.5 text-sm px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
-                <Plus className="w-4 h-4" /> New Experiment
+                <Plus className="icon-sm" aria-hidden="true" /> New Experiment
               </button>
             </div>
           </div>
 
           {loading && experiments.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-gray-400">
-              <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Loading…
+              <RefreshCw className="icon-md animate-spin mr-2" aria-hidden="true" /> Loading…
             </div>
           ) : experiments.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
-              <FlaskConical className="w-10 h-10 mb-2 opacity-30" />
+              <FlaskConical className="w-10 h-10 mb-2 opacity-30" aria-hidden="true" />
               <p className="text-sm">No experiments yet. Create one to start A/B testing.</p>
               <button
                 onClick={() => setShowCreate(true)}

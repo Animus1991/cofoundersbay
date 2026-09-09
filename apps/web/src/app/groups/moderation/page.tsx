@@ -80,7 +80,7 @@ function ReportCard({ report }: { report: ModerationReport }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className={cn('text-xs', typeCfg.color)}>
-                <AlertTriangle className="mr-1 h-3 w-3" />
+                <AlertTriangle className="mr-1 icon-2xs" aria-hidden="true" />
                 {typeCfg.label}
               </Badge>
               <Badge variant="secondary" className="text-xs capitalize">{report.contentType}</Badge>
@@ -99,29 +99,29 @@ function ReportCard({ report }: { report: ModerationReport }) {
               <span>Reported by: <span className="font-medium text-foreground">{report.reportedBy}</span></span>
               <span>Against: <span className="font-medium text-foreground">{report.reportedUser}</span></span>
               <span>In: <span className="font-medium text-foreground">{report.groupName}</span></span>
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{report.reportedAt}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{report.reportedAt}</span>
             </div>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />View Content</DropdownMenuItem>
-              <DropdownMenuItem><CheckCircle className="mr-2 h-4 w-4" />Mark Resolved</DropdownMenuItem>
-              <DropdownMenuItem><XCircle className="mr-2 h-4 w-4" />Dismiss</DropdownMenuItem>
-              <DropdownMenuItem><UserX className="mr-2 h-4 w-4" />Remove Member</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Ban className="mr-2 h-4 w-4" />Ban User</DropdownMenuItem>
+              <DropdownMenuItem><Eye className="mr-2 icon-sm" aria-hidden="true" />View Content</DropdownMenuItem>
+              <DropdownMenuItem><CheckCircle className="mr-2 icon-sm" aria-hidden="true" />Mark Resolved</DropdownMenuItem>
+              <DropdownMenuItem><XCircle className="mr-2 icon-sm" aria-hidden="true" />Dismiss</DropdownMenuItem>
+              <DropdownMenuItem><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive"><Ban className="mr-2 icon-sm" aria-hidden="true" />Ban User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
         {report.status === 'pending' && (
           <div className="flex gap-2 mt-3">
-            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 h-3 w-3" />Resolve</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 h-3 w-3" />Dismiss</Button>
-            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive border-destructive/30"><Ban className="mr-1 h-3 w-3" />Ban User</Button>
+            <Button size="sm" variant="default" className="h-7 text-xs"><CheckCircle className="mr-1 icon-2xs" aria-hidden="true" />Resolve</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs"><XCircle className="mr-1 icon-2xs" aria-hidden="true" />Dismiss</Button>
+            <Button size="sm" variant="outline" className="h-7 text-xs text-destructive border-destructive/30"><Ban className="mr-1 icon-2xs" aria-hidden="true" />Ban User</Button>
           </div>
         )}
       </CardContent>
@@ -149,7 +149,7 @@ export default function GroupsModerationPage() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
+            <Shield className="icon-lg text-primary" aria-hidden="true" />
             Moderation Queue
           </h1>
           <p className="text-muted-foreground">Review and action community reports</p>
@@ -159,7 +159,7 @@ export default function GroupsModerationPage() {
         {highPriority > 0 && (
           <Card className="border-red-500/30 bg-red-500/5">
             <CardContent className="p-4 flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+              <AlertTriangle className="icon-md text-red-500 shrink-0" aria-hidden="true" />
               <p className="text-sm">
                 <span className="font-semibold">{highPriority} high-priority report{highPriority > 1 ? 's' : ''}</span> require immediate attention
               </p>
@@ -186,7 +186,7 @@ export default function GroupsModerationPage() {
 
         {/* Search */}
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input placeholder="Search reports..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
         </div>
 
@@ -202,7 +202,7 @@ export default function GroupsModerationPage() {
             {filtered.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                  <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                   <p className="font-medium">No reports found</p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'pending' ? 'All caught up! No pending reports.' : 'No reports match your search.'}

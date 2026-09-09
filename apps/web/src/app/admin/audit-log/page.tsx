@@ -145,11 +145,11 @@ export default function AdminAuditLogPage() {
       actions={
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
-            <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} />
+            <RefreshCw className={cn('mr-2 icon-sm', isFetching && 'animate-spin')} aria-hidden="true" />
             Refresh
           </Button>
           <Button variant="outline" size="sm">
-            <Download className="mr-2 icon-sm" />
+            <Download className="mr-2 icon-sm" aria-hidden="true" />
             Export
           </Button>
         </div>
@@ -159,7 +159,7 @@ export default function AdminAuditLogPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search by actor, entity, action..."
               value={search}
@@ -193,7 +193,7 @@ export default function AdminAuditLogPage() {
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="icon-sm text-primary" />
+              <Shield className="icon-sm text-primary" aria-hidden="true" />
               Activity Log
             </CardTitle>
             <span className="text-xs text-muted-foreground">{total} total entries</span>
@@ -214,7 +214,7 @@ export default function AdminAuditLogPage() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="py-16 text-center">
-                <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                <Shield className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <p className="text-sm font-medium">No audit log entries</p>
                 <p className="text-xs text-muted-foreground mt-1">Try adjusting filters</p>
               </div>
@@ -241,7 +241,7 @@ export default function AdminAuditLogPage() {
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0 || isFetching}
               >
-                <ChevronLeft className="icon-sm" />
+                <ChevronLeft className="icon-sm" aria-hidden="true" />
                 Prev
               </Button>
               <Button
@@ -251,7 +251,7 @@ export default function AdminAuditLogPage() {
                 disabled={page >= totalPages - 1 || isFetching}
               >
                 Next
-                <ChevronRight className="icon-sm" />
+                <ChevronRight className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
           </div>

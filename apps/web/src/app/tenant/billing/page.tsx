@@ -51,7 +51,7 @@ function SeatRow({
         onClick={() => onRevoke(seat.userId)}
         disabled={revoking}
       >
-        {revoking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserMinus className="h-3.5 w-3.5" />}
+        {revoking ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <UserMinus className="h-3.5 w-3.5" aria-hidden="true" />}
         Revoke
       </Button>
     </div>
@@ -131,7 +131,7 @@ export default function TenantBillingPage() {
           <Link href="/pricing">
             <Button variant="outline" size="sm" className="gap-2">
               View plans
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </Link>
         </div>
@@ -144,14 +144,14 @@ export default function TenantBillingPage() {
           <CardContent className="space-y-4">
             {subLoading ? (
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 <span className="text-sm">Loading…</span>
               </div>
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 shrink-0">
-                    <Building2 className="h-6 w-6 text-violet-500" />
+                    <Building2 className="icon-lg text-violet-500" aria-hidden="true" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ export default function TenantBillingPage() {
 
                 {sub.status === 'past_due' && (
                   <div className="flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-700">
-                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                     Payment overdue. Update your payment method to avoid service interruption.
                   </div>
                 )}
@@ -191,14 +191,14 @@ export default function TenantBillingPage() {
                     onClick={() => openPortal(undefined)}
                     disabled={portalLoading}
                   >
-                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CreditCard className="h-3.5 w-3.5" />}
+                    {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <CreditCard className="h-3.5 w-3.5" aria-hidden="true" />}
                     Manage billing
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="icon-2xs" aria-hidden="true" />
                   </Button>
                   {(sub.plan?.planType === 'team' || sub.plan?.planType === 'organization') && (
                     <Button size="sm" variant="outline" className="gap-2" asChild>
                       <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade Request">
-                        <Crown className="h-3.5 w-3.5" />
+                        <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                         Request enterprise upgrade
                       </a>
                     </Button>
@@ -210,7 +210,7 @@ export default function TenantBillingPage() {
                 <p className="text-sm text-muted-foreground">No active subscription for this organization.</p>
                 <Link href="/pricing">
                   <Button size="sm" className="gap-2">
-                    <Building2 className="h-3.5 w-3.5" />
+                    <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     See organization plans
                   </Button>
                 </Link>
@@ -261,7 +261,7 @@ export default function TenantBillingPage() {
 
               {seatLimit && seatUsage >= seatLimit && (
                 <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-700">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                   Seat limit reached. Upgrade your plan or revoke unused seats to add more members.
                 </div>
               )}
@@ -285,7 +285,7 @@ export default function TenantBillingPage() {
 
               {seatLimit && seatUsage < seatLimit && (
                 <div className="pt-1 flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                   <span className="text-sm text-muted-foreground">
                     {seatLimit - seatUsage} seat{seatLimit - seatUsage !== 1 ? 's' : ''} available. Invite team members from the Members page.
                   </span>
@@ -307,7 +307,7 @@ export default function TenantBillingPage() {
                   .filter(([, v]) => Boolean(v))
                   .map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" aria-hidden="true" />
                       <span className="capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}{typeof v === 'string' ? `: ${v}` : ''}</span>
                     </div>
                   ))}
@@ -395,7 +395,7 @@ export default function TenantBillingPage() {
                     onClick={() => saveContact()}
                     disabled={savingContact || !contactForm.name || !contactForm.email}
                   >
-                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                    {savingContact && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
                     Save contact
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setShowContactForm(false)}>Cancel</Button>
@@ -410,7 +410,7 @@ export default function TenantBillingPage() {
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                <Shield className="h-5 w-5 text-primary" />
+                <Shield className="icon-md text-primary" aria-hidden="true" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">Need enterprise features?</p>
@@ -420,7 +420,7 @@ export default function TenantBillingPage() {
               </div>
               <Button size="sm" variant="outline" className="shrink-0 gap-2" asChild>
                 <a href="mailto:enterprise@cofounderbay.com?subject=Enterprise Upgrade">
-                  <Mail className="h-3.5 w-3.5" />
+                  <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                   Contact sales
                 </a>
               </Button>

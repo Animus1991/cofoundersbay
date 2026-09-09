@@ -87,7 +87,7 @@ function MenteeCard({ mentee }: { mentee: any }) {
           {mentee.sessionsCompleted} sessions
         </Badge>
         <Button aria-label="Message" variant="ghost" size="icon">
-          <MessageCircle className="icon-sm" />
+          <MessageCircle className="icon-sm" aria-hidden="true" />
         </Button>
       </div>
     </div>
@@ -106,7 +106,7 @@ function SessionCard({ session }: { session: any }) {
         'rounded-full p-2',
         isUpcoming ? 'bg-primary/10' : 'bg-muted'
       )}>
-        <Video className={cn('icon-sm', isUpcoming ? 'text-primary' : 'text-muted-foreground')} />
+        <Video className={cn('icon-sm', isUpcoming ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
@@ -231,7 +231,7 @@ export default function MentorDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <GraduationCap className="icon-sm" />
+            <GraduationCap className="icon-sm" aria-hidden="true" />
             Mentor
           </Badge>
         </div>
@@ -240,7 +240,7 @@ export default function MentorDashboard() {
         {nextSessionMinsAway !== null && nextSessionMinsAway <= 60 && nextSessionMinsAway > 0 && (
           <div className="flex items-center justify-between rounded-xl border border-blue-500/30 bg-blue-500/5 px-4 py-3">
             <div className="flex items-center gap-2">
-              <Video className="icon-sm text-blue-500" />
+              <Video className="icon-sm text-blue-500" aria-hidden="true" />
               <span className="text-sm font-medium">Session with {nextSession!.menteeName} in {nextSessionMinsAway} min</span>
             </div>
             <Link href="/mentor/sessions">
@@ -284,7 +284,7 @@ export default function MentorDashboard() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
               <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
-                <DollarSign className="icon-md text-emerald-500 shrink-0" />
+                <DollarSign className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Earnings this month</p>
                   <p className="text-lg font-bold text-emerald-600">{mentorStats.earningsThisMonth}</p>
@@ -293,7 +293,7 @@ export default function MentorDashboard() {
             </Link>
             <Link href="/mentor/reviews">
               <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 transition-all hover:border-amber-500/40 cursor-pointer">
-                <Star className="icon-md text-amber-500 shrink-0" />
+                <Star className="icon-md text-amber-500 shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Average rating</p>
                   <p className="text-lg font-bold text-amber-600">{mentorStats.avgRating} <span className="text-xs font-normal text-muted-foreground">/ 5.0</span></p>
@@ -302,7 +302,7 @@ export default function MentorDashboard() {
             </Link>
             <Link href="/mentor/sessions">
               <div className="flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 transition-all hover:border-primary/40 cursor-pointer">
-                <Video className="icon-md text-primary shrink-0" />
+                <Video className="icon-md text-primary shrink-0" aria-hidden="true" />
                 <div>
                   <p className="text-xs text-muted-foreground">Hours this month</p>
                   <p className="text-lg font-bold text-primary">{mentorStats.hoursThisMonth}h</p>
@@ -321,12 +321,12 @@ export default function MentorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" />
+                      <Zap className="icon-sm text-amber-500" aria-hidden="true" />
                       Mentorship Requests ({pendingRequests.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/mentor/requests">
-                        View all <ArrowRight className="ml-1 icon-sm" />
+                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                       </Link>
                     </Button>
                   </div>
@@ -344,12 +344,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Calendar className="icon-sm text-primary" />
+                    <Calendar className="icon-sm text-primary" aria-hidden="true" />
                     Upcoming Sessions
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/sessions">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -371,12 +371,12 @@ export default function MentorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <UserCheck className="icon-sm text-primary" />
+                    <UserCheck className="icon-sm text-primary" aria-hidden="true" />
                     Your Mentees
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/mentor/mentees">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -399,31 +399,31 @@ export default function MentorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/availability">
-                    <Clock className="mr-2 icon-sm" />
+                    <Clock className="mr-2 icon-sm" aria-hidden="true" />
                     Set Availability
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/requests">
-                    <UserCheck className="mr-2 icon-sm" />
+                    <UserCheck className="mr-2 icon-sm" aria-hidden="true" />
                     Mentorship Requests
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/reviews">
-                    <Star className="mr-2 icon-sm" />
+                    <Star className="mr-2 icon-sm" aria-hidden="true" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/earnings">
-                    <DollarSign className="mr-2 icon-sm" />
+                    <DollarSign className="mr-2 icon-sm" aria-hidden="true" />
                     Earnings
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/mentor/profile">
-                    <TrendingUp className="mr-2 icon-sm" />
+                    <TrendingUp className="mr-2 icon-sm" aria-hidden="true" />
                     Mentor Profile
                   </Link>
                 </Button>
@@ -452,7 +452,7 @@ export default function MentorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <Star className="icon-sm text-yellow-500 fill-yellow-500" />
+                    <Star className="icon-sm text-yellow-500 fill-yellow-500" aria-hidden="true" />
                     <span className="text-sm font-medium">Top 10% Mentor</span>
                   </div>
                 </div>

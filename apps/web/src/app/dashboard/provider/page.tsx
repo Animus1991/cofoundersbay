@@ -83,7 +83,7 @@ function ServiceCard({ service }: { service: any }) {
   return (
     <div className="flex items-start gap-3 rounded-lg border p-3 transition-all hover:bg-muted/50">
       <div className="rounded-lg bg-primary/10 p-2">
-        <Package className="icon-md text-primary" />
+        <Package className="icon-md text-primary" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ function ServiceCard({ service }: { service: any }) {
         </div>
       </div>
       <Button aria-label="Settings" variant="ghost" size="icon">
-        <Settings className="icon-sm" />
+        <Settings className="icon-sm" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -180,8 +180,7 @@ function ReviewCard({ review }: { review: any }) {
                 className={cn(
                   'icon-sm',
                   i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'
-                )}
-              />
+                )} aria-hidden="true" />
             ))}
           </div>
         </div>
@@ -271,7 +270,7 @@ export default function ProviderDashboard() {
             </p>
           </div>
           <Badge variant="outline" className="gap-1.5">
-            <Wrench className="icon-sm" />
+            <Wrench className="icon-sm" aria-hidden="true" />
             Service Provider
           </Badge>
         </div>
@@ -313,12 +312,12 @@ export default function ProviderDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Zap className="icon-sm text-amber-500" />
+                      <Zap className="icon-sm text-amber-500" aria-hidden="true" />
                       New Inquiries ({pendingInquiries.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/provider/inquiries">
-                        View all <ArrowRight className="ml-1 icon-sm" />
+                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                       </Link>
                     </Button>
                   </div>
@@ -336,12 +335,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Briefcase className="icon-sm text-primary" />
+                    <Briefcase className="icon-sm text-primary" aria-hidden="true" />
                     Active Projects
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/projects">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -363,12 +362,12 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Package className="icon-sm text-primary" />
+                    <Package className="icon-sm text-primary" aria-hidden="true" />
                     Your Services
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/provider/services">
-                      Manage <ArrowRight className="ml-1 icon-sm" />
+                      Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -391,31 +390,31 @@ export default function ProviderDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/services">
-                    <Package className="mr-2 icon-sm" />
+                    <Package className="mr-2 icon-sm" aria-hidden="true" />
                     Manage Services
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/inquiries">
-                    <MessageCircle className="mr-2 icon-sm" />
+                    <MessageCircle className="mr-2 icon-sm" aria-hidden="true" />
                     View Inquiries
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/reviews">
-                    <Star className="mr-2 icon-sm" />
+                    <Star className="mr-2 icon-sm" aria-hidden="true" />
                     My Reviews
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/provider/analytics">
-                    <TrendingUp className="mr-2 icon-sm" />
+                    <TrendingUp className="mr-2 icon-sm" aria-hidden="true" />
                     Earnings & Analytics
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/profile/edit">
-                    <Settings className="mr-2 icon-sm" />
+                    <Settings className="mr-2 icon-sm" aria-hidden="true" />
                     Edit Provider Profile
                   </Link>
                 </Button>
@@ -427,7 +426,7 @@ export default function ProviderDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="icon-sm" />
+                    <Star className="icon-sm" aria-hidden="true" />
                     Recent Reviews
                   </CardTitle>
                 </div>
@@ -466,7 +465,7 @@ export default function ProviderDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 text-sm text-green-600">
-                    <CheckCircle className="icon-sm" />
+                    <CheckCircle className="icon-sm" aria-hidden="true" />
                     <span>Top Rated Provider</span>
                   </div>
                 </div>

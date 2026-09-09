@@ -24,7 +24,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-500/10">
-        <Users className="h-8 w-8 text-indigo-400" />
+        <Users className="icon-xl text-indigo-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No connections yet</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -32,7 +32,7 @@ export function EmptyConnections({ className }: EmptyStateProps) {
       </p>
       <Link href="/discover">
         <Button className="gap-2">
-          <Compass className="h-4 w-4" />
+          <Compass className="icon-sm" aria-hidden="true" />
           Discover people
         </Button>
       </Link>
@@ -44,7 +44,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10">
-        <MessageCircle className="h-8 w-8 text-cyan-400" />
+        <MessageCircle className="icon-xl text-cyan-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No conversations</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -52,7 +52,7 @@ export function EmptyMessages({ className }: EmptyStateProps) {
       </p>
       <Link href="/connections">
         <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="icon-sm" aria-hidden="true" />
           View connections
         </Button>
       </Link>
@@ -64,7 +64,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10">
-        <Calendar className="h-8 w-8 text-purple-400" />
+        <Calendar className="icon-xl text-purple-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No upcoming events</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -72,7 +72,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
       </p>
       <Link href="/events/create">
         <Button className="gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="icon-sm" aria-hidden="true" />
           Create event
         </Button>
       </Link>
@@ -84,14 +84,14 @@ export function EmptyJobs({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/10">
-        <Briefcase className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+        <Briefcase className="icon-xl text-orange-600 dark:text-orange-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No jobs posted</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         There are no job listings at the moment. Post a job to find your next team member.
       </p>
       <Button className="gap-2">
-        <Briefcase className="h-4 w-4" />
+        <Briefcase className="icon-sm" aria-hidden="true" />
         Post a job
       </Button>
     </div>
@@ -102,7 +102,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10">
-        <Users className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+        <Users className="icon-xl text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No groups joined</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -110,7 +110,7 @@ export function EmptyGroups({ className }: EmptyStateProps) {
       </p>
       <Link href="/groups">
         <Button className="gap-2">
-          <Search className="h-4 w-4" />
+          <Search className="icon-sm" aria-hidden="true" />
           Browse groups
         </Button>
       </Link>
@@ -122,7 +122,7 @@ export function EmptyNotifications({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/10">
-        <Bell className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+        <Bell className="icon-xl text-amber-600 dark:text-amber-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
       <p className="text-sm text-muted-foreground max-w-sm">
@@ -136,7 +136,7 @@ export function EmptySearchResults({ query, className }: EmptyStateProps & { que
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/60">
-        <Search className="h-8 w-8 text-muted-foreground" />
+        <Search className="icon-xl text-muted-foreground" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -155,7 +155,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/10">
-        <BookOpen className="h-8 w-8 text-blue-400" />
+        <BookOpen className="icon-xl text-blue-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No resources yet</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -169,14 +169,14 @@ export function EmptyMarketplace({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-pink-500/10">
-        <ShoppingBag className="h-8 w-8 text-pink-400" />
+        <ShoppingBag className="icon-xl text-pink-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No services listed</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         The marketplace is empty. Be the first to offer your services to the community.
       </p>
       <Button className="gap-2">
-        <ShoppingBag className="h-4 w-4" />
+        <ShoppingBag className="icon-sm" aria-hidden="true" />
         List a service
       </Button>
     </div>
@@ -187,7 +187,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10">
-        <Users className="h-8 w-8 text-cyan-400" />
+        <Users className="icon-xl text-cyan-400" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No sessions booked</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -195,7 +195,7 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
       </p>
       <Link href="/mentoring">
         <Button className="gap-2">
-          <Search className="h-4 w-4" />
+          <Search className="icon-sm" aria-hidden="true" />
           Find mentors
         </Button>
       </Link>

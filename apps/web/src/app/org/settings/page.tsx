@@ -58,7 +58,7 @@ export default function OrgSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Building2 className="icon-md" />
+                  <Building2 className="icon-md" aria-hidden="true" />
                   Organization Profile
                 </CardTitle>
                 <CardDescription>
@@ -138,7 +138,7 @@ export default function OrgSettingsPage() {
                   </div>
                 </div>
                 <Button>
-                  <Save className="mr-2 icon-sm" />
+                  <Save className="mr-2 icon-sm" aria-hidden="true" />
                   Save Changes
                 </Button>
               </CardContent>
@@ -150,7 +150,7 @@ export default function OrgSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Palette className="icon-md" />
+                  <Palette className="icon-md" aria-hidden="true" />
                   Branding
                 </CardTitle>
                 <CardDescription>
@@ -162,7 +162,7 @@ export default function OrgSettingsPage() {
                   <Label>Logo</Label>
                   <div className="flex items-center gap-4">
                     <div className="h-20 w-20 rounded-lg bg-secondary flex items-center justify-center">
-                      <Building2 className="h-8 w-8 text-muted-foreground" />
+                      <Building2 className="icon-xl text-muted-foreground" aria-hidden="true" />
                     </div>
                     <Button variant="outline">Upload Logo</Button>
                   </div>
@@ -195,7 +195,7 @@ export default function OrgSettingsPage() {
                   </p>
                 </div>
                 <Button>
-                  <Save className="mr-2 icon-sm" />
+                  <Save className="mr-2 icon-sm" aria-hidden="true" />
                   Save Branding
                 </Button>
               </CardContent>
@@ -207,7 +207,7 @@ export default function OrgSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="icon-md" />
+                  <Users className="icon-md" aria-hidden="true" />
                   Team Members
                 </CardTitle>
                 <CardDescription>
@@ -253,7 +253,7 @@ export default function OrgSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Shield className="icon-md" />
+                  <Shield className="icon-md" aria-hidden="true" />
                   Permissions & Access
                 </CardTitle>
                 <CardDescription>
@@ -306,7 +306,7 @@ export default function OrgSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="icon-md" />
+                  <CreditCard className="icon-md" aria-hidden="true" />
                   Subscription & Billing
                 </CardTitle>
                 <CardDescription>
@@ -344,7 +344,7 @@ export default function OrgSettingsPage() {
                   <p className="font-medium">Payment Method</p>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
                     <div className="flex items-center gap-3">
-                      <CreditCard className="icon-md" />
+                      <CreditCard className="icon-md" aria-hidden="true" />
                       <span>•••• •••• •••• 4242</span>
                     </div>
                     <Button variant="ghost" size="sm">Update</Button>

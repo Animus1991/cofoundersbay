@@ -140,17 +140,17 @@ function EventCard({ event }: { event: OrgEvent }) {
             </div>
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />{event.date}
+                <Calendar className="icon-sm" aria-hidden="true" />{event.date}
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />{event.time}
+                <Clock className="icon-sm" aria-hidden="true" />{event.time}
               </span>
               <span className="flex items-center gap-1">
-                {event.format === 'online' ? <Video className="icon-sm" /> : <Building className="icon-sm" />}
+                {event.format === 'online' ? <Video className="icon-sm" aria-hidden="true" /> : <Building className="icon-sm" aria-hidden="true" />}
                 {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />{event.attendees}/{event.capacity} attending
+                <Users className="icon-sm" aria-hidden="true" />{event.attendees}/{event.capacity} attending
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
@@ -171,14 +171,14 @@ function EventCard({ event }: { event: OrgEvent }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-              <DropdownMenuItem><Copy className="mr-2 icon-sm" />Duplicate</DropdownMenuItem>
-              <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" />View Public Page</DropdownMenuItem>
-              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+              <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit</DropdownMenuItem>
+              <DropdownMenuItem><Copy className="mr-2 icon-sm" aria-hidden="true" />Duplicate</DropdownMenuItem>
+              <DropdownMenuItem><ExternalLink className="mr-2 icon-sm" aria-hidden="true" />View Public Page</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -208,14 +208,14 @@ export default function OrgEventsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" />
+              <Calendar className="icon-lg text-primary" aria-hidden="true" />
               Organization Events
             </h1>
             <p className="text-muted-foreground">Manage workshops, demo days, and cohort events</p>
           </div>
           <Button asChild>
             <Link href="/events/create">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
               Create Event
             </Link>
           </Button>
@@ -245,7 +245,7 @@ export default function OrgEventsPage() {
         {/* Search & Tabs */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
         </div>
@@ -263,7 +263,7 @@ export default function OrgEventsPage() {
             {filtered.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+                  <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                   <h3 className="font-medium">No events found</h3>
                   <p className="text-sm text-muted-foreground mt-1">Create your first event to get started</p>
                   <Button size="sm" className="mt-4" asChild>

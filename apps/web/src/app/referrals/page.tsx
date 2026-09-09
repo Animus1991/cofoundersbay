@@ -149,7 +149,7 @@ function ReferralLink({ code }: { code: string }) {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Share2 className="h-5 w-5 text-primary" />
+          <Share2 className="icon-md text-primary" aria-hidden="true" />
           Your Referral Link
         </CardTitle>
         <CardDescription>
@@ -164,22 +164,22 @@ function ReferralLink({ code }: { code: string }) {
             className="font-mono text-sm"
           />
           <Button onClick={copyLink}>
-            <Copy className="h-4 w-4 mr-1" />
+            <Copy className="icon-sm mr-1" aria-hidden="true" />
             Copy
           </Button>
         </div>
 
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => shareVia('email')}>
-            <Mail className="h-4 w-4 mr-1" />
+            <Mail className="icon-sm mr-1" aria-hidden="true" />
             Email
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('twitter')}>
-            <ExternalLink className="h-4 w-4 mr-1" />
+            <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
             Twitter
           </Button>
           <Button variant="outline" size="sm" onClick={() => shareVia('linkedin')}>
-            <ExternalLink className="h-4 w-4 mr-1" />
+            <ExternalLink className="icon-sm mr-1" aria-hidden="true" />
             LinkedIn
           </Button>
         </div>
@@ -201,7 +201,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
     <Card className="shadow-sm border-border/50">
       <CardHeader className="border-b border-border/50">
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-5 w-5 text-primary" />
+          <Award className="icon-md text-primary" aria-hidden="true" />
           Your Tier
         </CardTitle>
       </CardHeader>
@@ -236,7 +236,7 @@ function TierProgress({ referrals, currentTier }: { referrals: number; currentTi
           <ul className="space-y-1">
             {currentTier.perks.map((perk) => (
               <li key={perk} className="text-sm text-muted-foreground flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-emerald-500" />
+                <CheckCircle className="icon-2xs text-emerald-500" aria-hidden="true" />
                 {perk}
               </li>
             ))}
@@ -299,7 +299,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-blue-500/10 p-2">
-            <Users className="h-5 w-5 text-blue-500" />
+            <Users className="icon-md text-blue-500" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xl font-bold">{totalInvited}</p>
@@ -310,7 +310,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-emerald-500/10 p-2">
-            <CheckCircle className="h-5 w-5 text-emerald-500" />
+            <CheckCircle className="icon-md text-emerald-500" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xl font-bold">{signedUp}</p>
@@ -321,7 +321,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-purple-500/10 p-2">
-            <Gift className="h-5 w-5 text-purple-500" />
+            <Gift className="icon-md text-purple-500" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xl font-bold">{rewarded}</p>
@@ -332,7 +332,7 @@ function StatsCards({ referrals }: { referrals: Referral[] }) {
       <Card className="p-4">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-amber-500/10 p-2">
-            <TrendingUp className="h-5 w-5 text-amber-500" />
+            <TrendingUp className="icon-md text-amber-500" aria-hidden="true" />
           </div>
           <div>
             <p className="text-xl font-bold">€{totalEarned}</p>
@@ -396,7 +396,7 @@ export default function ReferralsPage() {
               <CardContent>
                 {filteredReferrals.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" aria-hidden="true" />
                     <p>No referrals in this category</p>
                   </div>
                 ) : (
@@ -418,7 +418,7 @@ export default function ReferralsPage() {
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Sparkles className="icon-md text-primary" aria-hidden="true" />
                   How It Works
                 </CardTitle>
               </CardHeader>

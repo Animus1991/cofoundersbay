@@ -55,7 +55,7 @@ export function TopBar() {
           aria-label="Command palette (Ctrl+K)"
           title="Command palette (Ctrl+K)"
         >
-          <Keyboard className="h-4 w-4" />
+          <Keyboard className="icon-sm" aria-hidden="true" />
         </Button>
 
         {/* Spacer */}

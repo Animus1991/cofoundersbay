@@ -130,7 +130,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
                         : 'border-border/60 text-muted-foreground hover:border-primary/40',
                     )}
                   >
-                    {p === 'public' ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    {p === 'public' ? <Globe className="icon-2xs" aria-hidden="true" /> : <Lock className="icon-2xs" aria-hidden="true" />}
                     {p}
                   </button>
                 ))}
@@ -152,7 +152,7 @@ export function CreateGroupModal({ onClose, onCreated }: Props) {
               Cancel
             </Button>
             <Button type="submit" className="flex-1 gap-2" disabled={loading || !form.name.trim()}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {loading ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : null}
               Create Group
             </Button>
           </div>

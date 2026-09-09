@@ -121,13 +121,13 @@ export default function ProviderProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Briefcase className="h-6 w-6 text-primary" />
+              <Briefcase className="icon-lg text-primary" aria-hidden="true" />
               Service Provider Profile
             </h1>
             <p className="text-muted-foreground">How startups discover your services</p>
           </div>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             Save Profile
           </Button>
         </div>
@@ -145,18 +145,18 @@ export default function ProviderProfilePage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="font-semibold text-lg">{companyName || displayName}</h2>
-                  <BadgeCheck className="h-4 w-4 text-primary" />
+                  <BadgeCheck className="icon-sm text-primary" aria-hidden="true" />
                   <Badge variant="secondary" className="text-xs">{serviceTypeLabel}</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
                   {headline || 'Add your service headline below...'}
                 </p>
                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
-                  <span className="flex items-center gap-1"><Star className="h-3 w-3 text-amber-400" /> 4.8 (8 reviews)</span>
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {clientsServed || '?'} clients</span>
-                  <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> {yearsInBusiness}y in business</span>
+                  <span className="flex items-center gap-1"><Star className="icon-2xs text-amber-400" aria-hidden="true" /> 4.8 (8 reviews)</span>
+                  <span className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" /> {clientsServed || '?'} clients</span>
+                  <span className="flex items-center gap-1"><TrendingUp className="icon-2xs" aria-hidden="true" /> {yearsInBusiness}y in business</span>
                   {companyWebsite && (
-                    <span className="flex items-center gap-1"><Globe className="h-3 w-3" /> {companyWebsite}</span>
+                    <span className="flex items-center gap-1"><Globe className="icon-2xs" aria-hidden="true" /> {companyWebsite}</span>
                   )}
                 </div>
               </div>

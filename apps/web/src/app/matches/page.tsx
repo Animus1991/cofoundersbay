@@ -62,7 +62,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <BarChart3 className="icon-md text-primary" aria-hidden="true" />
             Compatibility with {hit.displayName}
           </DialogTitle>
         </DialogHeader>
@@ -81,7 +81,7 @@ function CompatibilityModal({ hit, open, onClose }: { hit: SearchHit | null; ope
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Why you match</p>
             {reasons.map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm">
-                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" />
+                <Zap className="h-3.5 w-3.5 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <span className="text-foreground">{r.text}</span>
               </div>
             ))}
@@ -210,12 +210,12 @@ function MatchListRow({
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                  <Badge variant="outline" className={cn('text-[10px] h-5', TIER_CLASSES[tier])}>
+                  <Badge variant="outline" className={cn('text-2xs h-5', TIER_CLASSES[tier])}>
                     {tier.charAt(0).toUpperCase() + tier.slice(1)} · {score}%
                   </Badge>
                   {hit.location && (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />{hit.location}
+                      <MapPin className="icon-2xs" aria-hidden="true" />{hit.location}
                     </span>
                   )}
                 </div>
@@ -224,14 +224,14 @@ function MatchListRow({
               {/* Score text */}
               <div className="text-right shrink-0">
                 <p className="text-lg font-black tabular-nums leading-none" style={{ color }}>{score}%</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">match</p>
+                <p className="text-2xs text-muted-foreground mt-0.5">match</p>
               </div>
             </div>
 
             {/* Skills + reasons */}
             <div className="mt-2 flex flex-wrap gap-1.5">
               {(hit.skillNames ?? []).slice(0, 5).map(s => (
-                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-[11px] text-muted-foreground">
+                <span key={s} className="rounded-md border border-border/60 bg-secondary/50 px-2 py-0.5 text-2xs text-muted-foreground">
                   {s}
                 </span>
               ))}
@@ -244,8 +244,8 @@ function MatchListRow({
             {matchReasons.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {matchReasons.slice(0, 3).map((r, i) => (
-                  <span key={i} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Zap className="h-2.5 w-2.5 shrink-0" style={{ color }} />
+                  <span key={i} className="flex items-center gap-1 text-2xs text-muted-foreground">
+                    <Zap className="h-2.5 w-2.5 shrink-0" style={{ color }} aria-hidden="true" />
                     {r.text}
                   </span>
                 ))}
@@ -260,24 +260,24 @@ function MatchListRow({
             <button onClick={onPass}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
               title="Pass">
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
             <button onClick={onSave}
               className={cn('h-8 w-8 flex items-center justify-center rounded-full transition-colors', isSaved ? 'text-amber-400' : 'border border-border/60 text-muted-foreground hover:text-amber-400')}
               title={isSaved ? 'Saved' : 'Save to shortlist'}>
-              {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+              {isSaved ? <BookmarkCheck className="h-3.5 w-3.5" aria-hidden="true" /> : <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />}
             </button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={onBreakdown}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1.5 rounded-md hover:bg-secondary/60">
-              <BarChart3 className="h-3.5 w-3.5" /> Breakdown
+              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Breakdown
             </button>
             <Button size="sm" variant="outline" onClick={onMessage} className="h-8 gap-1.5 text-xs px-3">
-              <MessageCircle className="h-3.5 w-3.5" /> Message
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Message
             </Button>
             <Button size="sm" onClick={onConnect} className="h-8 gap-1.5 text-xs px-3">
-              <Heart className="h-3.5 w-3.5" /> Connect
+              <Heart className="h-3.5 w-3.5" aria-hidden="true" /> Connect
             </Button>
           </div>
         </div>
@@ -316,7 +316,7 @@ function MatchPreviewPanel({
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
           <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" aria-hidden="true" />
           </button>
         </div>
 
@@ -340,7 +340,7 @@ function MatchPreviewPanel({
           <div className="flex items-center justify-center gap-3 rounded-xl bg-secondary/30 p-3">
             <div className="text-center">
               <p className="text-2xl font-extrabold tabular-nums" style={{ color }}>{score}%</p>
-              <p className="text-[10px] font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
+              <p className="text-2xs font-bold tracking-wider uppercase mt-0.5" style={{ color }}>
                 {TIER_CLASSES[tier] ? tier.charAt(0).toUpperCase() + tier.slice(1) : 'Match'}
               </p>
             </div>
@@ -350,12 +350,12 @@ function MatchPreviewPanel({
           <div className="flex flex-wrap gap-2">
             {hit.location && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" /> {hit.location}
+                <MapPin className="icon-2xs" aria-hidden="true" /> {hit.location}
               </span>
             )}
             {hit.availability && (
               <span className="flex items-center gap-1 rounded-full bg-secondary/40 px-2.5 py-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" /> {hit.availability}
+                <Clock className="icon-2xs" aria-hidden="true" /> {hit.availability}
               </span>
             )}
           </div>
@@ -363,7 +363,7 @@ function MatchPreviewPanel({
           {/* Skills */}
           {(hit.skillNames ?? []).length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Skills</p>
               <div className="flex flex-wrap gap-1.5">
                 {(hit.skillNames ?? []).map(s => <SkillChip key={s} label={s} size="sm" />)}
               </div>
@@ -373,7 +373,7 @@ function MatchPreviewPanel({
           {/* Match reasons */}
           {matchReasons.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
+              <p className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why you match</p>
               <div className="space-y-1.5">
                 {matchReasons.map((r, i) => (
                   <div key={i} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs bg-muted/60">
@@ -389,27 +389,27 @@ function MatchPreviewPanel({
           <div className="space-y-2 pt-2 border-t border-border/40">
             <div className="flex gap-2">
               <Button className="flex-1 gap-1.5" size="sm" onClick={onConnect}>
-                <UserPlus className="h-3.5 w-3.5" /> Connect
+                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" /> Connect
               </Button>
               <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onMessage}>
-                <MessageCircle className="h-3.5 w-3.5" /> Message
+                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" /> Message
               </Button>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1 gap-1.5" onClick={onSave}>
-                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" /> : <Bookmark className="h-3.5 w-3.5" />}
+                {isSaved ? <BookmarkCheck className="h-3.5 w-3.5 text-amber-400" aria-hidden="true" /> : <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />}
                 {isSaved ? 'Saved' : 'Save'}
               </Button>
               <Button variant="outline" size="sm" className="flex-1 gap-1.5 hover:text-destructive" onClick={onPass}>
-                <X className="h-3.5 w-3.5" /> Pass
+                <X className="h-3.5 w-3.5" aria-hidden="true" /> Pass
               </Button>
             </div>
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
-              <BarChart3 className="h-3.5 w-3.5" /> View breakdown
+              <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> View breakdown
             </Button>
             <Link href={`/profiles/${hit.userId}`}>
               <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
-                <ArrowRight className="h-3.5 w-3.5" /> Full profile
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> Full profile
               </Button>
             </Link>
           </div>
@@ -605,13 +605,13 @@ export default function MatchesPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => void refetch()}>
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="icon-sm" aria-hidden="true" />
             Refresh
           </Button>
           <Link href="/discover">
             <Button variant="outline" size="sm" className="gap-2">
               Explore
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </Link>
         </div>
@@ -628,7 +628,7 @@ export default function MatchesPage() {
             action={
               <Link href="/login">
                 <Button className="gap-2">
-                  <UserPlus className="h-4 w-4" />
+                  <UserPlus className="icon-sm" aria-hidden="true" />
                   Sign in
                 </Button>
               </Link>
@@ -674,7 +674,7 @@ export default function MatchesPage() {
                   </div>
                   <div>
                     <p className={cn('text-xl font-black tabular-nums leading-none', color)}>{value}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -687,7 +687,7 @@ export default function MatchesPage() {
           <div className="rounded-xl border border-green-500/20 bg-gradient-to-r from-green-500/5 via-card to-transparent p-4 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-top-1 duration-300">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-green-500/10 p-2 shrink-0">
-                <Award className="h-5 w-5 text-green-600" />
+                <Award className="icon-md text-green-600" aria-hidden="true" />
               </div>
               <div>
                 <p className="font-semibold text-sm text-foreground">
@@ -701,11 +701,11 @@ export default function MatchesPage() {
             <div className="flex items-center gap-2 shrink-0">
               {lastPassed && (
                 <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground">
-                  <RotateCcw className="h-3.5 w-3.5" /> Undo
+                  <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Undo
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => setActiveFilter('excellent')} className="gap-1.5 h-8 text-xs">
-                View <ChevronRight className="h-3.5 w-3.5" />
+                View <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -721,7 +721,7 @@ export default function MatchesPage() {
               <Link href="/profile/edit">
                 <Button className="gap-2">
                   Complete profile
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="icon-sm" aria-hidden="true" />
                 </Button>
               </Link>
             }
@@ -738,7 +738,7 @@ export default function MatchesPage() {
               {/* Tier filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Match Tier</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Match Tier</p>
                   {TIER_TABS.map(tab => {
                     const isActive = activeFilter === tab.key;
                     return (
@@ -751,7 +751,7 @@ export default function MatchesPage() {
                           {tab.color && <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: tab.color }} />}
                           {tab.label}
                         </span>
-                        <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-semibold tabular-nums',
+                        <span className={cn('rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
                           isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground')}>
                           {counts[tab.key]}
                         </span>
@@ -764,7 +764,7 @@ export default function MatchesPage() {
               {/* Role filter */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Role</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Role</p>
                   {ROLE_TABS.map(({ key, label, icon: Icon }) => {
                     const isActive = roleFilter === key;
                     return (
@@ -784,15 +784,15 @@ export default function MatchesPage() {
               {/* Location */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1">Location</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1">Location</p>
                   <div className="relative">
-                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+                    <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 icon-2xs text-muted-foreground pointer-events-none" aria-hidden="true" />
                     <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
                       placeholder="City or country..."
                       className="w-full h-8 rounded-lg border border-border/60 bg-background pl-7 pr-7 text-xs outline-none focus:border-primary/60 transition-colors" />
                     {locationFilter && (
                       <button onClick={() => setLocationFilter('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        <X className="h-3 w-3" />
+                        <X className="icon-2xs" aria-hidden="true" />
                       </button>
                     )}
                   </div>
@@ -802,7 +802,7 @@ export default function MatchesPage() {
               {/* Availability */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Availability</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Availability</p>
                   {AVAIL_OPTIONS.map(({ key, label }) => {
                     const isOn = availFilter.has(key);
                     return (
@@ -825,7 +825,7 @@ export default function MatchesPage() {
               {/* Sort */}
               <Card className="shadow-sm border-border/50">
                 <CardContent className="p-3 space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Sort by</p>
+                  <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">Sort by</p>
                   {([
                     { key: 'score'  as SortKey, label: 'Best Match',   icon: Zap },
                     { key: 'name'   as SortKey, label: 'Name A–Z',     icon: ArrowUpDown },
@@ -846,7 +846,7 @@ export default function MatchesPage() {
                 <button
                   onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}
                   className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg text-xs text-muted-foreground border border-border/60 hover:bg-secondary hover:text-foreground transition-colors">
-                  <X className="h-3 w-3" /> Clear all filters
+                  <X className="icon-2xs" aria-hidden="true" /> Clear all filters
                 </button>
               )}
             </aside>
@@ -859,7 +859,7 @@ export default function MatchesPage() {
                 <button onClick={() => setShowAdvancedFilters(s => !s)}
                   className={cn('flex items-center gap-1.5 h-7 px-2.5 rounded-full text-xs font-medium whitespace-nowrap border transition-all shrink-0',
                     showAdvancedFilters || hasActiveFilters ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 text-muted-foreground')}>
-                  <SlidersHorizontal className="h-3 w-3" /> Filters
+                  <SlidersHorizontal className="icon-2xs" aria-hidden="true" /> Filters
                   {hasActiveFilters && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}
                 </button>
                 {TIER_TABS.filter(t => t.key !== 'all').map(tab => {
@@ -880,21 +880,21 @@ export default function MatchesPage() {
                 <div className="md:hidden rounded-xl border border-border/40 bg-secondary/20 p-3 space-y-3 animate-in fade-in duration-150">
                   <div className="grid gap-3 grid-cols-2">
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Tier</label>
                       <select value={activeFilter} onChange={e => setActiveFilter(e.target.value as FilterKey)}
                         className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {TIER_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Role</label>
                       <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as RoleFilter)}
                         className="w-full h-8 rounded-lg border border-border/60 bg-background px-2 text-xs outline-none">
                         {ROLE_TABS.map(({ key, label }) => <option key={key} value={key}>{label}</option>)}
                       </select>
                     </div>
                     <div className="col-span-2">
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
+                      <label className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 block">Location</label>
                       <input type="text" value={locationFilter} onChange={e => setLocationFilter(e.target.value)}
                         placeholder="City or country..." className="w-full h-8 rounded-lg border border-border/60 bg-background px-3 text-xs outline-none" />
                     </div>
@@ -924,15 +924,15 @@ export default function MatchesPage() {
                     className={cn('flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium transition-colors border',
                       selectMode ? 'bg-primary text-primary-foreground border-primary' : 'border-border/60 text-muted-foreground hover:bg-secondary hover:text-foreground')}
                     title="Select mode">
-                    <CheckSquare className="h-3.5 w-3.5" />
+                    <CheckSquare className="h-3.5 w-3.5" aria-hidden="true" />
                     <span className="hidden sm:inline">Select</span>
-                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-[10px] font-bold">{selectedIds.size}</span>}
+                    {selectedIds.size > 0 && <span className="rounded-full bg-primary-foreground/20 px-1 text-2xs font-bold">{selectedIds.size}</span>}
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
                     className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
                       showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
-                    <Search className="h-3.5 w-3.5" />
+                    <Search className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
 
                   <div className="flex items-center gap-1 border border-border/60 rounded-lg p-0.5">
@@ -945,14 +945,14 @@ export default function MatchesPage() {
                         className={cn('h-7 px-2 flex items-center justify-center rounded-md transition-all',
                           viewMode === mode ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}>
                         <Icon className={cn('h-3.5 w-3.5', small && 'scale-90')} />
-                        {mode === 'grid3' && <span className="text-[9px] ml-0.5 font-bold">3</span>}
+                        {mode === 'grid3' && <span className="text-2xs ml-0.5 font-bold">3</span>}
                       </button>
                     ))}
                   </div>
 
                   {lastPassed && (
                     <Button size="sm" variant="ghost" onClick={handleUndoPass} className="gap-1.5 text-xs h-8 text-muted-foreground hidden sm:flex">
-                      <RotateCcw className="h-3.5 w-3.5" /> Undo
+                      <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /> Undo
                     </Button>
                   )}
                 </div>
@@ -961,7 +961,7 @@ export default function MatchesPage() {
               {/* Search input (conditional) */}
               {showSearch && (
                 <div className="relative animate-in fade-in slide-in-from-top-1 duration-150">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                   <Input value={nameSearch} onChange={e => setNameSearch(e.target.value)}
                     placeholder="Search by name, headline, or skill..." className="pl-9 h-9 text-sm" autoFocus />
                   {nameSearch && (
@@ -985,7 +985,7 @@ export default function MatchesPage() {
               {filtered.length === 0 && (
                 <Card className="shadow-sm border-border/50">
                   <CardContent className="py-12 text-center">
-                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" />
+                    <SlidersHorizontal className="mx-auto h-10 w-10 text-muted-foreground/30 mb-3" aria-hidden="true" />
                     <p className="font-medium text-foreground mb-1">No matches for these filters</p>
                     <p className="text-sm text-muted-foreground mb-4">Try adjusting your tier, role, or location filter</p>
                     <Button variant="outline" size="sm" onClick={() => { setActiveFilter('all'); setRoleFilter('all'); setNameSearch(''); setLocationFilter(''); setAvailFilter(new Set()); }}>
@@ -1068,7 +1068,7 @@ export default function MatchesPage() {
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
                   <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
-                    Explore more <ArrowRight className="h-3 w-3" />
+                    Explore more <ArrowRight className="icon-2xs" aria-hidden="true" />
                   </Link>
                 </div>
               )}
@@ -1109,7 +1109,7 @@ export default function MatchesPage() {
               const ids = [...selectedIds].slice(0, 4).join(',');
               router.push(`/compare?ids=${ids}`);
             }}>
-            <BarChart3 className="h-3.5 w-3.5" /> Compare
+            <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> Compare
           </Button>
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs hover:text-destructive"
             onClick={() => {
@@ -1119,11 +1119,11 @@ export default function MatchesPage() {
               setSelectedIds(new Set());
               setSelectMode(false);
             }}>
-            <X className="h-3.5 w-3.5" /> Pass All
+            <X className="h-3.5 w-3.5" aria-hidden="true" /> Pass All
           </Button>
           <button onClick={() => { setSelectMode(false); setSelectedIds(new Set()); }}
             className="text-muted-foreground hover:text-foreground transition-colors ml-1">
-            <X className="h-4 w-4" />
+            <X className="icon-sm" aria-hidden="true" />
           </button>
         </div>
       )}

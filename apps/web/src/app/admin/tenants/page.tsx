@@ -95,7 +95,7 @@ export default function TenantsAdminPage() {
       description="Manage organizations and their white-label branding"
       actions={
         <Button onClick={() => setIsCreating(true)} className="gap-2">
-          <Plus className="icon-sm" />
+          <Plus className="icon-sm" aria-hidden="true" />
           Create Tenant
         </Button>
       }
@@ -108,7 +108,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
+              <Building2 className="icon-md text-primary" aria-hidden="true" />
               <span className="text-xl font-bold">{tenants?.length || 0}</span>
             </div>
           </CardContent>
@@ -120,7 +120,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Check className="icon-md text-green-500" />
+              <Check className="icon-md text-green-500" aria-hidden="true" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.status === 'active').length || 0}
               </span>
@@ -134,7 +134,7 @@ export default function TenantsAdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <Palette className="icon-md text-purple-500" />
+              <Palette className="icon-md text-purple-500" aria-hidden="true" />
               <span className="text-xl font-bold">
                 {tenants?.filter(t => t.logoUrl).length || 0}
               </span>
@@ -160,7 +160,7 @@ export default function TenantsAdminPage() {
             </div>
           ) : isError ? (
             <div className="text-center py-8 text-muted-foreground">
-              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive" />
+              <AlertTriangle className="icon-xl mx-auto mb-2 text-destructive" aria-hidden="true" />
               <p>Failed to load tenants</p>
               <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
                 Retry
@@ -168,10 +168,10 @@ export default function TenantsAdminPage() {
             </div>
           ) : !tenants?.length ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="h-8 w-8 mx-auto mb-2" />
+              <Building2 className="icon-xl mx-auto mb-2" aria-hidden="true" />
               <p>No tenants configured yet</p>
               <Button onClick={() => setIsCreating(true)} className="mt-4 gap-2">
-                <Plus className="icon-sm" />
+                <Plus className="icon-sm" aria-hidden="true" />
                 Create First Tenant
               </Button>
             </div>
@@ -193,7 +193,7 @@ export default function TenantsAdminPage() {
                       <img src={tenant.logoUrl} alt="" className="h-10 w-10 rounded-lg object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Building2 className="icon-md text-primary" />
+                        <Building2 className="icon-md text-primary" aria-hidden="true" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -204,7 +204,7 @@ export default function TenantsAdminPage() {
                   <div className="flex items-center gap-3">
                     {getStatusBadge(tenant.status)}
                     <Button variant="ghost" size="sm" onClick={() => setSelectedTenant(tenant)}>
-                      <Settings className="icon-sm" />
+                      <Settings className="icon-sm" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -369,12 +369,12 @@ function TenantEditor({
           <div className="flex items-center gap-2">
             {!isNew && (
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(!previewMode)} className="gap-2">
-                <Eye className="icon-sm" />
+                <Eye className="icon-sm" aria-hidden="true" />
                 {previewMode ? 'Edit' : 'Preview'}
               </Button>
             )}
             <Button aria-label="Close" variant="ghost" size="icon" onClick={onClose}>
-              <X className="icon-sm" />
+              <X className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
         </CardHeader>
@@ -385,17 +385,17 @@ function TenantEditor({
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="p-4">
               <TabsList className="mb-6 flex-wrap h-auto gap-1">
-                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" />General</TabsTrigger>
-                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" />Colors & Fonts</TabsTrigger>
-                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" />Media</TabsTrigger>
-                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" />Content</TabsTrigger>
-                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" />Links & Legal</TabsTrigger>
-                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" />Email</TabsTrigger>}
+                <TabsTrigger value="general" className="gap-1.5"><Settings className="h-3.5 w-3.5" aria-hidden="true" />General</TabsTrigger>
+                <TabsTrigger value="branding" className="gap-1.5"><Palette className="h-3.5 w-3.5" aria-hidden="true" />Colors & Fonts</TabsTrigger>
+                <TabsTrigger value="media" className="gap-1.5"><ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />Media</TabsTrigger>
+                <TabsTrigger value="content" className="gap-1.5"><FileText className="h-3.5 w-3.5" aria-hidden="true" />Content</TabsTrigger>
+                <TabsTrigger value="links" className="gap-1.5"><Globe className="h-3.5 w-3.5" aria-hidden="true" />Links & Legal</TabsTrigger>
+                {!isNew && <TabsTrigger value="email" className="gap-1.5"><Mail className="h-3.5 w-3.5" aria-hidden="true" />Email</TabsTrigger>}
               </TabsList>
 
               {saveError && (
                 <div className="mb-4 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-sm text-destructive flex items-center gap-2">
-                  <AlertTriangle className="icon-sm shrink-0" />
+                  <AlertTriangle className="icon-sm shrink-0" aria-hidden="true" />
                   {saveError}
                 </div>
               )}
@@ -460,7 +460,7 @@ function TenantEditor({
                 )}
                 <div className="flex justify-end pt-2">
                   <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                    <Save className="icon-sm" />
+                    <Save className="icon-sm" aria-hidden="true" />
                     {isSaving ? 'Saving…' : isNew ? 'Create Tenant' : 'Save General'}
                   </Button>
                 </div>
@@ -501,7 +501,7 @@ function TenantEditor({
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" />Typography</h4>
+                  <h4 className="font-medium text-sm flex items-center gap-2"><Type className="icon-sm" aria-hidden="true" />Typography</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Heading Font</label>
@@ -522,7 +522,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2 gap-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" />
+                      <Save className="icon-sm" aria-hidden="true" />
                       {isBrandingSaving ? 'Saving…' : 'Save Colors & Fonts'}
                     </Button>
                   </div>
@@ -544,7 +544,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" />
+                      <Save className="icon-sm" aria-hidden="true" />
                       {isBrandingSaving ? 'Saving…' : 'Save Media'}
                     </Button>
                   </div>
@@ -593,7 +593,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" />
+                      <Save className="icon-sm" aria-hidden="true" />
                       {isBrandingSaving ? 'Saving…' : 'Save Content'}
                     </Button>
                   </div>
@@ -645,7 +645,7 @@ function TenantEditor({
                 {!isNew && (
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" />
+                      <Save className="icon-sm" aria-hidden="true" />
                       {isBrandingSaving ? 'Saving…' : 'Save Links'}
                     </Button>
                   </div>
@@ -667,7 +667,7 @@ function TenantEditor({
                   </div>
                   <div className="flex justify-end pt-2">
                     <Button onClick={handleSaveBranding} disabled={isBrandingSaving} className="gap-2">
-                      <Save className="icon-sm" />
+                      <Save className="icon-sm" aria-hidden="true" />
                       {isBrandingSaving ? 'Saving…' : 'Save Email Settings'}
                     </Button>
                   </div>
@@ -683,7 +683,7 @@ function TenantEditor({
               <>
                 <Button variant="outline" size="sm" className="gap-2" asChild>
                   <a href={`/t/${tenant.slug}`} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4" />
+                    <ExternalLink className="icon-sm" aria-hidden="true" />
                     View Public Page
                   </a>
                 </Button>
@@ -693,7 +693,7 @@ function TenantEditor({
                   </Button>
                 ) : (
                   <Button variant="outline" size="sm" onClick={() => publishMut.mutate()} disabled={publishMut.isPending} className="gap-2 text-green-600 border-green-300 hover:bg-green-50">
-                    <Check className="h-4 w-4" />
+                    <Check className="icon-sm" aria-hidden="true" />
                     Publish Branding
                   </Button>
                 )}
@@ -717,14 +717,14 @@ function TenantEditor({
                   if (ok) deleteMut.mutate();
                 }}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="icon-sm" aria-hidden="true" />
                 Delete
               </Button>
             )}
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             {isNew && (
               <Button onClick={handleSaveGeneral} disabled={isSaving || !general.name || !general.slug} className="gap-2">
-                <Plus className="icon-sm" />
+                <Plus className="icon-sm" aria-hidden="true" />
                 {isSaving ? 'Creating…' : 'Create Tenant'}
               </Button>
             )}

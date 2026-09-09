@@ -90,7 +90,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
           </p>
         </div>
         <Button onClick={addField} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="icon-sm mr-2" aria-hidden="true" />
           Add Field
         </Button>
       </div>
@@ -114,7 +114,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <div className="cursor-move mt-2">
-                    <GripVertical className="h-5 w-5 text-muted-foreground" />
+                    <GripVertical className="icon-md text-muted-foreground" aria-hidden="true" />
                   </div>
 
                   <div className="flex-1 space-y-3">
@@ -184,7 +184,7 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
                     onClick={() => removeField(field.id)}
                     className="text-destructive hover:text-destructive"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="icon-sm" aria-hidden="true" />
                   </Button>
                 </div>
               </CardContent>
@@ -195,13 +195,13 @@ export function CustomFieldsEditor({ fields, onChange }: CustomFieldsEditorProps
         {fields.length === 0 && (
           <Card className="border-dashed">
             <CardContent className="py-12 text-center">
-              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
               <h3 className="text-lg font-semibold mb-2">No custom fields yet</h3>
               <p className="text-sm text-muted-foreground mb-4">
                 Add custom fields to showcase additional information
               </p>
               <Button onClick={addField} variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="icon-sm mr-2" aria-hidden="true" />
                 Add Your First Field
               </Button>
             </CardContent>

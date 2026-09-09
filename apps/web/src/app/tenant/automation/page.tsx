@@ -120,7 +120,7 @@ function ConfigPanel({ tenantId }: { tenantId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Settings className="h-4 w-4 text-primary" />
+          <Settings className="icon-sm text-primary" aria-hidden="true" />
           Automation Settings
         </CardTitle>
         <CardDescription className="text-xs">
@@ -198,12 +198,12 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
           </div>
           {rule.description && <p className="text-xs text-muted-foreground">{rule.description}</p>}
           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Zap className="h-3 w-3" />{rule.executionCount} runs</span>
+            <span className="flex items-center gap-1"><Zap className="icon-2xs" aria-hidden="true" />{rule.executionCount} runs</span>
             {rule.failureCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="h-3 w-3" />{rule.failureCount} failures</span>
+              <span className="flex items-center gap-1 text-amber-600"><AlertTriangle className="icon-2xs" aria-hidden="true" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>
@@ -211,15 +211,15 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
 
         <div className="flex items-center gap-1 shrink-0">
           <Button aria-label="Run now" variant="ghost" size="icon" className="h-8 w-8" title="Run now" onClick={() => trigger.mutate()} disabled={trigger.isPending}>
-            <Play className="h-3.5 w-3.5" />
+            <Play className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
           {rule.status === 'active' ? (
             <Button aria-label="Pause" variant="ghost" size="icon" className="h-8 w-8" title="Pause" onClick={() => setStatus.mutate('paused')} disabled={setStatus.isPending}>
-              <Pause className="h-3.5 w-3.5" />
+              <Pause className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           ) : rule.status !== 'archived' ? (
             <Button aria-label="Activate" variant="ghost" size="icon" className="h-8 w-8" title="Activate" onClick={() => setStatus.mutate('active')} disabled={setStatus.isPending}>
-              <Zap className="h-3.5 w-3.5 text-emerald-600" />
+              <Zap className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
             </Button>
           ) : null}
           {rule.tenantId !== null && (
@@ -237,7 +237,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               }}
               disabled={remove.isPending}
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -272,7 +272,7 @@ export default function TenantAutomationPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20">
-          <Workflow className="h-10 w-10 text-muted-foreground mb-3" />
+          <Workflow className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
           <p className="text-muted-foreground">No organization context found.</p>
         </div>
       </AppShell>
@@ -349,7 +349,7 @@ export default function TenantAutomationPage() {
 
             {!isLoading && rules.length === 0 && (
               <div className="py-16 text-center rounded-xl border border-dashed border-border/60">
-                <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+                <Workflow className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <p className="font-medium">No automation rules yet</p>
                 <p className="text-sm text-muted-foreground mt-1">Platform-wide rules will appear here once the automation engine seeds default rules.</p>
               </div>

@@ -46,8 +46,7 @@ function StarRating({ rating }: { rating: number }) {
           className={cn(
             'h-4 w-4',
             star <= rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
-          )}
-        />
+          )} aria-hidden="true" />
       ))}
     </div>
   );
@@ -76,11 +75,11 @@ function ReviewCard({ review }: { review: Review }) {
             <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
             <div className="flex items-center gap-4 mt-3">
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <ThumbsUp className="mr-1 h-3 w-3" />
+                <ThumbsUp className="mr-1 icon-2xs" aria-hidden="true" />
                 Helpful ({review.helpful})
               </Button>
               <Button variant="ghost" size="sm" className="h-7 text-xs">
-                <MessageSquare className="mr-1 h-3 w-3" />
+                <MessageSquare className="mr-1 icon-2xs" aria-hidden="true" />
                 Reply
               </Button>
             </div>
@@ -153,7 +152,7 @@ export default function MentorReviewsPage() {
                   {ratingDistribution.map((item) => (
                     <div key={item.rating} className="flex items-center gap-2">
                       <span className="text-sm w-3">{item.rating}</span>
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                      <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" />
                       <Progress value={item.percentage} className="h-2 flex-1" />
                       <span className="text-xs text-muted-foreground w-6">{item.count}</span>
                     </div>
@@ -190,7 +189,7 @@ export default function MentorReviewsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search reviews..."
               value={search}
@@ -221,7 +220,7 @@ export default function MentorReviewsPage() {
           {filteredReviews.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Star className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No reviews found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters

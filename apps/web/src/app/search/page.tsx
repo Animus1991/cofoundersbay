@@ -128,7 +128,7 @@ function ResultCard({ result }: { result: SearchResult }) {
                 <h3 className="font-medium text-foreground group-hover:text-primary transition-colors truncate">
                   {result.title}
                 </h3>
-                <Badge variant="secondary" className="text-[10px] shrink-0">
+                <Badge variant="secondary" className="text-2xs shrink-0">
                   {result.type}
                 </Badge>
               </div>
@@ -151,13 +151,13 @@ function ResultCard({ result }: { result: SearchResult }) {
                 <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
                   {result.meta.location && (
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
+                      <MapPin className="icon-2xs" aria-hidden="true" />
                       {result.meta.location}
                     </span>
                   )}
                   {result.meta.date && (
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                      <Clock className="icon-2xs" aria-hidden="true" />
                       {result.meta.date}
                     </span>
                   )}
@@ -167,12 +167,12 @@ function ResultCard({ result }: { result: SearchResult }) {
               {result.tags && result.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {result.tags.slice(0, 3).map((tag) => (
-                    <Badge key={tag} variant="outline" className="text-[10px] h-5">
+                    <Badge key={tag} variant="outline" className="text-2xs h-5">
                       {tag}
                     </Badge>
                   ))}
                   {result.tags.length > 3 && (
-                    <Badge variant="outline" className="text-[10px] h-5">
+                    <Badge variant="outline" className="text-2xs h-5">
                       +{result.tags.length - 3}
                     </Badge>
                   )}
@@ -180,7 +180,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               )}
             </div>
 
-            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+            <ArrowRight className="icon-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" aria-hidden="true" />
           </div>
         </CardContent>
       </Card>
@@ -192,7 +192,7 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
-        <Search className="h-7 w-7 text-muted-foreground" />
+        <Search className="h-7 w-7 text-muted-foreground" aria-hidden="true" />
       </div>
       <h3 className="text-lg font-semibold text-foreground mb-2">No results found</h3>
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
@@ -203,19 +203,19 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
       <div className="flex flex-wrap justify-center gap-2">
         <Link href="/discover">
           <Button variant="outline" size="sm" className="gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="icon-sm" aria-hidden="true" />
             Browse People
           </Button>
         </Link>
         <Link href="/jobs">
           <Button variant="outline" size="sm" className="gap-2">
-            <Briefcase className="h-4 w-4" />
+            <Briefcase className="icon-sm" aria-hidden="true" />
             Browse Jobs
           </Button>
         </Link>
         <Link href="/events">
           <Button variant="outline" size="sm" className="gap-2">
-            <Calendar className="h-4 w-4" />
+            <Calendar className="icon-sm" aria-hidden="true" />
             Browse Events
           </Button>
         </Link>
@@ -310,7 +310,7 @@ export default function SearchPage() {
         {/* Search Input */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-4 -mx-4 px-4 pt-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               ref={inputRef}
               type="text"
@@ -324,8 +324,8 @@ export default function SearchPage() {
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               {!query && (
-                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground font-mono">
-                  <Command className="h-2.5 w-2.5" />K
+                <kbd className="hidden sm:flex items-center gap-0.5 rounded border border-border/60 bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground font-mono">
+                  <Command className="h-2.5 w-2.5" aria-hidden="true" />K
                 </kbd>
               )}
               {query && (
@@ -333,7 +333,7 @@ export default function SearchPage() {
                   onClick={() => setQuery('')}
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="icon-sm" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -344,7 +344,7 @@ export default function SearchPage() {
             <div className="absolute left-4 right-4 top-full mt-1 z-50 rounded-xl border border-border/60 bg-popover shadow-lg overflow-hidden">
               <div className="px-3 py-2 border-b border-border/40 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                  <History className="h-3.5 w-3.5" />
+                  <History className="h-3.5 w-3.5" aria-hidden="true" />
                   Recent searches
                 </span>
                 <button
@@ -352,7 +352,7 @@ export default function SearchPage() {
                     setRecentSearches([]);
                     try { localStorage.removeItem(RECENT_SEARCHES_KEY); } catch {}
                   }}
-                  className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-2xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Clear
                 </button>
@@ -363,10 +363,10 @@ export default function SearchPage() {
                   onClick={() => { setQuery(term); inputRef.current?.blur(); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 text-sm hover:bg-secondary/60 transition-colors text-left"
                 >
-                  <History className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <History className="h-3.5 w-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
                   <span className="flex-1 truncate">{term}</span>
                   <X
-                    className="h-3 w-3 text-muted-foreground hover:text-foreground shrink-0"
+                    className="icon-2xs text-muted-foreground hover:text-foreground shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       setRecentSearches(prev => {
@@ -374,8 +374,7 @@ export default function SearchPage() {
                         try { localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated)); } catch {}
                         return updated;
                       });
-                    }}
-                  />
+                    }} aria-hidden="true" />
                 </button>
               ))}
             </div>
@@ -406,7 +405,7 @@ export default function SearchPage() {
                       {debouncedQuery.length >= 2 && count > 0 && (
                         <Badge
                           variant={isActive ? 'secondary' : 'outline'}
-                          className="ml-1 h-4 px-1 text-[10px]"
+                          className="ml-1 h-4 px-1 text-2xs"
                         >
                           {count}
                         </Badge>
@@ -432,7 +431,7 @@ export default function SearchPage() {
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-4">
-                <X className="h-7 w-7 text-destructive" />
+                <X className="h-7 w-7 text-destructive" aria-hidden="true" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Search failed</h3>
               <p className="text-sm text-muted-foreground mb-4">
@@ -469,7 +468,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                      <Users className="h-5 w-5 text-blue-500" />
+                      <Users className="icon-md text-blue-500" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary transition-colors">
@@ -484,7 +483,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-                      <GraduationCap className="h-5 w-5 text-purple-500" />
+                      <GraduationCap className="icon-md text-purple-500" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary transition-colors">
@@ -499,7 +498,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                      <Briefcase className="h-5 w-5 text-emerald-500" />
+                      <Briefcase className="icon-md text-emerald-500" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary transition-colors">
@@ -514,7 +513,7 @@ export default function SearchPage() {
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-                      <Calendar className="h-5 w-5 text-orange-500" />
+                      <Calendar className="icon-md text-orange-500" aria-hidden="true" />
                     </div>
                     <div>
                       <p className="font-medium text-foreground group-hover:text-primary transition-colors">

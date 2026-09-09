@@ -40,10 +40,10 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-yellow-500/15 text-yellow-700 border-yellow-200 gap-1"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
   }
 }
 
@@ -60,10 +60,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.verification.name}</span>
-          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button onClick={() => copy(instructions.verification.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.verification.value}</span>
-          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button onClick={() => copy(instructions.verification.value ?? '')} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
           <span className="text-muted-foreground">TTL</span>
           <span>{instructions.verification.ttl}</span>
           <span />
@@ -77,10 +77,10 @@ function DnsInstructionsPanel({ instructions }: { instructions: DnsInstructions 
           <span />
           <span className="text-muted-foreground">Name</span>
           <span className="break-all">{instructions.cname.name}</span>
-          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button onClick={() => copy(instructions.cname.name)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
           <span className="text-muted-foreground">Value</span>
           <span className="break-all">{instructions.cname.value}</span>
-          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" /></button>
+          <button onClick={() => copy(instructions.cname.value)} className="text-muted-foreground hover:text-foreground"><Copy className="icon-sm" aria-hidden="true" /></button>
         </div>
       </div>
       <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5">
@@ -139,7 +139,7 @@ function DomainRow({
     <div className="rounded-lg border border-border/60 bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm font-medium break-all">{domain.domainName}</span>
@@ -163,19 +163,19 @@ function DomainRow({
           {domain.domainType === 'custom' && domain.verificationStatus !== 'verified' && (
             <>
               <Button size="sm" variant="outline" onClick={handleShowDns} disabled={loadingDns} className="gap-1 h-7 text-xs">
-                <Link2 className="icon-sm" />
+                <Link2 className="icon-sm" aria-hidden="true" />
                 DNS Setup
-                {showDns ? <ChevronDown className="icon-sm" /> : <ChevronRight className="icon-sm" />}
+                {showDns ? <ChevronDown className="icon-sm" aria-hidden="true" /> : <ChevronRight className="icon-sm" aria-hidden="true" />}
               </Button>
               <Button size="sm" variant="outline" onClick={() => verify.mutate()} disabled={verify.isPending} className="gap-1 h-7 text-xs">
-                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`icon-sm ${verify.isPending ? 'animate-spin' : ''}`} aria-hidden="true" />
                 Verify
               </Button>
             </>
           )}
           {!domain.isPrimary && domain.isActive && (
             <Button size="sm" variant="ghost" onClick={() => setPrimary.mutate()} disabled={setPrimary.isPending} className="gap-1 h-7 text-xs">
-              <Star className="icon-sm" />
+              <Star className="icon-sm" aria-hidden="true" />
               Set Primary
             </Button>
           )}
@@ -186,7 +186,7 @@ function DomainRow({
             disabled={toggle.isPending}
             className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-yellow-600 hover:text-yellow-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="icon-sm" />
+            <Power className="icon-sm" aria-hidden="true" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
@@ -204,7 +204,7 @@ function DomainRow({
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
           >
-            <Trash2 className="icon-sm" />
+            <Trash2 className="icon-sm" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -272,7 +272,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addSub.isPending || !subdomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="icon-sm" />
+            <Plus className="icon-sm" aria-hidden="true" />
             Add
           </Button>
         </div>
@@ -296,7 +296,7 @@ function TenantDomainPanel({ tenant }: { tenant: TenantItem }) {
             disabled={addCustom.isPending || !customDomainInput.trim()}
             className="gap-1"
           >
-            <Plus className="icon-sm" />
+            <Plus className="icon-sm" aria-hidden="true" />
             Add
           </Button>
         </div>
@@ -350,7 +350,7 @@ export default function DomainsAdminPage() {
                   >
                     {t.logoUrl
                       ? <img src={t.logoUrl} alt="" className="icon-lg rounded" />
-                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" /></div>}
+                      : <div className="icon-lg rounded bg-primary/10 flex items-center justify-center"><Globe className="icon-sm text-primary" aria-hidden="true" /></div>}
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{t.displayName || t.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{t.slug}</p>
@@ -367,7 +367,7 @@ export default function DomainsAdminPage() {
           {!selectedTenant ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <Globe className="h-10 w-10 text-muted-foreground mx-auto mb-3" aria-hidden="true" />
                 <p className="text-muted-foreground">Select an organization to manage its domains</p>
               </CardContent>
             </Card>

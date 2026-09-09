@@ -128,18 +128,18 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                 {opportunity.company && (
                   <span className="text-sm text-muted-foreground">{opportunity.company}</span>
                 )}
-                <Badge variant="outline" className={cn('text-[10px] px-1.5', cfg.className)}>
+                <Badge variant="outline" className={cn('text-2xs px-1.5', cfg.className)}>
                   <cfg.icon className="mr-1 h-3 w-3" />
                   {cfg.label}
                 </Badge>
                 {opportunity.isRemote && (
-                  <Badge variant="secondary" className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">Remote</Badge>
                 )}
               </div>
             </div>
           </div>
           <span className="text-xs text-muted-foreground shrink-0 flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+            <Clock className="icon-2xs" aria-hidden="true" />
             {postedAgo}
           </span>
         </div>
@@ -151,7 +151,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         {opportunity.tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opportunity.tags.map((tag: string) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[11px] text-secondary-foreground">
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">
                 {tag}
               </span>
             ))}
@@ -161,7 +161,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {opportunity.location && (
             <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
+              <MapPin className="icon-2xs" aria-hidden="true" />
               {opportunity.location}
             </span>
           )}
@@ -173,7 +173,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
                 return daysLeft <= 3 ? 'text-red-500 font-medium' : 'text-amber-600 dark:text-amber-400';
               })()
             )}>
-              <AlertCircle className="h-3 w-3" />
+              <AlertCircle className="icon-2xs" aria-hidden="true" />
               {(() => {
                 const daysLeft = Math.ceil((new Date(opportunity.deadline as string).getTime() - Date.now()) / 86400000);
                 return daysLeft <= 0 ? 'Expired' : daysLeft <= 3 ? `${daysLeft}d left!` : `Deadline: ${deadline}`;
@@ -181,7 +181,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
             </span>
           )}
           <span className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
+            <Users className="icon-2xs" aria-hidden="true" />
             {opportunity.createdBy.displayName}
           </span>
         </div>
@@ -190,12 +190,12 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
           {opportunity.url ? (
             <Button size="sm" className="gap-1.5 text-xs" asChild>
               <a href={opportunity.url} target="_blank" rel="noopener noreferrer">
-                Apply Now <ArrowRight className="h-3 w-3" />
+                Apply Now <ArrowRight className="icon-2xs" aria-hidden="true" />
               </a>
             </Button>
           ) : (
             <Button size="sm" className="gap-1.5 text-xs">
-              Apply Now <ArrowRight className="h-3 w-3" />
+              Apply Now <ArrowRight className="icon-2xs" aria-hidden="true" />
             </Button>
           )}
           <Button
@@ -204,7 +204,7 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
             className="gap-1.5 text-xs"
             onClick={() => success('Saved', `${opportunity.title} saved to bookmarks.`)}
           >
-            <Bookmark className="h-3 w-3" />
+            <Bookmark className="icon-2xs" aria-hidden="true" />
             Save
           </Button>
         </div>
@@ -229,12 +229,12 @@ function JobCard({ job }: { job: JobPostingView }) {
               <h3 className="font-display text-base font-semibold text-foreground">{job.title}</h3>
               <div className="mt-1 flex items-center gap-2 flex-wrap">
                 <span className="text-sm text-muted-foreground">{job.creator.displayName}</span>
-                <Badge variant="outline" className="text-[10px] px-1.5 bg-primary/20 text-primary border-primary/20">
-                  <Building2 className="mr-1 h-3 w-3" />
+                <Badge variant="outline" className="text-2xs px-1.5 bg-primary/20 text-primary border-primary/20">
+                  <Building2 className="mr-1 icon-2xs" aria-hidden="true" />
                   Job
                 </Badge>
                 {job.isRemote && (
-                  <Badge variant="secondary" className="text-[10px]">Remote</Badge>
+                  <Badge variant="secondary" className="text-2xs">Remote</Badge>
                 )}
               </div>
             </div>
@@ -244,13 +244,13 @@ function JobCard({ job }: { job: JobPostingView }) {
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           {job.location && (
             <span className="flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
+              <MapPin className="icon-2xs" aria-hidden="true" />
               {job.location}
             </span>
           )}
           {job.role && (
             <span className="flex items-center gap-1">
-              <Briefcase className="h-3 w-3" />
+              <Briefcase className="icon-2xs" aria-hidden="true" />
               {job.role}
             </span>
           )}
@@ -259,7 +259,7 @@ function JobCard({ job }: { job: JobPostingView }) {
         <div className="flex gap-2 pt-1">
           <Button size="sm" className="gap-1.5 text-xs">
             Apply Now
-            <ArrowRight className="h-3 w-3" />
+            <ArrowRight className="icon-2xs" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
@@ -267,7 +267,7 @@ function JobCard({ job }: { job: JobPostingView }) {
             className="gap-1.5 text-xs"
             onClick={() => success('Saved', `${job.title} saved to bookmarks.`)}
           >
-            <Bookmark className="h-3 w-3" />
+            <Bookmark className="icon-2xs" aria-hidden="true" />
             Save
           </Button>
         </div>
@@ -320,11 +320,11 @@ function ProposalCard({
           <p className="text-sm text-foreground leading-relaxed">{proposal.scope}</p>
           <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-1">
             <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+              <Clock className="icon-2xs" aria-hidden="true" />
               {proposal.timeframe}
             </span>
             <span className="flex items-center gap-1">
-              <Coins className="h-3 w-3" />
+              <Coins className="icon-2xs" aria-hidden="true" />
               {proposal.compensation}
             </span>
           </div>
@@ -337,7 +337,7 @@ function ProposalCard({
               className="flex-1 gap-2"
               onClick={() => onAccept(proposal.id)}
             >
-              <Check className="h-3.5 w-3.5" />
+              <Check className="h-3.5 w-3.5" aria-hidden="true" />
               Accept
             </Button>
             <Button
@@ -346,7 +346,7 @@ function ProposalCard({
               className="flex-1 gap-2"
               onClick={() => onDecline(proposal.id)}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
               Decline
             </Button>
           </div>
@@ -458,7 +458,7 @@ function PostOpportunityForm({ onClose, onCreated }: { onClose: () => void; onCr
               onClick={() => mutation.mutate()}
               disabled={!form.title.trim() || mutation.isPending}
             >
-              {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+              {mutation.isPending ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Rocket className="icon-sm" aria-hidden="true" />}
               Post
             </Button>
         </DialogFooter>
@@ -535,7 +535,7 @@ export default function OpportunitiesPage() {
         description="Co-founder listings, jobs, freelance contracts, and collaboration proposals"
         actions={
           <Button className="gap-2" onClick={() => setShowPostForm(true)}>
-            <Plus className="h-4 w-4" />
+            <Plus className="icon-sm" aria-hidden="true" />
             Post opportunity
           </Button>
         }
@@ -558,7 +558,7 @@ export default function OpportunitiesPage() {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                    <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -582,7 +582,7 @@ export default function OpportunitiesPage() {
               <Icon className="h-4 w-4" />
               {label}
               {badge !== undefined && badge > 0 && (
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold text-primary">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-2xs font-bold text-primary">
                   {badge}
                 </span>
               )}
@@ -596,7 +596,7 @@ export default function OpportunitiesPage() {
             {/* Search + filter */}
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search roles, skills, companies…"
                   value={search}
@@ -651,11 +651,11 @@ export default function OpportunitiesPage() {
               ))
             ) : opportunities.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Handshake className="h-10 w-10 mb-3 opacity-30" />
+                <Handshake className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
                 <p className="font-medium">No opportunities found</p>
                 <p className="text-sm mt-1">Try adjusting your search or filters, or post the first opportunity.</p>
                 <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="h-4 w-4" />
+                  <Plus className="icon-sm" aria-hidden="true" />
                   Post opportunity
                 </Button>
               </div>
@@ -674,7 +674,7 @@ export default function OpportunitiesPage() {
         {activeTab === 'jobs' && (
           <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search jobs…"
                 value={search}
@@ -701,11 +701,11 @@ export default function OpportunitiesPage() {
               ))
             ) : !jobsData?.jobs?.length ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <Briefcase className="h-10 w-10 mb-3 opacity-30" />
+                <Briefcase className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
                 <p className="font-medium">No jobs posted yet</p>
                 <p className="text-sm mt-1">Be the first to post a role in the community.</p>
                 <Button className="mt-4 gap-2" onClick={() => setShowPostForm(true)}>
-                  <Plus className="h-4 w-4" />
+                  <Plus className="icon-sm" aria-hidden="true" />
                   Post a job
                 </Button>
               </div>
@@ -726,7 +726,7 @@ export default function OpportunitiesPage() {
         {activeTab === 'applications' && (
           <div className="space-y-4">
             <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <FileText className="h-10 w-10 mb-3 opacity-30" />
+              <FileText className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
               <p className="font-medium">Applications tracked here</p>
               <p className="text-sm mt-1">When you apply to listings or program applications, they appear here.</p>
               <div className="flex gap-3 mt-4">
@@ -742,7 +742,7 @@ export default function OpportunitiesPage() {
           <div className="space-y-4">
             {proposals.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-                <FileText className="h-10 w-10 mb-3 opacity-30" />
+                <FileText className="h-10 w-10 mb-3 opacity-30" aria-hidden="true" />
                 <p className="font-medium">No proposals yet</p>
                 <p className="text-sm mt-1">Collaboration proposals from other members will appear here.</p>
               </div>

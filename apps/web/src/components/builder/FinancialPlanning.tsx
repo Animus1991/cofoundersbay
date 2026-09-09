@@ -256,7 +256,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-500/10 rounded-lg">
-            <DollarSign className="h-5 w-5 text-emerald-600" />
+            <DollarSign className="icon-md text-emerald-600" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Financial Planning</h2>
@@ -277,14 +277,14 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
             )}
             AI Generate
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" aria-hidden="true" />
             Save
           </Button>
         </div>
@@ -295,7 +295,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <TrendingDown className="icon-sm text-red-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Monthly Burn</span>
             </div>
             <div className="text-2xl font-bold text-red-600">
@@ -306,7 +306,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <PiggyBank className="h-4 w-4 text-blue-500" />
+              <PiggyBank className="icon-sm text-blue-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Runway</span>
             </div>
             <div className="text-2xl font-bold text-blue-600">
@@ -317,7 +317,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="icon-sm text-green-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">Monthly Revenue</span>
             </div>
             <div className="text-2xl font-bold text-green-600">
@@ -328,7 +328,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
-              <Calculator className="h-4 w-4 text-purple-500" />
+              <Calculator className="icon-sm text-purple-500" aria-hidden="true" />
               <span className="text-sm text-muted-foreground">LTV/CAC Ratio</span>
             </div>
             <div className={cn(
@@ -346,23 +346,23 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="costs" className="gap-1">
-            <TrendingDown className="h-3 w-3" />
+            <TrendingDown className="icon-2xs" aria-hidden="true" />
             Costs
           </TabsTrigger>
           <TabsTrigger value="revenue" className="gap-1">
-            <TrendingUp className="h-3 w-3" />
+            <TrendingUp className="icon-2xs" aria-hidden="true" />
             Revenue
           </TabsTrigger>
           <TabsTrigger value="unit-economics" className="gap-1">
-            <Calculator className="h-3 w-3" />
+            <Calculator className="icon-2xs" aria-hidden="true" />
             Unit Economics
           </TabsTrigger>
           <TabsTrigger value="funding" className="gap-1">
-            <PiggyBank className="h-3 w-3" />
+            <PiggyBank className="icon-2xs" aria-hidden="true" />
             Funding
           </TabsTrigger>
           <TabsTrigger value="scenarios" className="gap-1">
-            <BarChart3 className="h-3 w-3" />
+            <BarChart3 className="icon-2xs" aria-hidden="true" />
             Scenarios
           </TabsTrigger>
         </TabsList>
@@ -795,7 +795,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-yellow-500/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                  <AlertTriangle className="icon-md text-yellow-500" aria-hidden="true" />
                   Conservative
                 </CardTitle>
               </CardHeader>
@@ -849,7 +849,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-blue-500/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-blue-500" />
+                  <Target className="icon-md text-blue-500" aria-hidden="true" />
                   Realistic
                 </CardTitle>
               </CardHeader>
@@ -903,7 +903,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <Card className="border-green-500/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <TrendingUp className="icon-md text-green-500" aria-hidden="true" />
                   Aggressive
                 </CardTitle>
               </CardHeader>

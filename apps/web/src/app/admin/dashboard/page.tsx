@@ -188,11 +188,11 @@ export default function AdminDashboardPage() {
   const getAlertIcon = (type: SecurityAlert['type']) => {
     switch (type) {
       case 'error':
-        return <XCircle className="icon-sm text-red-500" />;
+        return <XCircle className="icon-sm text-red-500" aria-hidden="true" />;
       case 'warning':
-        return <AlertTriangle className="icon-sm text-yellow-500" />;
+        return <AlertTriangle className="icon-sm text-yellow-500" aria-hidden="true" />;
       case 'info':
-        return <CheckCircle className="icon-sm text-blue-500" />;
+        return <CheckCircle className="icon-sm text-blue-500" aria-hidden="true" />;
     }
   };
 
@@ -226,7 +226,7 @@ export default function AdminDashboardPage() {
     return (
       <div className="p-8">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" aria-hidden="true" />
           <h2 className="text-xl font-bold text-red-600 mb-2">Dashboard Error</h2>
           <p className="text-muted-foreground">Failed to load admin metrics</p>
           <Button onClick={() => refetchMetrics()} className="mt-4">
@@ -277,7 +277,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="icon-sm text-muted-foreground" />
+            <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -298,7 +298,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-            <Activity className="icon-sm text-muted-foreground" />
+            <Activity className="icon-sm text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -325,7 +325,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Performance</CardTitle>
-            <TrendingUp className="icon-sm text-muted-foreground" />
+            <TrendingUp className="icon-sm text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -350,7 +350,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Business</CardTitle>
-            <Briefcase className="icon-sm text-muted-foreground" />
+            <Briefcase className="icon-sm text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
@@ -425,7 +425,7 @@ export default function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="icon-sm" />
+              <Shield className="icon-sm" aria-hidden="true" />
               Security Alerts
             </CardTitle>
           </CardHeader>
@@ -452,7 +452,7 @@ export default function AdminDashboardPage() {
                           {alert.message}
                         </p>
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                          <Clock className="icon-sm" />
+                          <Clock className="icon-sm" aria-hidden="true" />
                           {formatTimestamp(alert.timestamp)}
                         </p>
                       </div>
@@ -473,19 +473,19 @@ export default function AdminDashboardPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-20 flex-col">
-              <Users className="icon-lg mb-2" />
+              <Users className="icon-lg mb-2" aria-hidden="true" />
               <span className="text-sm">User Management</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col">
-              <Shield className="icon-lg mb-2" />
+              <Shield className="icon-lg mb-2" aria-hidden="true" />
               <span className="text-sm">Security</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col">
-              <Activity className="icon-lg mb-2" />
+              <Activity className="icon-lg mb-2" aria-hidden="true" />
               <span className="text-sm">Analytics</span>
             </Button>
             <Button variant="outline" className="h-20 flex-col">
-              <Briefcase className="icon-lg mb-2" />
+              <Briefcase className="icon-lg mb-2" aria-hidden="true" />
               <span className="text-sm">Business</span>
             </Button>
           </div>

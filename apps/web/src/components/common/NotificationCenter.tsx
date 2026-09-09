@@ -166,9 +166,9 @@ export function NotificationCenter({
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="icon-md" aria-hidden="true" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-2xs font-bold text-primary-foreground">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -186,7 +186,7 @@ export function NotificationCenter({
                 className="h-7 text-xs"
                 onClick={() => onMarkAllAsRead?.()}
               >
-                <CheckCheck className="h-3 w-3 mr-1" />
+                <CheckCheck className="icon-2xs mr-1" aria-hidden="true" />
                 Mark all read
               </Button>
             )}
@@ -206,7 +206,7 @@ export function NotificationCenter({
             ))
           ) : (
             <div className="py-12 text-center">
-              <Bell className="mx-auto h-8 w-8 text-muted-foreground/40 mb-3" />
+              <Bell className="mx-auto icon-xl text-muted-foreground/40 mb-3" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">No notifications yet</p>
             </div>
           )}
@@ -237,7 +237,7 @@ export function NotificationBadge({ count }: { count: number }) {
   return (
     <Badge
       variant="destructive"
-      className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-[10px] font-bold"
+      className="absolute -top-1 -right-1 h-4 min-w-[16px] px-1 text-2xs font-bold"
     >
       {count > 99 ? '99+' : count}
     </Badge>

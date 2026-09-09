@@ -97,7 +97,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -123,7 +123,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
               <div>
                 <p className="text-xs text-muted-foreground">Return</p>
                 <p className={cn('text-sm font-medium flex items-center gap-1', isPositive ? 'text-green-600' : 'text-red-600')}>
-                  {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {isPositive ? <TrendingUp className="icon-2xs" aria-hidden="true" /> : <TrendingDown className="icon-2xs" aria-hidden="true" />}
                   {isPositive ? '+' : ''}{investment.returnPct}%
                 </p>
               </div>
@@ -135,7 +135,7 @@ function InvestmentCard({ investment }: { investment: Investment }) {
 
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
+                <Users className="h-3.5 w-3.5" aria-hidden="true" />
                 {investment.teamSize} team members
               </span>
               <span>Last update: {investment.lastUpdate}</span>
@@ -164,7 +164,7 @@ export default function InvestorPortfolioPage() {
           illustration="default"
           title="No portfolio companies yet"
           description="Start investing through your deal pipeline to build your portfolio."
-          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 h-4 w-4" />View Pipeline</Link></Button>}
+          action={<Button asChild><Link href="/investor/pipeline"><TrendingUp className="mr-2 icon-sm" aria-hidden="true" />View Pipeline</Link></Button>}
         />
       </AppShell>
     );
@@ -176,7 +176,7 @@ export default function InvestorPortfolioPage() {
       description="Track your investments and returns"
       actions={
         <Button variant="outline" size="sm">
-          <Download className="mr-2 h-4 w-4" />Export Report
+          <Download className="mr-2 icon-sm" aria-hidden="true" />Export Report
         </Button>
       }
     >

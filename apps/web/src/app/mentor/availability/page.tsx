@@ -152,7 +152,7 @@ export default function MentorAvailabilityPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Calendar className="h-6 w-6 text-primary" />
+              <Calendar className="icon-lg text-primary" aria-hidden="true" />
               Availability Settings
             </h1>
             <p className="text-muted-foreground">
@@ -160,7 +160,7 @@ export default function MentorAvailabilityPage() {
             </p>
           </div>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <RefreshCw className="mr-2 icon-sm animate-spin" aria-hidden="true" /> : <Save className="mr-2 icon-sm" aria-hidden="true" />}
             Save Changes
           </Button>
         </div>
@@ -181,7 +181,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-primary" />
+                <Clock className="icon-sm text-primary" aria-hidden="true" />
                 <span className="text-sm font-medium">Weekly Hours</span>
               </div>
               <p className="text-xl font-bold">{weeklyHours.toFixed(1)}h</p>
@@ -191,7 +191,7 @@ export default function MentorAvailabilityPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Globe className="h-4 w-4 text-primary" />
+                <Globe className="icon-sm text-primary" aria-hidden="true" />
                 <span className="text-sm font-medium">Timezone</span>
               </div>
               <p className="text-sm font-semibold truncate">{timezone.replace('/', ' / ')}</p>
@@ -246,7 +246,7 @@ export default function MentorAvailabilityPage() {
                           )}
                         </div>
                         <Button size="sm" variant="ghost" onClick={() => addSlot(day.key)}>
-                          <Plus className="h-3.5 w-3.5 mr-1" /> Add
+                          <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" /> Add
                         </Button>
                       </div>
                       {daySlots.length > 0 && (
@@ -280,7 +280,7 @@ export default function MentorAvailabilityPage() {
                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                 onClick={() => removeSlot(slot.id)}
                               >
-                                <Trash2 className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                               </Button>
                             </div>
                           ))}
@@ -348,7 +348,7 @@ export default function MentorAvailabilityPage() {
                 <div className="border-t border-border" />
 
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
-                  <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                  <Info className="icon-sm text-blue-500 mt-0.5 shrink-0" aria-hidden="true" />
                   <p className="text-xs text-muted-foreground">
                     Your availability will be shown to mentees in their local timezone. 
                     Sessions are confirmed via email and appear in your upcoming sessions list.

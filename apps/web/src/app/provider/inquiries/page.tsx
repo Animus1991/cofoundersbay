@@ -82,7 +82,7 @@ function InquiryCard({ inquiry }: { inquiry: Inquiry }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -209,7 +209,7 @@ export default function ProviderInquiriesPage() {
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -218,7 +218,7 @@ export default function ProviderInquiriesPage() {
 
         {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search inquiries..."
             value={search}
@@ -251,7 +251,7 @@ export default function ProviderInquiriesPage() {
             {filteredInquiries.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                  <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                   <h3 className="font-medium">No inquiries found</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     {activeTab === 'all'

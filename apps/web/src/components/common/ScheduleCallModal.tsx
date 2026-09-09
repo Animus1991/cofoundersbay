@@ -182,11 +182,11 @@ export function ScheduleCallModal({
             {/* Calendar Header */}
             <div className="flex items-center justify-between">
               <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}>
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="icon-sm" aria-hidden="true" />
               </Button>
               <span className="font-medium">{monthName}</span>
               <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
 
@@ -225,7 +225,7 @@ export function ScheduleCallModal({
             {/* Calendar Integration Notice */}
             <Card className="bg-muted/50">
               <CardContent className="p-3 flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
+                <Calendar className="icon-md text-muted-foreground shrink-0" aria-hidden="true" />
                 <div className="text-sm">
                   <p className="font-medium text-foreground">Connect your calendar</p>
                   <p className="text-muted-foreground text-xs">
@@ -233,7 +233,7 @@ export function ScheduleCallModal({
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="shrink-0">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                   Connect
                 </Button>
               </CardContent>
@@ -244,7 +244,7 @@ export function ScheduleCallModal({
         {step === 'time' && selectedDate && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('date')} className="gap-1 -ml-2">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="icon-sm" aria-hidden="true" />
               {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
             </Button>
 
@@ -276,7 +276,7 @@ export function ScheduleCallModal({
         {step === 'details' && selectedDate && selectedTime && (
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('time')} className="gap-1 -ml-2">
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="icon-sm" aria-hidden="true" />
               {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
             </Button>
 
@@ -292,7 +292,7 @@ export function ScheduleCallModal({
                     callType === 'video' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary' : 'text-muted-foreground')} />
+                  <Video className={cn('h-5 w-5', callType === 'video' ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
                   <div className="text-left">
                     <p className="font-medium text-sm">Video Call</p>
                     <p className="text-xs text-muted-foreground">Face-to-face meeting</p>
@@ -306,7 +306,7 @@ export function ScheduleCallModal({
                     callType === 'phone' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   )}
                 >
-                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary' : 'text-muted-foreground')} />
+                  <Phone className={cn('h-5 w-5', callType === 'phone' ? 'text-primary' : 'text-muted-foreground')} aria-hidden="true" />
                   <div className="text-left">
                     <p className="font-medium text-sm">Phone Call</p>
                     <p className="text-xs text-muted-foreground">Audio only</p>
@@ -344,12 +344,12 @@ export function ScheduleCallModal({
             <Button className="w-full" onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" />
                   Scheduling...
                 </>
               ) : (
                 <>
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Calendar className="icon-sm mr-2" aria-hidden="true" />
                   Schedule Call
                 </>
               )}
@@ -360,7 +360,7 @@ export function ScheduleCallModal({
         {step === 'confirm' && selectedDate && selectedTime && (
           <div className="text-center py-6 space-y-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/10 mx-auto">
-              <Check className="h-8 w-8 text-emerald-500" />
+              <Check className="icon-xl text-emerald-500" aria-hidden="true" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>
@@ -371,11 +371,11 @@ export function ScheduleCallModal({
             <Card className="bg-muted/50">
               <CardContent className="p-4 text-left space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  {callType === 'video' ? <Video className="h-4 w-4" /> : <Phone className="h-4 w-4" />}
+                  {callType === 'video' ? <Video className="icon-sm" aria-hidden="true" /> : <Phone className="icon-sm" aria-hidden="true" />}
                   <span>{callType === 'video' ? 'Video Call' : 'Phone Call'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="h-4 w-4" />
+                  <Clock className="icon-sm" aria-hidden="true" />
                   <span>{DURATIONS.find((d) => d.value === duration)?.label}</span>
                 </div>
               </CardContent>

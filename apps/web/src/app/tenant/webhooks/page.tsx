@@ -86,7 +86,7 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
             <div className="flex items-center gap-2">
               <code className="text-xs font-mono bg-muted px-2 py-0.5 rounded truncate max-w-xs">{truncUrl}</code>
               <Button aria-label="Copy" variant="ghost" size="icon">
-                <Copy className="icon-sm" />
+                <Copy className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
             <div className="flex flex-wrap gap-1 mt-2">
@@ -95,9 +95,9 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
               ))}
             </div>
             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-              {webhook.lastTriggered && <span className="flex items-center gap-1"><Clock className="icon-sm" />{webhook.lastTriggered}</span>}
+              {webhook.lastTriggered && <span className="flex items-center gap-1"><Clock className="icon-sm" aria-hidden="true" />{webhook.lastTriggered}</span>}
               <span className="flex items-center gap-1">
-                <Activity className="icon-sm" />
+                <Activity className="icon-sm" aria-hidden="true" />
                 {webhook.successRate}% success · {webhook.totalDeliveries} deliveries
               </span>
             </div>
@@ -107,14 +107,14 @@ function WebhookCard({ webhook }: { webhook: WebhookItem }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon">
-                  <MoreVertical className="icon-sm" />
+                  <MoreVertical className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem><Edit className="mr-2 icon-sm" />Edit</DropdownMenuItem>
-                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" />Resend Last</DropdownMenuItem>
-                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" />View Logs</DropdownMenuItem>
-                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" />Delete</DropdownMenuItem>
+                <DropdownMenuItem><Edit className="mr-2 icon-sm" aria-hidden="true" />Edit</DropdownMenuItem>
+                <DropdownMenuItem><RefreshCw className="mr-2 icon-sm" aria-hidden="true" />Resend Last</DropdownMenuItem>
+                <DropdownMenuItem><ArrowRight className="mr-2 icon-sm" aria-hidden="true" />View Logs</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 icon-sm" aria-hidden="true" />Delete</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -136,7 +136,7 @@ export default function TenantWebhooksPage() {
     <AppShell
       title="Webhooks"
       description="Send real-time event notifications to external services"
-      actions={<Button size="sm"><Plus className="mr-2 icon-sm" />Add Webhook</Button>}
+      actions={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Webhook</Button>}
     >
       <div className="space-y-5">
         <div className="grid gap-3 md:grid-cols-3">
@@ -152,10 +152,10 @@ export default function TenantWebhooksPage() {
         {webhooks.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-12 text-center">
-              <Webhook className="icon-lg mx-auto text-muted-foreground/40 mb-3" />
+              <Webhook className="icon-lg mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
               <p className="font-medium">No webhooks configured</p>
               <p className="text-xs text-muted-foreground mt-1 mb-4">Connect Zapier, Slack, or any HTTP endpoint to receive real-time events</p>
-              <Button size="sm"><Plus className="mr-1.5 icon-sm" />Add Webhook</Button>
+              <Button size="sm"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
             </CardContent>
           </Card>
         ) : (
@@ -166,7 +166,7 @@ export default function TenantWebhooksPage() {
             <Card className="border-dashed">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">Add another endpoint</p>
-                <Button size="sm" variant="outline" className="mt-2"><Plus className="mr-1.5 icon-sm" />Add Webhook</Button>
+                <Button size="sm" variant="outline" className="mt-2"><Plus className="mr-1.5 icon-sm" aria-hidden="true" />Add Webhook</Button>
               </CardContent>
             </Card>
           </>

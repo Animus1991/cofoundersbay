@@ -34,7 +34,7 @@ export default function AllianceThemePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6">
-              <Sparkles className="h-4 w-4" />
+              <Sparkles className="icon-sm" aria-hidden="true" />
               <span className="text-sm font-medium">Alliance Theme Preview</span>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-100">
@@ -46,7 +46,7 @@ export default function AllianceThemePage() {
             <div className="flex items-center justify-center gap-4">
               <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
                 Get Started
-                <ChevronRight className="ml-2 h-5 w-5" />
+                <ChevronRight className="ml-2 icon-md" aria-hidden="true" />
               </Button>
               <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
                 Learn More
@@ -114,14 +114,14 @@ export default function AllianceThemePage() {
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-bold">Sarah Johnson</h3>
                         <Badge variant="secondary" className="text-xs">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                          <Star className="icon-2xs mr-1 fill-yellow-400 text-yellow-400" aria-hidden="true" />
                           Pro
                         </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">CEO & Founder at TechVentures</p>
                     </div>
                     <Button variant="outline" size="sm" className="rounded-full">
-                      <Users className="h-4 w-4 mr-2" />
+                      <Users className="icon-sm mr-2" aria-hidden="true" />
                       Connect
                     </Button>
                   </div>
@@ -140,26 +140,26 @@ export default function AllianceThemePage() {
 
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
+                      <MapPin className="icon-sm" aria-hidden="true" />
                       San Francisco, CA
                     </div>
                     <div className="flex items-center gap-1">
-                      <Building className="h-4 w-4" />
+                      <Building className="icon-sm" aria-hidden="true" />
                       Tech Industry
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <Heart className="h-4 w-4 mr-2" />
+                      <Heart className="icon-sm mr-2" aria-hidden="true" />
                       Like
                     </Button>
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <MessageSquare className="h-4 w-4 mr-2" />
+                      <MessageSquare className="icon-sm mr-2" aria-hidden="true" />
                       Message
                     </Button>
                     <Button variant="ghost" size="sm" className="flex-1">
-                      <Share2 className="h-4 w-4 mr-2" />
+                      <Share2 className="icon-sm mr-2" aria-hidden="true" />
                       Share
                     </Button>
                   </div>
@@ -187,7 +187,7 @@ export default function AllianceThemePage() {
                         <div className="font-semibold text-blue-600 dark:text-blue-400">{topic.tag}</div>
                         <div className="text-xs text-muted-foreground">{topic.count}</div>
                       </div>
-                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <TrendingUp className="icon-sm text-green-500" aria-hidden="true" />
                     </div>
                   ))}
                 </div>
@@ -196,7 +196,7 @@ export default function AllianceThemePage() {
 
             <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-600 to-purple-600 text-white">
               <CardContent className="p-6">
-                <Sparkles className="h-8 w-8 mb-3" />
+                <Sparkles className="icon-xl mb-3" aria-hidden="true" />
                 <h3 className="font-bold text-lg mb-2">Upgrade to Pro</h3>
                 <p className="text-sm text-blue-100 mb-4">
                   Unlock premium features and connect with top founders
@@ -221,7 +221,7 @@ export default function AllianceThemePage() {
                       className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors"
                     >
                       <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0">
-                        <Calendar className="h-6 w-6 text-white" />
+                        <Calendar className="icon-lg text-white" aria-hidden="true" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm truncate">{event.title}</div>

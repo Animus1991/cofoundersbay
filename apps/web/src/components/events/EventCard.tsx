@@ -61,14 +61,14 @@ function formatEventTime(start: Date, end: Date): string {
 function EventTypeIcon({ type }: { type: EventData['type'] }) {
   switch (type) {
     case 'online':
-      return <Video className="h-4 w-4" />;
+      return <Video className="icon-sm" aria-hidden="true" />;
     case 'in-person':
-      return <MapPin className="h-4 w-4" />;
+      return <MapPin className="icon-sm" aria-hidden="true" />;
     case 'hybrid':
       return (
         <div className="flex">
-          <Video className="h-4 w-4" />
-          <MapPin className="h-4 w-4 -ml-1" />
+          <Video className="icon-sm" aria-hidden="true" />
+          <MapPin className="icon-sm -ml-1" aria-hidden="true" />
         </div>
       );
   }
@@ -125,7 +125,7 @@ export function EventCard({
                 {event.title}
               </Link>
               <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
+                <Clock className="icon-2xs" aria-hidden="true" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               <div className="mt-1 flex items-center gap-2">
@@ -149,7 +149,7 @@ export function EventCard({
             >
               {rsvped ? (
                 <>
-                  <CheckCircle className="h-4 w-4 mr-1" />
+                  <CheckCircle className="icon-sm mr-1" aria-hidden="true" />
                   Going
                 </>
               ) : isFull ? (
@@ -212,12 +212,12 @@ export function EventCard({
           {/* Meta */}
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
+              <Clock className="icon-sm" aria-hidden="true" />
               {formatEventDate(event.startDate)} • {formatEventTime(event.startDate, event.endDate)}
             </div>
             {event.location && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+                <MapPin className="icon-sm" aria-hidden="true" />
                 {event.location}
               </div>
             )}
@@ -251,7 +251,7 @@ export function EventCard({
           {/* Actions */}
           <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" aria-hidden="true" />
               {event.attendeesCount} attending
               {spotsLeft !== null && spotsLeft > 0 && spotsLeft <= 10 && (
                 <span className="text-amber-600 dark:text-amber-400">• {spotsLeft} spots left</span>
@@ -264,10 +264,10 @@ export function EventCard({
                 onClick={handleBookmark}
                 className={cn(bookmarked && 'text-amber-500 dark:text-amber-400')}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
               </Button>
               <Button aria-label="Share" variant="ghost" size="icon" onClick={onShare}>
-                <Share2 className="h-4 w-4" />
+                <Share2 className="icon-sm" aria-hidden="true" />
               </Button>
               <Button
                 variant={rsvped ? 'secondary' : 'default'}
@@ -276,7 +276,7 @@ export function EventCard({
               >
                 {rsvped ? (
                   <>
-                    <CheckCircle className="h-4 w-4 mr-2" />
+                    <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
                     Going
                   </>
                 ) : isFull ? (
@@ -326,12 +326,12 @@ export function EventCard({
             
             <div className="mt-2 space-y-1">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                 {formatEventTime(event.startDate, event.endDate)}
               </div>
               {event.location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
                   <span className="truncate">{event.location}</span>
                 </div>
               )}
@@ -342,7 +342,7 @@ export function EventCard({
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
                   <AvatarImage src={event.hostAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-[10px]">
+                  <AvatarFallback className="bg-primary/20 text-primary text-2xs">
                     {event.hostName[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -363,7 +363,7 @@ export function EventCard({
             onClick={handleBookmark}
             className={cn('h-8 w-8', bookmarked && 'text-amber-500 dark:text-amber-400')}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
           <Button
             variant={rsvped ? 'secondary' : 'default'}
@@ -373,7 +373,7 @@ export function EventCard({
           >
             {rsvped ? (
               <>
-                <CheckCircle className="h-4 w-4 mr-1" />
+                <CheckCircle className="icon-sm mr-1" aria-hidden="true" />
                 Going
               </>
             ) : isFull ? (

@@ -83,10 +83,10 @@ function NoteEditor({
       />
       <div className="flex items-center gap-2">
         <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => onSave(value)} disabled={isSaving}>
-          <Check className="h-3 w-3" /> {isSaving ? 'Saving…' : 'Save'}
+          <Check className="icon-2xs" aria-hidden="true" /> {isSaving ? 'Saving…' : 'Save'}
         </Button>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onCancel}>
-          <X className="h-3 w-3 mr-1" /> Cancel
+          <X className="icon-2xs mr-1" aria-hidden="true" /> Cancel
         </Button>
       </div>
     </div>
@@ -126,8 +126,8 @@ function ShortlistCard({
         {compareMode && (
           <button onClick={() => onToggleSelect(item.userId)} className="mt-1 shrink-0">
             {isSelected
-              ? <CheckSquare className="h-4 w-4 text-primary" />
-              : <Square className="h-4 w-4 text-muted-foreground" />}
+              ? <CheckSquare className="icon-sm text-primary" aria-hidden="true" />
+              : <Square className="icon-sm text-muted-foreground" aria-hidden="true" />}
           </button>
         )}
 
@@ -137,7 +137,7 @@ function ShortlistCard({
             <img src={profile.avatarUrl} alt={profile.displayName ?? ''} className="h-10 w-10 rounded-full object-cover ring-2 ring-border/50 hover:ring-primary/40 transition-all" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted ring-2 ring-border/50">
-              <User className="h-5 w-5 text-muted-foreground" />
+              <User className="icon-md text-muted-foreground" aria-hidden="true" />
             </div>
           )}
         </Link>
@@ -152,16 +152,16 @@ function ShortlistCard({
                 </Link>
                 {/* Match score badge */}
                 <span className={cn(
-                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold border',
+                  'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-2xs font-semibold border',
                   matchScore >= 85 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
                     : matchScore >= 70 ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                     : 'bg-muted text-muted-foreground border-border',
                 )}>
-                  <Sparkles className="h-2.5 w-2.5" />
+                  <Sparkles className="h-2.5 w-2.5" aria-hidden="true" />
                   {matchScore}% match
                 </span>
                 {statusLabel && (
-                  <span className={cn('rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS_CONFIG[statusLabel].color)}>
+                  <span className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
                     {STATUS_CONFIG[statusLabel].label}
                   </span>
                 )}
@@ -169,14 +169,14 @@ function ShortlistCard({
               {profile?.headline && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">{profile.headline}</p>}
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 {profile?.role && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Briefcase className="h-3 w-3" />
+                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                    <Briefcase className="icon-2xs" aria-hidden="true" />
                     <span className="capitalize">{profile.role.replace(/_/g, ' ')}</span>
                   </div>
                 )}
                 {profile?.location && (
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
+                  <div className="flex items-center gap-1 text-2xs text-muted-foreground">
+                    <MapPin className="icon-2xs" aria-hidden="true" />
                     {profile.location}
                   </div>
                 )}
@@ -186,16 +186,16 @@ function ShortlistCard({
             {/* Actions */}
             <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
               <button onClick={() => setEditingNote((v) => !v)} title="Edit note" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <Edit2 className="h-3.5 w-3.5" />
+                <Edit2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
               <Link href={`/messages?to=${item.userId}`} title="Message" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
               <Link href={`/profiles/${item.userId}`} title="View profile" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
               <button onClick={() => onRemove(item.userId)} title="Remove" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -204,23 +204,23 @@ function ShortlistCard({
           {profile?.skills && profile.skills.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
               {profile.skills.slice(0, 5).map((s) => (
-                <Badge key={s} variant="secondary" className="h-5 rounded-full px-2 text-[10px] font-normal">{s}</Badge>
+                <Badge key={s} variant="secondary" className="h-5 rounded-full px-2 text-2xs font-normal">{s}</Badge>
               ))}
               {profile.skills.length > 5 && (
-                <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">+{profile.skills.length - 5}</Badge>
+                <Badge variant="outline" className="h-5 rounded-full px-2 text-2xs">+{profile.skills.length - 5}</Badge>
               )}
             </div>
           )}
 
           {/* Status label picker */}
           <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] text-muted-foreground font-medium">Label:</span>
+            <span className="text-2xs text-muted-foreground font-medium">Label:</span>
             {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
               <button
                 key={key}
                 onClick={() => setStatusLabel(statusLabel === key ? null : key)}
                 className={cn(
-                  'rounded-full border px-2 py-0.5 text-[10px] transition-all',
+                  'rounded-full border px-2 py-0.5 text-2xs transition-all',
                   statusLabel === key ? cfg.color : 'border-border/60 text-muted-foreground hover:border-border',
                 )}
               >
@@ -232,7 +232,7 @@ function ShortlistCard({
           {/* Note */}
           {!editingNote && item.note && (
             <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-muted/50 px-3 py-2">
-              <Tag className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
+              <Tag className="mt-0.5 icon-2xs shrink-0 text-muted-foreground" aria-hidden="true" />
               <p className="text-xs text-foreground/80 flex-1">{item.note}</p>
             </div>
           )}
@@ -242,14 +242,14 @@ function ShortlistCard({
 
           {/* Footer */}
           <div className="mt-2 flex items-center justify-between">
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <Clock className="h-3 w-3" />
+            <p className="text-2xs text-muted-foreground flex items-center gap-1">
+              <Clock className="icon-2xs" aria-hidden="true" />
               Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             <div className="flex items-center gap-1.5">
               <Link href={`/matches/compare?ids=${item.userId}`}>
-                <Button variant="ghost" size="sm" className="h-6 gap-1 text-[11px] px-2 text-muted-foreground hover:text-foreground">
-                  <GitMerge className="h-3 w-3" /> Compare
+                <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground">
+                  <GitMerge className="icon-2xs" aria-hidden="true" /> Compare
                 </Button>
               </Link>
             </div>
@@ -365,7 +365,7 @@ export default function ShortlistPage() {
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -377,7 +377,7 @@ export default function ShortlistPage() {
           {/* Search + sort + view */}
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search saved profiles…"
                 value={searchQuery}
@@ -387,7 +387,7 @@ export default function ShortlistPage() {
             </div>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
               <SelectTrigger className="h-9 w-44 text-sm">
-                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -399,10 +399,10 @@ export default function ShortlistPage() {
             </Select>
             <div className="flex items-center rounded-lg border border-border/60 p-0.5">
               <button onClick={() => setViewMode('list')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'list' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <List className="h-4 w-4" />
+                <List className="icon-sm" aria-hidden="true" />
               </button>
               <button onClick={() => setViewMode('grid')} className={cn('rounded-md p-1.5 transition-colors', viewMode === 'grid' ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}>
-                <Grid3X3 className="h-4 w-4" />
+                <Grid3X3 className="icon-sm" aria-hidden="true" />
               </button>
             </div>
             <Button
@@ -411,7 +411,7 @@ export default function ShortlistPage() {
               className="h-9 gap-1.5"
               onClick={() => { setCompareMode((v) => !v); setSelectedIds(new Set()); }}
             >
-              <GitMerge className="h-3.5 w-3.5" />
+              <GitMerge className="h-3.5 w-3.5" aria-hidden="true" />
               {compareMode ? 'Cancel compare' : 'Compare'}
             </Button>
           </div>
@@ -424,7 +424,7 @@ export default function ShortlistPage() {
                   <Icon className="h-3 w-3" />
                   {label}
                   {roleCounts[value] !== undefined && (
-                    <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-[10px] font-semibold">
+                    <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-2xs font-semibold">
                       {roleCounts[value]}
                     </span>
                   )}
@@ -442,7 +442,7 @@ export default function ShortlistPage() {
             </p>
             <Link href={`/matches/compare?ids=${Array.from(selectedIds).join(',')}`}>
               <Button size="sm" className="gap-1.5">
-                <GitMerge className="h-3.5 w-3.5" /> Compare now
+                <GitMerge className="h-3.5 w-3.5" aria-hidden="true" /> Compare now
               </Button>
             </Link>
           </div>
@@ -451,7 +451,7 @@ export default function ShortlistPage() {
         {/* Content */}
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
-            <AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
+            <AlertTriangle className="icon-xl text-muted-foreground/50" aria-hidden="true" />
             <p className="text-sm text-muted-foreground">Failed to load shortlist.</p>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
           </div>
@@ -462,7 +462,7 @@ export default function ShortlistPage() {
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border/60 bg-card/50 py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-              <BookmarkX className="h-7 w-7 text-primary" />
+              <BookmarkX className="h-7 w-7 text-primary" aria-hidden="true" />
             </div>
             <div>
               <p className="font-medium text-foreground">

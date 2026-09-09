@@ -152,19 +152,19 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="font-semibold text-sm truncate">{provider.providerName}</p>
-                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />}
-                {featured && <Badge className="text-[10px] bg-primary/10 text-primary border-primary/20 border">Featured</Badge>}
+                {provider.isVerified && <BadgeCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" aria-hidden="true" />}
+                {featured && <Badge className="text-2xs bg-primary/10 text-primary border-primary/20 border">Featured</Badge>}
               </div>
               <p className="text-xs text-muted-foreground truncate">{provider.providerTitle}</p>
               <div className="flex items-center gap-1 mt-1">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                <Star className="icon-2xs fill-amber-400 text-amber-400" aria-hidden="true" />
                 <span className="text-xs font-medium">{provider.avgRating.toFixed(1)}</span>
                 <span className="text-xs text-muted-foreground">({provider.reviewCount})</span>
               </div>
             </div>
           </div>
           <button onClick={() => setSaved(!saved)} className="shrink-0 p-1 rounded hover:bg-muted transition-colors">
-            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+            <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} aria-hidden="true" />
           </button>
         </div>
 
@@ -180,18 +180,18 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         {/* Specialties */}
         <div className="flex flex-wrap gap-1">
           {provider.specialties.slice(0, 3).map(s => (
-            <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+            <Badge key={s} variant="secondary" className="text-2xs">{s}</Badge>
           ))}
           {provider.specialties.length > 3 && (
-            <Badge variant="secondary" className="text-[10px]">+{provider.specialties.length - 3}</Badge>
+            <Badge variant="secondary" className="text-2xs">+{provider.specialties.length - 3}</Badge>
           )}
         </div>
 
         {/* Meta */}
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1"><Clock className="h-3 w-3" />{provider.responseTime}</div>
-          <div className="flex items-center gap-1"><Users className="h-3 w-3" />{provider.clientCount} clients</div>
-          <div className="flex items-center gap-1"><MapPin className="h-3 w-3" />{provider.location}</div>
+          <div className="flex items-center gap-1"><Clock className="icon-2xs" aria-hidden="true" />{provider.responseTime}</div>
+          <div className="flex items-center gap-1"><Users className="icon-2xs" aria-hidden="true" />{provider.clientCount} clients</div>
+          <div className="flex items-center gap-1"><MapPin className="icon-2xs" aria-hidden="true" />{provider.location}</div>
           <div className="flex items-center gap-1">
             <div className={cn('h-1.5 w-1.5 rounded-full', provider.isAvailable ? 'bg-green-500' : 'bg-gray-400')} />
             {provider.isAvailable ? 'Available' : 'Fully booked'}
@@ -206,7 +206,7 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
-              <MessageCircle className="h-3.5 w-3.5" />Message
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />Message
             </Button>
             <Button size="sm" className="h-8 text-xs" disabled={!provider.isAvailable}>
               Request
@@ -235,7 +235,7 @@ function StatsBar() {
             <s.icon className="h-4 w-4 text-primary shrink-0" />
             <div>
               <p className="text-xs font-bold">{s.value}</p>
-              <p className="text-[10px] text-muted-foreground">{s.label}</p>
+              <p className="text-2xs text-muted-foreground">{s.label}</p>
             </div>
           </CardContent>
         </Card>
@@ -316,7 +316,7 @@ export default function MarketplacePage() {
               <p className="text-sm text-muted-foreground">List your services and reach 500+ founders on CoFounderBay</p>
             </div>
             <Button size="sm" className="shrink-0">
-              <Plus className="mr-1.5 h-4 w-4" />List Your Service
+              <Plus className="mr-1.5 icon-sm" aria-hidden="true" />List Your Service
             </Button>
           </CardContent>
         </Card>
@@ -327,12 +327,12 @@ export default function MarketplacePage() {
         {/* Search & Sort */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input placeholder="Search services, providers, specialties..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[160px]">
-              <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+              <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -347,7 +347,7 @@ export default function MarketplacePage() {
             className="h-10"
             onClick={() => setAvailableOnly(!availableOnly)}
           >
-            <CheckCircle className="mr-1.5 h-4 w-4" />Available
+            <CheckCircle className="mr-1.5 icon-sm" aria-hidden="true" />Available
           </Button>
         </div>
 
@@ -383,7 +383,7 @@ export default function MarketplacePage() {
                 {featured.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
+                      <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -405,7 +405,7 @@ export default function MarketplacePage() {
 
                 {filtered.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <Package className="h-12 w-12 mb-4 text-muted-foreground/30" />
+                    <Package className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
                     <p className="font-medium">No services found</p>
                     <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
                   </div>

@@ -95,7 +95,7 @@ function ProgramCard({ program }: { program: any }) {
       className="group flex items-start gap-3 rounded-lg border p-4 transition-all hover:border-primary/30 hover:shadow-sm"
     >
       <div className="rounded-lg bg-primary/10 p-2">
-        <Rocket className="icon-md text-primary" />
+        <Rocket className="icon-md text-primary" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
@@ -107,16 +107,16 @@ function ProgramCard({ program }: { program: any }) {
         <p className="text-xs text-muted-foreground mt-0.5">{program.cohort}</p>
         <div className="flex items-center gap-4 mt-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Users className="icon-sm" />
+            <Users className="icon-sm" aria-hidden="true" />
             {program.startups} startups
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <GraduationCap className="icon-sm" />
+            <GraduationCap className="icon-sm" aria-hidden="true" />
             {program.mentors} mentors
           </div>
         </div>
       </div>
-      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+      <ChevronRight className="icon-sm text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
     </Link>
   );
 }
@@ -178,9 +178,9 @@ function MilestoneItem({ milestone }: { milestone: any }) {
         milestone.completed ? 'bg-green-500/10' : 'bg-muted'
       )}>
         {milestone.completed ? (
-          <Award className="icon-sm text-green-500" />
+          <Award className="icon-sm text-green-500" aria-hidden="true" />
         ) : (
-          <Target className="icon-sm text-muted-foreground" />
+          <Target className="icon-sm text-muted-foreground" aria-hidden="true" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -273,12 +273,12 @@ export default function IncubatorDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="gap-1.5">
-              <Building className="icon-sm" />
+              <Building className="icon-sm" aria-hidden="true" />
               Incubator Admin
             </Badge>
             <Button size="sm" asChild>
               <Link href="/org/programs/new">
-                <Plus className="mr-1.5 icon-sm" />
+                <Plus className="mr-1.5 icon-sm" aria-hidden="true" />
                 New Program
               </Link>
             </Button>
@@ -321,12 +321,12 @@ export default function IncubatorDashboard() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <UserPlus className="icon-sm text-amber-500" />
+                      <UserPlus className="icon-sm text-amber-500" aria-hidden="true" />
                       Pending Applications ({pendingApplications.length})
                     </CardTitle>
                     <Button variant="ghost" size="sm" asChild>
                       <Link href="/org/applications">
-                        View all <ArrowRight className="ml-1 icon-sm" />
+                        View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                       </Link>
                     </Button>
                   </div>
@@ -344,12 +344,12 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <LayoutGrid className="icon-sm text-primary" />
+                    <LayoutGrid className="icon-sm text-primary" aria-hidden="true" />
                     Your Programs
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/org/programs">
-                      Manage <ArrowRight className="ml-1 icon-sm" />
+                      Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -366,12 +366,12 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <TrendingUp className="icon-sm text-primary" />
+                    <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
                     Top Performing Startups
                   </CardTitle>
                   <Button variant="ghost" size="sm" asChild>
                     <Link href="/org/startups">
-                      View all <ArrowRight className="ml-1 icon-sm" />
+                      View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
                     </Link>
                   </Button>
                 </div>
@@ -394,31 +394,31 @@ export default function IncubatorDashboard() {
               <CardContent className="grid gap-2">
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/programs/new">
-                    <Plus className="mr-2 icon-sm" />
+                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
                     Create Program
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/applications">
-                    <UserPlus className="mr-2 icon-sm" />
+                    <UserPlus className="mr-2 icon-sm" aria-hidden="true" />
                     Review Applications
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/mentors">
-                    <GraduationCap className="mr-2 icon-sm" />
+                    <GraduationCap className="mr-2 icon-sm" aria-hidden="true" />
                     Manage Mentors
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/analytics">
-                    <BarChart3 className="mr-2 icon-sm" />
+                    <BarChart3 className="mr-2 icon-sm" aria-hidden="true" />
                     Cohort Reports
                   </Link>
                 </Button>
                 <Button variant="outline" className="justify-start" asChild>
                   <Link href="/org/settings">
-                    <Settings className="mr-2 icon-sm" />
+                    <Settings className="mr-2 icon-sm" aria-hidden="true" />
                     Organization Settings
                   </Link>
                 </Button>
@@ -430,7 +430,7 @@ export default function IncubatorDashboard() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Flag className="icon-sm" />
+                    <Flag className="icon-sm" aria-hidden="true" />
                     Upcoming Milestones
                   </CardTitle>
                 </div>
@@ -464,7 +464,7 @@ export default function IncubatorDashboard() {
                 </div>
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 text-sm">
-                    <Award className="icon-sm text-primary" />
+                    <Award className="icon-sm text-primary" aria-hidden="true" />
                     <span>12 startups graduated this year</span>
                   </div>
                 </div>

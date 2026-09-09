@@ -53,11 +53,11 @@ type Application = {
 
 function ApplicationCard({ application }: { application: Application }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" /> },
-    under_review: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Eye className="icon-sm" /> },
-    shortlisted: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Star className="icon-sm" /> },
-    accepted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
-    rejected: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="icon-sm" /> },
+    pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: <Clock className="icon-sm" aria-hidden="true" /> },
+    under_review: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <Eye className="icon-sm" aria-hidden="true" /> },
+    shortlisted: { color: 'bg-blue-500/10 text-blue-600 border-blue-500/20', icon: <Star className="icon-sm" aria-hidden="true" /> },
+    accepted: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    rejected: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <XCircle className="icon-sm" aria-hidden="true" /> },
   };
 
   const config = statusConfig[application.status];
@@ -91,7 +91,7 @@ function ApplicationCard({ application }: { application: Application }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon">
-                      <MoreVertical className="icon-sm" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -111,12 +111,12 @@ function ApplicationCard({ application }: { application: Application }) {
               <span>{application.program}</span>
               <span>{application.stage}</span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {application.submittedAt}
               </span>
               {application.score !== undefined && (
                 <span className="flex items-center gap-1">
-                  <Star className="icon-sm text-amber-500" />
+                  <Star className="icon-sm text-amber-500" aria-hidden="true" />
                   Score: {application.score}/100
                 </span>
               )}
@@ -272,7 +272,7 @@ export default function OrgApplicationsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search applications..."
               value={search}
@@ -301,7 +301,7 @@ export default function OrgApplicationsPage() {
           {filteredApplications.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No applications found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters

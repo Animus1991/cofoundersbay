@@ -52,10 +52,10 @@ type User = {
 
 function UserRow({ user }: { user: User }) {
   const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" /> },
-    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" /> },
+    active: { color: 'bg-green-500/10 text-green-600 border-green-500/20', icon: <CheckCircle2 className="icon-sm" aria-hidden="true" /> },
+    suspended: { color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: <AlertTriangle className="icon-sm" aria-hidden="true" /> },
     pending: { color: 'bg-gray-500/10 text-gray-600 border-gray-500/20', icon: null },
-    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="icon-sm" /> },
+    banned: { color: 'bg-red-500/10 text-red-600 border-red-500/20', icon: <Ban className="icon-sm" aria-hidden="true" /> },
   };
 
   const config = statusConfig[user.status];
@@ -72,7 +72,7 @@ function UserRow({ user }: { user: User }) {
           <Link href={`/p/${user.id}`} className="font-medium hover:text-primary transition-colors">
             {user.name}
           </Link>
-          {user.verified && <CheckCircle2 className="icon-sm text-primary" />}
+          {user.verified && <CheckCircle2 className="icon-sm text-primary" aria-hidden="true" />}
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
       </div>
@@ -92,7 +92,7 @@ function UserRow({ user }: { user: User }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-            <MoreVertical className="icon-sm" />
+            <MoreVertical className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -100,28 +100,28 @@ function UserRow({ user }: { user: User }) {
             <Link href={`/p/${user.id}`}>View Profile</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Mail className="mr-2 icon-sm" />
+            <Mail className="mr-2 icon-sm" aria-hidden="true" />
             Send Email
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Shield className="mr-2 icon-sm" />
+            <Shield className="mr-2 icon-sm" aria-hidden="true" />
             Change Role
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.status === 'active' && (
             <DropdownMenuItem className="text-amber-600">
-              <AlertTriangle className="mr-2 icon-sm" />
+              <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
               Suspend User
             </DropdownMenuItem>
           )}
           {user.status === 'suspended' && (
             <DropdownMenuItem className="text-green-600">
-              <CheckCircle2 className="mr-2 icon-sm" />
+              <CheckCircle2 className="mr-2 icon-sm" aria-hidden="true" />
               Reactivate User
             </DropdownMenuItem>
           )}
           <DropdownMenuItem className="text-destructive">
-            <UserX className="mr-2 icon-sm" />
+            <UserX className="mr-2 icon-sm" aria-hidden="true" />
             Ban User
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -252,7 +252,7 @@ export default function AdminUsersPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search users..."
               value={search}
@@ -302,7 +302,7 @@ export default function AdminUsersPage() {
           ))}
           {filteredUsers.length === 0 && (
             <CardContent className="py-12 text-center">
-              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+              <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
               <h3 className="font-medium">No users found</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Try adjusting your filters

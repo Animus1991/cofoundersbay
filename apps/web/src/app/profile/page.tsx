@@ -93,15 +93,15 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
               }`}
             >
               {item.done
-                ? <CheckCircle className="icon-sm shrink-0" />
-                : <AlertCircle className="icon-sm shrink-0" />}
+                ? <CheckCircle className="icon-sm shrink-0" aria-hidden="true" />
+                : <AlertCircle className="icon-sm shrink-0" aria-hidden="true" />}
               {item.label}
             </div>
           ))}
         </div>
         <Link href="/profile/edit">
           <Button size="sm" variant="secondary" className="w-full gap-2 mt-1">
-            <Edit className="h-3.5 w-3.5" />
+            <Edit className="h-3.5 w-3.5" aria-hidden="true" />
             Complete profile
           </Button>
         </Link>
@@ -132,7 +132,7 @@ function VerificationCard({ email }: { email?: string | null }) {
             </div>
             <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
             {verified
-              ? <CheckCircle className="ml-auto icon-sm text-primary" />
+              ? <CheckCircle className="ml-auto icon-sm text-primary" aria-hidden="true" />
               : <span className="ml-auto text-xs text-muted-foreground/60">Not connected</span>}
           </div>
         ))}
@@ -307,15 +307,15 @@ export default function ProfilePage() {
       actions={
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 hidden sm:flex">
-            <Share2 className="icon-sm" />
+            <Share2 className="icon-sm" aria-hidden="true" />
             Share Profile
           </Button>
           <Button aria-label="Copy profile link" variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
-            <Share2 className="icon-sm" />
+            <Share2 className="icon-sm" aria-hidden="true" />
           </Button>
           <Link href="/profile/edit">
             <Button size="sm" className="gap-2">
-              <Edit className="icon-sm" />
+              <Edit className="icon-sm" aria-hidden="true" />
               Edit Profile
             </Button>
           </Link>
@@ -340,7 +340,7 @@ export default function ProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="absolute bottom-2 right-2 rounded-full bg-background p-1 shadow-sm" title="Verified Member">
-                  <BadgeCheck className="icon-lg text-blue-500" />
+                  <BadgeCheck className="icon-lg text-blue-500" aria-hidden="true" />
                 </div>
               </div>
 
@@ -373,24 +373,24 @@ export default function ProfilePage() {
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground font-medium pt-1">
                   {profile.location && (
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="icon-sm" />
+                      <MapPin className="icon-sm" aria-hidden="true" />
                       {profile.location}
                     </div>
                   )}
                   {profile.timezone && (
                     <div className="flex items-center gap-1.5">
-                      <Clock className="icon-sm" />
+                      <Clock className="icon-sm" aria-hidden="true" />
                       {profile.timezone}
                     </div>
                   )}
                   {profile.languages?.length ? (
                     <div className="flex items-center gap-1.5">
-                      <Languages className="icon-sm" />
+                      <Languages className="icon-sm" aria-hidden="true" />
                       {profile.languages.join(', ')}
                     </div>
                   ) : null}
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="icon-sm" />
+                    <Calendar className="icon-sm" aria-hidden="true" />
                     Joined {new Date().getFullYear()}
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export default function ProfilePage() {
               <Card className="animate-fade-in stagger-2 shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="icon-md text-primary" />
+                    <Target className="icon-md text-primary" aria-hidden="true" />
                     What I&apos;m Looking For
                   </CardTitle>
                 </CardHeader>
@@ -483,12 +483,12 @@ export default function ProfilePage() {
               <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <BarChart3 className="icon-md text-primary" />
+                    <BarChart3 className="icon-md text-primary" aria-hidden="true" />
                     Top Skills & Proficiency
                   </CardTitle>
                   <Link href="/profile/edit">
                     <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
-                      <Plus className="h-3.5 w-3.5" /> Add
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add
                     </Button>
                   </Link>
                 </div>
@@ -530,18 +530,18 @@ export default function ProfilePage() {
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                  <FolderOpen className="icon-md text-primary" />
+                  <FolderOpen className="icon-md text-primary" aria-hidden="true" />
                   Portfolio &amp; Showcase
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary">
-                  <Plus className="h-3.5 w-3.5" /> Add
+                  <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-5">
               <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <FolderOpen className="icon-lg" />
+                  <FolderOpen className="icon-lg" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">Showcase your best work</p>
@@ -549,7 +549,7 @@ export default function ProfilePage() {
                 </div>
                 <Link href="/profile/edit" className="mt-2">
                   <Button variant="outline" size="sm" className="gap-1.5">
-                    <Plus className="h-3.5 w-3.5" /> Add First Item
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add First Item
                   </Button>
                 </Link>
               </div>
@@ -561,7 +561,7 @@ export default function ProfilePage() {
             <Card className="animate-fade-in bg-primary/5 border-primary/20 shadow-sm">
               <CardContent className="flex flex-col items-center gap-4 p-5 text-center">
                 <div className="p-3 bg-background rounded-full shadow-sm mb-2">
-                  <Activity className="h-8 w-8 text-primary" />
+                  <Activity className="icon-xl text-primary" aria-hidden="true" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-semibold text-lg">Your profile is looking bare</h3>
@@ -571,7 +571,7 @@ export default function ProfilePage() {
                 </div>
                 <Link href="/profile/edit">
                   <Button className="gap-2 mt-2">
-                    <Edit className="h-4 w-4" />
+                    <Edit className="icon-sm" aria-hidden="true" />
                     Complete Profile Now
                   </Button>
                 </Link>
@@ -587,18 +587,18 @@ export default function ProfilePage() {
             <CardContent className="p-5 space-y-4">
               <Link href="/profile/edit" className="block w-full">
                 <Button className="w-full gap-2 font-medium">
-                  <Edit className="h-4 w-4" />
+                  <Edit className="icon-sm" aria-hidden="true" />
                   Edit Profile
                 </Button>
               </Link>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
-                  <LinkIcon className="h-4 w-4" />
+                  <LinkIcon className="icon-sm" aria-hidden="true" />
                   Copy Link
                 </Button>
                 <Link href="/settings/general" className="block w-full">
                   <Button variant="outline" className="w-full gap-2">
-                    <Zap className="h-4 w-4" />
+                    <Zap className="icon-sm" aria-hidden="true" />
                     Settings
                   </Button>
                 </Link>
@@ -631,7 +631,7 @@ export default function ProfilePage() {
                     <Icon className={`h-4 w-4 ${color}`} />
                   </div>
                   <span className="text-lg font-bold text-foreground leading-none">{value}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">{label}</span>
+                  <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mt-1">{label}</span>
                 </div>
               ))}
               <div className="col-span-2 mt-2">

@@ -51,7 +51,7 @@ export function MobileBottomNav() {
                 aria-hidden
               />
               {badge > 0 && (
-                <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {badge > 99 ? '99+' : badge}
                 </span>
               )}

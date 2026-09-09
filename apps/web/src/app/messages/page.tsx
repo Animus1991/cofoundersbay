@@ -523,7 +523,7 @@ export default function MessagesPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" className="gap-2">
-              <MessageSquare className="icon-sm" />
+              <MessageSquare className="icon-sm" aria-hidden="true" />
               New Message
             </Button>
           </div>
@@ -541,7 +541,7 @@ export default function MessagesPage() {
               <div className="px-4 pt-4 pb-0 border-b border-border/40 flex-shrink-0">
                 <TabsList className="w-full">
                   <TabsTrigger value="chats" className="flex-1 gap-1.5">
-                    <MessageSquare className="h-3.5 w-3.5" />
+                    <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
                     Chats
                     {conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
@@ -550,7 +550,7 @@ export default function MessagesPage() {
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="intros" className="flex-1 gap-1.5">
-                    <UserPlus className="h-3.5 w-3.5" />
+                    <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
                     Intros
                     {pendingIntrosCount > 0 && (
                       <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground">
@@ -597,7 +597,7 @@ export default function MessagesPage() {
             ) : introRequests.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
                 <div className="rounded-full bg-secondary p-3">
-                  <UserPlus className="icon-lg text-muted-foreground" />
+                  <UserPlus className="icon-lg text-muted-foreground" aria-hidden="true" />
                 </div>
                 <p className="text-sm font-medium text-foreground">No pending intros</p>
                 <p className="text-xs text-muted-foreground">When someone sends you a connection request, it will appear here.</p>
@@ -638,7 +638,7 @@ export default function MessagesPage() {
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'accepted')}
                           >
-                            <Check className="icon-sm" />
+                            <Check className="icon-sm" aria-hidden="true" />
                             Accept
                           </Button>
                           <Button
@@ -648,7 +648,7 @@ export default function MessagesPage() {
                             disabled={introResponding[req.id]}
                             onClick={() => handleIntroRespond(req.id, 'declined')}
                           >
-                            <X className="icon-sm" />
+                            <X className="icon-sm" aria-hidden="true" />
                             Decline
                           </Button>
                         </div>

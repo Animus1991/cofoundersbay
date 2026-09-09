@@ -108,7 +108,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                 onClick={handleSSOLogin}
                 className="gap-2 bg-white/10 border border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
               >
-                <Building2 className="h-4 w-4" />
+                <Building2 className="icon-sm" aria-hidden="true" />
                 {sso.provider.loginButtonText || 'Sign in with Organization SSO'}
               </Button>
             )}
@@ -116,13 +116,13 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <Link href={b?.ctaUrl || '/register'}>
               <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2 shadow">
                 {b?.ctaLabel || 'Get Started'}
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="icon-sm" aria-hidden="true" />
               </Button>
             </Link>
 
             <Link href="/login">
               <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2">
-                <LogIn className="h-4 w-4" />
+                <LogIn className="icon-sm" aria-hidden="true" />
                 Sign In
               </Button>
             </Link>
@@ -140,7 +140,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
-                <Building2 className="h-5 w-5 text-primary" />
+                <Building2 className="icon-md text-primary" aria-hidden="true" />
               </div>
               <div>
                 <h2 className="text-xl font-bold mb-3">About {tenant.displayName || tenant.name}</h2>
@@ -178,7 +178,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
       <section className="mx-auto max-w-3xl px-6 pb-16 text-center">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="pt-8 pb-8">
-            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary" />
+            <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary" aria-hidden="true" />
             <h2 className="text-2xl font-bold mb-2">
               {b?.dashboardWelcomeText || `Ready to join ${tenant.displayName || tenant.name}?`}
             </h2>
@@ -188,14 +188,14 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
             <div className="flex flex-wrap justify-center gap-3">
               {sso?.ssoAvailable && sso.provider && (
                 <Button onClick={handleSSOLogin} variant="outline" className="gap-2">
-                  <Building2 className="h-4 w-4" />
+                  <Building2 className="icon-sm" aria-hidden="true" />
                   {sso.provider.loginButtonText || 'SSO Login'}
                 </Button>
               )}
               <Link href={b?.ctaUrl || '/register'}>
                 <Button size="lg" className="gap-2">
                   {b?.ctaLabel || 'Join Now'}
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="icon-sm" aria-hidden="true" />
                 </Button>
               </Link>
             </div>
@@ -215,43 +215,43 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           <div className="flex flex-wrap items-center gap-4">
             {b?.supportEmail && (
               <a href={`mailto:${b.supportEmail}`} className="text-muted-foreground hover:text-foreground transition-colors">
-                <Mail className="h-4 w-4" />
+                <Mail className="icon-sm" aria-hidden="true" />
               </a>
             )}
             {(b?.websiteUrl || tenant.website) && (
               <a href={b?.websiteUrl || tenant.website!} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Globe className="h-4 w-4" />
+                <Globe className="icon-sm" aria-hidden="true" />
               </a>
             )}
             {b?.linkedinUrl && (
               <a href={b.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Linkedin className="h-4 w-4" />
+                <Linkedin className="icon-sm" aria-hidden="true" />
               </a>
             )}
             {b?.twitterUrl && (
               <a href={b.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Twitter className="h-4 w-4" />
+                <Twitter className="icon-sm" aria-hidden="true" />
               </a>
             )}
             {b?.instagramUrl && (
               <a href={b.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                <Instagram className="h-4 w-4" />
+                <Instagram className="icon-sm" aria-hidden="true" />
               </a>
             )}
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {b?.privacyPolicyUrl && (
                 <a href={b.privacyPolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Privacy <ExternalLink className="h-3 w-3" />
+                  Privacy <ExternalLink className="icon-2xs" aria-hidden="true" />
                 </a>
               )}
               {b?.termsUrl && (
                 <a href={b.termsUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Terms <ExternalLink className="h-3 w-3" />
+                  Terms <ExternalLink className="icon-2xs" aria-hidden="true" />
                 </a>
               )}
               {b?.cookiePolicyUrl && (
                 <a href={b.cookiePolicyUrl} target="_blank" rel="noopener noreferrer" className="hover:text-foreground flex items-center gap-1">
-                  Cookies <ExternalLink className="h-3 w-3" />
+                  Cookies <ExternalLink className="icon-2xs" aria-hidden="true" />
                 </a>
               )}
             </div>
@@ -303,7 +303,7 @@ export default function TenantPage() {
   if (isError || !tenant) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
-        <Building2 className="h-12 w-12 text-muted-foreground" />
+        <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-foreground">Organization not found</h1>
         <p className="text-muted-foreground max-w-sm">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
         <Link href="/">

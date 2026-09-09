@@ -56,12 +56,12 @@ export function VideoCall({ className }: VideoCallProps) {
               {state === 'error' && 'Error'}
             </Badge>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" aria-hidden="true" />
               {participants.length} participant{participants.length !== 1 ? 's' : ''}
             </div>
             {isScreenSharing && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                <Monitor className="h-3 w-3 mr-1" />
+                <Monitor className="icon-2xs mr-1" aria-hidden="true" />
                 Sharing
               </Badge>
             )}
@@ -69,10 +69,10 @@ export function VideoCall({ className }: VideoCallProps) {
           
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
-              <Settings className="h-4 w-4" />
+              <Settings className="icon-sm" aria-hidden="true" />
             </Button>
             <Button variant="ghost" size="sm">
-              <Maximize2 className="h-4 w-4" />
+              <Maximize2 className="icon-sm" aria-hidden="true" />
             </Button>
             <Button 
               variant="destructive" 
@@ -80,7 +80,7 @@ export function VideoCall({ className }: VideoCallProps) {
               onClick={endCall}
               className="gap-1"
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="icon-sm" aria-hidden="true" />
               Leave
             </Button>
           </div>
@@ -109,7 +109,7 @@ export function VideoCall({ className }: VideoCallProps) {
           {participants.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
-                <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <Users className="h-16 w-16 mx-auto mb-4 opacity-50" aria-hidden="true" />
                 <p className="text-lg font-medium">Waiting for others to join...</p>
                 <p className="text-sm opacity-75">Share this room URL to invite participants</p>
               </div>
@@ -130,7 +130,7 @@ export function VideoCall({ className }: VideoCallProps) {
             <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center">
               <div className="text-center text-white">
                 <div className="text-red-300 mb-4">
-                  <Phone className="h-12 w-12 mx-auto" />
+                  <Phone className="h-12 w-12 mx-auto" aria-hidden="true" />
                 </div>
                 <p className="text-lg font-medium">Connection failed</p>
                 <p className="text-sm opacity-75">Please check your connection and try again</p>
@@ -148,7 +148,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            {isMuted ? <MicOff className="icon-sm" aria-hidden="true" /> : <Mic className="icon-sm" aria-hidden="true" />}
             {isMuted ? 'Unmute' : 'Mute'}
           </Button>
           
@@ -159,7 +159,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isVideoOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+            {isVideoOff ? <VideoOff className="icon-sm" aria-hidden="true" /> : <Video className="icon-sm" aria-hidden="true" />}
             {isVideoOff ? 'Start Video' : 'Stop Video'}
           </Button>
           
@@ -170,7 +170,7 @@ export function VideoCall({ className }: VideoCallProps) {
             className="gap-1"
             disabled={state !== 'joined'}
           >
-            {isScreenSharing ? <MonitorOff className="h-4 w-4" /> : <Monitor className="h-4 w-4" />}
+            {isScreenSharing ? <MonitorOff className="icon-sm" aria-hidden="true" /> : <Monitor className="icon-sm" aria-hidden="true" />}
             {isScreenSharing ? 'Stop Share' : 'Share Screen'}
           </Button>
         </div>
@@ -179,7 +179,7 @@ export function VideoCall({ className }: VideoCallProps) {
         {participants.length > 0 && (
           <div className="w-64 border-l bg-muted/30 p-4">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4" />
+              <Users className="icon-sm" aria-hidden="true" />
               Participants
             </h3>
             <div className="space-y-2">
@@ -188,8 +188,8 @@ export function VideoCall({ className }: VideoCallProps) {
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
                   <span className="font-medium">{participant.userName}</span>
                   <div className="flex gap-1 ml-auto">
-                    {participant.audio && <Mic className="h-3 w-3 text-green-500" />}
-                    {participant.video && <Video className="h-3 w-3 text-green-500" />}
+                    {participant.audio && <Mic className="icon-2xs text-green-500" aria-hidden="true" />}
+                    {participant.video && <Video className="icon-2xs text-green-500" aria-hidden="true" />}
                   </div>
                 </div>
               ))}

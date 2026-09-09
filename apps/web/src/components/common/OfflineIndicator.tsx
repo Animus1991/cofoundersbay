@@ -84,11 +84,11 @@ export function OfflineBanner() {
       <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-amber-950">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <WifiOff className="h-4 w-4" />
+            <WifiOff className="icon-sm" aria-hidden="true" />
             <span className="text-sm font-medium">You&apos;re offline. Some features may be unavailable.</span>
           </div>
           <Button size="sm" variant="ghost" className="h-7 text-amber-950 hover:bg-amber-600" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 mr-1" />
+            <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
             Retry
           </Button>
         </div>
@@ -101,13 +101,13 @@ export function OfflineBanner() {
       <div className="fixed top-0 left-0 right-0 z-50 bg-orange-600 px-4 py-2 text-white">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ServerCrash className="h-4 w-4 shrink-0" />
+            <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />
             <span className="text-sm font-medium">
               API server is unavailable — pages will reload automatically when it recovers.
             </span>
           </div>
           <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-700" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-3 w-3 mr-1" />
+            <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
             Reload now
           </Button>
         </div>
@@ -119,7 +119,7 @@ export function OfflineBanner() {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 px-4 py-2 text-emerald-950">
         <div className="container mx-auto flex items-center justify-center gap-2">
-          <Wifi className="h-4 w-4" />
+          <Wifi className="icon-sm" aria-hidden="true" />
           <span className="text-sm font-medium">Back online!</span>
         </div>
       </div>
@@ -143,12 +143,12 @@ export function OfflineStatusIndicator({ className }: { className?: string }) {
     >
       {isOnline ? (
         <>
-          <Cloud className="h-3 w-3" />
+          <Cloud className="icon-2xs" aria-hidden="true" />
           <span>Connected</span>
         </>
       ) : (
         <>
-          <CloudOff className="h-3 w-3" />
+          <CloudOff className="icon-2xs" aria-hidden="true" />
           <span>Offline</span>
         </>
       )}
@@ -171,7 +171,7 @@ export function OnlineOnly({ children, fallback, requireOnline = true }: WithOnl
       fallback || (
         <div className="flex items-center justify-center p-8 text-center">
           <div>
-            <WifiOff className="mx-auto h-8 w-8 text-muted-foreground mb-3" />
+            <WifiOff className="mx-auto icon-xl text-muted-foreground mb-3" aria-hidden="true" />
             <p className="text-sm text-muted-foreground">
               This feature requires an internet connection
             </p>

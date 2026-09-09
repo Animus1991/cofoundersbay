@@ -93,16 +93,16 @@ function ConversationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            {conversation.isPinned && <Pin className="h-3 w-3 text-primary flex-shrink-0" />}
+            {conversation.isPinned && <Pin className="icon-2xs text-primary flex-shrink-0" aria-hidden="true" />}
             <span className={cn(
               'text-sm font-semibold truncate',
               conversation.unreadCount > 0 ? 'text-foreground' : 'text-foreground/90'
             )}>
               {conversation.recipientName}
             </span>
-            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-[9px] leading-tight" />
+            <RoleBadge role={conversation.recipientRole} size="sm" showIcon={false} className="flex-shrink-0 py-0 text-2xs leading-tight" />
           </div>
-          <span className="text-[11px] text-muted-foreground flex-shrink-0 tabular-nums">
+          <span className="text-2xs text-muted-foreground flex-shrink-0 tabular-nums">
             {formatTime(conversation.lastMessageTime)}
           </span>
         </div>
@@ -114,7 +114,7 @@ function ConversationItem({
             {conversation.lastMessage || <span className="italic">No messages yet</span>}
           </p>
           {conversation.unreadCount > 0 && (
-            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground flex-shrink-0">
+            <span className="flex h-4.5 min-w-[1.125rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground flex-shrink-0">
               {conversation.unreadCount > 99 ? '99+' : conversation.unreadCount}
             </span>
           )}
@@ -130,20 +130,20 @@ function ConversationItem({
             className="h-8 w-8 opacity-0 group-hover:opacity-100 absolute right-2 top-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onPin}>
-            <Pin className="h-4 w-4 mr-2" />
+            <Pin className="icon-sm mr-2" aria-hidden="true" />
             {conversation.isPinned ? 'Unpin' : 'Pin'}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onArchive}>
-            <Archive className="h-4 w-4 mr-2" />
+            <Archive className="icon-sm mr-2" aria-hidden="true" />
             Archive
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onDelete} className="text-destructive">
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="icon-sm mr-2" aria-hidden="true" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -179,11 +179,11 @@ export function ConversationList({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground">Messages</h2>
           <Button aria-label="Edit" size="icon" variant="ghost" onClick={onNewMessage}>
-            <Edit className="h-5 w-5" />
+            <Edit className="icon-md" aria-hidden="true" />
           </Button>
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search conversations..."
             value={searchQuery}
@@ -234,7 +234,7 @@ export function ConversationList({
         {filteredConversations.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageSquarePlus className="h-6 w-6 text-primary" />
+              <MessageSquarePlus className="icon-lg text-primary" aria-hidden="true" />
             </div>
             <p className="text-sm font-medium text-foreground">
               {searchQuery ? 'No conversations found' : 'No messages yet'}

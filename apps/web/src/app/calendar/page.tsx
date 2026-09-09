@@ -127,17 +127,17 @@ function EventChip({ event }: { event: CalendarEvent }) {
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
           {event.time && (
-            <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span>
+            <span className="flex items-center gap-0.5"><Clock className="icon-sm" aria-hidden="true" />{event.time}{event.endTime ? ` – ${event.endTime}` : ''}</span>
           )}
           {event.location && (
-            <span className="flex items-center gap-0.5"><MapPin className="icon-sm" />{event.location}</span>
+            <span className="flex items-center gap-0.5"><MapPin className="icon-sm" aria-hidden="true" />{event.location}</span>
           )}
           {event.participants && event.participants.length > 0 && (
-            <span className="flex items-center gap-0.5"><Users className="icon-sm" />{event.participants.join(', ')}</span>
+            <span className="flex items-center gap-0.5"><Users className="icon-sm" aria-hidden="true" />{event.participants.join(', ')}</span>
           )}
         </div>
       </div>
-      <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{cfg.label}</Badge>
+      <Badge variant="secondary" className="text-2xs h-4 shrink-0">{cfg.label}</Badge>
     </Wrapper>
   );
 }
@@ -258,13 +258,13 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <div className="flex items-center border rounded-md">
             <Button aria-label="Grid view" variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')}>
-              <LayoutGrid className="h-3.5 w-3.5" />
+              <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
             <Button aria-label="List view" variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-l-none" onClick={() => setView('list')}>
-              <List className="h-3.5 w-3.5" />
+              <List className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" /> Add Event</Button>
+          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" aria-hidden="true" /> Add Event</Button>
         </div>
       }
     >
@@ -307,9 +307,9 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="icon-sm" /></Button>
+                    <Button aria-label="Previous" variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="icon-sm" aria-hidden="true" /></Button>
                     <span className="text-sm font-semibold">{MONTHS[currentMonth]} {currentYear}</span>
-                    <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="icon-sm" /></Button>
+                    <Button aria-label="Next" variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="icon-sm" aria-hidden="true" /></Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pb-4">
@@ -342,7 +342,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <CalendarDays className="icon-sm text-primary" />
+                    <CalendarDays className="icon-sm text-primary" aria-hidden="true" />
                     {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </CardTitle>
                 </CardHeader>
@@ -353,9 +353,9 @@ export default function CalendarPage() {
                     </div>
                   ) : (
                     <div className="py-8 text-center">
-                      <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                      <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                       <p className="text-sm text-muted-foreground">No events on this day</p>
-                      <Button variant="outline" size="sm" className="mt-3 gap-1"><Plus className="h-3.5 w-3.5" /> Schedule something</Button>
+                      <Button variant="outline" size="sm" className="mt-3 gap-1"><Plus className="h-3.5 w-3.5" aria-hidden="true" /> Schedule something</Button>
                     </div>
                   )}
                 </CardContent>
@@ -364,7 +364,7 @@ export default function CalendarPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="icon-sm text-primary" /> Upcoming
+                    <Sparkles className="icon-sm text-primary" aria-hidden="true" /> Upcoming
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -376,7 +376,7 @@ export default function CalendarPage() {
                         </span>
                         <div className={cn('h-2 w-2 rounded-full shrink-0', TYPE_CONFIG[e.type].color.replace('text-', 'bg-'))} />
                         <span className="truncate flex-1">{e.title}</span>
-                        <Badge variant="secondary" className="text-[9px] h-4 shrink-0">{TYPE_CONFIG[e.type].label}</Badge>
+                        <Badge variant="secondary" className="text-2xs h-4 shrink-0">{TYPE_CONFIG[e.type].label}</Badge>
                       </div>
                     ))}
                   </div>
@@ -392,7 +392,7 @@ export default function CalendarPage() {
             ) : (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <CalendarIcon className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">No events match your filters</p>
                 </CardContent>
               </Card>

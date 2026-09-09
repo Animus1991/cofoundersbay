@@ -74,7 +74,7 @@ function SearchCard({
             </div>
 
             <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-              <Search className="icon-sm" />
+              <Search className="icon-sm" aria-hidden="true" />
               <span className="truncate">{search.query}</span>
             </p>
 
@@ -82,19 +82,19 @@ function SearchCard({
             <div className="flex flex-wrap gap-1.5 mt-3">
               {search.filters.roles?.map((role) => (
                 <Badge key={role} variant="secondary" className="text-xs">
-                  <Users className="icon-sm mr-1" />
+                  <Users className="icon-sm mr-1" aria-hidden="true" />
                   {role}
                 </Badge>
               ))}
               {search.filters.industries?.slice(0, 2).map((ind) => (
                 <Badge key={ind} variant="outline" className="text-xs">
-                  <Briefcase className="icon-sm mr-1" />
+                  <Briefcase className="icon-sm mr-1" aria-hidden="true" />
                   {ind}
                 </Badge>
               ))}
               {search.filters.locations?.slice(0, 1).map((loc) => (
                 <Badge key={loc} variant="outline" className="text-xs">
-                  <MapPin className="icon-sm mr-1" />
+                  <MapPin className="icon-sm mr-1" aria-hidden="true" />
                   {loc}
                 </Badge>
               ))}
@@ -108,11 +108,11 @@ function SearchCard({
             {/* Stats */}
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Target className="icon-sm" />
+                <Target className="icon-sm" aria-hidden="true" />
                 {search.resultCount} results
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="icon-sm" />
+                <Clock className="icon-sm" aria-hidden="true" />
                 Last run {timeAgo}
               </span>
             </div>
@@ -127,31 +127,31 @@ function SearchCard({
                 aria-label="Toggle alerts"
               />
               {search.alertsEnabled ? (
-                <Bell className="icon-sm text-primary" />
+                <Bell className="icon-sm text-primary" aria-hidden="true" />
               ) : (
-                <BellOff className="icon-sm text-muted-foreground" />
+                <BellOff className="icon-sm text-muted-foreground" aria-hidden="true" />
               )}
             </div>
 
             <Button variant="outline" size="sm" onClick={onRun}>
-              <Play className="icon-sm mr-1" />
+              <Play className="icon-sm mr-1" aria-hidden="true" />
               Run
             </Button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon">
-                  <MoreHorizontal className="icon-sm" />
+                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onEdit}>
-                  <Edit2 className="icon-sm mr-2" />
+                  <Edit2 className="icon-sm mr-2" aria-hidden="true" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <Trash2 className="icon-sm mr-2" />
+                  <Trash2 className="icon-sm mr-2" aria-hidden="true" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -327,7 +327,7 @@ export default function SavedSearchesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Search className="h-6 w-6 text-primary" />
+              <Search className="icon-lg text-primary" aria-hidden="true" />
               Saved Searches
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -338,7 +338,7 @@ export default function SavedSearchesPage() {
             </p>
           </div>
           <Button onClick={handleCreateNew}>
-            <Plus className="icon-sm mr-2" />
+            <Plus className="icon-sm mr-2" aria-hidden="true" />
             New Search
           </Button>
         </div>
@@ -348,7 +348,7 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">
-                <Search className="icon-md text-primary" />
+                <Search className="icon-md text-primary" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">{searches.length}</p>
@@ -359,7 +359,7 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-emerald-500/10 p-2">
-                <Bell className="icon-md text-emerald-500" />
+                <Bell className="icon-md text-emerald-500" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">
@@ -372,7 +372,7 @@ export default function SavedSearchesPage() {
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-amber-500/10 p-2">
-                <Sparkles className="icon-md text-amber-500" />
+                <Sparkles className="icon-md text-amber-500" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-xl font-bold">{totalNewResults}</p>
@@ -390,7 +390,7 @@ export default function SavedSearchesPage() {
             description="Save your search queries to quickly find matching profiles and get alerts for new results"
             action={
               <Button onClick={handleCreateNew}>
-                <Plus className="icon-sm mr-2" />
+                <Plus className="icon-sm mr-2" aria-hidden="true" />
                 Create Your First Search
               </Button>
             }

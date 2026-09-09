@@ -32,10 +32,10 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 
 function statusBadge(status: TenantDomainItem['verificationStatus']) {
   switch (status) {
-    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" />Verified</Badge>;
-    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" />Pending</Badge>;
-    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" />Failed</Badge>;
-    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" />Expired</Badge>;
+    case 'verified': return <Badge className="bg-green-500/15 text-green-700 border-green-200 gap-1" size="sm"><CheckCircle2 className="icon-sm" aria-hidden="true" />Verified</Badge>;
+    case 'pending':  return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 gap-1" size="sm"><Clock className="icon-sm" aria-hidden="true" />Pending</Badge>;
+    case 'failed':   return <Badge className="bg-red-500/15 text-red-700 border-red-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Failed</Badge>;
+    case 'expired':  return <Badge className="bg-gray-500/15 text-gray-600 border-gray-200 gap-1" size="sm"><XCircle className="icon-sm" aria-hidden="true" />Expired</Badge>;
   }
 }
 
@@ -48,7 +48,7 @@ function CopyButton({ value }: { value: string }) {
   };
   return (
     <button onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors" title="Copy">
-      {copied ? <CheckCircle2 className="icon-sm text-green-600" /> : <Copy className="icon-sm" />}
+      {copied ? <CheckCircle2 className="icon-sm text-green-600" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
     </button>
   );
 }
@@ -57,7 +57,7 @@ function DnsPanel({ instructions }: { instructions: DnsInstructions }) {
   return (
     <div className="mt-3 rounded-lg border border-amber-200/60 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800/40 p-4 space-y-4 text-sm">
       <div className="flex items-start gap-2">
-        <Info className="icon-sm text-amber-600 mt-0.5 shrink-0" />
+        <Info className="icon-sm text-amber-600 mt-0.5 shrink-0" aria-hidden="true" />
         <div>
           <p className="font-semibold text-foreground">DNS Configuration Required</p>
           <p className="text-xs text-muted-foreground mt-0.5">Add these records to your DNS provider to verify ownership and route traffic to CoFounderBay.</p>
@@ -194,7 +194,7 @@ function DomainRow({
     <div className="rounded-xl border border-border/60 bg-card p-4 space-y-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <Globe className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <Globe className="icon-sm text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <a
@@ -215,7 +215,7 @@ function DomainRow({
                 : <Badge variant="outline" className="text-xs text-muted-foreground">Inactive</Badge>}
               {domain.sslStatus === 'active' && (
                 <Badge className="bg-blue-500/10 text-blue-700 border-blue-200 text-xs gap-1">
-                  <Shield className="h-2.5 w-2.5" />SSL
+                  <Shield className="h-2.5 w-2.5" aria-hidden="true" />SSL
                 </Badge>
               )}
             </div>
@@ -241,9 +241,9 @@ function DomainRow({
                 disabled={loadingDns}
                 className="gap-1 h-7 text-xs"
               >
-                <Link2 className="h-3 w-3" />
+                <Link2 className="icon-2xs" aria-hidden="true" />
                 DNS Setup
-                {showDns ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                {showDns ? <ChevronDown className="icon-2xs" aria-hidden="true" /> : <ChevronRight className="icon-2xs" aria-hidden="true" />}
               </Button>
               <Button
                 size="sm" variant="outline"
@@ -251,7 +251,7 @@ function DomainRow({
                 disabled={verify.isPending}
                 className="gap-1 h-7 text-xs"
               >
-                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 ${verify.isPending ? 'animate-spin' : ''}`} aria-hidden="true" />
                 Verify
               </Button>
             </>
@@ -263,7 +263,7 @@ function DomainRow({
               disabled={setPrimary.isPending}
               className="gap-1 h-7 text-xs"
             >
-              <Star className="h-3 w-3" />Set Primary
+              <Star className="icon-2xs" aria-hidden="true" />Set Primary
             </Button>
           )}
           <Button
@@ -272,7 +272,7 @@ function DomainRow({
             disabled={toggle.isPending || (domain.verificationStatus !== 'verified' && !domain.isActive)}
             className={`gap-1 h-7 text-xs ${domain.isActive ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}`}
           >
-            <Power className="h-3 w-3" />
+            <Power className="icon-2xs" aria-hidden="true" />
             {domain.isActive ? 'Deactivate' : 'Activate'}
           </Button>
           <Button
@@ -289,7 +289,7 @@ function DomainRow({
             disabled={remove.isPending}
             className="gap-1 h-7 text-xs text-destructive hover:text-destructive"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="icon-2xs" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -343,7 +343,7 @@ export default function TenantDomainsPage() {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <AlertTriangle className="h-10 w-10 text-muted-foreground" />
+          <AlertTriangle className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
           <p className="text-muted-foreground">No organization context. Please select or join an organization first.</p>
         </div>
       </AppShell>
@@ -400,7 +400,7 @@ export default function TenantDomainsPage() {
               </div>
             ) : domains.length === 0 ? (
               <div className="rounded-xl border border-dashed border-border/60 py-10 text-center">
-                <Globe className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <Globe className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">No domains configured yet.</p>
                 <p className="text-xs text-muted-foreground mt-1">Add a subdomain or custom domain below.</p>
               </div>
@@ -418,7 +418,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Globe className="h-4 w-4 text-primary" />
+              <Globe className="icon-sm text-primary" aria-hidden="true" />
               Platform Subdomain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -445,13 +445,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="icon-sm" />
+                <Plus className="icon-sm" aria-hidden="true" />
                 {addSub.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addSub.isError && (
               <p className="text-xs text-destructive flex items-center gap-1">
-                <XCircle className="icon-sm" />{(addSub.error as Error).message}
+                <XCircle className="icon-sm" aria-hidden="true" />{(addSub.error as Error).message}
               </p>
             )}
             <p className="text-xs text-muted-foreground">
@@ -464,7 +464,7 @@ export default function TenantDomainsPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="icon-sm text-primary" />
+              <Shield className="icon-sm text-primary" aria-hidden="true" />
               Custom Domain
             </CardTitle>
             <CardDescription className="text-xs">
@@ -485,13 +485,13 @@ export default function TenantDomainsPage() {
                 className="gap-1 shrink-0"
                 size="sm"
               >
-                <Plus className="icon-sm" />
+                <Plus className="icon-sm" aria-hidden="true" />
                 {addCustom.isPending ? 'Adding…' : 'Add'}
               </Button>
             </div>
             {addCustom.isError && (
               <p className="text-xs text-destructive flex items-center gap-1">
-                <XCircle className="icon-sm" />{(addCustom.error as Error).message}
+                <XCircle className="icon-sm" aria-hidden="true" />{(addCustom.error as Error).message}
               </p>
             )}
             <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs text-muted-foreground">

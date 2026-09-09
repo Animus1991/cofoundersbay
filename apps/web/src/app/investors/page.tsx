@@ -162,16 +162,16 @@ function InvestorCard({ investor }: { investor: Investor }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5 flex-wrap">
                   <h3 className="font-semibold truncate">{investor.displayName}</h3>
-                  {investor.isVerified && <BadgeCheck className="h-4 w-4 text-blue-500 shrink-0" />}
+                  {investor.isVerified && <BadgeCheck className="icon-sm text-blue-500 shrink-0" aria-hidden="true" />}
                   {investor.isActivelyScouting && (
-                    <Badge className="text-[10px] bg-green-500/10 text-green-600 border border-green-500/20">
-                      <Zap className="h-2.5 w-2.5 mr-1" />Actively Scouting
+                    <Badge className="text-2xs bg-green-500/10 text-green-600 border border-green-500/20">
+                      <Zap className="h-2.5 w-2.5 mr-1" aria-hidden="true" />Actively Scouting
                     </Badge>
                   )}
                 </div>
                 {investor.firmName && (
                   <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <Building2 className="h-3 w-3" />
+                    <Building2 className="icon-2xs" aria-hidden="true" />
                     {investor.firmName}
                     {investor.firmRole && <span className="text-muted-foreground/60"> · {investor.firmRole}</span>}
                   </p>
@@ -182,7 +182,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
                   {TYPE_LABEL[investor.investorType] ?? investor.investorType}
                 </Badge>
                 <button onClick={() => setSaved(!saved)} className="p-1 rounded hover:bg-muted transition-colors">
-                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} />
+                  <Bookmark className={cn('h-4 w-4', saved ? 'fill-primary text-primary' : 'text-muted-foreground')} aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -193,15 +193,15 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stages */}
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {investor.stages.map(s => (
-                <Badge key={s} variant="outline" className={cn('text-[10px] border', STAGE_COLOR[s] ?? '')}>
+                <Badge key={s} variant="outline" className={cn('text-2xs border', STAGE_COLOR[s] ?? '')}>
                   {s.replace('-', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                 </Badge>
               ))}
-              <Badge variant="outline" className="text-[10px]">
-                <DollarSign className="h-2.5 w-2.5 mr-0.5" />{formatCheckSize(investor.checkSizeMin, investor.checkSizeMax)}
+              <Badge variant="outline" className="text-2xs">
+                <DollarSign className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{formatCheckSize(investor.checkSizeMin, investor.checkSizeMax)}
               </Badge>
-              <Badge variant="outline" className="text-[10px]">
-                <Globe className="h-2.5 w-2.5 mr-0.5" />{investor.geographies.slice(0, 2).join(', ')}
+              <Badge variant="outline" className="text-2xs">
+                <Globe className="h-2.5 w-2.5 mr-0.5" aria-hidden="true" />{investor.geographies.slice(0, 2).join(', ')}
               </Badge>
             </div>
 
@@ -215,18 +215,18 @@ function InvestorCard({ investor }: { investor: Investor }) {
             {/* Stats & Actions */}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{investor.portfolioCount} investments</span>
-                <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{investor.viewCount.toLocaleString()} views</span>
-                <span className="flex items-center gap-1"><BarChart3 className="h-3 w-3" />{investor.dealsThisYear} deals / yr</span>
+                <span className="flex items-center gap-1"><Briefcase className="icon-2xs" aria-hidden="true" />{investor.portfolioCount} investments</span>
+                <span className="flex items-center gap-1"><Eye className="icon-2xs" aria-hidden="true" />{investor.viewCount.toLocaleString()} views</span>
+                <span className="flex items-center gap-1"><BarChart3 className="icon-2xs" aria-hidden="true" />{investor.dealsThisYear} deals / yr</span>
               </div>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
                   <Link href={`/p/${investor.userId}`}>
-                    <Eye className="h-3.5 w-3.5" />Profile
+                    <Eye className="h-3.5 w-3.5" aria-hidden="true" />Profile
                   </Link>
                 </Button>
                 <Button size="sm" className="h-7 text-xs gap-1">
-                  <UserPlus className="h-3.5 w-3.5" />Request Intro
+                  <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />Request Intro
                 </Button>
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function InvestorsPage() {
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="p-3 flex items-center gap-2">
                 <s.icon className="h-4 w-4 text-primary shrink-0" />
-                <div><p className="text-xs font-bold">{s.value}</p><p className="text-[10px] text-muted-foreground">{s.label}</p></div>
+                <div><p className="text-xs font-bold">{s.value}</p><p className="text-2xs text-muted-foreground">{s.label}</p></div>
               </CardContent>
             </Card>
           ))}
@@ -292,7 +292,7 @@ export default function InvestorsPage() {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input placeholder="Search by name, firm, or focus area..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={investorType} onValueChange={setInvestorType}>
@@ -320,7 +320,7 @@ export default function InvestorsPage() {
             </Select>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full sm:w-[150px]">
-                <ArrowUpDown className="mr-2 h-4 w-4 text-muted-foreground" />
+                <ArrowUpDown className="mr-2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -337,7 +337,7 @@ export default function InvestorsPage() {
               className="h-8"
               onClick={() => setScoutingOnly(!scoutingOnly)}
             >
-              <Zap className="mr-1.5 h-3.5 w-3.5" />Actively Scouting Only
+              <Zap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Actively Scouting Only
             </Button>
             <p className="text-xs text-muted-foreground ml-auto">
               {filtered.length} of {MOCK_INVESTORS.length} investors
@@ -351,7 +351,7 @@ export default function InvestorsPage() {
           {filtered.length === 0 && (
             <Card>
               <CardContent className="py-16 text-center">
-                <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" aria-hidden="true" />
                 <p className="font-medium">No investors match your filters</p>
                 <p className="text-sm text-muted-foreground mt-1">Try broadening your search criteria</p>
               </CardContent>

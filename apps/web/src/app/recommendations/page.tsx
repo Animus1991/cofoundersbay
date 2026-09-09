@@ -69,7 +69,7 @@ function MatchScoreBadge({ score }: { score: number }) {
     score >= 80 ? 'bg-emerald-500' : score >= 60 ? 'bg-blue-500' : 'bg-muted-foreground';
   return (
     <div className={cn('flex items-center gap-1 text-white text-xs font-semibold px-2 py-0.5 rounded-full', color)}>
-      <Star className="h-3 w-3 fill-current" />
+      <Star className="icon-2xs fill-current" aria-hidden="true" />
       {score}%
     </div>
   );
@@ -116,7 +116,7 @@ function BreakdownModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Star className="h-4 w-4 text-primary" />
+            <Star className="icon-sm text-primary" aria-hidden="true" />
             Match Score Breakdown
           </DialogTitle>
         </DialogHeader>
@@ -172,7 +172,7 @@ function FeedbackMenu({ onFeedback }: { onFeedback: (fb: MatchFeedbackType) => v
         onClick={() => setOpen(p => !p)}
         title="Feedback"
       >
-        <ChevronDown className="h-3.5 w-3.5" />
+        <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
       </Button>
       {open && (
         <>
@@ -254,7 +254,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 )}
                 {location && (
                   <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="icon-2xs" aria-hidden="true" />
                     {location}
                   </p>
                 )}
@@ -263,7 +263,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                 {score > 0 && <MatchScoreBadge score={score} />}
                 {confidence !== null && (
                   <span title={`Confidence: ${confidence}%`} className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                    <ShieldCheck className="h-3 w-3" />
+                    <ShieldCheck className="icon-2xs" aria-hidden="true" />
                     {confidence}%
                   </span>
                 )}
@@ -288,7 +288,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   onClick={() => setShowExplanation(p => !p)}
                   className="text-xs text-muted-foreground underline-offset-2 hover:underline flex items-center gap-0.5"
                 >
-                  <Info className="h-3 w-3" />
+                  <Info className="icon-2xs" aria-hidden="true" />
                   {showExplanation ? 'Hide' : 'Why this match?'}
                 </button>
               </div>
@@ -313,11 +313,11 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
 
             <div className="flex items-center gap-2">
               <Button size="sm" className="gap-1.5" onClick={() => onConnect(userId)}>
-                <UserPlus className="h-3.5 w-3.5" />
+                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
                 Connect
               </Button>
               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setBreakdownOpen(true)}>
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
                 Score Breakdown
               </Button>
               <div className="ml-auto flex items-center gap-1">
@@ -329,7 +329,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                     title="Save match"
                     onClick={() => onSave(userId)}
                   >
-                    <BookmarkPlus className="h-3.5 w-3.5" />
+                    <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
                   </Button>
                 )}
                 <Button aria-label="Good match"
@@ -339,7 +339,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
                   title="Good match"
                   onClick={() => onFeedback(userId, 'accepted')}
                 >
-                  <ThumbsUp className="h-3.5 w-3.5" />
+                  <ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
                 <FeedbackMenu onFeedback={(fb) => onFeedback(userId, fb)} />
               </div>
@@ -449,7 +449,7 @@ export default function RecommendationsPage() {
       description="AI-powered matches based on your profile, skills, and goals"
       actions={
         <Button variant="outline" size="sm" onClick={handleRefresh}>
-          <RefreshCw className="h-4 w-4 mr-2" />
+          <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
           Refresh
         </Button>
       }
@@ -482,7 +482,7 @@ export default function RecommendationsPage() {
           <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-primary" />
+                <Sparkles className="icon-sm text-primary" aria-hidden="true" />
                 <h3 className="font-semibold text-sm">This Week's Top Picks</h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
                   {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
@@ -499,7 +499,7 @@ export default function RecommendationsPage() {
                             {m.profile?.displayName?.[0] ?? '?'}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] font-bold px-1 rounded-full">
+                        <div className="absolute -bottom-0.5 -right-0.5 bg-primary text-primary-foreground text-2xs font-bold px-1 rounded-full">
                           {m.score}%
                         </div>
                       </div>
@@ -522,7 +522,7 @@ export default function RecommendationsPage() {
             className="gap-1.5"
             onClick={() => setShowFilter(p => !p)}
           >
-            <Filter className="h-3.5 w-3.5" />
+            <Filter className="h-3.5 w-3.5" aria-hidden="true" />
             Filter
             {minScore > 0 && <span className="ml-1 text-xs text-primary font-semibold">≥{minScore}%</span>}
           </Button>
@@ -541,7 +541,7 @@ export default function RecommendationsPage() {
               <span className="text-xs font-semibold w-8 text-right">{minScore}%</span>
               {minScore > 0 && (
                 <button onClick={() => setMinScore(0)} className="text-muted-foreground hover:text-foreground">
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               )}
             </div>
@@ -556,26 +556,26 @@ export default function RecommendationsPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList>
             <TabsTrigger value="all" className="gap-1.5">
-              <Target className="h-3.5 w-3.5" />
+              <Target className="h-3.5 w-3.5" aria-hidden="true" />
               All
             </TabsTrigger>
             <TabsTrigger value="founders" className="gap-1.5">
-              <Briefcase className="h-3.5 w-3.5" />
+              <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
               Founders
             </TabsTrigger>
             <TabsTrigger value="mentors" className="gap-1.5">
-              <GraduationCap className="h-3.5 w-3.5" />
+              <GraduationCap className="h-3.5 w-3.5" aria-hidden="true" />
               Mentors
             </TabsTrigger>
             <TabsTrigger value="investors" className="gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" />
+              <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
               Investors
             </TabsTrigger>
             <TabsTrigger value="saved" className="gap-1.5">
-              <BookmarkPlus className="h-3.5 w-3.5" />
+              <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
               Saved
               {savedIds.size > 0 && (
-                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                <span className="ml-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground">
                   {savedIds.size}
                 </span>
               )}
@@ -592,7 +592,7 @@ export default function RecommendationsPage() {
               </CardContent></Card>
             ) : activeTab === 'saved' && savedIds.size === 0 ? (
               <Card><CardContent className="py-14 text-center">
-                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                <BookmarkPlus className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" aria-hidden="true" />
                 <h3 className="font-semibold mb-1">No saved matches yet</h3>
                 <p className="text-sm text-muted-foreground">Bookmark matches you want to revisit later.</p>
               </CardContent></Card>
@@ -609,7 +609,7 @@ export default function RecommendationsPage() {
             ) : (
               <Card>
                 <CardContent className="py-14 text-center">
-                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" />
+                  <Sparkles className="mx-auto h-10 w-10 text-muted-foreground/40 mb-3" aria-hidden="true" />
                   <h3 className="font-semibold mb-1">No recommendations yet</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     {minScore > 0 ? `No matches with score ≥${minScore}%. Try lowering the filter.` : 'Complete your profile to unlock personalized matches.'}

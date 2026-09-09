@@ -151,7 +151,7 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center">
         <div className="text-center space-y-4 p-8">
           <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto">
-            <Users className="h-8 w-8 text-muted-foreground" />
+            <Users className="icon-xl text-muted-foreground" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
           <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
@@ -206,7 +206,7 @@ export default function PublicProfilePage() {
                           {firstName} {lastName}
                         </h1>
                         {isVerified && (
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                          <CheckCircle2 className="icon-md text-primary" aria-hidden="true" />
                         )}
                         <RoleBadge role={profile.role} />
                       </div>
@@ -216,19 +216,19 @@ export default function PublicProfilePage() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                       {profile.location && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
+                          <MapPin className="icon-sm" aria-hidden="true" />
                           {profile.location}
                         </span>
                       )}
                       {profile.timezone && (
                         <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="icon-sm" aria-hidden="true" />
                           {profile.timezone}
                         </span>
                       )}
                       {profile.role && (
                         <span className="flex items-center gap-1 capitalize">
-                          <Briefcase className="h-4 w-4" />
+                          <Briefcase className="icon-sm" aria-hidden="true" />
                           {profile.role}
                         </span>
                       )}
@@ -236,7 +236,7 @@ export default function PublicProfilePage() {
 
                     {isAvailable && (
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
-                        <Zap className="h-3 w-3 mr-1" />
+                        <Zap className="icon-2xs mr-1" aria-hidden="true" />
                         Open to Opportunities
                       </Badge>
                     )}
@@ -244,18 +244,18 @@ export default function PublicProfilePage() {
                     <div className="flex flex-wrap gap-2 pt-2">
                       <Button className="gap-2" asChild>
                         <Link href={`/register?action=message&user=${username}`}>
-                          <MessageSquare className="h-4 w-4" />
+                          <MessageSquare className="icon-sm" aria-hidden="true" />
                           Message
                         </Link>
                       </Button>
                       <Button variant="outline" className="gap-2" asChild>
                         <Link href={`/register?action=connect&user=${username}`}>
-                          <UserPlus className="h-4 w-4" />
+                          <UserPlus className="icon-sm" aria-hidden="true" />
                           Connect
                         </Link>
                       </Button>
                       <Button aria-label="Share" variant="ghost" size="icon">
-                        <Share2 className="h-4 w-4" />
+                        <Share2 className="icon-sm" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
@@ -282,7 +282,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="icon-md text-primary" aria-hidden="true" />
                     Looking For
                   </CardTitle>
                 </CardHeader>
@@ -303,7 +303,7 @@ export default function PublicProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Briefcase className="h-5 w-5" />
+                  <Briefcase className="icon-md" aria-hidden="true" />
                   Experience
                 </CardTitle>
               </CardHeader>
@@ -312,7 +312,7 @@ export default function PublicProfilePage() {
                   <div key={i} className={cn(i > 0 && 'pt-6 border-t border-border/60')}>
                     <div className="flex items-start gap-4">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                        <Briefcase className="h-5 w-5 text-muted-foreground" />
+                        <Briefcase className="icon-md text-muted-foreground" aria-hidden="true" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-foreground">{exp.title}</h4>
@@ -332,7 +332,7 @@ export default function PublicProfilePage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5" />
+                  <GraduationCap className="icon-md" aria-hidden="true" />
                   Education
                 </CardTitle>
               </CardHeader>
@@ -340,7 +340,7 @@ export default function PublicProfilePage() {
                 {education.map((edu, i) => (
                   <div key={i} className="flex items-start gap-4">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <GraduationCap className="h-5 w-5 text-muted-foreground" />
+                      <GraduationCap className="icon-md text-muted-foreground" aria-hidden="true" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground">{edu.degree}</h4>
@@ -358,12 +358,12 @@ export default function PublicProfilePage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Star className="h-5 w-5 text-amber-500" />
+                    <Star className="icon-md text-amber-500" aria-hidden="true" />
                     Endorsements
                   </CardTitle>
                   <Button variant="outline" size="sm" className="gap-1.5 text-xs" asChild>
                     <Link href={`/register?action=endorse&user=${username}`}>
-                      <PenLine className="h-3.5 w-3.5" />
+                      <PenLine className="h-3.5 w-3.5" aria-hidden="true" />
                       Write Endorsement
                     </Link>
                   </Button>
@@ -380,7 +380,7 @@ export default function PublicProfilePage() {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Star className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+                    <Star className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">
                       No endorsements yet
                     </p>
@@ -452,7 +452,7 @@ export default function PublicProfilePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Award className="h-5 w-5 text-amber-500" />
+                    <Award className="icon-md text-amber-500" aria-hidden="true" />
                     Achievements
                   </CardTitle>
                 </CardHeader>
@@ -460,7 +460,7 @@ export default function PublicProfilePage() {
                   <ul className="space-y-2">
                     {achievements.map((achievement, i) => (
                       <li key={i} className="flex items-center gap-2 text-sm">
-                        <Award className="h-4 w-4 text-amber-500 shrink-0" />
+                        <Award className="icon-sm text-amber-500 shrink-0" aria-hidden="true" />
                         <span className="text-muted-foreground">{achievement}</span>
                       </li>
                     ))}
@@ -481,33 +481,33 @@ export default function PublicProfilePage() {
                 {website && (
                   <a href={website} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Globe className="h-4 w-4" />
+                    <Globe className="icon-sm" aria-hidden="true" />
                     <span className="truncate">{website.replace(/^https?:\/\//, '')}</span>
-                    <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
+                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
                   </a>
                 )}
                 {linkedin && (
                   <a href={linkedin} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Linkedin className="h-4 w-4" />
+                    <Linkedin className="icon-sm" aria-hidden="true" />
                     <span>LinkedIn</span>
-                    <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
+                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
                   </a>
                 )}
                 {twitter && (
                   <a href={twitter} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Twitter className="h-4 w-4" />
+                    <Twitter className="icon-sm" aria-hidden="true" />
                     <span>Twitter / X</span>
-                    <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
+                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
                   </a>
                 )}
                 {github && (
                   <a href={github} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    <Github className="h-4 w-4" />
+                    <Github className="icon-sm" aria-hidden="true" />
                     <span>GitHub</span>
-                    <ExternalLink className="h-3 w-3 ml-auto shrink-0" />
+                    <ExternalLink className="icon-2xs ml-auto shrink-0" aria-hidden="true" />
                   </a>
                 )}
               </CardContent>
@@ -517,7 +517,7 @@ export default function PublicProfilePage() {
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
+                  <Calendar className="icon-sm" aria-hidden="true" />
                   <span>Member since {joinedAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
                 </div>
               </CardContent>

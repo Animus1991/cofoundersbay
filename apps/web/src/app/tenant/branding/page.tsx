@@ -219,7 +219,7 @@ export default function TenantBrandingPage() {
       <AppShell>
         <div className="flex items-center justify-center py-24">
           <div className="text-center space-y-2">
-            <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" />
+            <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto" aria-hidden="true" />
             <p className="text-lg font-medium">No organization context</p>
             <p className="text-sm text-muted-foreground">You must be a member of an organization to manage branding.</p>
           </div>
@@ -235,7 +235,7 @@ export default function TenantBrandingPage() {
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <Palette className="h-6 w-6 text-primary" />
+              <Palette className="icon-lg text-primary" aria-hidden="true" />
               Branding
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
@@ -245,20 +245,20 @@ export default function TenantBrandingPage() {
           <div className="flex items-center gap-2">
             {branding?.isBrandingActive ? (
               <Badge variant="default" className="gap-1.5 bg-green-600 hover:bg-green-600">
-                <CheckCircle2 className="h-3.5 w-3.5" />
+                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Published
               </Badge>
             ) : (
               <Badge variant="secondary" className="gap-1.5">
-                <AlertCircle className="h-3.5 w-3.5" />
+                <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />
                 Draft
               </Badge>
             )}
             {tenantSlug && (
               <Button variant="outline" size="sm" onClick={handlePreview}>
-                <Eye className="mr-1.5 h-4 w-4" />
+                <Eye className="mr-1.5 icon-sm" aria-hidden="true" />
                 Preview
-                <ExternalLink className="ml-1.5 h-3 w-3 opacity-60" />
+                <ExternalLink className="ml-1.5 icon-2xs opacity-60" aria-hidden="true" />
               </Button>
             )}
             <Button
@@ -267,11 +267,11 @@ export default function TenantBrandingPage() {
               disabled={saveMutation.isPending}
             >
               {saveMutation.isPending ? (
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1.5 icon-sm animate-spin" aria-hidden="true" />
               ) : saved ? (
-                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                <CheckCircle2 className="mr-1.5 icon-sm" aria-hidden="true" />
               ) : (
-                <Save className="mr-1.5 h-4 w-4" />
+                <Save className="mr-1.5 icon-sm" aria-hidden="true" />
               )}
               {saved ? 'Saved!' : 'Save Changes'}
             </Button>
@@ -280,26 +280,26 @@ export default function TenantBrandingPage() {
 
         {saveMutation.isError && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4 shrink-0" />
+            <AlertCircle className="icon-sm shrink-0" aria-hidden="true" />
             Failed to save changes. Please try again.
           </div>
         )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="icon-xl animate-spin text-muted-foreground" aria-hidden="true" />
           </div>
         ) : (
           <Tabs defaultValue="colors" className="space-y-6">
             <TabsList className="flex-wrap h-auto gap-1">
-              <TabsTrigger value="colors"><Palette className="mr-1.5 h-3.5 w-3.5" />Colors</TabsTrigger>
-              <TabsTrigger value="typography"><Type className="mr-1.5 h-3.5 w-3.5" />Typography</TabsTrigger>
-              <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" />Assets</TabsTrigger>
-              <TabsTrigger value="content"><FileText className="mr-1.5 h-3.5 w-3.5" />Content</TabsTrigger>
-              <TabsTrigger value="labels"><Tag className="mr-1.5 h-3.5 w-3.5" />Labels</TabsTrigger>
-              <TabsTrigger value="legal"><Globe className="mr-1.5 h-3.5 w-3.5" />Legal & Social</TabsTrigger>
-              <TabsTrigger value="email"><Mail className="mr-1.5 h-3.5 w-3.5" />Email</TabsTrigger>
-              <TabsTrigger value="publish"><Settings className="mr-1.5 h-3.5 w-3.5" />Publish</TabsTrigger>
+              <TabsTrigger value="colors"><Palette className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Colors</TabsTrigger>
+              <TabsTrigger value="typography"><Type className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Typography</TabsTrigger>
+              <TabsTrigger value="assets"><Image className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Assets</TabsTrigger>
+              <TabsTrigger value="content"><FileText className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Content</TabsTrigger>
+              <TabsTrigger value="labels"><Tag className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Labels</TabsTrigger>
+              <TabsTrigger value="legal"><Globe className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Legal & Social</TabsTrigger>
+              <TabsTrigger value="email"><Mail className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Email</TabsTrigger>
+              <TabsTrigger value="publish"><Settings className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />Publish</TabsTrigger>
             </TabsList>
 
             {/* ── Colors ── */}
@@ -462,11 +462,11 @@ export default function TenantBrandingPage() {
                             />
                           ) : (
                             <div className="h-16 w-32 rounded-lg border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
-                              <Image className="h-6 w-6 text-muted-foreground" />
+                              <Image className="icon-lg text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="h-6 w-6 text-white" />
+                            <Camera className="icon-lg text-white" aria-hidden="true" />
                           </div>
                         </div>
                       </ImageCropperTrigger>
@@ -510,11 +510,11 @@ export default function TenantBrandingPage() {
                             />
                           ) : (
                             <div className="h-8 w-8 rounded border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
-                              <Image className="h-3 w-3 text-muted-foreground" />
+                              <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="h-3 w-3 text-white" />
+                            <Camera className="icon-2xs text-white" aria-hidden="true" />
                           </div>
                         </div>
                       </ImageCropperTrigger>
@@ -726,7 +726,7 @@ export default function TenantBrandingPage() {
                       <div key={key} className="space-y-2">
                         <Label>{label}</Label>
                         <div className="flex items-center gap-2">
-                          <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <Link2 className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
                           <Input
                             value={form[key] ?? ''}
                             onChange={(e) => setField(key, e.target.value)}
@@ -822,19 +822,19 @@ export default function TenantBrandingPage() {
                     <p className="text-sm font-medium">Safeguards</p>
                     <ul className="space-y-1.5 text-sm text-muted-foreground">
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`h-4 w-4 ${form.primaryColor ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Primary color defined
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`h-4 w-4 ${form.heroTitle ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Hero title set
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`h-4 w-4 ${form.supportEmail ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Support email configured
                       </li>
                       <li className="flex items-center gap-2">
-                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} />
+                        <CheckCircle2 className={`h-4 w-4 ${form.privacyPolicyUrl && form.termsUrl ? 'text-green-600' : 'text-muted-foreground'}`} aria-hidden="true" />
                         Legal links provided
                       </li>
                     </ul>
@@ -842,18 +842,18 @@ export default function TenantBrandingPage() {
 
                   {tenantSlug && (
                     <Button variant="outline" className="w-full" onClick={handlePreview}>
-                      <Eye className="mr-2 h-4 w-4" />
+                      <Eye className="mr-2 icon-sm" aria-hidden="true" />
                       Preview Public Landing Page
-                      <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" />
+                      <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" aria-hidden="true" />
                     </Button>
                   )}
 
                   <div className="flex gap-3">
                     <Button className="flex-1" onClick={handleSave} disabled={saveMutation.isPending}>
                       {saveMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />
                       ) : (
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 icon-sm" aria-hidden="true" />
                       )}
                       Save Draft
                     </Button>
@@ -864,7 +864,7 @@ export default function TenantBrandingPage() {
                         onClick={() => { saveMutation.mutate(form); publishMutation.mutate(); }}
                         disabled={saveMutation.isPending || publishMutation.isPending}
                       >
-                        <CheckCircle2 className="mr-2 h-4 w-4" />
+                        <CheckCircle2 className="mr-2 icon-sm" aria-hidden="true" />
                         Save & Publish
                       </Button>
                     )}

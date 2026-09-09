@@ -109,7 +109,7 @@ function NotificationRow({
                   onMarkAsRead(notification.id);
                 }}
               >
-                <Check className="h-3 w-3" />
+                <Check className="icon-2xs" aria-hidden="true" />
               </Button>
             )}
             <Button
@@ -121,7 +121,7 @@ function NotificationRow({
                 onDelete(notification.id);
               }}
             >
-              <X className="h-3 w-3" />
+              <X className="icon-2xs" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -236,7 +236,7 @@ export function NotificationCenter() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button aria-label="Notifications" variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
+          <Bell className="icon-md" aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
@@ -259,11 +259,11 @@ export function NotificationCenter() {
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={unreadCount === 0}
               >
-                <CheckCheck className="h-4 w-4 mr-1" />
+                <CheckCheck className="icon-sm mr-1" aria-hidden="true" />
                 Mark all read
               </Button>
               <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
-                <Settings className="h-4 w-4" />
+                <Settings className="icon-sm" aria-hidden="true" />
               </Button>
             </div>
           </div>
@@ -304,7 +304,7 @@ export function NotificationCenter() {
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center">
-              <Bell className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+              <Bell className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" aria-hidden="true" />
               <h4 className="font-semibold mb-1">No notifications</h4>
               <p className="text-sm text-muted-foreground">
                 You're all caught up!

@@ -178,7 +178,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Award className="h-8 w-8 text-primary" />
+                <Award className="icon-xl text-primary" aria-hidden="true" />
               </div>
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
@@ -189,7 +189,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant="default" className="text-base px-3 py-1">
-                <Zap className="h-4 w-4 mr-1" />
+                <Zap className="icon-sm mr-1" aria-hidden="true" />
                 {currentPoints.toLocaleString()} XP
               </Badge>
               {currentStreak > 0 && (
@@ -219,7 +219,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Star className="h-3 w-3 text-primary" />
+                  <Star className="icon-2xs text-primary" aria-hidden="true" />
                 </div>
                 <span>{perk}</span>
               </div>
@@ -332,7 +332,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         'flex items-center gap-1 font-bold',
                         isEarned ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       )}>
-                        {isEarned ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                        {isEarned ? <ArrowUp className="icon-sm" aria-hidden="true" /> : <ArrowDown className="icon-sm" aria-hidden="true" />}
                         {Math.abs(activity.points)}
                       </div>
                     </div>
@@ -365,7 +365,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         <span className="font-medium">{item.action}</span>
                       </div>
                       <Badge variant="secondary" className="gap-1">
-                        <Zap className="h-3 w-3" />
+                        <Zap className="icon-2xs" aria-hidden="true" />
                         +{item.points}
                       </Badge>
                     </div>

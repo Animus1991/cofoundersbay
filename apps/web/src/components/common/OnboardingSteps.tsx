@@ -130,7 +130,7 @@ export function OnboardingProgress({ steps }: { steps: Step[] }) {
               )}
             >
               {isCompleted ? (
-                <Check className="h-5 w-5" />
+                <Check className="icon-md" aria-hidden="true" />
               ) : Icon ? (
                 <Icon className="h-5 w-5" />
               ) : (
@@ -200,7 +200,7 @@ export function OnboardingNavigation({
         disabled={!canGoPrev || isSubmitting}
         className={cn(!canGoPrev && 'invisible')}
       >
-        <ChevronLeft className="h-4 w-4 mr-1" />
+        <ChevronLeft className="icon-sm mr-1" aria-hidden="true" />
         Back
       </Button>
 
@@ -211,7 +211,7 @@ export function OnboardingNavigation({
       <Button onClick={handleNext} disabled={!canGoNext || isSubmitting}>
         {isSubmitting ? (
           <>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             Processing...
           </>
         ) : isLastStep ? (
@@ -219,7 +219,7 @@ export function OnboardingNavigation({
         ) : (
           <>
             Next
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <ChevronRight className="icon-sm ml-1" aria-hidden="true" />
           </>
         )}
       </Button>

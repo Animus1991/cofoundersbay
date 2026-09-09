@@ -72,7 +72,7 @@ function ProfileColumn({
           className="absolute -right-2 -top-2 z-10 rounded-full bg-destructive p-1 text-destructive-foreground shadow-md hover:bg-destructive/90 transition-colors"
           aria-label="Remove from comparison"
         >
-          <X className="icon-sm" />
+          <X className="icon-sm" aria-hidden="true" />
         </button>
 
         <div className="flex flex-col items-center text-center">
@@ -90,7 +90,7 @@ function ProfileColumn({
           </p>
           {profile.location && (
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="icon-sm" />
+              <MapPin className="icon-sm" aria-hidden="true" />
               <span>{profile.location}</span>
             </div>
           )}
@@ -110,13 +110,13 @@ function ProfileColumn({
         {profile.connectionStatus === 'connected' ? (
           <Button variant="outline" size="sm" className="flex-1" asChild>
             <a href={`/messages?user=${profile.id}`}>
-              <MessageCircle className="icon-sm mr-1" />
+              <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
               Message
             </a>
           </Button>
         ) : profile.connectionStatus === 'pending' ? (
           <Button variant="outline" size="sm" className="flex-1" disabled>
-            <Clock className="icon-sm mr-1" />
+            <Clock className="icon-sm mr-1" aria-hidden="true" />
             Pending
           </Button>
         ) : (
@@ -127,7 +127,7 @@ function ProfileColumn({
             onClick={onConnect}
             disabled={isConnecting}
           >
-            <UserPlus className="icon-sm mr-1" />
+            <UserPlus className="icon-sm mr-1" aria-hidden="true" />
             Connect
           </Button>
         )}
@@ -183,7 +183,7 @@ function AddProfileSlot({ onClick }: { onClick: () => void }) {
       className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/60 bg-secondary/20 p-8 transition-colors hover:border-primary/40 hover:bg-secondary/40 min-h-[400px]"
     >
       <div className="rounded-full bg-primary/10 p-4 mb-3">
-        <Plus className="h-8 w-8 text-primary" />
+        <Plus className="icon-xl text-primary" aria-hidden="true" />
       </div>
       <p className="font-medium text-foreground">Add Profile</p>
       <p className="text-sm text-muted-foreground mt-1">Select from matches or search</p>
@@ -203,7 +203,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="icon-md text-primary" />
+          <Zap className="icon-md text-primary" aria-hidden="true" />
           Skills Comparison
         </CardTitle>
       </CardHeader>
@@ -225,7 +225,7 @@ function SkillsComparison({ profiles }: { profiles: CompareProfile[] }) {
                           : 'bg-secondary/50 text-muted-foreground'
                       )}
                     >
-                      {hasSkill ? <CheckCircle className="icon-sm" /> : <Minus className="icon-sm" />}
+                      {hasSkill ? <CheckCircle className="icon-sm" aria-hidden="true" /> : <Minus className="icon-sm" aria-hidden="true" />}
                     </div>
                   );
                 })}
@@ -333,7 +333,7 @@ export default function ComparePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <ArrowLeftRight className="icon-lg text-primary" />
+              <ArrowLeftRight className="icon-lg text-primary" aria-hidden="true" />
               Compare Profiles
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -342,12 +342,12 @@ export default function ComparePage() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleShare}>
-              <Share2 className="icon-sm mr-1" />
+              <Share2 className="icon-sm mr-1" aria-hidden="true" />
               Share
             </Button>
             {profileIds.length < MAX_PROFILES && (
               <Button size="sm" onClick={handleAdd}>
-                <Plus className="icon-sm mr-1" />
+                <Plus className="icon-sm mr-1" aria-hidden="true" />
                 Add Profile
               </Button>
             )}
@@ -362,7 +362,7 @@ export default function ComparePage() {
             description="Add profiles from your matches or search to compare them side by side"
             action={
               <Button onClick={handleAdd}>
-                <Plus className="icon-sm mr-2" />
+                <Plus className="icon-sm mr-2" aria-hidden="true" />
                 Add Profiles
               </Button>
             }

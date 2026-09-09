@@ -84,7 +84,7 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold">Create Automation Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" aria-hidden="true" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -184,7 +184,7 @@ function EditRuleSlideOver({ rule, onClose, onSaved }: { rule: AutomationRuleIte
       <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold">Edit Rule</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" aria-hidden="true" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">
           <div className="space-y-1.5">
@@ -285,11 +285,11 @@ function statusBadge(status: string) {
 }
 
 function execStatusIcon(status: string) {
-  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />;
-  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" />;
-  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" />;
-  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" />;
-  return <Clock className="h-3.5 w-3.5 text-muted-foreground" />;
+  if (status === 'completed') return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" aria-hidden="true" />;
+  if (status === 'failed') return <XCircle className="h-3.5 w-3.5 text-destructive" aria-hidden="true" />;
+  if (status === 'running') return <RefreshCw className="h-3.5 w-3.5 text-blue-500 animate-spin" aria-hidden="true" />;
+  if (status === 'skipped') return <SkipForward className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
+  return <Clock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
 }
 
 function LogPanel({ executionId }: { executionId: string }) {
@@ -306,9 +306,9 @@ function LogPanel({ executionId }: { executionId: string }) {
       {logs.length === 0 && <p className="text-muted-foreground">No logs</p>}
       {logs.map(log => (
         <div key={log.id} className="flex items-start gap-2">
-          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" />}
-          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" />}
-          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" />}
+          {log.level === 'error' && <AlertTriangle className="icon-sm text-destructive mt-0.5 shrink-0" aria-hidden="true" />}
+          {log.level === 'warn' && <AlertTriangle className="icon-sm text-amber-500 mt-0.5 shrink-0" aria-hidden="true" />}
+          {log.level === 'info' && <CheckCircle2 className="icon-sm text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />}
           <span className={log.level === 'error' ? 'text-destructive' : log.level === 'warn' ? 'text-amber-600' : 'text-muted-foreground'}>
             [{new Date(log.createdAt).toLocaleTimeString()}] {log.message}
           </span>
@@ -384,7 +384,7 @@ export default function AutomationsPage() {
             </p>
           </div>
           <Button size="sm" className="gap-1" onClick={() => setShowCreate(true)}>
-            <Plus className="h-3.5 w-3.5" />New Rule
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />New Rule
           </Button>
         </div>
 
@@ -442,7 +442,7 @@ export default function AutomationsPage() {
             {rulesLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading rules…</p>}
             {!rulesLoading && rules.length === 0 && (
               <Card className="p-8 text-center">
-                <Layers className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <Layers className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
                 <p className="text-muted-foreground text-sm">No automation rules defined yet.</p>
               </Card>
             )}
@@ -485,7 +485,7 @@ export default function AutomationsPage() {
                       title="Edit rule"
                       onClick={() => setEditRule(rule)}
                     >
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                     <Button aria-label="Manual trigger"
                       variant="ghost"
@@ -495,7 +495,7 @@ export default function AutomationsPage() {
                       onClick={() => triggerMutation.mutate(rule.id)}
                       disabled={triggerMutation.isPending}
                     >
-                      <Play className="h-3.5 w-3.5" />
+                      <Play className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                     {rule.status === 'active' ? (
                       <Button aria-label="Pause"
@@ -505,7 +505,7 @@ export default function AutomationsPage() {
                         title="Pause"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'paused' })}
                       >
-                        <Pause className="h-3.5 w-3.5" />
+                        <Pause className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     ) : rule.status === 'paused' || rule.status === 'draft' ? (
                       <Button aria-label="Activate"
@@ -515,7 +515,7 @@ export default function AutomationsPage() {
                         title="Activate"
                         onClick={() => setStatusMutation.mutate({ id: rule.id, status: 'active' })}
                       >
-                        <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                        <Zap className="h-3.5 w-3.5 text-emerald-600" aria-hidden="true" />
                       </Button>
                     ) : null}
                     <Button aria-label="Delete"
@@ -533,7 +533,7 @@ export default function AutomationsPage() {
                         if (ok) deleteMutation.mutate(rule.id);
                       }}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -548,7 +548,7 @@ export default function AutomationsPage() {
             {execLoading && <p className="text-muted-foreground text-sm animate-pulse">Loading executions…</p>}
             {!execLoading && executions.length === 0 && (
               <Card className="p-8 text-center">
-                <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                <Activity className="icon-xl text-muted-foreground mx-auto mb-2" aria-hidden="true" />
                 <p className="text-muted-foreground text-sm">No executions yet.</p>
               </Card>
             )}
@@ -571,7 +571,7 @@ export default function AutomationsPage() {
                       {new Date(exec.createdAt).toLocaleString()}
                     </span>
                     <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
-                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} aria-hidden="true" />
                   </div>
                 </Card>
                 {selectedExecution === exec.id && (

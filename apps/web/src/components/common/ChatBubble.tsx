@@ -67,7 +67,7 @@ export function ChatBubble() {
           className="flex h-7 w-7 items-center justify-center rounded-full bg-card border border-border/60 text-muted-foreground shadow-sm hover:text-foreground transition-colors"
           aria-label="Dismiss chat bubble"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
 
         {/* Drag handle */}
@@ -81,7 +81,7 @@ export function ChatBubble() {
           style={{ width: '28px', height: '28px', ...dragHandleProps.style }}
           title="Drag to move"
         >
-          <GripVertical className="h-3.5 w-3.5" />
+          <GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
         </div>
 
         {/* Main bubble */}
@@ -95,9 +95,9 @@ export function ChatBubble() {
           )}
           style={{ width: '52px', height: '52px' }}
         >
-          <MessageCircle className="h-6 w-6" fill="currentColor" fillOpacity={0.2} />
+          <MessageCircle className="icon-lg" fill="currentColor" fillOpacity={0.2} aria-hidden="true" />
           {unreadMessages > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold leading-none text-white shadow-sm">
+            <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1 text-2xs font-bold leading-none text-white shadow-sm">
               {unreadMessages > 99 ? '99+' : unreadMessages}
             </span>
           )}

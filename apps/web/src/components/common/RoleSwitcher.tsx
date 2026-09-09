@@ -73,7 +73,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
   if (isLoading) {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
         <span className="text-sm text-muted-foreground">Loading roles...</span>
       </div>
     );
@@ -94,7 +94,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
           className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border hover:bg-accent transition-colors"
         >
           <CurrentIcon className={`h-4 w-4 ${currentRoleConfig?.color || 'text-foreground'}`} />
-          <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-3 w-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
         </button>
 
         {isOpen && allRoles.length > 1 && (
@@ -116,12 +116,12 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                     }`}
                   >
                     {switching === role.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                     ) : (
                       <Icon className={`h-4 w-4 ${roleConfig?.color || 'text-foreground'}`} />
                     )}
                     <span className="flex-1 text-sm">{roleConfig?.label || role.roleType}</span>
-                    {isActive && <Check className="h-4 w-4 text-primary" />}
+                    {isActive && <Check className="icon-sm text-primary" aria-hidden="true" />}
                     {role.isVerified && (
                       <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
                     )}
@@ -155,7 +155,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
               }`}
             >
               {switching === role.id ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
               ) : (
                 <Icon className={`h-3.5 w-3.5 ${isActive ? '' : roleConfig?.color || ''}`} />
               )}
@@ -183,7 +183,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
             </div>
           )}
         </div>
-        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
 
       {isOpen && allRoles.length > 1 && (
@@ -208,7 +208,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                   }`}
                 >
                   {switching === role.id ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                    <Loader2 className="icon-md animate-spin" aria-hidden="true" />
                   ) : (
                     <Icon className={`h-5 w-5 ${roleConfig?.color || 'text-foreground'}`} />
                   )}
@@ -218,7 +218,7 @@ export function RoleSwitcher({ variant = 'dropdown', showAllRoles = false, class
                       <div className="text-xs text-muted-foreground capitalize">{role.scope} scope</div>
                     )}
                   </div>
-                  {isActive && <Check className="h-4 w-4 text-primary" />}
+                  {isActive && <Check className="icon-sm text-primary" aria-hidden="true" />}
                   {role.isVerified && (
                     <span className="text-xs bg-green-500/10 text-green-500 px-1.5 py-0.5 rounded">Verified</span>
                   )}

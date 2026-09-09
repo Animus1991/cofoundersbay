@@ -70,16 +70,16 @@ function SubRow({
       </div>
       <div className="flex gap-1 shrink-0">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onOverride(sub)}>
-          <Settings className="icon-sm mr-1" />Override
+          <Settings className="icon-sm mr-1" aria-hidden="true" />Override
         </Button>
         {sub.status === 'trialing' && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onExtendTrial(sub.id)}>
-            <Clock className="icon-sm mr-1" />+7d
+            <Clock className="icon-sm mr-1" aria-hidden="true" />+7d
           </Button>
         )}
         {sub.status !== 'canceled' && (
           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive hover:text-destructive" onClick={() => onCancel(sub.id, false)}>
-            <XCircle className="icon-sm mr-1" />Cancel
+            <XCircle className="icon-sm mr-1" aria-hidden="true" />Cancel
           </Button>
         )}
       </div>
@@ -100,7 +100,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <FileText className="icon-sm text-muted-foreground shrink-0" />
+      <FileText className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
@@ -112,7 +112,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
       {inv.hostedInvoiceUrl && (
         <a href={inv.hostedInvoiceUrl} target="_blank" rel="noreferrer">
           <Button aria-label="Download" variant="ghost" size="icon" className="h-7 w-7 shrink-0">
-            <Download className="h-3.5 w-3.5" />
+            <Download className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </a>
       )}
@@ -216,7 +216,7 @@ export default function AdminBillingPage() {
             <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
           </div>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}>
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
             Refresh
           </Button>
         </div>
@@ -236,7 +236,7 @@ export default function AdminBillingPage() {
                   <p className="text-sm text-muted-foreground">{label}</p>
                 </div>
                 <p className="text-xl font-bold mt-1">
-                  {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" /> : value}
+                  {statsLoading ? <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /> : value}
                 </p>
               </CardContent>
             </Card>
@@ -254,7 +254,7 @@ export default function AdminBillingPage() {
             </TabsList>
             <div className="flex gap-2 sm:ml-auto">
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search…"
                   value={search}
@@ -282,7 +282,7 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {subsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : subs.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">No subscriptions found</div>
                 ) : (
@@ -308,7 +308,7 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {invoicesLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : invoices.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">No invoices found</div>
                 ) : (
@@ -331,7 +331,7 @@ export default function AdminBillingPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {statsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : plans.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">No plans configured</div>
                 ) : (
@@ -339,7 +339,7 @@ export default function AdminBillingPage() {
                     {plans.map(plan => (
                       <div key={plan.id} className="flex items-center gap-3 p-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                          <Crown className="icon-sm text-muted-foreground" />
+                          <Crown className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -370,7 +370,7 @@ export default function AdminBillingPage() {
           <TabsContent value="coupons" className="mt-4 space-y-4">
             <div className="flex justify-end">
               <Button size="sm" className="gap-2" onClick={() => setShowCouponForm(!showCouponForm)}>
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 New coupon
               </Button>
             </div>
@@ -422,7 +422,7 @@ export default function AdminBillingPage() {
                   </div>
                   <div className="flex gap-2 pt-1">
                     <Button size="sm" onClick={() => saveCoupon()} disabled={savingCoupon || !couponForm.code}>
-                      {savingCoupon && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                      {savingCoupon && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
                       Create
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setShowCouponForm(false)}>Cancel</Button>
@@ -434,7 +434,7 @@ export default function AdminBillingPage() {
             <Card>
               <CardContent className="p-0">
                 {couponsLoading ? (
-                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" /></div>
+                  <div className="flex justify-center p-8"><Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" /></div>
                 ) : coupons.length === 0 ? (
                   <div className="py-12 text-center text-sm text-muted-foreground">No coupons yet</div>
                 ) : (
@@ -442,7 +442,7 @@ export default function AdminBillingPage() {
                     {coupons.map(coupon => (
                       <div key={coupon.id} className="flex items-center gap-3 p-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted shrink-0">
-                          <Tag className="icon-sm text-muted-foreground" />
+                          <Tag className="icon-sm text-muted-foreground" aria-hidden="true" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function AdminBillingPage() {
                             className="h-7 w-7 text-destructive hover:text-destructive shrink-0"
                             onClick={() => removeCoupon(coupon.id)}
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </Button>
                         )}
                       </div>
@@ -500,7 +500,7 @@ export default function AdminBillingPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOverrideTarget(null)}>Cancel</Button>
             <Button onClick={() => applyOverride()} disabled={overriding || !overridePlanId}>
-              {overriding && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              {overriding && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
               Apply override
             </Button>
           </DialogFooter>

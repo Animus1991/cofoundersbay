@@ -79,9 +79,9 @@ const MOCK_TOP_SERVICES = [
 
 
 function TrendIcon({ trend }: { trend: 'up' | 'down' | 'neutral' }) {
-  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-green-500" />;
-  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-red-500" />;
-  return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
+  if (trend === 'up') return <ArrowUp className="h-3.5 w-3.5 text-green-500" aria-hidden="true" />;
+  if (trend === 'down') return <ArrowDown className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />;
+  return <Minus className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />;
 }
 
 function MetricCard({
@@ -161,7 +161,7 @@ export default function ProviderAnalyticsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <BarChart3 className="icon-lg text-primary" aria-hidden="true" />
               Analytics
             </h1>
             <p className="text-muted-foreground">Track your profile performance and service metrics</p>
@@ -179,7 +179,7 @@ export default function ProviderAnalyticsPage() {
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4" />
+              <RefreshCw className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -313,7 +313,7 @@ export default function ProviderAnalyticsPage() {
                       </div>
                       {svc.rating != null ? (
                         <div className="flex items-center gap-1 shrink-0">
-                          <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                          <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" aria-hidden="true" />
                           <span className="text-sm font-medium">{svc.rating}</span>
                         </div>
                       ) : (

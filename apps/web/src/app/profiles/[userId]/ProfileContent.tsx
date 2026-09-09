@@ -224,11 +224,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       actions={
         <div className="flex items-center gap-2">
           <Button aria-label="Copy link" variant="ghost" size="icon" onClick={handleShare} title="Copy link">
-            <Share2 className="icon-sm" />
+            <Share2 className="icon-sm" aria-hidden="true" />
           </Button>
           <Link href="/discover">
             <Button variant="secondary" size="sm" className="gap-2">
-              <ArrowLeft className="icon-sm" />
+              <ArrowLeft className="icon-sm" aria-hidden="true" />
               Back
             </Button>
           </Link>
@@ -260,19 +260,19 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               <div className="w-full space-y-2 text-sm text-muted-foreground">
                 {profile.location && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     {profile.location}
                   </p>
                 )}
                 {profile.timezone && (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     {profile.timezone}
                   </p>
                 )}
                 {profile.languages?.length ? (
                   <p className="flex items-center justify-center gap-1.5">
-                    <Languages className="h-3.5 w-3.5 shrink-0" />
+                    <Languages className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                     {profile.languages.join(' · ')}
                   </p>
                 ) : null}
@@ -288,11 +288,11 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     variant={isConnected || isBlocked ? 'secondary' : 'default'}
                   >
                     {connecting ? (
-                      <Loader2 className="icon-sm animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                     ) : isConnected || isBlocked ? (
-                      <UserCheck className="icon-sm" />
+                      <UserCheck className="icon-sm" aria-hidden="true" />
                     ) : (
-                      <UserPlus className="icon-sm" />
+                      <UserPlus className="icon-sm" aria-hidden="true" />
                     )}
                     {connButtonLabel}
                   </Button>
@@ -303,9 +303,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                     disabled={messaging || isBlocked}
                   >
                     {messaging ? (
-                      <Loader2 className="icon-sm animate-spin" />
+                      <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                     ) : (
-                      <MessageCircle className="icon-sm" />
+                      <MessageCircle className="icon-sm" aria-hidden="true" />
                     )}
                     Message
                   </Button>

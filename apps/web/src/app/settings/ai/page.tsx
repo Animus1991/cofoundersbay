@@ -183,14 +183,14 @@ export default function AISettingsPage() {
             href="/settings"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="icon-sm" aria-hidden="true" />
             Back to Settings
           </Link>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
-                  <Bot className="h-5 w-5 text-white" />
+                  <Bot className="icon-md text-white" aria-hidden="true" />
                 </div>
                 AI Assistant Settings
               </h1>
@@ -199,7 +199,7 @@ export default function AISettingsPage() {
               </p>
             </div>
             <Button onClick={handleSave} disabled={!hasChanges} className="gap-2">
-              {hasChanges ? <Save className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+              {hasChanges ? <Save className="icon-sm" aria-hidden="true" /> : <CheckCircle2 className="icon-sm" aria-hidden="true" />}
               {hasChanges ? 'Save Changes' : 'Saved'}
             </Button>
           </div>
@@ -217,9 +217,9 @@ export default function AISettingsPage() {
                 isAIAvailable ? 'bg-emerald-500/20' : 'bg-amber-500/20'
               )}>
                 {isAIAvailable ? (
-                  <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <Zap className="icon-md text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                 ) : (
-                  <Info className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <Info className="icon-md text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 )}
               </div>
               <div>
@@ -244,7 +244,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-violet-500" />
+                <Sparkles className="icon-md text-violet-500" aria-hidden="true" />
                 Model Configuration
               </CardTitle>
               <CardDescription>
@@ -321,7 +321,7 @@ export default function AISettingsPage() {
               {/* Temperature Selection */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <ThermometerSun className="h-4 w-4 text-muted-foreground" />
+                  <ThermometerSun className="icon-sm text-muted-foreground" aria-hidden="true" />
                   Creativity (Temperature)
                 </Label>
                 <Select
@@ -370,7 +370,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
+                <MessageSquare className="icon-md text-blue-500" aria-hidden="true" />
                 Response Style
               </CardTitle>
               <CardDescription>
@@ -400,7 +400,7 @@ export default function AISettingsPage() {
               {/* Language */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
-                  <Languages className="h-4 w-4 text-muted-foreground" />
+                  <Languages className="icon-sm text-muted-foreground" aria-hidden="true" />
                   Response Language
                 </Label>
                 <Select
@@ -440,7 +440,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sliders className="h-5 w-5 text-emerald-500" />
+                <Sliders className="icon-md text-emerald-500" aria-hidden="true" />
                 Features
               </CardTitle>
               <CardDescription>
@@ -472,7 +472,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-amber-500" />
+                <Shield className="icon-md text-amber-500" aria-hidden="true" />
                 Privacy & Data
               </CardTitle>
               <CardDescription>
@@ -503,7 +503,7 @@ export default function AISettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="h-5 w-5 text-purple-500" />
+                <Bot className="icon-md text-purple-500" aria-hidden="true" />
                 Available AI Agents
               </CardTitle>
               <CardDescription>
@@ -525,7 +525,7 @@ export default function AISettingsPage() {
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                      <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                      <Bot className="icon-sm text-violet-600 dark:text-violet-400" aria-hidden="true" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>

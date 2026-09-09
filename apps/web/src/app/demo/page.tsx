@@ -32,7 +32,7 @@ export default function DemoPage() {
       <div className="min-h-screen flex items-center justify-center bg-background px-4">
         <div className="max-w-sm w-full text-center space-y-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 mx-auto">
-            <AlertCircle className="h-7 w-7 text-destructive" />
+            <AlertCircle className="h-7 w-7 text-destructive" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-semibold text-foreground">Demo unavailable</h2>
           <p className="text-sm text-muted-foreground">{error}</p>
@@ -59,13 +59,13 @@ export default function DemoPage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
         <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-          <Sparkles className="h-8 w-8 text-primary animate-pulse" />
+          <Sparkles className="icon-xl text-primary animate-pulse" aria-hidden="true" />
         </div>
         <div className="space-y-1">
           <h2 className="text-xl font-semibold text-foreground">Loading demo…</h2>
           <p className="text-sm text-muted-foreground">Setting up your demo environment</p>
         </div>
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mx-auto" />
+        <Loader2 className="icon-md animate-spin text-muted-foreground mx-auto" aria-hidden="true" />
       </div>
     </div>
   );

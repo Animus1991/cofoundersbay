@@ -87,7 +87,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-primary/10">
-                  <Users className="h-5 w-5 text-primary" />
+                  <Users className="icon-md text-primary" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Members</p>
@@ -100,7 +100,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/10">
-                  <Rocket className="h-5 w-5 text-blue-600" />
+                  <Rocket className="icon-md text-blue-600" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Active Startups</p>
@@ -113,7 +113,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Award className="h-5 w-5 text-purple-600" />
+                  <Award className="icon-md text-purple-600" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Programs Run</p>
@@ -126,7 +126,7 @@ export default function TenantAnalyticsPage() {
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-green-500/10">
-                  <Calendar className="h-5 w-5 text-green-600" />
+                  <Calendar className="icon-md text-green-600" aria-hidden="true" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Mentor Sessions</p>

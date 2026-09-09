@@ -139,9 +139,9 @@ export function NotificationsBell({ className }: { className?: string }) {
           className={cn('relative', className)}
           aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}
         >
-          <Bell className={cn('h-5 w-5', hasNew && 'animate-pulse')} />
+          <Bell className={cn('h-5 w-5', hasNew && 'animate-pulse')} aria-hidden="true" />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground ring-2 ring-background">
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-1 text-2xs font-bold text-primary-foreground ring-2 ring-background">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
@@ -153,7 +153,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           <div>
             <span className="text-sm font-semibold text-foreground">Notifications</span>
             {unread > 0 && (
-              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+              <span className="ml-2 rounded-full bg-primary/15 px-1.5 py-0.5 text-2xs font-semibold text-primary">
                 {unread} new
               </span>
             )}
@@ -175,7 +175,7 @@ export function NotificationsBell({ className }: { className?: string }) {
               }
             }}
           >
-            <CheckCheck className="h-3.5 w-3.5" />
+            <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
             Mark all read
           </Button>
         </div>
@@ -185,7 +185,7 @@ export function NotificationsBell({ className }: { className?: string }) {
           {items.length === 0 && (
             <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary/60">
-                <Bell className="h-5 w-5 text-muted-foreground" />
+                <Bell className="icon-md text-muted-foreground" aria-hidden="true" />
               </div>
               <p className="text-sm text-muted-foreground">
                 {loading ? 'Loading...' : "You're all caught up!"}
@@ -232,7 +232,7 @@ export function NotificationsBell({ className }: { className?: string }) {
                   >
                     {notification.title}
                   </p>
-                  <span className="mt-0.5 shrink-0 text-[10px] text-muted-foreground">
+                  <span className="mt-0.5 shrink-0 text-2xs text-muted-foreground">
                     {formatRelativeTime(notification.createdAt)}
                   </span>
                 </div>

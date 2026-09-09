@@ -65,12 +65,12 @@ function ProgramCard({ program }: { program: Program }) {
             <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
               {program.startDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="icon-sm" />
+                  <Calendar className="icon-sm" aria-hidden="true" />
                   {program.startDate} - {program.endDate || 'Ongoing'}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {program.enrolled}/{program.capacity} enrolled
               </span>
             </div>
@@ -78,7 +78,7 @@ function ProgramCard({ program }: { program: Program }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -171,7 +171,7 @@ export default function OrgProgramsPage() {
           </div>
           <Button asChild>
             <Link href="/org/programs/new">
-              <Plus className="mr-2 icon-sm" />
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
               New Program
             </Link>
           </Button>
@@ -214,7 +214,7 @@ export default function OrgProgramsPage() {
         {/* Filters */}
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search programs..."
               value={search}
@@ -232,14 +232,14 @@ export default function OrgProgramsPage() {
           {filteredPrograms.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Layers className="icon-lg mx-auto text-muted-foreground/50 mb-4" />
+                <Layers className="icon-lg mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No programs found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Create your first program to get started
                 </p>
                 <Button className="mt-4" asChild>
                   <Link href="/org/programs/new">
-                    <Plus className="mr-2 icon-sm" />
+                    <Plus className="mr-2 icon-sm" aria-hidden="true" />
                     Create Program
                   </Link>
                 </Button>

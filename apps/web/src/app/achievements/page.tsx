@@ -266,12 +266,12 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
             <Icon className={cn('h-8 w-8', TIER_COLORS[achievement.tier])} />
             {achievement.unlocked && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
-                <CheckCircle2 className="icon-sm text-white" />
+                <CheckCircle2 className="icon-sm text-white" aria-hidden="true" />
               </div>
             )}
             {!achievement.unlocked && achievement.progress === 0 && (
               <div className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-secondary flex items-center justify-center">
-                <Lock className="icon-sm text-muted-foreground" />
+                <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
               </div>
             )}
           </div>
@@ -310,7 +310,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
                 variant="outline"
                 className={cn('gap-1', TIER_COLORS[achievement.tier])}
               >
-                <Medal className="icon-sm" />
+                <Medal className="icon-sm" aria-hidden="true" />
                 {achievement.tier}
               </Badge>
               <span className="text-muted-foreground">
@@ -342,7 +342,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
-                <Trophy className="icon-lg text-primary" />
+                <Trophy className="icon-lg text-primary" aria-hidden="true" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Current Level</p>
@@ -362,7 +362,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
 
             <div className="flex items-center gap-2">
               <Badge variant="default" className="gap-1">
-                <Crown className="icon-sm" />
+                <Crown className="icon-sm" aria-hidden="true" />
                 {stats.rank}
               </Badge>
               <span className="text-sm text-muted-foreground">
@@ -543,22 +543,22 @@ export default function AchievementsPage() {
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <TabsList className="justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
                   <TabsTrigger value="all" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> All ({achievements?.length})
+                    <Award className="h-3.5 w-3.5" aria-hidden="true" /> All ({achievements?.length})
                   </TabsTrigger>
                   <TabsTrigger value="unlocked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
+                    <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Unlocked ({achievements?.filter((a) => a.unlocked).length})
                   </TabsTrigger>
                   <TabsTrigger value="locked" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Lock className="h-3.5 w-3.5" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
+                    <Lock className="h-3.5 w-3.5" aria-hidden="true" /> In Progress ({achievements?.filter((a) => !a.unlocked).length})
                   </TabsTrigger>
                   <TabsTrigger value="leaderboard" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Trophy className="h-3.5 w-3.5" /> Leaderboard
+                    <Trophy className="h-3.5 w-3.5" aria-hidden="true" /> Leaderboard
                   </TabsTrigger>
                   <TabsTrigger value="reputation" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <TrendingUp className="h-3.5 w-3.5" /> Reputation
+                    <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" /> Reputation
                   </TabsTrigger>
                   <TabsTrigger value="badges" className="gap-1.5 text-xs rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-                    <Award className="h-3.5 w-3.5" /> Badges
+                    <Award className="h-3.5 w-3.5" aria-hidden="true" /> Badges
                   </TabsTrigger>
                 </TabsList>
 
@@ -590,7 +590,7 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <Award className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
                       <h3 className="text-lg font-semibold mb-2">No achievements found</h3>
                       <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
                     </CardContent>
@@ -606,7 +606,7 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <CheckCircle2 className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
                       <h3 className="text-lg font-semibold mb-2">No unlocked achievements</h3>
                       <p className="text-sm text-muted-foreground">Start engaging to unlock your first badge!</p>
                     </CardContent>
@@ -622,7 +622,7 @@ export default function AchievementsPage() {
                 ) : (
                   <Card>
                     <CardContent className="py-12 text-center">
-                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" />
+                      <Lock className="mx-auto h-12 w-12 text-muted-foreground/40 mb-4" aria-hidden="true" />
                       <p className="text-sm text-muted-foreground">All badges unlocked in this category!</p>
                     </CardContent>
                   </Card>
@@ -636,7 +636,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Trophy className="icon-sm text-yellow-500" /> Community Leaderboard
+                          <Trophy className="icon-sm text-yellow-500" aria-hidden="true" /> Community Leaderboard
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-1 px-2">
@@ -675,7 +675,7 @@ export default function AchievementsPage() {
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm flex items-center gap-2">
-                          <Zap className="icon-sm text-amber-500" /> Recently Unlocked
+                          <Zap className="icon-sm text-amber-500" aria-hidden="true" /> Recently Unlocked
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
@@ -712,7 +712,7 @@ export default function AchievementsPage() {
                           const total = achievements.filter((a) => a.tier === tier).length;
                           return (
                             <div key={tier} className="flex items-center gap-2">
-                              <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} />
+                              <Medal className={cn('icon-sm shrink-0', TIER_COLORS[tier])} aria-hidden="true" />
                               <span className="text-xs capitalize text-muted-foreground w-16">{tier}</span>
                               <Progress value={total ? (count / total) * 100 : 0} className="flex-1 h-1.5" />
                               <span className="text-xs text-muted-foreground w-8 text-right">{count}/{total}</span>

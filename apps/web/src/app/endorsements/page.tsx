@@ -157,16 +157,16 @@ function EndorsementCard({
             )}
             {!endorsement.isApproved && type === 'received' && (
               <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <Clock className="icon-sm mr-1" />Pending
+                <Clock className="icon-sm mr-1" aria-hidden="true" />Pending
               </Badge>
             )}
-            {endorsement.isApproved && <BadgeCheck className="icon-sm text-blue-500" />}
+            {endorsement.isApproved && <BadgeCheck className="icon-sm text-blue-500" aria-hidden="true" />}
           </div>
         </div>
 
         {/* Quote */}
         <div className="relative pl-4 border-l-2 border-primary/30">
-          <Quote className="absolute -top-1 -left-0.5 icon-sm text-primary/50" />
+          <Quote className="absolute -top-1 -left-0.5 icon-sm text-primary/50" aria-hidden="true" />
           <p className="text-sm text-muted-foreground leading-relaxed italic">{endorsement.content}</p>
         </div>
 
@@ -176,16 +176,16 @@ function EndorsementCard({
           {!endorsement.isApproved && type === 'received' && (
             <div className="flex gap-2">
               <Button size="sm" className="gap-1" onClick={() => onApprove?.(endorsement.id)}>
-                <ThumbsUp className="icon-sm" />Approve
+                <ThumbsUp className="icon-sm" aria-hidden="true" />Approve
               </Button>
               <Button size="sm" variant="outline" className="gap-1" onClick={() => onDecline?.(endorsement.id)}>
-                <ThumbsDown className="icon-sm" />Decline
+                <ThumbsDown className="icon-sm" aria-hidden="true" />Decline
               </Button>
             </div>
           )}
           {(endorsement.isApproved || type === 'given') && (
             <Button variant="ghost" size="sm" className="gap-1">
-              <MessageSquare className="icon-sm" />Reply
+              <MessageSquare className="icon-sm" aria-hidden="true" />Reply
             </Button>
           )}
         </div>
@@ -202,7 +202,7 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Award className="icon-sm text-primary" />My Endorsed Skills
+          <Award className="icon-sm text-primary" aria-hidden="true" />My Endorsed Skills
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -244,12 +244,12 @@ function RequestPanel() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Send className="icon-sm text-primary" />Request Endorsements
+          <Send className="icon-sm text-primary" aria-hidden="true" />Request Endorsements
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
           <Input placeholder="Search connections..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-8 text-xs" />
         </div>
         <div className="space-y-2">
@@ -265,7 +265,7 @@ function RequestPanel() {
                 </div>
               </div>
               {c.endorsed ? (
-                <Badge variant="secondary" size="sm"><CheckCircle2 className="icon-sm mr-1" />Endorsed</Badge>
+                <Badge variant="secondary" size="sm"><CheckCircle2 className="icon-sm mr-1" aria-hidden="true" />Endorsed</Badge>
               ) : (
                 <Button size="sm" variant="outline">Request</Button>
               )}
@@ -415,7 +415,7 @@ export default function EndorsementsPage() {
                 <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
               </TabsList>
               <Button size="sm" className="h-8 gap-1.5 text-xs">
-                <Plus className="h-3.5 w-3.5" />Give Endorsement
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />Give Endorsement
               </Button>
             </div>
 
@@ -430,7 +430,7 @@ export default function EndorsementsPage() {
               ))}
               {received.length === 0 && (
                 <Card><CardContent className="py-12 text-center">
-                  <Star className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                  <Star className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="font-medium">No endorsements received yet</p>
                   <p className="text-xs text-muted-foreground mt-1">Ask connections to endorse your skills</p>
                 </CardContent></Card>
@@ -441,9 +441,9 @@ export default function EndorsementsPage() {
               {given.map(e => <EndorsementCard key={e.id} endorsement={e} type="given" />)}
               {given.length === 0 && (
                 <Card><CardContent className="py-12 text-center">
-                  <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                  <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="font-medium">No endorsements given yet</p>
-                  <Button size="sm" className="mt-4"><Plus className="h-3.5 w-3.5 mr-1.5" />Give First Endorsement</Button>
+                  <Button size="sm" className="mt-4"><Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Give First Endorsement</Button>
                 </CardContent></Card>
               )}
             </TabsContent>

@@ -89,7 +89,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Users className="icon-sm text-muted-foreground" />
+                <Users className="icon-sm text-muted-foreground" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Total Users</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.totalUsers.toLocaleString()}</p>
@@ -98,7 +98,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-green-600" />
+                <TrendingUp className="icon-sm text-green-600" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Active Users</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.activeUsers.toLocaleString()}</p>
@@ -107,7 +107,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Rocket className="icon-sm text-blue-600" />
+                <Rocket className="icon-sm text-blue-600" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Startups</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.totalStartups}</p>
@@ -116,7 +116,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Award className="icon-sm text-purple-600" />
+                <Award className="icon-sm text-purple-600" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Mentors</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.totalMentors}</p>
@@ -125,7 +125,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <TrendingUp className="icon-sm text-amber-600" />
+                <TrendingUp className="icon-sm text-amber-600" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Investors</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.totalInvestors}</p>
@@ -134,7 +134,7 @@ export default function AdminAnalyticsPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
-                <Building2 className="icon-sm text-cyan-600" />
+                <Building2 className="icon-sm text-cyan-600" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Tenants</p>
               </div>
               <p className="text-xl font-bold mt-1">{platformMetrics.totalTenants}</p>

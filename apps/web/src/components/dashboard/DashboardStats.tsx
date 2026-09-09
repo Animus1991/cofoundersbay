@@ -70,13 +70,13 @@ export function DashboardStats({
           <StatCard
             label="Active profiles"
             value={stats.activeProfiles.toLocaleString()}
-            icon={<Users className="h-5 w-5" />}
+            icon={<Users className="icon-md" aria-hidden="true" />}
             trend={stats.trendPercent != null ? { value: stats.trendPercent, label: 'vs last week' } : undefined}
           />
           <StatCard
             label="Matches this week"
             value={String(stats.matchesThisWeek)}
-            icon={<Zap className="h-5 w-5" />}
+            icon={<Zap className="icon-md" aria-hidden="true" />}
           />
         </div>
         <div className="h-24 w-full" aria-hidden>

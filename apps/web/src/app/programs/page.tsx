@@ -146,7 +146,7 @@ function ApplyModal({
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isApplying}>Cancel</Button>
           <Button onClick={() => onApply(note)} disabled={isApplying}>
-            {isApplying ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Zap className="h-4 w-4 mr-2" />}
+            {isApplying ? <Loader2 className="icon-sm animate-spin mr-2" aria-hidden="true" /> : <Zap className="icon-sm mr-2" aria-hidden="true" />}
             Submit Application
           </Button>
         </DialogFooter>
@@ -188,12 +188,12 @@ function ProgramCard({
                   <h3 className="font-semibold truncate">{program.title}</h3>
                   {isEnrolled && (
                     <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30 gap-1">
-                      <CheckCircle2 className="h-3 w-3" />Applied
+                      <CheckCircle2 className="icon-2xs" aria-hidden="true" />Applied
                     </Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+                  <Building2 className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
                   <span className="truncate">{program.organization?.name}</span>
                 </p>
               </div>
@@ -214,23 +214,23 @@ function ProgramCard({
             <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
               {program.applicationDeadline && program.status === 'open' && deadline !== null && (
                 <span className={cn('flex items-center gap-1', deadline <= 7 && 'text-red-600 font-medium')}>
-                  <Clock className="h-3.5 w-3.5" />
+                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                   {deadline > 0 ? `${deadline}d to apply` : 'Deadline today'}
                 </span>
               )}
               {program.startDate && (
                 <span className="flex items-center gap-1">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
                   Starts {formatDate(program.startDate)}
                 </span>
               )}
               <span className="flex items-center gap-1">
-                {program.isRemote ? <Globe className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+                {program.isRemote ? <Globe className="h-3.5 w-3.5" aria-hidden="true" /> : <MapPin className="h-3.5 w-3.5" aria-hidden="true" />}
                 {program.isRemote ? 'Remote' : (program.location ?? 'On-site')}
               </span>
               {spotsLeft !== null && (
                 <span className={cn('flex items-center gap-1', isFull && 'text-red-500', spotsLeft <= 3 && !isFull && 'text-amber-600')}>
-                  <Users className="h-3.5 w-3.5" />
+                  <Users className="h-3.5 w-3.5" aria-hidden="true" />
                   {isFull ? 'Full' : `${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}
                 </span>
               )}
@@ -248,7 +248,7 @@ function ProgramCard({
               <div className="flex flex-wrap gap-1 mt-2">
                 {(program.benefits as string[]).slice(0, 3).map((b, i) => (
                   <span key={i} className="text-xs flex items-center gap-1 text-emerald-700 dark:text-emerald-400">
-                    <Star className="h-3 w-3" />{b}
+                    <Star className="icon-2xs" aria-hidden="true" />{b}
                   </span>
                 ))}
               </div>
@@ -257,17 +257,17 @@ function ProgramCard({
             <div className="flex items-center gap-2 mt-4">
               {program.status === 'open' && !isEnrolled && !isFull && (
                 <Button size="sm" onClick={(e) => { e.preventDefault(); onApply(program); }}>
-                  <Zap className="h-3.5 w-3.5 mr-1.5" />Apply Now
+                  <Zap className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Apply Now
                 </Button>
               )}
               {isEnrolled && (
                 <Button size="sm" variant="outline" className="text-primary border-primary/40">
-                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />Applied
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />Applied
                 </Button>
               )}
               <Button size="sm" variant="ghost" asChild>
                 <Link href={`/programs/${program.id}`}>
-                  View Details <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  View Details <ArrowRight className="h-3.5 w-3.5 ml-1" aria-hidden="true" />
                 </Link>
               </Button>
             </div>
@@ -367,7 +367,7 @@ export default function ProgramsPage() {
       description="Accelerators, incubators, bootcamps, and competitions to grow your startup"
       actions={
         <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isRefetching}>
-          {isRefetching ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <RefreshCw className="h-4 w-4 mr-1.5" />}
+          {isRefetching ? <Loader2 className="icon-sm animate-spin mr-1.5" aria-hidden="true" /> : <RefreshCw className="icon-sm mr-1.5" aria-hidden="true" />}
           Refresh
         </Button>
       }
@@ -401,7 +401,7 @@ export default function ProgramsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search programs, organizations, industries..."
               value={search}
@@ -410,7 +410,7 @@ export default function ProgramsPage() {
             />
             {search && (
               <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                <X className="h-4 w-4" />
+                <X className="icon-sm" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -441,7 +441,7 @@ export default function ProgramsPage() {
           </Select>
           {hasFilters && (
             <Button aria-label="Clear filters" variant="outline" size="icon" onClick={() => { setSearch(''); setProgramType('all'); setStatus('all'); }} title="Clear filters">
-              <X className="h-4 w-4" />
+              <X className="icon-sm" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -450,7 +450,7 @@ export default function ProgramsPage() {
         {featuredPrograms.length > 0 && !hasFilters && (
           <div className="space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-primary" />Featured &amp; Closing Soon
+              <Zap className="h-3.5 w-3.5 text-primary" aria-hidden="true" />Featured &amp; Closing Soon
             </p>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {featuredPrograms.slice(0, 4).map((p) => {
@@ -458,14 +458,14 @@ export default function ProgramsPage() {
                 return (
                   <div key={p.id} className="shrink-0 rounded-xl border border-border/60 bg-card p-3 w-56 hover:border-primary/30 transition-colors cursor-pointer" onClick={() => setApplyTarget(p)}>
                     <p className="text-xs font-semibold text-foreground line-clamp-1">{p.title}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
+                    <p className="text-2xs text-muted-foreground mt-0.5 truncate">{p.organization?.name}</p>
                     <div className="mt-2 flex items-center justify-between">
                       {d !== null && d >= 0 ? (
-                        <span className={cn('text-[10px] font-medium', d <= 3 ? 'text-red-500' : 'text-amber-600')}>
+                        <span className={cn('text-2xs font-medium', d <= 3 ? 'text-red-500' : 'text-amber-600')}>
                           {d === 0 ? 'Today!' : `${d}d left`}
                         </span>
                       ) : <span />}
-                      <Badge variant="outline" className={cn('text-[9px] px-1.5 capitalize', STATUS_COLORS[p.status] ?? STATUS_COLORS.closed)}>{p.status}</Badge>
+                      <Badge variant="outline" className={cn('text-2xs px-1.5 capitalize', STATUS_COLORS[p.status] ?? STATUS_COLORS.closed)}>{p.status}</Badge>
                     </div>
                   </div>
                 );
@@ -493,7 +493,7 @@ export default function ProgramsPage() {
             ) : filtered.length === 0 ? (
               <Card>
                 <CardContent className="py-16 text-center">
-                  <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                  <Award className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" aria-hidden="true" />
                   <p className="font-medium text-lg">No programs found</p>
                   <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters or search terms</p>
                   {hasFilters && (
@@ -518,7 +518,7 @@ export default function ProgramsPage() {
             {openPrograms.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                  <Zap className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="font-medium">No open programs right now</p>
                   <p className="text-sm text-muted-foreground mt-1">Check back soon — new programs open regularly</p>
                 </CardContent>
@@ -537,7 +537,7 @@ export default function ProgramsPage() {
             {myPrograms.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <BookmarkCheck className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                  <BookmarkCheck className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" aria-hidden="true" />
                   <p className="font-medium">No applications yet</p>
                   <p className="text-sm text-muted-foreground mt-1">Apply to open programs above to track them here</p>
                 </CardContent>

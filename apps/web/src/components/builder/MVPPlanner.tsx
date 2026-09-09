@@ -304,7 +304,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-500/10 rounded-lg">
-            <Rocket className="h-5 w-5 text-purple-600" />
+            <Rocket className="icon-md text-purple-600" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">MVP Planner</h2>
@@ -325,14 +325,14 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             disabled={isGenerating}
           >
             {isGenerating ? (
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+              <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             ) : (
-              <Sparkles className="h-4 w-4 mr-2" />
+              <Sparkles className="icon-sm mr-2" aria-hidden="true" />
             )}
             AI Generate
           </Button>
           <Button size="sm" onClick={handleSave}>
-            <Save className="h-4 w-4 mr-2" />
+            <Save className="icon-sm mr-2" aria-hidden="true" />
             Save
           </Button>
         </div>
@@ -351,23 +351,23 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="scope" className="gap-1">
-            <Target className="h-3 w-3" />
+            <Target className="icon-2xs" aria-hidden="true" />
             Scope
           </TabsTrigger>
           <TabsTrigger value="features" className="gap-1">
-            <Layers className="h-3 w-3" />
+            <Layers className="icon-2xs" aria-hidden="true" />
             Features
           </TabsTrigger>
           <TabsTrigger value="sprints" className="gap-1">
-            <Calendar className="h-3 w-3" />
+            <Calendar className="icon-2xs" aria-hidden="true" />
             Sprints
           </TabsTrigger>
           <TabsTrigger value="team" className="gap-1">
-            <Users className="h-3 w-3" />
+            <Users className="icon-2xs" aria-hidden="true" />
             Team Gaps
           </TabsTrigger>
           <TabsTrigger value="risks" className="gap-1">
-            <AlertTriangle className="h-3 w-3" />
+            <AlertTriangle className="icon-2xs" aria-hidden="true" />
             Risks
           </TabsTrigger>
         </TabsList>
@@ -416,7 +416,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
               <CardContent className="space-y-3">
                 {data.successCriteria.map((criteria, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                    <CheckCircle2 className="icon-sm text-green-500 shrink-0" aria-hidden="true" />
                     <Input
                       value={criteria}
                       onChange={(e) => {
@@ -468,7 +468,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             <CardContent>
               {data.features.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Layers className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <Layers className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
                   <p>No features added yet. Click "Add Feature" or use AI Generate.</p>
                 </div>
               ) : (
@@ -596,7 +596,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
             <CardContent>
               {data.sprints.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <Calendar className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
                   <p>No sprints planned yet. Click "Add Sprint" or use AI Generate.</p>
                 </div>
               ) : (
@@ -682,14 +682,14 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <Users className="icon-md" aria-hidden="true" />
                 Team Capability Gaps
               </CardTitle>
             </CardHeader>
             <CardContent>
               {data.teamGaps.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <Users className="icon-xl mx-auto mb-2 opacity-50" aria-hidden="true" />
                   <p>No team gaps identified yet. Use AI Generate to analyze.</p>
                 </div>
               ) : (
@@ -725,14 +725,14 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <AlertTriangle className="icon-md text-orange-500" aria-hidden="true" />
                 Risk Assessment
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {data.risks.map((risk, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-orange-500 shrink-0" />
+                  <AlertTriangle className="icon-sm text-orange-500 shrink-0" aria-hidden="true" />
                   <Input
                     value={risk}
                     onChange={(e) => {

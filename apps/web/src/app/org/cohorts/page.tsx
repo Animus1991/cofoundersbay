@@ -75,15 +75,15 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
             <p className="text-sm text-muted-foreground mt-1">{cohort.program}</p>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {cohort.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <GraduationCap className="icon-sm" />
+                <GraduationCap className="icon-sm" aria-hidden="true" />
                 {cohort.mentors} mentors
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {cohort.startDate} - {cohort.endDate}
               </span>
             </div>
@@ -105,10 +105,10 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
                     <Progress value={cohort.avgReadiness} className="h-1.5" />
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-[11px]">
+                <div className="flex items-center gap-3 text-2xs">
                   {cohort.mentorCoverage != null && (
                     <span className={cn('flex items-center gap-1', cohort.mentorCoverage >= 80 ? 'text-green-600' : 'text-amber-600')}>
-                      <CheckCircle2 className="icon-sm" /> {cohort.mentorCoverage}% mentor coverage
+                      <CheckCircle2 className="icon-sm" aria-hidden="true" /> {cohort.mentorCoverage}% mentor coverage
                     </span>
                   )}
                 </div>
@@ -118,22 +118,22 @@ function CohortCard({ cohort }: { cohort: Cohort }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
                 <Link href={`/org/cohorts/${cohort.id}`}>
-                  <Eye className="mr-2 icon-sm" />
+                  <Eye className="mr-2 icon-sm" aria-hidden="true" />
                   View Details
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 icon-sm" />
+                <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Cohort
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 icon-sm" />
+                <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -173,14 +173,14 @@ export default function OrgCohortsPage() {
     <AppShell
       title="Cohorts"
       description="Manage program cohorts and participants"
-      actions={<Button className="gap-1.5"><Plus className="icon-sm" /> Create Cohort</Button>}
+      actions={<Button className="gap-1.5"><Plus className="icon-sm" aria-hidden="true" /> Create Cohort</Button>}
     >
       <div className="space-y-6">
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search cohorts..."
               value={search}
@@ -214,7 +214,7 @@ export default function OrgCohortsPage() {
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -229,7 +229,7 @@ export default function OrgCohortsPage() {
           {filteredCohorts.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No cohorts found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters or create a new cohort

@@ -297,7 +297,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-cyan-500/10 rounded-lg">
-            <Target className="h-5 w-5 text-cyan-600" />
+            <Target className="icon-md text-cyan-600" aria-hidden="true" />
           </div>
           <div>
             <h2 className="text-xl font-semibold">Readiness Assessment</h2>
@@ -311,9 +311,9 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
           disabled={isAnalyzing}
         >
           {isAnalyzing ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            <RefreshCw className="icon-sm mr-2 animate-spin" aria-hidden="true" />
           ) : (
-            <Sparkles className="h-4 w-4 mr-2" />
+            <Sparkles className="icon-sm mr-2" aria-hidden="true" />
           )}
           {isAnalyzing ? 'Analyzing...' : 'Analyze Readiness'}
         </Button>
@@ -370,7 +370,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
             <div className="flex flex-col justify-center">
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Current Stage</h3>
               <div className="flex items-center gap-2 mb-2">
-                <Rocket className="h-5 w-5 text-primary" />
+                <Rocket className="icon-md text-primary" aria-hidden="true" />
                 <span className="text-xl font-semibold capitalize">{data.readinessLevel}</span>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -423,7 +423,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
             <Card className="border-red-200">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-red-600">
-                  <XCircle className="h-5 w-5" />
+                  <XCircle className="icon-md" aria-hidden="true" />
                   Critical Blockers
                 </CardTitle>
               </CardHeader>
@@ -431,7 +431,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                 <ul className="space-y-2">
                   {data.blockers.map((blocker, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                      <AlertTriangle className="icon-sm text-red-500 mt-0.5 shrink-0" aria-hidden="true" />
                       {blocker}
                     </li>
                   ))}
@@ -444,7 +444,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
             <Card className="border-green-200">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-green-600">
-                  <Lightbulb className="h-5 w-5" />
+                  <Lightbulb className="icon-md" aria-hidden="true" />
                   Recommended Next Steps
                 </CardTitle>
               </CardHeader>
@@ -452,7 +452,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                 <ul className="space-y-2">
                   {data.nextMilestones.map((milestone, index) => (
                     <li key={index} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="icon-sm text-green-500 mt-0.5 shrink-0" aria-hidden="true" />
                       {milestone}
                     </li>
                   ))}
@@ -527,7 +527,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
                             : "border-gray-300"
                         )}>
                           {criterion.completed && (
-                            <CheckCircle2 className="h-3 w-3 text-white" />
+                            <CheckCircle2 className="icon-2xs text-white" aria-hidden="true" />
                           )}
                         </div>
                         <div className="flex-1">

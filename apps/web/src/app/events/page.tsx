@@ -113,7 +113,7 @@ export default function EventsPage() {
       actions={
         <Link href="/events/create">
           <Button className="gap-2">
-            <Plus className="icon-sm" />
+            <Plus className="icon-sm" aria-hidden="true" />
             Create Event
           </Button>
         </Link>
@@ -149,7 +149,7 @@ export default function EventsPage() {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <TabsList>
             <TabsTrigger value="upcoming" className="gap-2">
-              <Calendar className="icon-sm" />
+              <Calendar className="icon-sm" aria-hidden="true" />
               Upcoming
             </TabsTrigger>
             <TabsTrigger value="my-events" className="gap-2">
@@ -167,7 +167,7 @@ export default function EventsPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('grid')}
             >
-              <Grid className="icon-sm" />
+              <Grid className="icon-sm" aria-hidden="true" />
             </Button>
             <Button aria-label="List view"
               variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -175,14 +175,14 @@ export default function EventsPage() {
               className="h-8 w-8"
               onClick={() => setViewMode('list')}
             >
-              <List className="icon-sm" />
+              <List className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <div className="relative min-w-[220px] flex-1">
-            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search events..."
               value={searchQuery}
@@ -200,8 +200,8 @@ export default function EventsPage() {
                 onClick={() => setFilter(f)}
                 className="capitalize gap-1"
               >
-                {f === 'online' && <Video className="icon-sm" />}
-                {f === 'in-person' && <MapPin className="icon-sm" />}
+                {f === 'online' && <Video className="icon-sm" aria-hidden="true" />}
+                {f === 'in-person' && <MapPin className="icon-sm" aria-hidden="true" />}
                 {f}
               </Button>
             ))}

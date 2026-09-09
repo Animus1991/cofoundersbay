@@ -69,12 +69,12 @@ function ScoreBadge({ score }: { score: number }) {
             strokeLinecap="round"
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
-        <span className="absolute text-[11px] font-black tabular-nums"
+        <span className="absolute text-2xs font-black tabular-nums"
           style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
           {score}%
         </span>
       </div>
-      <span className="text-[8px] font-bold tracking-wider"
+      <span className="text-2xs font-bold tracking-wider"
         style={{ color, fontFamily: "'JetBrains Mono', monospace" }}>
         {label}
       </span>
@@ -148,7 +148,7 @@ function MatchCardInner({
             'h-5 w-5 rounded border-2 flex items-center justify-center transition-colors',
             isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
           )}>
-            {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+            {isSelected && <Check className="icon-2xs text-primary-foreground" aria-hidden="true" />}
           </div>
         </button>
       )}
@@ -190,13 +190,13 @@ function MatchCardInner({
           <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3 shrink-0" />
+                <MapPin className="icon-2xs shrink-0" aria-hidden="true" />
                 {location}
               </span>
             )}
             {timezone && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3 shrink-0" />
+                <Clock className="icon-2xs shrink-0" aria-hidden="true" />
                 {timezone}
               </span>
             )}
@@ -221,9 +221,9 @@ function MatchCardInner({
           className="mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors"
           style={{ color }}
         >
-          <Sparkles className="h-3 w-3" />
+          <Sparkles className="icon-2xs" aria-hidden="true" />
           {showReasons ? 'Hide reasons' : 'Why this match?'}
-          {showReasons ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          {showReasons ? <ChevronUp className="icon-2xs" aria-hidden="true" /> : <ChevronDown className="icon-2xs" aria-hidden="true" />}
         </button>
 
         {/* Match reasons (collapsible) */}
@@ -248,7 +248,7 @@ function MatchCardInner({
               onClick={onPass}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
             >
-              <X className="h-4 w-4" />
+              <X className="icon-sm" aria-hidden="true" />
             </button>
           )}
           {onLike && (
@@ -256,7 +256,7 @@ function MatchCardInner({
               onClick={onLike}
               className="h-8 w-8 flex items-center justify-center rounded-full border border-border/60 text-muted-foreground hover:text-pink-500 hover:border-pink-400/40 transition-colors"
             >
-              <Heart className="h-4 w-4" />
+              <Heart className="icon-sm" aria-hidden="true" />
             </button>
           )}
           <button
@@ -266,7 +266,7 @@ function MatchCardInner({
               bookmarked ? 'text-amber-400' : 'text-muted-foreground hover:text-amber-400'
             )}
           >
-            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+            <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
           </button>
 
           <div className="flex-1" />
@@ -280,14 +280,14 @@ function MatchCardInner({
               style={{ borderColor: `${color}40`, color }}
               onClick={onBreakdown}
             >
-              <TrendingUp className="h-3.5 w-3.5" />
+              <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
               Breakdown
             </Button>
           ) : (
             <Link href={`/matches/${userId}`}>
               <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
                 style={{ borderColor: `${color}40`, color }}>
-                <TrendingUp className="h-3.5 w-3.5" />
+                <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
                 Compatibility
               </Button>
             </Link>
@@ -295,7 +295,7 @@ function MatchCardInner({
 
           {onMessage && (
             <Button onClick={onMessage} size="sm" className="gap-1.5 h-8 text-xs px-2.5">
-              <MessageCircle className="h-3.5 w-3.5" />
+              <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
               Message
             </Button>
           )}

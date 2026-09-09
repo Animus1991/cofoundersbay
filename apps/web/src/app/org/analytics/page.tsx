@@ -57,8 +57,8 @@ function StatCard({
                 changeType === 'negative' && 'text-red-600',
                 changeType === 'neutral' && 'text-muted-foreground'
               )}>
-                {changeType === 'positive' && <ArrowUpRight className="icon-sm" />}
-                {changeType === 'negative' && <ArrowDownRight className="icon-sm" />}
+                {changeType === 'positive' && <ArrowUpRight className="icon-sm" aria-hidden="true" />}
+                {changeType === 'negative' && <ArrowDownRight className="icon-sm" aria-hidden="true" />}
                 {change}
               </div>
             )}
@@ -156,7 +156,7 @@ export default function OrgAnalyticsPage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <BarChart3 className="icon-lg text-primary" /> Org Analytics
+              <BarChart3 className="icon-lg text-primary" aria-hidden="true" /> Org Analytics
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               Track performance, cohort health, and program impact
@@ -176,10 +176,10 @@ export default function OrgAnalyticsPage() {
               </SelectContent>
             </Select>
             <Button aria-label="Refresh" variant="outline" size="icon" title="Refresh">
-              <RefreshCw className="icon-sm" />
+              <RefreshCw className="icon-sm" aria-hidden="true" />
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5">
-              <Download className="icon-sm" /> Export
+              <Download className="icon-sm" aria-hidden="true" /> Export
             </Button>
           </div>
         </div>

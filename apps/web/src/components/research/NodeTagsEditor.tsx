@@ -75,7 +75,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" className="h-7 gap-1">
-            <Tag className="h-3 w-3" />
+            <Tag className="icon-2xs" aria-hidden="true" />
             {tags.length > 0 && <span className="text-xs">{tags.length}</span>}
           </Button>
         </DropdownMenuTrigger>
@@ -93,7 +93,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
                     onClick={() => removeTag(tag)}
                     className="ml-1 hover:bg-black/10 rounded-full p-0.5"
                   >
-                    <X className="h-3 w-3" />
+                    <X className="icon-2xs" aria-hidden="true" />
                   </button>
                 </Badge>
               ))}
@@ -143,7 +143,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
               onClick={() => removeTag(tag)}
               className="ml-1 hover:bg-black/10 rounded-full p-0.5"
             >
-              <X className="h-3 w-3" />
+              <X className="icon-2xs" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -162,7 +162,7 @@ export function NodeTagsEditor({ tags, onChange, compact = false }: NodeTagsEdit
           onClick={() => inputValue.trim() && addTag(inputValue)}
           disabled={!inputValue.trim()}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="icon-sm" aria-hidden="true" />
         </Button>
       </div>
 

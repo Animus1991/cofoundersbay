@@ -84,7 +84,7 @@ function StartupCard({ startup }: { startup: Startup }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
+                      <MoreVertical className="icon-sm" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -103,15 +103,15 @@ function StartupCard({ startup }: { startup: Startup }) {
 
             <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Rocket className="icon-sm" />
+                <Rocket className="icon-sm" aria-hidden="true" />
                 {startup.program}
               </span>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {startup.teamSize} members
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {startup.cohort}
               </span>
             </div>
@@ -264,7 +264,7 @@ export default function OrgStartupsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search startups..."
               value={search}
@@ -308,7 +308,7 @@ export default function OrgStartupsPage() {
           {filteredStartups.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Rocket className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Rocket className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No startups found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters

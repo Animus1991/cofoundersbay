@@ -74,7 +74,7 @@ function ProfileCompletenessBar({ score }: { score: number }) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-[10px] text-muted-foreground font-medium">{score}%</span>
+      <span className="text-2xs text-muted-foreground font-medium">{score}%</span>
     </div>
   );
 }
@@ -145,7 +145,7 @@ function ProfileCardInner({
               )}
             </div>
             <Button size="sm" variant="ghost" onClick={onConnect}>
-              <UserPlus className="h-4 w-4" />
+              <UserPlus className="icon-sm" aria-hidden="true" />
             </Button>
           </div>
         </CardContent>
@@ -210,13 +210,13 @@ function ProfileCardInner({
           <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
             {profile.location && (
               <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="icon-2xs" aria-hidden="true" />
                 {profile.location}
               </span>
             )}
             {profile.lastActive && (
               <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+                <Clock className="icon-2xs" aria-hidden="true" />
                 {formatLastActive(profile.lastActive)}
               </span>
             )}
@@ -281,11 +281,11 @@ function ProfileCardInner({
           <div className="mt-5 flex items-center justify-between pt-4 border-t border-border/40">
             <div className="flex items-center gap-2">
               <Button onClick={onConnect} size="sm" className="gap-2">
-                <UserPlus className="h-4 w-4" />
+                <UserPlus className="icon-sm" aria-hidden="true" />
                 Connect
               </Button>
               <Button onClick={onMessage} size="sm" variant="secondary" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="icon-sm" aria-hidden="true" />
                 Message
               </Button>
             </div>
@@ -299,30 +299,30 @@ function ProfileCardInner({
                   bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
                 )}
               >
-                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <Share2 className="h-4 w-4 mr-2" />
+                    <Share2 className="icon-sm mr-2" aria-hidden="true" />
                     Share profile
                   </DropdownMenuItem>
                   {profile.linkedinUrl && (
                     <DropdownMenuItem asChild>
                       <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
+                        <ExternalLink className="icon-sm mr-2" aria-hidden="true" />
                         LinkedIn
                       </a>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-destructive">
-                    <Flag className="h-4 w-4 mr-2" />
+                    <Flag className="icon-sm mr-2" aria-hidden="true" />
                     Report
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -371,7 +371,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 {profile.matchScore && profile.matchScore > 0 && (
                   <div className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                    <Star className="h-3 w-3 fill-current" />
+                    <Star className="icon-2xs fill-current" aria-hidden="true" />
                     {profile.matchScore}%
                   </div>
                 )}
@@ -384,7 +384,7 @@ function ProfileCardInner({
                     bookmarked ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground hover:text-amber-500 dark:hover:text-amber-400'
                   )}
                 >
-                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} />
+                  <Bookmark className={cn('h-4 w-4', bookmarked && 'fill-current')} aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -393,7 +393,7 @@ function ProfileCardInner({
             )}
             {profile.location && (
               <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
+                <MapPin className="icon-2xs" aria-hidden="true" />
                 {profile.location}
               </div>
             )}
@@ -429,11 +429,11 @@ function ProfileCardInner({
         {/* Actions */}
         <div className="mt-4 flex items-center gap-2">
           <Button onClick={onConnect} size="sm" variant="secondary" className="flex-1 gap-1.5">
-            <UserPlus className="h-3.5 w-3.5" />
+            <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
             Connect
           </Button>
           <Button onClick={onMessage} size="sm" variant="ghost" className="gap-1.5">
-            <MessageCircle className="h-3.5 w-3.5" />
+            <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         </div>
       </CardContent>

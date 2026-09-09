@@ -181,7 +181,7 @@ function InviteCollaboratorDialog({ open, onClose, onInvite }: InviteDialogProps
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || !userId.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
             Send Invite
           </Button>
         </DialogFooter>
@@ -251,7 +251,7 @@ function CreateDocumentDialog({ open, onClose, onCreate }: CreateDocDialogProps)
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading || !title.trim()}>
-            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />}
+            {loading && <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" aria-hidden="true" />}
             Create
           </Button>
         </DialogFooter>
@@ -390,7 +390,7 @@ export function BuilderWorkspace() {
         <Card>
           <CardContent className="p-4 text-center">
             <div className={cn('text-2xl font-bold', dimensionColor(overallReadiness))}>
-              {assessingReadiness ? <Loader2 className="h-6 w-6 animate-spin mx-auto" /> : `${overallReadiness}%`}
+              {assessingReadiness ? <Loader2 className="icon-lg animate-spin mx-auto" aria-hidden="true" /> : `${overallReadiness}%`}
             </div>
             <div className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">Readiness</div>
             <Progress value={overallReadiness} className="h-1.5 mt-2" />
@@ -413,7 +413,7 @@ export function BuilderWorkspace() {
               {collaborators.slice(0, 4).map(c => (
                 <Avatar key={c.id} className="h-5 w-5 border-2 border-background">
                   <AvatarImage src={c.user.avatarUrl} />
-                  <AvatarFallback className="text-[9px]">{(c.user.displayName ?? 'U').charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xs">{(c.user.displayName ?? 'U').charAt(0)}</AvatarFallback>
                 </Avatar>
               ))}
             </div>
@@ -443,11 +443,11 @@ export function BuilderWorkspace() {
 
           <div className="flex items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-              <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+              <UserPlus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               Invite
             </Button>
             <Button size="sm" onClick={() => setShowCreateDocDialog(true)}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              <Plus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               New Document
             </Button>
           </div>
@@ -460,7 +460,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Rocket className="h-4 w-4" />
+                  <Rocket className="icon-sm" aria-hidden="true" />
                   Startup Progress
                 </CardTitle>
               </CardHeader>
@@ -485,7 +485,7 @@ export function BuilderWorkspace() {
 
                 {assessingReadiness && (
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
                     Assessing readiness…
                   </div>
                 )}
@@ -531,7 +531,7 @@ export function BuilderWorkspace() {
                           {existing.completionPercent}%
                         </Badge>
                       ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                       )}
                     </Button>
                   );
@@ -542,7 +542,7 @@ export function BuilderWorkspace() {
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Critical Gaps</p>
                     {readinessAssessment.blockers.slice(0, 3).map((b, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-xs text-red-600">
-                        <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                        <AlertCircle className="icon-2xs mt-0.5 shrink-0" aria-hidden="true" />
                         {b}
                       </div>
                     ))}
@@ -557,7 +557,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <Zap className="icon-sm text-yellow-500" aria-hidden="true" />
                   Recommended Next Steps
                 </CardTitle>
               </CardHeader>
@@ -565,7 +565,7 @@ export function BuilderWorkspace() {
                 <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
                     <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-sm">
-                      <ChevronRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                      <ChevronRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" aria-hidden="true" />
                       <span className="text-muted-foreground">{milestone}</span>
                     </div>
                   ))}
@@ -594,10 +594,10 @@ export function BuilderWorkspace() {
           ) : documents.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" aria-hidden="true" />
                 <p className="text-muted-foreground mb-4">No documents yet. Create your first startup artifact.</p>
                 <Button onClick={() => setShowCreateDocDialog(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="icon-sm mr-2" aria-hidden="true" />
                   Create First Document
                 </Button>
               </CardContent>
@@ -641,7 +641,7 @@ export function BuilderWorkspace() {
                           v{doc.version}
                         </Badge>
                         <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          Open <ArrowRight className="h-3 w-3" />
+                          Open <ArrowRight className="icon-2xs" aria-hidden="true" />
                         </span>
                       </div>
                     </CardContent>
@@ -655,7 +655,7 @@ export function BuilderWorkspace() {
                 onClick={() => setShowCreateDocDialog(true)}
               >
                 <CardContent className="py-8 flex flex-col items-center justify-center text-center gap-2">
-                  <Plus className="h-8 w-8 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+                  <Plus className="icon-xl text-muted-foreground/40 group-hover:text-primary transition-colors" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">Add Document</p>
                 </CardContent>
               </Card>
@@ -669,11 +669,11 @@ export function BuilderWorkspace() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Users className="h-4 w-4" />
+                  <Users className="icon-sm" aria-hidden="true" />
                   Team Members
                 </CardTitle>
                 <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
-                  <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                  <UserPlus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
                   Invite
                 </Button>
               </div>
@@ -681,10 +681,10 @@ export function BuilderWorkspace() {
             <CardContent>
               {collaborators.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <Users className="h-10 w-10 mx-auto mb-3 opacity-30" aria-hidden="true" />
                   <p className="text-sm mb-3">No collaborators yet</p>
                   <Button size="sm" onClick={() => setShowInviteDialog(true)}>
-                    <UserPlus className="h-3.5 w-3.5 mr-1.5" />
+                    <UserPlus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
                     Invite First Collaborator
                   </Button>
                 </div>
@@ -721,7 +721,7 @@ export function BuilderWorkspace() {
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                                  <MoreHorizontal className="h-3.5 w-3.5" />
+                                  <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
@@ -729,7 +729,7 @@ export function BuilderWorkspace() {
                                   className="text-destructive"
                                   onClick={() => handleRemoveCollaborator(collab.id)}
                                 >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                  <Trash2 className="h-3.5 w-3.5 mr-2" aria-hidden="true" />
                                   Remove
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -749,7 +749,7 @@ export function BuilderWorkspace() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="icon-sm" aria-hidden="true" />
                   Workspace Settings
                 </CardTitle>
               </CardHeader>
@@ -798,9 +798,9 @@ export function BuilderWorkspace() {
               disabled={assessingReadiness}
             >
               {assessingReadiness ? (
-                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" aria-hidden="true" />
               ) : (
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               )}
               {assessingReadiness ? 'Assessing…' : 'Reassess'}
             </Button>
@@ -860,7 +860,7 @@ export function BuilderWorkspace() {
                       <div className="space-y-1 pt-1 border-t border-border/40">
                         {dim.recommendations.slice(0, 2).map((r, i) => (
                           <div key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                            <ChevronRight className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                            <ChevronRight className="icon-2xs text-primary mt-0.5 shrink-0" aria-hidden="true" />
                             {r}
                           </div>
                         ))}
@@ -873,12 +873,12 @@ export function BuilderWorkspace() {
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
-                <BarChart3 className="h-10 w-10 mx-auto mb-3 text-muted-foreground/30" />
+                <BarChart3 className="h-10 w-10 mx-auto mb-3 text-muted-foreground/30" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground mb-3">
                   No readiness data yet. Complete some documents first, then run an assessment.
                 </p>
                 <Button onClick={handleReassess} disabled={assessingReadiness}>
-                  {assessingReadiness ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Activity className="h-4 w-4 mr-2" />}
+                  {assessingReadiness ? <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" /> : <Activity className="icon-sm mr-2" aria-hidden="true" />}
                   Run Assessment
                 </Button>
               </CardContent>

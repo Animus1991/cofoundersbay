@@ -354,7 +354,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
           <div className="flex items-center gap-2">
             <h4 className="font-semibold">{badge.name}</h4>
             {isEarned && (
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
+              <CheckCircle className="icon-sm text-emerald-500" aria-hidden="true" />
             )}
           </div>
           <p className="text-sm text-muted-foreground">{badge.description}</p>
@@ -379,7 +379,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
 
       {!isEarned && (
         <div className="absolute top-2 right-2">
-          <Lock className="h-4 w-4 text-muted-foreground" />
+          <Lock className="icon-sm text-muted-foreground" aria-hidden="true" />
         </div>
       )}
     </div>
@@ -398,9 +398,9 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
         )}
       >
         {isPositive ? (
-          <TrendingUp className="h-4 w-4 text-emerald-500" />
+          <TrendingUp className="icon-sm text-emerald-500" aria-hidden="true" />
         ) : (
-          <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
+          <TrendingUp className="icon-sm text-red-500 rotate-180" aria-hidden="true" />
         )}
       </div>
       <div className="flex-1 min-w-0">
@@ -441,7 +441,7 @@ export default function ReputationPage() {
         <div className="flex items-center gap-2">
           <Link href="/profile">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" aria-hidden="true" />
               My Profile
             </Button>
           </Link>
@@ -449,7 +449,7 @@ export default function ReputationPage() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Eye className="h-4 w-4" />
+                  <Eye className="icon-sm" aria-hidden="true" />
                   Public View
                 </Button>
               </TooltipTrigger>
@@ -477,17 +477,17 @@ export default function ReputationPage() {
                 </p>
                 <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start">
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Trophy className="h-4 w-4 text-amber-500" />
+                    <Trophy className="icon-sm text-amber-500" aria-hidden="true" />
                     <span className="text-sm font-medium">
                       {earnedBadges}/{totalBadges} badges
                     </span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    <TrendingUp className="icon-sm text-emerald-500" aria-hidden="true" />
                     <span className="text-sm font-medium">+15 this month</span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/80 border border-border/40 rounded-lg px-3 py-1.5">
-                    <Users className="h-4 w-4 text-blue-500" />
+                    <Users className="icon-sm text-blue-500" aria-hidden="true" />
                     <span className="text-sm font-medium">Top 20%</span>
                   </div>
                 </div>
@@ -500,15 +500,15 @@ export default function ReputationPage() {
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
           <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent overflow-x-auto">
             <TabsTrigger value="overview" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Shield className="h-4 w-4" />
+              <Shield className="icon-sm" aria-hidden="true" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="badges" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <Award className="h-4 w-4" />
+              <Award className="icon-sm" aria-hidden="true" />
               Badges ({earnedBadges}/{totalBadges})
             </TabsTrigger>
             <TabsTrigger value="history" className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3">
-              <TrendingUp className="h-4 w-4" />
+              <TrendingUp className="icon-sm" aria-hidden="true" />
               History
             </TabsTrigger>
           </TabsList>
@@ -550,7 +550,7 @@ export default function ReputationPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+              <Sparkles className="icon-md text-primary" aria-hidden="true" />
               Tips to Improve Your Score
             </CardTitle>
           </CardHeader>

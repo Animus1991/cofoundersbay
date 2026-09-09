@@ -76,7 +76,7 @@ function SkillRow({
   return (
     <div className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50 transition-colors border-b last:border-b-0">
       <div className="w-6" />
-      <Hash className="icon-sm text-muted-foreground shrink-0" />
+      <Hash className="icon-sm text-muted-foreground shrink-0" aria-hidden="true" />
       <span className="flex-1 font-medium truncate">{skill.name}</span>
       <span className="text-sm text-muted-foreground hidden sm:block">{skill.slug}</span>
       {skill.category && (
@@ -86,16 +86,16 @@ function SkillRow({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <MoreVertical className="icon-sm" />
+            <MoreVertical className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onEdit(skill)}>
-            <Edit className="mr-2 icon-sm" />
+            <Edit className="mr-2 icon-sm" aria-hidden="true" />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem className="text-destructive" onClick={() => onDelete(skill)}>
-            <Trash2 className="mr-2 icon-sm" />
+            <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -175,7 +175,7 @@ function SkillDialog({
             onClick={() => onSave({ name: name.trim(), slug: slug.trim(), category })}
             disabled={isSaving || !name.trim() || !slug.trim()}
           >
-            {isSaving && <Loader2 className="mr-2 icon-sm animate-spin" />}
+            {isSaving && <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />}
             {skill ? 'Save Changes' : 'Add Skill'}
           </Button>
         </DialogFooter>
@@ -262,10 +262,10 @@ export default function AdminTaxonomyPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button aria-label="Refresh" variant="outline" size="icon" onClick={() => refetch()} title="Refresh">
-              <RefreshCw className="icon-sm" />
+              <RefreshCw className="icon-sm" aria-hidden="true" />
             </Button>
             <Button onClick={() => setEditTarget('new')}>
-              <Plus className="mr-2 icon-sm" />
+              <Plus className="mr-2 icon-sm" aria-hidden="true" />
               Add Skill
             </Button>
           </div>
@@ -308,12 +308,12 @@ export default function AdminTaxonomyPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
-                <Folder className="icon-md text-primary" />
+                <Folder className="icon-md text-primary" aria-hidden="true" />
                 <CardTitle className="text-lg">Skills</CardTitle>
                 {!isLoading && <Badge variant="secondary">{total}</Badge>}
               </div>
               <Button size="sm" onClick={() => setEditTarget('new')}>
-                <Plus className="mr-2 icon-sm" />
+                <Plus className="mr-2 icon-sm" aria-hidden="true" />
                 Add Skill
               </Button>
             </div>
@@ -323,7 +323,7 @@ export default function AdminTaxonomyPage() {
             {/* Filters */}
             <div className="px-4 pb-3 flex gap-3 flex-wrap">
               <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder="Search skills..."
                   value={search}
@@ -332,7 +332,7 @@ export default function AdminTaxonomyPage() {
                 />
                 {search && (
                   <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <X className="icon-sm text-muted-foreground" />
+                    <X className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -349,7 +349,7 @@ export default function AdminTaxonomyPage() {
             <div className="border-t">
               {isError && (
                 <div className="flex items-center gap-2 p-6 text-destructive justify-center">
-                  <AlertCircle className="icon-md" />
+                  <AlertCircle className="icon-md" aria-hidden="true" />
                   <span className="text-sm">Failed to load skills.</span>
                   <Button variant="outline" size="sm" onClick={() => refetch()}>Retry</Button>
                 </div>
@@ -365,7 +365,7 @@ export default function AdminTaxonomyPage() {
                 <div className="max-h-[480px] overflow-y-auto">
                   {skills.length === 0 && (
                     <div className="py-12 text-center">
-                      <Tags className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+                      <Tags className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" aria-hidden="true" />
                       <p className="text-muted-foreground text-sm">
                         {search || categoryFilter ? 'No skills match your filter' : 'No skills yet — add your first skill'}
                       </p>
@@ -431,7 +431,7 @@ export default function AdminTaxonomyPage() {
               onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" />}
+              {deleteMutation.isPending && <Loader2 className="mr-2 icon-sm animate-spin" aria-hidden="true" />}
               Delete
             </Button>
           </DialogFooter>

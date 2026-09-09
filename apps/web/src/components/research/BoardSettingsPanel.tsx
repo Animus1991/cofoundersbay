@@ -105,7 +105,7 @@ function CollaboratorRow({
               <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs" disabled={updateMutation.isPending}>
                 <RoleIcon className="h-3 w-3" />
                 {roleInfo.label}
-                <ChevronDown className="h-3 w-3" />
+                <ChevronDown className="icon-2xs" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -142,7 +142,7 @@ function CollaboratorRow({
             onClick={() => removeMutation.mutate()}
             disabled={removeMutation.isPending}
           >
-            <UserMinus className="h-3.5 w-3.5" />
+            <UserMinus className="h-3.5 w-3.5" aria-hidden="true" />
           </Button>
         )}
         {!isOwner && collab.userId === currentUserId && (
@@ -179,7 +179,7 @@ function OrgOwnershipSection({
   return (
     <div className="space-y-2">
       <label className="text-sm font-semibold flex items-center gap-1.5">
-        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+        <Building2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
         Organization Ownership
       </label>
       <p className="text-xs text-muted-foreground">
@@ -188,12 +188,12 @@ function OrgOwnershipSection({
 
       {isLoading ? (
         <div className="flex items-center gap-2 py-3">
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="icon-sm animate-spin text-muted-foreground" aria-hidden="true" />
           <span className="text-xs text-muted-foreground">Loading organizations…</span>
         </div>
       ) : memberships.length === 0 ? (
         <div className="rounded-lg border border-border p-3 text-center">
-          <Building2 className="h-5 w-5 mx-auto mb-1.5 text-muted-foreground/40" />
+          <Building2 className="icon-md mx-auto mb-1.5 text-muted-foreground/40" aria-hidden="true" />
           <p className="text-xs text-muted-foreground">You don&apos;t belong to any organizations yet.</p>
         </div>
       ) : (
@@ -208,12 +208,12 @@ function OrgOwnershipSection({
                 : 'border-border hover:border-primary/40',
             )}
           >
-            <Lock className="h-4 w-4 shrink-0" />
+            <Lock className="icon-sm shrink-0" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">Personal</p>
               <p className="text-xs text-muted-foreground">Owned by you only</p>
             </div>
-            {!currentOrgId && <Check className="h-4 w-4 text-primary shrink-0" />}
+            {!currentOrgId && <Check className="icon-sm text-primary shrink-0" aria-hidden="true" />}
           </button>
 
           {/* Org options */}
@@ -236,14 +236,14 @@ function OrgOwnershipSection({
                   <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" />
                 ) : (
                   <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                    <Building2 className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{m.organization.name}</p>
                   <p className="text-xs text-muted-foreground capitalize">{m.role}</p>
                 </div>
-                {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                {isActive && <Check className="icon-sm text-primary shrink-0" aria-hidden="true" />}
               </button>
             );
           })}
@@ -313,7 +313,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+            <Settings className="icon-sm" aria-hidden="true" />
             Board Settings
           </DialogTitle>
           <DialogDescription>Manage visibility and collaborators for "{board.title}"</DialogDescription>
@@ -365,7 +365,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                           <p className="text-sm font-medium">{opt.label}</p>
                           <p className="text-xs text-muted-foreground">{opt.desc}</p>
                         </div>
-                        {isActive && <Check className="h-4 w-4 text-primary shrink-0" />}
+                        {isActive && <Check className="icon-sm text-primary shrink-0" aria-hidden="true" />}
                       </button>
                     );
                   })}
@@ -387,7 +387,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                     className="text-xs text-muted-foreground bg-secondary/50"
                   />
                   <Button variant="outline" size="sm" onClick={copyLink} className="gap-1.5 shrink-0">
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                 </div>
@@ -437,7 +437,7 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" size="sm" className="gap-1 shrink-0 capitalize">
                           {inviteRole}
-                          <ChevronDown className="h-3 w-3" />
+                          <ChevronDown className="icon-2xs" aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -485,14 +485,14 @@ export function BoardSettingsPanel({ board, open, onClose, currentUserId }: Boar
                     ))}
                     {collabData.collaborators.length === 0 && (
                       <div className="py-6 text-center text-sm text-muted-foreground">
-                        <UserPlus className="h-6 w-6 mx-auto mb-2 opacity-40" />
+                        <UserPlus className="icon-lg mx-auto mb-2 opacity-40" aria-hidden="true" />
                         No collaborators yet
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                    <Loader2 className="icon-md animate-spin text-muted-foreground" aria-hidden="true" />
                   </div>
                 )}
               </div>

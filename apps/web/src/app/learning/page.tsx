@@ -180,14 +180,14 @@ function ResourceCard({ resource }: { resource: Resource }) {
               {resource.title}
             </h3>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
+              <Badge variant="outline" className={cn('text-2xs h-4 px-1.5 border-0', typeConfig.bg, typeConfig.color)}>
                 {typeConfig.label}
               </Badge>
-              <Badge variant="secondary" className={cn('text-[10px] h-4 px-1.5', difficultyConfig.color)}>
+              <Badge variant="secondary" className={cn('text-2xs h-4 px-1.5', difficultyConfig.color)}>
                 {difficultyConfig.label}
               </Badge>
               {resource.isFeatured && (
-                <Badge variant="secondary" className="text-[10px] h-4 px-1.5 bg-primary/10 text-primary">
+                <Badge variant="secondary" className="text-2xs h-4 px-1.5 bg-primary/10 text-primary">
                   Featured
                 </Badge>
               )}
@@ -197,7 +197,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
             onClick={() => setSaved(!saved)}
             className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary' : 'text-muted-foreground/40 hover:text-muted-foreground')}
           >
-            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} />
+            <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} aria-hidden="true" />
           </button>
         </div>
 
@@ -208,7 +208,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
         {resource.tags && resource.tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {resource.tags.slice(0, 3).map((tag) => (
-              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-[10px] text-secondary-foreground">{tag}</span>
+              <span key={tag} className="rounded-md bg-secondary/60 px-2 py-0.5 text-2xs text-secondary-foreground">{tag}</span>
             ))}
           </div>
         )}
@@ -216,20 +216,20 @@ function ResourceCard({ resource }: { resource: Resource }) {
         <div className="flex items-center justify-between pt-2 border-t border-border/40 mt-auto">
           <div className="min-w-0">
             <p className="text-xs font-medium text-foreground truncate">{resource.author}</p>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+            <div className="flex items-center gap-2 text-2xs text-muted-foreground mt-0.5">
               {resource.duration && (
-                <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{resource.duration}</span>
+                <span className="flex items-center gap-0.5"><Clock className="icon-2xs" aria-hidden="true" />{resource.duration}</span>
               )}
               {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{resource.completedBy.toLocaleString()}</span>
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-2xs text-emerald-500" aria-hidden="true" />{resource.completedBy.toLocaleString()}</span>
               )}
             </div>
           </div>
           <Button variant="default" size="sm" className="gap-1 h-7 text-xs shrink-0" onClick={() => window.open(resource.url, '_blank')}>
             {resource.type === 'video' || resource.type === 'course' ? (
-              <><Play className="h-3 w-3" />Start</>
+              <><Play className="icon-2xs" aria-hidden="true" />Start</>
             ) : (
-              <><ExternalLink className="h-3 w-3" />Open</>
+              <><ExternalLink className="icon-2xs" aria-hidden="true" />Open</>
             )}
           </Button>
         </div>
@@ -247,19 +247,19 @@ function LearningPathCard({ path }: { path: LearningPath }) {
           <Icon className="h-4.5 w-4.5 text-foreground" />
         </div>
         {path.progress > 0 && (
-          <Badge variant="secondary" className="text-[10px] bg-background/60">{path.progress}% done</Badge>
+          <Badge variant="secondary" className="text-2xs bg-background/60">{path.progress}% done</Badge>
         )}
       </div>
       <h3 className="font-semibold text-sm text-foreground mb-1">{path.title}</h3>
-      <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground mb-2">
-        <span className="flex items-center gap-0.5"><BookOpen className="h-3 w-3" />{path.steps} modules</span>
-        <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{path.duration}</span>
+      <p className="text-2xs text-muted-foreground line-clamp-2 mb-3">{path.description}</p>
+      <div className="flex items-center gap-3 text-2xs text-muted-foreground mb-2">
+        <span className="flex items-center gap-0.5"><BookOpen className="icon-2xs" aria-hidden="true" />{path.steps} modules</span>
+        <span className="flex items-center gap-0.5"><Clock className="icon-2xs" aria-hidden="true" />{path.duration}</span>
       </div>
       {path.progress > 0 && <Progress value={path.progress} className="h-1.5" />}
-      <div className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary">
+      <div className="mt-2 flex items-center gap-1 text-2xs font-medium text-primary">
         {path.progress > 0 ? 'Continue path' : 'Start path'}
-        <ChevronRight className="h-3 w-3" />
+        <ChevronRight className="icon-2xs" aria-hidden="true" />
       </div>
     </div>
   );
@@ -388,7 +388,7 @@ export default function LearningPage() {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -401,11 +401,11 @@ export default function LearningPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
+              <Target className="icon-sm text-primary" aria-hidden="true" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
             </div>
             <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-              View all <ChevronRight className="h-3 w-3" />
+              View all <ChevronRight className="icon-2xs" aria-hidden="true" />
             </Button>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -418,11 +418,11 @@ export default function LearningPage() {
       {recommendedResources.length > 0 && activeTab === 'all' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               Recommended for you
             </h2>
-            <Badge variant="secondary" className="text-[10px] capitalize">{userRole}</Badge>
+            <Badge variant="secondary" className="text-2xs capitalize">{userRole}</Badge>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (
@@ -444,7 +444,7 @@ export default function LearningPage() {
           {/* Search & Filters */}
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 icon-sm -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search courses, guides, topics..."
                 value={searchQuery}
@@ -511,7 +511,7 @@ export default function LearningPage() {
           {!learningLoading && featuredResources.length > 0 && activeTab === 'all' && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
+                <TrendingUp className="icon-sm text-primary" aria-hidden="true" />
                 <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                   Featured Resources
                 </h2>
@@ -541,7 +541,7 @@ export default function LearningPage() {
           {/* Empty State */}
           {!learningLoading && filteredResources.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" />
+              <BookOpen className="h-12 w-12 mb-4 text-muted-foreground/30" aria-hidden="true" />
               <p className="font-medium text-foreground">No resources found</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Try adjusting your search or filters

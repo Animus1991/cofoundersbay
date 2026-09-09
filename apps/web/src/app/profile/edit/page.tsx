@@ -221,7 +221,7 @@ function TagInput({
           <Badge key={tag} variant="secondary" className="gap-1">
             {tag}
             <button onClick={() => removeTag(tag)} className="ml-1 hover:text-destructive">
-              <X className="h-3 w-3" />
+              <X className="icon-2xs" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -508,7 +508,7 @@ export default function ProfileEditPage() {
     return (
       <AppShell title="Edit Profile">
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="icon-xl animate-spin text-primary" aria-hidden="true" />
         </div>
       </AppShell>
     );
@@ -532,12 +532,12 @@ export default function ProfileEditPage() {
         <div className="flex items-center gap-2">
           <Link href="/profile">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="icon-sm" aria-hidden="true" />
               Cancel
             </Button>
           </Link>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
             Save changes
           </Button>
         </div>
@@ -552,28 +552,28 @@ export default function ProfileEditPage() {
                 value="basic" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <User className="h-4 w-4" />
+                <User className="icon-sm" aria-hidden="true" />
                 Basic Info
               </TabsTrigger>
               <TabsTrigger 
                 value="role" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Briefcase className="h-4 w-4" />
+                <Briefcase className="icon-sm" aria-hidden="true" />
                 Role Details
               </TabsTrigger>
               <TabsTrigger 
                 value="links" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <Globe className="h-4 w-4" />
+                <Globe className="icon-sm" aria-hidden="true" />
                 Social Links
               </TabsTrigger>
               <TabsTrigger 
                 value="portfolio" 
                 className="gap-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
               >
-                <LayoutDashboard className="h-4 w-4" />
+                <LayoutDashboard className="icon-sm" aria-hidden="true" />
                 Portfolio
               </TabsTrigger>
             </TabsList>
@@ -584,7 +584,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Camera className="h-5 w-5 text-primary" />
+                    <Camera className="icon-md text-primary" aria-hidden="true" />
                     Profile Photo
                   </CardTitle>
                   <CardDescription>A friendly face helps others recognize you and builds trust</CardDescription>
@@ -619,7 +619,7 @@ export default function ProfileEditPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Camera className="h-8 w-8 text-white" />
+                          <Camera className="icon-xl text-white" aria-hidden="true" />
                         </div>
                       </div>
                     </ImageCropperTrigger>
@@ -637,7 +637,7 @@ export default function ProfileEditPage() {
                           className="gap-2 sm:w-auto w-full"
                           disabled={uploadingAvatar}
                         >
-                          {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                          {uploadingAvatar ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Camera className="icon-sm" aria-hidden="true" />}
                           Crop & Upload
                         </Button>
                       </div>
@@ -655,7 +655,7 @@ export default function ProfileEditPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        <User className="h-5 w-5 text-primary" />
+                        <User className="icon-md text-primary" aria-hidden="true" />
                         Personal Identity
                       </CardTitle>
                       <CardDescription>How you'll appear across the platform</CardDescription>
@@ -668,7 +668,7 @@ export default function ProfileEditPage() {
                       onClick={handleAISuggest}
                       disabled={aiLoading}
                     >
-                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {aiLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />}
                       {aiLoading ? 'Analyzing Profile...' : 'AI Suggestions'}
                     </Button>
                   </div>
@@ -714,7 +714,7 @@ export default function ProfileEditPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="p-1.5 bg-primary/20 rounded-md">
-                            <Sparkles className="h-4 w-4 text-primary" />
+                            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
                           </div>
                           <span className="font-semibold text-foreground">AI Review</span>
                           <Badge variant={aiSuggestions.completionScore > 80 ? 'default' : 'secondary'} className="text-xs ml-2">
@@ -722,7 +722,7 @@ export default function ProfileEditPage() {
                           </Badge>
                         </div>
                         <Button aria-label="Close" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => setShowAISuggestions(false)}>
-                          <X className="h-4 w-4" />
+                          <X className="icon-sm" aria-hidden="true" />
                         </Button>
                       </div>
 
@@ -736,7 +736,7 @@ export default function ProfileEditPage() {
                               </p>
                               <Button size="sm" variant="secondary" className="shrink-0 gap-1.5 w-full sm:w-auto"
                                 onClick={() => { updateField('headline', aiSuggestions.headline!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply
+                                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Apply
                               </Button>
                             </div>
                           </div>
@@ -751,7 +751,7 @@ export default function ProfileEditPage() {
                               </p>
                               <Button size="sm" variant="secondary" className="gap-1.5 self-start"
                                 onClick={() => { updateField('bio', aiSuggestions.bio!); }}>
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Apply Bio
+                                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Apply Bio
                               </Button>
                             </div>
                           </div>
@@ -780,7 +780,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
+                    <MapPin className="icon-md text-primary" aria-hidden="true" />
                     Location & Timezone
                   </CardTitle>
                 </CardHeader>
@@ -808,7 +808,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Target className="h-5 w-5 text-primary" />
+                    <Target className="icon-md text-primary" aria-hidden="true" />
                     Skills & Expertise
                   </CardTitle>
                   <CardDescription>What are your core strengths and areas of focus?</CardDescription>
@@ -850,7 +850,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-primary/20 bg-primary/5">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-primary" />
+                    <Briefcase className="icon-md text-primary" aria-hidden="true" />
                     Your Primary Role
                   </CardTitle>
                   <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
@@ -893,7 +893,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Rocket className="h-4 w-4" />
+                      <Rocket className="icon-sm" aria-hidden="true" />
                       Founder Details
                     </CardTitle>
                   </CardHeader>
@@ -926,7 +926,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4" />
+                      <GraduationCap className="icon-sm" aria-hidden="true" />
                       Mentor Details
                     </CardTitle>
                   </CardHeader>
@@ -977,7 +977,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
+                      <TrendingUp className="icon-sm" aria-hidden="true" />
                       Investor Details
                     </CardTitle>
                   </CardHeader>
@@ -1031,7 +1031,7 @@ export default function ProfileEditPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
+                      <Building2 className="icon-sm" aria-hidden="true" />
                       Organization Details
                     </CardTitle>
                   </CardHeader>
@@ -1059,7 +1059,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-4 border-b border-border/50">
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    <Globe className="h-5 w-5 text-primary" />
+                    <Globe className="icon-md text-primary" aria-hidden="true" />
                     Web & Social Links
                   </CardTitle>
                   <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
@@ -1068,7 +1068,7 @@ export default function ProfileEditPage() {
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" /> Personal Website
+                        <Globe className="icon-sm text-muted-foreground" aria-hidden="true" /> Personal Website
                       </label>
                       <Input
                         value={form.websiteUrl}
@@ -1078,7 +1078,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Linkedin className="h-4 w-4 text-blue-600" /> LinkedIn
+                        <Linkedin className="icon-sm text-blue-600" aria-hidden="true" /> LinkedIn
                       </label>
                       <Input
                         value={form.linkedinUrl}
@@ -1088,7 +1088,7 @@ export default function ProfileEditPage() {
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
-                        <Github className="h-4 w-4" /> GitHub
+                        <Github className="icon-sm" aria-hidden="true" /> GitHub
                       </label>
                       <Input
                         value={form.githubUrl}
@@ -1119,7 +1119,7 @@ export default function ProfileEditPage() {
               <Card className="shadow-sm border-border/50 text-center py-12">
                 <CardContent className="space-y-4">
                   <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-4">
-                    <LayoutDashboard className="h-8 w-8" />
+                    <LayoutDashboard className="icon-xl" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold">Portfolio Builder Coming Soon</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
@@ -1163,12 +1163,12 @@ export default function ProfileEditPage() {
                 <ul className="space-y-2">
                   {missingCompletionFields.length === 0 ? (
                     <li className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/10 p-2 rounded-md">
-                      <CheckCircle2 className="h-4 w-4" /> Your profile is fully complete!
+                      <CheckCircle2 className="icon-sm" aria-hidden="true" /> Your profile is fully complete!
                     </li>
                   ) : (
                     missingCompletionFields.slice(0, 4).map((item) => (
                       <li key={item.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <ShieldAlert className="h-4 w-4 text-amber-500" />
+                        <ShieldAlert className="icon-sm text-amber-500" aria-hidden="true" />
                         <span className="capitalize">{item.label}</span>
                       </li>
                     ))
@@ -1183,7 +1183,7 @@ export default function ProfileEditPage() {
 
               <div className="pt-4 border-t border-border/50 space-y-3">
                 <Button onClick={handleSave} disabled={saving} className="w-full gap-2 font-medium">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
                   Save Changes
                 </Button>
                 <div className="flex gap-2">

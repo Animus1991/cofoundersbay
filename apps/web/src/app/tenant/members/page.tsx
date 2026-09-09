@@ -72,7 +72,7 @@ function EngagementBar({ score }: { score: number }) {
   const color = score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-500' : 'bg-red-400';
   return (
     <div className="space-y-0.5">
-      <div className="flex justify-between text-[10px] text-muted-foreground">
+      <div className="flex justify-between text-2xs text-muted-foreground">
         <span>Engagement</span>
         <span className="tabular-nums">{score}%</span>
       </div>
@@ -102,7 +102,7 @@ function MemberCard({ member }: { member: Member }) {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-sm">{member.name}</span>
-                  <Badge variant="outline" className={cn('text-[10px] h-4 px-1.5', STATUS_COLORS[member.status])}>
+                  <Badge variant="outline" className={cn('text-2xs h-4 px-1.5', STATUS_COLORS[member.status])}>
                     {member.status}
                   </Badge>
                 </div>
@@ -111,28 +111,28 @@ function MemberCard({ member }: { member: Member }) {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button aria-label="More options" variant="ghost" size="icon" className="shrink-0">
-                    <MoreVertical className="icon-sm" />
+                    <MoreVertical className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem><Mail className="mr-2 icon-sm" />Send Message</DropdownMenuItem>
-                  <DropdownMenuItem><Shield className="mr-2 icon-sm" />Change Role</DropdownMenuItem>
+                  <DropdownMenuItem><Mail className="mr-2 icon-sm" aria-hidden="true" />Send Message</DropdownMenuItem>
+                  <DropdownMenuItem><Shield className="mr-2 icon-sm" aria-hidden="true" />Change Role</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" />Remove Member</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive"><UserX className="mr-2 icon-sm" aria-hidden="true" />Remove Member</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" size="sm">{member.role}</Badge>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Clock className="icon-sm" />Joined {member.joinedAt}
+                <Clock className="icon-sm" aria-hidden="true" />Joined {member.joinedAt}
               </span>
               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Activity className="icon-sm" />Active {member.lastActive}
+                <Activity className="icon-sm" aria-hidden="true" />Active {member.lastActive}
               </span>
               {member.milestonesCompleted != null && (
-                <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
-                  <CheckCircle2 className="icon-sm" />{member.milestonesCompleted} milestones
+                <span className="text-2xs text-emerald-600 flex items-center gap-0.5">
+                  <CheckCircle2 className="icon-sm" aria-hidden="true" />{member.milestonesCompleted} milestones
                 </span>
               )}
             </div>
@@ -155,7 +155,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" /> Invite Members
+            <Send className="icon-md text-primary" aria-hidden="true" /> Invite Members
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
@@ -184,9 +184,9 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3 space-y-2">
             <p className="text-xs font-medium text-muted-foreground">Or share invite link</p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-[11px] truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
+              <code className="flex-1 text-2xs truncate text-muted-foreground bg-background rounded px-2 py-1 border">{inviteLink}</code>
               <Button size="sm" variant="outline" className="shrink-0 gap-1" onClick={handleCopy}>
-                {copied ? <CheckCircle2 className="icon-sm text-green-500" /> : <Copy className="icon-sm" />}
+                {copied ? <CheckCircle2 className="icon-sm text-green-500" aria-hidden="true" /> : <Copy className="icon-sm" aria-hidden="true" />}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
             </div>
@@ -195,7 +195,7 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button className="gap-1.5" disabled={!emails.trim()}>
-            <Send className="h-4 w-4" /> Send Invites
+            <Send className="icon-sm" aria-hidden="true" /> Send Invites
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -242,7 +242,7 @@ export default function TenantMembersPage() {
       description="Manage and track your organization's member engagement"
       actions={
         <Button onClick={() => setShowInvite(true)} className="gap-1.5">
-          <Plus className="h-4 w-4" /> Invite Member
+          <Plus className="icon-sm" aria-hidden="true" /> Invite Member
         </Button>
       }
     >
@@ -273,7 +273,7 @@ export default function TenantMembersPage() {
         {/* Search & Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -311,7 +311,7 @@ export default function TenantMembersPage() {
               {filteredMembers.length === 0 && (
                 <Card>
                   <CardContent className="py-12 text-center">
-                    <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                    <Users className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                     <h3 className="font-medium">No members found</h3>
                     <p className="text-sm text-muted-foreground mt-1">Try adjusting your filters</p>
                   </CardContent>

@@ -196,7 +196,7 @@ function ProblemSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
-          <Target className="h-6 w-6 text-red-600" />
+          <Target className="icon-lg text-red-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -227,7 +227,7 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
-          <Lightbulb className="h-6 w-6 text-green-600" />
+          <Lightbulb className="icon-lg text-green-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -235,7 +235,7 @@ function SolutionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
       <div className="space-y-4">
         {(c.points as string[]).map((point, i) => (
           <div key={i} className="flex items-start gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <CheckCircle2 className="icon-md text-green-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
             <p className="text-lg text-muted-foreground">{point}</p>
           </div>
         ))}
@@ -250,7 +250,7 @@ function TractionSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-          <TrendingUp className="h-6 w-6 text-blue-600" />
+          <TrendingUp className="icon-lg text-blue-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -273,7 +273,7 @@ function MarketSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-          <Globe className="h-6 w-6 text-purple-600" />
+          <Globe className="icon-lg text-purple-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -301,7 +301,7 @@ function BusinessModelSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) 
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-          <DollarSign className="h-6 w-6 text-amber-600" />
+          <DollarSign className="icon-lg text-amber-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -329,7 +329,7 @@ function TeamSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
-          <Users className="h-6 w-6 text-teal-600" />
+          <Users className="icon-lg text-teal-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -357,7 +357,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
     <div className="flex flex-col justify-center h-full px-12 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-          <BarChart2 className="h-6 w-6 text-indigo-600" />
+          <BarChart2 className="icon-lg text-indigo-600" aria-hidden="true" />
         </div>
         <h2 className="text-3xl font-bold">{slide.title}</h2>
       </div>
@@ -366,7 +366,7 @@ function AskSlide({ slide }: { slide: (typeof DEMO_DECK.slides)[0] }) {
           <p className="text-5xl font-bold text-primary">{c.amount}</p>
           <p className="text-muted-foreground mt-1">Raising</p>
         </div>
-        <ArrowRight className="h-8 w-8 text-muted-foreground" />
+        <ArrowRight className="icon-xl text-muted-foreground" aria-hidden="true" />
         <div>
           <p className="text-2xl font-semibold">{c.valuation}</p>
           <p className="text-muted-foreground mt-1">Pre-money valuation</p>
@@ -482,15 +482,15 @@ export default function PitchDeckPage() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-3 text-xs text-muted-foreground mr-2">
-              <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{deck.stats.views}</span>
-              <span className="flex items-center gap-1"><Share2 className="h-3 w-3" />{deck.stats.shares}</span>
+              <span className="flex items-center gap-1"><Eye className="icon-2xs" aria-hidden="true" />{deck.stats.views}</span>
+              <span className="flex items-center gap-1"><Share2 className="icon-2xs" aria-hidden="true" />{deck.stats.shares}</span>
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowShare(true)}>
-              <Share2 className="h-4 w-4 mr-1.5" />Share
+              <Share2 className="icon-sm mr-1.5" aria-hidden="true" />Share
             </Button>
             {deck.allowContact && (
               <Button size="sm" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-1.5" />Contact
+                <Mail className="icon-sm mr-1.5" aria-hidden="true" />Contact
               </Button>
             )}
           </div>
@@ -511,7 +511,7 @@ export default function PitchDeckPage() {
                   : 'border-border bg-card'
               )}
             >
-              <div className="text-[10px] text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
+              <div className="text-2xs text-muted-foreground mb-0.5">{i + 1}/{slides.length}</div>
               <div className="font-medium truncate">{slide.title}</div>
             </button>
           ))}
@@ -530,7 +530,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.max(s - 1, 0))}
               disabled={currentSlide === 0}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />Previous
+              <ChevronLeft className="icon-sm mr-1" aria-hidden="true" />Previous
             </Button>
 
             <div className="flex items-center gap-1.5">
@@ -553,7 +553,7 @@ export default function PitchDeckPage() {
               onClick={() => setCurrentSlide((s) => Math.min(s + 1, slides.length - 1))}
               disabled={currentSlide === slides.length - 1}
             >
-              Next<ChevronRight className="h-4 w-4 ml-1" />
+              Next<ChevronRight className="icon-sm ml-1" aria-hidden="true" />
             </Button>
           </div>
 
@@ -580,7 +580,7 @@ export default function PitchDeckPage() {
             </div>
             {deck.allowContact && (
               <Button size="sm" className="w-full" onClick={() => setShowContact(true)}>
-                <Mail className="h-4 w-4 mr-2" />Get in Touch
+                <Mail className="icon-sm mr-2" aria-hidden="true" />Get in Touch
               </Button>
             )}
           </div>
@@ -599,16 +599,16 @@ export default function PitchDeckPage() {
             <div className="flex gap-2">
               <Button aria-label="Share on X" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&text=${encodeURIComponent(deck.title)}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-3.5 w-3.5" />
+                  <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               </Button>
               <Button aria-label="Share on LinkedIn" variant="outline" size="icon" className="h-8 w-8" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-3.5 w-3.5" />
+                  <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               </Button>
               <Button aria-label="Confirm" variant="outline" size="icon" className="h-8 w-8" onClick={copyLink}>
-                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Link2 className="h-3.5 w-3.5" />}
+                {copied ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" aria-hidden="true" /> : <Link2 className="h-3.5 w-3.5" aria-hidden="true" />}
               </Button>
             </div>
           </div>
@@ -678,19 +678,19 @@ export default function PitchDeckPage() {
               <div className="flex gap-2 mt-1.5">
                 <Input value={typeof window !== 'undefined' ? window.location.href : ''} readOnly />
                 <Button variant="outline" onClick={copyLink}>
-                  {copied ? <CheckCircle2 className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+                  {copied ? <CheckCircle2 className="icon-sm text-green-600" aria-hidden="true" /> : <Link2 className="icon-sm" aria-hidden="true" />}
                 </Button>
               </div>
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-4 w-4 mr-2" />Twitter
+                  <Twitter className="icon-sm mr-2" aria-hidden="true" />Twitter
                 </a>
               </Button>
               <Button variant="outline" className="flex-1" asChild>
                 <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`} target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="h-4 w-4 mr-2" />LinkedIn
+                  <Linkedin className="icon-sm mr-2" aria-hidden="true" />LinkedIn
                 </a>
               </Button>
             </div>

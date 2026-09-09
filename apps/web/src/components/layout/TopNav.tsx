@@ -41,19 +41,19 @@ export function TopNav() {
             aria-label="Open command palette (Ctrl+K)"
             title="Command palette (Ctrl+K)"
           >
-            <Keyboard className="h-4 w-4" aria-hidden="true" />
+            <Keyboard className="icon-sm" aria-hidden="true" />
           </Button>
           <OptimizedLink href="/discover">
             <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
-              <Compass className="h-4 w-4" />
+              <Compass className="icon-sm" aria-hidden="true" />
               Discover
             </Button>
           </OptimizedLink>
           <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
             <Button aria-label="Message" variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true">
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              <MessageCircle className="icon-sm" aria-hidden="true" />
               {unreadMessages > 0 && (
-                <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+                <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
                 </span>
               )}

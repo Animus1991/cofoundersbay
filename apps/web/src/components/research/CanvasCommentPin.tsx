@@ -141,14 +141,14 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
         title={comment.body}
       >
         {comment.resolved
-          ? <CheckCircle2 className="h-3.5 w-3.5 text-white" />
-          : <MessageSquare className="h-3.5 w-3.5 text-white" />
+          ? <CheckCircle2 className="h-3.5 w-3.5 text-white" aria-hidden="true" />
+          : <MessageSquare className="h-3.5 w-3.5 text-white" aria-hidden="true" />
         }
       </button>
 
       {/* Reply count badge */}
       {replies.length > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow">
+        <span className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 bg-primary text-primary-foreground text-2xs font-bold rounded-full flex items-center justify-center shadow">
           {replies.length}
         </span>
       )}
@@ -163,7 +163,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
           <div className="flex items-start gap-2 p-3 border-b border-border/50">
             <Avatar className="h-6 w-6 shrink-0 mt-0.5">
               <AvatarImage src={comment.author?.avatarUrl} />
-              <AvatarFallback className="text-[9px]">
+              <AvatarFallback className="text-2xs">
                 {comment.author?.displayName?.charAt(0) ?? '?'}
               </AvatarFallback>
             </Avatar>
@@ -173,20 +173,20 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                   {comment.author?.displayName ?? 'Anonymous'}
                 </span>
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[10px] text-muted-foreground">{timeAgo(comment.createdAt)}</span>
+                  <span className="text-2xs text-muted-foreground">{timeAgo(comment.createdAt)}</span>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-5 w-5 p-0 opacity-50 hover:opacity-100"
                     onClick={() => setOpen(false)}
                   >
-                    <X className="h-3 w-3" />
+                    <X className="icon-2xs" aria-hidden="true" />
                   </Button>
                 </div>
               </div>
               <Badge
                 variant="outline"
-                className={cn('text-[9px] px-1 py-0 mt-0.5 capitalize', {
+                className={cn('text-2xs px-1 py-0 mt-0.5 capitalize', {
                   'border-purple-300 text-purple-600': comment.commentType === 'suggestion',
                   'border-blue-300 text-blue-600': comment.commentType === 'question',
                   'border-green-300 text-green-600': comment.resolved,
@@ -206,12 +206,12 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
           {replies.length > 0 && (
             <div className="border-t border-border/40 px-3 py-1.5">
               <button
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-1 text-2xs text-muted-foreground hover:text-foreground"
                 onClick={() => setShowReplies((v) => !v)}
               >
                 {showReplies
-                  ? <ChevronDown className="h-3 w-3" />
-                  : <ChevronRight className="h-3 w-3" />
+                  ? <ChevronDown className="icon-2xs" aria-hidden="true" />
+                  : <ChevronRight className="icon-2xs" aria-hidden="true" />
                 }
                 {replies.length} repl{replies.length === 1 ? 'y' : 'ies'}
               </button>
@@ -219,10 +219,10 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 <div className="mt-1.5 space-y-2">
                   {replies.map((r) => (
                     <div key={r.id} className="flex gap-1.5">
-                      <CornerDownRight className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
+                      <CornerDownRight className="icon-2xs text-muted-foreground mt-0.5 shrink-0" aria-hidden="true" />
                       <div>
-                        <span className="text-[10px] font-medium">{r.author?.displayName ?? 'User'}</span>
-                        <p className="text-[10px] text-muted-foreground">{r.body}</p>
+                        <span className="text-2xs font-medium">{r.author?.displayName ?? 'User'}</span>
+                        <p className="text-2xs text-muted-foreground">{r.body}</p>
                       </div>
                     </div>
                   ))}
@@ -240,7 +240,7 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 onChange={(e) => setReplyBody(e.target.value)}
                 placeholder="Reply…"
                 rows={1}
-                className="text-[11px] min-h-0 py-1.5 px-2 resize-none"
+                className="text-2xs min-h-0 py-1.5 px-2 resize-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -255,8 +255,8 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
                 disabled={submittingReply || !replyBody.trim()}
               >
                 {submittingReply
-                  ? <Loader2 className="h-3 w-3 animate-spin" />
-                  : <Send className="h-3 w-3" />
+                  ? <Loader2 className="icon-2xs animate-spin" aria-hidden="true" />
+                  : <Send className="icon-2xs" aria-hidden="true" />
                 }
               </Button>
             </div>
@@ -266,10 +266,10 @@ function PinPopover({ comment, zoom, onResolve, onReply }: PinPopoverProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-[11px] text-green-600 border-green-200 hover:bg-green-50"
+                className="w-full h-7 text-2xs text-green-600 border-green-200 hover:bg-green-50"
                 onClick={() => { onResolve(comment.id); setOpen(false); }}
               >
-                <CheckCircle2 className="h-3 w-3 mr-1.5" />
+                <CheckCircle2 className="icon-2xs mr-1.5" aria-hidden="true" />
                 Resolve
               </Button>
             )}
@@ -429,7 +429,7 @@ export function CanvasCommentPins({
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                <Pin className="h-3 w-3 text-primary" />
+                <Pin className="icon-2xs text-primary" aria-hidden="true" />
                 Add Pin Comment
               </div>
               <Button
@@ -438,7 +438,7 @@ export function CanvasCommentPins({
                 className="h-5 w-5 p-0"
                 onClick={() => setPendingPin(null)}
               >
-                <X className="h-3 w-3" />
+                <X className="icon-2xs" aria-hidden="true" />
               </Button>
             </div>
 
@@ -449,7 +449,7 @@ export function CanvasCommentPins({
                   key={t}
                   onClick={() => setNewPinType(t)}
                   className={cn(
-                    'text-[10px] px-1.5 py-0.5 rounded border capitalize transition-colors',
+                    'text-2xs px-1.5 py-0.5 rounded border capitalize transition-colors',
                     newPinType === t
                       ? 'bg-primary text-primary-foreground border-primary'
                       : 'border-border text-muted-foreground hover:border-primary/50',
@@ -480,7 +480,7 @@ export function CanvasCommentPins({
                 onClick={handleSubmitPin}
                 disabled={submitting || !newPinBody.trim()}
               >
-                {submitting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                {submitting ? <Loader2 className="icon-2xs animate-spin mr-1" aria-hidden="true" /> : null}
                 Pin
               </Button>
               <Button

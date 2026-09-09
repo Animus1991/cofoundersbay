@@ -172,7 +172,7 @@ function EmailTemplatesTab() {
                     <p className="text-sm font-medium text-foreground truncate">{tpl.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{tpl.description}</p>
                   </div>
-                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground" />
+                  <ChevronRight className="icon-sm shrink-0 text-muted-foreground" aria-hidden="true" />
                 </button>
               ))
             )}
@@ -201,7 +201,7 @@ function EmailTemplatesTab() {
                     onClick={handleTestSend}
                     disabled={!testEmail || sending}
                   >
-                    <Send className="icon-sm" />
+                    <Send className="icon-sm" aria-hidden="true" />
                     {sending ? 'Sending…' : 'Test Send'}
                   </Button>
                 </div>
@@ -216,7 +216,7 @@ function EmailTemplatesTab() {
           <CardContent>
             {!selectedId && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Mail className="icon-lg text-muted-foreground mb-3" />
+                <Mail className="icon-lg text-muted-foreground mb-3" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground">Select a template to preview it</p>
               </div>
             )}
@@ -296,28 +296,28 @@ function ReportCard({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8" disabled={isActing}>
-                  <MoreHorizontal className="icon-sm" />
+                  <MoreHorizontal className="icon-sm" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${report.reported.id}`}>
-                    <Eye className="icon-sm mr-2" />
+                    <Eye className="icon-sm mr-2" aria-hidden="true" />
                     View profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onResolve} className="text-emerald-400">
-                  <CheckCircle className="icon-sm mr-2" />
+                  <CheckCircle className="icon-sm mr-2" aria-hidden="true" />
                   Resolve
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onDismiss}>
-                  <XCircle className="icon-sm mr-2" />
+                  <XCircle className="icon-sm mr-2" aria-hidden="true" />
                   Dismiss
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onBanUser} className="text-destructive">
-                  <Ban className="icon-sm mr-2" />
+                  <Ban className="icon-sm mr-2" aria-hidden="true" />
                   Ban user
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -403,38 +403,38 @@ function UserRow({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button aria-label="More options" variant="ghost" size="icon" disabled={isActing}>
-            <MoreHorizontal className="icon-sm" />
+            <MoreHorizontal className="icon-sm" aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
             <Link href={`/profiles/${user.id}`}>
-              <Eye className="mr-2 icon-sm" />
+              <Eye className="mr-2 icon-sm" aria-hidden="true" />
               View profile
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {user.moderationStatus === 'active' && (
             <DropdownMenuItem onClick={onSuspend} className="text-amber-600 dark:text-amber-400">
-              <AlertTriangle className="mr-2 icon-sm" />
+              <AlertTriangle className="mr-2 icon-sm" aria-hidden="true" />
               Suspend
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'suspended' && (
             <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 icon-sm" />
+              <CheckCircle className="mr-2 icon-sm" aria-hidden="true" />
               Reactivate
             </DropdownMenuItem>
           )}
           {user.moderationStatus !== 'banned' && (
             <DropdownMenuItem onClick={onBan} className="text-destructive">
-              <Ban className="mr-2 icon-sm" />
+              <Ban className="mr-2 icon-sm" aria-hidden="true" />
               Ban permanently
             </DropdownMenuItem>
           )}
           {user.moderationStatus === 'banned' && (
             <DropdownMenuItem onClick={onActivate} className="text-emerald-600 dark:text-emerald-400">
-              <CheckCircle className="mr-2 icon-sm" />
+              <CheckCircle className="mr-2 icon-sm" aria-hidden="true" />
               Unban
             </DropdownMenuItem>
           )}
@@ -612,7 +612,7 @@ export default function AdminPage() {
           className="gap-2"
           onClick={() => { void refetchReports(); void refetchUsers(); }}
         >
-          <RefreshCw className="icon-sm" />
+          <RefreshCw className="icon-sm" aria-hidden="true" />
           Refresh
         </Button>
       }
@@ -622,34 +622,34 @@ export default function AdminPage() {
         <StatCard
           label="Total Users"
           value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
+          icon={<Users className="icon-md" aria-hidden="true" />}
           trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
         />
         <StatCard
           label="Active Today"
           value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
+          icon={<Users className="icon-md" aria-hidden="true" />}
         />
         <StatCard
           label="Pending Reports"
           value={statsLoading ? '…' : (stats?.pendingReports ?? pendingReports).toString()}
-          icon={<Flag className="icon-md" />}
+          icon={<Flag className="icon-md" aria-hidden="true" />}
           trend={(stats?.pendingReports ?? pendingReports) > 0 ? { value: -(stats?.pendingReports ?? pendingReports), label: 'open' } : undefined}
         />
         <StatCard
           label="Connections"
           value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
+          icon={<Users className="icon-md" aria-hidden="true" />}
         />
         <StatCard
           label="Messages"
           value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
+          icon={<Users className="icon-md" aria-hidden="true" />}
         />
         <StatCard
           label="Events"
           value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
-          icon={<Users className="icon-md" />}
+          icon={<Users className="icon-md" aria-hidden="true" />}
         />
       </div>
 
@@ -657,7 +657,7 @@ export default function AdminPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="reports" className="gap-2">
-            <Flag className="icon-sm" />
+            <Flag className="icon-sm" aria-hidden="true" />
             Reports
             {pendingReports > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
@@ -666,47 +666,47 @@ export default function AdminPage() {
             )}
           </TabsTrigger>
           <TabsTrigger value="users" className="gap-2">
-            <Users className="icon-sm" />
+            <Users className="icon-sm" aria-hidden="true" />
             Users
           </TabsTrigger>
           <TabsTrigger value="content" className="gap-2">
-            <Layers className="icon-sm" />
+            <Layers className="icon-sm" aria-hidden="true" />
             Content
           </TabsTrigger>
           <TabsTrigger value="cohorts" className="gap-2">
-            <GraduationCap className="icon-sm" />
+            <GraduationCap className="icon-sm" aria-hidden="true" />
             Cohorts
           </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
-            <BarChart3 className="icon-sm" />
+            <BarChart3 className="icon-sm" aria-hidden="true" />
             Analytics
           </TabsTrigger>
           <TabsTrigger value="audit" className="gap-2">
-            <Shield className="icon-sm" />
+            <Shield className="icon-sm" aria-hidden="true" />
             Audit Log
           </TabsTrigger>
           <TabsTrigger value="email" className="gap-2">
-            <Mail className="icon-sm" />
+            <Mail className="icon-sm" aria-hidden="true" />
             Email Templates
           </TabsTrigger>
           <TabsTrigger value="gamification" className="gap-2">
-            <Zap className="icon-sm" />
+            <Zap className="icon-sm" aria-hidden="true" />
             Gamification
           </TabsTrigger>
           <TabsTrigger value="score-inspector" className="gap-2">
-            <BarChart3 className="icon-sm" />
+            <BarChart3 className="icon-sm" aria-hidden="true" />
             Score Inspector
           </TabsTrigger>
           <TabsTrigger value="abuse" className="gap-2">
-            <AlertTriangle className="icon-sm" />
+            <AlertTriangle className="icon-sm" aria-hidden="true" />
             Abuse Monitor
           </TabsTrigger>
           <TabsTrigger value="experiments" className="gap-2">
-            <FlaskConical className="icon-sm" />
+            <FlaskConical className="icon-sm" aria-hidden="true" />
             Experiments
           </TabsTrigger>
           <TabsTrigger value="behavior" className="gap-2">
-            <Brain className="icon-sm" />
+            <Brain className="icon-sm" aria-hidden="true" />
             Behavior AI
           </TabsTrigger>
         </TabsList>
@@ -739,7 +739,7 @@ export default function AdminPage() {
           ) : reports.filter((r) => r.status === 'pending').length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" />
+                <Shield className="mx-auto mb-4 h-12 w-12 text-emerald-400" aria-hidden="true" />
                 <h3 className="text-lg font-semibold text-foreground">All clear!</h3>
                 <p className="text-sm text-muted-foreground">No pending reports to review</p>
               </CardContent>
@@ -777,7 +777,7 @@ export default function AdminPage() {
               <div className="flex items-center justify-between gap-4">
                 <CardTitle className="text-base">User Management</CardTitle>
                 <div className="relative w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
                   <Input
                     placeholder="Search users…"
                     value={userSearch}
@@ -822,11 +822,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
                 Events
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchEvents()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" /> Refresh
               </Button>
             </div>
             {eventsLoading ? (
@@ -856,7 +856,7 @@ export default function AdminPage() {
                           onClick={() => featureMutation.mutate({ type: 'event', id: ev.id, featured: !ev.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {ev.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {ev.isFeatured ? <StarOff className="icon-sm mr-1" aria-hidden="true" /> : <Star className="icon-sm mr-1" aria-hidden="true" />}
                           {ev.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
@@ -864,7 +864,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'event', id: ev.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" aria-hidden="true" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -878,11 +878,11 @@ export default function AdminPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                <Briefcase className="icon-sm text-muted-foreground" aria-hidden="true" />
                 Job Postings
               </h2>
               <Button variant="ghost" size="sm" onClick={() => void refetchJobs()}>
-                <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+                <RefreshCw className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" /> Refresh
               </Button>
             </div>
             {jobsLoading ? (
@@ -912,7 +912,7 @@ export default function AdminPage() {
                           onClick={() => featureMutation.mutate({ type: 'job', id: job.id, featured: !job.isFeatured })}
                           disabled={featureMutation.isPending}
                         >
-                          {job.isFeatured ? <StarOff className="h-4 w-4 mr-1" /> : <Star className="h-4 w-4 mr-1" />}
+                          {job.isFeatured ? <StarOff className="icon-sm mr-1" aria-hidden="true" /> : <Star className="icon-sm mr-1" aria-hidden="true" />}
                           {job.isFeatured ? 'Unfeature' : 'Feature'}
                         </Button>
                         <Button
@@ -920,7 +920,7 @@ export default function AdminPage() {
                           onClick={() => removeContentMutation.mutate({ type: 'job', id: job.id })}
                           disabled={removeContentMutation.isPending}
                         >
-                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                          <Trash2 className="icon-sm mr-1" aria-hidden="true" /> Remove
                         </Button>
                       </div>
                     </div>
@@ -935,7 +935,7 @@ export default function AdminPage() {
         <TabsContent value="cohorts" className="mt-6 space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search cohorts…"
                 value={cohortSearch}
@@ -944,7 +944,7 @@ export default function AdminPage() {
               />
             </div>
             <Button size="sm" className="gap-2" onClick={() => setShowNewCohort(!showNewCohort)}>
-              <Plus className="h-4 w-4" />
+              <Plus className="icon-sm" aria-hidden="true" />
               New Cohort
             </Button>
           </div>
@@ -1007,7 +1007,7 @@ export default function AdminPage() {
           ) : (cohortsData?.cohorts ?? []).length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
-                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <GraduationCap className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
                 <h3 className="font-semibold text-foreground">No cohorts yet</h3>
                 <p className="text-sm text-muted-foreground">Create your first cohort or program above</p>
               </CardContent>
@@ -1026,12 +1026,12 @@ export default function AdminPage() {
                         )}
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Badge variant="secondary" className="gap-1 text-xs">
-                            <UserCheck className="h-3 w-3" />
+                            <UserCheck className="icon-2xs" aria-hidden="true" />
                             {cohort._count.members} members
                           </Badge>
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
-                              <Calendar className="h-3 w-3" />
+                              <Calendar className="icon-2xs" aria-hidden="true" />
                               {new Date(cohort.startDate).toLocaleDateString()}
                             </Badge>
                           )}
@@ -1047,7 +1047,7 @@ export default function AdminPage() {
                         onClick={() => deleteCohortMutation.mutate(cohort.id)}
                         disabled={deleteCohortMutation.isPending}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="icon-sm" aria-hidden="true" />
                       </Button>
                     </div>
                   </CardContent>
@@ -1130,7 +1130,7 @@ export default function AdminPage() {
                   disabled={!auditData?.logs?.length}
                   className="gap-1.5"
                 >
-                  <Download className="h-3.5 w-3.5" />
+                  <Download className="h-3.5 w-3.5" aria-hidden="true" />
                   Export CSV
                 </Button>
               </div>
@@ -1148,14 +1148,14 @@ export default function AdminPage() {
                 ))
               ) : (auditData?.logs ?? []).length === 0 ? (
                 <div className="py-12 text-center">
-                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <Shield className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
                   <p className="text-sm text-muted-foreground">No audit logs yet</p>
                 </div>
               ) : (
                 (auditData?.logs ?? []).map((log) => (
                   <div key={log.id} className="flex items-start gap-4 border-b border-border/40 p-4">
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <Shield className="h-4 w-4 text-primary" />
+                      <Shield className="icon-sm text-primary" aria-hidden="true" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">

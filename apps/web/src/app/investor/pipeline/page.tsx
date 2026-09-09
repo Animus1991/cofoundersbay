@@ -61,14 +61,14 @@ function DealCard({ deal }: { deal: Deal }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-sm truncate">{deal.name}</span>
-            {deal.starred && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
+            {deal.starred && <Star className="icon-2xs text-amber-500 fill-amber-500" aria-hidden="true" />}
           </div>
           <p className="text-xs text-muted-foreground">{deal.industry}</p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button aria-label="More options" variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="h-3 w-3" />
+              <MoreVertical className="icon-2xs" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -83,19 +83,19 @@ function DealCard({ deal }: { deal: Deal }) {
         </DropdownMenu>
       </div>
       <div className="flex items-center gap-2 mt-2">
-        <Badge variant="secondary" className="text-[10px]">{deal.stage}</Badge>
-        <span className="text-[10px] text-muted-foreground">{deal.readinessScore}% ready</span>
+        <Badge variant="secondary" className="text-2xs">{deal.stage}</Badge>
+        <span className="text-2xs text-muted-foreground">{deal.readinessScore}% ready</span>
         {deal.askAmount && (
-          <span className="text-[10px] font-medium text-emerald-600 ml-auto">${(deal.askAmount / 1000).toFixed(0)}K</span>
+          <span className="text-2xs font-medium text-emerald-600 ml-auto">${(deal.askAmount / 1000).toFixed(0)}K</span>
         )}
       </div>
       {deal.founderName && (
-        <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+        <p className="text-2xs text-muted-foreground mt-1.5 flex items-center gap-1">
           <span>👤 {deal.founderName}</span>
           {deal.teamSize && <span>· {deal.teamSize} team</span>}
         </p>
       )}
-      <p className="text-[10px] text-muted-foreground mt-1">{deal.lastActivity}</p>
+      <p className="text-2xs text-muted-foreground mt-1">{deal.lastActivity}</p>
     </div>
   );
 }
@@ -139,7 +139,7 @@ export default function InvestorPipelinePage() {
           illustration="rocket"
           title="No deals in pipeline"
           description="Start scouting startups to build your investment pipeline."
-          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 h-4 w-4" />Scout Startups</Link></Button>}
+          action={<Button asChild><Link href="/investor/scouting"><Telescope className="mr-2 icon-sm" aria-hidden="true" />Scout Startups</Link></Button>}
         />
       </AppShell>
     );
@@ -155,7 +155,7 @@ export default function InvestorPipelinePage() {
             {showPassed ? 'Hide Passed' : 'Show Passed'}
           </Button>
           <Button asChild size="sm">
-            <Link href="/investor/scouting"><Plus className="mr-2 h-4 w-4" />Add Deal</Link>
+            <Link href="/investor/scouting"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Deal</Link>
           </Button>
         </div>
       }
@@ -175,7 +175,7 @@ export default function InvestorPipelinePage() {
                 <div className="rounded-lg p-2 bg-secondary"><Icon className={cn('h-4 w-4', color)} /></div>
                 <div>
                   <p className="text-lg font-bold tabular-nums">{value}</p>
-                  <p className="text-[11px] text-muted-foreground">{label}</p>
+                  <p className="text-2xs text-muted-foreground">{label}</p>
                 </div>
               </CardContent>
             </Card>
@@ -185,7 +185,7 @@ export default function InvestorPipelinePage() {
         {/* Search */}
         <div className="flex gap-3">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search deals..."
               value={search}
@@ -194,7 +194,7 @@ export default function InvestorPipelinePage() {
             />
           </div>
           <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" />
+            <Filter className="mr-2 icon-sm" aria-hidden="true" />
             Filters
           </Button>
         </div>
@@ -231,7 +231,7 @@ export default function InvestorPipelinePage() {
         {/* Conversion Funnel */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Pipeline Conversion</CardTitle>
+            <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary" aria-hidden="true" /> Pipeline Conversion</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -242,10 +242,10 @@ export default function InvestorPipelinePage() {
                   <div key={stage.key} className="flex items-center gap-2 flex-1">
                     <div className="flex-1 text-center">
                       <p className="text-lg font-bold tabular-nums">{count}</p>
-                      <p className="text-[10px] text-muted-foreground">{stage.label}</p>
+                      <p className="text-2xs text-muted-foreground">{stage.label}</p>
                       <Progress value={pct} className="h-1 mt-1" />
                     </div>
-                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="h-3 w-3 text-muted-foreground/40 shrink-0" />}
+                    {i < PIPELINE_STAGES.length - 1 && <ArrowRight className="icon-2xs text-muted-foreground/40 shrink-0" aria-hidden="true" />}
                   </div>
                 );
               })}

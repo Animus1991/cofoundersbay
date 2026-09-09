@@ -91,7 +91,7 @@ export default function CreateEventPage() {
       actions={
         <Link href="/events">
           <Button variant="secondary" size="sm" className="gap-2">
-            <ArrowLeft className="icon-sm" />
+            <ArrowLeft className="icon-sm" aria-hidden="true" />
             Back to events
           </Button>
         </Link>
@@ -102,7 +102,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="icon-sm text-primary" />
+              <Calendar className="icon-sm text-primary" aria-hidden="true" />
               Basic information
             </CardTitle>
           </CardHeader>
@@ -158,7 +158,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Clock className="icon-sm text-primary" />
+              <Clock className="icon-sm text-primary" aria-hidden="true" />
               Date & time
             </CardTitle>
           </CardHeader>
@@ -188,7 +188,7 @@ export default function CreateEventPage() {
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-                <Globe className="h-3.5 w-3.5" />
+                <Globe className="h-3.5 w-3.5" aria-hidden="true" />
                 Timezone
               </label>
               <Input
@@ -204,7 +204,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="icon-sm text-primary" />
+              <MapPin className="icon-sm text-primary" aria-hidden="true" />
               Location
             </CardTitle>
           </CardHeader>
@@ -220,7 +220,7 @@ export default function CreateEventPage() {
                     : 'border-border/60 text-muted-foreground hover:border-primary/40',
                 )}
               >
-                <Video className="icon-sm" />
+                <Video className="icon-sm" aria-hidden="true" />
                 Online event
               </button>
               {form.isOnline && (
@@ -260,7 +260,7 @@ export default function CreateEventPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="icon-sm text-primary" />
+              <Users className="icon-sm text-primary" aria-hidden="true" />
               Capacity (optional)
             </CardTitle>
           </CardHeader>
@@ -288,12 +288,12 @@ export default function CreateEventPage() {
           <Button type="submit" className="gap-2 min-w-[140px]" disabled={submitting || !form.title.trim() || !form.startAt}>
             {submitting ? (
               <>
-                <Loader2 className="icon-sm animate-spin" />
+                <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
                 Creating…
               </>
             ) : (
               <>
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 Create event
               </>
             )}

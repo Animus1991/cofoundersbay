@@ -211,17 +211,17 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm">
-                    <ImageIcon className="h-4 w-4" />
+                    <ImageIcon className="icon-sm" aria-hidden="true" />
                   </Button>
                   <Button variant="ghost" size="sm">
-                    <Link2 className="h-4 w-4" />
+                    <Link2 className="icon-sm" aria-hidden="true" />
                   </Button>
                   <Button
                     size="sm"
                     onClick={handleSubmit}
                     disabled={!content.trim()}
                   >
-                    <Send className="h-4 w-4 mr-1" />
+                    <Send className="icon-sm mr-1" aria-hidden="true" />
                     Post
                   </Button>
                 </div>
@@ -293,7 +293,7 @@ function PostCard({
                 </Badge>
                 {post.personalizationScore && (
                   <Badge variant="secondary" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                    <Sparkles className="h-3 w-3 mr-1" />
+                    <Sparkles className="icon-2xs mr-1" aria-hidden="true" />
                     {Math.round(post.personalizationScore * 100)}% match
                   </Badge>
                 )}
@@ -311,21 +311,21 @@ function PostCard({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontal className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onBookmark}>
-                <Bookmark className="h-4 w-4 mr-2" />
+                <Bookmark className="icon-sm mr-2" aria-hidden="true" />
                 {post.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link2 className="h-4 w-4 mr-2" />
+                <Link2 className="icon-sm mr-2" aria-hidden="true" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                <Flag className="h-4 w-4 mr-2" />
+                <Flag className="icon-sm mr-2" aria-hidden="true" />
                 Report
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -361,7 +361,7 @@ function PostCard({
             onClick={onLike}
             className={cn(post.isLiked && 'text-primary')}
           >
-            <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} />
+            <Heart className={cn('h-4 w-4 mr-1', post.isLiked && 'fill-current')} aria-hidden="true" />
             Like
           </Button>
           <Button
@@ -369,11 +369,11 @@ function PostCard({
             size="sm"
             onClick={() => setShowComments(!showComments)}
           >
-            <MessageCircle className="h-4 w-4 mr-1" />
+            <MessageCircle className="icon-sm mr-1" aria-hidden="true" />
             Comment
           </Button>
           <Button variant="ghost" size="sm" onClick={onShare}>
-            <Share2 className="h-4 w-4 mr-1" />
+            <Share2 className="icon-sm mr-1" aria-hidden="true" />
             Share
           </Button>
           <Button
@@ -382,7 +382,7 @@ function PostCard({
             onClick={onBookmark}
             className={cn(post.isBookmarked && 'text-primary')}
           >
-            <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} />
+            <Bookmark className={cn('h-4 w-4', post.isBookmarked && 'fill-current')} aria-hidden="true" />
           </Button>
         </div>
 
@@ -408,7 +408,7 @@ function PostCard({
                     setCommentText('');
                   }}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send className="icon-sm" aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -434,7 +434,7 @@ function TrendingTopics({ topics }: { topics?: Array<{ tag: string; posts: numbe
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Flame className="h-4 w-4 text-orange-500" />
+          <Flame className="icon-sm text-orange-500" aria-hidden="true" />
           Trending Topics
         </h3>
       </CardHeader>
@@ -480,7 +480,7 @@ function SuggestedConnections() {
     <Card className="shadow-sm border-border/50">
       <CardHeader className="pb-3 border-b border-border/50">
         <h3 className="font-semibold flex items-center gap-2">
-          <Users className="h-4 w-4 text-primary" />
+          <Users className="icon-sm text-primary" aria-hidden="true" />
           Suggested Connections
         </h3>
       </CardHeader>
@@ -663,7 +663,7 @@ export default function FeedPage() {
             onClick={() => setShowPreferences(!showPreferences)}
             className="gap-1"
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="icon-sm" aria-hidden="true" />
             <span className="hidden sm:inline">Preferences</span>
           </Button>
         </div>
@@ -720,7 +720,7 @@ export default function FeedPage() {
             {/* Load More */}
             <div className="flex justify-center">
               <Button variant="outline">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="icon-sm mr-2" aria-hidden="true" />
                 Load More
               </Button>
             </div>
@@ -736,7 +736,7 @@ export default function FeedPage() {
               <Card className="shadow-sm border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
                   <h3 className="font-semibold flex items-center gap-2">
-                    <Settings className="h-4 w-4" />
+                    <Settings className="icon-sm" aria-hidden="true" />
                     Feed Preferences
                   </h3>
                 </CardHeader>

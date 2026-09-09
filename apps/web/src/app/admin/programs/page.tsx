@@ -69,17 +69,17 @@ function ProgramCard({ program }: { program: Program }) {
               </Badge>
             </div>
             <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-              <Building2 className="icon-sm" />
+              <Building2 className="icon-sm" aria-hidden="true" />
               {program.organization}
             </div>
             <div className="flex flex-wrap gap-3 mt-3 text-sm text-muted-foreground">
               <Badge variant="secondary" className="text-xs">{program.type}</Badge>
               <span className="flex items-center gap-1">
-                <Users className="icon-sm" />
+                <Users className="icon-sm" aria-hidden="true" />
                 {program.startups} startups
               </span>
               <span className="flex items-center gap-1">
-                <Calendar className="icon-sm" />
+                <Calendar className="icon-sm" aria-hidden="true" />
                 {program.startDate} - {program.endDate}
               </span>
             </div>
@@ -96,20 +96,20 @@ function ProgramCard({ program }: { program: Program }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button aria-label="More options" variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="icon-sm" />
+                <MoreVertical className="icon-sm" aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
-                <Eye className="mr-2 icon-sm" />
+                <Eye className="mr-2 icon-sm" aria-hidden="true" />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Edit className="mr-2 icon-sm" />
+                <Edit className="mr-2 icon-sm" aria-hidden="true" />
                 Edit Program
               </DropdownMenuItem>
               <DropdownMenuItem className="text-destructive">
-                <Trash2 className="mr-2 icon-sm" />
+                <Trash2 className="mr-2 icon-sm" aria-hidden="true" />
                 Archive
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -158,7 +158,7 @@ export default function AdminProgramsPage() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" aria-hidden="true" />
             <Input
               placeholder="Search programs..."
               value={search}
@@ -222,7 +222,7 @@ export default function AdminProgramsPage() {
           {filteredPrograms.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center">
-                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+                <Award className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" aria-hidden="true" />
                 <h3 className="font-medium">No programs found</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Try adjusting your filters

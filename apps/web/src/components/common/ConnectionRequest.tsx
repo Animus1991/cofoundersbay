@@ -85,7 +85,7 @@ export function ConnectionRequestDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5 text-primary" />
+            <Send className="icon-md text-primary" aria-hidden="true" />
             Request Connection
           </DialogTitle>
           <DialogDescription>
@@ -117,7 +117,7 @@ export function ConnectionRequestDialog({
         {/* Suggested messages */}
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="icon-sm text-primary" aria-hidden="true" />
             Quick suggestions
           </div>
           <div className="flex flex-wrap gap-2">
@@ -166,7 +166,7 @@ export function ConnectionRequestDialog({
         {/* Error message */}
         {error && (
           <div className="flex items-center gap-2 text-sm text-destructive animate-fade-in">
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="icon-sm" aria-hidden="true" />
             {error}
           </div>
         )}

@@ -179,7 +179,7 @@ function MessageBubble({
                 title="Reply"
                 onClick={() => onReply?.(message)}
               >
-                <Reply className="h-3.5 w-3.5 text-muted-foreground" />
+                <Reply className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </button>
               <button
                 type="button"
@@ -187,7 +187,7 @@ function MessageBubble({
                 title={copied ? 'Copied!' : 'Copy'}
                 onClick={handleCopy}
               >
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                <Copy className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               </button>
             </div>
           )}
@@ -216,7 +216,7 @@ function MessageBubble({
                     )}
                     onClick={(e) => { if (!a.url) e.preventDefault(); }}
                   >
-                    <Paperclip className="h-3 w-3 shrink-0" />
+                    <Paperclip className="icon-2xs shrink-0" aria-hidden="true" />
                     {a.name}
                   </a>
                 ))}
@@ -237,13 +237,13 @@ function MessageBubble({
         </div>
 
         <div className={cn('flex items-center gap-1 mt-1', isOwn ? 'justify-end' : 'justify-start')}>
-          <span className="text-[10px] text-muted-foreground">{formatTime(message.timestamp)}</span>
+          <span className="text-2xs text-muted-foreground">{formatTime(message.timestamp)}</span>
           {isOwn && (
             <span className="text-muted-foreground">
-              {message.status === 'sending' && <span className="text-[10px]" title="Sending">•</span>}
-              {message.status === 'sent' && <Check className="h-3 w-3" />}
-              {message.status === 'delivered' && <CheckCheck className="h-3 w-3" />}
-              {message.status === 'read' && <CheckCheck className="h-3 w-3 text-primary" />}
+              {message.status === 'sending' && <span className="text-2xs" title="Sending">•</span>}
+              {message.status === 'sent' && <Check className="icon-2xs" aria-hidden="true" />}
+              {message.status === 'delivered' && <CheckCheck className="icon-2xs" aria-hidden="true" />}
+              {message.status === 'read' && <CheckCheck className="icon-2xs text-primary" aria-hidden="true" />}
             </span>
           )}
         </div>
@@ -367,7 +367,7 @@ export function ChatWindow({
           <div className="flex items-center gap-3">
             {onBack && (
               <Button aria-label="Go back" variant="ghost" size="icon" onClick={onBack} className="md:hidden">
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="icon-md" aria-hidden="true" />
               </Button>
             )}
             <Link href={`/profiles/${conversation.recipientId}`} className="flex items-center gap-3">
@@ -415,34 +415,34 @@ export function ChatWindow({
               />
             )}
             <Button aria-label="Search messages" variant="ghost" size="icon" title="Search messages" onClick={() => { setSearchOpen((v) => !v); setSearchQuery(''); }}>
-              <Search className="h-4 w-4" />
+              <Search className="icon-sm" aria-hidden="true" />
             </Button>
             <Button aria-label="Voice call (coming soon)" variant="ghost" size="icon" disabled title="Voice call (coming soon)">
-              <Phone className="h-5 w-5" />
+              <Phone className="icon-md" aria-hidden="true" />
             </Button>
             <Button aria-label="Video call (coming soon)" variant="ghost" size="icon" disabled title="Video call (coming soon)">
-              <Video className="h-5 w-5" />
+              <Video className="icon-md" aria-hidden="true" />
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button aria-label="More options" variant="ghost" size="icon">
-                  <MoreVertical className="h-5 w-5" />
+                  <MoreVertical className="icon-md" aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/profiles/${conversation.recipientId}`}>
-                    <Info className="h-4 w-4 mr-2" />
+                    <Info className="icon-sm mr-2" aria-hidden="true" />
                     View profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onReport}>
-                  <Flag className="h-4 w-4 mr-2" />
+                  <Flag className="icon-sm mr-2" aria-hidden="true" />
                   Report
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onBlock} className="text-destructive">
-                  <Ban className="h-4 w-4 mr-2" />
+                  <Ban className="icon-sm mr-2" aria-hidden="true" />
                   Block
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -453,7 +453,7 @@ export function ChatWindow({
         {searchOpen && (
           <div className="px-4 pb-3 flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <input
                 autoFocus
                 type="text"
@@ -469,7 +469,7 @@ export function ChatWindow({
               </span>
             )}
             <Button aria-label="Close" variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setSearchOpen(false); setSearchQuery(''); }}>
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </div>
         )}
@@ -542,7 +542,7 @@ export function ChatWindow({
         {/* Reply preview */}
         {replyTo && (
           <div className="mb-2 flex items-start gap-2 rounded-lg border-l-2 border-primary/60 bg-secondary/50 px-3 py-2">
-            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+            <Reply className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-foreground/70">
                 {replyTo.senderId === currentUserId ? 'You' : conversation.recipientName}
@@ -550,7 +550,7 @@ export function ChatWindow({
               <p className="truncate text-xs text-muted-foreground">{replyTo.content.slice(0, 80)}</p>
             </div>
             <Button aria-label="Close" variant="ghost" size="icon" className="h-5 w-5 shrink-0" onClick={() => setReplyTo(null)}>
-              <X className="h-3 w-3" />
+              <X className="icon-2xs" aria-hidden="true" />
             </Button>
           </div>
         )}
@@ -562,7 +562,7 @@ export function ChatWindow({
                 key={`${f.name}-${f.size}-${f.lastModified}`}
                 className="flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-1 text-xs text-foreground"
               >
-                <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                <Paperclip className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <span className="max-w-[220px] truncate">{f.name}</span>
                 <button
                   type="button"
@@ -573,7 +573,7 @@ export function ChatWindow({
                     )
                   }
                 >
-                  <Trash2 className="h-3.5 w-3.5" />
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -599,7 +599,7 @@ export function ChatWindow({
             className="flex-shrink-0"
             onClick={() => fileInputRef.current?.click()}
           >
-            <Paperclip className="h-5 w-5" />
+            <Paperclip className="icon-md" aria-hidden="true" />
           </Button>
           <div className="flex-1 relative">
             <Textarea
@@ -615,7 +615,7 @@ export function ChatWindow({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button aria-label="Add emoji" variant="ghost" size="icon" className="h-8 w-8">
-                    <Smile className="h-4 w-4" />
+                    <Smile className="icon-sm" aria-hidden="true" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="p-2 w-auto">
@@ -644,7 +644,7 @@ export function ChatWindow({
             disabled={!inputValue.trim()}
             className="flex-shrink-0"
           >
-            <Send className="h-5 w-5" />
+            <Send className="icon-md" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -658,7 +658,7 @@ export function NoChatSelected() {
     <div className="flex flex-col items-center justify-center h-full text-center p-8 gap-4">
       <div className="relative">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
-          <MessageCircle className="h-10 w-10 text-primary" />
+          <MessageCircle className="h-10 w-10 text-primary" aria-hidden="true" />
         </div>
         <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400/20 flex items-center justify-center border-2 border-background">
           <span className="text-emerald-400 text-xs font-bold">✓</span>
@@ -675,14 +675,14 @@ export function NoChatSelected() {
           href="/discover"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20 transition-colors"
         >
-          <Users className="h-4 w-4" />
+          <Users className="icon-sm" aria-hidden="true" />
           Find people to message
         </a>
         <a
           href="/connections"
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-secondary/60 px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors"
         >
-          <UserCheck className="h-4 w-4" />
+          <UserCheck className="icon-sm" aria-hidden="true" />
           View connections
         </a>
       </div>

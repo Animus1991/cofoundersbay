@@ -320,15 +320,15 @@ export default function NotificationPreferencesPage() {
         <div className="flex items-center gap-2">
           <Link href="/settings">
             <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="icon-sm" aria-hidden="true" />
               Settings
             </Button>
           </Link>
           <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
             {savePrefs.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
             ) : (
-              <Save className="h-4 w-4" />
+              <Save className="icon-sm" aria-hidden="true" />
             )}
             Save Changes
           </Button>
@@ -341,7 +341,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Bell className="h-5 w-5 text-primary" />
+              <Bell className="icon-md text-primary" aria-hidden="true" />
               Global Settings
             </CardTitle>
           </CardHeader>
@@ -372,7 +372,7 @@ export default function NotificationPreferencesPage() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base flex items-center gap-2">
-                    {quietHoursEnabled ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                    {quietHoursEnabled ? <VolumeX className="icon-sm" aria-hidden="true" /> : <Volume2 className="icon-sm" aria-hidden="true" />}
                     Quiet Hours
                   </Label>
                   <p className="text-sm text-muted-foreground">
@@ -421,7 +421,7 @@ export default function NotificationPreferencesPage() {
         <Card className="shadow-sm border-border/50">
           <CardHeader className="border-b border-border/50">
             <CardTitle className="text-base flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
+              <Zap className="icon-md text-primary" aria-hidden="true" />
               Automation Notifications
             </CardTitle>
             <CardDescription>
@@ -450,15 +450,15 @@ export default function NotificationPreferencesPage() {
         {/* Channel Legend */}
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Smartphone className="h-4 w-4" />
+            <Smartphone className="icon-sm" aria-hidden="true" />
             <span>Push</span>
           </div>
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
+            <Mail className="icon-sm" aria-hidden="true" />
             <span>Email</span>
           </div>
           <div className="flex items-center gap-2">
-            <Monitor className="h-4 w-4" />
+            <Monitor className="icon-sm" aria-hidden="true" />
             <span>In-App</span>
           </div>
         </div>
@@ -497,21 +497,21 @@ export default function NotificationPreferencesPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
-                          <Smartphone className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Smartphone className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                           <Switch
                             checked={setting.channels.push}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'push')}
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                           <Switch
                             checked={setting.channels.email}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'email')}
                           />
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Monitor className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                           <Switch
                             checked={setting.channels.inApp}
                             onCheckedChange={() => toggleChannel(category.id, setting.id, 'inApp')}
@@ -530,9 +530,9 @@ export default function NotificationPreferencesPage() {
         <div className="sm:hidden">
           <Button className="w-full" onClick={handleSave} disabled={savePrefs.isPending}>
             {savePrefs.isPending ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="icon-sm mr-2 animate-spin" aria-hidden="true" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="icon-sm mr-2" aria-hidden="true" />
             )}
             Save Changes
           </Button>
