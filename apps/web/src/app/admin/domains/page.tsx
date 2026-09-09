@@ -319,7 +319,7 @@ export default function DomainsAdminPage() {
   const selectedTenant = tenants.find((t) => t.id === selectedTenantId) ?? null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="text-xl font-bold">Domain Management</h1>
         <p className="text-muted-foreground mt-1">
