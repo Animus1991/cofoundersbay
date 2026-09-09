@@ -153,8 +153,21 @@ const nextConfig: NextConfig = {
             value: '1; mode=block'
           },
           {
+            // strict-origin-when-cross-origin over origin-when-cross-origin:
+            // the latter still sends the origin to http:// targets.
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            // Deny by default. camera/microphone stay available to same-origin
+            // because the video-call surface requests them at the element level.
+            key: 'Permissions-Policy',
+            value: 'accelerometer=(), autoplay=(self), camera=(self), display-capture=(self), encrypted-media=(), geolocation=(), gyroscope=(), interest-cohort=(), magnetometer=(), microphone=(self), payment=(), usb=()'
+          },
+          {
+            // allow-popups so OAuth sign-in windows still work.
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups'
           }
         ]
       },
