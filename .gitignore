@@ -6,6 +6,8 @@ node_modules
 dist
 .next
 out
+.open-next
+.wrangler
 .turbo
 tmp
 out-tsc

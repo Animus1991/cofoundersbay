@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cofounderbay-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-01",
+  // nodejs_compat is required by the Next.js server runtime;
+  // global_fetch_strictly_public makes same-origin fetches go back out through
+  // the edge, which is what Next's own data fetching expects.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Uncomment and fill in the namespace id after running:
+  //   npx wrangler kv namespace create NEXT_INC_CACHE_KV
+  // "kv_namespaces": [
+  //   { "binding": "NEXT_INC_CACHE_KV", "id": "<namespace-id>" }
+  // ],
+
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://cofounderbay-web.workers.dev"
+  }
+}
