@@ -7,33 +7,49 @@ const PUBLIC_PATHS = new Set([
   '/register',
   '/forgot-password',
   '/reset-password',
-  '/verify-email',
+  '/auth/verify-email',   // the route is /auth/verify-email, not /verify-email
   '/auth/oauth-callback',
   '/auth/sso-complete',
   '/pricing',
   '/terms',
   '/privacy',
+  '/help',
+  '/demo',
+  '/api-status',
   '/manifest.json',
   '/site.webmanifest',
   '/robots.txt',
+  '/sitemap.xml',
 ]);
 
 const PUBLIC_PREFIXES = [
   '/p/',         // public user profile pages /p/[username]
   '/profiles/',
-  '/events/',
   '/t/',         // tenant public landing pages /t/[slug]
+  '/themes/',    // static theme previews
   '/_next/',
   '/favicon',
   '/uploads/',
   '/api/',
 ];
 
+/**
+ * Routes that look public by prefix but must stay behind auth.
+ * `/events/[id]` is a public listing; `/events/create` is not.
+ */
+const PROTECTED_EXCEPTIONS = ['/events/create'];
+
 const STATIC_EXTENSIONS = /\.(ico|png|jpg|jpeg|svg|webp|css|js|json|webmanifest|txt|xml|woff2?|ttf|otf|map)$/;
 
 function isPublicPath(pathname: string): boolean {
+  if (PROTECTED_EXCEPTIONS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return false;
+  }
   if (PUBLIC_PATHS.has(pathname)) return true;
   if (STATIC_EXTENSIONS.test(pathname)) return true;
+  // Individual event pages are public; the /events index still requires auth
+  // via the general rule below.
+  if (/^\/events\/[^/]+$/.test(pathname)) return true;
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 

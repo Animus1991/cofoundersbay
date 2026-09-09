@@ -14,7 +14,10 @@ function loadMermaid() {
         mod.default.initialize({
           startOnLoad: false,
           theme: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
-          securityLevel: 'loose',
+          // 'loose' permits raw HTML and click handlers inside diagram labels.
+          // Diagram source is user-authored on collaborative boards, so it is
+          // untrusted input: 'strict' escapes labels and disables click events.
+          securityLevel: 'strict',
           fontFamily: 'inherit',
         });
         mermaidLoaded = true;
@@ -167,6 +170,11 @@ export function MermaidDiagramNode({ content, onChange, readOnly = false, compac
             <div
               ref={containerRef}
               className="w-full"
+              // Not user HTML: this is SVG produced by mermaid itself, and with
+              // securityLevel 'strict' (set above) mermaid escapes every label
+              // and emits no event handlers. Sanitising it with the rich-text
+              // profile would strip the diagram, so the guarantee is enforced
+              // at the render config instead.
               dangerouslySetInnerHTML={{ __html: svg }}
               style={{ maxHeight: '100%' }}
             />

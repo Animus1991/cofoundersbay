@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 3600,
+    // SVGs are allowed but are served with `script-src 'none'; sandbox` (below)
+    // and as attachments, so they cannot execute in the page's origin.
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -127,6 +129,29 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and security
   async headers() {
+    const apiOrigin = process.env.NEXT_PUBLIC_API_URL || '';
+    const wsOrigin = apiOrigin.replace(/^http/, 'ws');
+
+    // `unsafe-inline` is required for styles because Tailwind's runtime theme
+    // switching writes inline custom properties; `unsafe-eval` is only allowed
+    // in development, where React Refresh needs it.
+    const csp = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"} https://*.posthog.com`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      `connect-src 'self' ${apiOrigin} ${wsOrigin} https://*.posthog.com https://*.sentry.io wss:`.trim(),
+      "media-src 'self' blob: https:",
+      "worker-src 'self' blob:",
+      "frame-src 'self' https://*.daily.co",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      ...(isProduction ? ['upgrade-insecure-requests'] : []),
+    ].join('; ');
+
     const headers = [
       {
         source: '/:path*',
@@ -148,12 +173,37 @@ const nextConfig: NextConfig = {
             value: 'SAMEORIGIN'
           },
           {
+            // X-XSS-Protection is deprecated and its filter has itself been a
+            // source of vulnerabilities; 0 disables it. CSP replaces it.
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '0'
           },
           {
+            // origin-when-cross-origin leaks the origin to http:// targets.
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: csp
+          },
+          {
+            // Deny by default: nothing in the product needs these, and the
+            // video-call surface requests camera/mic at the element level.
+            key: 'Permissions-Policy',
+            value: 'accelerometer=(), autoplay=(self), camera=(self), display-capture=(self), encrypted-media=(), geolocation=(), gyroscope=(), interest-cohort=(), magnetometer=(), microphone=(self), payment=(), usb=()'
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups'
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none'
           }
         ]
       },

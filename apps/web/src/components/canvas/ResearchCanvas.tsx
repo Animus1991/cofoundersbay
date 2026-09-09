@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 /* ─── Types ──────────────────────────────────────────────────── */
 type NodeType = "document" | "image" | "pdf" | "text" | "note" | "folder" | "link";
@@ -1234,9 +1235,9 @@ export default function ResearchCanvas() {
                   </div>
                 )}
                 {(node.type === "note" || node.type === "text" || node.type === "document") && (
-                  <div
+                  <SanitizedHtml
                     className="prose prose-sm max-w-none line-clamp-6"
-                    dangerouslySetInnerHTML={{ __html: node.content || "<p class='text-muted-foreground/40'>Empty note...</p>" }}
+                    html={node.content || "<p class='text-muted-foreground/40'>Empty note...</p>"}
                   />
                 )}
               </div>

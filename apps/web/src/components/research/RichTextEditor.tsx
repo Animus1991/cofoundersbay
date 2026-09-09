@@ -8,6 +8,7 @@ import {
   CheckSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 interface RichTextEditorProps {
   content: string;
@@ -106,12 +107,9 @@ export function RichTextEditor({
 
   if (readOnly) {
     return (
-      <div
-        className={cn(
-          'prose prose-sm dark:prose-invert max-w-none p-4',
-          className
-        )}
-        dangerouslySetInnerHTML={{ __html: content }}
+      <SanitizedHtml
+        className={cn('prose prose-sm dark:prose-invert max-w-none p-4', className)}
+        html={content}
       />
     );
   }
