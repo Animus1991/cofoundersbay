@@ -403,7 +403,7 @@ export default function EnhancedOnboardingPage() {
                 <Sparkles className="icon-lg text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">CoFounderBay Onboarding</h1>
+                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">CoFounderBay Onboarding</h1>
                 <p className="text-muted-foreground">Let's build your profile together</p>
               </div>
             </div>

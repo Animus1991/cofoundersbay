@@ -262,7 +262,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
             )}
 
             {review.summaryFeedback && (
-              <p className="mt-2 text-xs text-muted-foreground line-clamp-2 italic">
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2 italic">
                 "{review.summaryFeedback}"
               </p>
             )}
@@ -376,7 +376,7 @@ function ExpertCard({ expert }: { expert: ExpertProfile }) {
             )}
           </div>
 
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{expert.bio}</p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2">{expert.bio}</p>
 
           <div className="mt-2 flex flex-wrap gap-1">
             {expert.domains.slice(0, 3).map((d) => {

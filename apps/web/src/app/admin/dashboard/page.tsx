@@ -242,7 +242,7 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-muted-foreground">
             Monitor and manage your CoFounderBay platform
           </p>

@@ -131,7 +131,7 @@ export default function RegisterPage() {
               : <Logo size="sm" />}
           </Link>
 
-          <h1 className="font-display text-3xl font-bold text-foreground">Create your account</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">Create your account</h1>
           <p className="mt-2 text-muted-foreground">
             {activeTenant
               ? `Join ${activeTenant.displayName ?? activeTenant.name} in under 2 minutes.`

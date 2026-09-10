@@ -354,7 +354,7 @@ export const ActivityCard = React.forwardRef<
         
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-sm mb-1">{title}</h4>
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mb-2">
             {description}
           </p>
           <div className="flex items-center justify-between">

@@ -3,6 +3,20 @@
 @tailwind utilities;
 
 @layer base {
+  /* iOS Safari zooms the whole page whenever a focused form control renders
+     below 16px, and the user has to pinch back out — it is a platform rule, not
+     a style preference. The primitives express this as `text-base sm:text-sm`;
+     this catches the raw <input>/<select>/<textarea> elements that bypass them.
+     `!important` because a Tailwind text utility on the element would otherwise
+     win on specificity, which is exactly the case being corrected. */
+  @media (max-width: 639.98px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   :root {
     /* ── Font family CSS variables (set here since next/font/google is not used) ── */
     /* Bound to the self-hosted next/font faces loaded in app/layout.tsx.

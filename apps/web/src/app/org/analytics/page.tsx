@@ -159,7 +159,7 @@ export default function OrgAnalyticsPage() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
               <BarChart3 className="icon-lg text-primary-emphasis" aria-hidden="true" /> Org Analytics
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">

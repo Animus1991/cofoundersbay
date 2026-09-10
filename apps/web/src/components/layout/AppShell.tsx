@@ -30,14 +30,25 @@ type PageHeaderProps = {
 function PageHeader({ title, description, actions }: PageHeaderProps) {
   if (!title && !description && !actions) return null;
   return (
-    <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-5 py-3.5 shadow-sm lg:flex-row lg:items-center">
-      <div>
+    // Every page's title and description come through here, so this is where
+    // the type scale earns its steps: 20 -> 24 -> 30px for the title, and a
+    // description that reads at 16px on a phone before returning to the
+    // desktop density of 14px. The row also goes inline at `sm` rather than
+    // `lg`, so a tablet in portrait stops stacking what it has room for.
+    <section className="flex flex-col justify-between gap-3 rounded-xl border border-border/60 bg-card px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4 lg:px-6 lg:py-5">
+      <div className="min-w-0">
         {title && (
-          <h1 className="text-lg font-semibold tracking-tight text-foreground">{title}</h1>
+          <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl xl:text-3xl">
+            {title}
+          </h1>
         )}
-        {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+        {description && (
+          <p className="mt-1 text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm">
+            {description}
+          </p>
+        )}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 sm:shrink-0">{actions}</div>}
     </section>
   );
 }

@@ -30,7 +30,7 @@ export default function NotFound() {
           404
         </p>
 
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="mt-6 text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">
           We couldn&apos;t find that page
         </h1>
         <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground text-pretty">

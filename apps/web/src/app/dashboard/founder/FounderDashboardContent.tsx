@@ -264,7 +264,7 @@ export default function FounderDashboardContent() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
           <div className="min-w-0">
-            <h1 className="text-xl font-bold tracking-tight">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName} 👋
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">

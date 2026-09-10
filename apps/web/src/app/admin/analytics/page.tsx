@@ -66,7 +66,7 @@ export default function AdminAnalyticsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Platform Analytics</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Platform Analytics</h1>
             <p className="text-muted-foreground">
               Monitor platform-wide metrics and performance
             </p>

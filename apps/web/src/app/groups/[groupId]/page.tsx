@@ -352,7 +352,7 @@ export default function GroupDetailPage() {
                   )}
                 </div>
                 <div className="pb-1">
-                  <h1 className="font-display text-xl font-bold">{group.name}</h1>
+                  <h1 className="font-display text-xl sm:text-2xl xl:text-3xl font-bold">{group.name}</h1>
                   <div className="flex items-center gap-3 mt-1">
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       {group.privacy === 'public' ? <Globe className="icon-2xs" aria-hidden="true" /> : <Lock className="icon-2xs" aria-hidden="true" />}

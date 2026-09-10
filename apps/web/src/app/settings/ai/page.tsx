@@ -188,7 +188,7 @@ export default function AISettingsPage() {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
                   <Bot className="icon-md text-white" aria-hidden="true" />
                 </div>
@@ -529,7 +529,7 @@ export default function AISettingsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{agent.name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{agent.description}</p>
+                      <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{agent.description}</p>
                     </div>
                   </div>
                 ))}

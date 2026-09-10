@@ -305,7 +305,7 @@ export default function TenantPage() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 text-center px-6">
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
-        <h1 className="text-2xl font-bold text-foreground">Organization not found</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Organization not found</h1>
         <p className="text-muted-foreground max-w-sm">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
         <Button variant="outline" asChild>
           <Link href="/">Back to CoFounderBay</Link>

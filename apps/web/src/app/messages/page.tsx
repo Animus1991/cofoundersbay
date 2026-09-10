@@ -516,7 +516,7 @@ export default function MessagesPage() {
         {/* Context Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground">Messages</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Messages</h1>
             <p className="text-sm text-muted-foreground">
               Connect with co-founders, mentors, and team members
             </p>

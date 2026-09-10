@@ -110,7 +110,7 @@ function LoginPageContent() {
             )}
           </Link>
 
-          <h1 className="font-display text-3xl font-bold text-foreground">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground">
             {activeTenant ? `Welcome to ${activeTenant.displayName ?? activeTenant.name}` : 'Welcome back'}
           </h1>
           <p className="mt-2 text-muted-foreground">

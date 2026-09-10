@@ -30,7 +30,7 @@ export default function AuthError({
             <AlertTriangle className="icon-md text-destructive-emphasis" aria-hidden="true" />
           </div>
           <div className="space-y-1">
-            <h1 className="text-lg font-semibold text-foreground">Authentication error</h1>
+            <h1 className="text-lg sm:text-xl font-semibold text-foreground">Authentication error</h1>
             <p className="text-sm text-muted-foreground">
               Something went wrong while loading this page. This is usually transient — try again.
             </p>

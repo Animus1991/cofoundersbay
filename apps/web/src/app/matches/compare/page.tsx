@@ -333,7 +333,7 @@ export default function MatchComparePage() {
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">Compare Matches</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Compare Matches</h1>
             <p className="text-muted-foreground">
               Compare up to 3 potential co-founders side by side
             </p>

@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
           <Link href="/" className="inline-block mb-6 hover:opacity-80 transition-opacity">
             <Logo size="sm" />
           </Link>
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
             Reset your password
           </h1>
           <p className="text-muted-foreground text-sm">

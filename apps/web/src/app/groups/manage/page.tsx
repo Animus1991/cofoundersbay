@@ -142,7 +142,7 @@ export default function ManageGroupsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Settings className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Manage Communities
             </h1>

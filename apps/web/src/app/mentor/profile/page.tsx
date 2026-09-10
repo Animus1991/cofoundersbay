@@ -114,7 +114,7 @@ export default function MentorProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
               <User className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Mentor Profile
             </h1>

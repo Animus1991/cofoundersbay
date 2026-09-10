@@ -24,7 +24,10 @@ CardHeader.displayName = 'CardHeader';
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn('text-lg font-semibold leading-tight', className)} {...props} />
+    // 16px on a phone, 18px from `sm`: at 320px an 18px card title sat within
+    // 2px of the 20px page title, which flattened the hierarchy exactly where
+    // there is least room to establish it.
+    <h3 ref={ref} className={cn('text-base font-semibold leading-tight sm:text-lg', className)} {...props} />
   ),
 );
 CardTitle.displayName = 'CardTitle';

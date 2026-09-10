@@ -125,3 +125,105 @@ test('unauthenticated app routes redirect to login', async ({ page }) => {
   expect(response!.url()).toContain('/login');
   expect(response!.url()).toContain('redirect=%2Fdashboard');
 });
+
+/**
+ * iOS Safari zooms the whole page whenever a focused form control renders below
+ * 16px, and the user has to pinch back out to carry on. It is a platform rule,
+ * not a style preference, so it is enforced rather than reviewed. Above `sm`
+ * the design system's 14px density is intentional and out of scope here.
+ */
+test('form controls are at least 16px on phone viewports', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'phone viewports only');
+
+  for (const path of ['/login', '/register', '/forgot-password']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(800);
+
+    const small = await page.evaluate(() =>
+      Array.from(
+        document.querySelectorAll(
+          'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea',
+        ),
+      )
+        .filter((el) => {
+          const cs = getComputedStyle(el);
+          return cs.display !== 'none' && cs.visibility !== 'hidden'
+            && parseFloat(cs.fontSize) < 16;
+        })
+        .map((el) => `${el.tagName.toLowerCase()} ${getComputedStyle(el).fontSize} ${el.className}`),
+    );
+
+    expect(small, `controls under 16px on ${path} — iOS Safari will zoom on focus`).toEqual([]);
+  }
+});
+
+/**
+ * Content occluding content. Layered UI (dialogs, popovers, sticky chrome) is
+ * excluded; what is left is a laid-out box covering another one, which is how
+ * the /builder tab labels ended up behind the header buttons on a phone.
+ */
+test('no laid-out element occludes another', async ({ page }) => {
+  for (const path of ['/', '/pricing', '/login']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1200);
+
+    const hits = await page.evaluate(() => {
+      const layered = (el: Element) => {
+        for (let a: Element | null = el; a && a !== document.body; a = a.parentElement) {
+          const cs = getComputedStyle(a);
+          if (cs.position === 'fixed' || cs.position === 'sticky' || cs.position === 'absolute') return true;
+          if (a.getAttribute('aria-hidden') === 'true') return true;
+          if (a.getAttribute('role') === 'dialog' || a.getAttribute('role') === 'tooltip') return true;
+        }
+        return false;
+      };
+
+      // Two inline fragments of the same wrapped paragraph share an inline
+      // formatting context: with tight leading their line boxes overlap even
+      // though the glyphs sit on separate lines. That is type metrics, not
+      // occlusion, so pairs like that are not comparable.
+      const blockOf = (el: Element) => {
+        for (let a = el.parentElement; a; a = a.parentElement) {
+          if (!/^(inline|inline-block|inline-flex|contents)$/.test(getComputedStyle(a).display)) return a;
+        }
+        return null;
+      };
+      const inlineIn = new Map<Element, Element | null>();
+
+      const boxes: { el: Element; r: DOMRect; label: string }[] = [];
+      for (const el of Array.from(document.querySelectorAll('body *'))) {
+        if (el.children.length || el.closest('svg')) continue;
+        if (!(el.textContent || '').trim()) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') continue;
+        if (layered(el)) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        inlineIn.set(el, /^inline/.test(cs.display) ? blockOf(el) : null);
+        boxes.push({ el, r, label: (el.textContent || '').trim().slice(0, 30) });
+      }
+
+      boxes.sort((a, b) => a.r.top - b.r.top);
+      const out: string[] = [];
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          const A = boxes[i], B = boxes[j];
+          if (B.r.top >= A.r.bottom - 0.5) break;
+          if (A.el.contains(B.el) || B.el.contains(A.el)) continue;
+          const ba = inlineIn.get(A.el), bb = inlineIn.get(B.el);
+          if (ba && bb && ba === bb) continue;      // same run of inline text
+
+          const ox = Math.min(A.r.right, B.r.right) - Math.max(A.r.left, B.r.left);
+          const oy = Math.min(A.r.bottom, B.r.bottom) - Math.max(A.r.top, B.r.top);
+          if (ox <= 1 || oy <= 1) continue;
+          const smaller = Math.min(A.r.width * A.r.height, B.r.width * B.r.height);
+          if (smaller <= 0 || (ox * oy) / smaller < 0.15) continue;
+          out.push(`"${A.label}" is covered by "${B.label}"`);
+        }
+      }
+      return out;
+    });
+
+    expect(hits, `occluded content on ${path}`).toEqual([]);
+  }
+});

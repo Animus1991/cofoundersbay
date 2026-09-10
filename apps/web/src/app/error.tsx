@@ -24,7 +24,7 @@ export default function Error({
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive-emphasis">
           <AlertTriangle className="icon-md" aria-hidden="true" />
         </div>
-        <h1 className="mt-4 text-xl font-semibold text-foreground">This page hit an unexpected error</h1>
+        <h1 className="mt-4 text-xl sm:text-2xl xl:text-3xl font-semibold text-foreground">This page hit an unexpected error</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           The route failed safely instead of leaving the UI blank. Try the action again or return home.
         </p>

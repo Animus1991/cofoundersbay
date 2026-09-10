@@ -215,7 +215,7 @@ export default function OrgMentorsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Mentor Pool</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Mentor Pool</h1>
             <p className="text-muted-foreground">
               Manage mentors in your organization
             </p>

@@ -163,7 +163,7 @@ function BuilderPageContent() {
         {/* Context Bar */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Rocket className="icon-lg text-primary-emphasis" aria-hidden="true" />
               </div>

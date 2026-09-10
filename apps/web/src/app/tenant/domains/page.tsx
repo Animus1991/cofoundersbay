@@ -355,7 +355,7 @@ export default function TenantDomainsPage() {
       <div className="py-6 space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Domain Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Domain Management</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Configure how members reach your organization — via platform subdomain or your own custom domain.
           </p>

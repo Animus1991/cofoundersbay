@@ -165,7 +165,7 @@ const NotificationRow = memo(function NotificationRow({
           <span className="shrink-0 text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>
         </div>
         {item.body && (
-          <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>
         )}
         <div className="mt-2 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           {item.link && (

@@ -98,7 +98,7 @@ export default function ProjectDetailPage() {
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{project.name}</h1>
               <Badge variant="outline" className={cn('text-sm', statusConfig.color)}>
                 <StatusIcon className="h-3.5 w-3.5 mr-1" />
                 {statusConfig.label}

@@ -441,7 +441,7 @@ export default function ReadinessPage() {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Startup Readiness Score</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Startup Readiness Score</h1>
             <p className="text-muted-foreground text-sm">
               Assess your startup&apos;s readiness across 6 key dimensions
               {apiData?.lastAssessedAt && (

@@ -148,7 +148,7 @@ function _InvestorDashboardPage_legacy() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Deal Flow</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Deal Flow</h1>
             <p className="text-muted-foreground">
               Track and manage your investment pipeline
             </p>

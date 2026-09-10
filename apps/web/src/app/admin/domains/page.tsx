@@ -321,7 +321,7 @@ export default function DomainsAdminPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Domain Management</h1>
+        <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold">Domain Management</h1>
         <p className="text-muted-foreground mt-1">
           Configure subdomains and custom domains for each tenant organization.
         </p>

@@ -230,7 +230,7 @@ export default function OrgAdminPage() {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{org.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{org.name}</h1>
               <p className="text-muted-foreground">Organization Admin Dashboard</p>
             </div>
           </div>

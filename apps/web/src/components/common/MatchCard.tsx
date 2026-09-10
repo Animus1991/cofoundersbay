@@ -180,7 +180,7 @@ function MatchCardInner({
               <RoleBadge role={role} size="sm" showIcon />
             </div>
             {headline && (
-              <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">{headline}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground line-clamp-2 leading-relaxed">{headline}</p>
             )}
           </div>
         </div>

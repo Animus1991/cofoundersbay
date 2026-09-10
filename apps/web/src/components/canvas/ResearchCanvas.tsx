@@ -1027,7 +1027,7 @@ export default function ResearchCanvas() {
       {/* Toolbar */}
       <div className="flex-none px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <h1 className="text-lg sm:text-xl font-semibold text-foreground flex items-center gap-2">
             <Layers className="w-5 h-5 text-primary-emphasis" />
             Research Canvas
           </h1>

@@ -313,7 +313,7 @@ export default function InvestorWatchlistPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Eye className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Watchlist
             </h1>

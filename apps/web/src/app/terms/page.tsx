@@ -159,7 +159,7 @@ export default function TermsPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
             <FileText className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Terms of Service</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">Terms of Service</h1>
           <p className="text-muted-foreground">Last updated: {LAST_UPDATED}</p>
         </div>
       </section>

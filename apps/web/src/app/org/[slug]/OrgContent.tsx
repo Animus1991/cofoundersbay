@@ -55,7 +55,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
 
             <div className="flex-1 min-w-0 space-y-3">
               <div>
-                <h1 className="text-xl font-bold text-foreground">{org.name}</h1>
+                <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">{org.name}</h1>
                 {org.tagline && (
                   <p className="text-base text-muted-foreground mt-1">{org.tagline}</p>
                 )}
@@ -206,7 +206,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           {opp.type} {opp.location ? `· ${opp.location}` : ''}
                         </p>
                         {opp.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">{opp.description}</p>
+                          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{opp.description}</p>
                         )}
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-xs text-muted-foreground">
@@ -265,7 +265,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           </Badge>
                         </div>
                         {cohort.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-2">{cohort.description}</p>
+                          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{cohort.description}</p>
                         )}
                         <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">

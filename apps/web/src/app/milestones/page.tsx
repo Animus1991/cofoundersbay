@@ -186,7 +186,7 @@ function MilestoneCard({
             </div>
 
             {item.description && (
-              <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{item.description}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.description}</p>
             )}
 
             {/* Progress bar */}

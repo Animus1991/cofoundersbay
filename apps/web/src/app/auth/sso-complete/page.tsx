@@ -59,7 +59,7 @@ export default function SSOCompletePage() {
               className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-primary/20 border-t-primary"
             />
             <div>
-              <h1 className="text-xl font-semibold">Completing sign in...</h1>
+              <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold">Completing sign in...</h1>
               <p className="text-muted-foreground mt-1">
                 Please wait while we verify your credentials
               </p>
@@ -73,7 +73,7 @@ export default function SSOCompletePage() {
               OK
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-green-600 dark:text-green-400">Sign in successful!</h1>
+              <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-green-600 dark:text-green-400">Sign in successful!</h1>
               <p className="text-muted-foreground mt-1">
                 Redirecting you now...
               </p>
@@ -87,7 +87,7 @@ export default function SSOCompletePage() {
               !
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-destructive-emphasis">Sign in failed</h1>
+              <h1 className="text-xl sm:text-2xl xl:text-3xl font-semibold text-destructive-emphasis">Sign in failed</h1>
               <p className="text-muted-foreground mt-1">
                 {error || 'An unexpected error occurred'}
               </p>

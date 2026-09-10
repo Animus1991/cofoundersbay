@@ -335,7 +335,7 @@ function CoachCard({ coach }: { coach: CoachProfile }) {
             )}
           </div>
 
-          <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{coach.bio}</p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground line-clamp-2">{coach.bio}</p>
 
           <div className="mt-2 flex flex-wrap gap-1">
             {coach.specialties.slice(0, 3).map((s) => {

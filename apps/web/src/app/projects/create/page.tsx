@@ -127,7 +127,7 @@ export default function CreateProjectPage() {
             <ArrowLeft className="icon-md" aria-hidden="true" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Create Project</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Create Project</h1>
             <p className="text-muted-foreground">Share your idea and find co-founders</p>
           </div>
         </div>

@@ -252,7 +252,7 @@ export default function MentorDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName}
             </h1>
             <p className="text-muted-foreground">

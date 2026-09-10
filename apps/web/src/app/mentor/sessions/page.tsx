@@ -186,7 +186,7 @@ export default function MentorSessionsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Sessions</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Sessions</h1>
             <p className="text-muted-foreground">
               Manage your mentorship sessions
             </p>

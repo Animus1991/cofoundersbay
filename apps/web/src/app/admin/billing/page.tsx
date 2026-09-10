@@ -217,7 +217,7 @@ export default function AdminBillingPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Billing Administration</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Billing Administration</h1>
             <p className="text-sm text-muted-foreground">Subscriptions, invoices, plans, and coupons.</p>
           </div>
           <Button variant="outline" size="sm" className="gap-2" onClick={() => qc.invalidateQueries({ queryKey: ['admin', 'billing'] })}>

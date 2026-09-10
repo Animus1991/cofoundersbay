@@ -138,7 +138,7 @@ function ResultCard({ result }: { result: SearchResult }) {
               )}
 
               {result.description && (
-                <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mt-1">
                   {result.highlight ? (
                     <SanitizedHtml as="span" profile="highlight" html={result.highlight} />
                   ) : (

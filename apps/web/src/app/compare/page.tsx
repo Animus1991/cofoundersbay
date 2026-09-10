@@ -332,7 +332,7 @@ export default function ComparePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground flex items-center gap-2">
               <ArrowLeftRight className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Compare Profiles
             </h1>

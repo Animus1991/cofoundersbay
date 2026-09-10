@@ -83,7 +83,7 @@ function VersionCard({
         </div>
 
         {v.changesSummary && (
-          <p className="text-xs text-muted-foreground line-clamp-2">{v.changesSummary}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{v.changesSummary}</p>
         )}
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">

@@ -218,7 +218,7 @@ export default function OrgApplicationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Applications</h1>
+            <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold tracking-tight">Applications</h1>
             <p className="text-muted-foreground">
               Review and manage startup applications
             </p>

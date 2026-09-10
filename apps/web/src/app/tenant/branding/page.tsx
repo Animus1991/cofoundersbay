@@ -234,7 +234,7 @@ export default function TenantBrandingPage() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
               <Palette className="icon-lg text-primary-emphasis" aria-hidden="true" />
               Branding
             </h1>

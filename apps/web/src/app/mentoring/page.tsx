@@ -186,7 +186,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground line-clamp-2">{mentor.bio}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{mentor.bio}</p>
 
         {/* Expertise tags */}
         <div className="flex flex-wrap gap-1">

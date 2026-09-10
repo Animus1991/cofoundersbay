@@ -313,7 +313,7 @@ export function BranchPanel({
                             <span className="text-sm font-medium truncate">{branch.name}</span>
                           </div>
                           {branch.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
+                            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mb-2">{branch.description}</p>
                           )}
                           <div className="flex items-center gap-2 flex-wrap">
                             <Badge variant="outline" className={cn('text-xs', meta.color)}>

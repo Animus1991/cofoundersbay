@@ -423,8 +423,12 @@ export function BuilderWorkspace() {
 
       {/* ── Tabs ──────────────────────────────────────────────────────────── */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between">
-          <TabsList>
+        {/* The tab strip and the actions were one `justify-between` row with no
+            `min-w-0` on either side. Below ~430px the four triggers could not
+            shrink, so they ran under the buttons — the "Team" label was fully
+            covered. They get their own rows until there is width for both. */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="min-w-0 max-w-full">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="documents">
               Documents
@@ -441,7 +445,7 @@ export function BuilderWorkspace() {
             <TabsTrigger value="readiness">Readiness</TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <Button size="sm" variant="outline" onClick={() => setShowInviteDialog(true)}>
               <UserPlus className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
               Invite
@@ -627,7 +631,7 @@ export function BuilderWorkspace() {
                     </CardHeader>
                     <CardContent className="pt-0 space-y-3">
                       {doc.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">{doc.description}</p>
+                        <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">{doc.description}</p>
                       )}
                       <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">

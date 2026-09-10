@@ -111,7 +111,7 @@ export default function ApiStatusPage() {
   return (
     <div className="container mx-auto p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">API Status Check</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-2">API Status Check</h1>
         <p className="text-muted-foreground">
           Check the status of all API endpoints to diagnose 404 errors
         </p>

@@ -137,7 +137,7 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         <p className={cn('text-sm leading-snug', isUnread ? 'font-medium text-foreground' : 'text-foreground/80')}>
           {item.title}
         </p>
-        {item.body && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{item.body}</p>}
+        {item.body && <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground line-clamp-2">{item.body}</p>}
         <div className="mt-1 flex items-center gap-2">
           <Clock className="icon-2xs text-muted-foreground/60" aria-hidden="true" />
           <span className="text-2xs text-muted-foreground">{formatTimeAgo(item.createdAt)}</span>

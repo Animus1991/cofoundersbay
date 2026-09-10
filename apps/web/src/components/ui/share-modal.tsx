@@ -122,7 +122,7 @@ export function ShareModal({
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium line-clamp-1">{title}</p>
-                {description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
+                {description && <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2 mt-0.5">{description}</p>}
                 <p className="text-xs text-primary-emphasis truncate mt-1">{url}</p>
               </div>
             </div>

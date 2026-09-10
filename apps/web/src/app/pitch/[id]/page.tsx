@@ -217,7 +217,8 @@ function CoverSlide({ slide }: { slide: SlideBase }) {
       <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm text-primary-emphasis font-medium">
         {c.stage} • Raising {c.raising}
       </div>
-      <h1 className="text-5xl font-bold text-foreground mb-4">{slide.title}</h1>
+      {/* 48px fixed left roughly six characters per line on a 320px screen. */}
+      <h1 className="text-3xl font-bold text-foreground mb-4 sm:text-4xl lg:text-5xl">{slide.title}</h1>
       <p className="text-xl text-muted-foreground max-w-2xl">{c.tagline}</p>
       <p className="text-sm text-muted-foreground mt-8">Founded {c.founded}</p>
     </div>

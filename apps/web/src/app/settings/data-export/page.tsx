@@ -276,7 +276,7 @@ export default function DataExportPage() {
               <Database className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Export Your Data</h1>
+              <h1 className="text-xl sm:text-2xl xl:text-3xl font-bold text-foreground">Export Your Data</h1>
               <p className="text-sm text-muted-foreground">
                 Download a copy of your information from CoFounderBay
               </p>
