@@ -524,7 +524,11 @@
   .skip-to-content {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%) translateY(-120%);
+    /* -120% of a 38px pill against `top: 0.75rem` left 4px of it poking
+       below the top edge on every page. -200% is proportional to the
+       element's own height, so it clears any `top` offset up to 100% of
+       that height and cannot regress if the padding or font changes. */
+    transform: translateX(-50%) translateY(-200%);
     top: 0.75rem;
     z-index: 9999;
     padding: 0.5rem 1.25rem;

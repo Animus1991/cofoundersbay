@@ -18,7 +18,9 @@ const MOCK_API_PORT = Number(process.env.MOCK_API_PORT ?? 3001);
  */
 export default defineConfig({
   testDir: './e2e',
-  timeout: 60_000,
+  // The authenticated a11y tests poll for up to 45s (see the note there);
+  // the per-test budget has to leave room for navigation on top of that.
+  timeout: 90_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

@@ -45,11 +45,29 @@ for (const route of PUBLIC_ROUTES) {
 
 test('skip link is the first focusable element and targets main', async ({ page }) => {
   await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  // Off-screen until focused. It is moved with a percentage translate, so an
+  // offset that does not clear the element's own height leaves a sliver of it
+  // showing on every page — 4px, before this was pinned down.
+  const link = page.locator('a.skip-to-content');
+  const hidden = await link.boundingBox();
+  expect(hidden, 'skip link should be in the layout').not.toBeNull();
+  expect(hidden!.y + hidden!.height, 'skip link must sit fully above the viewport').toBeLessThanOrEqual(0);
+
   await page.keyboard.press('Tab');
 
   const focused = page.locator(':focus');
   await expect(focused).toHaveClass(/skip-to-content/);
   await expect(focused).toHaveAttribute('href', '#main-content');
+
+  // …and fully visible once it is focused, or it bypasses nothing. The reveal
+  // is a 150ms transform transition, so this has to settle rather than sample.
+  await expect
+    .poll(async () => (await link.boundingBox())?.y ?? -1, {
+      message: 'focused skip link must come fully on screen',
+      timeout: 3_000,
+    })
+    .toBeGreaterThanOrEqual(0);
 });
 
 test('viewport does not lock zoom', async ({ page }) => {

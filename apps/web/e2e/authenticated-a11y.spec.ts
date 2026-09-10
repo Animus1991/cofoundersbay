@@ -164,7 +164,12 @@ test.describe('authenticated routes', () => {
           );
         }, {
           message: `axe violations on ${route.path}`,
-          timeout: 20_000,
+          // Each attempt is a 5s stable-DOM wait plus a full axe scan, and under
+          // the 2 workers CI uses those scans contend for one Next server and a
+          // single-threaded stub API. A 20s budget could not fit three attempts
+          // and expired mid-scan, which surfaced as a different "failing" route
+          // on every run. The assertion is unchanged — only the patience.
+          timeout: 45_000,
           intervals: [0, 1500, 3000],
         })
         .toEqual([]);
