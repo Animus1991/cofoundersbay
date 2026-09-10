@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 const NAV_LINKS = [
   { href: '#how-it-works', label: 'How it works' },
@@ -19,7 +20,8 @@ export function LandingNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl safe-top"
+      style={{ top: TOP_BANNER_STACK }}
+      className="fixed z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl safe-top"
     >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
         <Link href="/" aria-label="CoFounderBay home">

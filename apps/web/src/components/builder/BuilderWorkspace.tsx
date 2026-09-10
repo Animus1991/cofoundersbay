@@ -590,7 +590,7 @@ export function BuilderWorkspace() {
 
         {/* ── Overview Tab ──────────────────────────────────────────────── */}
         <TabsContent value="overview" className="mt-4 space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Progress card */}
             <Card className="min-w-0">
               <CardHeader>

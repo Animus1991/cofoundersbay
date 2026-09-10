@@ -13,9 +13,23 @@
 html {
   --font-inter: system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display-brand: var(--font-inter);
+  --banner-network: 0px;
+  --banner-demo: 0px;
 }
 
 @layer base {
+  /* iOS Safari zooms the whole page whenever a focused form control renders
+     below 16px. Primitives already use `text-base sm:text-sm`; this catches
+     raw <input>/<select>/<textarea> that bypass them. `!important` because a
+     Tailwind text utility on the element would otherwise win. */
+  @media (max-width: 639.98px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
   :root {
     /* ── Light theme — clean, minimal (Replit / ChatGPT inspired) ── */
     --background:       220 16% 96%;

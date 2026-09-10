@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { appShellMainClasses } from '@/lib/layout-config';
 import { CfbGlyphWell } from '@/components/icons/CfbGlyph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 const MemoSideNav = memo(SideNav);
 const MemoTopBar = memo(TopBar);
@@ -60,7 +61,10 @@ export function AppShell({
       : `Help me with ${pageTitle ?? 'this page'}${pageDescription ? `: ${pageDescription}` : ''}. What should I do next?`;
 
   return (
-    <div className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}>
+    <div
+      className={cn('bg-background', fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]')}
+      style={{ paddingTop: TOP_BANNER_STACK }}
+    >
       {/* Skip link lives once in app/layout.tsx so it is never duplicated in the tab order. */}
 
       {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
@@ -106,19 +110,19 @@ export function AppShell({
                     <CfbGlyphWell href={pathname} size="md" />
                     <div className="min-w-0">
                       {pageTitle && (
-                        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+                        <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl xl:text-3xl">
                           <BilingualText en={pageTitle} el={pageTitleEl} />
                         </h1>
                       )}
                       {pageDescription && (
-                        <p className="mt-0.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
+                        <p className="mt-1 max-w-prose text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm">
                           <BilingualText en={pageDescription} el={pageDescriptionEl} />
                         </p>
                       )}
                     </div>
                   </div>
                   {(actions || showAskAi) && (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                       {showAskAi && (
                         <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
                       )}

@@ -31,6 +31,7 @@ import { useDemoData } from '@/contexts/DemoDataContext';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 import { useI18n } from '@/components/common/I18nProvider';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 /**
  * Small, inline indicator that this is the shared preview-demo account.
@@ -140,7 +141,10 @@ export function TopBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x">
+      <header
+        style={{ top: TOP_BANNER_STACK }}
+        className="sticky z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x"
+      >
         <MobileNav />
         <SearchBar />
 

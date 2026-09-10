@@ -41,7 +41,7 @@ export function XPProgressWidget() {
     );
   }
 
-  if (!xp) return null;
+  if (!xp || typeof xp.totalXp !== 'number' || typeof xp.levelProgress !== 'number') return null;
 
   return (
     <Card className="rounded-xl">

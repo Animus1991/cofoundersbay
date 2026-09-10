@@ -288,7 +288,10 @@ const TRUSTED_BY: Array<{ name: string; abbr: string; color: string }> = [
 
 export function LandingHome() {
   return (
-    <div className="min-h-screen bg-background">
+    <div
+      className="min-h-screen bg-background"
+      style={{ paddingTop: 'calc(var(--banner-network, 0px) + var(--banner-demo, 0px))' }}
+    >
       <LandingNav />
       <main id="main-content">
 

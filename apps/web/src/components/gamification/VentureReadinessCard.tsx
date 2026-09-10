@@ -110,7 +110,10 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
     );
   }
 
-  if (!vrs) return null;
+  // The card dereferences `overall` and maps `dimensions` unconditionally, and
+  // `<Link href>` throws outright on `undefined` — so anything short of a
+  // complete payload has to render nothing rather than take the page down.
+  if (!vrs || typeof vrs.overall !== 'number' || !Array.isArray(vrs.dimensions)) return null;
 
   const { labelEn: tierEn, labelEl: tierEl, color: tierColor } = scoreTier(vrs.overall);
   const dimensionCount = vrs.dimensions.length;
@@ -156,7 +159,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
                 el={`Ζυγισμένος σε ${dimensionCount} διαστάσεις προόδου ιδρυτή`}
               />
             </p>
-            {vrs.lowestDimension && (
+            {vrs.lowestDimension?.href && (
               <div className={cn('mt-2 flex items-start justify-center gap-1.5 text-xs sm:justify-start', STATUS.warning.text)}>
                 <CfbGlyph name="spark" className="icon-sm mt-0.5 shrink-0" />
                 <span className="min-w-0 text-pretty">
@@ -172,7 +175,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         </div>
 
         <ul className={cn('space-y-1.5', compact && 'hidden')}>
-          {vrs.dimensions.map((dim) => {
+          {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
             const { color, bar } = scoreTier(dim.score);
             return (
               <li key={dim.key}>
