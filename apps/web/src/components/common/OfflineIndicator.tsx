@@ -116,7 +116,10 @@ export function OfflineBanner() {
         role="status"
         className={cn('fixed top-0 left-0 right-0 z-50 px-4 py-2', variant.tone)}
       >
-        <div className="container mx-auto flex items-center justify-between gap-3">
+        {/* Centred when there is nothing to act on — the "Back online" state
+            has no button, and `justify-between` left it hanging on the left. */}
+        <div className={cn('container mx-auto flex items-center gap-3',
+                            variant.action ? 'justify-between' : 'justify-center')}>
           <div className="flex min-w-0 items-center gap-2">
             {variant.icon}
             <span className="text-sm font-medium">{variant.text}</span>

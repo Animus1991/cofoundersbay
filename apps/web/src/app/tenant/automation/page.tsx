@@ -25,6 +25,8 @@ import {
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
 import { useConfirm } from '@/components/ui/confirm-dialog';
+import Link from 'next/link';
+import { EmptyState } from '@/components/common/EmptyState';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -269,12 +271,26 @@ export default function TenantAutomationPage() {
   const failureRules = rules.filter(r => r.failureCount > 0).length;
 
   if (!tenantId) {
+    // This was a dead end: an icon and one sentence, with nothing to act on and
+    // no explanation of why. It now uses the same EmptyState the rest of the app
+    // does, says what automations are for, and offers a way out.
     return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center py-20">
-          <Workflow className="h-10 w-10 text-muted-foreground mb-3" aria-hidden="true" />
-          <p className="text-muted-foreground">No organization context found.</p>
-        </div>
+      <AppShell title="Automations">
+        <EmptyState
+          title="No organization selected"
+          description="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up."
+          illustration="rocket"
+          action={
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Button asChild>
+                <Link href="/tenant/dashboard">Choose an organization</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/org">Browse organizations</Link>
+              </Button>
+            </div>
+          }
+        />
       </AppShell>
     );
   }
