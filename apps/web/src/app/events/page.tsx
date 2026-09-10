@@ -111,12 +111,12 @@ export default function EventsPage() {
       title="Events"
       description="Discover networking events, workshops, and meetups"
       actions={
-        <Link href="/events/create">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/events/create">
             <Plus className="icon-sm" aria-hidden="true" />
             Create Event
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
@@ -190,7 +190,7 @@ export default function EventsPage() {
               className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">Filter:</span>
             {(['all', 'online', 'in-person', 'hybrid'] as EventFilter[]).map((f) => (
               <Button
@@ -216,7 +216,7 @@ export default function EventsPage() {
                 <button onClick={() => refetch()} className="text-sm text-primary-emphasis hover:underline">Try again</button>
               </div>
             ) : loading ? (
-              <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1')}>
+              <div className={cn('grid gap-4', viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1')}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <EventCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
                 ))}
@@ -236,13 +236,13 @@ export default function EventsPage() {
                 illustration="calendar"
                 action={
                   tab === 'my-events' && !hasToken ? (
-                    <Link href="/login">
-                      <Button>Sign in</Button>
-                    </Link>
+                    <Button asChild>
+                      <Link href="/login">Sign in</Link>
+                    </Button>
                   ) : (
-                    <Link href="/events/create">
-                      <Button>Create an event</Button>
-                    </Link>
+                    <Button asChild>
+                      <Link href="/events/create">Create an event</Link>
+                    </Button>
                   )
                 }
               />
@@ -268,7 +268,7 @@ export default function EventsPage() {
                   staggerDelay={50}
                   className={cn(
                     'grid gap-4',
-                    viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1',
+                    viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1',
                   )}
                 >
                   {rest.map((event) => (

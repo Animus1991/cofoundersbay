@@ -33,9 +33,9 @@ export default function Error({
             <RefreshCw className="icon-sm" aria-hidden="true" />
             Try again
           </Button>
-          <Link href="/">
-            <Button variant="secondary">Go home</Button>
-          </Link>
+          <Button variant="secondary" asChild>
+            <Link href="/">Go home</Link>
+          </Button>
         </div>
       </div>
     </div>

@@ -54,7 +54,7 @@ export default function NotFound() {
         </div>
 
         <nav aria-label="Suggested pages" className="mt-10">
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {SUGGESTIONS.map(({ href, label, description, icon: Icon }) => (
               <li key={href}>
                 <Link

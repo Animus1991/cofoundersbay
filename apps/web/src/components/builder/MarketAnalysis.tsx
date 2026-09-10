@@ -320,7 +320,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
         {/* Market Size Tab */}
         <TabsContent value="market-size" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* TAM */}
             <Card>
               <CardHeader>
@@ -510,7 +510,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               ) : (
                 data.directCompetitors.map((competitor, index) => (
                   <Card key={index} className="p-4">
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <Label>Name</Label>
                         <Input
@@ -561,7 +561,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <Label>Demographics</Label>
                   <Textarea
@@ -624,7 +624,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
                   <p>No personas created yet. Click "Add Persona" to start.</p>
                 </div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {data.personas.map((persona, index) => (
                     <Card key={index} className="p-4">
                       <div className="space-y-3">
@@ -730,7 +730,7 @@ export function MarketAnalysis({ onSave, initialData }: MarketAnalysisProps) {
 
         {/* Positioning Tab */}
         <TabsContent value="positioning" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Market Positioning</CardTitle>

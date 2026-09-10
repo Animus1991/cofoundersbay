@@ -137,7 +137,7 @@ export default function MentorAvailabilityPage() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-72" />
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function MentorAvailabilityPage() {
         </div>
 
         {/* Status Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
@@ -298,7 +298,7 @@ export default function MentorAvailabilityPage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Session Settings</CardTitle></CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Default Session Duration</Label>
                     <Select value={String(sessionDuration)} onValueChange={v => setSessionDuration(Number(v))}>

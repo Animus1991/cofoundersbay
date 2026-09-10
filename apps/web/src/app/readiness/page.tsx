@@ -383,7 +383,7 @@ function ReadinessSkeleton() {
         <Skeleton className="h-4 w-96" />
       </div>
       <Card><CardContent className="p-6"><Skeleton className="h-40 w-full" /></CardContent></Card>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {[...Array(6)].map((_, i) => (
           <Card key={i}><CardContent className="p-5"><Skeleton className="h-32 w-full" /></CardContent></Card>
         ))}
@@ -456,7 +456,7 @@ export default function ReadinessPage() {
         </div>
 
         {/* Overall Score + Readiness Benchmarks */}
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {/* Main score ring */}
           <Card className="lg:col-span-1 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
             <CardContent className="p-4 flex flex-col items-center text-center gap-3">
@@ -548,7 +548,7 @@ export default function ReadinessPage() {
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
           <div className="lg:col-span-3">
             <ReadinessRadarChart dimensions={dimensions} />
           </div>
@@ -624,7 +624,7 @@ export default function ReadinessPage() {
                 </div>
               </div>
             )}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {dimensions.map((dim) => (
                 <DimensionCard
                   key={dim.key}
@@ -687,7 +687,7 @@ export default function ReadinessPage() {
           </TabsContent>
 
           <TabsContent value="benchmarks" className="mt-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Accelerator benchmark */}
               <Card>
                 <CardHeader>
@@ -757,7 +757,7 @@ export default function ReadinessPage() {
                 <CardTitle className="text-sm">Dimension Weights & Weighted Scores</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     const accelContrib = Math.round(pct * d.acceleratorWeight / 100);
@@ -820,7 +820,7 @@ export default function ReadinessPage() {
         </Tabs>
 
         {/* Quick Actions */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Button asChild className="h-auto py-3 flex-col gap-1">
             <Link href="/builder">
               <Rocket className="icon-sm" aria-hidden="true" />

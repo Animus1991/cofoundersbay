@@ -530,12 +530,12 @@ export default function ProfileEditPage() {
       description="Update your personal details and how you appear to others"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/profile" className="hidden sm:block">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/profile" className="hidden sm:block">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
               Cancel
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
             {saving ? <Loader2 className="icon-sm animate-spin" aria-hidden="true" /> : <Save className="icon-sm" aria-hidden="true" />}
             Save changes
@@ -784,7 +784,7 @@ export default function ProfileEditPage() {
                     Location & Timezone
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-5 sm:grid-cols-2 pt-6">
+                <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2 pt-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">City, Country</label>
                     <Input
@@ -822,7 +822,7 @@ export default function ProfileEditPage() {
                     placeholder="Type a skill and press Enter..."
                     max={15}
                   />
-                  <div className="grid gap-6 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     <TagInput
                       label="Industries"
                       value={form.industries}
@@ -856,7 +856,7 @@ export default function ProfileEditPage() {
                   <CardDescription>Select how you primarily participate in the ecosystem</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {roleOptions.map((opt) => {
                       const Icon = opt.icon;
                       return (
@@ -945,7 +945,7 @@ export default function ProfileEditPage() {
                       onChange={(v) => updateField('availability', v as string)}
                       options={availabilityOptions}
                     />
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Meeting Preference</label>
                         <select
@@ -996,7 +996,7 @@ export default function ProfileEditPage() {
                       options={investmentStageOptions}
                       multiple
                     />
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Min Check Size</label>
                         <Input
@@ -1065,7 +1065,7 @@ export default function ProfileEditPage() {
                   <CardDescription>Connect your other profiles so people can learn more about you</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
-                  <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
                         <Globe className="icon-sm text-muted-foreground" aria-hidden="true" /> Personal Website
@@ -1187,11 +1187,11 @@ export default function ProfileEditPage() {
                   Save Changes
                 </Button>
                 <div className="flex gap-2">
-                  <Link href="/profile" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs h-9">
+                  <Button variant="outline" className="w-full text-xs h-9" asChild>
+                    <Link href="/profile" className="flex-1">
                       View Profile
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                   <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
                     Add Links
                   </Button>

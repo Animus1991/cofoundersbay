@@ -25,7 +25,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border/60 bg-card/95 px-2 py-2 backdrop-blur-md lg:hidden safe-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch justify-between border-t border-border/60 bg-card/95 px-1 py-2 backdrop-blur-md sm:hidden safe-bottom"
       role="navigation"
     >
       {bottomTabs.map((tab) => {
@@ -39,7 +39,7 @@ export function MobileBottomNav() {
             key={tab.path}
             href={tab.path}
             className={cn(
-              'relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 text-xs font-medium transition-colors',
+              'relative flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs font-medium transition-colors',
               isActive
                 ? 'text-primary-emphasis'
                 : 'text-muted-foreground hover:text-foreground'
@@ -56,7 +56,7 @@ export function MobileBottomNav() {
                 </span>
               )}
             </div>
-            <span>{tab.label}</span>
+            <span className="w-full truncate text-center">{tab.label}</span>
           </OptimizedLink>
         );
       })}

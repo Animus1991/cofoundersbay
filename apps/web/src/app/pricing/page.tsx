@@ -242,7 +242,7 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {PLANS.map((plan) => {
             const Icon = plan.icon;
             const price = getPlanPrice(plan);
@@ -383,7 +383,7 @@ export default function PricingPage() {
           Frequently asked questions
         </h2>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {[
             {
               q: 'Can I switch plans later?',

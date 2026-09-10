@@ -66,12 +66,17 @@ export function AppShellFrame({
   const { expanded, mounted } = useSidebar();
   const user = useCurrentUser();
   const isDemo = user?.email === 'demo@cofounderbay.com';
-  const offset = (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]';
+  // Purely CSS so the gutter is right on first paint: the 68px rail starts at
+  // `sm`, and only `lg` and up can widen to the 240px drawer. Keep these steps
+  // in lockstep with SideNav's `hidden sm:flex` and SidebarContext's RAIL_QUERY.
+  const offset = (mounted ? expanded : true)
+    ? 'sm:ml-[68px] lg:ml-[240px]'
+    : 'sm:ml-[68px] lg:ml-[68px]';
 
   return (
     <InAppShellFrame.Provider value={true}>
       <div className={cn('bg-background', fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen')}>
-        {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
+        {/* Fixed left nav — icon rail from sm, full drawer from lg, hidden below sm */}
         <MemoSideNav />
 
         {/* Demo mode banner — full width, above the content column */}
@@ -123,7 +128,7 @@ export function AppShellFrame({
               className={cn(
                 'flex-1 mx-auto w-full max-w-screen-2xl',
                 'px-4 sm:px-6 lg:px-8',
-                'pt-4 pb-24 lg:pb-10',
+                'pt-4 pb-24 sm:pb-10',
                 contentClassName,
               )}
             >

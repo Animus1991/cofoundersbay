@@ -289,7 +289,7 @@ export function ApplicationGenerator({ onSave, workspaceData }: ApplicationGener
       </div>
 
       {/* Application Selector */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         {applications.map(app => {
           const Icon = app.icon;
           const completion = calculateCompletion(app);

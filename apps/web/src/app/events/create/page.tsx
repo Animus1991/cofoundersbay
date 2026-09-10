@@ -89,12 +89,12 @@ export default function CreateEventPage() {
       title="Create Event"
       description="Host a meetup, webinar, or demo day for the community"
       actions={
-        <Link href="/events">
-          <Button variant="secondary" size="sm" className="gap-2">
+        <Button variant="secondary" size="sm" className="gap-2" asChild>
+          <Link href="/events">
             <ArrowLeft className="icon-sm" aria-hidden="true" />
             Back to events
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
@@ -163,7 +163,7 @@ export default function CreateEventPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">
                   Start <span className="text-destructive-emphasis">*</span>
@@ -298,11 +298,11 @@ export default function CreateEventPage() {
               </>
             )}
           </Button>
-          <Link href="/events">
-            <Button type="button" variant="ghost">
+          <Button type="button" variant="ghost" asChild>
+            <Link href="/events">
               Cancel
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </form>
     </AppShell>

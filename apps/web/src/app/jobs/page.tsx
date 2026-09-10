@@ -110,11 +110,11 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
             </div>
           </div>
 
-          <Link href={job.href ?? `/jobs`} className="shrink-0">
-            <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8">
+          <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8" asChild>
+            <Link href={job.href ?? `/jobs`} className="shrink-0">
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />View
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Skills footer */}
@@ -292,9 +292,9 @@ export default function JobsPage() {
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-base font-bold text-foreground leading-none">{s.value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">{s.label}</p>
+                  <p className="mt-0.5 truncate text-2xs text-muted-foreground">{s.label}</p>
                 </div>
               </CardContent>
             </Card>

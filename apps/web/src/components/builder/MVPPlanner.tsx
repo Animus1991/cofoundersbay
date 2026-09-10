@@ -374,7 +374,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
         {/* Scope Tab */}
         <TabsContent value="scope" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>MVP Scope Definition</CardTitle>
@@ -487,7 +487,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                         <div className="space-y-2 ml-5">
                           {priorityFeatures.map(feature => (
                             <Card key={feature.id} className="p-4">
-                              <div className="grid gap-3 md:grid-cols-4">
+                              <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                                 <div className="md:col-span-2">
                                   <Input
                                     value={feature.name}
@@ -547,7 +547,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
 
           {/* Feature Summary */}
           {data.features.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <Card>
                 <CardContent className="p-4 text-center">
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
@@ -608,7 +608,7 @@ export function MVPPlanner({ onSave, initialData }: MVPPlannerProps) {
                           {index + 1}
                         </div>
                         <div className="flex-1 space-y-3">
-                          <div className="grid gap-3 md:grid-cols-2">
+                          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                             <Input
                               value={sprint.name}
                               onChange={(e) => {

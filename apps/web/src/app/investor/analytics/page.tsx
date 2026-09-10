@@ -176,7 +176,7 @@ export default function InvestorAnalyticsPage() {
         </div>
 
         {/* KPI Grid */}
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {kpis.map(kpi => (
             <Card key={kpi.label}>
               <CardContent className="p-4">
@@ -210,7 +210,7 @@ export default function InvestorAnalyticsPage() {
 
           {/* Deal Flow Tab */}
           <TabsContent value="flow" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Monthly Deal Activity</CardTitle>
@@ -257,7 +257,7 @@ export default function InvestorAnalyticsPage() {
 
           {/* Sectors Tab */}
           <TabsContent value="sectors" className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Industry Distribution</CardTitle>

@@ -99,12 +99,12 @@ function ProfileCompletionCard({ profile }: { profile: NonNullable<ProfileData> 
             </div>
           ))}
         </div>
-        <Link href="/profile/edit">
-          <Button size="sm" variant="secondary" className="w-full gap-2 mt-1">
+        <Button size="sm" variant="secondary" className="w-full gap-2 mt-1" asChild>
+          <Link href="/profile/edit">
             <Edit className="h-3.5 w-3.5" aria-hidden="true" />
             Complete profile
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -313,12 +313,12 @@ export default function ProfilePage() {
           <Button aria-label="Copy profile link" variant="ghost" size="icon" onClick={handleShare} className="sm:hidden" title="Copy profile link">
             <Share2 className="icon-sm" aria-hidden="true" />
           </Button>
-          <Link href="/profile/edit">
-            <Button size="sm" className="gap-2">
+          <Button size="sm" className="gap-2" asChild>
+            <Link href="/profile/edit">
               <Edit className="icon-sm" aria-hidden="true" />
               Edit Profile
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -427,9 +427,9 @@ export default function ProfilePage() {
                 ) : (
                   <div className="text-center py-6 bg-secondary/20 rounded-lg border border-dashed border-border/50">
                     <p className="text-sm text-muted-foreground mb-3">Your bio is empty. Tell the community about yourself!</p>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm">Add Bio</Button>
-                    </Link>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/profile/edit">Add Bio</Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -453,7 +453,7 @@ export default function ProfilePage() {
                     What I&apos;m Looking For
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-4 sm:grid-cols-2 pt-5">
+                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-5">
                   {cards.map(({ icon: Icon, label, value }) => (
                     <div key={label} className="rounded-xl border bg-card p-4 hover:border-primary/30 transition-colors shadow-sm">
                       <div className="flex items-center gap-2.5 mb-2">
@@ -486,15 +486,15 @@ export default function ProfilePage() {
                     <BarChart3 className="icon-md text-primary-emphasis" aria-hidden="true" />
                     Top Skills & Proficiency
                   </CardTitle>
-                  <Link href="/profile/edit">
-                    <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-emphasis">
+                  <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-emphasis" asChild>
+                    <Link href="/profile/edit">
                       <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="pt-5">
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {profile.skills.slice(0, 6).map((s, i) => {
                     const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
                     const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
@@ -547,11 +547,11 @@ export default function ProfilePage() {
                   <p className="text-sm font-medium text-foreground">Showcase your best work</p>
                   <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">Add projects, startups, publications, or key achievements to stand out.</p>
                 </div>
-                <Link href="/profile/edit" className="mt-2">
-                  <Button variant="outline" size="sm" className="gap-1.5">
+                <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                  <Link href="/profile/edit" className="mt-2">
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" /> Add First Item
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -569,12 +569,12 @@ export default function ProfilePage() {
                     Profiles with bios and role details receive 4x more connection requests. Take 2 minutes to fill it out!
                   </p>
                 </div>
-                <Link href="/profile/edit">
-                  <Button className="gap-2 mt-2">
+                <Button className="gap-2 mt-2" asChild>
+                  <Link href="/profile/edit">
                     <Edit className="icon-sm" aria-hidden="true" />
                     Complete Profile Now
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -585,23 +585,23 @@ export default function ProfilePage() {
           {/* Action Card */}
           <Card className="shadow-sm border-border/50 sticky top-6">
             <CardContent className="p-5 space-y-4">
-              <Link href="/profile/edit" className="block w-full">
-                <Button className="w-full gap-2 font-medium">
+              <Button className="w-full gap-2 font-medium" asChild>
+                <Link href="/profile/edit" className="block w-full">
                   <Edit className="icon-sm" aria-hidden="true" />
                   Edit Profile
-                </Button>
-              </Link>
+                </Link>
+              </Button>
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" className="w-full gap-2" onClick={handleShare}>
                   <LinkIcon className="icon-sm" aria-hidden="true" />
                   Copy Link
                 </Button>
-                <Link href="/settings/general" className="block w-full">
-                  <Button variant="outline" className="w-full gap-2">
+                <Button variant="outline" className="w-full gap-2" asChild>
+                  <Link href="/settings/general" className="block w-full">
                     <Zap className="icon-sm" aria-hidden="true" />
                     Settings
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -635,9 +635,9 @@ export default function ProfilePage() {
                 </div>
               ))}
               <div className="col-span-2 mt-2">
-                <Link href="/reputation">
-                  <Button variant="secondary" className="w-full text-xs h-8">View Reputation Dashboard</Button>
-                </Link>
+                <Button variant="secondary" className="w-full text-xs h-8" asChild>
+                  <Link href="/reputation">View Reputation Dashboard</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -30,12 +30,12 @@ export function EmptyConnections({ className }: EmptyStateProps) {
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         Start building your network by discovering founders, mentors, and investors who share your interests.
       </p>
-      <Link href="/discover">
-        <Button className="gap-2">
+      <Button className="gap-2" asChild>
+        <Link href="/discover">
           <Compass className="icon-sm" aria-hidden="true" />
           Discover people
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -50,12 +50,12 @@ export function EmptyMessages({ className }: EmptyStateProps) {
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         Connect with someone to start a conversation. Your messages will appear here.
       </p>
-      <Link href="/connections">
-        <Button className="gap-2">
+      <Button className="gap-2" asChild>
+        <Link href="/connections">
           <UserPlus className="icon-sm" aria-hidden="true" />
           View connections
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -70,12 +70,12 @@ export function EmptyEvents({ className }: EmptyStateProps) {
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         There are no events scheduled right now. Check back later or create your own event.
       </p>
-      <Link href="/events/create">
-        <Button className="gap-2">
+      <Button className="gap-2" asChild>
+        <Link href="/events/create">
           <Calendar className="icon-sm" aria-hidden="true" />
           Create event
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -108,12 +108,12 @@ export function EmptyGroups({ className }: EmptyStateProps) {
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         Join groups to connect with like-minded founders and participate in discussions.
       </p>
-      <Link href="/groups">
-        <Button className="gap-2">
+      <Button className="gap-2" asChild>
+        <Link href="/groups">
           <Search className="icon-sm" aria-hidden="true" />
           Browse groups
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -193,12 +193,12 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
       <p className="text-sm text-muted-foreground max-w-sm mb-6">
         Book a session with a mentor to get personalized guidance for your startup journey.
       </p>
-      <Link href="/mentoring">
-        <Button className="gap-2">
+      <Button className="gap-2" asChild>
+        <Link href="/mentoring">
           <Search className="icon-sm" aria-hidden="true" />
           Find mentors
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

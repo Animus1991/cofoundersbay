@@ -114,19 +114,19 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
               </Button>
             )}
 
-            <Link href={b?.ctaUrl || '/register'}>
-              <Button size="lg" className="bg-white text-primary-emphasis hover:bg-white/90 gap-2 shadow">
+            <Button size="lg" className="bg-white text-primary-emphasis hover:bg-white/90 gap-2 shadow" asChild>
+              <Link href={b?.ctaUrl || '/register'}>
                 {b?.ctaLabel || 'Get Started'}
                 <ChevronRight className="icon-sm" aria-hidden="true" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link href="/login">
-              <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2">
+            <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 gap-2" asChild>
+              <Link href="/login">
                 <LogIn className="icon-sm" aria-hidden="true" />
                 Sign In
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {sso?.ssoRequired && (
@@ -156,7 +156,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
 
       {/* Feature cards */}
       <section className="mx-auto max-w-5xl px-6 py-16">
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           {[
             { icon: Users, title: b?.communityNaming ? `Join the ${b.communityNaming}` : 'Connect', desc: 'Find co-founders, mentors, and collaborators' },
             { icon: Sparkles, title: 'AI Matching', desc: 'Smart compatibility scoring for better teams' },
@@ -193,12 +193,12 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
                   {sso.provider.loginButtonText || 'SSO Login'}
                 </Button>
               )}
-              <Link href={b?.ctaUrl || '/register'}>
-                <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2" asChild>
+                <Link href={b?.ctaUrl || '/register'}>
                   {b?.ctaLabel || 'Join Now'}
                   <ChevronRight className="icon-sm" aria-hidden="true" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -293,7 +293,7 @@ export default function TenantPage() {
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-3/4" />
-          <div className="grid gap-4 sm:grid-cols-3 pt-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 pt-4">
             {[1,2,3].map(i => <Skeleton key={i} className="h-40 rounded-xl" />)}
           </div>
         </div>
@@ -307,9 +307,9 @@ export default function TenantPage() {
         <Building2 className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-foreground">Organization not found</h1>
         <p className="text-muted-foreground max-w-sm">The ecosystem you&apos;re looking for doesn&apos;t exist or is not active.</p>
-        <Link href="/">
-          <Button variant="outline">Back to CoFounderBay</Button>
-        </Link>
+        <Button variant="outline" asChild>
+          <Link href="/">Back to CoFounderBay</Link>
+        </Button>
       </div>
     );
   }

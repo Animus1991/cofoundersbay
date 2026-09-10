@@ -243,7 +243,7 @@ export default function OrgAdminPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Members"
             value={stats.totalMembers}
@@ -451,7 +451,7 @@ export default function OrgAdminPage() {
           </TabsContent>
 
           <TabsContent value="analytics">
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Member Growth</CardTitle>
@@ -490,7 +490,7 @@ export default function OrgAdminPage() {
                         {role}
                       </Badge>
                     </div>
-                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 text-sm">
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 text-sm">
                       {[
                         'Invite members',
                         'Remove members',

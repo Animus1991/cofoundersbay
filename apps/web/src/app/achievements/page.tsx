@@ -338,7 +338,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
   return (
     <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-sm border-border/50 animate-fade-in">
       <CardContent className="p-4 md:p-6">
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-primary/20">
@@ -630,7 +630,7 @@ export default function AchievementsPage() {
               </TabsContent>
 
               <TabsContent value="leaderboard" className="mt-4 animate-in fade-in slide-in-from-bottom-2">
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   {/* Leaderboard table */}
                   <div className="sm:col-span-2">
                     <Card>

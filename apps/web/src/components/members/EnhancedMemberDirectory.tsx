@@ -192,7 +192,7 @@ export function EnhancedMemberDirectory() {
         {showFilters && (
           <Card>
             <CardContent className="pt-6">
-              <div className="grid gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Role</label>
                   <Select
@@ -320,7 +320,7 @@ export function EnhancedMemberDirectory() {
       {/* Members Grid/List */}
       <div className={cn(
         "grid gap-4",
-        viewMode === 'grid' ? "md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+        viewMode === 'grid' ? "md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" : "grid-cols-1"
       )}>
         {filteredMembers.map((member) => (
           <Card key={member.id} className="hover:shadow-lg transition-shadow">

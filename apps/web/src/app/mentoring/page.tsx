@@ -801,7 +801,7 @@ export default function MentoringPage() {
               <p className="text-sm text-muted-foreground">Failed to load mentors.</p>
             </CardContent></Card>
           ) : mentorsQueryLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <MentorSkeleton key={i} />)}
             </div>
           ) : (
@@ -814,7 +814,7 @@ export default function MentoringPage() {
                       Featured Mentors
                     </h2>
                   </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {featuredMentors.map((mentor) => (
                       <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
                     ))}
@@ -827,7 +827,7 @@ export default function MentoringPage() {
                   {featuredMentors.length > 0 && (
                     <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">All Mentors</h2>
                   )}
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {regularMentors.map((mentor) => (
                       <MentorCard key={mentor.id} mentor={mentor} onBook={() => handleBookMentor(mentor)} />
                     ))}

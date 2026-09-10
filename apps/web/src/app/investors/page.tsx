@@ -213,13 +213,13 @@ function InvestorCard({ investor }: { investor: Investor }) {
             </div>
 
             {/* Stats & Actions */}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-3 pt-3 border-t border-border/40">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><Briefcase className="icon-2xs" aria-hidden="true" />{investor.portfolioCount} investments</span>
                 <span className="flex items-center gap-1"><Eye className="icon-2xs" aria-hidden="true" />{investor.viewCount.toLocaleString()} views</span>
                 <span className="flex items-center gap-1"><BarChart3 className="icon-2xs" aria-hidden="true" />{investor.dealsThisYear} deals / yr</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs gap-1" asChild>
                   <Link href={`/p/${investor.userId}`}>
                     <Eye className="h-3.5 w-3.5" aria-hidden="true" />Profile

@@ -94,7 +94,7 @@ function EndorsementsSkeleton() {
 function ProfilePageSkeleton() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <Card><CardContent className="pt-6"><div className="flex gap-6"><Skeleton className="h-28 w-28 rounded-full shrink-0" /><div className="flex-1 space-y-3"><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-72" /><Skeleton className="h-4 w-32" /></div></div></CardContent></Card>
           <Card><CardHeader><Skeleton className="h-5 w-24" /></CardHeader><CardContent className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></CardContent></Card>
@@ -157,7 +157,9 @@ export default function PublicProfilePage() {
           </div>
           <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
           <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
-          <Link href="/discover"><Button variant="outline">Browse Profiles</Button></Link>
+          <Button variant="outline" asChild>
+            <Link href="/discover">Browse Profiles</Link>
+          </Button>
         </div>
       </div>
     );
@@ -188,7 +190,7 @@ export default function PublicProfilePage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Header */}

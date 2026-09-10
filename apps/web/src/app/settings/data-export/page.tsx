@@ -405,11 +405,11 @@ export default function DataExportPage() {
                 If you want to permanently delete your account and all associated data, 
                 you can do so from your account settings.
               </p>
-              <Link href="/settings">
-                <Button variant="outline" size="sm" className="text-destructive-emphasis border-destructive/30 hover:bg-destructive/10">
+              <Button variant="outline" size="sm" className="text-destructive-emphasis border-destructive/30 hover:bg-destructive/10" asChild>
+                <Link href="/settings">
                   Go to Account Settings
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

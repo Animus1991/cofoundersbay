@@ -68,7 +68,7 @@ export default function SSOAdminPage() {
       description="Configure Single Sign-On for organization tenants"
     >
       {/* Stats row */}
-      <div className="grid gap-4 lg:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mb-6">
         {[
           { label: 'Total Tenants', value: tenants?.length ?? 0, icon: Building2, color: 'text-primary-emphasis' },
           { label: 'Active Providers', value: statsLoading ? '…' : (stats?.activeProviders ?? 0), icon: Key, color: 'text-blue-500' },

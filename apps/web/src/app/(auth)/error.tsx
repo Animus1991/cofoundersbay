@@ -45,9 +45,9 @@ export default function AuthError({
               <RefreshCw className="icon-sm" aria-hidden="true" />
               Try again
             </Button>
-            <Link href="/">
-              <Button variant="outline">Go home</Button>
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/">Go home</Link>
+            </Button>
           </div>
         </div>
       </div>

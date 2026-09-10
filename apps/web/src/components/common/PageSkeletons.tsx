@@ -24,7 +24,7 @@ export function DashboardSkeleton() {
       </div>
       
       {/* Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {[0, 1, 2].map((col) => (
           <div key={col} className="space-y-6">
             {[0, 1].map((row) => (
@@ -54,7 +54,7 @@ export function DiscoverSkeleton() {
       </div>
       
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
             <div className="flex items-start gap-3">
@@ -174,7 +174,7 @@ export function EventsSkeleton() {
       </div>
       
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-border/60 bg-card overflow-hidden">
             <Skeleton className="h-40 w-full" />
@@ -204,7 +204,7 @@ export function GroupsSkeleton() {
       </div>
       
       {/* Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
             <div className="flex items-start gap-3">
@@ -238,7 +238,7 @@ export function MentoringSkeleton() {
       </div>
       
       {/* Mentor grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-border/60 bg-card p-5">
             <div className="flex items-center gap-3">

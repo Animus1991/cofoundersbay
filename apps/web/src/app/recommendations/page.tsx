@@ -663,7 +663,9 @@ export default function RecommendationsPage() {
                   {minScore > 0 ? (
                     <Button size="sm" variant="outline" onClick={() => setMinScore(0)}>Clear Filter</Button>
                   ) : (
-                    <Link href="/profile/edit"><Button size="sm">Complete Profile</Button></Link>
+                    <Button size="sm" asChild>
+                      <Link href="/profile/edit">Complete Profile</Link>
+                    </Button>
                   )}
                 </CardContent>
               </Card>

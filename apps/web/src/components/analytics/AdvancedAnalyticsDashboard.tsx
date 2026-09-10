@@ -171,7 +171,7 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Key Metrics Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {metrics.map((metric, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -200,7 +200,7 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Engagement Chart */}
         <Card>
           <CardHeader>
@@ -279,7 +279,7 @@ export function AdvancedAnalyticsDashboard() {
       </div>
 
       {/* Additional Analytics */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Top Skills */}
         <Card>
           <CardHeader>

@@ -46,7 +46,9 @@ export function ChatBubble() {
 
   return (
     <div 
-      className="fixed bottom-11 right-6 z-50 flex flex-col items-end gap-2"
+      // `bottom-11` (44px) sits underneath the phone bottom bar, which is ~60px
+      // tall before the safe-area inset; lift it clear until the bar goes away at sm.
+      className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-2 sm:bottom-11 sm:right-6"
       style={{
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}

@@ -303,12 +303,12 @@ export function LandingHome() {
             <a href="#pricing" className="transition-colors hover:text-foreground">Pricing</a>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Log in</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm" className="gap-1.5">Join free <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Button>
-            </Link>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/login">Log in</Link>
+            </Button>
+            <Button size="sm" className="gap-1.5" asChild>
+              <Link href="/register">Join free <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>
+            </Button>
           </div>
         </div>
       </nav>
@@ -355,23 +355,23 @@ export function LandingHome() {
             className="mt-10 flex animate-fade-in flex-col items-center justify-center gap-4 sm:flex-row"
             style={{ animationDelay: '300ms' }}
           >
-            <Link href="/register">
-              <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25">
+            <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25" asChild>
+              <Link href="/register">
                 Get started free
                 <ArrowRight className="icon-sm" aria-hidden="true" />
-              </Button>
-            </Link>
-            <Link href="/demo">
-              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5" asChild>
+              <Link href="/demo">
                 <Play className="icon-sm text-primary-emphasis" aria-hidden="true" />
                 Try Demo
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground">
+              </Link>
+            </Button>
+            <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
+              <Link href="/discover">
                 Explore profiles
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div
@@ -428,7 +428,7 @@ export function LandingHome() {
               explainable scores, and end-to-end collaboration tools.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3 relative">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 relative">
             <div className="hidden md:block absolute top-12 left-1/3 right-1/3 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc, color }, index) => (
               <div
@@ -466,7 +466,7 @@ export function LandingHome() {
               Whether you&apos;re building, advising, investing, or supporting, CoFounderBay works for you.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PERSONAS.map(({ icon: Icon, role, color, bg, headline, bullets }, index) => (
               <div
                 key={role}
@@ -510,7 +510,7 @@ export function LandingHome() {
               One platform. No scattered tools. From introductions to signed term sheets.
             </p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {FEATURES.map(({ icon: Icon, title, desc }, index) => (
               <div
                 key={title}
@@ -542,7 +542,7 @@ export function LandingHome() {
               Real impact, real connections, real outcomes — across the global startup community.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {PLATFORM_STATS.map(({ value, label, sub }, index) => (
               <div
                 key={label}
@@ -570,7 +570,7 @@ export function LandingHome() {
               Real stories from real members of the CoFounderBay community.
             </p>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {TESTIMONIALS.map(({ name, role, company, avatar, quote, rating, tag }, index) => (
               <div
                 key={name}
@@ -615,7 +615,7 @@ export function LandingHome() {
               Start free. Upgrade when you need more firepower. No hidden fees.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {PRICING_PLANS.map(({ name, price, period, highlight, badge, desc, features, cta, href }, index) => (
               <div
                 key={name}
@@ -647,15 +647,15 @@ export function LandingHome() {
                     </li>
                   ))}
                 </ul>
-                <Link href={href}>
-                  <Button
+                <Button
                     variant={highlight ? 'default' : 'outline'}
                     className="w-full"
-                  >
+                   asChild>
+                  <Link href={href}>
                     {cta}
                     {highlight && <ArrowRight className="ml-1.5 icon-sm" aria-hidden="true" />}
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             ))}
           </div>
@@ -681,18 +681,18 @@ export function LandingHome() {
             connections on CoFounderBay. Free to start, no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25">
+            <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25" asChild>
+              <Link href="/register">
                 Create free account
                 <ArrowRight className="icon-sm" aria-hidden="true" />
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base">
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base" asChild>
+              <Link href="/discover">
                 <Users className="icon-sm" aria-hidden="true" />
                 Browse profiles
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}
@@ -704,7 +704,7 @@ export function LandingHome() {
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       <footer className="border-t border-border/40 bg-secondary/10 px-6 py-12">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5 mb-10">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5 mb-10">
             <div className="lg:col-span-2 space-y-4">
               <Logo size="sm" />
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">

@@ -82,8 +82,8 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
           </button>
           <button
             onClick={handleDismiss}
-            className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground/60 hover:text-muted-foreground"
-            title="Dismiss checklist"
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground/60 hover:text-muted-foreground"
+            aria-label="Dismiss checklist"
           >
             <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
@@ -118,11 +118,11 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
                 )}
               </div>
               {!step.done && (
-                <Link href={step.href} className="shrink-0">
-                  <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary-emphasis px-2 hover:bg-primary/10">
+                <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-primary-emphasis px-2 hover:bg-primary/10" asChild>
+                  <Link href={step.href} className="shrink-0">
                     {step.cta} <ChevronRight className="icon-2xs" aria-hidden="true" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </div>
           ))}

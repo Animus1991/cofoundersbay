@@ -439,12 +439,12 @@ export default function ReputationPage() {
       description="Your trust and credibility on CoFounderBay"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/profile" className="hidden sm:block">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/profile" className="hidden sm:block">
               <Shield className="icon-sm" aria-hidden="true" />
               My Profile
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -514,7 +514,7 @@ export default function ReputationPage() {
           </TabsList>
 
           <TabsContent value="overview" className="mt-6 animate-in fade-in slide-in-from-bottom-2">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {REPUTATION_CATEGORIES.map((category) => (
                 <CategoryCard key={category.id} category={category} />
               ))}
@@ -522,7 +522,7 @@ export default function ReputationPage() {
           </TabsContent>
 
           <TabsContent value="badges" className="mt-6 animate-in fade-in slide-in-from-bottom-2">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {BADGES.map((badge) => (
                 <BadgeCard key={badge.id} badge={badge} />
               ))}
@@ -555,7 +555,7 @@ export default function ReputationPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-5">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[
                 { icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', title: 'Complete your profile', desc: 'Add portfolio items and experience', href: '/profile/edit' },
                 { icon: MessageCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', title: 'Engage with community', desc: 'Post updates and help others', href: '/feed' },

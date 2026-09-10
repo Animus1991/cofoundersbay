@@ -260,7 +260,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
       </div>
 
       {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Slide Navigator */}
         <div className="lg:col-span-1 space-y-4">
           <Card>
@@ -450,7 +450,7 @@ export function PitchDeckBuilder({ onSave, initialData }: PitchDeckBuilderProps)
           <CardTitle>Deck Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
               <Label>Company Name</Label>
               <Input

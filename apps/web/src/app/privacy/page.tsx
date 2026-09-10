@@ -221,12 +221,12 @@ export default function PrivacyPage() {
             <span className="text-sm font-medium">Back to CoFounderBay</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/terms">
-              <Button variant="ghost" size="sm" className="text-xs">Terms of Service</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/terms">Terms of Service</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/help">Help Center</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -246,7 +246,7 @@ export default function PrivacyPage() {
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Privacy at a Glance</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: Database, label: 'Data Collection', desc: 'We collect only what we need' },
               { icon: Lock, label: 'Security', desc: 'Your data is encrypted' },
@@ -271,7 +271,7 @@ export default function PrivacyPage() {
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
                 key={section.id}
@@ -314,12 +314,12 @@ export default function PrivacyPage() {
             Your privacy matters to us. If you have any questions, please don't hesitate to reach out.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/terms">
-              <Button variant="outline" size="sm">Read Terms of Service</Button>
-            </Link>
-            <Link href="/settings">
-              <Button size="sm">Manage Privacy Settings</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/terms">Read Terms of Service</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/settings">Manage Privacy Settings</Link>
+            </Button>
           </div>
         </div>
       </main>

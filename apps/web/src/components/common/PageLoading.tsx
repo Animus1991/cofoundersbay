@@ -26,7 +26,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
       </div>
 
       {/* Stat row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="space-y-3 rounded-xl border border-border/60 bg-card p-4">
             <Skeleton className="h-3.5 w-24" />
@@ -37,7 +37,7 @@ export function PageLoading({ label = 'Loading page' }: { label?: string }) {
       </div>
 
       {/* Content */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="space-y-3 rounded-xl border border-border/60 bg-card p-5">

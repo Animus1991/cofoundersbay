@@ -145,12 +145,12 @@ export function MobileNav() {
             </>
           ) : (
             <div className="flex gap-2">
-              <Link href="/login" className="flex-1">
-                <Button variant="secondary" className="w-full">Sign in</Button>
-              </Link>
-              <Link href="/register" className="flex-1">
-                <Button className="w-full">Sign up</Button>
-              </Link>
+              <Button variant="secondary" className="w-full" asChild>
+                <Link href="/login" className="flex-1">Sign in</Link>
+              </Button>
+              <Button className="w-full" asChild>
+                <Link href="/register" className="flex-1">Sign up</Link>
+              </Button>
             </div>
           )}
         </div>

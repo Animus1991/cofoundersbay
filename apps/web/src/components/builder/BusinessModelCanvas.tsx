@@ -257,7 +257,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
       </div>
 
       {/* BMC Grid */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Left Column */}
         <div className="space-y-4">
           {sections.slice(0, 3).map(section => {
@@ -364,7 +364,7 @@ export function BusinessModelCanvas({ onSave, initialData }: BusinessModelCanvas
           <CardTitle>Canvas Insights</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {sections.filter(s => getConfidenceLevel(s.content) === 'high').length}

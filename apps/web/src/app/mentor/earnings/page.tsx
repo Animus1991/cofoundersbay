@@ -124,7 +124,7 @@ export default function MentorEarningsPage() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-60" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -165,7 +165,7 @@ export default function MentorEarningsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             icon={DollarSign}
             label="Total Earned"
@@ -302,7 +302,7 @@ export default function MentorEarningsPage() {
                     Connect
                   </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {['Stripe Connect', 'Bank Transfer (SEPA)', 'PayPal', 'Wise'].map(method => (
                     <div key={method} className="flex items-center justify-between p-3 rounded-lg border">
                       <span className="text-sm font-medium">{method}</span>

@@ -60,12 +60,12 @@ export function DashboardHero({
             </div>
           )}
           <div className="flex flex-wrap gap-3">
-            <Link href="/discover">
-              <Button variant="outline">Explore Discover</Button>
-            </Link>
-            <Link href="/profile">
-              <Button variant="ghost">View profile</Button>
-            </Link>
+            <Button variant="outline" asChild>
+              <Link href="/discover">Explore Discover</Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/profile">View profile</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -85,7 +85,7 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-2">
@@ -142,7 +142,7 @@ export default function AdminAnalyticsPage() {
           </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* User Distribution */}
           <Card>
             <CardHeader>

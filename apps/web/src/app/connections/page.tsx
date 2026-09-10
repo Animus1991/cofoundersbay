@@ -308,12 +308,12 @@ export default function ConnectionsPage() {
       title="Connections"
       description="Manage your network and connection requests"
       actions={
-        <Link href="/discover">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/discover">
             <UserPlus className="icon-sm" aria-hidden="true" />
             Find people
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-5 pb-10">
@@ -384,12 +384,12 @@ export default function ConnectionsPage() {
               title="No intro requests"
               description="When someone sends you a connection request with a message, it appears here."
               action={
-                <Link href="/discover">
-                  <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" asChild>
+                  <Link href="/discover">
                     <Compass className="icon-sm" aria-hidden="true" />
                     Discover people
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               }
             />
           ) : (
@@ -434,12 +434,12 @@ export default function ConnectionsPage() {
                 }
                 action={
                   t !== 'received' ? (
-                    <Link href="/discover">
-                      <Button variant="secondary" className="gap-2">
+                    <Button variant="secondary" className="gap-2" asChild>
+                      <Link href="/discover">
                         <Compass className="icon-sm" aria-hidden="true" />
                         Discover people
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   ) : undefined
                 }
               />

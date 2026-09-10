@@ -215,7 +215,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
             </>
           )}
           
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {currentLevel.perks.map((perk, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
@@ -350,7 +350,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
               <CardDescription>Complete these actions to increase your reputation</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {pointsEarningGuide.map((item, index) => {
                   const Icon = item.icon;
                   return (

@@ -18,7 +18,7 @@ export default function ReadinessLoading() {
             </div>
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/60 bg-card p-4 space-y-3">
               <div className="flex items-center justify-between">

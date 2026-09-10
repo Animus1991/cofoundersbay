@@ -410,7 +410,7 @@ export default function ComparePage() {
 
         {/* Comparison Charts */}
         {profiles && profiles.length >= 2 && (
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <ComparisonChart profiles={profiles} />
             <SkillsComparison profiles={profiles} />
           </div>

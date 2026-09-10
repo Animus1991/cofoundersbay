@@ -200,7 +200,7 @@ export default function MenteesPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2">

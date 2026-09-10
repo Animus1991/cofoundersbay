@@ -147,7 +147,7 @@ export default function OrgMembersPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
             { label: 'Total Members', value: MOCK_MEMBERS.length },
             { label: 'Admins', value: (roleCounts['owner'] ?? 0) + (roleCounts['admin'] ?? 0) },

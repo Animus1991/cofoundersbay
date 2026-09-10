@@ -22,7 +22,7 @@ export default function EventsLoading() {
               </div>
               <Skeleton className="h-9 w-32 rounded-lg" />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border/40 bg-card overflow-hidden">
                   <Skeleton className="h-36 w-full" />

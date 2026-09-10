@@ -151,7 +151,11 @@ function ToastPortal({ toasts, removeToast }: { toasts: Toast[]; removeToast: (i
       aria-label="Notifications"
       aria-live="polite"
       aria-relevant="additions text"
-      className="pointer-events-none fixed bottom-4 right-4 z-[100] flex w-full max-w-sm flex-col gap-2"
+      // Phones: pinned to the top, inset on both sides. `w-full max-w-sm`
+      // anchored to `right-4` resolved to 320px on a 320px screen and hung
+      // 16px off the left edge, and the bottom edge is already taken by the
+      // tab bar and the chat bubble. From `sm` it returns to bottom-right.
+      className="pointer-events-none fixed inset-x-4 top-4 z-[100] flex w-auto flex-col gap-2 sm:inset-x-auto sm:bottom-4 sm:right-4 sm:top-auto sm:w-full sm:max-w-sm"
     >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />

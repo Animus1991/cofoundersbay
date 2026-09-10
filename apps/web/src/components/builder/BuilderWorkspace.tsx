@@ -351,7 +351,7 @@ export function BuilderWorkspace() {
   if (isLoadingWorkspaces) {
     return (
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4">
@@ -361,7 +361,7 @@ export function BuilderWorkspace() {
             </Card>
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>
               <CardHeader className="pb-3"><Skeleton className="h-5 w-32" /></CardHeader>
@@ -378,7 +378,7 @@ export function BuilderWorkspace() {
   return (
     <div className="space-y-6">
       {/* ── Stats Bar ──────────────────────────────────────────────────── */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-foreground">{overallCompletion}%</div>
@@ -455,7 +455,7 @@ export function BuilderWorkspace() {
 
         {/* ── Overview Tab ──────────────────────────────────────────────── */}
         <TabsContent value="overview" className="space-y-6 mt-4">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Progress card */}
             <Card>
               <CardHeader>
@@ -562,7 +562,7 @@ export function BuilderWorkspace() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {readinessAssessment.nextMilestones.slice(0, 6).map((milestone, i) => (
                     <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg bg-muted/50 text-sm">
                       <ChevronRight className="h-3.5 w-3.5 text-primary-emphasis mt-0.5 shrink-0" aria-hidden="true" />
@@ -583,7 +583,7 @@ export function BuilderWorkspace() {
         {/* ── Documents Tab ─────────────────────────────────────────────── */}
         <TabsContent value="documents" className="space-y-4 mt-4">
           {isLoadingDocuments ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i}>
                   <CardHeader className="pb-3"><Skeleton className="h-5 w-32" /></CardHeader>
@@ -603,7 +603,7 @@ export function BuilderWorkspace() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {documents.map(doc => {
                 const meta = DOC_META[doc.type];
                 const status = docStatus(doc);
@@ -829,7 +829,7 @@ export function BuilderWorkspace() {
 
           {/* Dimension cards */}
           {assessingReadiness ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-4"><Skeleton className="h-20 w-full" /></CardContent>
@@ -837,7 +837,7 @@ export function BuilderWorkspace() {
               ))}
             </div>
           ) : readinessDimensions.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {readinessDimensions.map(dim => (
                 <Card key={dim.dimension} className="hover:shadow-sm transition-shadow">
                   <CardContent className="p-4 space-y-3">

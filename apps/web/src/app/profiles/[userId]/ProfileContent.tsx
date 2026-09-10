@@ -226,12 +226,12 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
           <Button aria-label="Copy link" variant="ghost" size="icon" onClick={handleShare} title="Copy link">
             <Share2 className="icon-sm" aria-hidden="true" />
           </Button>
-          <Link href="/discover">
-            <Button variant="secondary" size="sm" className="gap-2">
+          <Button variant="secondary" size="sm" className="gap-2" asChild>
+            <Link href="/discover">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
               Back
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -322,9 +322,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               )}
 
               {isOwnProfile && (
-                <Link href="/profile/edit" className="w-full">
-                  <Button variant="secondary" className="w-full">Edit your profile</Button>
-                </Link>
+                <Button variant="secondary" className="w-full" asChild>
+                  <Link href="/profile/edit" className="w-full">Edit your profile</Link>
+                </Button>
               )}
             </CardContent>
           </Card>

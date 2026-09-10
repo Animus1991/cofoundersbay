@@ -223,7 +223,7 @@ export function SmartRecommendations() {
       </div>
 
       {/* Recommendations Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {filteredRecommendations.map((rec) => (
           <Card key={rec.id} className="relative overflow-hidden hover:shadow-lg transition-shadow">
             {/* Match Score Badge */}
@@ -367,7 +367,7 @@ export function SmartRecommendations() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-1">
               <p className="text-xl font-bold">{recommendations.length}</p>
               <p className="text-sm text-muted-foreground">Active Recommendations</p>

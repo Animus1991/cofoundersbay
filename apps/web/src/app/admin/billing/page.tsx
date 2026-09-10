@@ -227,7 +227,7 @@ export default function AdminBillingPage() {
         </div>
 
         {/* Revenue Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
             { label: 'MRR', value: formatCents(mrr), icon: DollarSign, color: 'text-green-600 dark:text-green-400' },
             { label: 'ARR (est.)', value: formatCents(arr), icon: TrendingUp, color: 'text-blue-600 dark:text-blue-400' },

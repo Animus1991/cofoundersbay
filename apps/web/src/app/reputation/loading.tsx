@@ -22,7 +22,7 @@ export default function ReputationLoading() {
           </div>
         </div>
         {/* Category breakdown */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
               <div className="flex items-center gap-3">

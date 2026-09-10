@@ -240,7 +240,7 @@ export default function InvestorScoutingPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2"><Zap className="icon-sm text-primary-emphasis" aria-hidden="true" />Featured Startups</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
+            <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {featured.map(s => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border bg-background">
                   <Avatar className="h-10 w-10 rounded-lg">
@@ -323,7 +323,7 @@ export default function InvestorScoutingPage() {
         </div>
 
         {/* Results */}
-        <div className={cn('gap-4', viewMode === 'grid' ? 'grid md:grid-cols-2' : 'space-y-3')}>
+        <div className={cn('gap-4', viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2' : 'space-y-3')}>
           {filtered.map(startup => (
             <StartupCard key={startup.id} startup={startup} compact={viewMode === 'grid'} />
           ))}

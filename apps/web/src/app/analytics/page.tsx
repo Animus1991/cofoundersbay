@@ -338,7 +338,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
 function AnalyticsSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-5">
@@ -435,7 +435,7 @@ export default function AnalyticsPage() {
             <>
               {/* Network velocity + funnel side-by-side */}
               {metrics.length > 0 && (
-                <div className="grid gap-4 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                   <div className="lg:col-span-1">
                     <NetworkVelocity metrics={metrics} />
                   </div>
@@ -446,7 +446,7 @@ export default function AnalyticsPage() {
               )}
 
               {/* Metric cards with sparklines */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {metrics.map((metric) => {
                   const sparkValues = demoSparklines[metric.label] ?? [];
                   return (
@@ -490,7 +490,7 @@ export default function AnalyticsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-4 sm:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                       <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">Most Active Day</p>
                         <p className="text-lg font-semibold">{weeklySummary.mostActiveDay || '—'}</p>
@@ -525,7 +525,7 @@ export default function AnalyticsPage() {
             <AnalyticsSkeleton />
           ) : (
             <>
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <EngagementBreakdown engagement={engagement} />
                 {topContent && topContent.length > 0 ? (
                   <TopContentList content={topContent} />
@@ -560,7 +560,7 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
                 ))}

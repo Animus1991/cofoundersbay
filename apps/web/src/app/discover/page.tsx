@@ -210,12 +210,12 @@ export default function DiscoverPage() {
       title="Explore"
       description="Discover founders, mentors, investors, and team members"
       actions={
-        <Link href="/matches">
-          <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/matches">
             <TrendingUp className="icon-sm" aria-hidden="true" />
             View Matches
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-5 pb-10">
@@ -445,12 +445,12 @@ export default function DiscoverPage() {
               description="Complete your profile to get personalized recommendations."
               illustration="rocket"
               action={
-                <Link href="/profile/edit">
-                  <Button className="gap-2">
+                <Button className="gap-2" asChild>
+                  <Link href="/profile/edit">
                     Complete profile
                     <ArrowRight className="icon-sm" aria-hidden="true" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               }
             />
           )}
@@ -496,7 +496,7 @@ export default function DiscoverPage() {
           </div>
 
           {!suggestionsLoaded && (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {[...Array(4)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant="featured" />
               ))}
@@ -520,7 +520,7 @@ export default function DiscoverPage() {
             <AnimatedList
               animation="scale-in"
               staggerDelay={100}
-              className="grid gap-6 md:grid-cols-2"
+              className="grid grid-cols-1 gap-6 md:grid-cols-2"
             >
               {suggestions.slice(0, 6).map((hit) => {
                 const profile = hitToProfile(hit);

@@ -139,7 +139,7 @@ export default function TenantWebhooksPage() {
       actions={<Button size="sm"><Plus className="mr-2 icon-sm" aria-hidden="true" />Add Webhook</Button>}
     >
       <div className="space-y-5">
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {[
             { label: 'Active Webhooks', value: webhooks.filter(w => w.isActive).length },
             { label: 'Total Deliveries', value: webhooks.reduce((s, w) => s + w.totalDeliveries, 0) },

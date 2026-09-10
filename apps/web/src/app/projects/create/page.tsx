@@ -205,7 +205,7 @@ export default function CreateProjectPage() {
             <CardContent className="space-y-6">
               <div className="space-y-3">
                 <Label>Project Stage *</Label>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {STATUS_OPTIONS.map((opt) => {
                     const Icon = opt.icon;
                     return (
@@ -250,7 +250,7 @@ export default function CreateProjectPage() {
                 </Select>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <div className="relative">

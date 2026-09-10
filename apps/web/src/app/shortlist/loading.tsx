@@ -21,7 +21,7 @@ export default function ShortlistLoading() {
           <Skeleton className="h-10 w-28 rounded-lg" />
           <Skeleton className="h-10 w-10 rounded-lg" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-5 space-y-4">
               <div className="flex gap-3">

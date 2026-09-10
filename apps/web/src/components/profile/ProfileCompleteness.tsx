@@ -149,11 +149,11 @@ export function ProfileCompleteness({
           </div>
         </div>
         {percentage < 100 && (
-          <Link href="/profile/edit">
-            <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7">
+          <Button aria-label="Next" variant="ghost" size="icon" className="h-7 w-7" asChild>
+            <Link href="/profile/edit">
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -226,23 +226,23 @@ export function ProfileCompleteness({
                 })}
               </div>
               {missingFields.length > 5 && (
-                <Link href="/profile/edit">
-                  <Button variant="outline" size="sm" className="w-full mt-2">
+                <Button variant="outline" size="sm" className="w-full mt-2" asChild>
+                  <Link href="/profile/edit">
                     +{missingFields.length - 5} more fields
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </div>
           </>
         )}
 
         {percentage < 100 && (
-          <Link href="/profile/edit" className="block">
-            <Button className="w-full gap-2">
+          <Button className="w-full gap-2" asChild>
+            <Link href="/profile/edit" className="block">
               Complete Your Profile
               <ArrowRight className="icon-sm" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </CardContent>
     </Card>

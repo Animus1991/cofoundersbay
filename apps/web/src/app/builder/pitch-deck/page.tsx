@@ -66,11 +66,11 @@ function PitchDeckPageContent() {
         )}
 
         <div className="flex items-center gap-4">
-          <Link href="/builder">
-            <Button aria-label="Go back" variant="ghost" size="icon" className="h-8 w-8">
+          <Button aria-label="Go back" variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link href="/builder">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">

@@ -83,7 +83,7 @@ export default function OrgSettingsPage() {
                     rows={3}
                   />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="website">Website</Label>
                     <Input
@@ -108,7 +108,7 @@ export default function OrgSettingsPage() {
                     </Select>
                   </div>
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
                     <Select defaultValue="gr">
@@ -325,7 +325,7 @@ export default function OrgSettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="font-medium">Usage</p>
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <div className="p-3 rounded-lg border">
                       <p className="text-sm text-muted-foreground">Startups</p>
                       <p className="text-xl font-bold">32 / 50</p>

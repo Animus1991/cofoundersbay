@@ -239,12 +239,12 @@ export function CollaborationStarter({
             <MessageCircle className="icon-2xs" aria-hidden="true" />
             Message
           </Button>
-          <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-            <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
+            <Link href={`/projects/create?collaborator=${otherUser.id}`}>
               <FolderPlus className="icon-2xs" aria-hidden="true" />
               Collaborate
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
         {onDismiss && (
           <button
@@ -276,18 +276,18 @@ export function CollaborationStarter({
         <MessageCircle className="icon-2xs" aria-hidden="true" />
         Message
       </Button>
-      <Link href={`/projects/create?collaborator=${otherUser.id}`}>
-        <Button size="sm" variant="outline" className="h-7 text-xs gap-1">
+      <Button size="sm" variant="outline" className="h-7 text-xs gap-1" asChild>
+        <Link href={`/projects/create?collaborator=${otherUser.id}`}>
           <FolderPlus className="icon-2xs" aria-hidden="true" />
           Start project
-        </Button>
-      </Link>
-      <Link href={`/milestones/new?with=${otherUser.id}`}>
-        <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground">
+        </Link>
+      </Button>
+      <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-muted-foreground" asChild>
+        <Link href={`/milestones/new?with=${otherUser.id}`}>
           <Target className="icon-2xs" aria-hidden="true" />
           Set milestone
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

@@ -178,7 +178,7 @@ export default function OrgProgramsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Programs</p>

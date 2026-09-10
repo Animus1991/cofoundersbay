@@ -318,12 +318,12 @@ export default function NotificationPreferencesPage() {
       description="Control how and when you receive notifications"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/settings" className="hidden sm:block">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/settings" className="hidden sm:block">
               <ArrowLeft className="icon-sm" aria-hidden="true" />
               Settings
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
             {savePrefs.isPending ? (
               <Loader2 className="icon-sm animate-spin" aria-hidden="true" />
@@ -386,7 +386,7 @@ export default function NotificationPreferencesPage() {
                 />
               </div>
               {quietHoursEnabled && (
-                <div className="flex items-center gap-4 pl-6">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pl-6">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm text-muted-foreground">From</Label>
                     <Select value={quietHoursStart} onValueChange={setQuietHoursStart}>
@@ -492,15 +492,15 @@ export default function NotificationPreferencesPage() {
                     <div
                       key={setting.id}
                       className={cn(
-                        'flex items-center justify-between py-3',
+                        'flex flex-col items-stretch gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4',
                         i < category.settings.length - 1 && 'border-b border-border/60'
                       )}
                     >
-                      <div className="space-y-0.5">
+                      <div className="min-w-0 space-y-0.5">
                         <Label className="text-sm font-medium">{setting.label}</Label>
                         <p className="text-xs text-muted-foreground">{setting.description}</p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex shrink-0 items-center justify-between gap-4 sm:justify-start">
                         <div className="flex items-center gap-1.5">
                           <Smartphone className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                           <Switch

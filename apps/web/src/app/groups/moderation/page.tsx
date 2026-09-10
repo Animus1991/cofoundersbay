@@ -168,7 +168,7 @@ export default function GroupsModerationPage() {
         )}
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {[
             { label: 'Pending', value: pendingCount, color: 'text-amber-500' },
             { label: 'High Priority', value: highPriority, color: 'text-red-500' },

@@ -253,7 +253,7 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Model Selection */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Preferred Model</Label>
                   <Select
@@ -379,7 +379,7 @@ export default function AISettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Style Selection */}
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {RESPONSE_STYLES.map((style) => (
                   <button
                     key={style.value}
@@ -511,7 +511,7 @@ export default function AISettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {(agents.length > 0 ? agents : [
                   { id: 'general', name: 'General Assistant', description: 'Platform help and FAQs' },
                   { id: 'matching', name: 'Co-Founder Matching', description: 'Find the right co-founder' },

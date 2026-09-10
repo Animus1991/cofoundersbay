@@ -157,7 +157,7 @@ export default function ManageGroupsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
             { label: 'Groups Managed', value: MOCK_GROUPS.length },
             { label: 'Total Members', value: totalMembers.toLocaleString() },

@@ -9,7 +9,7 @@ export default function SettingsLoading() {
         <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
           <Skeleton className="hidden lg:block h-[420px] rounded-2xl" />
           <div className="space-y-6">
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               {Array.from({ length: 2 }).map((_, i) => (
                 <Card key={i}>
                   <CardHeader>

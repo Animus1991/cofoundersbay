@@ -190,7 +190,7 @@ function GroupsGrid({
 }) {
   if (groups.length === 0) return null;
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {groups.map((g, i) => (
         <GroupCard key={g.id} group={g} onToggle={onToggle} loading={loadingId === g.id} index={offset + i} />
       ))}
@@ -358,7 +358,7 @@ export default function GroupsPage() {
                 />
               </div>
               {/* Type filter tabs — Figma-inspired */}
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {TYPE_FILTERS.map((tf) => {
                   const TIcon = tf.icon;
                   const isActive = typeFilter === tf.value;
@@ -461,7 +461,7 @@ export default function GroupsPage() {
                   {activeTab === 'my-groups' ? 'Your Communities' : sort === 'trending' ? 'Trending Now' : 'Top Communities'}
                 </h2>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {topGroups.map((g, i) => (
                   <GroupCard key={g.id} group={g} onToggle={handleToggle} loading={loadingId === g.id} index={i} />
                 ))}

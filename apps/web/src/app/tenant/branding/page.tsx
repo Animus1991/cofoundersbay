@@ -310,7 +310,7 @@ export default function TenantBrandingPage() {
                   <CardDescription>Define your organization's color palette. These are applied as CSS variables throughout the platform.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid gap-6 sm:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
                     <ColorField
                       label="Primary Color"
                       value={form.primaryColor ?? '#6366f1'}
@@ -564,7 +564,7 @@ export default function TenantBrandingPage() {
                   <CardDescription>Text shown on the public tenant landing page at /t/{'{slug}'}.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Hero Title</Label>
                       <Input
@@ -691,7 +691,7 @@ export default function TenantBrandingPage() {
                   <CardTitle>Contact & Legal</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {[
                       { key: 'supportEmail' as const, label: 'Support Email', placeholder: 'support@yourorg.com', type: 'email' },
                       { key: 'websiteUrl' as const, label: 'Organization Website', placeholder: 'https://yourorg.com', type: 'url' },
@@ -716,7 +716,7 @@ export default function TenantBrandingPage() {
                   <CardTitle>Social Links</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {[
                       { key: 'linkedinUrl' as const, label: 'LinkedIn', placeholder: 'https://linkedin.com/company/...' },
                       { key: 'twitterUrl' as const, label: 'Twitter / X', placeholder: 'https://twitter.com/...' },
@@ -748,7 +748,7 @@ export default function TenantBrandingPage() {
                   <CardDescription>Customize how your organization appears in outgoing emails.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Sender Name</Label>
                       <Input

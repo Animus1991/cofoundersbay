@@ -31,29 +31,36 @@ interface NextActionBannerProps {
 
 /* ── Color maps ──────────────────────────────────────────────────────────── */
 
-const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string; cta: string }> = {
+// `icon` is an aria-hidden glyph colour and is tuned for shape, not for text
+// contrast — `text-amber-500` on a white card is 2.1:1. `signal` is the
+// text-safe sibling used for the identity line, >= 4.5:1 in both themes.
+const ACCENT_CLASSES: Record<string, { border: string; bg: string; icon: string; signal: string; cta: string }> = {
   primary: {
     border: 'border-primary/30',
     bg:     'bg-primary/5',
     icon:   'text-primary-emphasis',
+    signal: 'text-primary-emphasis',
     cta:    'text-primary-emphasis hover:bg-primary/10',
   },
   amber: {
     border: 'border-amber-500/30',
     bg:     'bg-amber-500/5',
     icon:   'text-amber-500',
+    signal: 'text-amber-700 dark:text-amber-400',
     cta:    'text-amber-600 dark:text-amber-400 hover:bg-amber-500/10',
   },
   emerald: {
     border: 'border-emerald-500/30',
     bg:     'bg-emerald-500/5',
     icon:   'text-emerald-600 dark:text-emerald-400',
+    signal: 'text-emerald-700 dark:text-emerald-400',
     cta:    'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10',
   },
   violet: {
     border: 'border-violet-500/30',
     bg:     'bg-violet-500/5',
     icon:   'text-violet-600 dark:text-violet-400',
+    signal: 'text-violet-600 dark:text-violet-400',
     cta:    'text-violet-600 dark:text-violet-400 hover:bg-violet-500/10',
   },
 };
@@ -99,24 +106,26 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-foreground truncate">{action.label}</p>
         <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{action.description}</p>
+        {/* `opacity-70` over the accent colour measured 3.87:1 on the dark card —
+            below the 4.5:1 that 12px body text needs (WCAG 1.4.3). */}
         {action.identitySignal && (
-          <p className={cn('text-xs italic mt-1', ac.icon, 'opacity-70')}>{action.identitySignal}</p>
+          <p className={cn('text-xs italic mt-1', ac.signal)}>{action.identitySignal}</p>
         )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <Link href={action.href}>
-          <Button
+        <Button
             variant="ghost"
             size="sm"
             className={cn('h-7 gap-1 text-xs font-semibold px-2.5', ac.cta)}
-          >
+           asChild>
+          <Link href={action.href}>
             {action.cta} <ArrowRight className="icon-2xs" aria-hidden="true" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <button
           onClick={handleDismiss}
-          className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          title="Dismiss"
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          aria-label="Dismiss"
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>

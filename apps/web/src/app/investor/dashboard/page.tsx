@@ -169,7 +169,7 @@ function _InvestorDashboardPage_legacy() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             title="Deal Flow"
             value={stats.dealflow}
@@ -200,7 +200,7 @@ function _InvestorDashboardPage_legacy() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Recent Startups */}
           <Card className="lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-2">

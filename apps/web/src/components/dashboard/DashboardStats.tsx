@@ -50,7 +50,7 @@ export function DashboardStats({
           <div className="h-5 w-24 animate-pulse rounded bg-muted" />
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="h-20 animate-pulse rounded-lg bg-muted" />
             <div className="h-20 animate-pulse rounded-lg bg-muted" />
           </div>
@@ -66,7 +66,7 @@ export function DashboardStats({
         <CardTitle className="text-base font-medium text-muted-foreground">Overview</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <StatCard
             label="Active profiles"
             value={stats.activeProfiles.toLocaleString()}

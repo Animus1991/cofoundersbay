@@ -247,11 +247,11 @@ function ShortlistCard({
               Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             <div className="flex items-center gap-1.5">
-              <Link href={`/matches/compare?ids=${item.userId}`}>
-                <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground" asChild>
+                <Link href={`/matches/compare?ids=${item.userId}`}>
                   <GitMerge className="icon-2xs" aria-hidden="true" /> Compare
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -440,11 +440,11 @@ export default function ShortlistPage() {
             <p className="text-sm font-medium text-foreground">
               {selectedIds.size} profiles selected (max 3)
             </p>
-            <Link href={`/matches/compare?ids=${Array.from(selectedIds).join(',')}`}>
-              <Button size="sm" className="gap-1.5">
+            <Button size="sm" className="gap-1.5" asChild>
+              <Link href={`/matches/compare?ids=${Array.from(selectedIds).join(',')}`}>
                 <GitMerge className="h-3.5 w-3.5" aria-hidden="true" /> Compare now
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         )}
 
@@ -475,9 +475,9 @@ export default function ShortlistPage() {
               </p>
             </div>
             {rawItems.length === 0 && (
-              <Link href="/matches">
-                <Button size="sm" variant="outline" className="gap-1.5">Browse matches</Button>
-              </Link>
+              <Button size="sm" variant="outline" className="gap-1.5" asChild>
+                <Link href="/matches">Browse matches</Link>
+              </Button>
             )}
           </div>
         ) : (

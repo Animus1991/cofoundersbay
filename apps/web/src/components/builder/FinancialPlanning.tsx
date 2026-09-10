@@ -291,7 +291,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
       </div>
 
       {/* Key Metrics Dashboard */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -369,7 +369,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
         {/* Costs Tab */}
         <TabsContent value="costs" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Startup Costs */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
@@ -510,7 +510,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.revenueStreams.map((stream, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                     <div>
                       <Label>Name</Label>
                       <Input
@@ -595,7 +595,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
         {/* Unit Economics Tab */}
         <TabsContent value="unit-economics" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Customer Acquisition</CardTitle>
@@ -673,7 +673,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
               <CardTitle>Unit Economics Health</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="text-center p-4 border rounded-lg">
                   <div className={cn(
                     "text-3xl font-bold mb-2",
@@ -723,7 +723,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
             <CardContent className="space-y-4">
               {data.fundingRounds.map((round, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid gap-3 md:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                     <div>
                       <Label>Stage</Label>
                       <Input
@@ -790,7 +790,7 @@ export function FinancialPlanning({ onSave, initialData }: FinancialPlanningProp
 
         {/* Scenarios Tab */}
         <TabsContent value="scenarios" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Conservative */}
             <Card className="border-yellow-500/50">
               <CardHeader>

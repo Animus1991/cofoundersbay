@@ -211,7 +211,7 @@ export default function ProviderServicesPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Services</p>

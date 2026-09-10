@@ -176,7 +176,7 @@ export default function ProviderProfilePage() {
             <Card>
               <CardHeader><CardTitle className="text-base">Company Info</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Company Name</Label>
                     <Input value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Acme Legal Partners" />
@@ -216,7 +216,7 @@ export default function ProviderProfilePage() {
                     className="resize-none"
                   />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Years in Business</Label>
                     <Select value={yearsInBusiness} onValueChange={setYearsInBusiness}>

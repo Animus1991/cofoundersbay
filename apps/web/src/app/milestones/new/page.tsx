@@ -74,12 +74,12 @@ export default function NewMilestonePage() {
       title="New Milestone"
       description="Set a goal and track your progress"
       actions={
-        <Link href="/milestones">
-          <Button variant="ghost" size="sm" className="gap-2">
+        <Button variant="ghost" size="sm" className="gap-2" asChild>
+          <Link href="/milestones">
             <ArrowLeft className="icon-sm" aria-hidden="true" />
             Back to milestones
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="max-w-2xl mx-auto">
@@ -206,9 +206,9 @@ export default function NewMilestonePage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2 border-t border-border/40">
-                <Link href="/milestones">
-                  <Button type="button" variant="ghost">Cancel</Button>
-                </Link>
+                <Button type="button" variant="ghost" asChild>
+                  <Link href="/milestones">Cancel</Link>
+                </Button>
                 <Button type="submit" disabled={!canSubmit}>
                   {mutation.isPending ? 'Creating…' : 'Create milestone'}
                 </Button>

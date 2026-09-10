@@ -533,7 +533,7 @@ export default function MilestonesPage() {
             </Button>
           </div>
         ) : (
-          <div className={cn(viewMode === 'grid' ? 'grid gap-3 sm:grid-cols-2' : 'space-y-3')}>
+          <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 gap-3 sm:grid-cols-2' : 'space-y-3')}>
             {milestones.map((m) => (
               <MilestoneCard
                 key={m.id}

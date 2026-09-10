@@ -360,23 +360,23 @@ export function DashboardHome() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/matches">
-              <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <Link href="/matches">
                 <Heart className="icon-sm" aria-hidden="true" />
                 View Matches
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button size="sm" className="gap-2">
+              </Link>
+            </Button>
+            <Button size="sm" className="gap-2" asChild>
+              <Link href="/discover">
                 <Sparkles className="icon-sm" aria-hidden="true" />
                 Explore
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
         {/* Main Grid */}
-        <div className="grid gap-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Left Column: Priority Actions + Activity */}
           <div className="space-y-6 lg:col-span-4">
             {/* Priority Actions */}
@@ -491,11 +491,11 @@ export function DashboardHome() {
                       <p className="text-sm font-medium text-foreground">No matches yet</p>
                       <p className="text-xs text-muted-foreground">Complete your profile to get matched</p>
                     </div>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/profile/edit">
                         Complete Profile
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -595,12 +595,12 @@ export function DashboardHome() {
                       </div>
                       <Progress value={profileCompletion} className="h-2" />
                     </div>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm" className="w-full gap-2">
+                    <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                      <Link href="/profile/edit">
                         Complete Profile
                         <ArrowRight className="icon-2xs" aria-hidden="true" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -672,12 +672,12 @@ export function DashboardHome() {
                       )}
                     </div>
                   </div>
-                  <Link href="/readiness">
-                    <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
+                  <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs" asChild>
+                    <Link href="/readiness">
                       <Target className="h-3.5 w-3.5" aria-hidden="true" />
                       View Readiness
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}

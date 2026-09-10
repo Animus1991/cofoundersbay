@@ -189,7 +189,7 @@ export default function OrgAnalyticsPage() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             title="Total Startups"
             value={stats.totalStartups}
@@ -221,7 +221,7 @@ export default function OrgAnalyticsPage() {
         </div>
 
         {/* Charts Row */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Applications Trend */}
           <Card>
             <CardHeader className="pb-2">
@@ -276,7 +276,7 @@ export default function OrgAnalyticsPage() {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Program Performance */}
           <Card>
             <CardHeader>

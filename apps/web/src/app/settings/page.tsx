@@ -246,16 +246,16 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p>To manage billing and preferences, please sign in.</p>
-            <Link href="/login">
-              <Button>Go to login</Button>
-            </Link>
+            <Button asChild>
+              <Link href="/login">Go to login</Link>
+            </Button>
           </CardContent>
         </Card>
       )}
 
       {hasToken && (
         <div className="space-y-6 pb-10">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Billing */}
             <Card className="shadow-sm border-border/50">
               <CardHeader className="border-b border-border/50">
@@ -540,18 +540,18 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link href="/profile/edit">
-                  <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" asChild>
+                  <Link href="/profile/edit">
                     <User className="icon-sm" aria-hidden="true" />
                     Edit profile
-                  </Button>
-                </Link>
-                <Link href="/profile">
-                  <Button variant="outline" className="gap-2">
+                  </Link>
+                </Button>
+                <Button variant="outline" className="gap-2" asChild>
+                  <Link href="/profile">
                     <Shield className="icon-sm" aria-hidden="true" />
                     View public profile
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   className="gap-2 text-destructive-emphasis hover:text-destructive-emphasis hover:bg-destructive/10"

@@ -249,7 +249,7 @@ export default function FounderDashboardContent() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -262,8 +262,8 @@ export default function FounderDashboardContent() {
       <div className="py-6 space-y-6">
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="min-w-0">
             <h1 className="text-xl font-bold tracking-tight">
               {getTimeBasedGreeting()}, {displayName} 👋
             </h1>
@@ -271,16 +271,16 @@ export default function FounderDashboardContent() {
               Your startup command center — track progress, find team, and close your round.
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
             <Badge variant="outline" className="gap-1.5">
               <Rocket className="icon-sm" aria-hidden="true" /> Founder
             </Badge>
-            <Link href="/readiness">
-              <Button variant="outline" size="sm" className="gap-1.5">
+            <Button variant="outline" size="sm" className="gap-1.5" asChild>
+              <Link href="/readiness">
                 <Gauge className="icon-sm" aria-hidden="true" />
                 Readiness: {avgReadiness}%
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -292,14 +292,14 @@ export default function FounderDashboardContent() {
         }
 
         {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
           <StatCard icon={Users} label="Profile Views (7d)" value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" accent="bg-primary" />
           <StatCard icon={Sparkles} label="New Matches" value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
           <StatCard icon={MessageCircle} label="Unread Messages" value={3} href="/messages" />
           <StatCard icon={Target} label="Milestone Progress" value={`${DEMO_MILESTONES.filter(m => m.progress === 100).length}/${DEMO_MILESTONES.length}`} href="/milestones" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main column */}
           <div className="lg:col-span-2 space-y-5">
 
@@ -314,11 +314,11 @@ export default function FounderDashboardContent() {
                     <CardTitle className="text-base flex items-center gap-2">
                       <Gauge className="icon-sm text-primary-emphasis" aria-hidden="true" /> Startup Readiness
                     </CardTitle>
-                    <Link href="/readiness">
-                      <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href="/readiness">
                         Full report <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -352,16 +352,16 @@ export default function FounderDashboardContent() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Link href="/builder" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/builder" className="flex-1">
                         <FileText className="icon-sm" aria-hidden="true" /> Open Builder
-                      </Button>
-                    </Link>
-                    <Link href="/expert-reviews" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/expert-reviews" className="flex-1">
                         <Award className="icon-sm" aria-hidden="true" /> Get Expert Review
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -374,11 +374,11 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-base flex items-center gap-2">
                     <DollarSign className="icon-sm text-emerald-500" aria-hidden="true" /> Fundraising
                   </CardTitle>
-                  <Link href="/fundraising">
-                    <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/fundraising">
                       Open tracker <ArrowRight className="ml-1 icon-sm" aria-hidden="true" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -406,16 +406,16 @@ export default function FounderDashboardContent() {
                     <span className="flex items-center gap-1"><CheckCircle2 className="icon-sm text-emerald-500" aria-hidden="true" /> {FUNDRAISING_DEMO.committedCount} committed</span>
                   </div>
                   <div className="flex gap-2">
-                    <Link href="/fundraising" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/fundraising" className="flex-1">
                         <TrendingUp className="icon-sm" aria-hidden="true" /> Manage Pipeline
-                      </Button>
-                    </Link>
-                    <Link href="/investors" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/investors" className="flex-1">
                         <Globe className="icon-sm" aria-hidden="true" /> Find Investors
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -428,9 +428,9 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-base flex items-center gap-2">
                     <Sparkles className="icon-sm text-primary-emphasis" aria-hidden="true" /> Top Matches for You
                   </CardTitle>
-                  <Link href="/matches">
-                    <Button variant="ghost" size="sm">View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Button>
-                  </Link>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/matches">View all <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -440,11 +440,11 @@ export default function FounderDashboardContent() {
                 {(!recommendations?.suggestions || recommendations.suggestions.length === 0) && (
                   <div className="text-center py-6">
                     <p className="text-sm text-muted-foreground">Complete your profile to get personalized matches</p>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm" className="mt-2 gap-1.5">
+                    <Button variant="outline" size="sm" className="mt-2 gap-1.5" asChild>
+                      <Link href="/profile/edit">
                         Complete profile
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -457,9 +457,9 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-base flex items-center gap-2">
                     <Flag className="icon-sm text-primary-emphasis" aria-hidden="true" /> Milestones
                   </CardTitle>
-                  <Link href="/milestones">
-                    <Button variant="ghost" size="sm">Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Button>
-                  </Link>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/milestones">Manage <ArrowRight className="ml-1 icon-sm" aria-hidden="true" /></Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -530,9 +530,9 @@ export default function FounderDashboardContent() {
                   ))}
                 </div>
                 {profilePct < 100 && (
-                  <Link href="/profile/edit">
-                    <Button variant="secondary" size="sm" className="w-full">Complete profile</Button>
-                  </Link>
+                  <Button variant="secondary" size="sm" className="w-full" asChild>
+                    <Link href="/profile/edit">Complete profile</Link>
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -570,9 +570,9 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Activity className="icon-sm text-muted-foreground" aria-hidden="true" /> Recent Activity
                   </CardTitle>
-                  <Link href="/activity">
-                    <Button variant="ghost" size="sm">All</Button>
-                  </Link>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/activity">All</Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -600,9 +600,9 @@ export default function FounderDashboardContent() {
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Calendar className="icon-sm" aria-hidden="true" /> Upcoming
                   </CardTitle>
-                  <Link href="/events">
-                    <Button variant="ghost" size="sm">View all</Button>
-                  </Link>
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/events">View all</Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5">
@@ -641,11 +641,11 @@ export default function FounderDashboardContent() {
                 ) : (
                   <div className="rounded-lg bg-muted/40 p-3 text-center">
                     <p className="text-xs text-muted-foreground">No events this week</p>
-                    <Link href="/events">
-                      <Button variant="ghost" size="sm" className="mt-1.5 gap-1">
+                    <Button variant="ghost" size="sm" className="mt-1.5 gap-1" asChild>
+                      <Link href="/events">
                         Browse events <ArrowRight className="icon-sm" aria-hidden="true" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>

@@ -222,7 +222,7 @@ export default function OrgEventsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {[
             { label: 'Upcoming Events', value: upcoming, icon: Calendar },
             { label: 'Total Attendees (all)', value: totalAttendees, icon: Users },

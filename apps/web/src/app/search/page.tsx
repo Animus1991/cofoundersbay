@@ -201,24 +201,24 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
           : 'Enter a search term to find people, jobs, events, and more'}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
-        <Link href="/discover">
-          <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/discover">
             <Users className="icon-sm" aria-hidden="true" />
             Browse People
-          </Button>
-        </Link>
-        <Link href="/jobs">
-          <Button variant="outline" size="sm" className="gap-2">
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/jobs">
             <Briefcase className="icon-sm" aria-hidden="true" />
             Browse Jobs
-          </Button>
-        </Link>
-        <Link href="/events">
-          <Button variant="outline" size="sm" className="gap-2">
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/events">
             <Calendar className="icon-sm" aria-hidden="true" />
             Browse Events
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );
@@ -463,7 +463,7 @@ export default function SearchPage() {
         {debouncedQuery.length < 2 && (
           <div className="mt-8">
             <h3 className="text-sm font-semibold text-foreground mb-4">Quick Links</h3>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Link href="/discover" className="group">
                 <Card className="hover:border-primary/50 transition-colors">
                   <CardContent className="p-4 flex items-center gap-3">

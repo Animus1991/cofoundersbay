@@ -11,7 +11,12 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      'inline-flex h-9 items-center gap-0.5 rounded-lg border border-border bg-muted/40 p-1 text-muted-foreground',
+      // A plain inline-flex list silently clips any tab set wider than its
+      // container — /admin's 12 triggers measured 1522px and the last four
+      // were unreachable at every viewport, phone to 1440px. Scrolling keeps
+      // them reachable by pointer, and Radix's roving tabindex scrolls the
+      // focused trigger into view for keyboard users.
+      'inline-flex h-9 max-w-full items-center gap-0.5 overflow-x-auto overscroll-x-contain scrollbar-hide rounded-lg border border-border bg-muted/40 p-1 text-muted-foreground',
       className,
     )}
     {...props}
@@ -26,7 +31,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all duration-150',
+      'inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all duration-150',
       'text-muted-foreground hover:text-foreground',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
       'disabled:pointer-events-none disabled:opacity-40',

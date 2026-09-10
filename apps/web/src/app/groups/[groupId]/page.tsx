@@ -555,7 +555,7 @@ export default function GroupDetailPage() {
         {activeSection === 'members' && (
           <div className="rounded-xl border border-border/60 bg-card/70 p-4">
             <h3 className="text-sm font-semibold mb-4">All Members ({group.memberCount})</h3>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {group.members.map((m) => (
                 <div
                   key={m.userId}

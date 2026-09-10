@@ -165,7 +165,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           {/* Opportunities */}
           <TabsContent value="opportunities" className="space-y-3">
             {oppsLoading ? (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <CardContent className="pt-5">
@@ -186,7 +186,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {opportunities.map((opp) => (
                   <Card key={opp.id} className="group hover:border-border transition-all duration-150">
                     <CardContent className="pt-5 pb-4">
@@ -227,7 +227,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           {/* Programs */}
           <TabsContent value="programs" className="space-y-3">
             {cohortsLoading ? (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <CardContent className="pt-5">
@@ -248,7 +248,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {cohorts.map((cohort) => (
                   <Card key={cohort.id} className="group hover:border-border transition-all duration-150">
                     <CardContent className="pt-5 pb-4">
@@ -288,7 +288,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
           {/* Members */}
           <TabsContent value="members" className="space-y-3">
             {membersLoading ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i} className="animate-pulse">
                     <CardContent className="pt-5">
@@ -312,7 +312,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {members.map((member) => (
                   <Card key={member.id} className="group hover:border-border transition-all duration-150">
                     <CardContent className="pt-5 pb-4">

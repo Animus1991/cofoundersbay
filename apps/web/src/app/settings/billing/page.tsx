@@ -161,17 +161,17 @@ export default function UserBillingPage() {
       description="Manage your plan, invoices, and billing details"
       actions={
         <div className="flex items-center gap-2">
-          <Link href="/settings" className="hidden sm:block">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/settings" className="hidden sm:block">
               Settings
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/pricing">
               View plans
               <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -255,24 +255,24 @@ export default function UserBillingPage() {
                     <ExternalLink className="icon-2xs" aria-hidden="true" />
                   </Button>
                   {(sub.plan?.name === 'free' || !sub) && (
-                    <Link href="/pricing">
-                      <Button size="sm" className="gap-2">
+                    <Button size="sm" className="gap-2" asChild>
+                      <Link href="/pricing">
                         <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                         Upgrade plan
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
                 </div>
               </>
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">You are on the free plan.</p>
-                <Link href="/pricing">
-                  <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" asChild>
+                  <Link href="/pricing">
                     <Crown className="h-3.5 w-3.5" aria-hidden="true" />
                     Upgrade to Pro
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             )}
           </CardContent>

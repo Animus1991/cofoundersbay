@@ -281,7 +281,7 @@ export default function ProviderDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -311,7 +311,7 @@ export default function ProviderDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             icon={Package}
             label="Active Services"
@@ -338,7 +338,7 @@ export default function ProviderDashboard() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Inquiries */}

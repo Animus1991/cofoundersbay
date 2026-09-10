@@ -195,7 +195,14 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             onClick={() => setSaved(!saved)}
-            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary-emphasis' : 'text-muted-foreground/40 hover:text-muted-foreground')}
+            aria-label={saved ? 'Remove from saved' : 'Save for later'}
+            aria-pressed={saved}
+            className={cn(
+              // 16x16 (the bare icon) failed WCAG 2.5.8's 24px floor and the
+              // aria-hidden icon left the control with no accessible name.
+              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors',
+              saved ? 'text-primary-emphasis' : 'text-muted-foreground/40 hover:text-muted-foreground',
+            )}
           >
             <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} aria-hidden="true" />
           </button>
@@ -408,7 +415,7 @@ export default function LearningPage() {
               View all <ChevronRight className="icon-2xs" aria-hidden="true" />
             </Button>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {LEARNING_PATHS.map((path) => <LearningPathCard key={path.id} path={path} />)}
           </div>
         </div>
@@ -424,7 +431,7 @@ export default function LearningPage() {
             </h2>
             <Badge variant="secondary" className="text-2xs capitalize">{userRole}</Badge>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {recommendedResources.map((resource) => (
               <ResourceCard key={`rec-${resource.id}`} resource={resource} />
             ))}
@@ -490,7 +497,7 @@ export default function LearningPage() {
 
           {/* Loading skeleton */}
           {learningLoading && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border p-5 space-y-3">
                   <div className="flex gap-3">
@@ -516,7 +523,7 @@ export default function LearningPage() {
                   Featured Resources
                 </h2>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {featuredResources.map((resource) => (
                   <ResourceCard key={resource.id} resource={resource} />
                 ))}
@@ -530,7 +537,7 @@ export default function LearningPage() {
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 All Resources
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {regularResources.map((resource) => (
                   <ResourceCard key={resource.id} resource={resource} />
                 ))}

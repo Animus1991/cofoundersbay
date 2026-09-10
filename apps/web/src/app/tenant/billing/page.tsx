@@ -128,12 +128,12 @@ export default function TenantBillingPage() {
             <h1 className="text-xl font-bold tracking-tight">Organization Billing</h1>
             <p className="text-sm text-muted-foreground">Manage your organization plan, seats, and billing details.</p>
           </div>
-          <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/pricing">
               View plans
               <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Plan Overview */}
@@ -208,12 +208,12 @@ export default function TenantBillingPage() {
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">No active subscription for this organization.</p>
-                <Link href="/pricing">
-                  <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" asChild>
+                  <Link href="/pricing">
                     <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
                     See organization plans
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             )}
           </CardContent>

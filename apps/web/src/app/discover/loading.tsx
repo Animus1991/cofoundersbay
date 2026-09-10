@@ -40,7 +40,7 @@ export default function DiscoverLoading() {
             <Skeleton className="h-12 w-full rounded-xl" />
 
             {/* Cards grid */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded-xl border border-border/40 bg-card p-5 space-y-3">
                   <div className="flex items-start gap-3">

@@ -199,12 +199,12 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-border/40">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-3 border-t border-border/40">
+          <div className="min-w-0">
             <p className="text-xs text-muted-foreground">Starting at</p>
-            <p className="font-semibold text-sm">{provider.pricing}</p>
+            <p className="truncate font-semibold text-sm">{provider.pricing}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex shrink-0 gap-2">
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1">
               <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />Message
             </Button>
@@ -368,7 +368,7 @@ export default function MarketplacePage() {
 
           <TabsContent value={selectedCategory} className="space-y-6 mt-4">
             {isLoading && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i}><CardContent className="p-5 space-y-3">
                     <div className="flex gap-3"><Skeleton className="h-11 w-11 rounded-xl" /><div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>
@@ -386,7 +386,7 @@ export default function MarketplacePage() {
                       <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Featured Providers</h2>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {featured.map(p => <ProviderCard key={p.id} provider={p} featured />)}
                     </div>
                   </div>
@@ -397,7 +397,7 @@ export default function MarketplacePage() {
                     {featured.length > 0 && (
                       <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">All Providers</h2>
                     )}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {regular.map(p => <ProviderCard key={p.id} provider={p} />)}
                     </div>
                   </div>

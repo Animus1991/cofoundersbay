@@ -147,13 +147,13 @@ export function DashboardSkeleton() {
         <Skeleton className="h-10 w-32" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
           <Skeleton className="h-6 w-32" />
           <div className="rounded-lg border border-border/60 p-4">
@@ -194,7 +194,7 @@ export function ProfilePageSkeleton() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <div className="rounded-lg border border-border/60 bg-card p-6">
             <Skeleton className="h-5 w-24 mb-4" />
@@ -246,7 +246,7 @@ export function DiscoverPageSkeleton() {
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <ProfileCardSkeleton key={i} />
         ))}

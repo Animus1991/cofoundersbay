@@ -184,7 +184,7 @@ export default function InvestorPortfolioPage() {
     >
       <div className="space-y-6">
         {/* Summary Stats */}
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
           {[
             { label: 'Total Invested', value: '$275K', icon: DollarSign, color: 'text-foreground' },
             { label: 'Current Value', value: '$535K', icon: TrendingUp, color: 'text-primary-emphasis' },

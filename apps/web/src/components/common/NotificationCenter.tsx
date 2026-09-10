@@ -217,11 +217,11 @@ export function NotificationCenter({
           <>
             <DropdownMenuSeparator />
             <div className="p-2">
-              <Link href="/notifications">
-                <Button variant="ghost" size="sm" className="w-full justify-center">
+              <Button variant="ghost" size="sm" className="w-full justify-center" asChild>
+                <Link href="/notifications">
                   View all notifications
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </>
         )}

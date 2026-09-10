@@ -145,7 +145,7 @@ function EmailTemplatesTab() {
 
   return (
     <TabsContent value="email" className="mt-6 space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Template list */}
         <Card className="md:col-span-1">
           <CardHeader>
@@ -618,7 +618,7 @@ export default function AdminPage() {
       }
     >
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <StatCard
           label="Total Users"
           value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
@@ -955,7 +955,7 @@ export default function AdminPage() {
                 <CardTitle className="text-base">Create New Cohort / Program</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">Name *</label>
                     <Input placeholder="e.g. Spring 2025 Accelerator" value={newCohort.name}
@@ -1013,7 +1013,7 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {(cohortsData?.cohorts ?? []).map((cohort) => (
                 <Card key={cohort.id} className="group">
                   <CardContent className="pt-5">
@@ -1059,7 +1059,7 @@ export default function AdminPage() {
 
         {/* Analytics Tab */}
         <TabsContent value="analytics" className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium text-muted-foreground">Users by Role</CardTitle>

@@ -10,7 +10,7 @@ export default function MentoringLoading() {
           <Skeleton className="hidden lg:block h-[420px] rounded-2xl" />
           <div className="space-y-4">
             <Skeleton className="h-10 w-full rounded-xl" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i}>
                   <CardContent className="p-5 space-y-3">

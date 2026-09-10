@@ -1198,7 +1198,7 @@ export default function ResearchBoardPage() {
       <div
         className={cn(
           'h-screen flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
-          expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          expanded ? 'sm:ml-[68px] lg:ml-[240px]' : 'sm:ml-[68px] lg:ml-[68px]',
         )}
       >
         {/* Loading state — also rendered during SSR for consistent HTML */}
@@ -1571,11 +1571,11 @@ export default function ResearchBoardPage() {
               Turn your canvas insights into a fundable startup artifact.
             </span>
           </div>
-          <Link href="/builder">
-            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0">
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:bg-violet-500/10 shrink-0" asChild>
+            <Link href="/builder">
               Open Builder <ArrowRight className="icon-2xs" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <button
             onClick={() => { setSynthDismissed(true); localStorage.setItem(synthDismissKey, 'true'); }}
             className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"

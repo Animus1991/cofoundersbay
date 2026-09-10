@@ -191,7 +191,7 @@ export default function MentorProfilePage() {
                     className="resize-none"
                   />
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label>Years of Experience</Label>
                     <Select value={yearsExp} onValueChange={setYearsExp}>

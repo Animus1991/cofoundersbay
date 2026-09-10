@@ -117,11 +117,11 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
           )}
         </div>
         {nextStep?.href && (
-          <Link href={nextStep.href}>
-            <Button size="sm" variant="secondary">
+          <Button size="sm" variant="secondary" asChild>
+            <Link href={nextStep.href}>
               Complete
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </div>
     );
@@ -187,11 +187,11 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
                 {field.label}
               </span>
               {!field.completed && field.href && (
-                <Link href={field.href}>
-                  <Button size="sm" variant="ghost" className="h-7 px-2">
+                <Button size="sm" variant="ghost" className="h-7 px-2" asChild>
+                  <Link href={field.href}>
                     <ArrowRight className="icon-sm" aria-hidden="true" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               )}
             </div>
           ))}
@@ -199,12 +199,12 @@ export function ProfileCompletionCard({ fields, className, compact = false }: Pr
 
         {/* CTA for next step */}
         {nextStep?.href && (
-          <Link href={nextStep.href} className="block">
-            <Button className="w-full gap-2">
+          <Button className="w-full gap-2" asChild>
+            <Link href={nextStep.href} className="block">
               Complete "{nextStep.label}"
               <ArrowRight className="icon-sm" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         )}
       </CardContent>
     </Card>

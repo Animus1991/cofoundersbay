@@ -492,7 +492,7 @@ export default function ProjectsPage() {
             ) : (
               <div className={cn(
                 viewMode === 'grid'
-                  ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                  ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                   : 'space-y-3'
               )}>
                 {filteredProjects.map((project) => (
@@ -538,7 +538,7 @@ export default function ProjectsPage() {
           <TabsContent value="starred">
             <div className={cn(
               viewMode === 'grid'
-                ? 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3'
+                ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                 : 'space-y-3'
             )}>
               {MOCK_PROJECTS.filter((p) => p.isStarred).map((project) => (

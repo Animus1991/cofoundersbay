@@ -43,22 +43,22 @@ export function TopNav() {
           >
             <Keyboard className="icon-sm" aria-hidden="true" />
           </Button>
-          <OptimizedLink href="/discover">
-            <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
+          <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift" asChild>
+            <OptimizedLink href="/discover">
               <Compass className="icon-sm" aria-hidden="true" />
               Discover
-            </Button>
-          </OptimizedLink>
-          <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
-            <Button aria-label="Message" variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true">
+            </OptimizedLink>
+          </Button>
+          <Button aria-label="Message" variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true" asChild>
+            <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
               <MessageCircle className="icon-sm" aria-hidden="true" />
               {unreadMessages > 0 && (
                 <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
                 </span>
               )}
-            </Button>
-          </OptimizedLink>
+            </OptimizedLink>
+          </Button>
         </div>
 
         {/* Actions */}

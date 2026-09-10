@@ -407,11 +407,11 @@ function MatchPreviewPanel({
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
               <BarChart3 className="h-3.5 w-3.5" aria-hidden="true" /> View breakdown
             </Button>
-            <Link href={`/profiles/${hit.userId}`}>
-              <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
+            <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" asChild>
+              <Link href={`/profiles/${hit.userId}`}>
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /> Full profile
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -608,12 +608,12 @@ export default function MatchesPage() {
             <RefreshCw className="icon-sm" aria-hidden="true" />
             Refresh
           </Button>
-          <Link href="/discover">
-            <Button variant="outline" size="sm" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/discover">
               Explore
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -626,12 +626,12 @@ export default function MatchesPage() {
             description="Your matches are personalized based on your profile and preferences."
             illustration="connection"
             action={
-              <Link href="/login">
-                <Button className="gap-2">
+              <Button className="gap-2" asChild>
+                <Link href="/login">
                   <UserPlus className="icon-sm" aria-hidden="true" />
                   Sign in
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             }
           />
         )}
@@ -660,7 +660,7 @@ export default function MatchesPage() {
 
         {/* ── Stats bar ── */}
         {hasToken && !isLoading && visible.length > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Total Matches',  value: counts.all,       color: 'text-foreground',  bg: 'bg-muted/40',       icon: Users },
               { label: 'Excellent ≥80%', value: counts.excellent, color: 'text-green-600 dark:text-green-400',   bg: 'bg-green-500/10',   icon: Star },
@@ -718,12 +718,12 @@ export default function MatchesPage() {
             description="Complete your profile (stage, commitment, roles sought) to get better cofounder and team suggestions."
             illustration="rocket"
             action={
-              <Link href="/profile/edit">
-                <Button className="gap-2">
+              <Button className="gap-2" asChild>
+                <Link href="/profile/edit">
                   Complete profile
                   <ArrowRight className="icon-sm" aria-hidden="true" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             }
           />
         )}
@@ -1101,7 +1101,7 @@ export default function MatchesPage() {
 
       {/* ── Bulk action bar (b4) ── */}
       {selectMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-20 lg:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
+        <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-xl border border-border/60 bg-card shadow-2xl px-4 py-2.5 animate-in slide-in-from-bottom duration-200">
           <span className="text-sm font-medium text-foreground">{selectedIds.size} selected</span>
           <div className="w-px h-5 bg-border/60" />
           <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs"

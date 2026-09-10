@@ -143,12 +143,12 @@ export default function TermsPage() {
             <span className="text-sm font-medium">Back to CoFounderBay</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-xs">Privacy Policy</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/privacy">Privacy Policy</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/help">Help Center</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -168,7 +168,7 @@ export default function TermsPage() {
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-4 py-8">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Table of Contents</h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {sections.map((section) => (
               <a
                 key={section.id}
@@ -211,12 +211,12 @@ export default function TermsPage() {
             By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/privacy">
-              <Button variant="outline" size="sm">Read Privacy Policy</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Create Account</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/privacy">Read Privacy Policy</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/register">Create Account</Link>
+            </Button>
           </div>
         </div>
       </main>

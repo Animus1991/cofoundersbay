@@ -328,7 +328,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
         data.overallStatus === 'needs-work' ? 'border-yellow-500' : 'border-red-500'
       )}>
         <CardContent className="p-6">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {/* Score Circle */}
             <div className="flex flex-col items-center justify-center">
               <div className="relative w-32 h-32">
@@ -419,7 +419,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
 
       {/* Blockers & Next Steps */}
       {(data.blockers.length > 0 || data.nextMilestones.length > 0) && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {data.blockers.length > 0 && (
             <Card className="border-red-200">
               <CardHeader className="pb-3">
@@ -465,7 +465,7 @@ export function ReadinessScoring({ workspaceData, onRefresh }: ReadinessScoringP
       )}
 
       {/* Dimension Details */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {data.dimensions.map(dimension => {
           const Icon = dimension.icon;
           const StatusIcon = getStatusIcon(dimension.status);

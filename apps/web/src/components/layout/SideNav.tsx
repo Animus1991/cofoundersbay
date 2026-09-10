@@ -22,7 +22,7 @@ type StoredUser = {
 export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
-  const { expanded, toggle } = useSidebar();
+  const { expanded, isRail, toggle } = useSidebar();
   const { messages: unreadMessages, intros: pendingIntros } = useUnreadCounts();
   const [user, setUser] = useState<StoredUser>(null);
   const [mounted, setMounted] = useState(false);
@@ -91,8 +91,10 @@ export function SideNav() {
       className={cn(
         'fixed left-0 top-0 z-40 flex h-full flex-col border-r border-border/60 bg-card/98 backdrop-blur-sm',
         'transition-[width] duration-200 ease-out will-change-[width]',
-        'hidden lg:flex',
-        expanded ? 'w-[240px]' : 'w-[68px]',
+        'hidden sm:flex',
+        // Width comes from CSS rather than from `expanded` so the rail is the
+        // correct 68px on the very first paint, before the media query resolves.
+        expanded ? 'w-[68px] lg:w-[240px]' : 'w-[68px]',
       )}
       aria-label="Main navigation"
     >
@@ -115,7 +117,7 @@ export function SideNav() {
         {expanded && mounted && (
           <button
             onClick={toggle}
-            className="rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"
+            className="hidden rounded-md p-1.5 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors lg:block"
             aria-label="Collapse sidebar"
           >
             <PanelLeftClose className="icon-sm" aria-hidden="true" />
@@ -131,7 +133,7 @@ export function SideNav() {
         {sections.map(({ section, links }) => (
           <div key={section} className="mb-1">
             {expanded ? (
-              <p className="mx-3 mb-1 mt-3 text-2xs font-semibold uppercase tracking-widest text-muted-foreground first:mt-1">
+              <p className="mx-3 mb-1 mt-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground first:mt-1">
                 {section}
               </p>
             ) : (
@@ -239,7 +241,7 @@ export function SideNav() {
         )}
 
         {/* Expand button when collapsed */}
-        {!expanded && mounted && (
+        {!expanded && mounted && !isRail && (
           <button
             onClick={toggle}
             className="mt-1 flex w-full items-center justify-center rounded-lg p-2 text-muted-foreground/60 hover:bg-secondary hover:text-foreground transition-colors"

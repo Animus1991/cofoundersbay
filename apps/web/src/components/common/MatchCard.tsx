@@ -284,13 +284,13 @@ function MatchCardInner({
               Breakdown
             </Button>
           ) : (
-            <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
-                style={{ borderColor: `${color}40`, color }}>
+            <Button size="sm" variant="outline" className="gap-1.5 h-8 text-xs font-medium px-2.5"
+                style={{ borderColor: `${color}40`, color }} asChild>
+              <Link href={`/matches/${userId}`}>
                 <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
                 Compatibility
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
 
           {onMessage && (

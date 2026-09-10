@@ -463,18 +463,18 @@ export default function HelpPage() {
                   Email Support
                 </Button>
               </a>
-              <Link href="/messages">
-                <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link href="/messages">
                   <MessageCircle className="icon-sm" aria-hidden="true" />
                   Live Chat
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Quick Links */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Link href="/terms" className="group">
             <Card className="h-full shadow-sm border-border/50 hover:border-primary/40 hover:shadow-md transition-all">
               <CardContent className="pt-5 pb-5 text-center">

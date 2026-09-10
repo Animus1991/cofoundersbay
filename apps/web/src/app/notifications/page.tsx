@@ -386,11 +386,11 @@ export default function NotificationsPage() {
             <Button aria-label="Refresh" variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} aria-hidden="true" />
             </Button>
-            <Link href="/settings" title="Notification settings">
-              <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8">
+            <Button aria-label="Settings" variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href="/settings" title="Notification settings">
                 <Settings className="h-3.5 w-3.5" aria-hidden="true" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 

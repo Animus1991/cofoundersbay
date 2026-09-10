@@ -92,11 +92,11 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             <TrendingUp className="icon-sm text-primary-emphasis" aria-hidden="true" />
             Venture Readiness Score
           </CardTitle>
-          <Link href="/achievements">
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" asChild>
+            <Link href="/achievements">
               History <ArrowRight className="icon-2xs" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

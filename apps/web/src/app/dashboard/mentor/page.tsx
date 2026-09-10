@@ -171,9 +171,9 @@ function RequestCard({ request }: { request: MentorRequest }) {
         <p className="text-sm font-medium">{request.name}</p>
         <p className="text-sm text-muted-foreground line-clamp-2">{request.message}</p>
         <div className="flex gap-2 mt-2">
-          <Link href="/mentor/requests">
-            <Button size="sm" variant="outline">Review Request</Button>
-          </Link>
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/mentor/requests">Review Request</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -236,7 +236,7 @@ export default function MentorDashboard() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <Skeleton key={i} className="h-24" />
             ))}
@@ -281,7 +281,7 @@ export default function MentorDashboard() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           <StatCard
             icon={Users}
             label="Active Mentees"
@@ -310,7 +310,7 @@ export default function MentorDashboard() {
 
         {/* Earnings Banner */}
         {showDemoData && (
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Link href="/mentor/earnings">
               <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 transition-all hover:border-emerald-500/40 cursor-pointer">
                 <DollarSign className="icon-md text-emerald-500 shrink-0" aria-hidden="true" />
@@ -341,7 +341,7 @@ export default function MentorDashboard() {
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Pending Requests */}
