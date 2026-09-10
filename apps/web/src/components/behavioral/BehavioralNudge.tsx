@@ -42,7 +42,9 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
     }
   }, [action?.key]);
 
-  if (isLoading || dismissed || !action) return null;
+  // `ctaHref` feeds <Link href>, which throws on undefined rather than warning,
+  // so an action without one is dropped instead of blanking the host page.
+  if (isLoading || dismissed || !action?.ctaHref) return null;
 
   const Icon = ICON_MAP[action.icon] ?? Zap;
 

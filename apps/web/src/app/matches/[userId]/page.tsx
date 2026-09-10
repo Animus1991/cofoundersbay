@@ -321,7 +321,9 @@ export default function MatchDetailPage() {
     );
   }
 
-  if (isError || !data) {
+  // The whole render below dereferences these three unconditionally, so a 200
+  // with a partial body has to take the same path as an outright failure.
+  if (isError || !data?.overall || !data.sourceProfile || !data.targetProfile) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">

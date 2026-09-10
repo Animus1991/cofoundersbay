@@ -130,8 +130,11 @@ export default function DiscoverPage() {
         sortBy: filters.sortBy,
         limit: 30,
       });
-      setHits(res.hits);
-      setTotal(res.total);
+      // A 200 whose body is missing `hits` must not blank the page: every
+      // read below goes through `hits.length`, so an undefined here throws
+      // inside render and trips the route error boundary.
+      setHits(Array.isArray(res?.hits) ? res.hits : []);
+      setTotal(typeof res?.total === 'number' ? res.total : 0);
     } catch {
       setHits([]);
       setTotal(0);
@@ -325,7 +328,7 @@ export default function DiscoverPage() {
           {loading && (
             <div className={cn(
               'grid gap-4',
-              viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+              viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
             )}>
               {[...Array(6)].map((_, i) => (
                 <ProfileCardSkeleton key={i} variant={viewMode === 'list' ? 'compact' : 'default'} />
@@ -391,7 +394,7 @@ export default function DiscoverPage() {
               staggerDelay={50}
               className={cn(
                 'grid gap-4',
-                viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'
               )}
             >
               {filteredHits.map((hit) => {

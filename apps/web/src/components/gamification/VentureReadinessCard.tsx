@@ -77,7 +77,10 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
     );
   }
 
-  if (!vrs) return null;
+  // The card dereferences `overall` and maps `dimensions` unconditionally, and
+  // `<Link href>` throws outright on `undefined` — so anything short of a
+  // complete payload has to render nothing rather than take the page down.
+  if (!vrs || typeof vrs.overall !== 'number' || !Array.isArray(vrs.dimensions)) return null;
 
   const { label: tierLabel, color: tierColor } = scoreTier(vrs.overall);
 
@@ -104,7 +107,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             <p className="text-xs text-muted-foreground mt-0.5">
               Weighted across 6 dimensions of founder progress
             </p>
-            {vrs.lowestDimension && (
+            {vrs.lowestDimension?.href && (
               <div className="flex items-center gap-1.5 mt-2 text-xs text-amber-600 dark:text-amber-400">
                 <Zap className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
@@ -118,7 +121,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         </div>
 
         <div className={cn('space-y-1.5', compact && 'hidden')}>
-          {vrs.dimensions.map((dim) => {
+          {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
             const { color } = scoreTier(dim.score);
             return (
               <Link key={dim.key} href={dim.href} className="group block">

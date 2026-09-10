@@ -12,7 +12,8 @@ const roleConfig: Record<RoleType, { label: string; icon: React.ComponentType<{ 
 };
 
 type RoleBadgeProps = {
-  role: string;
+  /** May legitimately be absent on a partially-populated profile payload. */
+  role: string | null | undefined;
   showIcon?: boolean;
   size?: BadgeProps['size'];
   className?: string;
@@ -26,10 +27,13 @@ export function RoleBadge({
   className,
   animated = false,
 }: RoleBadgeProps) {
-  const roleKey = role.toLowerCase() as RoleType;
+  // `role` arrives straight from API payloads; a missing one must degrade to a
+  // neutral badge rather than throw inside render and blank the whole profile.
+  const roleKey = (role ?? '').toLowerCase() as RoleType;
   const config = roleConfig[roleKey];
-  
+
   if (!config) {
+    if (!role) return null;
     return <Badge variant="secondary" size={size} className={className}>{role}</Badge>;
   }
 

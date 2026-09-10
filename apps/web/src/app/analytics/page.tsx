@@ -78,16 +78,27 @@ interface TopContent {
   date: string;
 }
 
-function metricsToDisplay(m: UserMetrics): AnalyticsMetric[] {
+// Tolerates a partial payload: a 200 that omits a counter renders that card at
+// zero instead of throwing inside render and taking the whole page to its
+// error boundary.
+function metricsToDisplay(m: Partial<UserMetrics> | undefined): AnalyticsMetric[] {
   const changeType = (v: number): 'increase' | 'decrease' | 'neutral' =>
     v > 0 ? 'increase' : v < 0 ? 'decrease' : 'neutral';
+  const n = (v: number | undefined): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  const row = (
+    label: string,
+    value: number | undefined,
+    change: number | undefined,
+    icon: AnalyticsMetric['icon'],
+    color: string,
+  ): AnalyticsMetric => ({ label, value: n(value), change: n(change), changeType: changeType(n(change)), icon, color });
   return [
-    { label: 'Profile Views', value: m.profileViews, change: m.profileViewsChange, changeType: changeType(m.profileViewsChange), icon: Eye, color: 'text-blue-500' },
-    { label: 'New Connections', value: m.newConnections, change: m.newConnectionsChange, changeType: changeType(m.newConnectionsChange), icon: UserPlus, color: 'text-green-500' },
-    { label: 'Messages Sent', value: m.messagesSent, change: m.messagesSentChange, changeType: changeType(m.messagesSentChange), icon: MessageCircle, color: 'text-purple-500' },
-    { label: 'Engagement Rate', value: m.engagementRate, change: m.engagementRateChange, changeType: changeType(m.engagementRateChange), icon: Heart, color: 'text-red-500' },
-    { label: 'Search Appearances', value: m.searchAppearances, change: m.searchAppearancesChange, changeType: changeType(m.searchAppearancesChange), icon: Target, color: 'text-orange-500' },
-    { label: 'Activity Score', value: m.activityScore, change: m.activityScoreChange, changeType: changeType(m.activityScoreChange), icon: Activity, color: 'text-cyan-500' },
+    row('Profile Views', m?.profileViews, m?.profileViewsChange, Eye, 'text-blue-500'),
+    row('New Connections', m?.newConnections, m?.newConnectionsChange, UserPlus, 'text-green-500'),
+    row('Messages Sent', m?.messagesSent, m?.messagesSentChange, MessageCircle, 'text-purple-500'),
+    row('Engagement Rate', m?.engagementRate, m?.engagementRateChange, Heart, 'text-red-500'),
+    row('Search Appearances', m?.searchAppearances, m?.searchAppearancesChange, Target, 'text-orange-500'),
+    row('Activity Score', m?.activityScore, m?.activityScoreChange, Activity, 'text-cyan-500'),
   ];
 }
 

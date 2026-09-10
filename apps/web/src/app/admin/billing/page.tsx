@@ -32,6 +32,8 @@ import {
 import { formatCents, STATUS_COLORS } from '@/lib/billing';
 import { cn } from '@/lib/utils';
 
+const ALL_STATUSES = 'all';
+
 function SubRow({
   sub, plans, onExtendTrial, onCancel, onOverride,
 }: {
@@ -124,7 +126,10 @@ export default function AdminBillingPage() {
   const qc = useQueryClient();
   const { success: toastSuccess, error: toastError } = useToast();
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  // Radix <Select.Item> forbids an empty-string value (it is reserved for
+  // "cleared"), so the no-filter option carries a sentinel that is mapped
+  // back to `undefined` at the query boundary.
+  const [statusFilter, setStatusFilter] = useState(ALL_STATUSES);
   const [overrideTarget, setOverrideTarget] = useState<BillingSubscription | null>(null);
   const [overridePlanId, setOverridePlanId] = useState('');
   const [showCouponForm, setShowCouponForm] = useState(false);
@@ -138,13 +143,13 @@ export default function AdminBillingPage() {
 
   const { data: subsData, isLoading: subsLoading } = useQuery({
     queryKey: ['admin', 'billing', 'subscriptions', statusFilter, search],
-    queryFn: () => listAdminSubscriptions({ status: statusFilter || undefined, search: search || undefined }),
+    queryFn: () => listAdminSubscriptions({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter, search: search || undefined }),
     staleTime: 30_000,
   });
 
   const { data: invoicesData, isLoading: invoicesLoading } = useQuery({
     queryKey: ['admin', 'billing', 'invoices', statusFilter],
-    queryFn: () => listAdminInvoices({ status: statusFilter || undefined }),
+    queryFn: () => listAdminInvoices({ status: statusFilter === ALL_STATUSES ? undefined : statusFilter }),
     staleTime: 30_000,
   });
 
@@ -267,7 +272,7 @@ export default function AdminBillingPage() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value={ALL_STATUSES}>All statuses</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="trialing">Trialing</SelectItem>
                   <SelectItem value="past_due">Past due</SelectItem>

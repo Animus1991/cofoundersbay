@@ -451,7 +451,7 @@ export default function SearchPage() {
                 </p>
               </div>
               <div className="space-y-3">
-                {results.map((result) => (
+                {results.filter((result) => Boolean(result?.href)).map((result) => (
                   <ResultCard key={`${result.type}-${result.id}`} result={result} />
                 ))}
               </div>
