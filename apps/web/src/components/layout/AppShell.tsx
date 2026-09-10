@@ -110,7 +110,7 @@ export function AppShell({
                     <CfbGlyphWell href={pathname} size="md" />
                     <div className="min-w-0">
                       {pageTitle && (
-                        <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl xl:text-3xl">
+                        <h1 className="text-balance text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">
                           <BilingualText en={pageTitle} el={pageTitleEl} />
                         </h1>
                       )}
