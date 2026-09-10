@@ -7,6 +7,7 @@ import { SideNav } from './SideNav';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { useSidebar } from './SidebarContext';
+import { useTopBannerHeight, TOP_BANNER_STACK } from './useTopBannerHeight';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { cn } from '@/lib/utils';
 
@@ -66,6 +67,7 @@ export function AppShellFrame({
   const { expanded, mounted } = useSidebar();
   const user = useCurrentUser();
   const isDemo = user?.email === 'demo@cofounderbay.com';
+  const demoBannerRef = useTopBannerHeight<HTMLDivElement>('--banner-demo', isDemo);
   // Purely CSS so the gutter is right on first paint: the 68px rail starts at
   // `sm`, and only `lg` and up can widen to the 240px drawer. Keep these steps
   // in lockstep with SideNav's `hidden sm:flex` and SidebarContext's RAIL_QUERY.
@@ -79,11 +81,13 @@ export function AppShellFrame({
         {/* Fixed left nav — icon rail from sm, full drawer from lg, hidden below sm */}
         <MemoSideNav />
 
-        {/* Demo mode banner — full width, above the content column */}
+        {/* Demo mode banner — stacked under the network banner, not over it */}
         {isDemo && (
           <div
+            ref={demoBannerRef}
+            style={{ top: 'var(--banner-network, 0px)' }}
             className={cn(
-              'fixed top-0 right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
+              'fixed right-0 z-[60] flex items-center justify-between gap-3 px-4 py-2',
               'bg-amber-500/95 text-amber-950 text-[13px] font-medium backdrop-blur-sm shadow-sm',
               'transition-[margin-left] duration-200 ease-out',
               offset,
@@ -110,8 +114,8 @@ export function AppShellFrame({
             fullHeight ? 'h-screen overflow-hidden' : 'min-h-screen',
             'transition-[margin-left] duration-200 ease-out',
             offset,
-            isDemo && 'pt-9',
           )}
+          style={{ paddingTop: TOP_BANNER_STACK }}
         >
           <MemoTopBar />
 

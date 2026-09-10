@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { WifiOff, Wifi, RefreshCw, Cloud, CloudOff, ServerCrash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTopBannerHeight } from '@/components/layout/useTopBannerHeight';
 
 // Network status context
 type NetworkContextType = {
@@ -79,49 +80,58 @@ export function OfflineBanner() {
     }
   }, [fullyOnline, wasEverOffline]);
 
-  if (!isOnline) {
-    return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 px-4 py-2 text-amber-950">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <WifiOff className="icon-sm" aria-hidden="true" />
-            <span className="text-sm font-medium">You&apos;re offline. Some features may be unavailable.</span>
-          </div>
-          <Button size="sm" variant="ghost" className="h-7 text-amber-950 hover:bg-amber-600" onClick={() => window.location.reload()}>
-            <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
-            Retry
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // One wrapper for all three states: it carries the fixed positioning and
+  // publishes its measured height, so the demo bar below it and the shell's
+  // content column can offset by however tall this actually renders.
+  const variant = !isOnline
+    ? ({
+        tone: 'bg-amber-500 text-amber-950',
+        icon: <WifiOff className="icon-sm shrink-0" aria-hidden="true" />,
+        text: "You're offline. Some features may be unavailable.",
+        action: { label: 'Retry', hover: 'hover:bg-amber-600', text: 'text-amber-950' },
+      } as const)
+    : !isApiOnline
+      ? ({
+          // orange-700, not -600: white on -600 is 3.56:1, below AA for body text.
+          tone: 'bg-orange-700 text-white',
+          icon: <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />,
+          text: 'API server is unavailable — pages will reload automatically when it recovers.',
+          action: { label: 'Reload now', hover: 'hover:bg-orange-800', text: 'text-white' },
+        } as const)
+      : showReconnected
+        ? ({
+            tone: 'bg-emerald-500 text-emerald-950',
+            icon: <Wifi className="icon-sm shrink-0" aria-hidden="true" />,
+            text: 'Back online!',
+            action: null,
+          } as const)
+        : null;
 
-  if (!isApiOnline) {
-    // orange-700, not -600: white on -600 is 3.56:1, below AA for body text.
-    return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-orange-700 px-4 py-2 text-white">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ServerCrash className="icon-sm shrink-0" aria-hidden="true" />
-            <span className="text-sm font-medium">
-              API server is unavailable — pages will reload automatically when it recovers.
-            </span>
-          </div>
-          <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-orange-800" onClick={() => window.location.reload()}>
-            <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
-            Reload now
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const bannerRef = useTopBannerHeight<HTMLDivElement>('--banner-network', variant !== null);
 
-  if (showReconnected) {
+  if (variant) {
     return (
-      <div className="fixed top-0 left-0 right-0 z-50 bg-emerald-500 px-4 py-2 text-emerald-950">
-        <div className="container mx-auto flex items-center justify-center gap-2">
-          <Wifi className="icon-sm" aria-hidden="true" />
-          <span className="text-sm font-medium">Back online!</span>
+      <div
+        ref={bannerRef}
+        role="status"
+        className={cn('fixed top-0 left-0 right-0 z-50 px-4 py-2', variant.tone)}
+      >
+        <div className="container mx-auto flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2">
+            {variant.icon}
+            <span className="text-sm font-medium">{variant.text}</span>
+          </div>
+          {variant.action && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className={cn('h-7 shrink-0', variant.action.text, variant.action.hover)}
+              onClick={() => window.location.reload()}
+            >
+              <RefreshCw className="icon-2xs mr-1" aria-hidden="true" />
+              {variant.action.label}
+            </Button>
+          )}
         </div>
       </div>
     );

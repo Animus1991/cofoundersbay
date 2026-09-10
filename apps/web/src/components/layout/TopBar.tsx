@@ -12,6 +12,7 @@ import { ThemeSwitcher } from '@/components/theme/ThemeSwitcher';
 import { NotificationsBell } from './NotificationsBell';
 import { DemoDataToggle } from '@/components/common/DemoDataToggle';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { TOP_BANNER_STACK } from './useTopBannerHeight';
 
 const CommandPalette = dynamic(
   () => import('@/components/common/CommandPalette').then((module) => ({ default: module.CommandPalette })),
@@ -40,7 +41,12 @@ export function TopBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-card/95 px-4 backdrop-blur-sm sm:px-6">
+      <header
+      // Sticks below the fixed banner stack rather than sliding under it: with
+      // a plain `top-0` the header scrolled behind the network/demo banners.
+      style={{ top: TOP_BANNER_STACK }}
+      className="sticky z-30 flex h-14 items-center gap-3 border-b border-border/60 bg-card/95 px-4 backdrop-blur-sm sm:px-6"
+    >
         {/* Search */}
         <div className="flex-1 max-w-sm">
           <SearchBar />
