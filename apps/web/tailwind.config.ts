@@ -206,6 +206,14 @@ const config: Config = {
       // values (8px–13px) that were scattered through the codebase.
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }], // 11px — counters, badges, micro-labels
+        // Top of the scale pulled in 2.5% (Claude 2e5b104). Tailwind defaults
+        // 30/36/48/60/72 against a ~14px body read as a jump next to the
+        // 11–16px steps that carry most of the product. Nothing below 30px.
+        '3xl': ['1.828rem', { lineHeight: '2.194rem' }],
+        '4xl': ['2.194rem', { lineHeight: '2.438rem' }],
+        '5xl': ['2.925rem', { lineHeight: '1' }],
+        '6xl': ['3.656rem', { lineHeight: '1' }],
+        '7xl': ['4.388rem', { lineHeight: '1' }],
       },
       fontFamily: {
         // Outer var = per-tenant override written by TenantContext.applyBrandingFonts;

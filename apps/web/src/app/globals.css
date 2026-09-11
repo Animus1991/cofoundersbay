@@ -61,7 +61,7 @@ html {
     --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 50%; /* WCAG AA: white on destructive ≥4.5:1 (was 60%) */
+    --destructive:      0 84% 49%; /* WCAG AA: white on destructive 4.70 (50% was 4.53) */
     --destructive-foreground: 0 0% 100%;
     /* Text-only destructive (headings, labels, ghost-button labels) — same tension as
        --primary-accessible: text needs to be darker than the button's own fill for
@@ -155,7 +155,7 @@ html {
     --popover-foreground: 210 20% 98%;
     --primary: 199 89% 36%; /* WCAG AA: white on cyan primary ≥4.5:1 (was 48%) */
     --primary-foreground: 0 0% 100%;
-    --primary-accessible: 199 89% 48%; /* text-on-dark variant — reuses the original pre-reduction lightness */
+    --primary-accessible: 199 89% 50%; /* text-on-dark — 48% was 4.46 on this theme's card */
     --secondary: 215 20% 26%;
     --secondary-foreground: 210 20% 98%;
     --muted: 215 20% 26%;
@@ -164,7 +164,7 @@ html {
     --accent-foreground: 0 0% 100%;
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-accessible: 0 70% 69%; /* text-on-dark variant — 50% measures ~2.6:1 as inline text on this theme's card */
+    --destructive-accessible: 0 70% 70%; /* text-on-dark — 69% was 4.48 on this theme's card */
     --border: 215 20% 30%;
     --input: 215 20% 30%;
     --ring: 199 89% 36%;
@@ -187,10 +187,10 @@ html {
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 44%; /* WCAG AA on background (was 46%) */
+    --muted-foreground: 210 5% 43%; /* WCAG AA on muted fill (44% was 4.46) */
     --accent: 34 100% 52%;
     --accent-foreground: 220 100% 3%;
-    --destructive: 0 84% 50%;
+    --destructive: 0 84% 49%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 0 84% 46%; /* text-on-light variant, darkened like light theme above */
     --border: 200 15% 88%;
