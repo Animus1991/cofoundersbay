@@ -269,11 +269,44 @@
     scroll-behavior: smooth;
   }
 
+  /* ── Desktop density ──────────────────────────────────────────────────────
+     The web view renders at 82% of the phone/tablet scale — an 18% reduction
+     applied once, at the root, so type, spacing, icons, radii and every h-N /
+     w-N box shrink by exactly the same factor and every proportion in the
+     design system is preserved. A percentage, not a px value, so a reader who
+     has raised their browser's default font size still gets 82% of *their*
+     size rather than having the preference overwritten.
+     Breakpoint is `lg` (1024px): the width at which the app switches to the
+     full desktop chrome with the 240px drawer. Phones and tablets are
+     untouched. ──────────────────────────────────────────────────────────── */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 82%;
+    }
+  }
+
+  /* ── Phone titles ─────────────────────────────────────────────────────────
+     Headings render 3% smaller on a phone. Tailwind writes these sizes in rem
+     on the element itself, and CSS has no way to say "97% of whatever this
+     element already computes to" — `em` resolves against the parent — so each
+     size that carries a title on a phone is restated here at 97%. Scoped to
+     heading elements, so body copy, labels and badges keep their size.
+     ──────────────────────────────────────────────────────────────────────── */
+  @media (max-width: 639.98px) {
+    h1.text-base, h2.text-base, h3.text-base { font-size: 0.97rem; }      /* 16   -> 15.52 */
+    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.09125rem; }   /* 18   -> 17.46 */
+    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.2125rem; }    /* 20   -> 19.4  */
+    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.455rem; }     /* 24   -> 23.28 */
+    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.77316rem; }   /* 29.25 -> 28.37 */
+    h1.text-4xl,  h2.text-4xl                { font-size: 2.12818rem; }   /* 35.1  -> 34.05 */
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100vh;
     font-feature-settings: 'cv11', 'ss01';
-    font-size: 14px;
+    /* rem, not px, so it participates in the desktop scale below. */
+    font-size: 0.875rem;
     line-height: 1.55;
     letter-spacing: -0.012em;
     text-rendering: optimizeLegibility;
