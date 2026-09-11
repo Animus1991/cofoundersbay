@@ -317,16 +317,18 @@ export default function NotificationPreferencesPage() {
   return (
     <AppShell
       actions={
-        <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="outline" size="icon" className="sm:hidden" aria-label="Settings">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Settings" asChild>
+            <Link href="/settings">
               <ArrowLeft className="icon-sm" />
-            </Button>
-            <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/settings">
               <ArrowLeft className="icon-sm" />
               <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button size="sm" onClick={handleSave} disabled={savePrefs.isPending} className="gap-2">
             {savePrefs.isPending ? (
               <Loader2 className="icon-sm animate-spin" />

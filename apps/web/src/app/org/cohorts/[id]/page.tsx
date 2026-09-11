@@ -314,7 +314,7 @@ export default function CohortDetailPage() {
       title={cohort.name}
       description={`${cohort.program} • ${formatDate(cohort.startDate)} - ${formatDate(cohort.endDate)}`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm">
             <Share2 className="icon-sm mr-2" />
             Share

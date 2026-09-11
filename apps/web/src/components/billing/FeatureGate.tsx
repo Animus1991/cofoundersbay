@@ -49,9 +49,9 @@ function UpgradePrompt({ feature }: { feature: PlanFeatureKey }) {
         <p className="text-sm font-semibold text-foreground">{label} requires an upgrade</p>
         <p className="text-xs text-muted-foreground">This feature is not included in your current plan.</p>
       </div>
-      <Link href="/pricing">
-        <Button size="sm" className="gap-2">Upgrade plan</Button>
-      </Link>
+      <Button size="sm" className="gap-2" asChild>
+        <Link href="/pricing">Upgrade plan</Link>
+      </Button>
     </div>
   );
 }

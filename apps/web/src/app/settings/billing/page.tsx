@@ -160,18 +160,18 @@ export default function UserBillingPage() {
   return (
     <AppShell
       actions={
-        <div className="flex items-center gap-2">
-          <Link href="/settings">
-            <Button variant="outline" size="sm" className="gap-2 hidden sm:flex">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" className="gap-2 hidden sm:flex" asChild>
+            <Link href="/settings">
               <BilingualText en={settingsEn('settings')} el={settingsEl('settings')} />
-            </Button>
-          </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="sm" className="gap-2">
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link href="/pricing">
               View plans
               <ChevronRight className="icon-sm" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -255,24 +255,24 @@ export default function UserBillingPage() {
                     <ExternalLink className="icon-sm" />
                   </Button>
                   {(sub.plan?.name === 'free' || !sub) && (
-                    <Link href="/pricing">
-                      <Button size="sm" className="gap-2">
+                    <Button size="sm" className="gap-2" asChild>
+                      <Link href="/pricing">
                         <Crown className="icon-sm" />
                         Upgrade plan
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
                 </div>
               </>
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">You are on the free plan.</p>
-                <Link href="/pricing">
-                  <Button size="sm" className="gap-2">
+                <Button size="sm" className="gap-2" asChild>
+                  <Link href="/pricing">
                     <Crown className="icon-sm" />
                     Upgrade to Pro
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             )}
           </CardContent>

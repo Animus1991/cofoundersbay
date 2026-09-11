@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Globe, Keyboard, MoreHorizontal, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, Globe, Keyboard, Languages, MoreHorizontal, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ import { LanguagePreferenceToggle } from '@/components/common/LanguagePreference
 import { BilingualText } from '@/components/common/BilingualText';
 import { commonEn, commonEl } from '@/lib/i18n/strings-common';
 import { bilingualAria } from '@/lib/i18n/format';
+import { useLanguagePreference } from '@/lib/i18n/LanguagePreferenceContext';
 import { STATUS } from '@/lib/semantic-colors';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -59,7 +60,7 @@ function PreviewDemoBadge() {
             )}
           >
             <Sparkles className="icon-sm" aria-hidden="true" />
-            <BilingualText en="Demo account" el="Δοκιμαστικός λογαριασμός" compact />
+            <BilingualText en="Demo account" el="Δοκιμαστικός λογαριασμός" compact secondaryFrom="lg" />
           </Link>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="end" className="max-w-[220px]">
@@ -80,8 +81,15 @@ const CommandPalette = dynamic(
   { ssr: false },
 );
 
+// Consolidated tools, up to `xl`. Between 640 and 1023 the bar also carries the
+// navigation rail's absence, the demo chips and the user menu, and at `lg` the 240px drawer
+// takes 240px more, so the narrowest `lg` window has the least room of any: the
+// separate command-palette / sample-data / display-language controls squeezed the
+// search field to three characters ("Sea") at 834px and pushed the bar 51px past
+// the viewport at 1024px. Everything they do is here.
 function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
   const { showDemoData, toggleDemoData } = useDemoData();
+  const { displayMode, setDisplayMode } = useLanguagePreference();
   const router = useRouter();
   const { t } = useI18n();
 
@@ -91,7 +99,7 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0 md:hidden"
+          className="h-9 w-9 shrink-0 xl:hidden"
           aria-label={t('More tools')}
         >
           <MoreHorizontal className="icon-sm" />
@@ -105,6 +113,16 @@ function MobileToolsMenu({ onCommand }: { onCommand: () => void }) {
         <DropdownMenuItem onClick={() => router.push('/settings#language')}>
           <Globe className="mr-2 icon-sm shrink-0" aria-hidden="true" />
           <BilingualText en="Language" el="Γλώσσα" compact />
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => setDisplayMode(displayMode === 'bilingual' ? 'primary-only' : 'bilingual')}
+        >
+          <Languages className="mr-2 icon-sm shrink-0" aria-hidden="true" />
+          <BilingualText
+            en={displayMode === 'bilingual' ? 'Primary language only' : 'Bilingual display'}
+            el={displayMode === 'bilingual' ? 'Μόνο κύρια γλώσσα' : 'Δίγλωσση εμφάνιση'}
+            compact
+          />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleDemoData}>
@@ -143,26 +161,31 @@ export function TopBar() {
     <>
       <header
         style={{ top: TOP_BANNER_STACK }}
-        className="sticky z-30 flex h-12 min-h-12 items-center gap-1 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x"
+        /* Gaps tighten below `sm`. Measured at 320px: the bar needed 339px --
+           hamburger 44 + search 36 + the five-control cluster 219, plus 4px
+           gaps -- and scrolled the whole page sideways. Narrowing the gaps to
+           2px recovers 22px and keeps every control at its 36px tap target,
+           rather than dropping one of them. */
+        className="sticky z-30 flex h-12 min-h-12 items-center gap-0.5 border-b border-border/50 bg-background/80 px-2 backdrop-blur-md sm:h-14 sm:gap-2 sm:px-4 lg:px-6 safe-x"
       >
         <MobileNav />
         <SearchBar />
 
         <div className="min-w-0 flex-1" />
 
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1.5">
           <PreviewDemoBadge />
           <Button
             variant="ghost"
             size="icon"
-            className="hidden h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:flex"
+            className="hidden h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground xl:flex"
             onClick={() => setCommandOpen(true)}
             aria-label={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
             title={bilingualAria('Command palette (Ctrl+K)', 'Παλέτα εντολών (Ctrl+K)')}
           >
             <Keyboard className="icon-sm" />
           </Button>
-          <div className="hidden md:flex items-center gap-0.5">
+          <div className="hidden xl:flex items-center gap-0.5">
             <DemoDataToggle />
             <LanguagePreferenceToggle />
           </div>

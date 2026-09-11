@@ -104,11 +104,11 @@ function NetworkActivityRow({ item }: { item: DashboardActivityItem }) {
         </div>
       </div>
       {item.href && (
-        <Link href={item.href} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <Link href={item.href} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <ArrowRight className="icon-sm" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -145,11 +145,11 @@ function NotificationRow({ item }: { item: NotificationItem }) {
         </div>
       </div>
       {item.link && (
-        <Link href={item.link} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="h-7 w-7">
+        <Button variant="ghost" size="icon" className="h-7 w-7" asChild>
+          <Link href={item.link} className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <ExternalLink className="icon-sm" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       )}
     </div>
   );
@@ -390,9 +390,9 @@ export default function ActivityPage() {
                         {typeFilter === 'all' ? 'Connect with people to see updates here.' : 'Try a different filter.'}
                       </p>
                       {typeFilter === 'all' && (
-                        <Link href="/discover">
-                          <Button variant="outline" size="sm">Discover people</Button>
-                        </Link>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href="/discover">Discover people</Link>
+                        </Button>
                       )}
                     </div>
                   ) : (
@@ -470,9 +470,9 @@ export default function ActivityPage() {
                       </div>
                       <p className="text-sm font-medium text-foreground">No upcoming events</p>
                       <p className="text-xs text-muted-foreground">Browse and join events in your ecosystem.</p>
-                      <Link href="/events">
-                        <Button variant="outline" size="sm">Browse events</Button>
-                      </Link>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/events">Browse events</Link>
+                      </Button>
                     </div>
                   ) : (
                     eventItems.map((item) => <NetworkActivityRow key={item.id} item={item} />)
@@ -546,11 +546,11 @@ export default function ActivityPage() {
                 </div>
                 <p className="mt-2 text-sm font-semibold text-foreground">Stay Active</p>
                 <p className="text-xs text-muted-foreground mt-0.5">Connect, engage, and grow your network daily.</p>
-                <Link href="/analytics">
-                  <Button variant="outline" size="sm" className="mt-3 w-full h-8 text-xs gap-1.5">
+                <Button variant="outline" size="sm" className="mt-3 w-full h-8 text-xs gap-1.5" asChild>
+                  <Link href="/analytics">
                     <Target className="icon-sm" /> View Analytics
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           </div>

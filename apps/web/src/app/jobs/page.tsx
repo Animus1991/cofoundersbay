@@ -110,11 +110,11 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
             </div>
           </div>
 
-          <Link href={job.href ?? `/jobs`} className="shrink-0">
-            <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8">
+          <Button variant="ghost" size="sm" className="gap-1 opacity-0 group-hover:opacity-100 transition-opacity h-8" asChild>
+            <Link href={job.href ?? `/jobs`} className="shrink-0">
               <ExternalLink className="icon-sm" />View
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Skills footer */}

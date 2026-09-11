@@ -143,9 +143,9 @@ function RequestCard({ request }: { request: any }) {
         <p className="text-sm font-medium">{request.name}</p>
         <p className="text-sm text-muted-foreground line-clamp-2">{request.message}</p>
         <div className="flex gap-2 mt-2">
-          <Link href="/mentor/requests">
-            <Button size="sm" variant="outline">Review Request</Button>
-          </Link>
+          <Button size="sm" variant="outline" asChild>
+            <Link href="/mentor/requests">Review Request</Link>
+          </Button>
         </div>
       </div>
     </div>

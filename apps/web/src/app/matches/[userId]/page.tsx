@@ -513,12 +513,12 @@ export default function MatchDetailPage() {
             <Bookmark className={`icon-sm ${shortlisted ? 'fill-current text-amber-400' : ''}`} />
             {shortlisted ? 'Saved' : 'Shortlist'}
           </Button>
-          <Link href={`/messages?to=${targetUserId}`} className="contents">
-            <Button variant="outline" className="gap-1.5 text-sm w-full">
+          <Button variant="outline" className="gap-1.5 text-sm w-full" asChild>
+            <Link href={`/messages?to=${targetUserId}`} className="contents">
               <MessageCircle className="icon-sm" />
               Message
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button
             className="gap-1.5 font-bold text-black text-sm"
             style={{ background: '#22D3EE' }}

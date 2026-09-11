@@ -1210,6 +1210,7 @@ export default function ResearchBoardPage() {
       <div
         className={cn(
           'h-[100dvh] flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
+          'sm:ml-[4.25rem]',
           expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
         )}
       >
@@ -1638,11 +1639,11 @@ export default function ResearchBoardPage() {
               Turn your canvas insights into a fundable startup artifact.
             </span>
           </div>
-          <Link href="/builder">
-            <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0">
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs font-semibold text-violet-600 hover:bg-violet-500/10 shrink-0" asChild>
+            <Link href="/builder">
               Open Builder <ArrowRight className="icon-sm" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <button
             onClick={() => { setSynthDismissed(true); localStorage.setItem(synthDismissKey, 'true'); }}
             className="p-1 rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"

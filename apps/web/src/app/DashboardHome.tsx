@@ -361,18 +361,18 @@ export function DashboardHome() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/matches">
-              <Button variant="outline" size="sm" className="gap-2">
+            <Button variant="outline" size="sm" className="gap-2" asChild>
+              <Link href="/matches">
                 <CfbGlyph name="matches" className="icon-sm" />
                 <BilingualText en={dashboardEn('view_matches')} el={dashboardEl('view_matches')} compact />
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button size="sm" className="gap-2">
+              </Link>
+            </Button>
+            <Button size="sm" className="gap-2" asChild>
+              <Link href="/discover">
                 <CfbGlyph name="discover" className="icon-sm" />
                 <BilingualText en={dashboardEn('explore')} el={dashboardEl('explore')} compact />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -506,11 +506,11 @@ export function DashboardHome() {
                         <BilingualText en={dashboardEn('complete_profile_for_matches')} el={dashboardEl('complete_profile_for_matches')} />
                       </p>
                     </div>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href="/profile/edit">
                         <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -614,12 +614,12 @@ export function DashboardHome() {
                       </div>
                       <Progress value={profileCompletion} className="h-2" />
                     </div>
-                    <Link href="/profile/edit">
-                      <Button variant="outline" size="sm" className="w-full gap-2">
+                    <Button variant="outline" size="sm" className="w-full gap-2" asChild>
+                      <Link href="/profile/edit">
                         Complete Profile
                         <ArrowRight className="icon-sm" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -695,12 +695,12 @@ export function DashboardHome() {
                       )}
                     </div>
                   </div>
-                  <Link href="/readiness">
-                    <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs">
+                  <Button variant="outline" size="sm" className="mt-3 w-full gap-1.5 text-xs" asChild>
+                    <Link href="/readiness">
                       <CfbGlyph name="chart" className="icon-sm" />
                       <BilingualText en="View readiness" el="Δείτε την ετοιμότητα" compact />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}

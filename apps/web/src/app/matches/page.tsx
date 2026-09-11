@@ -429,11 +429,11 @@ function MatchPreviewPanel({
             <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" onClick={onBreakdown}>
               <BarChart3 className="icon-sm" /> View breakdown
             </Button>
-            <Link href={`/profiles/${hit.userId}`}>
-              <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs">
+            <Button variant="ghost" size="sm" className="w-full gap-1.5 text-xs" asChild>
+              <Link href={`/profiles/${hit.userId}`}>
                 <ArrowRight className="icon-sm" /> Full profile
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -637,12 +637,12 @@ export default function MatchesPage() {
             <RefreshCw className="icon-sm" />
             <BilingualText en={matchesEn('refresh')} el={matchesEl('refresh')} compact />
           </Button>
-          <Link href="/discover">
-            <Button variant="outline" size="sm" className="min-h-10 gap-2">
+          <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
+            <Link href="/discover">
               <BilingualText en={matchesEn('explore')} el={matchesEl('explore')} compact />
               <ArrowRight className="icon-sm" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -656,12 +656,12 @@ export default function MatchesPage() {
             illustration="connection"
             askAiPrompt="I am not signed in. Explain how matching works on CoFounderBay and what I should complete after login."
             action={
-              <Link href="/login">
-                <Button className="gap-2">
+              <Button className="gap-2" asChild>
+                <Link href="/login">
                   <UserPlus className="icon-sm" />
                   <BilingualText en={matchesEn('sign_in')} el={matchesEl('sign_in')} />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             }
           />
         )}
@@ -759,12 +759,12 @@ export default function MatchesPage() {
             illustration="rocket"
             askAiPrompt="I have no matches yet. Tell me which profile fields to complete so I get better cofounder suggestions."
             action={
-              <Link href="/profile/edit">
-                <Button className="gap-2">
+              <Button className="gap-2" asChild>
+                <Link href="/profile/edit">
                   <BilingualText en={matchesEn('complete_profile')} el={matchesEl('complete_profile')} />
                   <ArrowRight className="icon-sm" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             }
           />
         )}

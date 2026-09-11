@@ -73,11 +73,11 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
       >
         <CfbGlyph name={glyph} className="icon-sm shrink-0 text-foreground/70" />
         <span className="flex-1 text-xs text-foreground/90">{action.title}</span>
-        <Link href={action.ctaHref}>
-          <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+          <Link href={action.ctaHref}>
             {action.ctaLabel} <ArrowRight className="ml-1 icon-sm" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <button type="button" onClick={handleDismiss} className="ml-1 text-muted-foreground hover:text-foreground" aria-label={dismissLabel}>
           <X className="icon-sm" />
         </button>
@@ -111,12 +111,12 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
           <p className="text-sm font-semibold leading-snug text-foreground">{action.title}</p>
           <p className="text-xs leading-relaxed text-muted-foreground">{action.description}</p>
           <div className="pt-1">
-            <Link href={action.ctaHref}>
-              <Button size="sm" className="h-7 gap-1.5 text-xs">
+            <Button size="sm" className="h-7 gap-1.5 text-xs" asChild>
+              <Link href={action.ctaHref}>
                 {action.ctaLabel}
                 <ArrowRight className="icon-sm" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

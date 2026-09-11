@@ -83,12 +83,12 @@ export default function NewMilestonePage() {
             <CfbGlyph name="spark" className="icon-sm" />
             <BilingualText en={milestoneEn('ask_ai')} el={milestoneEl('ask_ai')} compact />
           </Button>
-          <Link href="/milestones">
-            <Button variant="ghost" size="sm" className="gap-2 rounded-xl" aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))}>
+          <Button variant="ghost" size="sm" className="gap-2 rounded-xl" aria-label={bilingualAria(milestoneEn('back'), milestoneEl('back'))} asChild>
+            <Link href="/milestones">
               <ArrowLeft className="icon-sm" />
               <BilingualText en={milestoneEn('back')} el={milestoneEl('back')} compact />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -224,11 +224,11 @@ export default function NewMilestonePage() {
               </div>
 
               <div className="flex items-center justify-end gap-3 border-t border-border/40 pt-2">
-                <Link href="/milestones">
-                  <Button type="button" variant="ghost" className="rounded-xl">
+                <Button type="button" variant="ghost" className="rounded-xl" asChild>
+                  <Link href="/milestones">
                     <BilingualText en={milestoneEn('cancel')} el={milestoneEl('cancel')} compact />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button type="submit" className="rounded-xl" disabled={!canSubmit}>
                   {mutation.isPending
                     ? <BilingualText en={milestoneEn('creating')} el={milestoneEl('creating')} compact />

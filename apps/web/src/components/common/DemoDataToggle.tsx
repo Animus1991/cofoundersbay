@@ -51,7 +51,7 @@ export function DemoDataToggle({ className }: { className?: string }) {
               ? <Eye className="icon-sm" aria-hidden="true" />
               : <EyeOff className="icon-sm" aria-hidden="true" />}
             <span className="hidden sm:inline">
-              <BilingualText en="Sample data" el="Δείγμα" compact />
+              <BilingualText en="Sample data" el="Δείγμα" compact secondaryFrom="lg" />
             </span>
           </Button>
         </TooltipTrigger>

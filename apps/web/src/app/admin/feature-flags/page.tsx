@@ -202,7 +202,7 @@ export default function AdminFeatureFlagsPage() {
       title="Feature Flags"
       description="Control feature rollouts, experiments, and gradual deployments"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

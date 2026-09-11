@@ -464,12 +464,12 @@ export default function HelpPage() {
                   Email Support
                 </Button>
               </a>
-              <Link href="/messages">
-                <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" asChild>
+                <Link href="/messages">
                   <MessageCircle className="icon-sm" />
                   Live Chat
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>

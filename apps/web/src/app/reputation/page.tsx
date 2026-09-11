@@ -438,16 +438,18 @@ export default function ReputationPage() {
       title="Reputation Score"
       description="Your trust and credibility on CoFounderBay"
       actions={
-        <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="My Profile" asChild>
+            <Link href="/profile">
               <Shield className="icon-sm" />
-            </Button>
-            <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/profile">
               <Shield className="icon-sm" />
               My Profile
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

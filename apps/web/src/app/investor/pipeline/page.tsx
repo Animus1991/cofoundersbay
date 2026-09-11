@@ -151,7 +151,7 @@ export default function InvestorPipelinePage() {
       title="Investment Pipeline"
       description="Track deals through your investment process"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setShowPassed(!showPassed)}>
             {showPassed ? 'Hide Passed' : 'Show Passed'}
           </Button>

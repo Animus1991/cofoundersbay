@@ -359,12 +359,12 @@ export default function FounderDashboardContent() {
           <Badge variant="outline" className="gap-1.5">
             <CfbGlyph name="builder" className="icon-sm" /> <BilingualText en="Founder" el="Ιδρυτής" compact />
           </Badge>
-          <Link href="/readiness">
-            <Button variant="outline" size="sm" className="gap-1.5">
+          <Button variant="outline" size="sm" className="gap-1.5" asChild>
+            <Link href="/readiness">
               <CfbGlyph name="chart" className="icon-sm" />
               <BilingualText en={`Readiness: ${avgReadiness}%`} el={`Ετοιμότητα: ${avgReadiness}%`} compact />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </>
       }
     >
@@ -414,24 +414,24 @@ export default function FounderDashboardContent() {
                 footer={
                   <div className="space-y-2">
                     <div className="grid gap-2 sm:grid-cols-3">
-                      <Link href="/readiness" className="w-full">
-                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                        <Link href="/readiness" className="w-full">
                           <CfbGlyph name="chart" className="icon-sm" />
                           <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
-                        </Button>
-                      </Link>
-                      <Link href="/builder" className="w-full">
-                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                        <Link href="/builder" className="w-full">
                           <CfbGlyph name="builder" className="icon-sm" />
                           <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
-                        </Button>
-                      </Link>
-                      <Link href="/expert-reviews" className="w-full">
-                        <Button variant="outline" size="sm" className="w-full gap-1.5">
+                        </Link>
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                        <Link href="/expert-reviews" className="w-full">
                           <CfbGlyph name="award" className="icon-sm" />
                           <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                     </div>
                     <AskAiButton
                       variant="ghost"
@@ -452,12 +452,12 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('fundraising')} el={dashboardEl('fundraising')} />
                   </CardTitle>
-                  <Link href="/fundraising">
-                    <Button variant="ghost" size="sm" className="gap-1">
+                  <Button variant="ghost" size="sm" className="gap-1" asChild>
+                    <Link href="/fundraising">
                       <BilingualText en={dashboardEn('open_tracker')} el={dashboardEl('open_tracker')} compact />
                       <ArrowRight className="icon-sm" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
@@ -502,18 +502,18 @@ export default function FounderDashboardContent() {
                     </span>
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
-                    <Link href="/fundraising" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/fundraising" className="flex-1">
                         <CfbGlyph name="wallet" className="icon-sm" />
                         <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
-                      </Button>
-                    </Link>
-                    <Link href="/investors" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5">
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Link href="/investors" className="flex-1">
                         <CfbGlyph name="discover" className="icon-sm" />
                         <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -527,12 +527,12 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="matches" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} />
                   </CardTitle>
-                  <Link href="/matches">
-                    <Button variant="ghost" size="sm" className="gap-1">
+                  <Button variant="ghost" size="sm" className="gap-1" asChild>
+                    <Link href="/matches">
                       <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
                       <ArrowRight className="icon-sm" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -549,12 +549,12 @@ export default function FounderDashboardContent() {
                       />
                     </p>
                     <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-                      <Link href="/profile/edit">
-                        <Button variant="outline" size="sm" className="gap-1.5">
+                      <Button variant="outline" size="sm" className="gap-1.5" asChild>
+                        <Link href="/profile/edit">
                           <CfbGlyph name="profile" className="icon-sm" />
                           <BilingualText en={dashboardEn('complete_profile')} el={dashboardEl('complete_profile')} compact />
-                        </Button>
-                      </Link>
+                        </Link>
+                      </Button>
                       <AskAiButton
                         variant="ghost"
                         labelEn={dashboardEn('ask_ai_matches')}
@@ -574,12 +574,12 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('milestones')} el={dashboardEl('milestones')} />
                   </CardTitle>
-                  <Link href="/milestones">
-                    <Button variant="ghost" size="sm" className="gap-1">
+                  <Button variant="ghost" size="sm" className="gap-1" asChild>
+                    <Link href="/milestones">
                       <BilingualText en={dashboardEn('manage')} el={dashboardEl('manage')} compact />
                       <ArrowRight className="icon-sm" />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -639,12 +639,12 @@ export default function FounderDashboardContent() {
                   ))}
                 </div>
                 {profilePct < 100 && (
-                  <Link href="/profile/edit">
-                    <Button variant="secondary" size="sm" className="w-full gap-1.5">
+                  <Button variant="secondary" size="sm" className="w-full gap-1.5" asChild>
+                    <Link href="/profile/edit">
                       <CfbGlyph name="profile" className="icon-sm" />
                       <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 )}
               </CardContent>
             </Card>
@@ -682,11 +682,11 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
                   </CardTitle>
-                  <Link href="/activity">
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
+                    <Link href="/activity">
                       <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -716,11 +716,11 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
                   </CardTitle>
-                  <Link href="/events">
-                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1">
+                  <Button variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" asChild>
+                    <Link href="/events">
                       <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2.5">
@@ -772,11 +772,11 @@ export default function FounderDashboardContent() {
                     <p className="text-xs text-muted-foreground">
                       <BilingualText en="No events this week" el="Δεν υπάρχουν εκδηλώσεις αυτή την εβδομάδα" />
                     </p>
-                    <Link href="/events">
-                      <Button variant="ghost" size="sm" className="mt-1.5 gap-1">
+                    <Button variant="ghost" size="sm" className="mt-1.5 gap-1" asChild>
+                      <Link href="/events">
                         <BilingualText en="Browse events" el="Περιήγηση εκδηλώσεων" /> <ArrowRight className="icon-sm" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </div>
                 )}
               </CardContent>

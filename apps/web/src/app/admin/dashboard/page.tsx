@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
       title="Admin Dashboard"
       description="Monitor and manage your CoFounderBay platform"
       actions={
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}

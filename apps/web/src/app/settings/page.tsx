@@ -277,9 +277,9 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p>To manage billing and preferences, please sign in.</p>
-            <Link href="/login">
-              <Button>Go to login</Button>
-            </Link>
+            <Button asChild>
+              <Link href="/login">Go to login</Link>
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -565,18 +565,18 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link href="/profile/edit">
-                  <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" asChild>
+                  <Link href="/profile/edit">
                     <User className="icon-sm" />
                     Edit profile
-                  </Button>
-                </Link>
-                <Link href="/profile">
-                  <Button variant="outline" className="gap-2">
+                  </Link>
+                </Button>
+                <Button variant="outline" className="gap-2" asChild>
+                  <Link href="/profile">
                     <Shield className="icon-sm" />
                     View public profile
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   className="gap-2 text-destructive-accessible hover:text-destructive-accessible hover:bg-destructive/10"

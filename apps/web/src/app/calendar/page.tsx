@@ -257,7 +257,7 @@ export default function CalendarPage() {
       title="Calendar"
       description="Your unified schedule — sessions, events, milestones & deadlines"
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center border rounded-md">
             <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="icon" className="h-8 w-8 rounded-r-none" onClick={() => setView('calendar')}>
               <LayoutGrid className="icon-sm" />

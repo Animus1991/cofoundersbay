@@ -138,12 +138,12 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
             <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
           </CardTitle>
-          <Link href="/achievements" className="shrink-0">
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" asChild>
+            <Link href="/achievements" className="shrink-0">
               <BilingualText en="History" el="Ιστορικό" compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

@@ -618,7 +618,9 @@ export default function RecommendationsPage() {
                   {minScore > 0 ? (
                     <Button size="sm" variant="outline" onClick={() => setMinScore(0)}><BilingualText en="Clear Filter" el="Εκκαθάριση φίλτρου" compact /></Button>
                   ) : (
-                    <Link href="/profile/edit"><Button size="sm"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Button></Link>
+                    <Button size="sm" asChild>
+                      <Link href="/profile/edit"><BilingualText en="Complete Profile" el="Ολοκλήρωση προφίλ" compact /></Link>
+                    </Button>
                   )}
                 </CardContent>
               </Card>

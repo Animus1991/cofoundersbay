@@ -82,18 +82,13 @@ function ApplicationsPageContent() {
         )}
 
         <div className="flex flex-wrap items-start gap-3">
-          <Link href="/builder">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 gap-1.5 rounded-xl text-muted-foreground"
-              aria-label={bilingualAria(builderEn('app_back'), builderEl('app_back'))}
-            >
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5 rounded-xl text-muted-foreground" aria-label={bilingualAria(builderEn('app_back'), builderEl('app_back'))} asChild>
+            <Link href="/builder">
               <ArrowLeft className="icon-sm" />
               <CfbGlyph name="builder" className="icon-sm" />
               <BilingualText en={builderEn('app_back')} el={builderEl('app_back')} compact />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <p className="max-w-2xl text-sm text-muted-foreground">
             <BilingualText en={builderEn('app_lead')} el={builderEl('app_lead')} />
           </p>

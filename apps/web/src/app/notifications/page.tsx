@@ -401,11 +401,11 @@ export default function NotificationsPage() {
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => refetch()} title="Refresh">
               <RefreshCw className={cn('icon-sm', isLoading && 'animate-spin')} />
             </Button>
-            <Link href="/settings" title="Notification settings">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+              <Link href="/settings" title="Notification settings">
                 <Settings className="icon-sm" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 

@@ -110,12 +110,12 @@ export default function EventsPage() {
   return (
     <AppShell
       actions={
-        <Link href="/events/create">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/events/create">
             <Plus className="icon-sm" />
             <BilingualText en="Create Event" el="Δημιουργία εκδήλωσης" />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-6 pb-10">
@@ -134,7 +134,7 @@ export default function EventsPage() {
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
                   <SIcon className="icon-sm" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     <BilingualText en={s.labelEn} el={s.labelEl} compact />
@@ -148,7 +148,10 @@ export default function EventsPage() {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <TabsList>
+          {/* min-w-0 so the tab list's own overflow-x-auto can bound it; without
+              it the list sat at min-content and the last trigger sat 8px past
+              the viewport at 640px. */}
+          <TabsList className="min-w-0">
             <TabsTrigger value="upcoming" className="gap-2">
               <Calendar className="icon-sm" />
               <BilingualText en="Upcoming" el="Επερχόμενες" compact />
@@ -191,8 +194,8 @@ export default function EventsPage() {
               className="pl-9"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Filter:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="shrink-0 text-sm text-muted-foreground">Filter:</span>
             {(['all', 'online', 'in-person', 'hybrid'] as EventFilter[]).map((f) => (
               <Button
                 key={f}
@@ -238,13 +241,13 @@ export default function EventsPage() {
                 askAiPrompt="I have no events. Suggest how to use Events and Calendar to meet cofounders this month."
                 action={
                   tab === 'my-events' && !hasToken ? (
-                    <Link href="/login">
-                      <Button>Sign in</Button>
-                    </Link>
+                    <Button asChild>
+                      <Link href="/login">Sign in</Link>
+                    </Button>
                   ) : (
-                    <Link href="/events/create">
-                      <Button>Create an event</Button>
-                    </Link>
+                    <Button asChild>
+                      <Link href="/events/create">Create an event</Link>
+                    </Button>
                   )
                 }
               />

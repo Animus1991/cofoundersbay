@@ -337,23 +337,23 @@ export function LandingHome() {
             className="mt-10 flex animate-fade-in flex-col items-center justify-center gap-4 sm:flex-row"
             style={{ animationDelay: '300ms' }}
           >
-            <Link href="/register">
-              <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25">
+            <Button size="lg" className="gap-2 px-8 py-6 text-base shadow-lg shadow-primary/25" asChild>
+              <Link href="/register">
                 Get started free
                 <ArrowRight className="icon-sm" />
-              </Button>
-            </Link>
-            <Link href="/demo">
-              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5">
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base border-primary/40 hover:bg-primary/5" asChild>
+              <Link href="/demo">
                 <Play className="icon-sm text-primary-accessible" />
                 Try Demo
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground">
+              </Link>
+            </Button>
+            <Button variant="ghost" size="lg" className="px-6 py-6 text-base text-muted-foreground hover:text-foreground" asChild>
+              <Link href="/discover">
                 Explore profiles
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           <div
@@ -626,15 +626,12 @@ export function LandingHome() {
                     </li>
                   ))}
                 </ul>
-                <Link href={href}>
-                  <Button
-                    variant={highlight ? 'default' : 'outline'}
-                    className="w-full"
-                  >
+                <Button variant={highlight ? 'default' : 'outline'} className="w-full" asChild>
+                  <Link href={href}>
                     {cta}
                     {highlight && <ArrowRight className="ml-1.5 icon-sm" />}
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             ))}
           </div>
@@ -660,18 +657,18 @@ export function LandingHome() {
             connections on CoFounderBay. Free to start, no credit card required.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/register">
-              <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25">
+            <Button size="lg" className="gap-2 px-10 py-6 text-base shadow-lg shadow-primary/25" asChild>
+              <Link href="/register">
                 Create free account
                 <ArrowRight className="icon-sm" />
-              </Button>
-            </Link>
-            <Link href="/discover">
-              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base">
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-base" asChild>
+              <Link href="/discover">
                 <Users className="icon-sm" />
                 Browse profiles
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
             Already have an account?{' '}

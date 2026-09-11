@@ -234,30 +234,30 @@ function EmptyState({ query, category }: { query: string; category: SearchCatego
         )}
       </p>
       <div className="flex flex-wrap justify-center gap-2">
-        <Link href="/discover">
-          <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/discover">
             <Users className="icon-sm" />
             <BilingualText en={searchEn('browse_people')} el={searchEl('browse_people')} />
-          </Button>
-        </Link>
-        <Link href="/jobs">
-          <Button variant="outline" size="sm" className="gap-2">
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/jobs">
             <Briefcase className="icon-sm" />
             <BilingualText en={searchEn('browse_jobs')} el={searchEl('browse_jobs')} />
-          </Button>
-        </Link>
-        <Link href="/events">
-          <Button variant="outline" size="sm" className="gap-2">
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href="/events">
             <Calendar className="icon-sm" />
             <BilingualText en={searchEn('browse_events')} el={searchEl('browse_events')} />
-          </Button>
-        </Link>
-        <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
-          <Button variant="outline" size="sm" className="gap-2">
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" className="gap-2" asChild>
+          <Link href={`/ai?q=${encodeURIComponent(query ? `No search results for "${query}" in ${category}. Suggest better people, jobs, or events to look for.` : 'Help me search the network for a complementary cofounder.')}`}>
             <Sparkles className="h-4 w-4 text-violet-500" />
             Ask AI
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </div>
   );

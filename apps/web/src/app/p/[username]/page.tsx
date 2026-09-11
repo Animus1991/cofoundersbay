@@ -155,7 +155,9 @@ export default function PublicProfilePage() {
           </div>
           <h2 className="text-xl font-semibold text-foreground">Profile not found</h2>
           <p className="text-muted-foreground">This profile doesn&apos;t exist or may have been removed.</p>
-          <Link href="/discover"><Button variant="outline">Browse Profiles</Button></Link>
+          <Button variant="outline" asChild>
+            <Link href="/discover">Browse Profiles</Link>
+          </Button>
         </div>
       </div>
     );

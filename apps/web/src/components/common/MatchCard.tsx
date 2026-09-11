@@ -305,13 +305,12 @@ function MatchCardInner({
               Breakdown
             </Button>
           ) : (
-            <Link href={`/matches/${userId}`}>
-              <Button size="sm" variant="outline" className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.text)}
-                style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }}>
+            <Button size="sm" variant="outline" className={cn('h-10 gap-1.5 px-2.5 text-xs font-medium', colors.text)} style={{ borderColor: `color-mix(in srgb, ${stroke} 25%, transparent)` }} asChild>
+              <Link href={`/matches/${userId}`}>
                 <TrendingUp className="icon-sm" />
                 Compatibility
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
 
           {onMessage && (

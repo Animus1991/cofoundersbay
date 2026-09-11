@@ -531,16 +531,18 @@ export default function ProfileEditPage() {
       title="Edit Profile"
       description="Update your personal details and how you appear to others"
       actions={
-        <div className="flex items-center gap-2">
-          <Link href="/profile">
-            <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="icon" className="sm:hidden" aria-label="Cancel" asChild>
+            <Link href="/profile">
               <ArrowLeft className="icon-sm" />
-            </Button>
-            <Button variant="outline" size="sm" className="hidden gap-2 sm:flex">
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="hidden gap-2 sm:flex" asChild>
+            <Link href="/profile">
               <ArrowLeft className="icon-sm" />
               <BilingualText en="Cancel" el="Ακύρωση" compact />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button onClick={handleSave} disabled={saving} size="sm" className="gap-2">
             {saving ? <Loader2 className="icon-sm animate-spin" /> : <Save className="icon-sm" />}
             <BilingualText en="Save changes" el="Αποθήκευση αλλαγών" compact secondaryClassName="text-primary-foreground" />
@@ -1192,11 +1194,11 @@ export default function ProfileEditPage() {
                   Save Changes
                 </Button>
                 <div className="flex gap-2">
-                  <Link href="/profile" className="flex-1">
-                    <Button variant="outline" className="w-full text-xs h-9">
+                  <Button variant="outline" className="w-full text-xs h-9" asChild>
+                    <Link href="/profile" className="flex-1">
                       View Profile
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                   <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setActiveTab('links')}>
                     Add Links
                   </Button>

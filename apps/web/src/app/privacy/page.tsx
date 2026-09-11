@@ -221,12 +221,12 @@ export default function PrivacyPage() {
             <span className="text-sm font-medium">Back to CoFounderBay</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/terms">
-              <Button variant="ghost" size="sm" className="text-xs">Terms of Service</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/terms">Terms of Service</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/help">Help Center</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -314,12 +314,12 @@ export default function PrivacyPage() {
             Your privacy matters to us. If you have any questions, please don't hesitate to reach out.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/terms">
-              <Button variant="outline" size="sm">Read Terms of Service</Button>
-            </Link>
-            <Link href="/settings">
-              <Button size="sm">Manage Privacy Settings</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/terms">Read Terms of Service</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/settings">Manage Privacy Settings</Link>
+            </Button>
           </div>
         </div>
       </main>

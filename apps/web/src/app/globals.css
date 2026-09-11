@@ -1006,6 +1006,20 @@ html {
     }
   }
 
+  /* Top-bar chips hold their second language only where the bar has room.
+     Measured at 834px: the header's right-hand cluster is `shrink-0` and the
+     two demo chips rendered both languages in full, taking it to 794px and the
+     header to 988px inside an 834px viewport -- the whole page scrolled
+     sideways. The bar is already at capacity on a tablet, so these chips join
+     the one-language rule up to `lg` instead of `sm`. Nothing is lost: each
+     chip carries a Tooltip with the full bilingual text. */
+  @media (max-width: 1279.98px) {
+    .bilingual-secondary--chrome,
+    .bilingual-separator--chrome {
+      display: none !important;
+    }
+  }
+
   /* ── Card padding standards ──
      Responsive on purpose. CardContent/CardFooter apply .card-comfortable
      unconditionally, and because these are declared in @layer utilities *after*
@@ -1170,5 +1184,7 @@ html {
     padding-top: 1.5rem;
   }
 }
+
+
 
 

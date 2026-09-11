@@ -222,16 +222,16 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       title={profile.displayName}
       description={profile.headline ?? `${profile.role} on CoFounderBay`}
       actions={
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
             <Share2 className="icon-sm" />
           </Button>
-          <Link href="/discover">
-            <Button variant="secondary" size="sm" className="gap-2">
+          <Button variant="secondary" size="sm" className="gap-2" asChild>
+            <Link href="/discover">
               <ArrowLeft className="icon-sm" />
               Back
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       }
     >
@@ -322,9 +322,9 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
               )}
 
               {isOwnProfile && (
-                <Link href="/profile/edit" className="w-full">
-                  <Button variant="secondary" className="w-full">Edit your profile</Button>
-                </Link>
+                <Button variant="secondary" className="w-full" asChild>
+                  <Link href="/profile/edit" className="w-full">Edit your profile</Link>
+                </Button>
               )}
             </CardContent>
           </Card>

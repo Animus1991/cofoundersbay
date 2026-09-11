@@ -38,7 +38,7 @@ export default function AdminAnalyticsPage() {
       description="Platform growth, engagement, and role distribution — export for board or investor updates."
       showHelp
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select value={range} onValueChange={setRange}>
             <SelectTrigger className="w-[140px] h-9">
               <SelectValue />

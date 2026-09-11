@@ -34,6 +34,15 @@ type BilingualTextProps = {
    * cell, and the two-line label is the design rather than an overflow risk.
    */
   keepSecondaryOnMobile?: boolean;
+  /**
+   * Width from which the *inline* second language appears.
+   *
+   * `'sm'` (default) is the product-wide phone rule. `'lg'` is for chrome that
+   * is already at capacity on a tablet -- the top bar's demo chips, whose two
+   * languages pushed the header 154px past an 834px viewport. Both variants
+   * keep the primary line, which is the reader's chosen language.
+   */
+  secondaryFrom?: 'sm' | 'lg';
   primaryClassName?: string;
   secondaryClassName?: string;
 };
@@ -60,13 +69,21 @@ export function BilingualText({
   compact = false,
   wrap = false,
   keepSecondaryOnMobile = false,
+  secondaryFrom = 'sm',
   primaryClassName,
   secondaryClassName,
 }: BilingualTextProps) {
   const { primary, showSecondary } = useLanguagePreference();
   const resolved = resolveBilingualPair(en, el, primary, showSecondary);
-  // The class the phone-only display:none rule keys off (see globals.css).
-  const hideOnMobile = keepSecondaryOnMobile ? '' : 'bilingual-secondary--inline';
+  // Written out in full, never assembled from parts: these live in
+  // `@layer utilities` in globals.css, and Tailwind tree-shakes a custom
+  // utility whose class name it cannot find literally in the source. A
+  // template string here silently deleted the rule from the built stylesheet.
+  const { secondary: secondaryNarrow, separator: separatorNarrow } =
+    secondaryFrom === 'lg'
+      ? { secondary: 'bilingual-secondary--chrome', separator: 'bilingual-separator--chrome' }
+      : { secondary: 'bilingual-secondary--inline', separator: 'bilingual-separator--inline' };
+  const hideOnMobile = keepSecondaryOnMobile ? '' : secondaryNarrow;
 
   if (!resolved.secondaryText) {
     return (
@@ -82,13 +99,14 @@ export function BilingualText({
         <span lang={resolved.primaryLang} className={cn('truncate', primaryClassName)}>
           {resolved.primaryText}
         </span>
-        <span className="bilingual-separator bilingual-separator--inline shrink-0" aria-hidden="true">
+        <span className={cn('bilingual-separator shrink-0', separatorNarrow)} aria-hidden="true">
           ·
         </span>
         <span
           lang={resolved.secondaryLang ?? undefined}
           className={cn(
-            'bilingual-secondary bilingual-secondary--inline truncate text-muted-foreground',
+            'bilingual-secondary truncate text-muted-foreground',
+            secondaryNarrow,
             secondaryClassName,
           )}
         >
@@ -129,13 +147,14 @@ export function BilingualText({
       <span lang={resolved.primaryLang} className={primaryClassName}>
         {resolved.primaryText}
       </span>
-      <span className="bilingual-separator bilingual-separator--inline mx-1.5" aria-hidden="true">
+      <span className={cn('bilingual-separator mx-1.5', separatorNarrow)} aria-hidden="true">
         ·
       </span>
       <span
         lang={resolved.secondaryLang ?? undefined}
         className={cn(
-          'bilingual-secondary bilingual-secondary--inline text-muted-foreground',
+          'bilingual-secondary text-muted-foreground',
+          secondaryNarrow,
           secondaryClassName,
         )}
       >

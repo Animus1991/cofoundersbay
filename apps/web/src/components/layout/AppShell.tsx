@@ -67,7 +67,7 @@ export function AppShell({
     >
       {/* Skip link lives once in app/layout.tsx so it is never duplicated in the tab order. */}
 
-      {/* Fixed left sidebar — hides itself on < lg via hidden lg:flex */}
+      {/* Fixed left sidebar — rail from `sm`, drawer from `lg`; hidden below `sm` */}
       <MemoSideNav />
 
       {/* Main column — offset by sidebar width on lg+ */}
@@ -76,6 +76,9 @@ export function AppShell({
           'flex min-w-0 flex-col',
           fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
           'transition-[margin-left] duration-200 ease-out',
+          // Rail from `sm` (68px), drawer from `lg`. Below `sm` the nav is the
+          // bottom bar and the column takes the full width.
+          'sm:ml-[4.25rem]',
           (mounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
         )}
       >
@@ -91,7 +94,8 @@ export function AppShell({
             tabIndex={-1}
             className={cn(
               'flex min-h-0 flex-1 flex-col overflow-hidden focus:outline-none',
-              'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0',
+              // MobileBottomNav now stops at `sm`, so its clearance does too.
+              'pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:pb-0',
               contentClassName,
             )}
           >
@@ -121,8 +125,13 @@ export function AppShell({
                       )}
                     </div>
                   </div>
+                  {/* `sm:shrink-0` stopped the action cluster from ever giving width
+                      back, so from `sm` up it pushed the page sideways (measured on
+                      /profile at 640px: 576px of buttons ending 61px past the
+                      viewport). It already wraps; letting it shrink to its widest
+                      single button is what makes the wrap happen. */}
                   {(actions || showAskAi) && (
-                    <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
                       {showAskAi && (
                         <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
                       )}

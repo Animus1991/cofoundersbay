@@ -208,8 +208,8 @@ function RoundCard({
   return (
     <Card className="rounded-xl border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
       <CardContent className="p-4">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <CfbGlyphWell name="wallet" size="sm" />
               <h2 className="text-xl font-bold">{round.name}</h2>
@@ -253,8 +253,8 @@ function RoundCard({
           ].map((s) => (
             <div key={s.label} className="rounded-xl bg-background/60 p-3">
               <div className="mb-1 flex items-center gap-1.5">
-                <CfbGlyph name={s.glyph} className="icon-sm text-primary-accessible" />
-                <p className="text-2xs text-muted-foreground">
+                <CfbGlyph name={s.glyph} className="icon-sm shrink-0 text-primary-accessible" />
+                <p className="min-w-0 text-2xs text-muted-foreground">
                   <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact />
                 </p>
               </div>
@@ -678,7 +678,9 @@ export default function FundraisingPage() {
                 <div className={cn('shrink-0 rounded-xl p-2', STATUS[s.tone].bg)}>
                   <CfbGlyph name={s.glyph} className={cn('icon-sm', STATUS[s.tone].icon)} />
                 </div>
-                <div>
+                {/* min-w-0 so the label truncates instead of widening the tile —
+                    measured 122px past the viewport at 640-1024px without it. */}
+                <div className="min-w-0">
                   <p className="text-lg font-bold tabular-nums">{s.value}</p>
                   <p className="text-2xs text-muted-foreground">
                     <BilingualText en={fundraisingEn(s.label)} el={fundraisingEl(s.label)} compact />

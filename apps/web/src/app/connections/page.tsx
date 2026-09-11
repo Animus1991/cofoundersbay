@@ -195,7 +195,7 @@ function IntroRequestCard({
               </div>
             )}
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <Button size="sm" className="gap-1.5" onClick={onAccept} disabled={isPending}>
                 <Check className="icon-sm" />
                 <BilingualText en={connectionsEn('accept_intro')} el={connectionsEl('accept_intro')} compact />
@@ -210,7 +210,7 @@ function IntroRequestCard({
                 <X className="icon-sm" />
                 <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
-              <p className="ml-auto text-xs text-muted-foreground">
+              <p className="ml-auto shrink-0 text-xs text-muted-foreground">
                 {new Date(connection.createdAt).toLocaleDateString()}
               </p>
             </div>
@@ -311,12 +311,12 @@ export default function ConnectionsPage() {
     <AppShell
       showHelp
       actions={
-        <Link href="/discover">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/discover">
             <UserPlus className="icon-sm" />
             <BilingualText en={connectionsEn('find_people')} el={connectionsEl('find_people')} />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="space-y-5 pb-10">
@@ -337,7 +337,10 @@ export default function ConnectionsPage() {
                   <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', colors.bg, colors.icon)}>
                     <SIcon className="icon-sm" />
                   </div>
-                  <div>
+                  {/* min-w-0: without it this flex child sits at its min-content
+                      width, so `compact`'s truncation never engages and the tile
+                      pushed the page 166px sideways at 640-1024px. */}
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-foreground leading-none">{s.value}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       <BilingualText en={s.labelEn} el={s.labelEl} compact />
@@ -391,12 +394,12 @@ export default function ConnectionsPage() {
               description={<BilingualText en={connectionsEn('no_intro_desc')} el={connectionsEl('no_intro_desc')} />}
               askAiPrompt="I have no intro requests. Help me find people to connect with and draft a first intro."
               action={
-                <Link href="/discover">
-                  <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" asChild>
+                  <Link href="/discover">
                     <Compass className="icon-sm" />
                     <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               }
             />
           ) : (
@@ -456,12 +459,12 @@ export default function ConnectionsPage() {
                 askAiPrompt="My connections list is empty. Who should I reach out to first from my matches?"
                 action={
                   t !== 'received' ? (
-                    <Link href="/discover">
-                      <Button variant="secondary" className="gap-2">
+                    <Button variant="secondary" className="gap-2" asChild>
+                      <Link href="/discover">
                         <Compass className="icon-sm" />
                         <BilingualText en={connectionsEn('discover_people')} el={connectionsEl('discover_people')} />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   ) : undefined
                 }
               />

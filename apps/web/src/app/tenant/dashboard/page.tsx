@@ -102,7 +102,7 @@ export default function TenantDashboardPage() {
       title="Tenant Dashboard"
       description="Manage your organization on CoFounderBay"
       actions={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href="/tenant/branding"><Building2 className="mr-1.5 icon-sm" /> Branding</Link>
           </Button>

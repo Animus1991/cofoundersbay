@@ -6,6 +6,20 @@ import type { SidebarMode } from './nav-modes';
 type SidebarCtx = {
   expanded: boolean;
   mounted: boolean;
+  /**
+   * True between `sm` and `lg`, i.e. the navigation-rail window.
+   *
+   * Tablets in portrait (744-1023px) used to get the phone chrome: SideNav was
+   * `hidden lg:flex` and MobileBottomNav `lg:hidden`, so an iPad showed a
+   * five-item bottom bar and no side navigation at all, with every other
+   * section behind "More". Material 3 gives 600dp and up a navigation rail.
+   *
+   * This flag decides the rail's *contents* only — whether labels render — and
+   * is false during SSR and the first client render so the markup matches. The
+   * rail's width is CSS (`w-[4.25rem] lg:w-[15rem]`), so the layout is correct
+   * on first paint without waiting for this.
+   */
+  isRail: boolean;
   toggle: () => void;
   setExpanded: (v: boolean) => void;
   mobileNavOpen: boolean;
@@ -18,6 +32,7 @@ type SidebarCtx = {
 const SidebarContext = createContext<SidebarCtx>({
   expanded: true,
   mounted: false,
+  isRail: false,
   toggle: () => {},
   setExpanded: () => {},
   mobileNavOpen: false,
@@ -35,6 +50,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [expanded, setExpandedState] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isRail, setIsRail] = useState(false);
   const mobileNavId = useId();
   const [mode, setModeState] = useState<SidebarMode>('work');
 
@@ -51,6 +67,17 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     } catch {
       // localStorage not available
     }
+  }, []);
+
+  // Rail window: wide enough for side navigation, too narrow for the 240px
+  // drawer. Listened to rather than read once, so a rotated tablet or a resized
+  // window swaps the nav's contents without a reload.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 640px) and (max-width: 1023.98px)');
+    const apply = () => setIsRail(mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+    return () => mq.removeEventListener('change', apply);
   }, []);
 
   const toggle = useCallback(() => {
@@ -85,7 +112,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 
   return (
     <SidebarContext.Provider
-      value={{ expanded, mounted, toggle, setExpanded, mobileNavOpen, mobileNavId, setMobileNavOpen, mode, setMode }}
+      value={{ expanded, mounted, isRail, toggle, setExpanded, mobileNavOpen, mobileNavId, setMobileNavOpen, mode, setMode }}
     >
       {children}
     </SidebarContext.Provider>

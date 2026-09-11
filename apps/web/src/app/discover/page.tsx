@@ -235,12 +235,12 @@ export default function DiscoverPage() {
       askAi={askAi}
       contentClassName="overflow-x-clip"
       actions={
-        <Link href="/matches">
-          <Button variant="outline" size="sm" className="min-h-10 gap-2">
+        <Button variant="outline" size="sm" className="min-h-10 gap-2" asChild>
+          <Link href="/matches">
             <TrendingUp className="icon-sm" />
             <BilingualText en={discoverEn('view_matches')} el={discoverEl('view_matches')} compact />
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       }
     >
       <div className="min-w-0 space-y-5 overflow-x-clip pb-10">
@@ -475,12 +475,12 @@ export default function DiscoverPage() {
               illustration="rocket"
               askAiPrompt="I have no Discover suggestions. What should I add to my profile so recommendations appear?"
               action={
-                <Link href="/profile/edit">
-                  <Button className="gap-2">
+                <Button className="gap-2" asChild>
+                  <Link href="/profile/edit">
                     Complete profile
                     <ArrowRight className="icon-sm" />
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               }
             />
           )}

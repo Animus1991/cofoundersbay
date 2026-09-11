@@ -184,12 +184,12 @@ export function EmptyConnections({ className }: EmptyStateProps) {
         Start building your network by discovering founders, mentors, and investors who share your interests.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link href="/discover">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/discover">
             <Compass className="icon-sm" />
             Discover people
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AskAiLink prompt="I have no connections yet. Help me find a complementary cofounder and send a first intro." />
       </div>
     </div>
@@ -207,12 +207,12 @@ export function EmptyMessages({ className }: EmptyStateProps) {
         Connect with someone to start a conversation. Your messages will appear here.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link href="/connections">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/connections">
             <UserPlus className="icon-sm" />
             View connections
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AskAiLink prompt="My inbox is empty. Who should I message first from my matches or connections?" />
       </div>
     </div>
@@ -230,12 +230,12 @@ export function EmptyEvents({ className }: EmptyStateProps) {
         There are no events scheduled right now. Check back later or create your own event.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link href="/events/create">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/events/create">
             <Calendar className="icon-sm" />
             Create event
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AskAiLink prompt="There are no upcoming events. Suggest how I should use Events and Calendar to meet cofounders." />
       </div>
     </div>
@@ -274,12 +274,12 @@ export function EmptyGroups({ className }: EmptyStateProps) {
         Join groups to connect with like-minded founders and participate in discussions.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link href="/groups">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/groups">
             <Search className="icon-sm" />
             Browse groups
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AskAiLink prompt="I have not joined any groups. Which communities fit a founder looking for a technical cofounder?" />
       </div>
     </div>
@@ -376,12 +376,12 @@ export function EmptyMentoringSessions({ className }: EmptyStateProps) {
         Book a session with a mentor to get personalized guidance for your startup journey.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Link href="/mentoring">
-          <Button className="gap-2">
+        <Button className="gap-2" asChild>
+          <Link href="/mentoring">
             <Search className="icon-sm" />
             Find mentors
-          </Button>
-        </Link>
+          </Link>
+        </Button>
         <AskAiLink prompt="I have no mentoring sessions. Recommend a mentor type for a first-time founder and how to book." />
       </div>
     </div>

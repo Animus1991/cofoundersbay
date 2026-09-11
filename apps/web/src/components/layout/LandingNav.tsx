@@ -39,21 +39,21 @@ export function LandingNav() {
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/demo" className="hidden sm:block">
-            <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/demo" className="hidden sm:block">
               Try demo
-            </Button>
-          </Link>
-          <Link href="/login" className="hidden sm:block">
-            <Button variant="ghost" size="sm">
+            </Link>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/login" className="hidden sm:block">
               Log in
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button size="sm" className="gap-1.5">
+            </Link>
+          </Button>
+          <Button size="sm" className="gap-1.5" asChild>
+            <Link href="/register">
               Join free <ArrowRight className="icon-sm" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -84,16 +84,16 @@ export function LandingNav() {
                 {link.label}
               </a>
             ))}
-            <Link href="/demo" onClick={() => setOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/demo" onClick={() => setOpen(false)}>
                 Try demo
-              </Button>
-            </Link>
-            <Link href="/login" onClick={() => setOpen(false)}>
-              <Button variant="outline" size="sm" className="w-full">
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="w-full" asChild>
+              <Link href="/login" onClick={() => setOpen(false)}>
                 Log in
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
       )}

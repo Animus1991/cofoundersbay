@@ -143,12 +143,12 @@ export default function TermsPage() {
             <span className="text-sm font-medium">Back to CoFounderBay</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/privacy">
-              <Button variant="ghost" size="sm" className="text-xs">Privacy Policy</Button>
-            </Link>
-            <Link href="/help">
-              <Button variant="ghost" size="sm" className="text-xs">Help Center</Button>
-            </Link>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/privacy">Privacy Policy</Link>
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <Link href="/help">Help Center</Link>
+            </Button>
           </div>
         </div>
       </header>
@@ -211,12 +211,12 @@ export default function TermsPage() {
             By using CoFounderBay, you acknowledge that you have read and agree to these Terms of Service.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <Link href="/privacy">
-              <Button variant="outline" size="sm">Read Privacy Policy</Button>
-            </Link>
-            <Link href="/register">
-              <Button size="sm">Create Account</Button>
-            </Link>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/privacy">Read Privacy Policy</Link>
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/register">Create Account</Link>
+            </Button>
           </div>
         </div>
       </main>
