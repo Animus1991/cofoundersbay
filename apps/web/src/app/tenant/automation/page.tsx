@@ -21,11 +21,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
-  Workflow, Zap, Clock, Play, Pause, Trash2,
+  Zap, Clock, Play, Pause, Trash2,
   CheckCircle2, XCircle, AlertTriangle,
   Settings, Bell, Users, GitMerge, CreditCard, RefreshCw,
 } from 'lucide-react';
 import { EmptyTenantAutomations } from '@/components/common/EmptyStates';
+import { EmptyState } from '@/components/common/EmptyState';
+import Link from 'next/link';
 
 const TRIGGER_LABELS: Record<string, string> = {
   user_signup: 'User Signup',
@@ -263,11 +265,23 @@ export default function TenantAutomationPage() {
 
   if (!tenantId) {
     return (
-      <AppShell>
-        <div className="flex flex-col items-center justify-center py-20">
-          <Workflow className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-muted-foreground">No organization context found.</p>
-        </div>
+      <AppShell title="Automation">
+        <EmptyState
+          title="No organization selected"
+          description="Automations run inside an organization — they react to events like a new member joining or an application being submitted. Pick or create an organization to set them up."
+          illustration="rocket"
+          askAiPrompt="I opened organization automations without an organization selected. Help me pick or create one and explain what automation rules I should turn on first."
+          action={
+            <>
+              <Button asChild>
+                <Link href="/tenant/dashboard">Choose an organization</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/org/dashboard">Browse organizations</Link>
+              </Button>
+            </>
+          }
+        />
       </AppShell>
     );
   }

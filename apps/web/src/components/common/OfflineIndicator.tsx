@@ -137,7 +137,10 @@ export function OfflineBanner() {
       role="status"
       className={cn('fixed left-0 right-0 top-0 z-50 px-3 py-1.5 sm:px-4', variant.tone)}
     >
-      <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-2">
+      <div className={cn(
+        'mx-auto flex max-w-screen-2xl items-center gap-2',
+        variant.action || variant.dismiss ? 'justify-between' : 'justify-center',
+      )}>
         <div className="flex min-w-0 items-center gap-2">
           {variant.icon}
           <span className="text-xs font-medium sm:text-sm">{variant.text}</span>
