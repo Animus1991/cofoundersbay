@@ -344,7 +344,7 @@ export default function GroupDetailPage() {
           <div className="px-6 pb-5 -mt-8 relative">
             <div className="flex items-end justify-between gap-4">
               <div className="flex items-end gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border-2 border-card bg-gradient-to-br from-primary/30 to-primary/10 shadow-lg">
                   {group.avatarUrl ? (
                     <img src={group.avatarUrl} alt="" className="h-full w-full rounded-2xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
                   ) : (

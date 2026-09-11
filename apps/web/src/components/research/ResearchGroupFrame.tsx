@@ -162,7 +162,7 @@ export function ResearchGroupFrame({
           <div ref={colorPickerRef} className="relative">
             <button
               onClick={(e) => { e.stopPropagation(); setShowColorPicker((v) => !v); }}
-              className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+              className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
               title="Change color"
             >
               <Palette className="icon-2xs" style={{ color: group.color }} aria-hidden="true" />
@@ -177,7 +177,7 @@ export function ResearchGroupFrame({
                     key={c.value}
                     onClick={() => { onUpdate({ color: c.value }); setShowColorPicker(false); }}
                     className={cn(
-                      'w-6 h-6 rounded-lg border-2 transition-all hover:scale-110',
+                      'w-6 h-6 rounded border-2 transition-all hover:scale-110',
                       group.color === c.value ? 'border-foreground scale-110' : 'border-transparent',
                     )}
                     style={{ backgroundColor: c.value }}
@@ -191,7 +191,7 @@ export function ResearchGroupFrame({
           {/* Collapse toggle */}
           <button
             onClick={(e) => { e.stopPropagation(); onUpdate({ collapsed: !group.collapsed }); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
             title={group.collapsed ? 'Expand' : 'Collapse'}
           >
             {group.collapsed
@@ -203,7 +203,7 @@ export function ResearchGroupFrame({
           {/* Lock toggle */}
           <button
             onClick={(e) => { e.stopPropagation(); onUpdate({ locked: !group.locked }); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
             title={group.locked ? 'Unlock' : 'Lock'}
           >
             {group.locked
@@ -215,7 +215,7 @@ export function ResearchGroupFrame({
           {/* Delete */}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/20 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/20 transition-colors"
             title="Delete group"
           >
             <X className="icon-2xs text-destructive-emphasis" aria-hidden="true" />

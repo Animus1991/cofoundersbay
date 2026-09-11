@@ -11,7 +11,7 @@ export default function InvestorsLoading() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-3.5 flex items-center gap-3">
-              <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+              <Skeleton className="h-9 w-9 rounded-md shrink-0" />
               <div className="space-y-1.5"><Skeleton className="h-5 w-10" /><Skeleton className="h-3 w-20" /></div>
             </div>
           ))}
@@ -35,7 +35,7 @@ export default function InvestorsLoading() {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2"><Skeleton className="h-9 flex-1 rounded-lg" /><Skeleton className="h-9 w-9 rounded-lg" /></div>
+              <div className="flex gap-2"><Skeleton className="h-9 flex-1 rounded-lg" /><Skeleton className="h-9 w-9 rounded-md" /></div>
             </div>
           ))}
         </div>

@@ -23,14 +23,18 @@ const buttonVariants = cva(
           'text-primary-emphasis underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
       size: {
-        xs:   'h-7 px-2.5 text-xs rounded',
-        sm:   'h-8 px-3 text-xs',
-        md:   'h-9 px-4',
-        lg:   'h-10 px-6 text-base',
-        xl:   'h-12 px-8 text-base',
+        // Radius tracks height. One `rounded-md` across eight sizes made a
+        // 28px button look rounder than a 48px one at the same number; the
+        // overrides below hold every size in a 0.25-0.33 radius/height band,
+        // which is what makes them read as the same button at two scales.
+        xs:   'h-7 px-2.5 text-xs rounded',      /*  7 / 28 = .25 */
+        sm:   'h-8 px-3 text-xs',                /* 10 / 32 = .31 */
+        md:   'h-9 px-4',                        /* 10 / 36 = .28 */
+        lg:   'h-10 px-6 text-base rounded-lg',  /* 13 / 40 = .33 */
+        xl:   'h-12 px-8 text-base rounded-lg',  /* 13 / 48 = .27 */
         icon: 'h-9 w-9',
         'icon-sm': 'h-8 w-8',
-        'icon-xs': 'h-7 w-7',
+        'icon-xs': 'h-7 w-7 rounded',
       },
       fullWidth: {
         true: 'w-full',

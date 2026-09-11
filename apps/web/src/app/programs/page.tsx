@@ -174,9 +174,9 @@ function ProgramCard({
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30 group', isEnrolled && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-5">
         <div className="flex gap-4">
-          <Avatar className="h-11 w-11 rounded-xl flex-shrink-0 border border-border/60">
+          <Avatar className="h-11 w-11 rounded-lg flex-shrink-0 border border-border/60">
             <AvatarImage src={program.organization?.logoUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis">
               <TypeIcon className="h-6 w-6" />
             </AvatarFallback>
           </Avatar>

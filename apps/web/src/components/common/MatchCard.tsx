@@ -145,7 +145,7 @@ function MatchCardInner({
           aria-label={isSelected ? 'Deselect' : 'Select'}
         >
           <div className={cn(
-            'h-5 w-5 rounded border-2 flex items-center justify-center transition-colors',
+            'h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors',
             isSelected ? 'bg-primary border-primary' : 'bg-background/80 border-border/60 hover:border-primary'
           )}>
             {isSelected && <Check className="icon-2xs text-primary-foreground" aria-hidden="true" />}

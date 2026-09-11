@@ -200,7 +200,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
             className={cn(
               // 16x16 (the bare icon) failed WCAG 2.5.8's 24px floor and the
               // aria-hidden icon left the control with no accessible name.
-              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors',
+              'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors',
               saved ? 'text-primary-emphasis' : 'text-muted-foreground/40 hover:text-muted-foreground',
             )}
           >
@@ -250,7 +250,7 @@ function LearningPathCard({ path }: { path: LearningPath }) {
   return (
     <div className={cn('relative rounded-xl border bg-gradient-to-br p-4 transition-all hover:shadow-md cursor-pointer', path.color)}>
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className={cn('flex h-9 w-9 items-center justify-center rounded-lg bg-background/60')}>
+        <div className={cn('flex h-9 w-9 items-center justify-center rounded-md bg-background/60')}>
           <Icon className="h-4.5 w-4.5 text-foreground" />
         </div>
         {path.progress > 0 && (
@@ -390,7 +390,7 @@ export default function LearningPage() {
           return (
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-2.5 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />
                 </div>
                 <div>

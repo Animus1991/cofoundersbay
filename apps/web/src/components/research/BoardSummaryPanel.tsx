@@ -28,7 +28,7 @@ interface BoardSummaryPanelProps {
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: string }) {
   return (
     <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-secondary/40 border border-border/50">
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
+      <div className="w-7 h-7 rounded flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}15` }}>
         <Icon className="w-3.5 h-3.5" style={{ color }} />
       </div>
       <div className="min-w-0">
@@ -156,14 +156,14 @@ export function BoardSummaryPanel({
     <div className="w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
-        <div className="w-6 h-6 rounded-lg bg-emerald-400/15 flex items-center justify-center">
+        <div className="w-6 h-6 rounded bg-emerald-400/15 flex items-center justify-center">
           <BarChart3 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-foreground">Board Summary</p>
           <p className="text-2xs text-muted-foreground truncate">{boardTitle}</p>
         </div>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>

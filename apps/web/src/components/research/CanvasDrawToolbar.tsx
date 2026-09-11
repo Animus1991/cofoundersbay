@@ -105,7 +105,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
                 onMouseDown={handleKey(def.tool)}
                 title={`${def.label}${def.shortcut ? ` (${def.shortcut})` : ''}`}
                 className={cn(
-                  'w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-100',
+                  'w-8 h-8 flex items-center justify-center rounded-md transition-all duration-100',
                   'hover:bg-secondary active:scale-95',
                   isActive
                     ? 'bg-primary/15 ring-1 ring-primary/50 text-primary-emphasis'
@@ -128,7 +128,7 @@ export function CanvasDrawToolbar({ activeTool, onToolChange, onToggleLibrary, l
             onMouseDown={(e) => { e.stopPropagation(); onToggleLibrary(); }}
             title="Shape Library (Shapes panel)"
             className={cn(
-              'w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-100',
+              'w-8 h-8 flex items-center justify-center rounded-md transition-all duration-100',
               'hover:bg-secondary active:scale-95',
               libraryOpen ? 'bg-violet-500/15 ring-1 ring-violet-400/50 text-violet-500' : 'text-muted-foreground',
             )}

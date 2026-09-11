@@ -194,7 +194,7 @@ export function ShapeLibraryPanel({ onClose, onAddShape }: ShapeLibraryPanelProp
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b shrink-0 bg-muted/30">
         <span className="text-2xs font-bold uppercase tracking-wider text-foreground flex-1">Shape Library</span>
-        <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded hover:bg-muted text-muted-foreground/60 hover:text-foreground">
+        <button onClick={onClose} className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-muted text-muted-foreground/60 hover:text-foreground">
           <X className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>

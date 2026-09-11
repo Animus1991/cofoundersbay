@@ -39,7 +39,7 @@ const DEMO_BAR_DATA = [
 const TOOLTIP_STYLE = {
   background: 'hsl(var(--card))',
   border: '1px solid hsl(var(--border))',
-  borderRadius: 8,
+  borderRadius: 13,
   fontSize: 12,
 };
 

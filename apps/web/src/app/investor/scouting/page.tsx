@@ -75,9 +75,9 @@ function StartupCard({ startup, compact = false }: { startup: Startup; compact?:
     <Card className={cn('transition-all hover:shadow-md hover:border-primary/30', startup.isFeatured && 'border-primary/40 bg-primary/2')}>
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <Avatar className="h-11 w-11 rounded-xl shrink-0">
+          <Avatar className="h-11 w-11 rounded-lg shrink-0">
             <AvatarImage src={startup.logoUrl} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold text-sm">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold text-sm">
               {startup.name[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>

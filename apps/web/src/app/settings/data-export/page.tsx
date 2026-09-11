@@ -272,7 +272,7 @@ export default function DataExportPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
               <Database className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <div>
@@ -343,7 +343,7 @@ export default function DataExportPage() {
                       className="sr-only"
                     />
                     <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg',
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-md',
                       isSelected ? 'bg-primary/10' : 'bg-muted'
                     )}>
                       <Icon className={cn(
@@ -356,7 +356,7 @@ export default function DataExportPage() {
                       <p className="text-xs text-muted-foreground">{category.description}</p>
                     </div>
                     <div className={cn(
-                      'h-5 w-5 rounded-md border-2 flex items-center justify-center transition-colors',
+                      'h-5 w-5 rounded-sm border-2 flex items-center justify-center transition-colors',
                       isSelected
                         ? 'border-primary bg-primary'
                         : 'border-border'

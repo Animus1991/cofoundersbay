@@ -246,7 +246,7 @@ function LoginPageContent() {
           <div className="mt-10 space-y-3 text-left">
             {HERO_POINTS.map((text, index) => (
               <div key={text} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/8 px-4 py-3 backdrop-blur-sm">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white/15">
                   <span className="text-xs font-semibold text-white">{String(index + 1).padStart(2, '0')}</span>
                 </div>
                 <span className="text-sm text-white/85 font-medium">{text}</span>

@@ -251,3 +251,107 @@ test('every theme clears WCAG AA on its token pairs', async () => {
   }
   expect(out).toContain('TOTAL FAILURES BELOW 4.5:1 -> 0');
 });
+
+/**
+ * The corner system.
+ *
+ * Corners are the one property in this app that is set from two places at
+ * once: a Tailwind utility on nearly every element, and a token ladder in
+ * globals.css that those utilities resolve against. That is exactly the shape
+ * of thing that drifts — someone adds `rounded-[14px]` because 13 "looked a
+ * bit tight", and six months later the product draws nine radii again. These
+ * three assertions pin the ladder, the curvature, and the nesting rule that
+ * the radius work established, so a drift shows up as a failing test rather
+ * than as a page that is subtly noisier than the one next to it.
+ */
+test.describe('corner system', () => {
+  // --radius-xs .. --radius-3xl, plus the 2px heat-map cell, which is smaller
+  // than the bottom of the ladder on purpose: its box is 6-10px square.
+  const LADDER = [0, 2, 5, 7, 10, 13, 18, 24, 32];
+
+  test('every corner comes from the radius ladder', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const strays = await page.evaluate((ladder: number[]) => {
+      const out: string[] = [];
+      for (const el of Array.from(document.querySelectorAll('body *'))) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        if (el.closest('svg')) continue;
+        for (const k of ['borderTopLeftRadius', 'borderTopRightRadius',
+                         'borderBottomRightRadius', 'borderBottomLeftRadius'] as const) {
+          const v = Math.round((parseFloat(cs[k]) || 0) * 100) / 100;
+          // A pill is `9999px` clamped by the browser to half the short side,
+          // so it resolves to an arbitrary number and is not a ladder step.
+          if (v >= Math.min(r.width, r.height) / 2 - 0.6 && v > 0) continue;
+          if (ladder.includes(v)) continue;
+          out.push(`${el.tagName.toLowerCase()}.${String(el.className).slice(0, 40)} → ${v}px`);
+        }
+      }
+      return [...new Set(out)];
+    }, LADDER);
+    expect(strays, 'radii outside the ladder').toEqual([]);
+  });
+
+  test('pills keep a circular corner, everything else is a squircle', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const res = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      if (!CSS.supports('corner-shape', 'squircle')) return { supported: false, bad: [], squircles: 0 };
+      probe.remove();
+      const bad: string[] = [];
+      let squircles = 0;
+      for (const el of Array.from(document.querySelectorAll('body *'))) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none') continue;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        const shape = cs.getPropertyValue('corner-shape').trim();
+        const cn = el.className as string | { baseVal?: string };
+        const cls = typeof cn === 'string' ? cn : (cn?.baseVal ?? '');
+        const radius = parseFloat(cs.borderTopLeftRadius) || 0;
+        // `rounded-full` is 9999px — hundreds of times past the clamp, where a
+        // superellipse degrades into a rounded rectangle. Avatars, badges and
+        // switches have to stay circular.
+        if (cls.includes('rounded-full') && shape !== 'round') {
+          bad.push(`pill ${el.tagName.toLowerCase()}.${cls.slice(0, 40)} → ${shape}`);
+        }
+        if (radius > 0 && shape === 'squircle') squircles++;
+      }
+      return { supported: true, bad: [...new Set(bad)], squircles };
+    });
+    if (!res.supported) test.skip(true, 'browser does not implement corner-shape');
+    expect(res.bad, 'pills rendered as squircles').toEqual([]);
+    expect(res.squircles, 'nothing picked up continuous curvature').toBeGreaterThan(10);
+  });
+
+  test('no inset child out-radiuses the surface it sits in', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const hits = await page.evaluate(() => {
+      const rad = (el: Element) => Math.max(...['borderTopLeftRadius', 'borderTopRightRadius',
+        'borderBottomRightRadius', 'borderBottomLeftRadius']
+        .map((k) => parseFloat(getComputedStyle(el)[k as never]) || 0));
+      const out: string[] = [];
+      for (const el of Array.from(document.querySelectorAll('body *'))) {
+        const p = el.parentElement;
+        if (!p) continue;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        const r = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        const cr = rad(el), prr = rad(p);
+        if (!cr || !prr) continue;
+        if (cr >= Math.min(r.width, r.height) / 2 - 0.6) continue;        // pill
+        if (prr >= Math.min(pr.width, pr.height) / 2 - 0.6) continue;     // pill parent
+        // A full-bleed child correctly carries its parent's exact radius; only
+        // an *inset* child with a bigger corner bulges past the surface edge.
+        const inset = (pr.width - r.width) + (pr.height - r.height);
+        if (inset < 4) continue;
+        if (cr > prr) out.push(`${String(el.className).slice(0, 40)} ${cr} inside ${prr}`);
+      }
+      return [...new Set(out)];
+    });
+    expect(hits, 'inner corner larger than the surface around it').toEqual([]);
+  });
+});

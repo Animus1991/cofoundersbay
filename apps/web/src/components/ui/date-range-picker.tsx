@@ -81,7 +81,7 @@ function CalendarMonth({
               onMouseEnter={() => onDayHover(day)}
               onMouseLeave={() => onDayHover(null)}
               className={cn(
-                'h-7 w-7 text-xs rounded-sm transition-colors relative',
+                'h-7 w-7 text-xs rounded transition-colors relative',
                 !isCurrentMonth && 'opacity-30',
                 isDisabled && 'opacity-20 cursor-not-allowed',
                 !isFrom && !isTo && !inRange && isCurrentMonth && !isDisabled && 'hover:bg-accent',

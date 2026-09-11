@@ -70,8 +70,8 @@ function GroupCard({ group }: { group: ManagedGroup }) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-10 w-10 rounded-xl shrink-0">
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold">
+            <Avatar className="h-10 w-10 rounded-lg shrink-0">
+              <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">
                 {group.name[0]}
               </AvatarFallback>
             </Avatar>

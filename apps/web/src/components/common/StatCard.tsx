@@ -36,7 +36,7 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
           )}
         </div>
         {icon && (
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary-emphasis transition-transform group-hover:scale-110 group-hover:bg-primary/20">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary-emphasis transition-transform group-hover:scale-110 group-hover:bg-primary/20">
             {icon}
           </div>
         )}

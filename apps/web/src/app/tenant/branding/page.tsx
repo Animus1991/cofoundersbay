@@ -506,10 +506,10 @@ export default function TenantBrandingPage() {
                             <img
                               src={form.faviconUrl}
                               alt="Favicon preview"
-                              className="h-8 w-8 rounded border border-border/60 object-contain bg-background/50"
+                              className="h-8 w-8 rounded-md border border-border/60 object-contain bg-background/50"
                             />
                           ) : (
-                            <div className="h-8 w-8 rounded border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
+                            <div className="h-8 w-8 rounded-md border-2 border-dashed border-border/60 flex items-center justify-center bg-muted/20">
                               <Image className="icon-2xs text-muted-foreground" aria-hidden="true" />
                             </div>
                           )}

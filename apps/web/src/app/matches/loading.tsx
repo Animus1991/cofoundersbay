@@ -28,7 +28,7 @@ export default function MatchesLoading() {
               </div>
               <div className="flex gap-2 pt-1">
                 <Skeleton className="h-9 flex-1 rounded-lg" />
-                <Skeleton className="h-9 w-9 rounded-lg" />
+                <Skeleton className="h-9 w-9 rounded-md" />
               </div>
             </div>
           ))}

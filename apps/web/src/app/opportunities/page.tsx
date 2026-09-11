@@ -119,8 +119,8 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
       <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-emphasis font-bold text-sm">{initials}</AvatarFallback>
+            <Avatar className="h-10 w-10 shrink-0 rounded-lg ring-2 ring-border/60">
+              <AvatarFallback className="rounded-lg bg-primary/20 text-primary-emphasis font-bold text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-display text-base font-semibold text-foreground">{opportunity.title}</h3>
@@ -220,8 +220,8 @@ function JobCard({ job }: { job: JobPostingView }) {
       <CardContent className="p-4 sm:p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 shrink-0 rounded-xl ring-2 ring-border/60">
-              <AvatarFallback className="rounded-xl bg-primary/20 text-primary-emphasis font-bold text-sm">
+            <Avatar className="h-10 w-10 shrink-0 rounded-lg ring-2 ring-border/60">
+              <AvatarFallback className="rounded-lg bg-primary/20 text-primary-emphasis font-bold text-sm">
                 {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
               </AvatarFallback>
             </Avatar>
@@ -553,7 +553,7 @@ export default function OpportunitiesPage() {
             return (
               <Card key={s.label} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-2.5 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
                     <SIcon className="h-4 w-4" />
                   </div>
                   <div>
@@ -641,7 +641,7 @@ export default function OpportunitiesPage() {
             ) : oppLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <Card key={i}><CardContent className="flex gap-4 p-5">
-                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-48" />
                     <Skeleton className="h-3 w-32" />
@@ -691,7 +691,7 @@ export default function OpportunitiesPage() {
               Array.from({ length: 3 }).map((_, i) => (
                 <Card key={i}>
                   <CardContent className="flex gap-4 p-5">
-                    <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                    <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />
                       <Skeleton className="h-3 w-32" />

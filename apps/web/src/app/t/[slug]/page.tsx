@@ -140,7 +140,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
         <section className="bg-muted/30 border-b border-border/60">
           <div className="mx-auto max-w-4xl px-6 py-14">
             <div className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 mt-1">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 mt-1">
                 <Building2 className="icon-md text-primary-emphasis" aria-hidden="true" />
               </div>
               <div>
@@ -164,7 +164,7 @@ function TenantLanding({ tenant, sso }: { tenant: TenantItem; sso: SSODiscoveryR
           ].map((f) => (
             <Card key={f.title} className="text-center border-border/60 hover:shadow-md transition-shadow">
               <CardContent className="pt-6 pb-6">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <f.icon className="h-6 w-6 text-primary-emphasis" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-1">{f.title}</h3>

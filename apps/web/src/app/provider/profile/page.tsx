@@ -136,9 +136,9 @@ export default function ProviderProfilePage() {
         <Card className="border-primary/20">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/20">
+              <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/20">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-lg">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>

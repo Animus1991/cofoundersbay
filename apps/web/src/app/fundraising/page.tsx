@@ -212,8 +212,8 @@ function PipelineView({ leads }: { leads: InvestorLead[] }) {
                   <Card key={lead.id} className="cursor-pointer hover:border-primary/30 transition-colors">
                     <CardContent className="p-3 space-y-1.5">
                       <div className="flex items-center gap-1.5">
-                        <Avatar className="h-7 w-7 rounded-lg shrink-0">
-                          <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis text-xs font-bold">
+                        <Avatar className="h-7 w-7 rounded shrink-0">
+                          <AvatarFallback className="rounded bg-primary/10 text-primary-emphasis text-xs font-bold">
                             {lead.name[0]}
                           </AvatarFallback>
                         </Avatar>
@@ -313,7 +313,7 @@ function DataRoomView({ docs }: { docs: DataRoomDoc[] }) {
           return (
             <Card key={doc.id} className="hover:border-primary/20 transition-colors">
               <CardContent className="p-3.5 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                <div className="h-9 w-9 rounded-md bg-muted flex items-center justify-center shrink-0">
                   <FileText className="icon-sm text-muted-foreground" aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -354,8 +354,8 @@ function InvestorListView({ leads }: { leads: InvestorLead[] }) {
         return (
           <Card key={lead.id} className="hover:border-primary/20 transition-colors">
             <CardContent className="p-4 flex items-center gap-4">
-              <Avatar className="h-10 w-10 rounded-xl shrink-0">
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold">{lead.name[0]}</AvatarFallback>
+              <Avatar className="h-10 w-10 rounded-lg shrink-0">
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">{lead.name[0]}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">

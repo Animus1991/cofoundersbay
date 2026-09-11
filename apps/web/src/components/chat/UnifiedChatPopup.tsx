@@ -922,7 +922,7 @@ export function UnifiedChatPopup() {
                     onClick={handleMsgSend}
                     disabled={!msgInput.trim() || !socketRef.current?.connected}
                     size="sm"
-                    className="h-9 w-9 p-0 rounded-xl shrink-0"
+                    className="h-9 w-9 p-0 rounded-md shrink-0"
                   >
                     <Send className="icon-sm" aria-hidden="true" />
                   </Button>

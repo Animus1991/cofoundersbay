@@ -475,7 +475,7 @@ export function LandingHome() {
               >
                 <Card className={`h-full border ${bg} card-interactive hover-lift`}>
                   <CardHeader className="pb-3">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${bg}`}>
                       <Icon className={`h-5 w-5 ${color}`} />
                     </div>
                     <Badge variant="outline" className={`mt-2 w-fit border-current text-xs ${color}`}>
@@ -517,7 +517,7 @@ export function LandingHome() {
                 className="group flex animate-fade-in gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-glow-sm"
                 style={{ animationDelay: `${index * 70}ms` }}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
                   <Icon className="h-5 w-5 text-primary-emphasis" />
                 </div>
                 <div>
@@ -669,7 +669,7 @@ export function LandingHome() {
       <section id="cta" className="border-t border-border/40 px-6 py-24">
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <div className="mb-4 flex justify-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
               <Network className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
             </div>
           </div>
@@ -714,22 +714,22 @@ export function LandingHome() {
               <div className="flex items-center gap-3">
                 <a href="https://twitter.com" target="_blank" rel="noreferrer"
                   aria-label="CoFounderBay on X (formerly Twitter) (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Twitter className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://linkedin.com" target="_blank" rel="noreferrer"
                   aria-label="CoFounderBay on LinkedIn (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Linkedin className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://github.com" target="_blank" rel="noreferrer"
                   aria-label="CoFounderBay on GitHub (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Github className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
                 <a href="https://globe.app" target="_blank" rel="noreferrer"
                   aria-label="CoFounderBay on our website (opens in a new tab)"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 text-muted-foreground hover:text-foreground hover:border-border transition-colors">
                   <Globe className="h-3.5 w-3.5" aria-hidden="true" />
                 </a>
               </div>

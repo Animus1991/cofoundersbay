@@ -60,11 +60,50 @@
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 84% 45%; /* text on a light surface — 5.43 on white */
 
-    /* Borders: subtle, consistent */
-    --border:           220 13% 90%;
+    /* ── Borders ──────────────────────────────────────────────────────────
+       Every theme used to put its border between 1.27 and 1.41:1 against its
+       own card, and the codebase reaches for `border-border/60`, `/50` and
+       `/40` constantly, which dropped those to 1.10-1.23:1 -- a hairline most
+       people cannot resolve on a typical display. Measured across all 134
+       routes that was ~4,200 borders being painted and roughly 500 of them
+       being painted for nothing, which is why the product had taken to
+       stacking a border, a fill and a shadow on the same card to make an
+       edge read at all.
+       Each theme's border now clears 1.45:1 on its card -- GitHub Primer's
+       level, visible as a boundary without reading as an outline -- so the
+       opacity variants become a real three-step hierarchy instead of four
+       values crowded into the invisible band:
+         border-border     1.45   a boundary between two things
+         border-border/60  1.24   a quieter edge (where the plain one was)
+         border-border/40  1.15   an internal rule inside one thing
+       Borders are decorative under WCAG unless they are a control's only
+       boundary, and that case is carried by --input, which is held at 3:1
+       for SC 1.4.11 separately. */
+    --border:           220 13% 85%;
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
-    --radius:           8px;
+    /* ── Corner radius ladder ──────────────────────────────────────────
+       One geometric scale, all of it in px. Before this, half the scale was
+       px (--radius and its calc() children: 4/6/8) and half was Tailwind's
+       rem defaults (rounded / -xl / -2xl), which the 82% desktop root shrank
+       to 3.28/9.84/13.12 -- so on desktop the product drew six different
+       corner sizes between 3 and 13px. Six steps inside a 10px span is not a
+       scale; adjacent components differed by 2px, too little to read as a
+       decision and enough to read as an accident. The ladder below steps by
+       ~1.35x, which is the smallest ratio two radii can differ by and still
+       look deliberate, and it is unitless-of-root so a corner is the same
+       curve at every viewport. Curvature is the same everywhere too -- see
+       the `corner-shape` layer further down this file.  */
+    --radius-xs:         5px;   /* checkbox, heat-map cells, inline code    */
+    --radius-sm:         7px;   /* chips and anything under ~24px tall      */
+    --radius-md:        10px;   /* controls: button, input, select, menu    */
+    --radius-lg:        13px;   /* rows, list items, small panels, tabs     */
+    --radius-xl:        18px;   /* cards, dialogs, popovers, page sections  */
+    --radius-2xl:       24px;   /* sheets, hero and feature blocks          */
+    --radius-3xl:       32px;   /* marketing surfaces                       */
+    /* Kept as the control-sized alias: everything that reads `var(--radius)`
+       directly (the skip link, the minimal theme layer) wants a control. */
+    --radius:           var(--radius-md);
 
     /* Native UI (scrollbars, autofill, date pickers) follows the theme */
     color-scheme: light;
@@ -84,11 +123,32 @@
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(286 74% 62%));
     --gradient-card:    linear-gradient(145deg, hsl(0 0% 100%), hsl(220 14% 98.5%));
 
-    /* Shadows — subtle, professional (ChatGPT style) */
-    --shadow-glow:      0 0 0 1px hsl(var(--border));
-    --shadow-card:      0 1px 2px hsl(0 0% 0% / 0.05), 0 0 0 1px hsl(var(--border) / 0.7);
-    --shadow-elevated:  0 4px 16px hsl(0 0% 0% / 0.06), 0 1px 4px hsl(0 0% 0% / 0.04);
-    --shadow-modal:     0 16px 40px hsl(0 0% 0% / 0.10), 0 4px 12px hsl(0 0% 0% / 0.06);
+    /* ── Shadows ──────────────────────────────────────────────────────────
+       Elevation is tinted with the theme rather than pure black: a neutral
+       black shadow over a tinted ground reads as grey haze, a shadow that
+       carries the ground's hue reads as depth. `--shadow-strength` scales
+       every step at once, which is how the dark themes get shadows that are
+       visible at all without each of them restating the whole ladder. */
+    --shadow-color:     220 40% 18%;
+    --shadow-strength:  1;
+
+    /* A quiet lift, not a second outline. This used to be
+       `0 0 0 1px hsl(var(--border))`, a 1px ring sitting exactly on top of
+       the border that every element carrying it already had -- two hairlines
+       painted at the same coordinates on every outline button in the
+       product. The dark themes override it with their primary glow, which is
+       a deliberate effect and is left alone. */
+    --shadow-glow:      0 1px 2px -1px hsl(var(--shadow-color) / 0.07);
+    /* --shadow-card also carried a coincident `0 0 0 1px border` ring, on top
+       of the border its four users (tooltip, dropdown, EmptyState, the
+       landing feature cards) already declare in their class lists. Dropped
+       for the same reason as --shadow-glow's; the lift is what was wanted. */
+    --shadow-card:      0 1px 2px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%)),
+                        0 2px 8px -3px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%));
+    --shadow-elevated:  0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%)),
+                        0 10px 24px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 9%));
+    --shadow-modal:     0 8px 18px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%)),
+                        0 28px 56px -18px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 14%));
 
     /* ── Standardized spacing scale ── */
     --spacing-card-compact: 1rem;      /* 16px - p-4 */
@@ -110,7 +170,8 @@
     --gradient-hero: linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 10%) 50%, hsl(235 80% 15%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(222 30% 14% / 0.8), hsl(222 30% 10% / 0.6));
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.15);
-    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
+    --shadow-color: 222 60% 2%;
+    --shadow-strength: 3;
     --background: 222 35% 8%;
     --foreground: 210 40% 96%;
     --card: 222 30% 12%;
@@ -129,7 +190,7 @@
     --destructive: 0 62% 46%;          /* surface */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 62% 66%; /* text on a dark surface — 5.58 on card, 5.10 on a destructive/15 tint (46% gave 2.95, a fail) */
-    --border: 220 18% 20%;
+    --border: 220 18% 23%;             /* 1.45 on card, 1.58 on page */
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
     color-scheme: dark;
@@ -137,6 +198,8 @@
 
   /* ── System theme: distinct slate-blue palette ── */
   [data-theme="system"] {
+    --shadow-color: 215 50% 5%;
+    --shadow-strength: 3;
     --background: 215 28% 17%;
     --foreground: 210 20% 98%;
     --card: 215 25% 21%;
@@ -155,7 +218,7 @@
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 70% 70%;  /* 4.64 on this theme's card (68% gave 4.33) */
-    --border: 215 20% 30%;
+    --border: 215 20% 31%;             /* 1.45 on card, 1.67 on page */
     --input: 215 20% 30%;
     --ring: 199 89% 48%;
     --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
@@ -164,6 +227,8 @@
 
   /* ── Alliance theme: warm cream & amber ── */
   [data-theme="alliance"] {
+    --shadow-color: 200 40% 18%;
+    --shadow-strength: 1;
     --background: 195 26% 96%;
     --foreground: 220 100% 3%;
     --card: 0 0% 100%;
@@ -185,7 +250,7 @@
     --destructive: 0 84% 49%;          /* white on it: 4.70 (60% gave 3.78) */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 84% 45%;
-    --border: 200 15% 88%;
+    --border: 200 15% 84%;             /* 1.45 on card, 1.33 on page */
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
     --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
@@ -194,6 +259,8 @@
 
   /* ── Cofounder theme: dark purple/cyan ── */
   [data-theme="cofounder"] {
+    --shadow-color: 240 60% 2%;
+    --shadow-strength: 3;
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 8% 8%;
@@ -212,7 +279,7 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 72% 70%;
-    --border: 240 6% 18%;
+    --border: 240 6% 21%;              /* 1.45 on card, 1.55 on page */
     --input: 240 6% 18%;
     --ring: 262 83% 58%;
     --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
@@ -233,6 +300,8 @@
      The component rules that give this theme its character live further down,
      all scoped to [data-theme="minimal"], so no other theme is touched. ──── */
   [data-theme="minimal"] {
+    --shadow-color: 30 18% 22%;
+    --shadow-strength: 0.8;
     --background:        40 20% 98%;
     --foreground:        30 8% 12%;
     --card:              0 0% 100%;
@@ -256,11 +325,13 @@
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 6 60% 36%;  /* 7.83 on card */
 
-    --border:            36 12% 88%;
+    --border:            36 12% 83%;   /* 1.45 on card, 1.39 on page */
     --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
     --ring:              190 48% 32%;   /* 5.75 on page */
 
-    --radius: 0.5rem;
+    /* Inherits the radius ladder unchanged. Minimal is a restraint on colour,
+       elevation and weight, not on curvature -- the corners are the one part
+       of the product that reads as calm in every theme, so they stay put. */
     color-scheme: light;
   }
 
@@ -308,6 +379,42 @@
 
   * {
     @apply border-border;
+  }
+
+  /* ── Continuous curvature ─────────────────────────────────────────────────
+     A plain `border-radius` draws a circular arc, which meets the straight
+     edge at a curvature discontinuity: the corner "starts" at a visible
+     point. That break is what makes a rounded rectangle read as stamped
+     rather than moulded, and it is the single reason the product's corners
+     looked mechanical no matter what radius they were given. A superellipse
+     has no such break -- curvature ramps smoothly into the edge, which is
+     the shape Apple uses for icons and Figma exposes as "corner smoothing".
+
+     `corner-shape` is an unknown declaration in browsers that do not
+     implement it, so the @supports guard is belt-and-braces: those browsers
+     keep the circular arc at the same radius and lose only the smoothing.
+     Applying it with `*` costs nothing on the ~90% of elements with radius
+     0, where there is no corner to shape.
+
+     Pills are the one exclusion, and they are excluded for a rendering
+     reason rather than a taste one: `rounded-full` sets 9999px, hundreds of
+     times past the clamp, and a superellipse that far past the clamp
+     degrades into a rounded rectangle -- it would turn every avatar,
+     badge and switch into a squarish blob. Radii that merely graze the
+     clamp (a 13px corner on a 24px chip) render as a clean squircle
+     capsule, so they are left in. */
+  @supports (corner-shape: squircle) {
+    *,
+    *::before,
+    *::after {
+      corner-shape: squircle;
+    }
+
+    [class*='rounded-full'],
+    [class*='rounded-full']::before,
+    [class*='rounded-full']::after {
+      corner-shape: round;
+    }
   }
 
   html {

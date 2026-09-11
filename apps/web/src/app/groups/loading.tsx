@@ -40,7 +40,7 @@ export default function GroupsLoading() {
             <Card key={i}>
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-40" />
                     <div className="flex gap-2">
@@ -76,7 +76,7 @@ export default function GroupsLoading() {
             <Card key={i}>
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-xl shrink-0" />
+                  <Skeleton className="h-12 w-12 rounded-lg shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-3 w-20" />

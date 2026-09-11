@@ -188,7 +188,7 @@ export function CollaborationStarter({
                     loading === action.id && 'opacity-60 pointer-events-none',
                   )}
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary">
                     <Icon className="h-4.5 w-4.5 text-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">

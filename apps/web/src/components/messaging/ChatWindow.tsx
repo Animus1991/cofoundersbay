@@ -625,7 +625,7 @@ export function ChatWindow({
                       <button
                         key={e}
                         type="button"
-                        className="flex h-8 w-8 items-center justify-center rounded hover:bg-secondary/80 text-base transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-secondary/80 text-base transition-colors"
                         onClick={() => {
                           setInputValue((v) => v + e);
                           textareaRef.current?.focus();

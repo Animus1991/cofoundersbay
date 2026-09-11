@@ -129,7 +129,7 @@ export function WhiteboardNode({
         {!readOnly && (
           <button
             onMouseDown={(e) => { e.stopPropagation(); onDelete?.(); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-emphasis transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/10 text-muted-foreground/40 hover:text-destructive-emphasis transition-colors"
             title="Delete node"
           >
             <Trash2 className="icon-2xs" aria-hidden="true" />

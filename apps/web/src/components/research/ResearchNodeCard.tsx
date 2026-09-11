@@ -558,7 +558,7 @@ export function ResearchNodeCard({
             <span className="text-2xs font-semibold uppercase tracking-wide" style={{ color: '#EC4899' }}>DIAGRAM</span>
           </div>
           <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded hover:bg-destructive/10 text-destructive-emphasis">
+            <button onClick={(e) => { e.stopPropagation(); handleDelete(e); }} className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-destructive/10 text-destructive-emphasis">
               <Trash2 className="icon-2xs" aria-hidden="true" />
             </button>
           </div>
@@ -742,7 +742,7 @@ export function ResearchNodeCard({
           {node.locked && <Lock className="icon-2xs text-muted-foreground" aria-hidden="true" />}
           <button
             onClick={(e) => { e.stopPropagation(); setShowMenu((p) => !p); setShowColorPicker(false); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            className="w-5 h-5 flex items-center justify-center rounded-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
           >
             <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
           </button>

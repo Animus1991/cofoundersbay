@@ -59,7 +59,7 @@ function SkillRowSkeleton() {
       <Skeleton className="h-4 flex-1 max-w-[160px]" />
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-5 w-10 rounded-full" />
-      <Skeleton className="h-8 w-8 rounded" />
+      <Skeleton className="h-8 w-8 rounded-md" />
     </div>
   );
 }

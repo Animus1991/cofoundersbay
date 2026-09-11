@@ -311,9 +311,9 @@ export default function MatchDetailPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header skeleton */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="h-5 w-5 rounded-sm" />
             <Skeleton className="h-4 w-40 rounded" />
-            <Skeleton className="h-5 w-5 rounded" />
+            <Skeleton className="h-5 w-5 rounded-sm" />
           </div>
           <PageSkeleton />
         </div>
@@ -368,9 +368,9 @@ export default function MatchDetailPage() {
           <div className="flex items-start justify-around">
             {/* Source user */}
             <div className="flex flex-col items-center gap-3">
-              <Avatar className="h-20 w-20 rounded-lg ring-2 ring-border">
+              <Avatar className="h-20 w-20 rounded-2xl ring-2 ring-border">
                 <AvatarImage src={sourceProfile.avatarUrl ?? undefined} alt={sourceProfile.displayName} />
-                <AvatarFallback className="rounded-lg text-base font-semibold bg-muted">
+                <AvatarFallback className="rounded-2xl text-base font-semibold bg-muted">
                   {sourceProfile.displayName.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -391,9 +391,9 @@ export default function MatchDetailPage() {
             {/* Target user — accent ring */}
             <div className="flex flex-col items-center gap-3">
               <Link href={`/profiles/${targetProfile.id}`}>
-                <Avatar className="h-20 w-20 rounded-lg ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': '#22D3EE' } as React.CSSProperties}>
+                <Avatar className="h-20 w-20 rounded-2xl ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': '#22D3EE' } as React.CSSProperties}>
                   <AvatarImage src={targetProfile.avatarUrl ?? undefined} alt={targetProfile.displayName} />
-                  <AvatarFallback className="rounded-lg text-base font-semibold" style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>
+                  <AvatarFallback className="rounded-2xl text-base font-semibold" style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>
                     {targetProfile.displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>

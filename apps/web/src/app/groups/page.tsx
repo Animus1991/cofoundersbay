@@ -103,9 +103,9 @@ function GroupCard({
       <CardContent className="p-5 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary-emphasis">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-primary-emphasis">
               {group.avatarUrl ? (
-                <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-xl object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={44} height={44} />
+                <img src={group.avatarUrl} alt={group.name} className="h-11 w-11 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={44} height={44} />
               ) : (
                 <Users className="icon-md" aria-hidden="true" />
               )}
@@ -297,7 +297,7 @@ export default function GroupsPage() {
           return (
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">

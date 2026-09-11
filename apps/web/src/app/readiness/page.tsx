@@ -321,7 +321,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
             <Radar name="Your Score" dataKey="score" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.25} strokeWidth={2} />
             <Radar name="Benchmark" dataKey="benchmark" stroke={theme.status.neutral} fill={theme.status.neutral} fillOpacity={0.1} strokeWidth={1.5} strokeDasharray="4 2" />
             <RechartsTooltip
-              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }}
               formatter={(val: number, name: string) => [`${val}%`, name]}
             />
           </RadarChart>
@@ -357,7 +357,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
             <XAxis dataKey="week" tick={{ fontSize: 11 }} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
             <RechartsTooltip
-              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+              contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 13, fontSize: 12 }}
               formatter={(val: number, name: string) => [`${val}%`, name]}
             />
             <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3 }} name="Overall" />

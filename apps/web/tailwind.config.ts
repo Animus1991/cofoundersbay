@@ -58,10 +58,33 @@ const config: Config = {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
       },
+      // The full radius scale, not a three-key patch on top of Tailwind's
+      // defaults. Overriding only lg/md/sm left `rounded`, `rounded-xl`,
+      // `rounded-2xl` and `rounded-3xl` on Tailwind's rem values, which the
+      // 82% desktop root shrank while the px-based lg/md/sm stayed put -- so
+      // the same utility drew a different curve depending on which half of
+      // the scale it came from. Every step now resolves from one ladder in
+      // src/app/globals.css, so a class name means the same corner
+      // everywhere, and moving the ladder moves the whole product at once.
+      //
+      // Each step names a component family rather than an abstract size:
+      //   sm  -> checkbox, heat-map cell        (5px)
+      //   DEF -> chip, tag, anything under 24px (7px)
+      //   md  -> button, input, select, menu    (9px)
+      //   lg  -> list row, small panel, tab     (12px)
+      //   xl  -> card, dialog, popover, section (16px)
+      //   2xl -> sheet, hero block              (22px)
+      //   3xl -> marketing surface              (30px)
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        none: '0px',
+        sm: 'var(--radius-xs)',
+        DEFAULT: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
+        '3xl': 'var(--radius-3xl)',
+        full: '9999px',
       },
       keyframes: {
         'fade-in': {
@@ -142,7 +165,32 @@ const config: Config = {
         'wiggle': 'wiggle 0.3s ease-in-out',
         'spin-slow': 'spin-slow 8s linear infinite',
       },
+      // The elevation ladder, rebuilt to sit next to the softened corners.
+      //
+      // Tailwind's defaults are pure black at a tight blur -- `shadow-sm` is
+      // `0 1px 2px rgb(0 0 0 / 0.05)`, which on the 641 cards that carry
+      // `border + bg-card + shadow-sm` draws a second hard line a pixel below
+      // the border, at exactly the place the corner turns. Two hairlines
+      // tracing the same corner is what made those cards read as busy; it is
+      // also the one thing that would have survived the radius change and
+      // kept the corners looking stamped.
+      //
+      // Each step here is a contact shadow plus an ambient one, tinted with
+      // `--shadow-color` (the ground's own hue -- a neutral black over a
+      // tinted surface reads as grey haze) and scaled by `--shadow-strength`,
+      // which is where the dark themes get elevation that is visible at all
+      // without restating the ladder five times.
       boxShadow: {
+        sm: '0 1px 2px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%)), 0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 5%))',
+        DEFAULT:
+          '0 1px 3px -1px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 7%)), 0 4px 10px -3px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        md: '0 2px 6px -2px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%)), 0 8px 18px -6px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 8%))',
+        lg: '0 4px 10px -4px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 9%)), 0 14px 30px -10px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%))',
+        xl: '0 8px 18px -8px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 10%)), 0 24px 48px -16px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 13%))',
+        '2xl':
+          '0 16px 32px -12px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 12%)), 0 40px 72px -24px hsl(var(--shadow-color) / calc(var(--shadow-strength) * 18%))',
+        inner: 'inset 0 1px 2px 0 hsl(var(--shadow-color) / calc(var(--shadow-strength) * 6%))',
+        none: 'none',
         'glow-sm': '0 0 0 1px rgba(99,102,241,0.25), 0 8px 32px rgba(0,0,0,0.35)',
         'glow-md': '0 0 0 1px rgba(99,102,241,0.35), 0 16px 48px rgba(0,0,0,0.45)',
       },

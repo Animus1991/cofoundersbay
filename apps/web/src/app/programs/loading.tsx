@@ -9,7 +9,7 @@ export default function ProgramsLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="shadow-sm border-border/50">
             <CardContent className="flex items-center gap-2.5 p-3">
-              <Skeleton className="h-8 w-8 rounded-lg shrink-0" />
+              <Skeleton className="h-8 w-8 rounded-md shrink-0" />
               <div className="space-y-1.5">
                 <Skeleton className="h-4 w-8" />
                 <Skeleton className="h-3 w-16" />

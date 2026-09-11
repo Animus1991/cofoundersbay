@@ -235,7 +235,7 @@ function OrgOwnershipSection({
                 {m.organization.avatarUrl ? (
                   <img src={m.organization.avatarUrl} alt="" className="h-6 w-6 rounded-md object-cover shrink-0" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={24} height={24} />
                 ) : (
-                  <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0">
+                  <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center shrink-0">
                     <Building2 className="h-3.5 w-3.5 text-primary-emphasis" aria-hidden="true" />
                   </div>
                 )}

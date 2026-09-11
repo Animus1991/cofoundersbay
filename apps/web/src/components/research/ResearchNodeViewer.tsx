@@ -436,7 +436,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
             {canDownload && (
               <button
                 onClick={handleDownload}
-                className="w-7 h-7 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 title="Download"
               >
                 <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -598,7 +598,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                   />
                   <button
                     onClick={() => removeChecklistItem(item.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded hover:text-destructive-emphasis"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 flex items-center justify-center rounded-sm hover:text-destructive-emphasis"
                   >
                     <X className="icon-2xs" aria-hidden="true" />
                   </button>
@@ -653,7 +653,7 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setImgZoom((z) => Math.max(0.2, z - 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <ZoomOut className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
@@ -662,13 +662,13 @@ export function ResearchNodeViewer({ node, onClose, onUpdate }: ResearchNodeView
                 </span>
                 <button
                   onClick={() => setImgZoom((z) => Math.min(4, z + 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <ZoomIn className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => setImgZoom(1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                 >
                   <Maximize2 className="w-3.5 h-3.5" aria-hidden="true" />
                 </button>

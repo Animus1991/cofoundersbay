@@ -36,7 +36,7 @@ export function LoadingCard({ variant = 'default', className, style }: LoadingCa
         <div style={style} className={cn('rounded-xl border border-border/60 bg-card/80 p-4 space-y-2', className)}>
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-8 w-8 rounded-md" />
           </div>
           <Skeleton className="h-8 w-20" />
           <Skeleton className="h-3 w-32" />

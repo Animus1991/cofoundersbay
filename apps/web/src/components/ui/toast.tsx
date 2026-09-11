@@ -115,7 +115,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
           <button
             type="button"
             onClick={toast.action.onClick}
-            className="focus-ring mt-2 rounded-sm text-sm font-medium underline-offset-2 hover:underline"
+            className="focus-ring mt-2 rounded text-sm font-medium underline-offset-2 hover:underline"
           >
             {toast.action.label}
           </button>

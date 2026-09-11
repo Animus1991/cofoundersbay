@@ -49,7 +49,7 @@ function InvoiceStatusBadge({ status }: { status: string }) {
 function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
   return (
     <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
+      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted shrink-0">
         <FileText className="icon-sm text-muted-foreground" aria-hidden="true" />
       </div>
       <div className="flex-1 min-w-0">
@@ -191,7 +191,7 @@ export default function UserBillingPage() {
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                     <PlanIcon className="h-6 w-6 text-primary-emphasis" />
                   </div>
                   <div className="flex-1">

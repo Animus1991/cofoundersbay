@@ -26,7 +26,7 @@ export default function ReputationLoading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
               <div className="flex items-center gap-3">
-                <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+                <Skeleton className="h-9 w-9 rounded-md shrink-0" />
                 <div className="flex-1 space-y-1"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-20" /></div>
                 <Skeleton className="h-8 w-12 rounded-full shrink-0" />
               </div>

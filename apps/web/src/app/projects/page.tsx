@@ -379,7 +379,7 @@ export default function ProjectsPage() {
             return (
               <Card key={s.label} className="border-border/40">
                 <CardContent className="flex items-center gap-3 p-3">
-                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg)}>
+                  <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg)}>
                     <SIcon className={cn('h-4 w-4', s.color)} />
                   </div>
                   <div className="min-w-0">

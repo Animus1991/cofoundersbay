@@ -378,7 +378,7 @@ export default function ResearchBoardsPage() {
                     key={color.name}
                     onClick={() => setNewBoardColor(color.value)}
                     className={cn(
-                      'w-8 h-8 rounded-lg border-2 transition-all',
+                      'w-8 h-8 rounded-md border-2 transition-all',
                       newBoardColor === color.value
                         ? 'border-primary scale-110'
                         : 'border-transparent hover:scale-105',

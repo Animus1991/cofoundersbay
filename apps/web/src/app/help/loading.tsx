@@ -9,7 +9,7 @@ export default function HelpLoading() {
           <Skeleton className="h-9 w-36 rounded-lg" />
         </div>
         <div className="rounded-xl border border-border/50 bg-card p-6 text-center space-y-4">
-          <Skeleton className="h-12 w-12 rounded-xl mx-auto" />
+          <Skeleton className="h-12 w-12 rounded-lg mx-auto" />
           <Skeleton className="h-6 w-48 mx-auto" />
           <Skeleton className="h-4 w-72 mx-auto" />
           <Skeleton className="h-11 w-full max-w-lg mx-auto rounded-lg" />
@@ -20,7 +20,7 @@ export default function HelpLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-border/50 bg-card overflow-hidden">
             <div className="p-4 border-b border-border/50 flex items-center gap-3">
-              <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+              <Skeleton className="h-9 w-9 rounded-md shrink-0" />
               <div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-48" /></div>
               <Skeleton className="h-5 w-14 rounded-full" />
             </div>

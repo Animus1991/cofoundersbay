@@ -227,7 +227,7 @@ export default function DiscoverPage() {
             return (
               <Card key={s.label} className="shadow-sm border-border/50 bg-gradient-to-br from-card to-muted/20">
                 <CardContent className="flex items-center gap-3 p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
                     <SIcon className="icon-sm text-primary-emphasis" />
                   </div>
                   <div className="min-w-0">

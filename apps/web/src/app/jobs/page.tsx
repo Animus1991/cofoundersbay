@@ -66,9 +66,9 @@ function JobCard({ job, featured = false }: { job: JobPostingView; featured?: bo
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           {/* Company avatar */}
-          <Avatar className="h-11 w-11 shrink-0 rounded-xl ring-2 ring-border/60">
+          <Avatar className="h-11 w-11 shrink-0 rounded-lg ring-2 ring-border/60">
             <AvatarImage src={job.creator.avatarUrl ?? undefined} />
-            <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold text-sm">
+            <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold text-sm">
               {job.creator.displayName[0]?.toUpperCase() ?? 'J'}
             </AvatarFallback>
           </Avatar>
@@ -135,7 +135,7 @@ function JobSkeleton() {
   return (
     <Card>
       <CardContent className="flex items-start gap-4 p-5">
-        <Skeleton className="h-11 w-11 rounded-xl shrink-0" />
+        <Skeleton className="h-11 w-11 rounded-lg shrink-0" />
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-48" />
           <Skeleton className="h-3 w-32" />
@@ -289,7 +289,7 @@ export default function JobsPage() {
           return (
             <Card key={s.label} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
-                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-md', s.bg, s.color)}>
                   <SIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">

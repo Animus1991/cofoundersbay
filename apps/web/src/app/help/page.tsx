@@ -322,7 +322,7 @@ export default function HelpPage() {
 
         {/* Search Hero */}
         <div className="rounded-xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-muted/20 p-6 text-center shadow-sm">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
             <HelpCircle className="icon-lg text-primary-emphasis" aria-hidden="true" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-1">How can we help you?</h2>
@@ -419,7 +419,7 @@ export default function HelpPage() {
               <Card key={category.id} className="shadow-sm border-border/50">
                 <CardHeader className="border-b border-border/50 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
                       <category.icon className="h-4 w-4 text-primary-emphasis" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -449,7 +449,7 @@ export default function HelpPage() {
         {/* Contact Support */}
         <Card className="shadow-sm border-primary/20 bg-gradient-to-br from-primary/5 to-card">
           <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
               <Mail className="icon-lg text-primary-emphasis" aria-hidden="true" />
             </div>
             <h2 className="text-lg font-semibold text-foreground mb-1">Still need help?</h2>

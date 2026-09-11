@@ -99,7 +99,7 @@ export function RichTextEditor({
       type="button"
       onMouseDown={(e) => { e.preventDefault(); onClick(); }}
       title={title}
-      className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
+      className="w-7 h-7 flex items-center justify-center rounded hover:bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
     >
       {Icon ? <Icon className="w-3.5 h-3.5" /> : children}
     </button>

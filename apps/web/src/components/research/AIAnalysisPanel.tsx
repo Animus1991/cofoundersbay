@@ -227,14 +227,14 @@ export function AIAnalysisPanel({
     <div className="w-80 flex-none flex flex-col border-l border-border bg-card h-full overflow-hidden shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border flex-none">
-        <div className="w-6 h-6 rounded-lg bg-purple-400/15 flex items-center justify-center">
+        <div className="w-6 h-6 rounded bg-purple-400/15 flex items-center justify-center">
           <Sparkles className="w-3.5 h-3.5 text-purple-400" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-foreground">AI Research Assistant</p>
           <p className="text-2xs text-muted-foreground">Analyze, extract, and synthesize</p>
         </div>
-        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+        <button onClick={onClose} className="w-6 h-6 flex items-center justify-center rounded text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
           <X className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </div>
@@ -330,7 +330,7 @@ export function AIAnalysisPanel({
                         )}
                       >
                         <div className="flex items-start gap-2">
-                          <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 bg-secondary text-muted-foreground">
+                          <div className="w-5 h-5 rounded-sm flex items-center justify-center shrink-0 mt-0.5 bg-secondary text-muted-foreground">
                             {nodeTypeIcon(s.type, 'w-3 h-3')}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -519,7 +519,7 @@ export function AIAnalysisPanel({
                     <button onClick={commitSynthesis} className="flex-1 h-7 rounded-lg bg-emerald-400/15 text-emerald-400 hover:bg-emerald-400/25 text-2xs font-semibold transition-colors flex items-center justify-center gap-1">
                       <Plus className="icon-2xs" aria-hidden="true" /> Add to canvas
                     </button>
-                    <button onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary transition-colors">
+                    <button onClick={() => setSynthResult(null)} className="w-7 h-7 flex items-center justify-center rounded text-muted-foreground hover:bg-secondary transition-colors">
                       <Trash2 className="icon-2xs" aria-hidden="true" />
                     </button>
                   </div>
@@ -657,7 +657,7 @@ export function AIAnalysisPanel({
                 <button
                   onClick={handleChat}
                   disabled={loading || !chatInput.trim()}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-8 h-8 flex items-center justify-center rounded-md bg-purple-400/15 text-purple-400 hover:bg-purple-400/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />}
                 </button>

@@ -218,7 +218,7 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
             const Icon = item.icon;
             return (
               <div key={item.label} className="text-center">
-                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg mx-auto mb-1 bg-secondary/60', item.color)}>
+                <div className={cn('flex h-7 w-7 items-center justify-center rounded mx-auto mb-1 bg-secondary/60', item.color)}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <p className={cn('text-xs font-bold',

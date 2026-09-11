@@ -138,7 +138,7 @@ export default function PublicProfilePage() {
         <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center"><span className="text-sm font-bold text-primary-foreground">C</span></div>
+              <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center"><span className="text-sm font-bold text-primary-foreground">C</span></div>
               <span className="font-semibold text-foreground">CoFounderBay</span>
             </Link>
           </div>
@@ -173,7 +173,7 @@ export default function PublicProfilePage() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+            <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center">
               <span className="text-sm font-bold text-primary-foreground">C</span>
             </div>
             <span className="font-semibold text-foreground">CoFounderBay</span>

@@ -53,7 +53,7 @@ function StatCard({
             <p className={cn('text-3xl font-bold mt-1', accent ? 'text-primary-emphasis' : 'text-foreground')}>{value}</p>
             {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
           </div>
-          <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl', accent ? 'bg-primary/15' : 'bg-secondary')}>
+          <div className={cn('flex h-9 w-9 items-center justify-center rounded-md', accent ? 'bg-primary/15' : 'bg-secondary')}>
             <Icon className={cn('h-4 w-4', accent ? 'text-primary-emphasis' : 'text-muted-foreground')} />
           </div>
         </div>

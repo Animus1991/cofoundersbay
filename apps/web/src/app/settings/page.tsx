@@ -111,7 +111,7 @@ function PrivacyCard() {
         {PRIVACY_ITEMS.map(({ id, icon: Icon, label, desc }) => (
           <div key={id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
                 <Icon className="h-4 w-4 text-primary-emphasis" />
               </div>
               <div>
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                     className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-secondary/40 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
                         <Icon className="h-4 w-4 text-primary-emphasis" />
                       </div>
                       <div>
@@ -501,7 +501,7 @@ export default function SettingsPage() {
               ].map(({ key, label, icon, connected, connectUrl }) => (
                 <div key={key} className="flex items-center justify-between rounded-xl border p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
                       {icon}
                     </div>
                     <div>

@@ -737,7 +737,7 @@ export default function MentoringPage() {
               return (
                 <Card key={s.label} className="border-border/40">
                   <CardContent className="flex items-center gap-2.5 p-3">
-                    <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-lg', s.bg, s.color)}>
+                    <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded', s.bg, s.color)}>
                       <SIcon className="h-3.5 w-3.5" />
                     </div>
                     <div>

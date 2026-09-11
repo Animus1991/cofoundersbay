@@ -336,7 +336,7 @@ export default function ProjectDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
                     <Briefcase className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </div>
                   <div>
@@ -345,7 +345,7 @@ export default function ProjectDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
                     <Target className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </div>
                   <div>
@@ -354,7 +354,7 @@ export default function ProjectDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
                     <MapPin className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </div>
                   <div>
@@ -364,7 +364,7 @@ export default function ProjectDetailPage() {
                 </div>
                 {project.website && (
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
                       <Globe className="icon-sm text-muted-foreground" aria-hidden="true" />
                     </div>
                     <div>
@@ -376,7 +376,7 @@ export default function ProjectDetailPage() {
                   </div>
                 )}
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted">
                     <Calendar className="icon-sm text-muted-foreground" aria-hidden="true" />
                   </div>
                   <div>

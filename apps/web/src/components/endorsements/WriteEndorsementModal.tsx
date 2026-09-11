@@ -87,7 +87,7 @@ export function WriteEndorsementModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/60 px-5 py-4 pr-14">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500/10">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-amber-500/10">
               <Star className="icon-sm text-amber-500" aria-hidden="true" />
             </div>
             <div>

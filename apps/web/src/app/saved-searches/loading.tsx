@@ -11,7 +11,7 @@ export default function SavedSearchesLoading() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-3.5 flex items-center gap-3">
-              <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+              <Skeleton className="h-9 w-9 rounded-md shrink-0" />
               <div className="space-y-1.5"><Skeleton className="h-5 w-10" /><Skeleton className="h-3 w-20" /></div>
             </div>
           ))}

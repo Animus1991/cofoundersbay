@@ -13,7 +13,7 @@ export default function CalendarLoading() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-border/50 bg-card p-3.5 flex items-center gap-3">
-              <Skeleton className="h-9 w-9 rounded-lg shrink-0" />
+              <Skeleton className="h-9 w-9 rounded-md shrink-0" />
               <div className="space-y-1.5"><Skeleton className="h-5 w-10" /><Skeleton className="h-3 w-20" /></div>
             </div>
           ))}
@@ -23,7 +23,7 @@ export default function CalendarLoading() {
           <div className="rounded-xl border border-border/50 bg-card p-4 space-y-3">
             <div className="flex items-center justify-between mb-2">
               <Skeleton className="h-6 w-32" />
-              <div className="flex gap-2"><Skeleton className="h-8 w-8 rounded-lg" /><Skeleton className="h-8 w-8 rounded-lg" /></div>
+              <div className="flex gap-2"><Skeleton className="h-8 w-8 rounded-md" /><Skeleton className="h-8 w-8 rounded-md" /></div>
             </div>
             <div className="grid grid-cols-7 gap-1">
               {Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} className="h-6 w-full rounded" />)}

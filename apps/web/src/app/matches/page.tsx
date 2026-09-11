@@ -315,7 +315,7 @@ function MatchPreviewPanel({
         {/* Header */}
         <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card/95 backdrop-blur-sm">
           <p className="text-sm font-semibold">Profile Preview</p>
-          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
+          <button onClick={onClose} className="h-7 w-7 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors">
             <X className="icon-sm" aria-hidden="true" />
           </button>
         </div>
@@ -323,9 +323,9 @@ function MatchPreviewPanel({
         <div className="p-4 space-y-4">
           {/* Avatar + name */}
           <div className="flex flex-col items-center text-center pt-1">
-            <Avatar className="h-16 w-16 rounded-2xl border-2 border-border/60">
+            <Avatar className="h-16 w-16 rounded-xl border-2 border-border/60">
               <AvatarImage src={hit.avatarUrl ?? undefined} />
-              <AvatarFallback className="rounded-2xl text-base font-bold bg-muted">
+              <AvatarFallback className="rounded-xl text-base font-bold bg-muted">
                 {hit.displayName.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -669,7 +669,7 @@ export default function MatchesPage() {
             ].map(({ label, value, color, bg, icon: Icon }) => (
               <Card key={label} className="shadow-sm border-border/50">
                 <CardContent className="flex items-center gap-3 p-3.5">
-                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', bg)}>
+                  <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-md', bg)}>
                     <Icon className={cn('h-4 w-4', color)} />
                   </div>
                   <div>
@@ -930,7 +930,7 @@ export default function MatchesPage() {
                   </button>
 
                   <button onClick={() => setShowSearch(s => !s)}
-                    className={cn('h-8 w-8 flex items-center justify-center rounded-lg transition-colors',
+                    className={cn('h-8 w-8 flex items-center justify-center rounded-md transition-colors',
                       showSearch ? 'bg-primary text-primary-foreground' : 'border border-border/60 text-muted-foreground hover:bg-secondary')}>
                     <Search className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>

@@ -164,7 +164,7 @@ function CommunityRow({ group }: { group: { id: string; name: string; memberCoun
       href={`/groups/${group.id}`}
       className="group flex items-center gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-secondary/50"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10">
         {group.avatarUrl ? (
           <img src={group.avatarUrl} alt="" className="h-8 w-8 rounded-lg object-cover" loading="lazy" decoding="async" referrerPolicy="no-referrer" width={32} height={32} />
         ) : (

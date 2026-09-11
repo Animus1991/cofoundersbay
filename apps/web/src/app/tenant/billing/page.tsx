@@ -150,7 +150,7 @@ export default function TenantBillingPage() {
             ) : sub ? (
               <>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 shrink-0">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-violet-500/10 shrink-0">
                     <Building2 className="icon-lg text-violet-500" aria-hidden="true" />
                   </div>
                   <div className="flex-1">

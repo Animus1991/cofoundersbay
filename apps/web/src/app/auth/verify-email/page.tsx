@@ -96,7 +96,7 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-xl font-bold text-primary-foreground">C</span>
             </div>
             <span className="text-xl font-bold text-foreground">CoFounderBay</span>

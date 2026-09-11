@@ -418,8 +418,8 @@ export default function InvestorWatchlistPage() {
                 <Card key={item.id} className="transition-all hover:border-primary/20">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      <Avatar className="h-9 w-9 rounded-lg shrink-0">
-                        <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis text-xs font-bold">
+                      <Avatar className="h-9 w-9 rounded-md shrink-0">
+                        <AvatarFallback className="rounded-md bg-primary/10 text-primary-emphasis text-xs font-bold">
                           {item.startupName[0]}
                         </AvatarFallback>
                       </Avatar>

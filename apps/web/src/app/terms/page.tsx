@@ -156,7 +156,7 @@ export default function TermsPage() {
       {/* Hero */}
       <section className="border-b border-border/60 bg-muted/30">
         <div className="mx-auto max-w-4xl px-4 py-12 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
             <FileText className="h-7 w-7 text-primary-emphasis" aria-hidden="true" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2">Terms of Service</h1>
@@ -190,7 +190,7 @@ export default function TermsPage() {
             <Card key={section.id} id={section.id} className="scroll-mt-20 border-border/60">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10">
                     <section.icon className="h-4 w-4 text-primary-emphasis" />
                   </div>
                   <h2 className="text-lg font-semibold text-foreground pt-1">{section.title}</h2>

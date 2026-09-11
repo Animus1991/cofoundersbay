@@ -143,9 +143,9 @@ function ProviderCard({ provider, featured }: { provider: ServiceProvider; featu
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <Avatar className="h-11 w-11 shrink-0 rounded-xl">
+            <Avatar className="h-11 w-11 shrink-0 rounded-lg">
               <AvatarImage src={provider.providerAvatar} />
-              <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-bold">
+              <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-bold">
                 {provider.providerName[0]}
               </AvatarFallback>
             </Avatar>
@@ -371,7 +371,7 @@ export default function MarketplacePage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <Card key={i}><CardContent className="p-5 space-y-3">
-                    <div className="flex gap-3"><Skeleton className="h-11 w-11 rounded-xl" /><div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>
+                    <div className="flex gap-3"><Skeleton className="h-11 w-11 rounded-lg" /><div className="flex-1 space-y-1.5"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-24" /></div></div>
                     <Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-2/3" />
                   </CardContent></Card>
                 ))}

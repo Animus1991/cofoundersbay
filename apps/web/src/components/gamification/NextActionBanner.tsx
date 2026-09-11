@@ -124,7 +124,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
         </Button>
         <button
           onClick={handleDismiss}
-          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-muted/60 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
           aria-label="Dismiss"
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

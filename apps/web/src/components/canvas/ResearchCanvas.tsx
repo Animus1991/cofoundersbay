@@ -355,7 +355,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
                 <a
                   href={node.url}
                   download={node.title}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
                   title="Download"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
               )}
               <button
                 onClick={onClose}
-                className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -411,16 +411,16 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
             <div className="flex flex-col items-center min-h-full p-4 gap-3">
               <div className="flex items-center gap-2">
                 <button onClick={() => setImgZoom(z => Math.max(0.2, z - 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomOut className="w-3.5 h-3.5" />
                 </button>
                 <span className="text-xs text-muted-foreground min-w-[44px] text-center">{Math.round(imgZoom * 100)}%</span>
                 <button onClick={() => setImgZoom(z => Math.min(4, z + 0.15))}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
                 <button onClick={() => setImgZoom(1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
+                  className="w-7 h-7 flex items-center justify-center rounded bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors">
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -1063,7 +1063,7 @@ export default function ResearchCanvas() {
           <button
             onClick={undo}
             disabled={historyIndex <= 0}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Undo (Ctrl+Z)"
           >
             <Undo2 className="w-3.5 h-3.5" />
@@ -1071,7 +1071,7 @@ export default function ResearchCanvas() {
           <button
             onClick={redo}
             disabled={historyIndex >= history.length - 1}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             title="Redo (Ctrl+Y)"
           >
             <Redo2 className="w-3.5 h-3.5" />
@@ -1081,7 +1081,7 @@ export default function ResearchCanvas() {
 
           <button
             onClick={() => handleZoom(-ZOOM_STEP)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom out"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -1091,14 +1091,14 @@ export default function ResearchCanvas() {
           </span>
           <button
             onClick={() => handleZoom(ZOOM_STEP)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Zoom in"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => { setZoom(1); setPanX(0); setPanY(0); }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Reset view"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -1109,7 +1109,7 @@ export default function ResearchCanvas() {
           <button
             onClick={() => setShowGrid(!showGrid)}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
+              "w-8 h-8 flex items-center justify-center rounded-md transition-colors",
               showGrid ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle grid"
@@ -1119,7 +1119,7 @@ export default function ResearchCanvas() {
           <button
             onClick={() => setShowMinimap(!showMinimap)}
             className={cn(
-              "w-8 h-8 flex items-center justify-center rounded-lg transition-colors",
+              "w-8 h-8 flex items-center justify-center rounded-md transition-colors",
               showMinimap ? "bg-primary/10 text-primary-emphasis" : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
             )}
             title="Toggle minimap"
@@ -1146,14 +1146,14 @@ export default function ResearchCanvas() {
 
           <button
             onClick={exportCanvas}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Export canvas"
           >
             <Download className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={importCanvas}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Import canvas"
           >
             <FileOutput className="w-3.5 h-3.5" />
@@ -1161,7 +1161,7 @@ export default function ResearchCanvas() {
 
           <button
             onClick={() => setShowShortcuts(true)}
-            className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md bg-secondary hover:bg-secondary/80 text-muted-foreground transition-colors"
             title="Keyboard shortcuts"
           >
             <Keyboard className="w-3.5 h-3.5" />
@@ -1448,7 +1448,7 @@ export default function ResearchCanvas() {
                 <button
                   onClick={() => setShowShortcuts(false)}
                   aria-label="Close keyboard shortcuts"
-                  className="focus-ring w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors"
+                  className="focus-ring w-8 h-8 flex items-center justify-center rounded-md hover:bg-secondary transition-colors"
                 >
                   <X className="icon-sm" aria-hidden="true" />
                 </button>

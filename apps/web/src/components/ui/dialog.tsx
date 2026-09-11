@@ -34,7 +34,7 @@ const dialogContentVariants = cva(
     // A dialog can never exceed the viewport — it scrolls internally instead.
     // `dvh` keeps this correct while mobile browser chrome collapses.
     'max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain',
-    'rounded-xl border border-border/60 bg-card p-6 text-card-foreground shadow-modal',
+    'rounded-2xl border border-border/60 bg-card p-6 text-card-foreground shadow-modal',
     'duration-150 focus:outline-none',
     'data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
     'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',

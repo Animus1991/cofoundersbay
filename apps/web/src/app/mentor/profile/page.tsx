@@ -130,9 +130,9 @@ export default function MentorProfilePage() {
         <Card className="border-primary/20 bg-primary/2">
           <CardContent className="p-5">
             <div className="flex items-start gap-4">
-              <Avatar className="h-12 w-12 rounded-xl ring-2 ring-primary/30">
+              <Avatar className="h-12 w-12 rounded-lg ring-2 ring-primary/30">
                 <AvatarImage src={avatarUrl ?? undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-xl">
+                <AvatarFallback className="bg-primary/10 text-primary-emphasis text-sm font-bold rounded-lg">
                   {displayName[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>

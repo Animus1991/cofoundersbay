@@ -189,7 +189,7 @@ export default function AISettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
                   <Bot className="icon-md text-white" aria-hidden="true" />
                 </div>
                 AI Assistant Settings
@@ -524,7 +524,7 @@ export default function AISettingsPage() {
                     key={agent.id}
                     className="flex items-start gap-3 rounded-lg border border-border/60 p-3 bg-card"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-violet-500/20 to-purple-500/20">
                       <Bot className="icon-sm text-violet-600 dark:text-violet-400" aria-hidden="true" />
                     </div>
                     <div className="min-w-0">

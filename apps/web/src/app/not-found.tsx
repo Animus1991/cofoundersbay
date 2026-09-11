@@ -61,7 +61,7 @@ export default function NotFound() {
                   href={href}
                   className="focus-ring flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-secondary/40"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-emphasis">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary-emphasis">
                     <Icon className="icon-sm" aria-hidden="true" />
                   </span>
                   <span className="min-w-0">

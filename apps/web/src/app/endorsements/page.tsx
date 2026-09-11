@@ -138,9 +138,9 @@ function EndorsementCard({
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
             <Link href={`/p/${user.id}`}>
-              <Avatar className="h-11 w-11 rounded-xl">
+              <Avatar className="h-11 w-11 rounded-lg">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="rounded-xl bg-primary/10 text-primary-emphasis font-semibold">{initials}</AvatarFallback>
+                <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis font-semibold">{initials}</AvatarFallback>
               </Avatar>
             </Link>
             <div>
@@ -256,8 +256,8 @@ function RequestPanel() {
           {filtered.map(c => (
             <div key={c.id} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-primary/10 text-primary-emphasis text-xs font-bold">{c.name[0]}</AvatarFallback>
+                <Avatar className="h-7 w-7 rounded">
+                  <AvatarFallback className="rounded bg-primary/10 text-primary-emphasis text-xs font-bold">{c.name[0]}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-xs font-medium">{c.name}</p>
