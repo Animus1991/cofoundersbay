@@ -160,6 +160,18 @@ const config: Config = {
         // 11px step — the documented home for the 548 arbitrary `text-[10px]` /
         // `text-[11px]` values scattered through the app.
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+
+        // The top of the scale, pulled in 2.5%. Tailwind's defaults run
+        // 30/36/48/60/72px against a 14px body — 2.14x up to 5.14x — which
+        // reads as a gap rather than a progression next to the 11-16px steps
+        // that carry 96% of the product's text. Line heights move by the same
+        // factor so the leading ratio is unchanged; 5xl and up already use a
+        // unitless 1 and scale themselves. Nothing below 30px is touched.
+        '3xl': ['1.828rem', { lineHeight: '2.194rem' }],  // 30   -> 29.25px
+        '4xl': ['2.194rem', { lineHeight: '2.438rem' }],  // 36   -> 35.1px
+        '5xl': ['2.925rem', { lineHeight: '1' }],         // 48   -> 46.8px
+        '6xl': ['3.656rem', { lineHeight: '1' }],         // 60   -> 58.5px
+        '7xl': ['4.388rem', { lineHeight: '1' }],         // 72   -> 70.2px
       },
       screens: {
         // Tall-and-narrow breakpoint used by the split-pane layouts.

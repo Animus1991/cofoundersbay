@@ -227,3 +227,27 @@ test('no laid-out element occludes another', async ({ page }) => {
     expect(hits, `occluded content on ${path}`).toEqual([]);
   }
 });
+
+/**
+ * WCAG 1.4.3 over the design tokens, for every theme.
+ *
+ * The app ships thirteen theme contexts — light, dark, system, alliance,
+ * cofounder, and four role palettes that are each applied *alongside* light or
+ * dark. axe only ever sees the one the page is currently rendering, so a token
+ * pair that fails under `[data-theme="alliance"]`, or under `role-mentor` on a
+ * light ground, is invisible to the browser suite. This runs the static check
+ * that reads globals.css directly.
+ */
+test('every theme clears WCAG AA on its token pairs', async () => {
+  const { execFileSync } = await import('node:child_process');
+  let out = '';
+  try {
+    out = execFileSync('python3', ['scripts/check-theme-contrast.py'], { encoding: 'utf8' });
+  } catch (e) {
+    const err = e as { stdout?: string };
+    out = err.stdout ?? String(e);
+    const failing = out.split('\n').filter((l) => /^\s{2}\S.*\d\.\d{2}\s+#/.test(l));
+    throw new Error('theme contrast failures:\n' + failing.join('\n'));
+  }
+  expect(out).toContain('TOTAL FAILURES BELOW 4.5:1 -> 0');
+});

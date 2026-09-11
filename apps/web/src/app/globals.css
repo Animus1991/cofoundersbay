@@ -56,7 +56,7 @@
     --accent:           236 72% 55%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive:      0 84% 60%;   /* surface — white on it: 3.78 (large text / icons) */
+    --destructive:      0 84% 49%;   /* surface — white on it: 4.70 (60% gave 3.78) */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 84% 45%; /* text on a light surface — 5.43 on white */
 
@@ -125,7 +125,7 @@
     --muted: 218 18% 16%;
     --muted-foreground: 215 20% 65%; /* Balanced contrast for dark mode */
     --accent: 292 84% 66%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 292 60% 20%;  /* on #de5ff1: 4.65 (white was 2.99) */
     --destructive: 0 62% 46%;          /* surface */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 62% 66%; /* text on a dark surface — 5.58 on card, 5.10 on a destructive/15 tint (46% gave 2.95, a fail) */
@@ -151,10 +151,10 @@
     --muted: 215 20% 26%;
     --muted-foreground: 215 16% 70%;
     --accent: 199 89% 48%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 199 60% 16%;  /* on #0da2e7: 4.75 (white was 2.85) */
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-emphasis: 0 70% 68%;
+    --destructive-emphasis: 0 70% 70%;  /* 4.64 on this theme's card (68% gave 4.33) */
     --border: 215 20% 30%;
     --input: 215 20% 30%;
     --ring: 199 89% 48%;
@@ -179,10 +179,10 @@
     --secondary: 200 15% 88%;
     --secondary-foreground: 220 100% 3%;
     --muted: 180 25% 94%;
-    --muted-foreground: 210 5% 46%;
+    --muted-foreground: 210 5% 43%;    /* 4.62 on muted, 4.77 on page (46% gave 4.14) */
     --accent: 34 100% 52%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --accent-foreground: 34 60% 21%;   /* on #ff950a: 4.76 (white was 2.20) */
+    --destructive: 0 84% 49%;          /* white on it: 4.70 (60% gave 3.78) */
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 84% 45%;
     --border: 200 15% 88%;
@@ -208,7 +208,7 @@
     --muted: 240 6% 15%;
     --muted-foreground: 240 5% 65%;
     --accent: 280 100% 70%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 280 60% 21%;  /* on #cc66ff: 4.72 (white was 3.04) */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --destructive-emphasis: 0 72% 70%;
@@ -222,35 +222,44 @@
   .role-founder {
     --primary: 235 88% 64%;
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 235 88% 78%;
+    --primary-emphasis: 235 88% 63%;  /* light ground — 5.08 on card, 4.63 on page */
     --accent: 292 84% 66%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 292 60% 20%;  /* on #de5ff1: 4.65 (white was 2.99) */
   }
 
   .role-mentor {
     --primary: 200 84% 38%;            /* white on it: 4.55 */
     --primary-foreground: 0 0% 100%;
-    --primary-emphasis: 200 84% 66%;
+    --primary-emphasis: 200 84% 36%;  /* light ground — 5.05 on card, 4.60 on page */
     --accent: 180 72% 52%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 180 60% 22%;  /* on #2cdddd: 4.73 (white was 1.68) */
   }
 
   .role-investor {
     /* Amber, like the alliance orange, cannot carry white text on brand. */
     --primary: 32 92% 60%;
     --primary-foreground: 25 60% 12%;
-    --primary-emphasis: 32 92% 72%;
+    --primary-emphasis: 32 92% 33%;  /* light ground — 5.29 on card, 4.82 on page */
     --accent: 14 82% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 14 60% 12%;   /* on #ea562a: 4.73 (white was 3.58) */
   }
 
   .role-org {
     --primary: 268 84% 58%;            /* white on it: 5.06 */
-    --primary-emphasis: 268 84% 76%;
+    --primary-emphasis: 268 84% 59%;  /* light ground — 5.08 on card, 4.63 on page */
     --primary-foreground: 0 0% 100%;
     --accent: 248 70% 60%;
     --accent-foreground: 0 0% 100%;
   }
+
+  /* The role palettes are applied *alongside* `light` or `dark`, so the
+     emphasis tint has to exist for both grounds. The role block above
+     carries the light value; these restore the dark-tuned one, and win on
+     specificity (0,2,0) over the single class. */
+  .dark.role-founder { --primary-emphasis: 235 88% 78%; }
+  .dark.role-mentor { --primary-emphasis: 200 84% 66%; }
+  .dark.role-investor { --primary-emphasis: 32 92% 72%; }
+  .dark.role-org { --primary-emphasis: 268 84% 76%; }
 
   * {
     @apply border-border;

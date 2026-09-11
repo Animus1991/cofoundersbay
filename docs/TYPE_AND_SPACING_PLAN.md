@@ -202,3 +202,101 @@ ever sees.
 - Reading comfort is asserted through measurable proxies — size, leading,
   measure, target size, occlusion. Whether a screen *feels* right at a glance
   is not something this method claims to have tested.
+
+---
+
+# Addendum — theme contrast and the top of the scale
+
+Fifth round. Two things the earlier rounds did not reach: contrast across
+*every* theme rather than the one a page happens to render, and the proportion
+between the largest type steps and the small ones that carry the product.
+
+## Thirteen theme contexts, not two
+
+The app ships nine theme blocks — `:root`, `.dark`, `system`, `alliance`,
+`cofounder`, and four role palettes. The role palettes are the ones that make
+this hard: `RoleTheme` reads `localStorage.user.role` and adds `role-founder`
+(or mentor / investor / org) **alongside** `light` or `dark`, so each one has to
+work on two grounds. That is 13 real combinations.
+
+axe can only judge the theme in front of it, so a pair that fails under
+`[data-theme="alliance"]`, or under `role-mentor` on a light ground, never
+appears in the browser suite. `scripts/check-theme-contrast.py` reads
+`globals.css` directly, composes each role against both grounds, and checks
+every semantic pair. It runs in the e2e suite.
+
+### What it found
+
+| Context | Pair | Ratio | |
+|---|---|--:|---|
+| `.role-mentor` + light | primary link on card | **1.68** | white-ish cyan on white |
+| `.role-investor` + light | primary link on card | 1.68 | |
+| `alliance` | label on accent fill | **2.20** | white on `#ff950a` |
+| `.role-founder` + light | primary link on card | 2.46 | |
+| `.role-org` + light | primary link on card | 2.50 | |
+| `system` | label on accent fill | 2.85 | white on `#0da2e7` |
+| `.dark` | label on accent fill | 2.99 | white on `#de5ff1` |
+| `cofounder` | label on accent fill | 3.04 | white on `#cc66ff` |
+| `.role-mentor` | label on accent fill | 1.68 | white on `#2cdddd` |
+| `:root`, `alliance` | label on destructive button | 3.78 | white on `#ef4343` |
+| `alliance` | muted text on muted fill | 4.14 | |
+| `system` | error text on card | 4.33 | |
+
+Two distinct causes:
+
+**`--accent-foreground` was white in every theme** while `--accent` is a
+saturated mid-tone in all but the light one. `SelectItem` uses
+`focus:bg-accent focus:text-accent-foreground`, so this is reachable on every
+select in the product — and on the rich-text toolbar's active state. Each theme
+now carries an ink in its own accent hue at 60% saturation, solved for ≥4.6:1.
+
+**The role palettes were tuned for a dark ground only.** `--primary-emphasis`
+is a light tint in all four, which is right on `.dark` and unreadable on white.
+The role block now carries the light value and `.dark.role-*` restores the dark
+one, winning on specificity.
+
+`--destructive` was inherited from shadcn's default `0 84% 60%`, which gives
+its own white label 3.78:1. Hue and saturation are untouched; only lightness
+moves to 49%, the smallest change that clears the threshold.
+
+**13 contexts × 13 pairs, 0 failures.**
+
+## The top of the type scale, in by 2.5%
+
+Tailwind's defaults run 30 / 36 / 48 / 60 / 72px against a 14px body — 2.14×
+up to 5.14× — while 96% of the product's text sits between 11 and 16px. The top
+steps read as a jump rather than a progression.
+
+| step | was | now | ratio to body |
+|---|--:|--:|--:|
+| `3xl` | 30px | **29.25px** | 2.14× → 2.09× |
+| `4xl` | 36px | **35.1px** | 2.57× → 2.51× |
+| `5xl` | 48px | **46.8px** | 3.43× → 3.34× |
+| `6xl` | 60px | **58.5px** | 4.29× → 4.18× |
+| `7xl` | 72px | **70.2px** | 5.14× → 5.01× |
+
+Line heights move by the same factor so the leading ratio is unchanged; `5xl`
+and up already use a unitless `1`. Nothing below 30px is touched.
+
+### Why the component scale was left alone
+
+The same 2–3% was considered for components and declined on measurement. The
+icon scale is 12 / 14 / 16 / 20 / 24 / 32px and the box sizes are Tailwind's
+4px grid — `w-32` is 128px, used 126 times. Taking 2.5% off gives 31.2px icons
+and 124.8px boxes: off-grid, sub-pixel, and imperceptible. Text renders at
+sub-pixel precision and takes fractional rem cleanly; a 4px layout grid does
+not. The proportion complaint is real for type, where the range is 6.5×, and
+not for icons, where it is 2.7×.
+
+## Functionality
+
+Nothing in this round touches component logic. `onClick`, `onSubmit`, `href`,
+`<Button>`, `<Dialog>` and `export` counts are all identical before and after;
+the only source file changed is `globals.css`, and only token values within it.
+The standing evidence is in `FUNCTIONALITY_PRESERVATION_AUDIT.md`.
+
+## Gates
+
+147/147 routes render under a partial-payload API · 0 overflow · 0 unreachable
+clipped content · 0 WCAG 2.5.8 failures · 0 occlusions · 0 phone controls under
+16px · **0 theme contrast failures across 13 contexts** · axe 72/72.
