@@ -101,7 +101,7 @@ export function SideNav() {
           'transition-[width] duration-200 ease-out will-change-[width]',
           'hidden lg:flex',
           'max-lg:pointer-events-none max-lg:invisible',
-          expanded ? 'w-[240px]' : 'w-[68px]',
+          expanded ? 'w-[15rem]' : 'w-[4.25rem]',
         )}
         aria-label={bilingualAria(commonEn('main_navigation'), commonEl('main_navigation'))}
       >

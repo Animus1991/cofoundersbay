@@ -1210,7 +1210,7 @@ export default function ResearchBoardPage() {
       <div
         className={cn(
           'h-[100dvh] flex flex-col overflow-hidden transition-[margin-left] duration-200 ease-out',
-          expanded ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          expanded ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
         )}
       >
         <TopBar />

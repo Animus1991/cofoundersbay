@@ -76,7 +76,7 @@ export function AppShell({
           'flex min-w-0 flex-col',
           fullHeight ? 'h-[100dvh] overflow-hidden' : 'min-h-[100dvh]',
           'transition-[margin-left] duration-200 ease-out',
-          (mounted ? expanded : true) ? 'lg:ml-[240px]' : 'lg:ml-[68px]',
+          (mounted ? expanded : true) ? 'lg:ml-[15rem]' : 'lg:ml-[4.25rem]',
         )}
       >
         <MemoTopBar />
