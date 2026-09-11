@@ -70,7 +70,18 @@ html {
     --destructive-accessible: 0 84% 46%;
 
     /* Borders: subtle, consistent */
-    --border:           220 13% 90%;
+    /* Measured against this theme's own --card: every theme sat between 1.27
+       and 1.41:1, and the codebase reaches for `border-border/60` constantly,
+       which dropped those to 1.10-1.23:1 -- a hairline most displays cannot
+       resolve, which is why cards had taken to stacking a border, a fill and a
+       shadow to make one edge read. Each theme now clears 1.45:1 on its card
+       (GitHub Primer's level: a boundary, not an outline), so the /60 and /40
+       variants become a real hierarchy instead of four values crowded into the
+       invisible band. Borders are decorative under WCAG unless they are a
+       control's only boundary, and that case is carried by --input, held at
+       3:1 for SC 1.4.11 separately. Values from origin/claude 1501b70,
+       re-derived here. */
+    --border:           220 13% 85%;   /* 1.44 on card */
     --input:            0 0% 100%;
     --ring:             236 72% 55%;
     /* Base radius. All Tailwind rounded-* steps derive from this (tailwind.config.ts):
@@ -140,7 +151,7 @@ html {
     --destructive: 0 62% 46%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 0 62% 61%; /* text-on-dark variant — 46% measures ~2.9:1 as inline text (axe-core) */
-    --border: 220 18% 20%;
+    --border: 220 18% 23%;             /* 1.44 on card, 1.58 on page */
     --input: 220 18% 20%;
     --ring: 235 88% 66%;
   }
@@ -165,7 +176,7 @@ html {
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 0 70% 70%; /* text-on-dark — 69% was 4.48 on this theme's card */
-    --border: 215 20% 30%;
+    --border: 215 20% 31%;             /* 1.47 on card, 1.69 on page */
     --input: 215 20% 30%;
     --ring: 199 89% 36%;
     --gradient-hero: linear-gradient(135deg, hsl(215 28% 12%) 0%, hsl(215 28% 18%) 50%, hsl(199 60% 22%) 100%);
@@ -193,7 +204,7 @@ html {
     --destructive: 0 84% 49%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 0 84% 46%; /* text-on-light variant, darkened like light theme above */
-    --border: 200 15% 88%;
+    --border: 200 15% 84%;             /* 1.44 on card, 1.33 on page */
     --input: 200 15% 88%;
     --ring: 34 100% 52%;
     --gradient-hero: linear-gradient(135deg, hsl(200 20% 12%) 0%, hsl(210 18% 18%) 50%, hsl(34 60% 28%) 100%);
@@ -219,7 +230,7 @@ html {
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 0 72% 58%; /* text-on-dark variant, same pattern as .dark above */
-    --border: 240 6% 18%;
+    --border: 240 6% 21%;              /* 1.47 on card, 1.57 on page */
     --input: 240 6% 18%;
     --ring: 262 83% 58%;
     --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
@@ -254,11 +265,16 @@ html {
     --destructive-foreground: 0 0% 100%;
     --destructive-accessible: 6 60% 36%; /* 7.83 on card */
 
-    --border:            36 12% 88%;
+    --border:            36 12% 83%;   /* 1.47 on card, 1.41 on page */
     --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
     --ring:              190 48% 32%;   /* 5.75 on page */
 
-    --radius: 0.5rem;
+    /* 8px, not 0.5rem: the desktop root is 82%, which silently shrank this
+       theme's radius to 6.56px and every calc() step with it (cards at
+       10.6px instead of 16). The whole ladder is px so a corner is the same
+       curve at every viewport; this is the same 8px 0.5rem meant at the
+       default root. */
+    --radius: 8px;
     color-scheme: light;
   }
 

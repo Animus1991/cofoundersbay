@@ -62,10 +62,27 @@ export function ChatBubble() {
         transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >
-      {/* Unread pill — states the count in words so the red badge below is
-          never the only carrier of the information. */}
+      {/* Unread pill — the count in words, on hover or keyboard focus.
+          It used to be permanent, and at 218px wide it sat opaquely on top of
+          whatever the page had in its bottom-right corner (measured on the
+          founder dashboard: it covered the Badges card's whole header row).
+          Nothing is lost by revealing it the same way the hide and drag
+          controls below are revealed: the red badge on the bubble carries the
+          number itself — a digit, not a colour, so WCAG 1.4.1 is satisfied
+          without this — and the button's aria-label and title both read
+          "Open messages (N unread messages)" at all times. */}
       {unreadMessages > 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 rounded-full border border-border/60 bg-card px-3 py-1 shadow-md">
+        <div
+          className={cn(
+            'max-w-[15rem] rounded-full border border-border/60 bg-card px-3 py-1 shadow-md',
+            // Never a click target: the pill is a label, and at opacity-0 an
+            // interactive-looking box would still swallow clicks meant for the
+            // page content underneath it.
+            'pointer-events-none transition-opacity duration-150',
+            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+            isDragging && 'opacity-100',
+          )}
+        >
           <span className="text-xs font-medium text-foreground">
             <BilingualText en={unreadEn} el={unreadEl} compact />
           </span>
