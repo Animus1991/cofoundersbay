@@ -5,7 +5,7 @@ Adopted from origin/claude/project-audit-upgrade-y2ebnr (2e5b104) and pointed
 at this line's token names: --primary-accessible / --destructive-accessible
 instead of --primary-emphasis / --destructive-emphasis.
 
-The app ships light, dark, system, alliance, cofounder and four role palettes.
+The app ships light, dark, system, alliance, cofounder, minimal and four role palettes.
 Role classes apply *alongside* light or dark. axe sees only one combination at
 a time; this reads globals.css and checks every pair in every composed context.
 

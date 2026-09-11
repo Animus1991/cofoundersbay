@@ -1,6 +1,6 @@
 'use client';
 
-import { Moon, Sun, Monitor } from 'lucide-react';
+import { Moon, Sun, Monitor, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,10 +13,11 @@ import { useTheme } from '@/components/layout/RoleTheme';
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  const icons = {
+  const icons: Partial<Record<typeof theme, typeof Sun>> = {
     light: Sun,
     dark: Moon,
     system: Monitor,
+    minimal: Minus,
   };
 
   const CurrentIcon = icons[theme] || Moon;
@@ -41,6 +42,10 @@ export function ThemeToggle() {
         <DropdownMenuItem onClick={() => setTheme('system')} className="gap-2">
           <Monitor className="icon-sm" />
           System
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme('minimal')} className="gap-2">
+          <Minus className="icon-sm" />
+          Minimal
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

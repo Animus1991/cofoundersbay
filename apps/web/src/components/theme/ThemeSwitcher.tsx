@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Monitor, Palette, Sparkles, Check } from 'lucide-react';
+import { Moon, Sun, Monitor, Palette, Sparkles, Check, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -52,6 +52,13 @@ const themeConfig = [
     description: 'Modern & vibrant',
     icon: Sparkles,
     swatch: ['#0a0a14', '#9333ea', '#00ccff'],
+  },
+  {
+    name: 'minimal' as ThemeName,
+    label: 'Minimal',
+    description: 'Warm paper, quiet chrome',
+    icon: Minus,
+    swatch: ['#faf8f5', '#237a86', '#e8e4dc'],
   },
 ];
 

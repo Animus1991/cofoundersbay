@@ -225,6 +225,43 @@ html {
     --gradient-hero: linear-gradient(135deg, hsl(240 10% 3%) 0%, hsl(240 10% 7%) 50%, hsl(262 50% 15%) 100%);
   }
 
+  /* ── "minimal" ────────────────────────────────────────────────────────────
+     Light-first, near-monochrome on warm paper, one teal-ink accent.
+     Scoped to [data-theme="minimal"] so alliance/cofounder/system are untouched.
+     Token names on this line: --primary-accessible / --destructive-accessible
+     (Claude 803ddb2 used --primary-emphasis / --destructive-emphasis). ──── */
+  [data-theme="minimal"] {
+    --background:        40 20% 98%;
+    --foreground:        30 8% 12%;
+    --card:              0 0% 100%;
+    --card-foreground:   30 8% 12%;
+    --popover:           0 0% 100%;
+    --popover-foreground: 30 8% 12%;
+
+    --primary:           190 48% 26%;   /* white on it: 8.00 */
+    --primary-foreground: 0 0% 100%;
+    --primary-accessible:  190 48% 24%; /* link text — 8.82 on card */
+
+    --secondary:         40 14% 94%;
+    --secondary-foreground: 30 8% 16%;
+    --muted:             40 14% 95%;
+    --muted-foreground:  30 6% 38%;     /* 5.51 on muted, 6.12 on card */
+
+    --accent:            40 16% 93%;
+    --accent-foreground: 30 8% 12%;     /* 14.24 — a tint, not a brand fill */
+
+    --destructive:       6 60% 42%;     /* white on it: 6.30 */
+    --destructive-foreground: 0 0% 100%;
+    --destructive-accessible: 6 60% 36%; /* 7.83 on card */
+
+    --border:            36 12% 88%;
+    --input:             36 10% 55%;    /* 3.21 on card — a visible field edge */
+    --ring:              190 48% 32%;   /* 5.75 on page */
+
+    --radius: 0.5rem;
+    color-scheme: light;
+  }
+
   .role-founder {
     --primary: 235 88% 62%;
     --primary-foreground: 0 0% 100%;
@@ -256,7 +293,8 @@ html {
   /* ── Semantic status colors (theme-aware — replaces hardcoded text-emerald-600 etc.)
      Light surfaces: :root + alliance. Dark surfaces: .dark + cofounder + system. ── */
   :root,
-  [data-theme="alliance"] {
+  [data-theme="alliance"],
+  [data-theme="minimal"] {
     --status-success-fg:     142 64% 30%;
     --status-success-bg:     142 55% 94%;
     --status-success-border: 142 45% 78%;
@@ -1003,4 +1041,118 @@ html {
     overscroll-behavior-x: contain;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   "minimal" — component layer (Claude 803ddb2)
+
+   Everything here is scoped to [data-theme="minimal"]. No other theme sees a
+   single one of these rules, and nothing is removed. Token name on this line
+   is --primary-accessible (not Claude's --primary-emphasis).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="minimal"] {
+  /* ── 1. One elevation ────────────────────────────────────────────────── */
+  .shadow-sm,
+  .shadow,
+  .shadow-md,
+  .shadow-lg,
+  .hover\:shadow-md:hover,
+  .hover\:shadow-lg:hover {
+    box-shadow: none;
+  }
+
+  /* …except the things that genuinely float. */
+  [role='dialog'],
+  [data-radix-popper-content-wrapper] > * {
+    box-shadow: 0 1px 2px hsl(30 8% 12% / 0.04), 0 12px 32px -8px hsl(30 8% 12% / 0.12);
+  }
+
+  /* ── 2. The page title is not a box ──────────────────────────────────── */
+  #main-content > div > section:first-child,
+  #main-content > section:first-child {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid hsl(var(--border));
+    border-radius: 0;
+    box-shadow: none;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 1rem;
+  }
+
+  /* ── 3. One filled button per view ───────────────────────────────────── */
+  .bg-secondary:not(.bg-secondary\/40):not(.bg-secondary\/60) {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px hsl(var(--border));
+  }
+
+  /* ── 4. Badges outline, not filled ───────────────────────────────────── */
+  [class*='rounded-full'][class*='bg-primary'],
+  [class*='rounded-full'][class*='bg-secondary'],
+  [class*='rounded-md'][class*='bg-primary\/'],
+  [class*='bg-primary\/10'],
+  [class*='bg-primary\/15'],
+  [class*='bg-primary\/20'] {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.35);
+    color: hsl(var(--primary-accessible));
+  }
+
+  /* ── 5. Focus you cannot miss ────────────────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* ── 6. Fewer weights ────────────────────────────────────────────────── */
+  .font-bold,
+  .font-extrabold,
+  .font-black {
+    font-weight: 600;
+  }
+
+  /* ── 7. Calm by default ──────────────────────────────────────────────── */
+  .bg-gradient-to-r,
+  .bg-gradient-to-l,
+  .bg-gradient-to-b,
+  .bg-gradient-to-t,
+  .bg-gradient-to-br,
+  .bg-gradient-to-bl,
+  .bg-gradient-to-tr,
+  .bg-gradient-to-tl {
+    background-image: none;
+  }
+
+  .hover-lift:hover,
+  .card-interactive:hover {
+    transform: none;
+  }
+
+  .animate-bounce-subtle,
+  .animate-pulse-slow,
+  .animate-spin-slow,
+  .animate-scale-in,
+  .animate-fade-in-up {
+    animation: none;
+  }
+
+  /* ── Chrome recedes ──────────────────────────────────────────────────── */
+  aside[aria-label='Main navigation'],
+  header.sticky {
+    background: hsl(var(--background));
+    backdrop-filter: none;
+  }
+
+  /* ── Room to breathe ─────────────────────────────────────────────────── */
+  .card-comfortable {
+    padding: 1.75rem;
+  }
+
+  #main-content {
+    padding-top: 1.5rem;
+  }
+}
+
 
