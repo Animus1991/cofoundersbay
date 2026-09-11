@@ -300,4 +300,16 @@ Claude `803ddb2`: έκτο theme **Minimal** (warm paper, ένα teal accent, co
 
 Υιοθετήθηκαν: tokens + component layer (με `--primary-accessible` / `--destructive-accessible` αντί για `--primary-emphasis`), `ThemeSwitcher` + `RoleTheme` + `ThemeToggle`, πλάτος Invite/Data Export. **Δεν** αντιγράφηκε το `removeAttribute('data-theme')` για κάθε άλλο theme — θα έσβηνε alliance/cofounder. Δεν αντιγράφηκε το `TYPE_AND_SPACING_PLAN.md` του Claude (μετράει το δικό τους fork). Prose pages (`/terms`, `/privacy`, `/pricing`) μένουν με measure cap.
 
+### 13.5 Έλεγχος 2026-09-11 (βράδυ)
+
+`git fetch origin --prune`. **Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `6e1fae9` — fast-forward 3 commits πάνω στο δικό μας `adf7193` (0 unique εδώ). Claude `1501b70` (corners/borders). Full merge Claude ακόμα ~336 conflicts.
+
+Τραβήχτηκαν με `git merge --ff-only origin/integration/ai-platform-upgrade` (καμία παράλειψη από τη γραμμή προϊόντος):
+
+- `b3a7083` — guard `overall.score` στο match-detail (το παλιό `typeof overall !== 'number'` έσπαγε κάθε valid payload)· preview-api `/api/recommendations/vs/*` + streak· fundraising phone rows χωρίς clip· ask_ai_hint χωρίς truncate.
+- `40e75bc` — harvest του Claude `1501b70`: `--border` ~1.45:1 σε και τα 6 themes· `--radius: 8px` στο Minimal (όχι `0.5rem` που έγινε 6.56px στο 82%)· ChatBubble unread pill hover/focus, όχι μόνιμο overlay.
+- `6e1fae9` — tablet rail από `sm` (bottom nav `sm:hidden`)· `<Button asChild><Link>` αντί για nested interactive· overflow στα TopBar/stats/profile· BilingualText `secondaryFrom` + κυριολεκτικά class names ώστε το Tailwind να μην πετάει τα utilities.
+
+**Σκόπιμα όχι από Claude `1501b70`:** αντικατάσταση όλης της radius ladder (η δική μας είναι ήδη px από `--radius` στο `tailwind.config.ts`)· squircle `corner-shape` + 101 αρχεία rounded recode· `docs/CORNER_AND_BORDER_PLAN.md` και axe spec του April fork.
+
 
