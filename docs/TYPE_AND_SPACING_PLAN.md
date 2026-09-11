@@ -300,3 +300,82 @@ The standing evidence is in `FUNCTIONALITY_PRESERVATION_AUDIT.md`.
 147/147 routes render under a partial-payload API · 0 overflow · 0 unreachable
 clipped content · 0 WCAG 2.5.8 failures · 0 occlusions · 0 phone controls under
 16px · **0 theme contrast failures across 13 contexts** · axe 72/72.
+
+---
+
+# Addendum — the `minimal` theme
+
+A sixth theme, reachable from the header's theme menu and from `ThemeSwitcher`.
+Every rule is scoped to `[data-theme="minimal"]`, so the other twelve theme
+contexts see none of it and no functionality is touched — every control, route
+and affordance is still present. What changes is how much visual weight each
+one is allowed to spend.
+
+## Palette
+
+Light-first on warm paper, near-monochrome, one calm accent. Solved before it
+was written, then re-checked by `scripts/check-theme-contrast.py`:
+
+| pair | ratio |
+|---|--:|
+| body on page | 15.84 |
+| text on card | 16.49 |
+| label on primary | 8.00 |
+| label on accent | 14.24 |
+| muted on muted | 5.51 |
+| link on card | 8.82 |
+| error on card | 7.83 |
+| label on destructive | 6.30 |
+
+`--accent` is deliberately a warm tint rather than a brand colour. That single
+choice removes the failure mode that produced eight of the thirteen contrast
+bugs in the other themes: a saturated accent fill with a white label.
+
+`--input` is `36 10% 55%` — darker than the decorative `--border` — so a field
+edge clears the 3:1 that WCAG 1.4.11 asks of a control boundary. A hairline you
+cannot see is not minimal, it is missing.
+
+## The seven decisions
+
+1. **One elevation.** The product stacks border + shadow + fill on nearly every
+   block; when everything is a card, nothing is. A card here is white on warm
+   paper with a hairline, and shadow is kept for things that genuinely float —
+   dialogs, popovers, dropdowns.
+2. **The page title is not a box.** `PageHeader` renders as a bordered, shadowed
+   card on every page, so each page opens with a container around its own name.
+   It becomes a plain heading block with a rule under it.
+3. **One filled button per view.** A filled control means "this is the thing to
+   do". Secondary and outline variants go quiet so the primary reads first.
+4. **Badges outline, not filled.** Dozens of saturated pills is the loudest
+   thing in the current UI. They keep their colour as a thin border and coloured
+   text, which still encodes state at a glance.
+5. **Focus you cannot miss.** 2px ring in the accent at 2px offset, on
+   everything focusable. The one place this theme spends contrast freely.
+6. **Fewer weights.** 700 and 800 collapse to 600. Hierarchy comes from size,
+   space and colour rather than heaviness.
+7. **Calm by default.** Decorative gradients, lift-on-hover and bounce/pulse
+   animations stand down; transitions that communicate state are kept.
+
+Chrome recedes — sidebar and top bar drop their fills and blur for a flat
+ground with hairline separators — and `card-comfortable` grows to 1.75rem
+because minimal means uncrowded, not cramped.
+
+## What this theme does not do
+
+It is a CSS layer. It cannot rewrite copy, reorder a page's sections, or split
+a dense form into steps — the three things that would do most for
+self-explanatoriness. Those are component changes, and they would land in every
+theme, which is exactly what was asked not to happen. If the direction here is
+right, the next step is to promote individual decisions out of the theme and
+into the components, one at a time, with the other themes re-checked each time.
+
+## Page width
+
+`/settings/data-export` capped its own content at `max-w-2xl` (672px) and
+`/invite` at `max-w-4xl` (896px), while `#main-content` already centres and
+caps at `max-w-screen-2xl` inside the sidebar offset. Both now use the full
+content column — measured 1148px at 1440px wide, with no overlap of the nav.
+
+The prose pages (`/terms`, `/privacy`, `/pricing`) keep their caps: a measure
+limit is correct typography there, and no line in the product exceeds 95
+characters.

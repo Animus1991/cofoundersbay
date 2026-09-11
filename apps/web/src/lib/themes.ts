@@ -1,4 +1,4 @@
-export type ThemeName = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder';
+export type ThemeName = 'dark' | 'light' | 'system' | 'alliance' | 'cofounder' | 'minimal';
 
 export interface ThemeColors {
   background: string;
@@ -131,6 +131,27 @@ export const themes: Record<ThemeName, ThemeColors> = {
     input: '240 6% 15%',
     ring: '262 83% 58%',
   },
+  minimal: {
+    background: '40 20% 98%',
+    foreground: '30 8% 12%',
+    card: '0 0% 100%',
+    cardForeground: '30 8% 12%',
+    popover: '0 0% 100%',
+    popoverForeground: '30 8% 12%',
+    primary: '190 48% 26%',
+    primaryForeground: '0 0% 100%',
+    secondary: '40 14% 94%',
+    secondaryForeground: '30 8% 16%',
+    muted: '40 14% 95%',
+    mutedForeground: '30 6% 38%',
+    accent: '40 16% 93%',
+    accentForeground: '30 8% 12%',
+    destructive: '6 60% 42%',
+    destructiveForeground: '0 0% 100%',
+    border: '36 12% 88%',
+    input: '36 10% 55%',
+    ring: '190 48% 32%',
+  },
 };
 
 export function applyTheme(themeName: ThemeName) {
@@ -166,6 +187,12 @@ export function applyTheme(themeName: ThemeName) {
     case 'cofounder':
       root.classList.add('dark');
       root.setAttribute('data-theme', 'cofounder');
+      break;
+    case 'minimal':
+      // Light-first: the `light` class supplies the base, and the data-theme
+      // attribute carries both the palette and the component layer.
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'minimal');
       break;
   }
 

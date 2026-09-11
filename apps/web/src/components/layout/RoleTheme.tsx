@@ -2,7 +2,7 @@
 
 import { useEffect, useState, createContext, useContext, useCallback } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light' | 'system' | 'minimal';
 type Role = 'founder' | 'mentor' | 'investor' | 'org' | null;
 
 const roleClasses = ['role-founder', 'role-mentor', 'role-investor', 'role-org'];
@@ -35,13 +35,21 @@ export function RoleTheme({ children }: { children?: React.ReactNode }) {
     if (typeof window === 'undefined') return;
     const root = document.documentElement;
     
-    // Handle dark/light mode
+    // Handle dark/light mode. `minimal` is a light-based palette plus its own
+    // component layer, both carried by the data-theme attribute; the attribute
+    // is cleared for every other theme so none of them inherit it.
     root.classList.remove('dark', 'light');
-    if (newTheme === 'system') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.add(systemDark ? 'dark' : 'light');
+    if (newTheme === 'minimal') {
+      root.classList.add('light');
+      root.setAttribute('data-theme', 'minimal');
     } else {
-      root.classList.add(newTheme);
+      root.removeAttribute('data-theme');
+      if (newTheme === 'system') {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.classList.add(systemDark ? 'dark' : 'light');
+      } else {
+        root.classList.add(newTheme);
+      }
     }
 
     // Handle role theme

@@ -259,7 +259,7 @@ export default function DataExportPage() {
 
   return (
     <AppShell title="Data Export" description="Download a copy of your data">
-      <div className="mx-auto max-w-2xl">
+      <div className="w-full">
         {/* Back link */}
         <Link
           href="/settings"
