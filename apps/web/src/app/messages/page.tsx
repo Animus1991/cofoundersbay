@@ -614,8 +614,11 @@ export default function MessagesPage() {
                   <span className="block text-xs font-semibold text-foreground">
                     <BilingualText en={messagesEn('ask_ai')} el={messagesEl('ask_ai')} compact />
                   </span>
-                  <span className="block truncate text-2xs text-muted-foreground">
-                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} compact />
+                  {/* line-clamp, not truncate: this hint is a sentence, and one
+                      line cut it by a third ("Draft a reply, summarise this thread,
+                      or s…"). Two lines still bound the button's height. */}
+                  <span className="block line-clamp-2 text-2xs text-muted-foreground">
+                    <BilingualText en={messagesEn('ask_ai_hint')} el={messagesEl('ask_ai_hint')} />
                   </span>
                 </span>
               </button>

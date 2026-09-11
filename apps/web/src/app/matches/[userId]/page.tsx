@@ -321,9 +321,20 @@ export default function MatchDetailPage() {
     );
   }
 
-  // The whole render below dereferences these unconditionally, so a 200
-  // with a partial body has to take the same path as an outright failure.
-  if (isError || typeof data?.overall !== 'number' || !data.sourceProfile || !data.targetProfile) {
+  // The whole render below dereferences these unconditionally, so a 200 with a
+  // partial body has to take the same path as an outright failure.
+  //
+  // Guard `overall.score`, not `overall`. `overall` is { score, confidence }
+  // (see MatchCompatibility in lib/api.ts), so an earlier `typeof data?.overall
+  // !== 'number'` was true for every well-formed response — it sent the page to
+  // "Could not load compatibility data." always, and narrowed `overall` to
+  // `never`, which is where the three type errors came from.
+  if (
+    isError ||
+    typeof data?.overall?.score !== 'number' ||
+    !data.sourceProfile ||
+    !data.targetProfile
+  ) {
     return (
       <AppShell>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">

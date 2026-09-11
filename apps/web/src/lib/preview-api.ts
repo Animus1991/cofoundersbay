@@ -664,6 +664,60 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     });
     return { hits, results: hits, total: hits.length };
   }
+  // The match detail page (/matches/[userId]) reads this one, and it has to come
+  // before the generic /api/recommendations branch below or it never matches.
+  // Without it the page fell through to the generic fallback, whose object has no
+  // `overall`, and every match rendered "Could not load compatibility data."
+  // Shape must match MatchVsResult in lib/api.ts.
+  if (/^\/api\/recommendations\/vs\//.test(pathname)) {
+    const targetId = pathname.split('/').pop() ?? '';
+    const target = PEOPLE.find((p) => p.userId === targetId) ?? PEOPLE[0];
+    const score = target.matchScore ?? 80;
+    return {
+      overall: { score, confidence: Math.min(99, score + 4) },
+      breakdown: [
+        { key: 'skills', label: 'Skills', score: Math.min(100, score + 5), color: 'hsl(var(--status-success-fg))' },
+        { key: 'stage', label: 'Stage', score: Math.max(0, score - 7), color: 'hsl(var(--status-info-fg))' },
+        { key: 'industry', label: 'Industry', score: Math.min(100, score + 2), color: 'hsl(var(--status-accent-fg))' },
+        { key: 'location', label: 'Location', score: Math.max(0, score - 18), color: 'hsl(var(--status-warning-fg))' },
+        { key: 'values', label: 'Values', score: Math.max(0, score - 3), color: 'hsl(var(--status-success-fg))' },
+      ],
+      badges: ['Complementary skills', 'Same stage'],
+      sharedStrengths: [
+        { icon: 'target', label: 'Both focused on early-stage traction' },
+        { icon: 'spark', label: 'Overlapping product instincts' },
+      ],
+      frictionPoints: [
+        {
+          icon: 'clock',
+          title: 'Different time zones',
+          description: 'Plan a fixed weekly overlap so decisions do not wait a day.',
+        },
+      ],
+      workStyle: {
+        axes: ['Pace', 'Structure', 'Risk', 'Detail', 'Autonomy'],
+        source: [78, 62, 70, 55, 80],
+        target: [70, 74, 58, 72, 66],
+      },
+      reasons: target.matchReasons ?? ['Complementary skills'],
+      sourceProfile: {
+        id: ME_ID,
+        role: 'founder',
+        displayName: 'Alex Demo',
+        headline: 'Founder — building CoFounderBay',
+        avatarUrl: undefined,
+        location: 'Athens, Greece',
+      },
+      targetProfile: {
+        id: target.userId,
+        role: target.role,
+        displayName: target.displayName,
+        headline: target.headline,
+        avatarUrl: target.avatarUrl ?? undefined,
+        location: target.location,
+      },
+    };
+  }
   if (pathname.startsWith('/api/recommendations') || pathname.startsWith('/api/matching/recommendations')) {
     return { suggestions: PEOPLE };
   }

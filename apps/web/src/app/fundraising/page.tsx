@@ -495,25 +495,36 @@ function InvestorListView({
         const colors = STATUS[INVESTOR_TONE[lead.status]];
         return (
           <Card key={lead.id} className="rounded-xl transition-colors hover:border-primary/20">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Avatar className="h-10 w-10 shrink-0 rounded-xl">
-                <AvatarFallback className="rounded-xl bg-primary/10 font-bold text-primary-accessible">{lead.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-semibold">{lead.name}</p>
-                  {lead.isVerified && <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} />}
+            {/* Two rows on a phone, one row from `sm` up.
+                Measured at 360px: the identity column collapsed to 18px — the
+                status <select> is sized by its widest option label and, with the
+                two icon buttons, held ~206px of a ~296px row as `shrink-0`, so
+                every line of investor text lost 33-67% of its characters. Wrapping
+                the controls onto their own line gives the name, firm and note the
+                full width back; nothing is hidden or removed. */}
+            <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
+                <Avatar className="h-10 w-10 shrink-0 rounded-xl">
+                  <AvatarFallback className="rounded-xl bg-primary/10 font-bold text-primary-accessible">{lead.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold">{lead.name}</p>
+                    {lead.isVerified && <CfbGlyph name="award" className={cn('icon-sm', STATUS.info.icon)} />}
+                  </div>
+                  <p className="text-2xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
+                  {/* Two lines, not one — a note is prose, and `truncate` cut a
+                      44-character note down to "Interes…". line-clamp keeps it
+                      readable and still bounds the row height. */}
+                  {lead.notes && <p className="mt-0.5 line-clamp-2 text-2xs text-muted-foreground">{lead.notes}</p>}
                 </div>
-                <p className="text-2xs text-muted-foreground">{lead.firm ? `${lead.firm} · ` : ''}{lead.type} · {lead.checkSize}</p>
-                {/* Two lines, not one. On a 360px row this column is ~40px wide after
-                    the avatar and the status controls, and `truncate` cut a 44-character
-                    note down to "Interes…" — 80% lost, which tells the reader nothing.
-                    line-clamp keeps the note useful on a phone and still bounds it. */}
-                {lead.notes && <p className="mt-0.5 line-clamp-2 text-2xs text-muted-foreground">{lead.notes}</p>}
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex shrink-0 items-center gap-3 sm:justify-end">
                 {lead.lastContact && (
-                  <p className="hidden text-2xs text-muted-foreground sm:block">
+                  /* `mr-auto` pins the date to the left edge of the controls row so
+                     the status select and the actions stay right-aligned whether or
+                     not a lead has a last-contact date. */
+                  <p className="mr-auto text-2xs text-muted-foreground sm:mr-0">
                     <Clock className="mr-1 inline icon-sm" />
                     {formatShortDate(lead.lastContact, primary)}
                   </p>
@@ -626,7 +637,7 @@ export default function FundraisingPage() {
               <BilingualText en={fundraisingEn('ask_ai_plan')} el={fundraisingEl('ask_ai_plan')} stacked />
             </span>
             <span className="block text-2xs text-muted-foreground">
-              <BilingualText en={fundraisingEn('ask_ai_hint')} el={fundraisingEl('ask_ai_hint')} compact />
+              <BilingualText en={fundraisingEn('ask_ai_hint')} el={fundraisingEl('ask_ai_hint')} />
             </span>
           </span>
         </button>

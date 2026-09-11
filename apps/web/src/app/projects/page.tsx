@@ -441,7 +441,7 @@ export default function ProjectsPage() {
               <BilingualText en={projectEn('ask_ai_plan')} el={projectEl('ask_ai_plan')} stacked />
             </span>
             <span className="block text-2xs text-muted-foreground">
-              <BilingualText en={projectEn('ask_ai_hint')} el={projectEl('ask_ai_hint')} compact />
+              <BilingualText en={projectEn('ask_ai_hint')} el={projectEl('ask_ai_hint')} />
             </span>
           </span>
         </button>
