@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.0815). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.10313). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.01390625rem;
+      font-size: 1.034184375rem;
     }
   }
 
@@ -1002,47 +1002,88 @@ html {
     line-height: max(1rem, 16px);
   }
 
-  /* ── Web view: +8.15% on everything below the display sizes ─────────────
-     Requested for the desktop view only, in two passes: +5%, then a further
-     +3% on top of it (1.05 x 1.03 = 1.0815 against the original scale).
+  /* ── Web view type scale ────────────────────────────────────────────────
+     Desktop only, built up over three requested passes:
+       steps below `text-lg`   x1.05, then x1.03, then x1.02  = x1.10313
+       `text-lg` and above     x0.98 (this pass; they were held fixed before)
 
-     The display steps stay exactly where they are -- `text-lg` (14.76px, "Your
-     founder journey") and up, which is the same bracket as the page title and
-     the stat numerals (19.68px, "Founder dashboard", "1840", "0/4").
+     The threshold was set by measuring what the named elements actually are:
+     "Your founder journey" is `text-lg`, and the page title and the stat
+     numerals ("Founder dashboard", "1840", "0/4") are `text-2xl`.
 
-     Written as rem x 1.0815 rather than as fixed px so a reader who raises
-     their browser default still gets it; the px halves of the `max()` are the
-     existing 11px/16px floors, also scaled, so the legibility floor rises with
-     the rest instead of swallowing the increase.
+     THE TWO GROUPS HAVE NOW MET. `text-base` lands at 14.473px and `text-lg` at
+     14.465px -- the display step is 0.008px *smaller* than the body step above
+     which it is supposed to sit. Nothing renders differently at that margin,
+     but the two are one size now, and any further move in this direction opens
+     a visible inversion. Raising the small steps again means raising `text-lg`
+     with them, or moving the threshold up to `text-xl`.
 
-     Note the cost of holding `text-lg` fixed while the step below it keeps
-     growing: `text-base` is now 14.19px against `text-lg`'s 14.76px, a 0.57px
-     gap where there were 1.64px before these two passes. The two steps no
-     longer read as different sizes on desktop. Anything further will need
-     `text-lg` to move as well, or the two will invert.
+     Sizes are rem x multiplier, not fixed px, so a reader who raises their
+     browser default still gets the scale; the px halves of the `max()` on the
+     two smallest steps are the 11px/16px legibility floors, scaled alongside,
+     so the floor rises with the type instead of swallowing the increase.
 
-     The `.bilingual-secondary` line needs no entry: it is sized in `em` against
-     its own parent, so it follows whichever side of this threshold that parent
-     falls on. */
+     `.bilingual-secondary` needs no entry -- it is sized in `em` against its
+     own parent, so it follows whichever side of the threshold that parent is
+     on. */
   @media (min-width: 1024px) {
+    /* ── below the threshold: x1.10313 ── */
     .text-2xs {
-      font-size: max(0.74353125rem, 11.8965px);
-      line-height: max(1.0815rem, 17.304px);
+      font-size: max(0.75840188rem, 12.13443px);
+      line-height: max(1.10313rem, 17.65008px);
     }
 
     .text-xs {
-      font-size: max(0.811125rem, 11.8965px);
-      line-height: max(1.0815rem, 17.304px);
+      font-size: max(0.8273475rem, 12.13443px);
+      line-height: max(1.10313rem, 17.65008px);
     }
 
     .text-sm {
-      font-size: 0.9463125rem;
-      line-height: 1.351875rem;
+      font-size: 0.96523875rem;
+      line-height: 1.3789125rem;
     }
 
     .text-base {
-      font-size: 1.0815rem;
-      line-height: 1.62225rem;
+      font-size: 1.10313rem;
+      line-height: 1.654695rem;
+    }
+
+    /* ── the display steps: x0.98 ── */
+    .text-lg {
+      font-size: 1.1025rem;
+      line-height: 1.715rem;
+    }
+
+    .text-xl {
+      font-size: 1.225rem;
+      line-height: 1.715rem;
+    }
+
+    .text-2xl {
+      font-size: 1.47rem;
+      line-height: 1.96rem;
+    }
+
+    .text-3xl {
+      font-size: 1.79144rem;
+      line-height: 2.15012rem;
+    }
+
+    .text-4xl {
+      font-size: 2.15012rem;
+      line-height: 2.38924rem;
+    }
+
+    .text-5xl {
+      font-size: 2.8665rem;
+    }
+
+    .text-6xl {
+      font-size: 3.58288rem;
+    }
+
+    .text-7xl {
+      font-size: 4.30024rem;
     }
   }
 
