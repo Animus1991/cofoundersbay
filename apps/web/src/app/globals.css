@@ -416,6 +416,16 @@ html {
     background-attachment: fixed;
   }
 
+  /* Body copy joins the web view's +5% (0.9375rem x 1.05). It has to sit after
+     the rule above, not inside the `min-width: 1024px` block further up: same
+     layer, same specificity, so source order decides and that block comes
+     first. */
+  @media (min-width: 1024px) {
+    body {
+      font-size: 0.984375rem;
+    }
+  }
+
   /* Custom scrollbar — thin & minimal */
   ::-webkit-scrollbar {
     width: 6px;
@@ -990,6 +1000,42 @@ html {
   .text-xs {
     font-size: max(0.75rem, 11px);
     line-height: max(1rem, 16px);
+  }
+
+  /* ── Web view: +5% on everything below the display sizes ────────────────
+     Requested for the desktop view only. The display steps stay exactly where
+     they are -- `text-lg` (14.76px, "Your founder journey") and up, which is
+     the same bracket as the page title and the stat numerals (19.68px,
+     "Founder dashboard", "1840", "0/4"). Everything under that grows by 5%.
+
+     Written as rem x 1.05 rather than as fixed px so a reader who raises their
+     browser default still gets it; the px halves of the `max()` are the
+     existing 11px/16px floors, also x 1.05, so the legibility floor rises with
+     the rest instead of swallowing the increase.
+
+     The `.bilingual-secondary` line needs no entry: it is sized in `em` against
+     its own parent, so it follows whichever side of this threshold that parent
+     falls on. */
+  @media (min-width: 1024px) {
+    .text-2xs {
+      font-size: max(0.721875rem, 11.55px);
+      line-height: max(1.05rem, 16.8px);
+    }
+
+    .text-xs {
+      font-size: max(0.7875rem, 11.55px);
+      line-height: max(1.05rem, 16.8px);
+    }
+
+    .text-sm {
+      font-size: 0.91875rem;
+      line-height: 1.3125rem;
+    }
+
+    .text-base {
+      font-size: 1.05rem;
+      line-height: 1.575rem;
+    }
   }
 
   /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
