@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.10313). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.1251926). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.034184375rem;
+      font-size: 1.05487rem;
     }
   }
 
@@ -1003,87 +1003,101 @@ html {
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over three requested passes:
-       steps below `text-lg`   x1.05, then x1.03, then x1.02  = x1.10313
-       `text-lg` and above     x0.98 (this pass; they were held fixed before)
+     Desktop only, built up over four requested passes:
+       below `text-lg`   x1.05, x1.03, x1.02, x1.02  = x1.1251926
+       `text-lg` and up   held, held, x0.98, x0.98   = x0.9604
 
-     The threshold was set by measuring what the named elements actually are:
-     "Your founder journey" is `text-lg`, and the page title and the stat
-     numerals ("Founder dashboard", "1840", "0/4") are `text-2xl`.
+     The threshold came from measuring what the named elements are: "Your
+     founder journey" is `text-lg`, and the page title and the stat numerals
+     ("Founder dashboard", "1840", "0/4") are `text-2xl`.
 
-     THE TWO GROUPS HAVE NOW MET. `text-base` lands at 14.473px and `text-lg` at
-     14.465px -- the display step is 0.008px *smaller* than the body step above
-     which it is supposed to sit. Nothing renders differently at that margin,
-     but the two are one size now, and any further move in this direction opens
-     a visible inversion. Raising the small steps again means raising `text-lg`
-     with them, or moving the threshold up to `text-xl`.
+     THE SCALE IS NOW INVERTED AT THE THRESHOLD, VISIBLY. `text-base` renders at
+     14.76px and `text-lg` at 14.18px, so a section heading is 0.59px *smaller*
+     than the body copy underneath it -- last pass the two were level at 0.008px
+     and this one has pushed them apart the wrong way. Nothing is broken
+     mechanically, but the size hierarchy at that step now runs backwards and
+     only the font weight still separates them. Putting it right means letting
+     `text-lg` travel with the steps below it, or moving the threshold up to
+     `text-xl` so only the page title and the numerals shrink.
 
      Sizes are rem x multiplier, not fixed px, so a reader who raises their
      browser default still gets the scale; the px halves of the `max()` on the
      two smallest steps are the 11px/16px legibility floors, scaled alongside,
-     so the floor rises with the type instead of swallowing the increase.
+     so the floor travels with the type instead of swallowing the change.
 
      `.bilingual-secondary` needs no entry -- it is sized in `em` against its
      own parent, so it follows whichever side of the threshold that parent is
      on. */
   @media (min-width: 1024px) {
-    /* ── below the threshold: x1.10313 ── */
+    /* ── below the threshold: x1.1251926 ── */
     .text-2xs {
-      font-size: max(0.75840188rem, 12.13443px);
-      line-height: max(1.10313rem, 17.65008px);
+      font-size: max(0.77357rem, 12.37712px);
+      line-height: max(1.12519rem, 18.00308px);
     }
 
     .text-xs {
-      font-size: max(0.8273475rem, 12.13443px);
-      line-height: max(1.10313rem, 17.65008px);
+      font-size: max(0.84389rem, 12.37712px);
+      line-height: max(1.12519rem, 18.00308px);
     }
 
     .text-sm {
-      font-size: 0.96523875rem;
-      line-height: 1.3789125rem;
+      font-size: 0.98454rem;
+      line-height: 1.40649rem;
     }
 
     .text-base {
-      font-size: 1.10313rem;
-      line-height: 1.654695rem;
+      font-size: 1.12519rem;
+      line-height: 1.68779rem;
     }
 
-    /* ── the display steps: x0.98 ── */
+    /* ── the display steps: x0.9604 ── */
     .text-lg {
-      font-size: 1.1025rem;
-      line-height: 1.715rem;
+      font-size: 1.08045rem;
+      line-height: 1.6807rem;
     }
 
     .text-xl {
-      font-size: 1.225rem;
-      line-height: 1.715rem;
+      font-size: 1.2005rem;
+      line-height: 1.6807rem;
     }
 
     .text-2xl {
-      font-size: 1.47rem;
-      line-height: 1.96rem;
+      font-size: 1.4406rem;
+      line-height: 1.9208rem;
     }
 
     .text-3xl {
-      font-size: 1.79144rem;
-      line-height: 2.15012rem;
+      font-size: 1.755611rem;
+      line-height: 2.107118rem;
     }
 
     .text-4xl {
-      font-size: 2.15012rem;
-      line-height: 2.38924rem;
+      font-size: 2.107118rem;
+      line-height: 2.341455rem;
     }
 
     .text-5xl {
-      font-size: 2.8665rem;
+      font-size: 2.80917rem;
     }
 
     .text-6xl {
-      font-size: 3.58288rem;
+      font-size: 3.511222rem;
     }
 
     .text-7xl {
-      font-size: 4.30024rem;
+      font-size: 4.214235rem;
+    }
+
+    /* The sidebar's uppercase section headings run the other way: they take the
+       display steps' x0.98 per pass while the links beneath them take the
+       x1.02 of `text-sm`. Declared after `.text-xs` above, whose size the
+       element would otherwise inherit -- same layer and specificity, so source
+       order is what decides. Written out as its own class, never assembled from
+       parts, because Tailwind drops a custom utility whose name it cannot find
+       literally in the source. */
+    .nav-section-label {
+      font-size: max(0.81080055rem, 11.8917414px);
+      line-height: max(1.0810674rem, 17.2970784px);
     }
   }
 

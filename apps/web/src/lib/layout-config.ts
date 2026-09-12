@@ -101,13 +101,17 @@ export type LayoutConfig = typeof layoutConfig;
  *  On lg+ it reserves room for the floating chat bubble (ChatBubble: 52px button + unread pill,
  *  anchored bottom-6 right-6) so the last row of content is never hidden behind it. */
 /**
- * Gutters step up one more time at `2xl`. Without a width cap the column now
- * runs to the edge of the viewport, and a gutter that stops growing at `lg`
- * reads as the content being pushed against the window on a wide monitor.
+ * The desktop gutter is 1.2rem (15.7px at the 82% root), down from 2rem/2.5rem.
+ *
+ * The column already used 100% of the width the sidebar leaves — measured 0px
+ * unused at every desktop width — so a further 2% could only come out of the
+ * gutter itself. 1.2rem is the value that lands nearest +2% across the range:
+ * +2.0% at 1280 and 1920, +2.3% at 1725, +1.7% at 1440, +1.5% at 2560. Below
+ * `lg` the phone and tablet gutters are untouched.
  */
 export const appShellMainClasses =
-  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 2xl:px-10 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
+  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-[1.2rem] pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
 
 /** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
 export const appShellLoadingClasses =
-  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-8 2xl:px-10 pt-3 space-y-5';
+  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-[1.2rem] pt-3 space-y-5';

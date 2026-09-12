@@ -147,8 +147,11 @@ export function SideNav() {
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
           {sections.map(({ section, links }) => (
             <div key={section} className="mb-1">
+              {/* nav-section-label, not plain text-xs: these uppercase headings
+                  take the display steps' -2% per pass while the links under them
+                  take the +2% of the body scale (see globals.css). */}
               {showLabels ? (
-                <p className="mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
+                <p className="nav-section-label mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
                   <BilingualText
                     en={section}
                     el={getNavSectionEl(section)}
