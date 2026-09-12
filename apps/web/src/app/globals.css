@@ -1144,31 +1144,35 @@ html {
       line-height: 1.6807rem;
     }
 
-    /* Icons in the rail and the top bar, +2%.
+    /* Icons in the rail and the top bar, +2% then +3% = x1.0506.
        The icon scale is rem-based (`icon-sm` is `h-4 w-4`), so the 82% desktop
        root renders it at 13.12px where the class comment says 16px -- and it has
        stayed there while the type around it grew, so the glyphs had drifted small
        against their own labels. This lifts only the two chrome surfaces; the
        page's icons are untouched, and so is every viewport below `lg`, where the
-       root is 100% and the icons are already their nominal size. */
+       root is 100% and the icons are already their nominal size.
+
+       These two surfaces are now the only place the icon scale differs from the
+       page's, which is deliberate: the chrome carries labels that have grown
+       nine times while the glyphs beside them never moved. */
     aside .icon-sm,
     header .icon-sm,
     aside svg.h-4,
     header svg.h-4 {
-      height: 1.02rem;
-      width: 1.02rem;
+      height: 1.0506rem;
+      width: 1.0506rem;
     }
 
     aside .icon-md,
     header .icon-md {
-      height: 1.275rem;
-      width: 1.275rem;
+      height: 1.31325rem;
+      width: 1.31325rem;
     }
 
     aside .icon-lg,
     header .icon-lg {
-      height: 1.53rem;
-      width: 1.53rem;
+      height: 1.5759rem;
+      width: 1.5759rem;
     }
 
     aside .nav-section-label {
