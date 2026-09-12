@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.1823569). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.2062040). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.10845960rem;
+      font-size: 1.13081629rem;
     }
   }
 
@@ -1003,9 +1003,10 @@ html {
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over seven requested passes:
-       below `text-lg`  x1.05, x1.03, x1.02, x1.02, x1.02, x1.02, x1.01 = x1.1823569
-       `text-lg` and up  held, held, x0.98, x0.98, held, held, held     = x0.9604
+     Desktop only, built up over eight requested passes:
+       below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02 = x1.2062040
+       `text-lg` and up  held, held, x0.98, x0.98, then held = x0.9604
+       the sidebar                          held from here on
 
      The threshold came from measuring what the named elements are: "Your
      founder journey" is `text-lg`, and the page title and the stat numerals
@@ -1013,13 +1014,13 @@ html {
 
      THE SCALE NO LONGER RUNS IN ORDER. As rendered now, smallest first:
 
-       text-xs 13.006 | text-sm 13.573 | text-lg 14.176 | body 14.543
-       text-base 15.513 | text-xl 15.751
+       text-xs 13.268 | text-sm 13.847 | text-lg 14.176 | body 14.836
+       text-xl 15.751 | text-base 15.825
 
-     `text-lg` sits below plain body copy, so a section heading is smaller than
-     the paragraph beside it and 1.34px smaller than the one under it -- only
-     weight still separates them. `text-base` is now 0.238px from `text-xl`,
-     which is the next step to go.
+     `text-base` has now passed `text-xl` as well, so body copy is the largest
+     step in the scale below the page title: a paragraph renders larger than
+     both the section heading above it (`text-lg`, 1.65px smaller) and the
+     card heading (`text-xl`). Only weight still separates any of them.
 
      This is the arithmetic of the request, not a fault in applying it: the steps
      below the threshold have taken +18.2% across seven passes while `text-lg`
@@ -1040,23 +1041,23 @@ html {
   @media (min-width: 1024px) {
     /* ── below the threshold: x1.1251926 ── */
     .text-2xs {
-      font-size: max(0.81287037rem, 13.00592594px);
-      line-height: max(1.18235690rem, 18.91771046px);
+      font-size: max(0.82926528rem, 13.26824442px);
+      line-height: max(1.20620404rem, 19.29926461px);
     }
 
     .text-xs {
-      font-size: max(0.88676768rem, 13.00592594px);
-      line-height: max(1.18235690rem, 18.91771046px);
+      font-size: max(0.90465303rem, 13.26824442px);
+      line-height: max(1.20620404rem, 19.29926461px);
     }
 
     .text-sm {
-      font-size: 1.03456229rem;
-      line-height: 1.47794613rem;
+      font-size: 1.05542853rem;
+      line-height: 1.50775505rem;
     }
 
     .text-base {
-      font-size: 1.18235690rem;
-      line-height: 1.77353536rem;
+      font-size: 1.20620404rem;
+      line-height: 1.80930606rem;
     }
 
     /* ── the display steps: x0.9604 ── */
@@ -1104,7 +1105,45 @@ html {
        order is what decides. Written out as its own class, never assembled from
        parts, because Tailwind drops a custom utility whose name it cannot find
        literally in the source. */
-    .nav-section-label {
+    /* The rail is frozen from this pass on: every size inside <aside> stays
+       where it was, while the page's own steps keep moving. `aside .text-*` is
+       (0,1,1) against the (0,1,0) of the rules above, so it wins on specificity
+       rather than order -- and `.nav-section-label` therefore needs the same
+       weight, declared after, or the frozen `aside .text-xs` would capture the
+       section headings too. */
+    aside .text-2xs {
+      font-size: max(0.81287037rem, 13.00592594px);
+      line-height: max(1.18235690rem, 18.91771046px);
+    }
+
+    aside .text-xs {
+      font-size: max(0.88676768rem, 13.00592594px);
+      line-height: max(1.18235690rem, 18.91771046px);
+    }
+
+    aside .text-sm {
+      font-size: 1.03456229rem;
+      line-height: 1.47794613rem;
+    }
+
+    /* The logo wordmark is `text-base`; the rest are frozen so the rail cannot
+       drift if it later uses one of them. */
+    aside .text-base {
+      font-size: 1.18235690rem;
+      line-height: 1.77353536rem;
+    }
+
+    aside .text-lg {
+      font-size: 1.08045rem;
+      line-height: 1.6807rem;
+    }
+
+    aside .text-xl {
+      font-size: 1.2005rem;
+      line-height: 1.6807rem;
+    }
+
+    aside .nav-section-label {
       font-size: max(0.81080055rem, 11.8917414px);
       line-height: max(1.0810674rem, 17.2970784px);
     }
