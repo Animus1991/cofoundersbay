@@ -100,9 +100,14 @@ export type LayoutConfig = typeof layoutConfig;
  *  Bottom padding accounts for the safe-area inset above the mobile bottom nav / home indicator.
  *  On lg+ it reserves room for the floating chat bubble (ChatBubble: 52px button + unread pill,
  *  anchored bottom-6 right-6) so the last row of content is never hidden behind it. */
+/**
+ * Gutters step up one more time at `2xl`. Without a width cap the column now
+ * runs to the edge of the viewport, and a gutter that stops growing at `lg`
+ * reads as the content being pushed against the window on a wide monitor.
+ */
 export const appShellMainClasses =
-  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
+  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-8 2xl:px-10 pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
 
 /** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
 export const appShellLoadingClasses =
-  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-8 pt-3 space-y-5';
+  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-8 2xl:px-10 pt-3 space-y-5';

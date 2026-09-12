@@ -105,7 +105,11 @@ export function HelpCallout({
           <X className="icon-sm" aria-hidden="true" />
         </button>
       </div>
-      <div className="space-y-2 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
+      {/* max-w in ch, not px: this is running prose, and the column that used to
+          bound it is gone now that the shell has no width cap. Past roughly 90
+          characters a line the eye loses the return sweep, which is the one
+          thing a full-width layout must not take from the reader. */}
+      <div className="max-w-[90ch] space-y-2 pl-9 text-muted-foreground [&_a]:text-primary-accessible [&_a]:underline-offset-2 [&_a:hover]:underline [&_strong]:font-semibold [&_strong]:text-foreground">
         {children}
       </div>
     </div>

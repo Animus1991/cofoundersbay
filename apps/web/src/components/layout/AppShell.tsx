@@ -105,7 +105,14 @@ export function AppShell({
           <main
             id="main-content"
             tabIndex={-1}
-            className={cn(appShellMainClasses, 'mx-auto max-w-shell', contentClassName)}
+            // No width cap. The column is already offset by the sidebar's own
+            // width, so "full width" here means exactly the space the sidebar
+            // leaves, never over it. The old `max-w-shell` (1613px) only bound
+            // above ~1810px, where it left 110px unused at 1920 and 750px at
+            // 2560 -- and /messages, which renders through the fullHeight branch
+            // below, had no cap at all, so the two halves of the product did not
+            // agree on how wide a page was.
+            className={cn(appShellMainClasses, contentClassName)}
           >
             <div className="space-y-6">
               {(pageTitle || pageDescription || actions || showAskAi) && (
@@ -118,8 +125,15 @@ export function AppShell({
                           <BilingualText en={pageTitle} el={pageTitleEl} />
                         </h1>
                       )}
+                      {/* `lg:` on the wider measure, deliberately. The problem it
+                          solves is desktop-only -- with the column uncapped this
+                          bilingual subtitle still broke onto three lines while
+                          ~1200px sat empty beside it -- and applying 90ch at every
+                          width let the heading block claim room the action buttons
+                          needed, which pushed them 22px past a 640px viewport.
+                          Below `lg` the 65ch measure stays. */}
                       {pageDescription && (
-                        <p className="mt-1 max-w-prose text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm">
+                        <p className="mt-1 max-w-prose text-base leading-normal text-muted-foreground sm:mt-0.5 sm:text-sm lg:max-w-[90ch]">
                           <BilingualText en={pageDescription} el={pageDescriptionEl} />
                         </p>
                       )}

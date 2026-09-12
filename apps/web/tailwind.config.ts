@@ -90,19 +90,6 @@ const config: Config = {
       // theme can soften or sharpen the whole product by changing a single value,
       // and nested surfaces stay concentric: card 16 > row 12 > control 10 > item 6,
       // i.e. each inner radius ≈ outer radius minus the padding between them.
-      maxWidth: {
-        /**
-         * Width cap for the main content column inside AppShell (applied in
-         * components/layout/AppShell.tsx). 1613px is the previous
-         * `screen-2xl` (1536px) widened by 5%.
-         *
-         * It only changes anything once the window is wide enough for the cap
-         * to bind — narrower than that, the column already uses every pixel
-         * beside the sidebar apart from its own gutter, so there is nothing
-         * left to give without removing the gutter itself.
-         */
-        shell: '1613px',
-      },
       borderRadius: {
         sm: 'calc(var(--radius) - 6px)',       //  6px  menu items, tiny chips
         DEFAULT: 'calc(var(--radius) - 4px)',  //  8px  small inline elements
