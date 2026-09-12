@@ -322,4 +322,17 @@ Claude `803ddb2`: έκτο theme **Minimal** (warm paper, ένα teal accent, co
 - `94f003d` — floor `text-xs` στα 11px· `tap-target` 24px στα 43 failures του 82%· contrast BilingualText / match-detail hex / opacity· JetBrains Mono μέσω next/font· XP fraction, preview `/profiles/[userId]`, `sanitize.ts` χωρίς throw.
 - `3f7c793` — +5% στα βήματα κάτω από `text-lg` μόνο από 1024px· display sizes αμετάβλητα.
 
+### 13.7 Έλεγχος 2026-09-12 (απόγευμα)
+
+`git fetch origin --prune`. **Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `0a0a9ed` — 4 commits πάνω στο `3f7c793`. Claude fork ακόμα `1501b70`. Full merge Claude ακόμα ~336 conflicts.
+
+Τραβήχτηκαν με `git merge origin/integration/ai-platform-upgrade` (καμία παράλειψη):
+
+- `c906586` — επιπλέον +3% στα μικρά βήματα (σύνολο +8.15% από το αρχικό desktop)· `text-lg+` αμετάβλητα.
+- `3fb23a5` — μικρά +2%, display −2%· `sm:text-2xl` παίρνει ρητό override.
+- `b627cb0` — αφαίρεση `max-w-shell`· η στήλη γεμίζει ό,τι αφήνει το sidebar· gutter `2xl`· HelpCallout/header 90ch· compose στο `/messages` σε δική του γραμμή.
+- `0a0a9ed` — gutter 1.2rem (+~2% πλάτος στήλης)· μικρά +2% / display −2%· sidebar headings −2% (`.nav-section-label`)· wrap στα profile stats.
+
+Αντικειμενικό υπόλοιπο που καταγράφει το ίδιο το integration: μετά το `0a0a9ed`, `text-base` (14.76px) είναι μεγαλύτερο από `text-lg` (14.18px). Δεν το «διορθώνουμε» εδώ — είναι μέρος της γραμμής προϊόντος.
+
 
