@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.1706504). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.1823569). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.09748478rem;
+      font-size: 1.10845960rem;
     }
   }
 
@@ -1003,9 +1003,9 @@ html {
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over six requested passes:
-       below `text-lg`   x1.05, x1.03, x1.02, x1.02, x1.02, x1.02 = x1.1706504
-       `text-lg` and up   held, held, x0.98, x0.98, held, held    = x0.9604
+     Desktop only, built up over seven requested passes:
+       below `text-lg`  x1.05, x1.03, x1.02, x1.02, x1.02, x1.02, x1.01 = x1.1823569
+       `text-lg` and up  held, held, x0.98, x0.98, held, held, held     = x0.9604
 
      The threshold came from measuring what the named elements are: "Your
      founder journey" is `text-lg`, and the page title and the stat numerals
@@ -1013,19 +1013,21 @@ html {
 
      THE SCALE NO LONGER RUNS IN ORDER. As rendered now, smallest first:
 
-       text-sm 13.439 | text-lg 14.176 | body 14.399 | text-base 15.359 | text-xl 15.751
+       text-xs 13.006 | text-sm 13.573 | text-lg 14.176 | body 14.543
+       text-base 15.513 | text-xl 15.751
 
-     `text-lg` has fallen below plain body copy, so a section heading is smaller
-     than the paragraph beside it and 1.18px smaller than the paragraph under
-     it -- only weight still separates them. And `text-base` is now 0.392px from
-     `text-xl`: one more pass of this shape takes out that step too.
+     `text-lg` sits below plain body copy, so a section heading is smaller than
+     the paragraph beside it and 1.34px smaller than the one under it -- only
+     weight still separates them. `text-base` is now 0.238px from `text-xl`,
+     which is the next step to go.
 
      This is the arithmetic of the request, not a fault in applying it: the steps
-     below the threshold have taken +17.1% in total while `text-lg` has taken
-     -4%. Restoring the order means letting `text-lg` travel with the steps below
-     it, or moving the threshold up to `text-xl` so only the page title and the
-     stat numerals stay fixed -- those are the elements that get named each
-     time, and both options leave every one of them exactly where it is.
+     below the threshold have taken +18.2% across seven passes while `text-lg`
+     has taken -4%. Restoring the order means letting `text-lg` travel with the
+     steps below it, or moving the threshold up to `text-xl` so only the page
+     title and the stat numerals stay fixed -- those are the elements that get
+     named each time, and both options leave every one of them exactly where it
+     is.
 
      Sizes are rem x multiplier, not fixed px, so a reader who raises their
      browser default still gets the scale; the px halves of the `max()` on the
@@ -1038,23 +1040,23 @@ html {
   @media (min-width: 1024px) {
     /* ── below the threshold: x1.1251926 ── */
     .text-2xs {
-      font-size: max(0.80482217rem, 12.87715473px);
-      line-height: max(1.17065043rem, 18.73040688px);
+      font-size: max(0.81287037rem, 13.00592594px);
+      line-height: max(1.18235690rem, 18.91771046px);
     }
 
     .text-xs {
-      font-size: max(0.87798782rem, 12.87715473px);
-      line-height: max(1.17065043rem, 18.73040688px);
+      font-size: max(0.88676768rem, 13.00592594px);
+      line-height: max(1.18235690rem, 18.91771046px);
     }
 
     .text-sm {
-      font-size: 1.02431913rem;
-      line-height: 1.46331304rem;
+      font-size: 1.03456229rem;
+      line-height: 1.47794613rem;
     }
 
     .text-base {
-      font-size: 1.17065043rem;
-      line-height: 1.75597565rem;
+      font-size: 1.18235690rem;
+      line-height: 1.77353536rem;
     }
 
     /* ── the display steps: x0.9604 ── */
