@@ -695,12 +695,17 @@ export default function ProfilePage() {
                 { icon: MessageSquare, labelEn: profileEn('posts'), labelEl: profileEl('posts'), value: '0', color: 'text-blue-500', bg: 'bg-blue-500/10' },
                 { icon: Award, labelEn: profileEn('achievements'), labelEl: profileEl('achievements'), value: '0', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
               ].map(({ icon: Icon, labelEn, labelEl, value, color, bg }) => (
-                <div key={labelEn} className="flex flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
+                <div key={labelEn} className="flex min-w-0 flex-col items-center rounded-xl border border-border/40 bg-card p-3 shadow-sm hover:shadow-md transition-shadow">
                   <div className={`p-2 rounded-full ${bg} mb-2`}>
                     <Icon className={`icon-sm ${color}`} />
                   </div>
                   <span className="text-lg font-bold text-foreground leading-none">{value}</span>
-                  <span className="text-2xs font-medium text-muted-foreground uppercase tracking-wider mt-1">
+                  {/* max-w-full + min-w-0: `items-center` sizes this child to its own
+                      content, so a bilingual uppercase label with wide tracking
+                      could exceed the ~128px tile -- it went 5px past the card
+                      once the web-view type scale grew. Bounded here so it wraps
+                      inside the tile instead. */}
+                  <span className="mt-1 min-w-0 max-w-full text-center text-2xs font-medium uppercase tracking-wider text-muted-foreground">
                     <BilingualText en={labelEn} el={labelEl} compact />
                   </span>
                 </div>

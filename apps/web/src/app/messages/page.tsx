@@ -573,6 +573,12 @@ export default function MessagesPage() {
             )}
           >
             <div className="shrink-0 space-y-3 px-4 pb-3 pt-4">
+              {/* The compose button gets its own row. This pane is a fixed 392px
+                  at every desktop width, and with the button beside the title the
+                  heading block was left 138px of a 365px row -- the lead wrapped
+                  to five lines of about 23 characters, at every width, not just
+                  the wide ones. A full-width compose action at the top of a list
+                  pane is also what the reader expects it to be. */}
               <div className="flex items-start gap-2">
                 <div className="min-w-0 flex-1">
                   <h1 className="text-lg font-semibold tracking-tight text-foreground">
@@ -583,10 +589,12 @@ export default function MessagesPage() {
                   </p>
                 </div>
                 <PageContextualHelp defaultOpen={false} compact />
+              </div>
+              <div>
                 <Button
                   type="button"
                   size="sm"
-                  className="h-8 shrink-0 gap-1.5 rounded-full px-3 text-xs shadow-sm"
+                  className="h-8 w-full gap-1.5 rounded-full px-3 text-xs shadow-sm"
                   onClick={() => setComposeOpen(true)}
                   aria-label={bilingualAria(messagesEn('new_message'), messagesEl('new_message'))}
                 >
