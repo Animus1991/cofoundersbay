@@ -312,4 +312,14 @@ Claude `803ddb2`: έκτο theme **Minimal** (warm paper, ένα teal accent, co
 
 **Σκόπιμα όχι από Claude `1501b70`:** αντικατάσταση όλης της radius ladder (η δική μας είναι ήδη px από `--radius` στο `tailwind.config.ts`)· squircle `corner-shape` + 101 αρχεία rounded recode· `docs/CORNER_AND_BORDER_PLAN.md` και axe spec του April fork.
 
+### 13.6 Έλεγχος 2026-09-12 (πρωί)
+
+`git fetch origin --prune`. **Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `3f7c793` — 4 commits μπροστά από `6e1fae9` (το δικό μας `9a45209` docs είναι ίδιο patch-id με το `c4ce7b9`). Claude fork ακόμα `1501b70`. Full merge Claude ακόμα ~336 conflicts.
+
+Τραβήχτηκαν με `git merge origin/integration/ai-platform-upgrade` (καμία παράλειψη):
+
+- `0e391f8` — UTC `timeZone`/`locale` σε κάθε `toLocale*` στο render· `LocalTime` για ώρες· `/calendar` demo events και grid σε UTC (hydration 0/60 σε 3 ζώνες).
+- `94f003d` — floor `text-xs` στα 11px· `tap-target` 24px στα 43 failures του 82%· contrast BilingualText / match-detail hex / opacity· JetBrains Mono μέσω next/font· XP fraction, preview `/profiles/[userId]`, `sanitize.ts` χωρίς throw.
+- `3f7c793` — +5% στα βήματα κάτω από `text-lg` μόνο από 1024px· display sizes αμετάβλητα.
+
 
