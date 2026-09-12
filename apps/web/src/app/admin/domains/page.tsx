@@ -169,7 +169,7 @@ function DomainRow({
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             )}
           </div>

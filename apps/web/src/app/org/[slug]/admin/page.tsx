@@ -388,11 +388,11 @@ export default function OrgAdminPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {member.joinedAt.toLocaleDateString()}
+                        {member.joinedAt.toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {member.lastActive
-                          ? member.lastActive.toLocaleDateString()
+                          ? member.lastActive.toLocaleDateString('en-GB', { timeZone: 'UTC' })
                           : '—'}
                       </TableCell>
                       <TableCell>

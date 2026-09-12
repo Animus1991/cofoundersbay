@@ -517,7 +517,7 @@ export default function PublicProfilePage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Calendar className="icon-sm" />
-                  <span>Member since {joinedAt.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                  <span>Member since {joinedAt.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' })}</span>
                 </div>
               </CardContent>
             </Card>

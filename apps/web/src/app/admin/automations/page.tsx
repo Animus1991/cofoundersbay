@@ -474,7 +474,7 @@ export default function AutomationsPage() {
                         <span className="text-status-warning font-medium">⚠ {rule.failureCount} failures</span>
                       )}
                       {rule.lastRunAt && (
-                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString()}</span>
+                        <span>Last: {new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                       )}
                       {rule.delaySeconds > 0 && (
                         <span>Delay: {rule.delaySeconds}s</span>
@@ -566,7 +566,7 @@ export default function AutomationsPage() {
                       {exec.targetUserId && ` · user:${exec.targetUserId.slice(0, 6)}`}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {new Date(exec.createdAt).toLocaleString()}
+                      {new Date(exec.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                     </span>
                     <span className="text-xs text-muted-foreground">{exec._count?.logs ?? 0} logs</span>
                     <ChevronRight className={`icon-sm text-muted-foreground transition-transform ${selectedExecution === exec.id ? 'rotate-90' : ''}`} />

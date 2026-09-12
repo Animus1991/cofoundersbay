@@ -58,6 +58,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { LocalTime } from '@/components/common/LocalTime';
 
 const STATUS_COLORS: Record<string, string> = {
   requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
@@ -439,13 +440,13 @@ function BookingCard({
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                {start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="icon-sm" />
-                {start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <LocalTime value={start} />
                 {' – '}
-                {end.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <LocalTime value={end} />
               </span>
               <span className="flex items-center gap-1">
                 <Video className="icon-sm" />

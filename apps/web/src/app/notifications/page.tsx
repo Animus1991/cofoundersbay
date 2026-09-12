@@ -93,7 +93,7 @@ function formatTimeAgo(dateStr: string): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return new Date(dateStr).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
 }
 
 function NotificationSkeleton() {

@@ -304,7 +304,7 @@ export default function SettingsPage() {
                   </Badge>
                   {subscription?.currentPeriodEnd && (
                     <span className="text-xs text-muted-foreground">
-                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                     </span>
                   )}
                 </div>

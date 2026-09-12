@@ -80,7 +80,7 @@ function formatTimeAgo(date: Date): string {
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function PostCard({

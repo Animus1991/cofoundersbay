@@ -109,9 +109,9 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
   const { success } = useToast();
   const cfg = OPP_TYPE_DISPLAY[opportunity.type] ?? OPP_TYPE_DISPLAY.other;
   const initials = (opportunity.company ?? opportunity.title).slice(0, 2).toUpperCase();
-  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  const postedAgo = new Date(opportunity.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
   const deadline = opportunity.deadline
-    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    ? new Date(opportunity.deadline).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
     : null;
 
   return (

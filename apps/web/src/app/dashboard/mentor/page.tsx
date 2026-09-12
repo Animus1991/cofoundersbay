@@ -112,7 +112,7 @@ function SessionCard({ session }: { session: any }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{session.menteeName}</p>
         <p className="text-xs text-muted-foreground">
-          {new Date(session.scheduledAt).toLocaleDateString()} at{' '}
+          {new Date(session.scheduledAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })} at{' '}
           {new Date(session.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>

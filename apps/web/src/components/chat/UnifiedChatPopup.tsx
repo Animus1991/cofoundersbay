@@ -85,8 +85,8 @@ function formatRelativeTime(d: Date) {
   const days = Math.floor(diff / 86400000);
   if (days === 0) return formatTime(d);
   if (days === 1) return 'Yesterday';
-  if (days < 7) return d.toLocaleDateString([], { weekday: 'short' });
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (days < 7) return d.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short' });
+  return d.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' });
 }
 
 // ── Messaging sub-components ───────────────────────────────────────────────────

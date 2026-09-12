@@ -65,12 +65,20 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 
 // ── Demo Data ────────────────────────────────────────────────────────────────
 
+// UTC throughout, like every other date the product renders.
+//
+// `new Date(y, m, day, hour, min)` builds the instant in the *runtime's* zone,
+// so the demo events themselves came out different on the server (UTC) than in
+// the browser: at UTC+14 this produced a timestamp 14 hours earlier, which lands
+// on a different calendar day, and at the extremes `now.getMonth()` was a
+// different month entirely. The grid, the events and the "today" highlight all
+// disagreed, and React could not hydrate the page.
 const now = new Date();
-const y = now.getFullYear();
-const m = now.getMonth();
+const y = now.getUTCFullYear();
+const m = now.getUTCMonth();
 
 function d(day: number, hour = 10, min = 0) {
-  return new Date(y, m, day, hour, min).toISOString();
+  return new Date(Date.UTC(y, m, day, hour, min)).toISOString();
 }
 
 const DEMO_EVENTS: CalendarEvent[] = [
@@ -92,15 +100,19 @@ const DEMO_EVENTS: CalendarEvent[] = [
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
+  );
 }
 
 function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 }
 
 function getFirstDayOfMonth(year: number, month: number) {
-  return new Date(year, month, 1).getDay();
+  return new Date(Date.UTC(year, month, 1)).getUTCDay();
 }
 
 // ── Components ───────────────────────────────────────────────────────────────
@@ -165,7 +177,7 @@ function MiniCalendar({
     const set = new Set<number>();
     events.forEach((e) => {
       const ed = new Date(e.date);
-      if (ed.getFullYear() === year && ed.getMonth() === month) set.add(ed.getDate());
+      if (ed.getUTCFullYear() === year && ed.getUTCMonth() === month) set.add(ed.getUTCDate());
     });
     return set;
   }, [events, year, month]);
@@ -184,7 +196,11 @@ function MiniCalendar({
       <div className="grid grid-cols-7 gap-0.5">
         {cells.map((day, i) => {
           if (day === null) return <div key={`e-${i}`} />;
-          const date = new Date(year, month, day);
+          // Date.UTC, to match isSameDay below. The local constructor put this
+          // cell on the previous calendar day at UTC+14, so `isToday` and
+          // `isSelected` — and therefore the cell's className — differed between
+          // the server and the browser.
+          const date = new Date(Date.UTC(year, month, day));
           const isToday = isSameDay(date, today);
           const isSelected = isSameDay(date, selectedDate);
           const hasEvents = eventDates.has(day);
@@ -213,8 +229,8 @@ function MiniCalendar({
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CalendarPage() {
-  const [currentMonth, setCurrentMonth] = useState(now.getMonth());
-  const [currentYear, setCurrentYear] = useState(now.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(now.getUTCMonth());
+  const [currentYear, setCurrentYear] = useState(now.getUTCFullYear());
   const [selectedDate, setSelectedDate] = useState(now);
   const [typeFilter, setTypeFilter] = useState<EventType | 'all'>('all');
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
@@ -239,14 +255,15 @@ export default function CalendarPage() {
   }, [filteredEvents, selectedDate]);
 
   const upcomingEvents = useMemo(() => {
-    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const n = new Date();
+    const todayStart = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
     return filteredEvents.filter((e) => new Date(e.date) >= todayStart).slice(0, 8);
   }, [filteredEvents]);
 
   // Stats
   const thisMonthEvents = filteredEvents.filter((e) => {
     const ed = new Date(e.date);
-    return ed.getFullYear() === currentYear && ed.getMonth() === currentMonth;
+    return ed.getUTCFullYear() === currentYear && ed.getUTCMonth() === currentMonth;
   });
   const deadlineCount = thisMonthEvents.filter((e) => e.type === 'deadline').length;
   const sessionCount = thisMonthEvents.filter((e) => e.type === 'session').length;
@@ -350,7 +367,7 @@ export default function CalendarPage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <CalendarDays className="icon-sm text-primary-accessible" />
-                    {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                    {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -379,7 +396,7 @@ export default function CalendarPage() {
                     {upcomingEvents.map((e) => (
                       <div key={e.id} className="flex items-center gap-3 text-sm">
                         <span className="text-xs text-muted-foreground w-14 shrink-0 tabular-nums">
-                          {new Date(e.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {new Date(e.date).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' })}
                         </span>
                         <div className={cn('h-2 w-2 rounded-full shrink-0', TYPE_CONFIG[e.type].color.replace('text-', 'bg-'))} />
                         <span className="truncate flex-1">{e.title}</span>

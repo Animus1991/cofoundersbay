@@ -44,16 +44,12 @@ function MenteeCard({ relationship }: { relationship: MentorshipRelationshipItem
   };
 
   const nextSessionFormatted = relationship.nextSessionAt
-    ? new Date(relationship.nextSessionAt).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      })
+    ? new Date(relationship.nextSessionAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
+        day: 'numeric' })
     : null;
 
-  const startedAtFormatted = new Date(relationship.startedAt).toLocaleDateString('en-US', {
-    month: 'short',
-    year: 'numeric',
-  });
+  const startedAtFormatted = new Date(relationship.startedAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
+    year: 'numeric' });
 
   return (
     <Card className="transition-all hover:shadow-md hover:border-primary/30">

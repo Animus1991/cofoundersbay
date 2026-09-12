@@ -110,7 +110,7 @@ function ExperimentCard({
           <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
             <span>Split {Math.round(exp.splitRatio * 100)}% B</span>
             <span>A: {exp.variantACounts} users · B: {exp.variantBCounts} users</span>
-            {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString()}</span>}
+            {exp.startedAt && <span>Started {new Date(exp.startedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>}
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -418,7 +418,7 @@ function ConfigEditor() {
                 </button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Updated {new Date(cfg.updatedAt).toLocaleString()}
+                Updated {new Date(cfg.updatedAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
               </p>
             </div>
           ))}

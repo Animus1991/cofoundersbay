@@ -435,7 +435,7 @@ export function MentorMetricsPanel({ workspaceId }: MentorMetricsPanelProps) {
         )}
         {data.lastFeedbackAt && (
           <p className="text-2xs text-muted-foreground">
-            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+            Last feedback: {new Date(data.lastFeedbackAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
           </p>
         )}
       </CardContent>

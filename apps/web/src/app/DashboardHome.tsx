@@ -582,10 +582,8 @@ export function DashboardHome() {
                       >
                         <span className="truncate text-sm text-foreground">{event.title}</span>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {new Date(event.startAt).toLocaleDateString('en-GB', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
+                          {new Date(event.startAt).toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short',
+                            day: 'numeric' })}
                         </span>
                       </Link>
                     ))}
@@ -635,7 +633,7 @@ export function DashboardHome() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-secondary/40 p-3 text-center">
                     <p className="text-lg font-bold text-foreground tabular-nums">
-                      {statsData?.activeProfiles?.toLocaleString() ?? '—'}
+                      {statsData?.activeProfiles?.toLocaleString('en-GB') ?? '—'}
                     </p>
                     <p className="text-2xs text-muted-foreground uppercase tracking-wide">
                       <BilingualText en="Active members" el="Ενεργά μέλη" compact />
@@ -727,7 +725,7 @@ export function DashboardHome() {
                         <span className="flex-1 truncate text-xs text-foreground">{m.title}</span>
                         {m.dueDate && (
                           <span className="shrink-0 text-2xs text-muted-foreground">
-                            {new Date(m.dueDate).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                            {new Date(m.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' })}
                           </span>
                         )}
                       </Link>

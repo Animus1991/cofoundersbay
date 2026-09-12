@@ -222,7 +222,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
                 <span className="flex items-center gap-0.5"><Clock className="icon-sm" />{resource.duration}</span>
               )}
               {resource.completedBy && (
-                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-sm text-status-success" />{resource.completedBy.toLocaleString()}</span>
+                <span className="flex items-center gap-0.5"><CheckCircle2 className="icon-sm text-status-success" />{resource.completedBy.toLocaleString('en-GB')}</span>
               )}
             </div>
           </div>

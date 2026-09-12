@@ -323,7 +323,7 @@ export function UserBadges({ live = true }: UserBadgesProps = {}) {
                   <CardContent>
                     {badge.earned ? (
                       <div className="text-sm text-muted-foreground">
-                        Earned on {new Date(badge.earnedAt!).toLocaleDateString()}
+                        Earned on {new Date(badge.earnedAt!).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                       </div>
                     ) : hasProgress ? (
                       <div className="space-y-2">

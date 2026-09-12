@@ -69,7 +69,7 @@ export function DashboardStats({
         <div className="grid gap-3 sm:grid-cols-2">
           <StatCard
             label="Active profiles"
-            value={stats.activeProfiles.toLocaleString()}
+            value={stats.activeProfiles.toLocaleString('en-GB')}
             icon={<Users className="icon-md" />}
             trend={stats.trendPercent != null ? { value: stats.trendPercent, label: 'vs last week' } : undefined}
           />

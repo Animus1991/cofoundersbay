@@ -100,7 +100,7 @@ function formatDate(date: Date, today: string, yesterday: string): string {
 
   if (date.toDateString() === now.toDateString()) return today;
   if (date.toDateString() === yest.toDateString()) return yesterday;
-  return date.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'short', day: 'numeric' });
 }
 
 function MessageBubble({

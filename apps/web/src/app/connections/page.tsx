@@ -211,7 +211,7 @@ function IntroRequestCard({
                 <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
               <p className="ml-auto shrink-0 text-xs text-muted-foreground">
-                {new Date(connection.createdAt).toLocaleDateString()}
+                {new Date(connection.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             </div>
           </div>

@@ -183,14 +183,14 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
               <div>
                 <CardTitle className="text-2xl">Level {currentLevel.level}: {currentLevel.name}</CardTitle>
                 <CardDescription className="text-base">
-                  {currentPoints.toLocaleString()} reputation points
+                  {currentPoints.toLocaleString('en-GB')} reputation points
                 </CardDescription>
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge variant="default" className="text-base px-3 py-1">
                 <Zap className="icon-sm mr-1" />
-                {currentPoints.toLocaleString()} XP
+                {currentPoints.toLocaleString('en-GB')} XP
               </Badge>
               {currentStreak > 0 && (
                 <Badge variant="secondary" className="text-xs gap-1">
@@ -207,7 +207,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Progress to {nextLevel.name}</span>
                   <span className="font-medium">
-                    {pointsToNextLevel.toLocaleString()} points needed
+                    {pointsToNextLevel.toLocaleString('en-GB')} points needed
                   </span>
                 </div>
                 <Progress value={levelProgress} className="h-3" />
@@ -271,7 +271,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                       <div className="flex-1">
                         <div className="font-semibold">{level.name}</div>
                         <div className="text-sm text-muted-foreground">
-                          {level.minPoints.toLocaleString()} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString()} points
+                          {level.minPoints.toLocaleString('en-GB')} - {level.maxPoints === Infinity ? '∞' : level.maxPoints.toLocaleString('en-GB')} points
                         </div>
                       </div>
                       {isCurrentLevel && (
@@ -323,7 +323,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
                         <div>
                           <div className="font-medium">{activity.action}</div>
                           <div className="text-sm text-muted-foreground">
-                            {new Date(activity.timestamp).toLocaleDateString()} at{' '}
+                            {new Date(activity.timestamp).toLocaleDateString('en-GB', { timeZone: 'UTC' })} at{' '}
                             {new Date(activity.timestamp).toLocaleTimeString()}
                           </div>
                         </div>

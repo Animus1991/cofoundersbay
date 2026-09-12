@@ -50,11 +50,9 @@ function RequestCard({ request, onAccept, onDecline, isResponding }: RequestCard
     declined: 'bg-status-danger-bg text-status-danger border-status-danger-border',
   };
 
-  const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', {
-    month: 'short',
+  const formattedDate = new Date(request.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
     day: 'numeric',
-    year: 'numeric',
-  });
+    year: 'numeric' });
 
   return (
     <Card className={cn(

@@ -74,7 +74,7 @@ function AskAiButton({
 function metricValue(metric: AnalyticsMetric) {
   if (metric.value === null) return '—';
   return metric.label === 'Engagement Rate' || metric.label === 'Activity Score'
-    ? `${metric.value}%` : metric.value.toLocaleString();
+    ? `${metric.value}%` : metric.value.toLocaleString('en-GB');
 }
 
 function MetricCard({ metric }: { metric: AnalyticsMetric }) {
@@ -158,7 +158,7 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           <div key={s.key} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact /></span>
-              <span className="font-semibold text-foreground">{s.value === null ? '—' : s.value.toLocaleString()}</span>
+              <span className="font-semibold text-foreground">{s.value === null ? '—' : s.value.toLocaleString('en-GB')}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-secondary/40">
               <div className={cn('h-full rounded-full transition-all duration-700', s.bar)} style={{ width: `${(s.value ?? 0) / maximum * 100}%` }} />
@@ -238,7 +238,7 @@ function TopContentList({ content }: { content: TopContent[] }) {
                 <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <CfbGlyph name="profile" className="icon-sm shrink-0" />
-                    {item.views.toLocaleString()} <BilingualText en={analyticsEn('views')} el={analyticsEl('views')} compact />
+                    {item.views.toLocaleString('en-GB')} <BilingualText en={analyticsEn('views')} el={analyticsEl('views')} compact />
                   </span>
                   <span className="flex items-center gap-1">
                     <CfbGlyph name="spark" className="icon-sm shrink-0" />

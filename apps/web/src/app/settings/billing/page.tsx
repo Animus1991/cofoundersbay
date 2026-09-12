@@ -60,13 +60,13 @@ function InvoiceRow({ invoice }: { invoice: BillingInvoice }) {
           <InvoiceStatusBadge status={invoice.status} />
         </div>
         <p className="text-xs text-muted-foreground">
-          {new Date(invoice.periodStart).toLocaleDateString()} – {new Date(invoice.periodEnd).toLocaleDateString()}
+          {new Date(invoice.periodStart).toLocaleDateString('en-GB', { timeZone: 'UTC' })} – {new Date(invoice.periodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
         </p>
       </div>
       <div className="text-right shrink-0">
         <p className="text-sm font-semibold">{formatCents(invoice.total, invoice.currency)}</p>
         {invoice.paidAt && (
-          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString()}</p>
+          <p className="text-xs text-muted-foreground">{new Date(invoice.paidAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
         )}
       </div>
       {invoice.hostedInvoiceUrl && (
@@ -208,7 +208,7 @@ export default function UserBillingPage() {
                     <p className="text-sm text-muted-foreground capitalize">
                       {sub.billingCycle} billing
                       {sub.currentPeriodEnd && (
-                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}</>
+                        <> · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</>
                       )}
                     </p>
                   </div>
@@ -223,7 +223,7 @@ export default function UserBillingPage() {
                 {sub.cancelAtPeriodEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-warning-bg border border-status-warning-border p-3 text-sm text-status-warning">
                     <AlertTriangle className="icon-sm shrink-0" />
-                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString()}.
+                    Your subscription will cancel on {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}.
                     Reactivate in the billing portal to continue.
                   </div>
                 )}
@@ -231,7 +231,7 @@ export default function UserBillingPage() {
                 {sub.status === 'trialing' && sub.trialEnd && (
                   <div className="flex items-center gap-2 rounded-lg bg-status-info-bg border border-status-info-border p-3 text-sm text-status-info">
                     <Clock className="icon-sm shrink-0" />
-                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString()}. Add a payment method to continue.
+                    Free trial ends {new Date(sub.trialEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}. Add a payment method to continue.
                   </div>
                 )}
 

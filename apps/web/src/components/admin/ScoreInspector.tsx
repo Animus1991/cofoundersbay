@@ -178,7 +178,7 @@ export function ScoreInspector() {
               <div className="mt-3 bg-status-danger-bg border border-status-danger-border rounded-lg px-4 py-2.5 text-sm text-status-danger flex items-center gap-2">
                 <AlertTriangle className="icon-sm shrink-0" />
                 Burst suppression active until{' '}
-                <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString()}</span>
+                <span className="font-mono">{new Date(report.suppressedUntil).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
               </div>
             )}
 
@@ -292,7 +292,7 @@ export function ScoreInspector() {
                   <p className="text-muted-foreground text-xs">Last Active</p>
                   <p className="text-foreground">
                     {report.streak.lastActiveDate
-                      ? new Date(report.streak.lastActiveDate).toLocaleDateString()
+                      ? new Date(report.streak.lastActiveDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })
                       : '—'}
                   </p>
                 </div>
@@ -300,7 +300,7 @@ export function ScoreInspector() {
                   <p className="text-muted-foreground text-xs">Grace Used</p>
                   <p className="text-foreground">
                     {report.streak.graceUsedAt
-                      ? new Date(report.streak.graceUsedAt).toLocaleDateString()
+                      ? new Date(report.streak.graceUsedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })
                       : 'No'}
                   </p>
                 </div>
@@ -340,7 +340,7 @@ export function ScoreInspector() {
                         <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
                       )}
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(a.createdAt).toLocaleString()}
+                        {new Date(a.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                       </p>
                     </div>
                   </div>

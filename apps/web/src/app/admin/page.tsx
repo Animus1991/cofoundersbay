@@ -622,13 +622,13 @@ export default function AdminPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
         <StatCard
           label="Total Users"
-          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString()}
+          value={statsLoading ? '…' : (stats?.totalUsers ?? 0).toLocaleString('en-GB')}
           icon={<Users className="icon-md" />}
           trend={stats?.newUsersThisWeek ? { value: stats.newUsersThisWeek, label: 'this week' } : undefined}
         />
         <StatCard
           label="Active Today"
-          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString()}
+          value={statsLoading ? '…' : (stats?.activeUsersToday ?? 0).toLocaleString('en-GB')}
           icon={<Users className="icon-md" />}
         />
         <StatCard
@@ -639,17 +639,17 @@ export default function AdminPage() {
         />
         <StatCard
           label="Connections"
-          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString()}
+          value={statsLoading ? '…' : (stats?.totalConnections ?? 0).toLocaleString('en-GB')}
           icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Messages"
-          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString()}
+          value={statsLoading ? '…' : (stats?.totalMessages ?? 0).toLocaleString('en-GB')}
           icon={<Users className="icon-md" />}
         />
         <StatCard
           label="Events"
-          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString()}
+          value={statsLoading ? '…' : (stats?.totalEvents ?? 0).toLocaleString('en-GB')}
           icon={<Users className="icon-md" />}
         />
       </div>
@@ -1033,7 +1033,7 @@ export default function AdminPage() {
                           {cohort.startDate && (
                             <Badge variant="outline" className="gap-1 text-xs">
                               <Calendar className="icon-sm" />
-                              {new Date(cohort.startDate).toLocaleDateString()}
+                              {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                             </Badge>
                           )}
                           {cohort.capacity && (

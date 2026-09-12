@@ -67,7 +67,7 @@ export default function CommunityManagementPage() {
             <div className="min-w-0 flex-1">
               <p className="font-medium">{c.name}</p>
               <p className="text-sm text-muted-foreground">
-                {c.members.toLocaleString()} members · {c.posts.toLocaleString()} posts · {c.growth} growth
+                {c.members.toLocaleString('en-GB')} members · {c.posts.toLocaleString('en-GB')} posts · {c.growth} growth
               </p>
                           </div>
             <Badge variant="outline" className="capitalize">{c.status}</Badge>

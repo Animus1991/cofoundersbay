@@ -41,7 +41,7 @@ function SeatRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{seat.user.email}</p>
         <p className="text-xs text-muted-foreground">
-          Allocated {new Date(seat.allocatedAt).toLocaleDateString()}
+          Allocated {new Date(seat.allocatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
         </p>
       </div>
       <Button
@@ -162,7 +162,7 @@ export default function TenantBillingPage() {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString()}
+                      {sub.billingCycle} · Renews {new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                     </p>
                   </div>
                   <div className="text-right shrink-0">

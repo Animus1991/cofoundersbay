@@ -233,7 +233,7 @@ export default function AdminCommunitiesPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Members</p>
               <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString()}
+                {communities.reduce((acc, c) => acc + c.memberCount, 0).toLocaleString('en-GB')}
               </p>
             </CardContent>
           </Card>
@@ -241,7 +241,7 @@ export default function AdminCommunitiesPage() {
             <CardContent className="p-4">
               <p className="text-sm text-muted-foreground">Total Posts</p>
               <p className="text-xl font-bold">
-                {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString()}
+                {communities.reduce((acc, c) => acc + c.postCount, 0).toLocaleString('en-GB')}
               </p>
             </CardContent>
           </Card>

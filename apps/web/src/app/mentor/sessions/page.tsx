@@ -45,11 +45,9 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
   const MeetingIcon = meetingIcons[session.meetingType || 'video'] || Video;
 
   const scheduledDate = new Date(session.scheduledAt);
-  const formattedDate = scheduledDate.toLocaleDateString('en-US', {
-    month: 'short',
+  const formattedDate = scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
     day: 'numeric',
-    year: 'numeric',
-  });
+    year: 'numeric' });
   const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -61,7 +59,7 @@ function SessionCard({ session }: { session: MentorshipSessionItem }) {
         <div className="flex gap-4">
           <div className="flex flex-col items-center justify-center min-w-[60px] p-2 rounded-lg bg-primary/5">
             <span className="text-xs text-muted-foreground uppercase">
-              {scheduledDate.toLocaleDateString('en-US', { month: 'short' })}
+              {scheduledDate.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short' })}
             </span>
             <span className="text-xl font-bold">{scheduledDate.getDate()}</span>
           </div>

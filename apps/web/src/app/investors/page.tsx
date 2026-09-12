@@ -217,7 +217,7 @@ function InvestorCard({ investor }: { investor: Investor }) {
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><Briefcase className="icon-sm" />{investor.portfolioCount} investments</span>
-                <span className="flex items-center gap-1"><Eye className="icon-sm" />{investor.viewCount.toLocaleString()} views</span>
+                <span className="flex items-center gap-1"><Eye className="icon-sm" />{investor.viewCount.toLocaleString('en-GB')} views</span>
                 <span className="flex items-center gap-1"><BarChart3 className="icon-sm" />{investor.dealsThisYear} deals / yr</span>
               </div>
               <div className="flex gap-2">

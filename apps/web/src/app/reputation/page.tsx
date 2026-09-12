@@ -371,7 +371,7 @@ function BadgeCard({ badge }: { badge: Badge }) {
 
           {isEarned && badge.earnedAt && (
             <p className="text-xs text-muted-foreground mt-1">
-              Earned {new Date(badge.earnedAt).toLocaleDateString()}
+              Earned {new Date(badge.earnedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
             </p>
           )}
         </div>
@@ -406,7 +406,7 @@ function HistoryItem({ event }: { event: ReputationEvent }) {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium truncate">{event.reason}</p>
         <p className="text-xs text-muted-foreground">
-          {new Date(event.date).toLocaleDateString()} • {event.category}
+          {new Date(event.date).toLocaleDateString('en-GB', { timeZone: 'UTC' })} • {event.category}
         </p>
       </div>
       <Badge

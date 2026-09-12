@@ -61,7 +61,7 @@ export function XPProgressWidget() {
               <div>
                 <div className="text-lg font-semibold">{xp.levelLabel}</div>
                 <div className="text-sm text-muted-foreground">
-                  {xp.totalXp.toLocaleString()} XP
+                  {xp.totalXp.toLocaleString('en-GB')} XP
                 </div>
               </div>
             </div>

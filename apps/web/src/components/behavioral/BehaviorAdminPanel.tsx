@@ -171,7 +171,7 @@ function UserClassifyTab() {
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
                   {log.converted && <Badge className="bg-emerald-500 text-xs text-white">converted</Badge>}
                   {log.dismissed && <Badge className="bg-rose-500 text-xs text-white">dismissed</Badge>}
-                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString()}</span>
+                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                 </div>
               ))}
             </div>

@@ -224,12 +224,10 @@ export function ContributionGraph({
                         {day.count} contribution{day.count !== 1 ? 's' : ''}
                       </p>
                       <p className="text-muted-foreground">
-                        {new Date(day.date).toLocaleDateString('en-US', {
-                          weekday: 'short',
+                        {new Date(day.date).toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short',
                           month: 'short',
                           day: 'numeric',
-                          year: 'numeric',
-                        })}
+                          year: 'numeric' })}
                       </p>
                     </TooltipContent>
                   </Tooltip>

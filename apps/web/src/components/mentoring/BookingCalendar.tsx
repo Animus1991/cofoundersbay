@@ -207,7 +207,7 @@ export function BookingCalendar({
                   <ChevronLeft className="icon-md" />
                 </Button>
                 <span className="font-semibold text-foreground">
-                  {currentMonth.toLocaleDateString([], { month: 'long', year: 'numeric' })}
+                  {currentMonth.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'long', year: 'numeric' })}
                 </span>
                 <Button variant="ghost" size="icon" onClick={nextMonth}>
                   <ChevronRight className="icon-md" />
@@ -268,7 +268,7 @@ export function BookingCalendar({
                     Select a time
                   </CardTitle>
                   <CardDescription>
-                    {selectedDate.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </CardDescription>
                 </div>
                 <Button variant="ghost" onClick={() => setStep('date')}>
@@ -323,7 +323,7 @@ export function BookingCalendar({
                 <div className="flex items-center gap-3 text-foreground">
                   <Calendar className="icon-md text-primary-accessible" />
                   <span className="font-medium">
-                    {selectedDate?.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                    {selectedDate?.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-foreground mt-2">
@@ -400,7 +400,7 @@ export function BookingCalendar({
                 <span className="text-muted-foreground">Date</span>
                 <span className="font-medium text-foreground">
                   {selectedDate
-                    ? selectedDate.toLocaleDateString([], { month: 'short', day: 'numeric' })
+                    ? selectedDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' })
                     : 'Not selected'}
                 </span>
               </div>

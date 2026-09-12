@@ -60,7 +60,7 @@ function SubRow({
           <Badge variant="outline" className="text-xs shrink-0">{sub.plan?.displayName ?? '—'}</Badge>
         </div>
         <p className="text-xs text-muted-foreground capitalize">
-          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString()}` : ''}
+          {sub.billingCycle} · {sub.currentPeriodEnd ? `Renews ${new Date(sub.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
           {sub.seatLimit ? ` · ${sub.activeSeatCount}/${sub.seatLimit} seats` : ''}
         </p>
       </div>
@@ -108,7 +108,7 @@ function InvRow({ inv }: { inv: BillingInvoice }) {
           <span className="text-sm font-medium">{inv.invoiceNumber}</span>
           <Badge variant="outline" className={cn('text-xs capitalize', statusColors[inv.status] ?? '')}>{inv.status}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString()}</p>
+        <p className="text-xs text-muted-foreground">{ownerLabel} · {new Date(inv.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</p>
       </div>
       <p className="text-sm font-semibold shrink-0">{formatCents(inv.total, inv.currency)}</p>
       {inv.hostedInvoiceUrl && (
@@ -457,7 +457,7 @@ export default function AdminBillingPage() {
                           <p className="text-xs text-muted-foreground">
                             {coupon.discountType === 'percent' ? `${coupon.discountValue}% off` : formatCents(coupon.discountValue)} ·
                             {coupon.timesRedeemed}/{coupon.maxRedemptions ?? '∞'} used
-                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString()}` : ''}
+                            {coupon.validUntil ? ` · Expires ${new Date(coupon.validUntil).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}
                           </p>
                         </div>
                         {coupon.isActive && (

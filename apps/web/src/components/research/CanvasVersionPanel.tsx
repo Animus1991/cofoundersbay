@@ -53,6 +53,7 @@ import {
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { LocalTime } from '@/components/common/LocalTime';
 
 // ── Legacy snapshot types (backward compat) ───────────────────────────────────
 
@@ -381,9 +382,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
 
   const grouped: Record<string, BoardSnapshot[]> = {};
   for (const snap of snapshots) {
-    const dateKey = new Date(snap.createdAt).toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
+    const dateKey = new Date(snap.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(snap);
   }
@@ -440,7 +439,7 @@ function SnapshotsTab({ boardId }: { boardId: string }) {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{snap.label ?? 'Snapshot'}</p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-muted-foreground">{new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <LocalTime value={snap.createdAt} className="text-xs text-muted-foreground" />
                         <span className="text-xs text-muted-foreground">·</span>
                         <span className="text-xs text-muted-foreground">{snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}</span>
                         {snap.createdBy && (

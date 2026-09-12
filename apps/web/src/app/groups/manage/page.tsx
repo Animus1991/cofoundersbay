@@ -92,7 +92,7 @@ function GroupCard({ group }: { group: ManagedGroup }) {
               </div>
               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{group.description}</p>
               <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Users className="icon-sm" />{group.memberCount.toLocaleString()} members</span>
+                <span className="flex items-center gap-1"><Users className="icon-sm" />{group.memberCount.toLocaleString('en-GB')} members</span>
                 <span className="flex items-center gap-1"><MessageSquare className="icon-sm" />{group.postCount} posts</span>
                 <span className="flex items-center gap-1"><TrendingUp className="icon-sm" />Active {group.lastActivity}</span>
                 {group.pendingRequests && group.pendingRequests > 0 && (
@@ -156,7 +156,7 @@ export default function ManageGroupsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           {[
             { label: 'Groups Managed', value: MOCK_GROUPS.length },
-            { label: 'Total Members', value: totalMembers.toLocaleString() },
+            { label: 'Total Members', value: totalMembers.toLocaleString('en-GB') },
             { label: 'Pending Requests', value: pendingTotal },
           ].map(stat => (
             <Card key={stat.label}>
