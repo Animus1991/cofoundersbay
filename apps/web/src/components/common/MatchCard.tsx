@@ -94,12 +94,12 @@ function ScoreBadge({ score }: { score: number }) {
             style={{ transformOrigin: '22px 22px', transition: 'stroke-dasharray 1s ease' }} />
         </svg>
         <span className="absolute text-2xs font-black tabular-nums"
-          style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ color: stroke, fontFamily: 'var(--font-mono)' }}>
           {score}%
         </span>
       </div>
       <span className="text-2xs font-bold tracking-wider"
-        style={{ color: stroke, fontFamily: "'JetBrains Mono', monospace" }}>
+        style={{ color: stroke, fontFamily: 'var(--font-mono)' }}>
         {label}
       </span>
     </div>
@@ -242,7 +242,8 @@ function MatchCardInner({
         {/* Match reasons toggle */}
         <button
           onClick={() => setShowReasons(!showReasons)}
-          className={cn('mt-3 flex items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
+          // tap-target-y: a 16px-tall disclosure is under the 24px target minimum.
+          className={cn('mt-3 flex tap-target-y items-center gap-1.5 text-xs font-medium transition-colors', colors.text)}
         >
           <Sparkles className="icon-sm" />
           {showReasons ? 'Hide reasons' : 'Why this match?'}

@@ -222,6 +222,10 @@ const config: Config = {
         // tenant fonts silently had no effect.
         sans: ['var(--font-sans, var(--font-inter))', 'system-ui', 'sans-serif'],
         display: ['var(--font-heading, var(--font-display-brand))', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+        // Self-hosted by next/font in app/layout.tsx. The fallbacks matter: a
+        // missing --font-mono used to land on the device's generic monospace,
+        // which differs on every platform.
+        mono: ['var(--font-mono)', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
     },
   },

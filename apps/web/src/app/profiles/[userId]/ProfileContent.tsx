@@ -220,7 +220,13 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   return (
     <AppShell
       title={profile.displayName}
-      description={profile.headline ?? `${profile.role} on CoFounderBay`}
+      // `??` guarded the headline but not the role, so a profile payload without
+      // one interpolated the word itself and the page header read "undefined on
+      // CoFounderBay". Passing undefined lets resolvePageHeader fall back to the
+      // registry's own description, the same way the title already does.
+      description={
+        profile.headline ?? (profile.role ? `${profile.role} on CoFounderBay` : undefined)
+      }
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="ghost" size="icon" onClick={handleShare} title="Copy link">
@@ -338,8 +344,10 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2 pt-0">
-                {profile.skills.map((s) => (
-                  <SkillChip key={s.skillId} label={s.skillName} />
+                {profile.skills.map((s, i) => (
+                  // skillId can be absent on a partially-populated payload, and
+                  // key={undefined} is the same as no key to React.
+                  <SkillChip key={s.skillId ?? s.skillName ?? i} label={s.skillName} />
                 ))}
               </CardContent>
             </Card>

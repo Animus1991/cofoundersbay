@@ -196,7 +196,7 @@ export function ScoreInspector() {
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={xpChartData} layout="vertical" margin={{ left: 20, right: 20, top: 4, bottom: 4 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="type" tick={{ fontSize: 10 }} width={130} />
+                <YAxis type="category" dataKey="type" tick={{ fontSize: 11 }} width={130} />
                 <Tooltip
                   formatter={(v: number, _: string, props: { payload?: { count: number } }) =>
                     [`${v} XP (${props.payload?.count ?? 0} events)`, 'Total XP']

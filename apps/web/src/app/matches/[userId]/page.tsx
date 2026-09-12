@@ -24,7 +24,7 @@ import {
 function SectionLabel({ label }: { label: string }) {
   return (
     <p className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground"
-      style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      style={{ fontFamily: 'var(--font-mono)' }}>
       {label}
     </p>
   );
@@ -36,11 +36,11 @@ function FactorRow({ item }: { item: MatchVsBreakdownItem }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <span className="text-xs text-muted-foreground" style={{ fontFamily: 'var(--font-mono)' }}>
           {item.label}
         </span>
         <span className="text-2xs font-semibold tabular-nums text-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ fontFamily: 'var(--font-mono)' }}>
           {item.score}%
         </span>
       </div>
@@ -65,10 +65,10 @@ function CompatBadge({ label }: { label: string }) {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded"
       style={{
-        background: 'rgba(34,211,238,0.08)',
-        border: '1px solid rgba(34,211,238,0.2)',
-        color: '#22D3EE',
-        fontFamily: "'JetBrains Mono', monospace",
+        background: 'hsl(var(--status-info-bg))',
+        border: '1px solid hsl(var(--status-info-border))',
+        color: 'hsl(var(--status-info-fg))',
+        fontFamily: 'var(--font-mono)',
         fontSize: 11,
         fontWeight: 600,
       }}>
@@ -83,9 +83,9 @@ function CompatBadge({ label }: { label: string }) {
 function TraitChip({ item }: { item: MatchVsStrength }) {
   return (
     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-border bg-card">
-      <span style={{ color: '#4ADE80', fontSize: 10 }}>■</span>
+      <span className="text-status-success" style={{ fontSize: 11 }} aria-hidden="true">■</span>
       <span className="text-2xs font-medium text-foreground"
-        style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        style={{ fontFamily: 'var(--font-mono)' }}>
         {item.label}
       </span>
     </div>
@@ -107,22 +107,22 @@ function FrictionSection({ points }: { points: MatchVsFrictionPoint[] }) {
   if (points.length === 0) return null;
   return (
     <div className="rounded-lg overflow-hidden border"
-      style={{ background: 'rgba(251,146,60,0.05)', borderColor: 'rgba(251,146,60,0.2)' }}>
+      style={{ background: 'hsl(var(--status-warning-bg))', borderColor: 'hsl(var(--status-warning-border))' }}>
       {points.map((point, i) => (
         <div key={point.title}>
           <div className="flex gap-3 p-4">
-            <div className="shrink-0 mt-0.5" style={{ color: '#FB923C' }}>
+            <div className="shrink-0 mt-0.5" style={{ color: 'hsl(var(--status-warning-fg))' }}>
               <FrictionIcon icon={point.icon} />
             </div>
             <div className="flex flex-col gap-1 flex-1">
-              <span className="text-sm font-semibold leading-none" style={{ color: '#FB923C' }}>
+              <span className="text-sm font-semibold leading-none" style={{ color: 'hsl(var(--status-warning-fg))' }}>
                 {point.title}
               </span>
               <span className="text-sm text-foreground leading-relaxed">{point.description}</span>
             </div>
           </div>
           {i < points.length - 1 && (
-            <div className="mx-4" style={{ height: 1, background: 'rgba(251,146,60,0.13)' }} />
+            <div className="mx-4" style={{ height: 1, background: 'hsl(var(--status-warning-border))' }} />
           )}
         </div>
       ))}
@@ -164,37 +164,37 @@ function WorkStyleLineChart({ data }: { data: MatchVsResult['workStyle'] }) {
             stroke="rgba(107,114,128,0.15)" strokeWidth={1} />
         ))}
         {/* Source line */}
-        <path d={smoothPath(source)} fill="none" stroke="#4ADE80" strokeWidth={2}
+        <path d={smoothPath(source)} fill="none" stroke="hsl(var(--status-success-fg))" strokeWidth={2}
           strokeLinecap="round" strokeLinejoin="round" />
         {/* Target line */}
-        <path d={smoothPath(target)} fill="none" stroke="#22D3EE" strokeWidth={2}
+        <path d={smoothPath(target)} fill="none" stroke="hsl(var(--status-info-fg))" strokeWidth={2}
           strokeLinecap="round" strokeLinejoin="round" />
         {/* Source dots */}
         {source.map((v, i) => (
-          <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#4ADE80" />
+          <circle key={`s${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="hsl(var(--status-success-fg))" />
         ))}
         {/* Target dots */}
         {target.map((v, i) => (
-          <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="#22D3EE" />
+          <circle key={`t${i}`} cx={xAt(i)} cy={yAt(v)} r={4} fill="hsl(var(--status-info-fg))" />
         ))}
         {/* X-axis labels */}
         {axes.map((axis, i) => (
           <text key={axis} x={xAt(i)} y={H - 6} textAnchor="middle" fontSize={9}
             fill="rgba(107,114,128,0.7)"
-            fontFamily="'JetBrains Mono', monospace">
+            fontFamily="var(--font-mono)">
             {axis}
           </text>
         ))}
       </svg>
       <div className="flex justify-center gap-6 mt-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#4ADE80' }} />
+          style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="w-5 h-0.5 rounded-full" style={{ background: 'hsl(var(--status-success-fg))' }} />
           You
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <div className="w-5 h-0.5 rounded-full" style={{ background: '#22D3EE' }} />
+          style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="w-5 h-0.5 rounded-full" style={{ background: 'hsl(var(--status-info-fg))' }} />
           Match
         </div>
       </div>
@@ -214,7 +214,7 @@ function DonutScore({ score }: { score: number }) {
         {/* Background track */}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="#333333" strokeWidth={10} />
         {/* Score arc — rotated so 0% starts at top */}
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#22D3EE" strokeWidth={10}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="hsl(var(--status-info-fg))" strokeWidth={10}
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeDashoffset={circ / 4}
           strokeLinecap="round"
@@ -222,12 +222,12 @@ function DonutScore({ score }: { score: number }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-extrabold tabular-nums leading-none"
-          style={{ color: '#22D3EE', fontSize: 22, fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ color: 'hsl(var(--status-info-fg))', fontSize: 22, fontFamily: 'var(--font-mono)' }}>
           {score}%
         </span>
         <span className="uppercase tracking-wider mt-0.5"
-          style={{ color: 'var(--muted-foreground)', fontSize: 9, fontWeight: 600,
-            fontFamily: "'JetBrains Mono', monospace" }}>
+          style={{ color: 'hsl(var(--muted-foreground))', fontSize: 11, fontWeight: 600,
+            fontFamily: 'var(--font-mono)' }}>
           MATCH
         </span>
       </div>
@@ -362,7 +362,7 @@ export default function MatchDetailPage() {
             <ArrowLeft className="icon-md text-foreground" />
           </button>
           <span className="text-sm font-semibold"
-            style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            style={{ fontFamily: 'var(--font-mono)' }}>
             Compatibility Analysis
           </span>
           <button
@@ -390,7 +390,7 @@ export default function MatchDetailPage() {
                   {sourceProfile.displayName}
                 </span>
                 <span className="text-2xs text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  style={{ fontFamily: 'var(--font-mono)' }}>
                   {sourceProfile.role}
                 </span>
               </div>
@@ -402,9 +402,9 @@ export default function MatchDetailPage() {
             {/* Target user — accent ring */}
             <div className="flex flex-col items-center gap-3">
               <Link href={`/profiles/${targetProfile.id}`}>
-                <Avatar className="h-20 w-20 rounded-lg ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': '#22D3EE' } as React.CSSProperties}>
+                <Avatar className="h-20 w-20 rounded-lg ring-2 transition-opacity hover:opacity-90" style={{ '--tw-ring-color': 'hsl(var(--status-info-fg))' } as React.CSSProperties}>
                   <AvatarImage src={targetProfile.avatarUrl ?? undefined} alt={targetProfile.displayName} />
-                  <AvatarFallback className="rounded-lg text-base font-semibold" style={{ background: 'rgba(34,211,238,0.12)', color: '#22D3EE' }}>
+                  <AvatarFallback className="rounded-lg text-base font-semibold" style={{ background: 'hsl(var(--status-info-bg))', color: 'hsl(var(--status-info-fg))' }}>
                     {targetProfile.displayName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -414,12 +414,12 @@ export default function MatchDetailPage() {
                   {targetProfile.displayName}
                 </span>
                 <span className="text-2xs text-muted-foreground capitalize"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  style={{ fontFamily: 'var(--font-mono)' }}>
                   {targetProfile.role}
                 </span>
                 <Link href={`/profiles/${targetProfile.id}`}
                   className="flex items-center gap-0.5 text-2xs mt-0.5 transition-colors"
-                  style={{ color: '#22D3EE' }}>
+                  style={{ color: 'hsl(var(--status-info-fg))' }}>
                   <ExternalLink className="h-2.5 w-2.5" />
                   View profile
                 </Link>
@@ -430,7 +430,7 @@ export default function MatchDetailPage() {
           {/* Confidence indicator */}
           <div className="flex flex-col items-center gap-1.5 mt-4">
             <span className="text-2xs text-muted-foreground"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              style={{ fontFamily: 'var(--font-mono)' }}>
               {overall.confidence}% CONFIDENCE
             </span>
             <div className="w-28 h-0.5 rounded-full bg-border overflow-hidden">
@@ -491,7 +491,7 @@ export default function MatchDetailPage() {
               <div className="bg-card border border-border rounded-lg p-4 space-y-3">
                 {data.reasons.map(r => (
                   <div key={r} className="flex items-start gap-2.5">
-                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: '#4ADE80' }} />
+                    <CheckCircle className="icon-sm mt-0.5 shrink-0" style={{ color: 'hsl(var(--status-success-fg))' }} />
                     <span className="text-sm text-muted-foreground leading-relaxed">{r}</span>
                   </div>
                 ))}
@@ -521,7 +521,7 @@ export default function MatchDetailPage() {
           </Button>
           <Button
             className="gap-1.5 font-bold text-black text-sm"
-            style={{ background: '#22D3EE' }}
+            style={{ background: 'hsl(var(--status-info-fg))' }}
             onClick={handlePropose}
             disabled={connectMutation.isPending}
           >

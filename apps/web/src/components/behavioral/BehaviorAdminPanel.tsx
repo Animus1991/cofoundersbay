@@ -84,7 +84,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={140} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
                 <Tooltip />
                 <Bar dataKey="shown" name="Shown" fill="#6366f1" radius={[0, 2, 2, 0]} />
                 <Bar dataKey="converted" name="Converted" fill="#10b981" radius={[0, 2, 2, 0]} />

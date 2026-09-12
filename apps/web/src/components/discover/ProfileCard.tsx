@@ -134,7 +134,8 @@ function ProfileCardInner({
               <div className="flex items-center gap-2">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors truncate"
+                  // tap-target-y + inline-flex: the name link measured 23px tall, a hair under the 24px target minimum, and `truncate` already forces it out of the inline flow so SC 2.5.8's inline-link exception does not apply.
+                  className="inline-flex tap-target-y items-center truncate font-semibold text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>
@@ -360,7 +361,7 @@ function ProfileCardInner({
               <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <Link
                   href={`/profiles/${profile.userId}`}
-                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors truncate"
+                  className="inline-flex tap-target-y items-center truncate font-semibold text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {profile.displayName}
                 </Link>

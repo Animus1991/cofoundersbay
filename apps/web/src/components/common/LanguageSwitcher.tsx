@@ -62,7 +62,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           title={t('Language')}
         >
           <Globe className="h-4 w-4 shrink-0" />
-          <span className="text-[10px] font-semibold tabular-nums">{current.short}</span>
+          <span className="text-2xs font-semibold tabular-nums">{current.short}</span>
           <span className="sr-only">{t('Change language')}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -131,7 +131,7 @@ export function LanguagePanel({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-2">
       {!compact && (
-        <p className="px-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">
+        <p className="px-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground/80">
           {t('Language')}
         </p>
       )}

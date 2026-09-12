@@ -134,15 +134,23 @@ function VerificationCard({ email }: { email?: string | null }) {
       <CardContent className="space-y-2 pt-0">
         {items.map(({ labelEn, labelEl, verified, icon: Icon }) => (
           <div key={labelEn} className="flex items-center gap-2.5 text-xs">
-            <div className={`flex h-6 w-6 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
+            <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${verified ? 'bg-primary/15' : 'bg-secondary/60'}`}>
               <Icon className={`icon-sm ${verified ? 'text-primary-accessible' : 'text-muted-foreground'}`} />
             </div>
-            <span className={verified ? 'text-foreground' : 'text-muted-foreground'}>
+            {/* min-w-0 so the label yields before the row does: this line is
+                `text-xs`, which now holds an 11px floor rather than shrinking to
+                9.84px with the 82% desktop root, and the extra width pushed the
+                card 10px past a 1024px viewport. */}
+            <span className={`min-w-0 ${verified ? 'text-foreground' : 'text-muted-foreground'}`}>
               <BilingualText en={labelEn} el={labelEl} compact />
             </span>
             {verified
               ? <CheckCircle className="ml-auto icon-sm text-primary-accessible" />
-              : <span className="ml-auto text-xs text-muted-foreground/60">
+              : /* No /60 here: an alpha modifier on a text colour composites toward
+                   the surface, and muted-foreground at 0.6 measures 3.27:1 on the
+                   card -- under AA. Below 0.80 alpha this token always fails;
+                   status text needs the token at full strength. */
+                <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                   <BilingualText en={profileEn('not_connected')} el={profileEl('not_connected')} />
                 </span>}
           </div>

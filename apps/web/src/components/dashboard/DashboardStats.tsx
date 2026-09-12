@@ -82,7 +82,7 @@ export function DashboardStats({
         <div className="h-24 w-full" aria-hidden>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis hide domain={[0, 'auto']} />
               <Tooltip
                 contentStyle={{ fontSize: 12 }}

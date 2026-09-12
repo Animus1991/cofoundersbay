@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
-import { Inter, Commissioner } from 'next/font/google';
+import { Inter, Commissioner, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
 /*
@@ -17,11 +17,26 @@ import './globals.css';
  *  - Commissioner display: a humanist grotesque by Kostas Bartsokas with
  *                 Greek designed in, not bolted on. Distinct from Inter at
  *                 heading sizes without being ornamental.
+ *  - JetBrains Mono  the technical voice on the match-analysis screens. Those
+ *                 screens already asked for it in 17 inline `fontFamily`
+ *                 declarations, but nothing ever loaded it, so every one of
+ *                 them fell through to whatever generic monospace the device
+ *                 happened to have — Consolas on Windows, Menlo on iOS, Roboto
+ *                 Mono on Android. Self-hosting it makes that screen look the
+ *                 same everywhere, which was the point of self-hosting the
+ *                 other two.
  */
 const inter = Inter({
   subsets: ['latin', 'latin-ext', 'greek', 'greek-ext'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin', 'latin-ext', 'greek'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+  variable: '--font-mono',
 });
 
 const commissioner = Commissioner({
@@ -101,7 +116,7 @@ export default function RootLayout({
       lang="en"
       data-bilingual="en-el"
       data-scroll-behavior="smooth"
-      className={`scroll-smooth ${inter.variable} ${commissioner.variable}`}
+      className={`scroll-smooth ${inter.variable} ${commissioner.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <body

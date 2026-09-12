@@ -147,7 +147,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+              <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
               {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />}
@@ -422,7 +422,7 @@ function BookingCard({
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <Link
                 href={`/profiles/${otherUserId}`}
-                className="font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
               >
                 {other.displayName}
               </Link>

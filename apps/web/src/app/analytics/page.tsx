@@ -100,7 +100,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
                 ? 'destructive'
                 : 'secondary'
             }
-            className="gap-1 text-[10px]"
+            className="gap-1 text-2xs"
           >
             <ChangeIcon className="icon-sm" />
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}

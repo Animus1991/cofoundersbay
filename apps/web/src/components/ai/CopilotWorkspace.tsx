@@ -293,7 +293,7 @@ export function CopilotWorkspace({
                       onDismiss={chat.dismissAction}
                     />
                   )}
-                  <p className={cn('mt-1 text-[10px]', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
+                  <p className={cn('mt-1 text-2xs', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
                     {formatTime(msg.timestamp)}
                   </p>
                 </div>
@@ -327,7 +327,7 @@ export function CopilotWorkspace({
               {chat.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
-          <p className="mt-2 flex items-center justify-center gap-1 text-center text-[10px] text-muted-foreground">
+          <p className="mt-2 flex items-center justify-center gap-1 text-center text-2xs text-muted-foreground">
             <Sparkles className="h-3 w-3" />
             Tools use your real Connections, Matches, and Messages APIs. Destructive steps need confirm.
           </p>

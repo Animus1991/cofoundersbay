@@ -196,7 +196,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
           </div>
           <button
             onClick={() => setSaved(!saved)}
-            className={cn('shrink-0 mt-0.5 transition-colors', saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground')}
+            // WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows.
+            className={cn(
+              'shrink-0 -m-1 mt-0.5 inline-flex tap-target items-center justify-center transition-colors',
+              saved ? 'text-primary-accessible' : 'text-muted-foreground/40 hover:text-muted-foreground',
+            )}
           >
             <Bookmark className={cn('icon-sm', saved && 'fill-current')} />
           </button>
