@@ -113,7 +113,7 @@ function DocumentContentView({ content, type }: { content: Record<string, unknow
       return (
         <div key={key} className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
-          <p className="text-sm font-medium">{val.toLocaleString()}</p>
+          <p className="text-sm font-medium">{val.toLocaleString('en-GB')}</p>
         </div>
       );
     }
@@ -325,7 +325,7 @@ export default function SharePage() {
             {linkInfo?.expiresAt && (
               <span className="text-xs text-muted-foreground hidden sm:flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                Expires {new Date(linkInfo.expiresAt).toLocaleDateString()}
+                Expires {new Date(linkInfo.expiresAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </span>
             )}
             <Button
@@ -424,7 +424,7 @@ export default function SharePage() {
                     Document Content
                   </CardTitle>
                   <span className="text-xs text-muted-foreground">
-                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString()}
+                    v{document.version} · Updated {new Date(document.updatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                   </span>
                 </div>
               </CardHeader>

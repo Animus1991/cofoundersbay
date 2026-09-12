@@ -31,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import { apiRequest } from '@/lib/api';
 import { usePollingGuards } from '@/hooks/usePollingGuards';
+import { LocalTime } from '@/components/common/LocalTime';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -124,7 +125,7 @@ function SnapshotPreviewDialog({ open, onClose, boardId, snapshot }: SnapshotPre
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="icon-sm text-primary-accessible" />
-            {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString()}`}
+            {snapshot.label ?? `Snapshot — ${new Date(snapshot.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
           </DialogTitle>
           <DialogDescription>
             {snapshot.nodeCount} nodes · saved {timeAgo(snapshot.createdAt)}
@@ -235,9 +236,7 @@ export function BoardHistoryDrawer({
   // Group snapshots by date
   const grouped: Record<string, BoardSnapshot[]> = {};
   for (const snap of snapshots) {
-    const dateKey = new Date(snap.createdAt).toLocaleDateString(undefined, {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
+    const dateKey = new Date(snap.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(snap);
   }
@@ -337,9 +336,10 @@ export function BoardHistoryDrawer({
                             {snap.label ?? `Snapshot`}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(snap.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+                            <LocalTime
+                              value={snap.createdAt}
+                              className="text-xs text-muted-foreground"
+                            />
                             <span className="text-xs text-muted-foreground">·</span>
                             <span className="text-xs text-muted-foreground">
                               {snap.nodeCount} node{snap.nodeCount !== 1 ? 's' : ''}

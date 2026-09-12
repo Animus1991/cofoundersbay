@@ -798,7 +798,7 @@ export default function TenantBrandingPage() {
                       <p className="font-medium">Branding Status</p>
                       <p className="text-sm text-muted-foreground">
                         {branding?.isBrandingActive
-                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString()}` : ''}`
+                          ? `Published ${branding.publishedAt ? `on ${new Date(branding.publishedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}` : ''}`
                           : 'Not yet published — save changes first, then publish.'}
                       </p>
                     </div>

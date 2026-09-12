@@ -247,7 +247,7 @@ function RecommendationCard({ hit, onConnect, onFeedback, onSave }: {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2 mb-1">
               <div>
-                <Link href={`/profiles/${userId}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+                <Link href={`/profiles/${userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {displayName}
                 </Link>
                 {headline && (
@@ -486,7 +486,7 @@ export default function RecommendationsPage() {
                 <Sparkles className="icon-sm text-primary-accessible" />
                 <h3 className="font-semibold text-sm"><BilingualText en="This Week's Top Picks" el="Κορυφαίες επιλογές εβδομάδας" /></h3>
                 <Badge variant="secondary" className="text-xs ml-auto">
-                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString() : 'Today'}
+                  {digestData?.generatedAt ? new Date(digestData.generatedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' }) : 'Today'}
                 </Badge>
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1">

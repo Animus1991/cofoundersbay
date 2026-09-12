@@ -72,6 +72,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return (
         <Slot
           {...props}
+          // Conventional identity hook for tooling and tests. Note it does NOT
+          // reach the DOM on this branch -- Radix's Slot does not forward it to
+          // the child -- so nothing in CSS may depend on it here.
+          data-slot="button"
           className={cn(buttonVariants({ variant, size, className }), inactive && 'pointer-events-none opacity-50')}
           ref={ref}
           aria-disabled={inactive || props['aria-disabled']}
@@ -93,6 +97,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <button
+        data-slot="button"
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}

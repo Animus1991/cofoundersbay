@@ -710,7 +710,7 @@ export default function MessagesPage() {
                                 {req.requester.displayName}
                               </span>
                               <span className="shrink-0 text-xs text-muted-foreground">
-                                {new Date(req.createdAt).toLocaleDateString()}
+                                {new Date(req.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                               </span>
                             </div>
                             <RoleBadge role={req.requester?.role || 'founder'} size="sm" className="mt-0.5" />

@@ -416,6 +416,16 @@ html {
     background-attachment: fixed;
   }
 
+  /* Body copy joins the web view's +5% (0.9375rem x 1.05). It has to sit after
+     the rule above, not inside the `min-width: 1024px` block further up: same
+     layer, same specificity, so source order decides and that block comes
+     first. */
+  @media (min-width: 1024px) {
+    body {
+      font-size: 0.984375rem;
+    }
+  }
+
   /* Custom scrollbar — thin & minimal */
   ::-webkit-scrollbar {
     width: 6px;
@@ -983,6 +993,66 @@ html {
     line-height: max(1rem, 16px);
   }
 
+  /* `text-xs` needed the same floor and did not have it. 0.75rem against the 82%
+     desktop root is 9.84px, and it is the most common size in the product -- 111
+     text nodes on the founder dashboard alone were rendering below the
+     documented 11px minimum on every desktop. */
+  .text-xs {
+    font-size: max(0.75rem, 11px);
+    line-height: max(1rem, 16px);
+  }
+
+  /* ── Web view: +5% on everything below the display sizes ────────────────
+     Requested for the desktop view only. The display steps stay exactly where
+     they are -- `text-lg` (14.76px, "Your founder journey") and up, which is
+     the same bracket as the page title and the stat numerals (19.68px,
+     "Founder dashboard", "1840", "0/4"). Everything under that grows by 5%.
+
+     Written as rem x 1.05 rather than as fixed px so a reader who raises their
+     browser default still gets it; the px halves of the `max()` are the
+     existing 11px/16px floors, also x 1.05, so the legibility floor rises with
+     the rest instead of swallowing the increase.
+
+     The `.bilingual-secondary` line needs no entry: it is sized in `em` against
+     its own parent, so it follows whichever side of this threshold that parent
+     falls on. */
+  @media (min-width: 1024px) {
+    .text-2xs {
+      font-size: max(0.721875rem, 11.55px);
+      line-height: max(1.05rem, 16.8px);
+    }
+
+    .text-xs {
+      font-size: max(0.7875rem, 11.55px);
+      line-height: max(1.05rem, 16.8px);
+    }
+
+    .text-sm {
+      font-size: 0.91875rem;
+      line-height: 1.3125rem;
+    }
+
+    .text-base {
+      font-size: 1.05rem;
+      line-height: 1.575rem;
+    }
+  }
+
+  /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
+     is 19.67px once the desktop root is 82% -- and because these are utilities
+     they also beat the `min-height: 24px` base rule that was meant to hold the
+     line. Use these instead on anything a pointer has to hit.
+     `tap-target` for an icon-only control, `tap-target-y` where only the height
+     is short (a text button or a name link in a row). */
+  .tap-target {
+    min-height: max(1.5rem, 24px);
+    min-width: max(1.5rem, 24px);
+  }
+
+  .tap-target-y {
+    min-height: max(1.5rem, 24px);
+  }
+
   /* ── Phones: one language on the inline variants ──
      Both languages on a single line makes every string roughly twice as long.
      Measured on a 360px viewport, that was the single biggest source of broken
@@ -1004,6 +1074,36 @@ html {
     .bilingual-separator--inline {
       display: none !important;
     }
+  }
+
+  /* A control paints its own foreground; the page's muted token is not readable
+     on it. Measured on the primary fill: #94a3b8 on #4957f3 is 2.07:1, and axe
+     flagged it on /discover, /profile, /connections, /projects, /milestones,
+     /fundraising and /readiness -- every filled button with a bilingual label
+     had an unreadable second line. Inheriting keeps whatever the control chose
+     (5.32:1 on the primary fill); the size difference still carries the
+     hierarchy, which is what the smaller line was for. */
+  button .bilingual-secondary,
+  button .bilingual-separator,
+  [role='button'] .bilingual-secondary,
+  [role='button'] .bilingual-separator,
+  [role='tab'] .bilingual-secondary,
+  [role='tab'] .bilingual-separator,
+  /* Any element that declares its own foreground has taken responsibility for
+     the contrast on it -- a filled Button rendered `asChild` is an <a>, not a
+     <button>, so the element selectors above miss it. Keying on the foreground
+     class is both broader and more precise than tagging the component: it says
+     "wherever the surface sets its own text colour, the second language uses
+     that colour too". */
+  .text-primary-foreground .bilingual-secondary,
+  .text-primary-foreground .bilingual-separator,
+  .text-secondary-foreground .bilingual-secondary,
+  .text-secondary-foreground .bilingual-separator,
+  .text-destructive-foreground .bilingual-secondary,
+  .text-destructive-foreground .bilingual-separator,
+  .text-accent-foreground .bilingual-secondary,
+  .text-accent-foreground .bilingual-separator {
+    color: inherit;
   }
 
   /* Top-bar chips hold their second language only where the bar has room.

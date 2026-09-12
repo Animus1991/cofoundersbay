@@ -76,8 +76,8 @@ function InviteRow({ invite, onCancel, cancelling }: {
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{invite.email}</p>
         <p className="text-xs text-muted-foreground">
-          Sent {new Date(invite.createdAt).toLocaleDateString()}
-          {invite.acceptedAt && ` · Joined ${new Date(invite.acceptedAt).toLocaleDateString()}`}
+          Sent {new Date(invite.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
+          {invite.acceptedAt && ` · Joined ${new Date(invite.acceptedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}`}
         </p>
       </div>
       <Badge className={cn('shrink-0 text-xs', cfg.color)}>{cfg.label}</Badge>

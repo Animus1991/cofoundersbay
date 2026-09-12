@@ -168,7 +168,7 @@ export function AbuseMonitorPanel() {
                       <SeverityBar v={f.severity} />
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(f.createdAt).toLocaleString()}
+                      {new Date(f.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}
                     </p>
                   </div>
                   {f.status === 'pending' && (

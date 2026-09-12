@@ -49,7 +49,7 @@ type EventCardProps = {
 };
 
 function formatEventDate(date: Date): string {
-  return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 function formatEventTime(start: Date, end: Date): string {
@@ -108,7 +108,7 @@ export function EventCard({
             <div className="flex-shrink-0 text-center">
               <div className="w-14 h-14 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                 <span className="text-xs font-medium text-primary-accessible">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
                 <span className="text-lg font-bold text-primary-accessible">
                   {event.startDate.getDate()}
@@ -180,7 +180,7 @@ export function EventCard({
             <div className="absolute top-4 left-4">
               <div className="rounded-lg bg-background/90 backdrop-blur-sm px-3 py-2 text-center">
                 <span className="text-xs font-medium text-primary-accessible block">
-                  {event.startDate.toLocaleDateString([], { month: 'short' })}
+                  {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
                 </span>
                 <span className="text-xl font-bold text-foreground">
                   {event.startDate.getDate()}
@@ -301,7 +301,7 @@ export function EventCard({
           <div className="flex-shrink-0 text-center">
             <div className="w-16 h-16 rounded-xl bg-primary/10 flex flex-col items-center justify-center">
               <span className="text-xs font-medium text-primary-accessible">
-                {event.startDate.toLocaleDateString([], { month: 'short' })}
+                {event.startDate.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short' })}
               </span>
               <span className="text-2xl font-bold text-primary-accessible">
                 {event.startDate.getDate()}

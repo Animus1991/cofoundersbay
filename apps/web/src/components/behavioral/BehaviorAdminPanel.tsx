@@ -84,7 +84,7 @@ function NudgeStatsTab({ stats, isLoading }: { stats?: BehaviorPlatformStats; is
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 16 }}>
                 <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={140} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={140} />
                 <Tooltip />
                 <Bar dataKey="shown" name="Shown" fill="#6366f1" radius={[0, 2, 2, 0]} />
                 <Bar dataKey="converted" name="Converted" fill="#10b981" radius={[0, 2, 2, 0]} />
@@ -171,7 +171,7 @@ function UserClassifyTab() {
                   <Badge variant="outline" className="text-xs">{log.surface}</Badge>
                   {log.converted && <Badge className="bg-emerald-500 text-xs text-white">converted</Badge>}
                   {log.dismissed && <Badge className="bg-rose-500 text-xs text-white">dismissed</Badge>}
-                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString()}</span>
+                  <span className="ml-auto text-muted-foreground">{new Date(log.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                 </div>
               ))}
             </div>

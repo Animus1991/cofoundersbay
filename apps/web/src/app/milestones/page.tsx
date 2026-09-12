@@ -128,7 +128,13 @@ function MilestoneCard({
     <div
       className={cn(
         'group relative rounded-xl border bg-card transition-all hover:shadow-sm',
-        item.status === 'completed' ? cn('border', STATUS.success.border, 'opacity-75 hover:opacity-100') : 'border-border/60',
+        // No opacity fade on a completed row. Fading the container fades its text
+        // with it: muted text measured 4.35:1 at 0.75 on the card and 4.38:1 at
+        // 0.80 on this row's own success tint -- both under AA, and the exact
+        // value needed depends on whichever surface the row happens to sit on.
+        // Completion is already carried by the success border and the struck-out
+        // title, so the row recedes without taking its own legibility with it.
+        item.status === 'completed' ? cn('border', STATUS.success.border) : 'border-border/60',
         overdue && cn('border', STATUS.danger.border),
       )}
     >
@@ -535,7 +541,7 @@ export default function MilestonesPage() {
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value as typeof priorityFilter)}
-                className="bg-transparent text-xs text-foreground outline-none cursor-pointer"
+                className="tap-target-y cursor-pointer bg-transparent text-xs text-foreground outline-none"
               >
                 {[
                   { value: 'all' as const, key: 'pri_all' as const },

@@ -110,7 +110,7 @@ export function ThemeSwitcher() {
               {idx === 3 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                  <DropdownMenuLabel className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                     <BilingualText
                       en="Custom Themes"
                       el={translate('el', 'Custom Themes')}

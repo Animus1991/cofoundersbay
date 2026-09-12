@@ -214,7 +214,7 @@ function SSOEventRow({ event }: { event: SSOAuthEvent }) {
         {event.email && <span className="ml-2 text-muted-foreground">{event.email}</span>}
       </div>
       <span className="text-xs text-muted-foreground shrink-0">{event.identityProvider.tenant.name}</span>
-      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString()}</span>
+      <span className="text-xs text-muted-foreground shrink-0">{new Date(event.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}</span>
       {event.errorMessage && <span className="text-xs text-destructive-accessible truncate max-w-[160px]">{event.errorMessage}</span>}
     </div>
   );

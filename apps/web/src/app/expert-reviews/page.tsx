@@ -254,7 +254,7 @@ function ReviewCard({ review }: { review: ExpertReview }) {
               {review.dueDate && review.status !== 'submitted' && (
                 <span className={cn('text-2xs flex items-center gap-1', STATUS.warning.icon)}>
                   <Clock className="icon-sm" />
-                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  Due {new Date(review.dueDate).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
                 </span>
               )}
             </div>

@@ -244,7 +244,7 @@ function ShortlistCard({
           <div className="mt-2 flex items-center justify-between">
             <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <Clock className="icon-sm" />
-              Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
             <div className="flex items-center gap-1.5">
               <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground" asChild>

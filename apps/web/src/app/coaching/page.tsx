@@ -165,7 +165,7 @@ function LocalWhen({ iso, variant }: { iso: string; variant: 'card' | 'banner' }
       return;
     }
     if (variant === 'banner') {
-      const day = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
+      const day = d.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'short' });
       const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
       setLabel(`${day} at ${time}`);
       return;

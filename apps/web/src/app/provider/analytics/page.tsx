@@ -102,10 +102,10 @@ function MetricCard({
   format?: 'number' | 'currency' | 'percent';
 }) {
   const displayValue = format === 'currency'
-    ? `$${value.toLocaleString()}`
+    ? `$${value.toLocaleString('en-GB')}`
     : format === 'percent'
     ? `${value}%`
-    : value.toLocaleString();
+    : value.toLocaleString('en-GB');
 
   return (
     <Card>
@@ -274,7 +274,7 @@ export default function ProviderAnalyticsPage() {
                         <span className="font-medium">{stage.stage}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-muted-foreground text-xs">{stage.count.toLocaleString()}</span>
+                        <span className="text-muted-foreground text-xs">{stage.count.toLocaleString('en-GB')}</span>
                         <Badge variant="outline" className="text-xs tabular-nums">{stage.pct}%</Badge>
                       </div>
                     </div>
@@ -308,7 +308,7 @@ export default function ProviderAnalyticsPage() {
                         <p className="text-xs text-muted-foreground">{svc.inquiries} inquiries</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">${svc.revenue.toLocaleString()}</p>
+                        <p className="text-sm font-semibold">${svc.revenue.toLocaleString('en-GB')}</p>
                         <p className="text-xs text-muted-foreground">revenue</p>
                       </div>
                       {svc.rating != null ? (

@@ -386,7 +386,7 @@ export function MembersPageClient() {
   return (
     <AppShell
       title="Member Directory"
-      description={`Discover and connect with ${total.toLocaleString()} members`}
+      description={`Discover and connect with ${total.toLocaleString('en-GB')} members`}
     >
       <div className="space-y-4 pb-10">
 
@@ -603,7 +603,7 @@ export function MembersPageClient() {
         {/* Results Header */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {isLoading ? 'Loading...' : `${total.toLocaleString()} member${total !== 1 ? 's' : ''} found`}
+            {isLoading ? 'Loading...' : `${total.toLocaleString('en-GB')} member${total !== 1 ? 's' : ''} found`}
           </p>
 
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>

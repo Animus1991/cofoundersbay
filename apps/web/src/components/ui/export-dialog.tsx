@@ -81,7 +81,7 @@ export function ExportDialog({
           {/* Row count info */}
           {rowCount != null && (
             <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString()}</span> {rowCount === 1 ? 'row' : 'rows'}
+              Exporting <span className="font-medium text-foreground">{rowCount.toLocaleString('en-GB')}</span> {rowCount === 1 ? 'row' : 'rows'}
               {columns && ` · ${selectedColumns.length} of ${columns.length} columns`}
             </div>
           )}

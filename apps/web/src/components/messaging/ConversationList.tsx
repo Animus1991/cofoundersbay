@@ -56,8 +56,8 @@ function formatListTime(date: Date, yesterday: string): string {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
   if (days === 1) return yesterday;
-  if (days < 7) return date.toLocaleDateString([], { weekday: 'short' });
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  if (days < 7) return date.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short' });
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC', month: 'short', day: 'numeric' });
 }
 
 function ConversationItem({

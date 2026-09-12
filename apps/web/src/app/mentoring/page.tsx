@@ -58,6 +58,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { LocalTime } from '@/components/common/LocalTime';
 
 const STATUS_COLORS: Record<string, string> = {
   requested: 'bg-status-warning-bg text-status-warning border-status-warning-border',
@@ -146,7 +147,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <Link href={`/profiles/${mentor.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+              <Link href={`/profiles/${mentor.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {mentor.displayName}
               </Link>
               {mentor.isVerified && <BadgeCheck className="icon-sm text-primary-accessible shrink-0" />}
@@ -421,7 +422,7 @@ function BookingCard({
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <Link
                 href={`/profiles/${otherUserId}`}
-                className="font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
               >
                 {other.displayName}
               </Link>
@@ -439,13 +440,13 @@ function BookingCard({
             <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="icon-sm" />
-                {start.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                {start.toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })}
               </span>
               <span className="flex items-center gap-1">
                 <Clock className="icon-sm" />
-                {start.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <LocalTime value={start} />
                 {' – '}
-                {end.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                <LocalTime value={end} />
               </span>
               <span className="flex items-center gap-1">
                 <Video className="icon-sm" />

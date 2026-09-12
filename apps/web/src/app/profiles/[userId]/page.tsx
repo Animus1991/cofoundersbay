@@ -27,12 +27,19 @@ export async function generateMetadata({
   if (!profile) {
     return { title: 'Profile | CoFounderBay', description: 'View this profile on CoFounderBay' };
   }
+  // `??` guarded the headline but not the role, so a payload without one put the
+  // literal word into the description: "undefined on CoFounderBay", in the meta
+  // tag and the OpenGraph card that link previews read.
+  const summary =
+    profile.headline ??
+    (profile.role ? `${profile.role} on CoFounderBay` : 'View this profile on CoFounderBay');
+
   return {
     title: `${profile.displayName ?? 'Profile'} | CoFounderBay`,
-    description: profile.headline ?? `${profile.role} on CoFounderBay`,
+    description: summary,
     openGraph: {
       title: `${profile.displayName ?? 'Profile'} on CoFounderBay`,
-      description: profile.headline ?? `${profile.role} on CoFounderBay`,
+      description: summary,
       images: profile.avatarUrl ? [{ url: profile.avatarUrl }] : [],
     },
   };

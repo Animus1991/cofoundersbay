@@ -84,7 +84,7 @@ function ConnectionCard({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/profiles/${other.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+            <Link href={`/profiles/${other.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
               {other.displayName}
             </Link>
             <RoleBadge role={other.role} size="sm" />
@@ -174,7 +174,7 @@ function IntroRequestCard({
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={`/profiles/${sender.id}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+              <Link href={`/profiles/${sender.id}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                 {sender.displayName}
               </Link>
               <RoleBadge role={sender.role} size="sm" />
@@ -211,7 +211,7 @@ function IntroRequestCard({
                 <BilingualText en={connectionsEn('decline')} el={connectionsEl('decline')} compact />
               </Button>
               <p className="ml-auto shrink-0 text-xs text-muted-foreground">
-                {new Date(connection.createdAt).toLocaleDateString()}
+                {new Date(connection.createdAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             </div>
           </div>

@@ -206,7 +206,7 @@ function RuleRow({ rule, tenantId, onRefresh }: { rule: AutomationRuleItem; tena
               <span className="flex items-center gap-1 text-status-warning"><AlertTriangle className="icon-sm" />{rule.failureCount} failures</span>
             )}
             {rule.lastRunAt && (
-              <span className="flex items-center gap-1"><Clock className="icon-sm" />{new Date(rule.lastRunAt).toLocaleDateString()}</span>
+              <span className="flex items-center gap-1"><Clock className="icon-sm" />{new Date(rule.lastRunAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
             )}
             {rule.delaySeconds > 0 && <span>Delay: {rule.delaySeconds}s</span>}
           </div>

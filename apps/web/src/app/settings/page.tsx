@@ -304,7 +304,7 @@ export default function SettingsPage() {
                   </Badge>
                   {subscription?.currentPeriodEnd && (
                     <span className="text-xs text-muted-foreground">
-                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                      Renews {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                     </span>
                   )}
                 </div>
@@ -437,7 +437,12 @@ export default function SettingsPage() {
                     autoComplete="current-password"
                     className="pr-10"
                   />
-                  <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                  {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-2 top-1/2 inline-flex tap-target -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+                  >
                     {showPw ? <EyeOff className="icon-sm" /> : <Eye className="icon-sm" />}
                   </button>
                 </div>

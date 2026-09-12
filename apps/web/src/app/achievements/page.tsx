@@ -326,7 +326,7 @@ function AchievementCard({ achievement }: { achievement: Achievement }) {
               </span>
               {achievement.unlocked && achievement.unlockedAt && (
                 <span className="text-muted-foreground ml-auto">
-                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                  Unlocked {new Date(achievement.unlockedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                 </span>
               )}
             </div>
@@ -382,7 +382,7 @@ function UserStatsCard({ stats }: { stats: UserStats }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('total_points')} el={achievementsEl('total_points')} compact /></p>
-              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString()}</p>
+              <p className="text-xl font-bold">{stats.totalPoints.toLocaleString('en-GB')}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground"><BilingualText en={achievementsEn('achievements')} el={achievementsEl('achievements')} compact /></p>
@@ -679,7 +679,7 @@ export default function AchievementsPage() {
                               <p className="text-xs text-muted-foreground">Level {user.level} · {user.badge}</p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString()}</p>
+                              <p className="text-sm font-bold tabular-nums">{user.points.toLocaleString('en-GB')}</p>
                               <p className="text-xs text-muted-foreground">pts</p>
                             </div>
                           </div>
@@ -707,7 +707,7 @@ export default function AchievementsPage() {
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium truncate">{a.title}</p>
                                 <p className="text-xs text-muted-foreground">
-                                  {a.unlockedAt?.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                                  {a.unlockedAt?.toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' })}
                                 </p>
                               </div>
                               <Badge variant="secondary" size="sm" className="px-1.5 shrink-0">{a.points}pts</Badge>

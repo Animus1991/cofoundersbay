@@ -1076,14 +1076,59 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     return { ok: true, available: false, agents: [], models: [], conversations: PREVIEW_AI_CONVERSATIONS, messages: [] };
   }
 
+  // /profiles/[userId] had no demo handler at all, so it fell through to the
+  // generic fallback and every field came back undefined: a "?" avatar, no name,
+  // "undefined on CoFounderBay" under the title, and three empty skill chips
+  // whose missing skillId also tripped React's duplicate-key warning. Resolved
+  // from PEOPLE so a card opened from Discover shows the person that was clicked.
+  if (/^\/api\/profiles\/[^/]+$/.test(pathname)) {
+    const id = pathname.split('/').pop() ?? '';
+    const person =
+      PEOPLE.find((p) => p.userId === id || p.id === id) ?? PEOPLE[0];
+    const slug = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    return {
+      id: person.id,
+      userId: person.userId,
+      displayName: person.displayName,
+      headline: person.headline,
+      bio: person.bio,
+      location: person.location,
+      timezone: 'Europe/Athens',
+      languages: ['English'],
+      avatarUrl: person.avatarUrl,
+      rolePayload: {
+        lookingFor: person.lookingFor ? [person.lookingFor] : [],
+        availability: person.availability,
+        industries: person.industries,
+      },
+      visibilityRules: null,
+      role: person.role,
+      skills: person.skillNames.map((name) => ({
+        skillId: slug(name),
+        skillName: name,
+        slug: slug(name),
+        level: 'advanced',
+      })),
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: NOW,
+    };
+  }
+
   if (pathname === '/api/gamification/users/me/xp' || pathname.endsWith('/xp')) {
     return {
+      // Consistent with the real ladder in apps/api gamification.types.ts, which
+      // is what the widget renders against: level 3 "Builder" spans 500-1000 XP,
+      // and `levelProgress` is a **percentage**, not a fraction. It used to read
+      // `level: 3, totalXp: 420, levelProgress: 0.68` — 420 XP is level 2 on that
+      // ladder, and 0.68 rendered as an all-but-empty bar labelled "1%" beside a
+      // badge promising only 80 XP to go. 920 keeps both the level and the "80 to
+      // next" and makes the bar agree with them: (920-500)/(1000-500) = 84%.
       userId: ME_ID,
-      totalXp: 420,
+      totalXp: 920,
       level: 3,
       levelLabel: 'Builder',
       xpToNextLevel: 80,
-      levelProgress: 0.68,
+      levelProgress: 84,
       recentEvents: [],
       streak: { currentStreak: 4, longestStreak: 7, lastActiveDate: NOW },
     };

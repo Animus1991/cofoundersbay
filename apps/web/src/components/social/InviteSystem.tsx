@@ -201,7 +201,7 @@ export function InviteSystem() {
                         <div>
                           <p className="font-medium">{invite.email}</p>
                           <p className="text-xs text-muted-foreground">
-                            Sent {new Date(invite.sentAt).toLocaleDateString()}
+                            Sent {new Date(invite.sentAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
                           </p>
                         </div>
                       </div>

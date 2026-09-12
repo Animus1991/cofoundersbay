@@ -93,7 +93,7 @@ function formatTimeAgo(dateStr: string): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return new Date(dateStr).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
 }
 
 function NotificationSkeleton() {
@@ -181,7 +181,10 @@ const NotificationRow = memo(function NotificationRow({
             <Link
               href={item.link}
               onClick={() => onRead(item.id)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary-accessible hover:underline"
+              // tap-target-y on all three row actions: they were 16px tall, under the
+              // 24px target minimum, and they sit close enough together that the
+              // SC 2.5.8 spacing exception does not rescue them either.
+              className="inline-flex tap-target-y items-center gap-1 text-xs font-medium text-primary-accessible hover:underline"
             >
               <BilingualText en="View" el="Προβολή" compact /> <ExternalLink className="icon-sm" />
             </Link>
@@ -189,14 +192,14 @@ const NotificationRow = memo(function NotificationRow({
           {isUnread && (
             <button
               onClick={() => onRead(item.id)}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="inline-flex tap-target-y items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <Check className="icon-sm" /> <BilingualText en="Mark read" el="Αναγνωσμένη" compact />
             </button>
           )}
           <button
             onClick={() => onDelete(item.id)}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive-accessible transition-colors"
+            className="inline-flex tap-target-y items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive-accessible"
           >
             <Trash2 className="icon-sm" /> <BilingualText en="Delete" el="Διαγραφή" compact />
           </button>

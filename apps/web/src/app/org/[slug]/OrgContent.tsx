@@ -275,7 +275,7 @@ export function OrgContent({ org, slug }: OrgContentProps) {
                           </span>
                           {cohort.capacity && <span>Cap: {cohort.capacity}</span>}
                           {cohort.startDate && (
-                            <span>Starts {new Date(cohort.startDate).toLocaleDateString()}</span>
+                            <span>Starts {new Date(cohort.startDate).toLocaleDateString('en-GB', { timeZone: 'UTC' })}</span>
                           )}
                         </div>
                       </div>

@@ -293,7 +293,7 @@ function mapApiItem(item: EndorsementItem): Endorsement {
     content: item.content,
     relationship: item.relationship ?? undefined,
     isApproved: item.isApproved,
-    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    createdAt: new Date(item.createdAt).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }),
   };
 }
 

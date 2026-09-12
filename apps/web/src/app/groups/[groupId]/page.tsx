@@ -361,11 +361,11 @@ export default function GroupDetailPage() {
                     </div>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Users className="icon-sm" />
-                      {group.memberCount.toLocaleString()} members
+                      {group.memberCount.toLocaleString('en-GB')} members
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MessageCircle className="icon-sm" />
-                      {group.postCount.toLocaleString()} posts
+                      {group.postCount.toLocaleString('en-GB')} posts
                     </span>
                   </div>
                 </div>

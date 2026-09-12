@@ -80,7 +80,7 @@ function formatTimeAgo(date: Date): string {
   if (minutes < 60) return `${minutes}m`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB', { timeZone: 'UTC' });
 }
 
 export function PostCard({
@@ -139,7 +139,7 @@ export function PostCard({
               <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/profiles/${author.id}`}
-                  className="font-semibold text-foreground hover:text-primary-accessible transition-colors"
+                  className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible"
                 >
                   {author.displayName}
                 </Link>

@@ -363,7 +363,12 @@ function DimensionCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button type="button" className="text-muted-foreground/50 hover:text-muted-foreground" aria-label={bilingualAria(dim.descriptionEn, dim.descriptionEl)}>
+                      {/* WCAG 2.5.8 wants 24x24 CSS px. The icon stays 16px; the negative margin cancels the extra 8px so nothing moves, only the hit area grows. */}
+                      <button
+                        type="button"
+                        className="-m-1 inline-flex tap-target items-center justify-center text-muted-foreground/50 hover:text-muted-foreground"
+                        aria-label={bilingualAria(dim.descriptionEn, dim.descriptionEl)}
+                      >
                         <Info className="icon-sm cursor-help" />
                       </button>
                     </TooltipTrigger>
@@ -1050,21 +1055,21 @@ export default function ReadinessPage() {
             <Link href="/builder">
               <CfbGlyph name="builder" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
-              <span className="text-xs opacity-70"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
+              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
             <Link href="/mentoring">
               <CfbGlyph name="mentor" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
-              <span className="text-xs opacity-70"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
+              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
             </Link>
           </Button>
           <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
             <Link href="/programs">
               <CfbGlyph name="award" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>
-              <span className="text-xs opacity-70"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
+              <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('accelerators_cohorts')} el={readinessEl('accelerators_cohorts')} compact /></span>
             </Link>
           </Button>
         </div>

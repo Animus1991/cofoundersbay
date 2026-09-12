@@ -310,11 +310,9 @@ export default function DataRoomPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
+    return new Date(dateString).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short',
       day: 'numeric',
-      year: 'numeric',
-    });
+      year: 'numeric' });
   };
 
   const getFileIcon = (type: string) => {

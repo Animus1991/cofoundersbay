@@ -286,7 +286,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.users.total.toLocaleString()}
+              {metricsLoading ? '...' : metrics?.users.total.toLocaleString('en-GB')}
             </div>
             <p className="text-xs text-muted-foreground">
               +{metrics?.users.new} new today
@@ -308,7 +308,7 @@ export default function AdminDashboardPage() {
           <CardContent>
             <div className="text-xl font-bold">
               {metricsLoading ? '...' : (
-                Object.values(metrics?.engagement || {}).reduce((a, b) => a + b, 0).toLocaleString()
+                Object.values(metrics?.engagement || {}).reduce((a, b) => a + b, 0).toLocaleString('en-GB')
               )}
             </div>
             <p className="text-xs text-muted-foreground">

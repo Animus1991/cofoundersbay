@@ -237,12 +237,12 @@ function DomainRow({
             </div>
             {domain.verifiedAt && (
               <p className="text-xs text-muted-foreground">
-                Verified {new Date(domain.verifiedAt).toLocaleDateString()}
+                Verified {new Date(domain.verifiedAt).toLocaleDateString('en-GB', { timeZone: 'UTC' })}
               </p>
             )}
             {domain.lastVerificationCheck && domain.verificationStatus === 'failed' && (
               <p className="text-xs text-status-danger">
-                Last check: {new Date(domain.lastVerificationCheck).toLocaleString()} — DNS record not found
+                Last check: {new Date(domain.lastVerificationCheck).toLocaleString('en-GB', { timeZone: 'UTC' })} — DNS record not found
               </p>
             )}
           </div>

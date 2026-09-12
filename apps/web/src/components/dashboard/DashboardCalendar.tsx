@@ -22,7 +22,7 @@ const defaultEvents: CalendarEvent[] = [
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short' });
 }
 
 type DashboardCalendarProps = {

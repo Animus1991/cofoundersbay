@@ -95,7 +95,7 @@ export function ScheduleCallModal({
   const [viewYear, setViewYear] = useState(today.getFullYear());
 
   const calendarDays = generateCalendarDays(viewYear, viewMonth);
-  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = new Date(viewYear, viewMonth).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' });
 
   const prevMonth = () => {
     if (viewMonth === 0) {
@@ -245,7 +245,7 @@ export function ScheduleCallModal({
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('date')} className="gap-1 -ml-2">
               <ChevronLeft className="icon-sm" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })}
             </Button>
 
             <div className="grid grid-cols-3 gap-2">
@@ -277,7 +277,7 @@ export function ScheduleCallModal({
           <div className="space-y-4">
             <Button variant="ghost" size="sm" onClick={() => setStep('time')} className="gap-1 -ml-2">
               <ChevronLeft className="icon-sm" />
-              {selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
+              {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}
             </Button>
 
             {/* Call Type */}
@@ -365,7 +365,7 @@ export function ScheduleCallModal({
             <div>
               <h3 className="text-lg font-semibold text-foreground">Call Scheduled!</h3>
               <p className="text-muted-foreground mt-1">
-                {selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
+                {selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC', weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
               </p>
             </div>
             <Card className="bg-muted/50">

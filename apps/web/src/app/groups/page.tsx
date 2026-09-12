@@ -145,11 +145,11 @@ function GroupCard({
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Users className="icon-sm" />
-              {group.memberCount.toLocaleString()}
+              {group.memberCount.toLocaleString('en-GB')}
             </span>
             <span className="flex items-center gap-1">
               <MessageCircle className="icon-sm" />
-              {group.postCount.toLocaleString()}
+              {group.postCount.toLocaleString('en-GB')}
             </span>
           </div>
           <Button

@@ -228,7 +228,7 @@ function MatchListRow({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <Link href={`/profiles/${hit.userId}`} className="font-semibold text-foreground hover:text-primary-accessible transition-colors">
+                <Link href={`/profiles/${hit.userId}`} className="inline-flex tap-target-y items-center font-semibold text-foreground transition-colors hover:text-primary-accessible">
                   {hit.displayName}
                 </Link>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -1130,7 +1130,7 @@ export default function MatchesPage() {
               {filtered.length > 0 && (
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/40">
                   <span>{filtered.length} match{filtered.length !== 1 ? 'es' : ''} shown{passedIds.size > 0 ? ` · ${passedIds.size} passed` : ''}</span>
-                  <Link href="/discover" className="flex items-center gap-1 hover:text-foreground transition-colors">
+                  <Link href="/discover" className="flex tap-target-y items-center gap-1 transition-colors hover:text-foreground">
                     Explore more <ArrowRight className="icon-sm" />
                   </Link>
                 </div>

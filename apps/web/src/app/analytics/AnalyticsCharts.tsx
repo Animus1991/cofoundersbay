@@ -133,8 +133,8 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
           {barData.length ? <ResponsiveContainer width="100%" height={180}>
             <BarChart data={barData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} className="text-muted-foreground" />
-              <YAxis width={28} tick={{ fontSize: 10 }} className="text-muted-foreground" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} className="text-muted-foreground" />
+              <YAxis width={28} tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <Tooltip contentStyle={TOOLTIP_STYLE} />
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>

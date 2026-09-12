@@ -487,7 +487,7 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
         <div className="flex-none px-4 py-2 border-t border-border bg-card/50 backdrop-blur-sm">
           <div className="flex items-center justify-between text-2xs text-muted-foreground">
             <span>
-              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString()}`}
+              {node.createdAt && `Created ${new Date(node.createdAt).toLocaleString('en-GB', { timeZone: 'UTC' })}`}
             </span>
             {node.fileSize && <span>{fmtSize(node.fileSize)}</span>}
           </div>

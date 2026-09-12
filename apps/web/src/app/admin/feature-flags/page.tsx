@@ -139,7 +139,7 @@ function FlagCard({ flag, onToggle }: { flag: FeatureFlag; onToggle: (id: string
             <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Users className="icon-sm" />
-                {flag.affectedUsers?.toLocaleString() ?? 0} affected
+                {flag.affectedUsers?.toLocaleString('en-GB') ?? 0} affected
               </span>
               <span>Updated {flag.updatedAt}</span>
               <span>By {flag.createdBy}</span>
