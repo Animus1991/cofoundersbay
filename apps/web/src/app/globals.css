@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.1476965). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.1706504). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.07596542rem;
+      font-size: 1.09748478rem;
     }
   }
 
@@ -1003,29 +1003,29 @@ html {
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over five requested passes:
-       below `text-lg`   x1.05, x1.03, x1.02, x1.02, x1.02 = x1.1476965
-       `text-lg` and up   held, held, x0.98, x0.98, held   = x0.9604
+     Desktop only, built up over six requested passes:
+       below `text-lg`   x1.05, x1.03, x1.02, x1.02, x1.02, x1.02 = x1.1706504
+       `text-lg` and up   held, held, x0.98, x0.98, held, held    = x0.9604
 
      The threshold came from measuring what the named elements are: "Your
      founder journey" is `text-lg`, and the page title and the stat numerals
      ("Founder dashboard", "1840", "0/4") are `text-2xl`.
 
-     THE ORDER OF THE SCALE IS GONE AROUND THE THRESHOLD. As rendered now:
+     THE SCALE NO LONGER RUNS IN ORDER. As rendered now, smallest first:
 
-       text-sm    13.176      body      14.117
-       text-lg    14.176      text-base 15.058      text-xl 15.751
+       text-sm 13.439 | text-lg 14.176 | body 14.399 | text-base 15.359 | text-xl 15.751
 
-     `text-lg` is 0.06px from plain body copy and 0.88px *below* `text-base`, so
-     a section heading is now the same size as the paragraph beside it and
-     smaller than the paragraph under it. Only weight still separates them.
-     Three passes ago these were 1.64px apart in the right direction.
+     `text-lg` has fallen below plain body copy, so a section heading is smaller
+     than the paragraph beside it and 1.18px smaller than the paragraph under
+     it -- only weight still separates them. And `text-base` is now 0.392px from
+     `text-xl`: one more pass of this shape takes out that step too.
 
-     This is the arithmetic of the request, not a mistake in it: the steps below
-     the threshold have taken +14.8% while `text-lg` has taken -4%. Restoring
-     the order means letting `text-lg` travel with the steps below it, or moving
-     the threshold up to `text-xl` so only the page title and the stat numerals
-     stay fixed -- those are the elements that actually get named each time.
+     This is the arithmetic of the request, not a fault in applying it: the steps
+     below the threshold have taken +17.1% in total while `text-lg` has taken
+     -4%. Restoring the order means letting `text-lg` travel with the steps below
+     it, or moving the threshold up to `text-xl` so only the page title and the
+     stat numerals stay fixed -- those are the elements that get named each
+     time, and both options leave every one of them exactly where it is.
 
      Sizes are rem x multiplier, not fixed px, so a reader who raises their
      browser default still gets the scale; the px halves of the `max()` on the
@@ -1038,23 +1038,23 @@ html {
   @media (min-width: 1024px) {
     /* ── below the threshold: x1.1251926 ── */
     .text-2xs {
-      font-size: max(0.78904131rem, 12.62466097px);
-      line-height: max(1.14769645rem, 18.36314323px);
+      font-size: max(0.80482217rem, 12.87715473px);
+      line-height: max(1.17065043rem, 18.73040688px);
     }
 
     .text-xs {
-      font-size: max(0.86077234rem, 12.62466097px);
-      line-height: max(1.14769645rem, 18.36314323px);
+      font-size: max(0.87798782rem, 12.87715473px);
+      line-height: max(1.17065043rem, 18.73040688px);
     }
 
     .text-sm {
-      font-size: 1.0042344rem;
-      line-height: 1.43462057rem;
+      font-size: 1.02431913rem;
+      line-height: 1.46331304rem;
     }
 
     .text-base {
-      font-size: 1.14769645rem;
-      line-height: 1.72154468rem;
+      font-size: 1.17065043rem;
+      line-height: 1.75597565rem;
     }
 
     /* ── the display steps: x0.9604 ── */
