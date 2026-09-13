@@ -416,13 +416,13 @@ html {
     background-attachment: fixed;
   }
 
-  /* Body copy joins the web view's increase (0.9375rem x 1.1251926). It has to sit
+  /* Body copy joins the web view's increase (0.9375rem x 1.2182660). It has to sit
      after the rule above, not inside the `min-width: 1024px` block further up:
      same layer, same specificity, so source order decides and that block comes
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.05487rem;
+      font-size: 1.14212445rem;
     }
   }
 
@@ -1003,22 +1003,33 @@ html {
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over four requested passes:
-       below `text-lg`   x1.05, x1.03, x1.02, x1.02  = x1.1251926
-       `text-lg` and up   held, held, x0.98, x0.98   = x0.9604
+     Desktop only, built up over nine requested passes:
+       page, below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02, x1.01 = x1.2182660
+       `text-lg` and up        held, held, x0.98, x0.98, then held        = x0.9604
+       the sidebar             frozen at pass 7, then x1.02 on this pass
+       the sidebar's headings  frozen at pass 6 and held since
 
      The threshold came from measuring what the named elements are: "Your
      founder journey" is `text-lg`, and the page title and the stat numerals
      ("Founder dashboard", "1840", "0/4") are `text-2xl`.
 
-     THE SCALE IS NOW INVERTED AT THE THRESHOLD, VISIBLY. `text-base` renders at
-     14.76px and `text-lg` at 14.18px, so a section heading is 0.59px *smaller*
-     than the body copy underneath it -- last pass the two were level at 0.008px
-     and this one has pushed them apart the wrong way. Nothing is broken
-     mechanically, but the size hierarchy at that step now runs backwards and
-     only the font weight still separates them. Putting it right means letting
-     `text-lg` travel with the steps below it, or moving the threshold up to
-     `text-xl` so only the page title and the numerals shrink.
+     THE SCALE NO LONGER RUNS IN ORDER. As rendered now, smallest first:
+
+       text-xs 13.401 | text-sm 13.986 | text-lg 14.176 | body 14.984
+       text-xl 15.751 | text-base 15.984
+
+     `text-base` has now passed `text-xl` as well, so body copy is the largest
+     step in the scale below the page title: a paragraph renders larger than
+     both the section heading above it (`text-lg`, 1.65px smaller) and the
+     card heading (`text-xl`). Only weight still separates any of them.
+
+     This is the arithmetic of the request, not a fault in applying it: the steps
+     below the threshold have taken +18.2% across seven passes while `text-lg`
+     has taken -4%. Restoring the order means letting `text-lg` travel with the
+     steps below it, or moving the threshold up to `text-xl` so only the page
+     title and the stat numerals stay fixed -- those are the elements that get
+     named each time, and both options leave every one of them exactly where it
+     is.
 
      Sizes are rem x multiplier, not fixed px, so a reader who raises their
      browser default still gets the scale; the px halves of the `max()` on the
@@ -1031,23 +1042,23 @@ html {
   @media (min-width: 1024px) {
     /* ── below the threshold: x1.1251926 ── */
     .text-2xs {
-      font-size: max(0.77357rem, 12.37712px);
-      line-height: max(1.12519rem, 18.00308px);
+      font-size: max(0.83755788rem, 13.40092686px);
+      line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .text-xs {
-      font-size: max(0.84389rem, 12.37712px);
-      line-height: max(1.12519rem, 18.00308px);
+      font-size: max(0.91369956rem, 13.40092686px);
+      line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .text-sm {
-      font-size: 0.98454rem;
-      line-height: 1.40649rem;
+      font-size: 1.06598282rem;
+      line-height: 1.52283260rem;
     }
 
     .text-base {
-      font-size: 1.12519rem;
-      line-height: 1.68779rem;
+      font-size: 1.21826608rem;
+      line-height: 1.82739912rem;
     }
 
     /* ── the display steps: x0.9604 ── */
@@ -1095,7 +1106,76 @@ html {
        order is what decides. Written out as its own class, never assembled from
        parts, because Tailwind drops a custom utility whose name it cannot find
        literally in the source. */
-    .nav-section-label {
+    /* The rail moves on its own multiplier: x1.02 this pass against the page's
+       x1.01, and its uppercase section headings stay where pass six left them. `aside .text-*` is
+       (0,1,1) against the (0,1,0) of the rules above, so it wins on specificity
+       rather than order -- and `.nav-section-label` therefore needs the same
+       weight, declared after, or the frozen `aside .text-xs` would capture the
+       section headings too. */
+    aside .text-2xs {
+      font-size: max(0.82912778rem, 13.26604446px);
+      line-height: max(1.20600404rem, 19.29606467px);
+    }
+
+    aside .text-xs {
+      font-size: max(0.90450303rem, 13.26604446px);
+      line-height: max(1.20600404rem, 19.29606467px);
+    }
+
+    aside .text-sm {
+      font-size: 1.05525354rem;
+      line-height: 1.50750505rem;
+    }
+
+    /* The logo wordmark is `text-base`; the rest are frozen so the rail cannot
+       drift if it later uses one of them. */
+    aside .text-base {
+      font-size: 1.20600404rem;
+      line-height: 1.80900607rem;
+    }
+
+    aside .text-lg {
+      font-size: 1.08045rem;
+      line-height: 1.6807rem;
+    }
+
+    aside .text-xl {
+      font-size: 1.2005rem;
+      line-height: 1.6807rem;
+    }
+
+    /* Icons in the rail and the top bar, +2% then +3% = x1.0506.
+       The icon scale is rem-based (`icon-sm` is `h-4 w-4`), so the 82% desktop
+       root renders it at 13.12px where the class comment says 16px -- and it has
+       stayed there while the type around it grew, so the glyphs had drifted small
+       against their own labels. This lifts only the two chrome surfaces; the
+       page's icons are untouched, and so is every viewport below `lg`, where the
+       root is 100% and the icons are already their nominal size.
+
+       These two surfaces are now the only place the icon scale differs from the
+       page's, which is deliberate: the chrome carries labels that have grown
+       nine times while the glyphs beside them never moved. */
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 {
+      height: 1.0506rem;
+      width: 1.0506rem;
+    }
+
+    aside .icon-md,
+    header .icon-md {
+      height: 1.31325rem;
+      width: 1.31325rem;
+    }
+
+    aside .icon-lg,
+    header .icon-lg {
+      height: 1.5759rem;
+      width: 1.5759rem;
+    }
+
+    aside .nav-section-label {
       font-size: max(0.81080055rem, 11.8917414px);
       line-height: max(1.0810674rem, 17.2970784px);
     }

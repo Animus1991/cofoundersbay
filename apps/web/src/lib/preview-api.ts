@@ -1114,6 +1114,136 @@ export function resolvePreviewApi(path: string, init?: RequestInit): unknown {
     };
   }
 
+  // The workspace panels on /builder had no demo handlers at all, so every one
+  // of them fell through to the generic fallback -- an object with none of the
+  // fields they read. WorkspaceReadinessPanel then crashed the page on
+  // `data.dimensions[key]`, because its only guard was `if (!data)`.
+  if (/^\/api\/gamification\/workspaces\/[^/]+\/readiness$/.test(pathname)) {
+    const dimensions = {
+      problemClarity: 72,
+      solutionClarity: 64,
+      marketUnderstanding: 48,
+      productDefinition: 55,
+      teamCompleteness: 40,
+      executionReadiness: 58,
+      validationScore: 35,
+      artifactCompleteness: 61,
+    };
+    const detail: Record<string, string> = {
+      problemClarity: 'Problem statement written and reviewed',
+      solutionClarity: 'Solution outline drafted',
+      marketUnderstanding: 'TAM sized, competitors not yet mapped',
+      productDefinition: 'PRD started, MVP scope open',
+      teamCompleteness: 'Founder only — no technical cofounder yet',
+      executionReadiness: '2 of 4 milestones on track',
+      validationScore: 'No expert review requested yet',
+      artifactCompleteness: 'Documents averaging 61% complete',
+    };
+    const weight = 1 / Object.keys(dimensions).length;
+    return {
+      workspaceId: pathname.split('/')[4] ?? 'preview-ws-harbor',
+      score: 54,
+      bottleneckFactor: 0.92,
+      dimensions,
+      dimensionBreakdown: Object.fromEntries(
+        Object.entries(dimensions).map(([k, score]) => [
+          k,
+          {
+            score,
+            weight,
+            weightedContribution: Math.round(score * weight * 100) / 100,
+            detail: detail[k] ?? '',
+            signals: {},
+          },
+        ]),
+      ),
+      updatedAt: NOW,
+    };
+  }
+
+  if (/^\/api\/gamification\/workspaces\/[^/]+\/momentum$/.test(pathname)) {
+    return {
+      workspaceId: pathname.split('/')[4] ?? 'preview-ws-harbor',
+      score: 61,
+      velocity: 1.84,
+      recentActivityScore: 66,
+      collaborationDensity: 48,
+      breakdown: {
+        activeContributors: 3,
+        recentMeaningfulActions: 14,
+        meaningful7d: 9,
+        meaningful14d: 14,
+        velocityScore: 62,
+        recentActivityScore: 66,
+        collaborationDensityScore: 48,
+        feedbackLoopScore: 54,
+        milestoneRateScore: 58,
+        artifactProgressEvents: 7,
+        momentumLevel: 'Strong',
+      },
+      updatedAt: NOW,
+    };
+  }
+
+  if (/^\/api\/gamification\/workspaces\/[^/]+\/contributions$/.test(pathname)) {
+    // An array, not an object with a `contributors` field -- the panel maps over
+    // the response directly.
+    const wsId = pathname.split('/')[4] ?? 'preview-ws-harbor';
+    const contributor = (
+      userId: string,
+      score: number,
+      explain: string,
+      b: Partial<Record<string, number>>,
+    ) => ({
+      userId,
+      workspaceId: wsId,
+      score,
+      rawScore: score,
+      breakdown: {
+        artifactsCreated: 0,
+        artifactsImproved: 0,
+        feedbackGiven: 0,
+        feedbackApplied: 0,
+        collaborationActions: 0,
+        usageByTeam: 0,
+        recentArtifactsCreated: 0,
+        recentArtifactsImproved: 0,
+        recentFeedbackApplied: 0,
+        ...b,
+      },
+      explain,
+      updatedAt: NOW,
+    });
+    return [
+      contributor(ME_ID, 58, 'Created most of the workspace artefacts', {
+        artifactsCreated: 6, artifactsImproved: 9, collaborationActions: 12, recentArtifactsImproved: 3,
+      }),
+      contributor('user-marcus', 29, 'Improved the product and MVP documents', {
+        artifactsImproved: 7, feedbackGiven: 3, collaborationActions: 5, recentArtifactsImproved: 2,
+      }),
+      contributor('user-sarah', 13, 'Reviewed the pitch and market sections', {
+        feedbackGiven: 5, feedbackApplied: 4, recentFeedbackApplied: 2,
+      }),
+    ];
+  }
+
+  if (/^\/api\/gamification\/workspaces\/[^/]+\/mentor/.test(pathname)) {
+    return {
+      workspaceId: pathname.split('/')[4] ?? 'preview-ws-harbor',
+      feedbackCount: 8,
+      appliedFeedbackCount: 5,
+      unresolvedFeedback: 3,
+      appliedFeedbackRate: 0.63,
+      avgResponseTimeHrs: 14.5,
+      speedScore: 62,
+      depthScore: 54,
+      burdenScore: 38,
+      improvementScore: 46,
+      lastFeedbackAt: NOW,
+      updatedAt: NOW,
+    };
+  }
+
   if (pathname === '/api/gamification/users/me/xp' || pathname.endsWith('/xp')) {
     return {
       // Consistent with the real ladder in apps/api gamification.types.ts, which
