@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getOrCreateDirectConversation,
+  removeFromShortlist,
   saveToShortlist,
   sendConnectionRequest,
 } from '@/lib/api';
@@ -9,8 +10,10 @@ import {
   ACTION_REGISTRY,
   executeAction,
   getActionSpec,
+  isUndoable,
   resolveRouteTarget,
   toToolCatalog,
+  undoAction,
 } from './action-registry';
 import { detectNavigateHref } from './copilot-planner';
 import { PAGE_REGISTRY } from './page-registry';
@@ -20,11 +23,13 @@ vi.mock('@/lib/api', async (importOriginal) => ({
   sendConnectionRequest: vi.fn(),
   getOrCreateDirectConversation: vi.fn(),
   saveToShortlist: vi.fn(),
+  removeFromShortlist: vi.fn(),
 }));
 
 const sendConnection = vi.mocked(sendConnectionRequest);
 const openThread = vi.mocked(getOrCreateDirectConversation);
 const shortlist = vi.mocked(saveToShortlist);
+const unshortlist = vi.mocked(removeFromShortlist);
 
 /**
  * Reads the union members straight out of the type file, so adding a name to
@@ -52,6 +57,7 @@ beforeEach(() => {
   sendConnection.mockReset();
   openThread.mockReset();
   shortlist.mockReset();
+  unshortlist.mockReset();
 });
 
 describe('action registry coverage', () => {
@@ -96,12 +102,48 @@ describe('action registry coverage', () => {
       if (!spec.confirmLabel?.en.trim() || !spec.confirmLabel?.el.trim()) {
         faults.push(`${spec.id} has no bilingual confirmLabel`);
       }
-      if (!spec.reversal?.en.trim() || !spec.reversal?.el.trim()) {
+      if (!spec.reversal?.explanation.en.trim() || !spec.reversal?.explanation.el.trim()) {
         faults.push(`${spec.id} does not state how it is reversed`);
       }
     }
 
     expect(faults).toEqual([]);
+  });
+
+  it('backs every claim of reversibility with a working undo', () => {
+    // The first version of this registry claimed send_connection could be
+    // "withdrawn in Connections". ConnectionsController has no withdraw route
+    // for the sender at all, so the claim was simply false. The union type now
+    // makes `full`/`partial` require an undo function, and this asserts the
+    // same thing at runtime plus its converse: a `none` must not smuggle one in.
+    const faults: string[] = [];
+
+    for (const spec of ACTION_REGISTRY) {
+      const reversal = spec.reversal;
+      if (!reversal) continue;
+
+      const claimsReversible = reversal.kind !== 'none';
+      // Read through a widened view: the union already forbids the mismatch, so
+      // narrowing would reduce one side of this comparison to `never` and the
+      // assertion would only be restating the type rather than checking it.
+      const hasUndo = typeof (reversal as { undo?: unknown }).undo === 'function';
+
+      if (claimsReversible !== hasUndo) {
+        faults.push(
+          `${spec.id}: kind="${reversal.kind}" but undo is ${hasUndo ? 'present' : 'absent'}`,
+        );
+      }
+      if (isUndoable(spec.id) !== claimsReversible) {
+        faults.push(`${spec.id} disagrees with isUndoable()`);
+      }
+    }
+
+    expect(faults).toEqual([]);
+  });
+
+  it('states a reversal for every mutation that writes', () => {
+    const silent = ACTION_REGISTRY.filter((spec) => spec.writes && !spec.reversal).map((s) => s.id);
+    expect(silent).toEqual([]);
   });
 
   it('never marks a read tool as writing', () => {
@@ -217,6 +259,70 @@ describe('executing registry actions', () => {
       ok: false,
       error: 'rate limited',
     });
+  });
+});
+
+describe('undoing registry actions', () => {
+  it('takes a shortlist entry back off the list', async () => {
+    await expect(undoAction('shortlist_add', { userId: 'u1' })).resolves.toEqual({
+      ok: true,
+      href: '/shortlist',
+    });
+    expect(unshortlist).toHaveBeenCalledExactlyOnceWith('u1');
+  });
+
+  it('refuses to undo an intro, and touches no API doing so', async () => {
+    // There is no sender-side withdraw route. A "best effort" undo here would
+    // either fail loudly or, worse, reach for the receiver's PATCH and be
+    // rejected as Forbidden after the recipient was already notified.
+    await expect(undoAction('send_connection', { receiverId: 'u2' })).resolves.toEqual({
+      ok: false,
+      error: 'Not reversible',
+    });
+    expect(sendConnection).not.toHaveBeenCalled();
+  });
+
+  it('refuses to undo opening a thread rather than archiving the user’s own', async () => {
+    // getOrCreateDirectConversation returns the same shape whether it created
+    // the thread or found one, so an undo cannot tell those apart.
+    await expect(undoAction('start_or_send_message', { userId: 'u3' })).resolves.toEqual({
+      ok: false,
+      error: 'Not reversible',
+    });
+    expect(openThread).not.toHaveBeenCalled();
+  });
+
+  it('refuses an unknown id and a read tool', async () => {
+    await expect(undoAction('get_graph', {})).resolves.toEqual({
+      ok: false,
+      error: 'Not reversible',
+    });
+    await expect(undoAction('nope', {})).resolves.toEqual({
+      ok: false,
+      error: 'Not reversible',
+    });
+  });
+
+  it('requires a subject and reports a failing undo instead of throwing', async () => {
+    await expect(undoAction('shortlist_add', {})).resolves.toEqual({
+      ok: false,
+      error: 'Missing user',
+    });
+    expect(unshortlist).not.toHaveBeenCalled();
+
+    unshortlist.mockRejectedValue(new Error('offline'));
+    await expect(undoAction('shortlist_add', { userId: 'u1' })).resolves.toEqual({
+      ok: false,
+      error: 'offline',
+    });
+  });
+
+  it('reports exactly which tools can be taken back', () => {
+    expect(isUndoable('shortlist_add')).toBe(true);
+    expect(isUndoable('send_connection')).toBe(false);
+    expect(isUndoable('start_or_send_message')).toBe(false);
+    expect(isUndoable('navigate')).toBe(false);
+    expect(isUndoable('get_graph')).toBe(false);
   });
 });
 

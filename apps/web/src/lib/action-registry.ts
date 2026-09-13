@@ -1,5 +1,6 @@
 import {
   getOrCreateDirectConversation,
+  removeFromShortlist,
   saveToShortlist,
   sendConnectionRequest,
 } from '@/lib/api';
@@ -46,6 +47,35 @@ export type ActionKind = 'read' | 'mutation';
 
 export type ActionOutcome = { ok: boolean; href?: string; error?: string };
 
+/**
+ * What taking an action back actually costs, verified against the API rather
+ * than asserted in prose.
+ *
+ * This started as a single bilingual string, and the first thing that happened
+ * was that it carried a false claim: `send_connection` said the request "can be
+ * withdrawn" in Connections. It cannot. `ConnectionsController` exposes only
+ * POST, GET, PATCH and block; the PATCH is `respondToRequest`, which throws
+ * `ForbiddenException` unless the caller is the *receiver*, and the receiver is
+ * notified the moment the request is created. There is no withdraw route for
+ * the sender at all.
+ *
+ * So the shape is a discriminated union: claiming `full` or `partial` requires
+ * handing over the function that performs the undo. A claim cannot compile
+ * without its implementation, which is the only way this stays true as the
+ * registry grows.
+ */
+export type ActionReversal =
+  | {
+      kind: 'none';
+      explanation: BilingualPair;
+      undo?: never;
+    }
+  | {
+      kind: 'full' | 'partial';
+      explanation: BilingualPair;
+      undo: (payload: Record<string, unknown>) => Promise<ActionOutcome>;
+    };
+
 export type ActionSpec = {
   id: CopilotToolName;
   kind: ActionKind;
@@ -59,7 +89,7 @@ export type ActionSpec = {
    */
   writes: boolean;
   /** Every mutation states this, including when the answer is "it cannot be undone". */
-  reversal?: BilingualPair;
+  reversal?: ActionReversal;
   /** The label on the confirm control. Mutations only. */
   confirmLabel?: BilingualPair;
   /**
@@ -169,8 +199,11 @@ export const ACTION_REGISTRY: readonly ActionSpec[] = [
     ],
     writes: false,
     reversal: {
-      en: 'Nothing is written. Use the browser’s back control to return.',
-      el: 'Δεν γράφεται τίποτα. Χρησιμοποίησε το πίσω του browser για επιστροφή.',
+      kind: 'none',
+      explanation: {
+        en: 'Nothing is written, so there is nothing to undo. Use the browser’s back control to return.',
+        el: 'Δεν γράφεται τίποτα, άρα δεν υπάρχει κάτι να αναιρεθεί. Χρησιμοποίησε το πίσω του browser για επιστροφή.',
+      },
     },
     confirmLabel: { en: 'Go', el: 'Μετάβαση' },
     execute: async (payload) => ({
@@ -199,8 +232,19 @@ export const ACTION_REGISTRY: readonly ActionSpec[] = [
     ],
     writes: true,
     reversal: {
-      en: 'Reversible: remove the person again from Saved Profiles.',
-      el: 'Αναστρέψιμο: αφαίρεσε ξανά το άτομο από τα Αποθηκευμένα προφίλ.',
+      // `DELETE /api/shortlist/:userId` runs `savedProfile.deleteMany`, so the
+      // row is really gone and nobody else was notified. Fully reversible.
+      kind: 'full',
+      explanation: {
+        en: 'Fully reversible. Removing them deletes the saved entry, and nobody is notified either way.',
+        el: 'Πλήρως αναστρέψιμο. Η αφαίρεση διαγράφει την αποθηκευμένη εγγραφή και δεν ειδοποιείται κανείς σε καμία περίπτωση.',
+      },
+      undo: async (payload) => {
+        const userId = requireString(payload, 'userId');
+        if (!userId) return { ok: false, error: 'Missing user' };
+        await removeFromShortlist(userId);
+        return { ok: true, href: '/shortlist' };
+      },
     },
     confirmLabel: { en: 'Save to shortlist', el: 'Αποθήκευση στη λίστα' },
     execute: async (payload) => {
@@ -240,8 +284,15 @@ export const ACTION_REGISTRY: readonly ActionSpec[] = [
     ],
     writes: true,
     reversal: {
-      en: 'The request appears in Connections and can be withdrawn there. The recipient may already have seen it.',
-      el: 'Το αίτημα εμφανίζεται στις Συνδέσεις και μπορεί να ανακληθεί από εκεί. Ο παραλήπτης μπορεί να το έχει δει ήδη.',
+      // Verified against ConnectionsController: POST, GET, PATCH, block and
+      // status. The PATCH is respondToRequest and throws ForbiddenException
+      // unless the caller is the receiver, and sendRequest notifies the
+      // receiver before it returns. The sender has no route to take it back.
+      kind: 'none',
+      explanation: {
+        en: 'Cannot be undone. The recipient is notified as soon as it is sent, and only they can accept or decline it — there is no withdraw action for the sender.',
+        el: 'Δεν αναιρείται. Ο παραλήπτης ειδοποιείται μόλις σταλεί και μόνο αυτός μπορεί να το αποδεχτεί ή να το απορρίψει — δεν υπάρχει ανάκληση για τον αποστολέα.',
+      },
     },
     confirmLabel: { en: 'Send intro', el: 'Αποστολή σύστασης' },
     execute: async (payload) => {
@@ -273,8 +324,17 @@ export const ACTION_REGISTRY: readonly ActionSpec[] = [
     ],
     writes: true,
     reversal: {
-      en: 'Creates an empty thread and nothing is sent, so there is nothing for the other person to read yet.',
-      el: 'Δημιουργεί κενό νήμα και δεν στέλνεται τίποτα, άρα ο άλλος δεν έχει κάτι να διαβάσει ακόμη.',
+      // MessagingController has no delete for a conversation, and
+      // getOrCreateDirectConversation returns the same `{ id }` shape whether
+      // it found an existing thread or created one. So an undo could not tell
+      // "we made this" from "this was already the user's thread", and
+      // archiving the latter would destroy something the assistant never
+      // created. Nothing is claimed until the API reports which happened.
+      kind: 'none',
+      explanation: {
+        en: 'No message is sent, so there is nothing for the other person to read. The thread itself cannot be removed, and the API does not report whether it was created now or already existed.',
+        el: 'Δεν στέλνεται μήνυμα, άρα ο άλλος δεν έχει κάτι να διαβάσει. Το νήμα δεν μπορεί να αφαιρεθεί και το API δεν αναφέρει αν δημιουργήθηκε τώρα ή υπήρχε ήδη.',
+      },
     },
     confirmLabel: { en: 'Open thread', el: 'Άνοιγμα νήματος' },
     execute: async (payload) => {
@@ -310,6 +370,37 @@ export async function executeAction(
     return await spec.execute(payload);
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : 'Action failed' };
+  }
+}
+
+/** True when the action declares an undo the UI can actually offer. */
+export function isUndoable(id: string): boolean {
+  const reversal = getActionSpec(id)?.reversal;
+  return reversal?.kind === 'full' || reversal?.kind === 'partial';
+}
+
+/**
+ * Takes back an action that declared it could be taken back.
+ *
+ * Refuses anything whose reversal is `none` rather than attempting a
+ * best-effort guess, because the two `none` cases here are exactly the ones
+ * where a guess would do damage: withdrawing an intro is not the sender's to
+ * perform, and archiving a conversation the assistant may not have created
+ * would remove something the user already had.
+ */
+export async function undoAction(
+  id: string,
+  payload: Record<string, unknown>,
+): Promise<ActionOutcome> {
+  const reversal = getActionSpec(id)?.reversal;
+  if (!reversal || reversal.kind === 'none' || !reversal.undo) {
+    return { ok: false, error: 'Not reversible' };
+  }
+
+  try {
+    return await reversal.undo(payload);
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Undo failed' };
   }
 }
 

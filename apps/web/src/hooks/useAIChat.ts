@@ -28,6 +28,7 @@ import {
 } from '@/lib/ai-api';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { executeCopilotAction, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
+import { isUndoable, undoAction as runUndo } from '@/lib/action-registry';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
 import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
 
@@ -68,6 +69,8 @@ export interface UseAIChatReturn {
   clearMessages: () => void;
   retryLastMessage: () => void;
   confirmAction: (action: CopilotAction) => Promise<{ href?: string } | void>;
+  /** Resolves `false` when the action declares no undo, so the caller can say so. */
+  undoAction: (action: CopilotAction) => Promise<boolean>;
   dismissAction: (action: CopilotAction) => void;
   loadConversation: (id: string) => Promise<void>;
   refreshConversations: () => Promise<void>;
@@ -334,29 +337,40 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     [messages, currentAgent, conversationId, isAIAvailable, pageContext, refreshConversations, enableCopilot],
   );
 
+  /**
+   * The caches a tool touches. Undo writes to the same rows as the action it
+   * reverses, so both paths refresh the same keys -- an undo that left the old
+   * value on screen would read as a failed undo.
+   */
+  const invalidateFor = useCallback(
+    (tool: CopilotAction['tool']) => {
+      if (!queryClient || isPreviewDemo()) return;
+      if (tool === 'send_connection') {
+        CONNECTION_KEYS.forEach((key) => {
+          void queryClient.invalidateQueries({ queryKey: [...key] });
+        });
+        void queryClient.invalidateQueries({ queryKey: [...queryKeys.graphMe] });
+      }
+      if (tool === 'start_or_send_message') {
+        MESSAGE_KEYS.forEach((key) => {
+          void queryClient.invalidateQueries({ queryKey: [...key] });
+        });
+      }
+      if (tool === 'shortlist_add') {
+        void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
+        void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
+      }
+    },
+    [queryClient],
+  );
+
   const confirmAction = useCallback(
     async (action: CopilotAction) => {
       if (pendingActionId) return;
       setPendingActionId(action.id);
       try {
         const result = await executeCopilotAction(action);
-        if (queryClient && !isPreviewDemo()) {
-          if (action.tool === 'send_connection') {
-            CONNECTION_KEYS.forEach((key) => {
-              void queryClient.invalidateQueries({ queryKey: [...key] });
-            });
-            void queryClient.invalidateQueries({ queryKey: [...queryKeys.graphMe] });
-          }
-          if (action.tool === 'start_or_send_message') {
-            MESSAGE_KEYS.forEach((key) => {
-              void queryClient.invalidateQueries({ queryKey: [...key] });
-            });
-          }
-          if (action.tool === 'shortlist_add') {
-            void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlist] });
-            void queryClient.invalidateQueries({ queryKey: [...queryKeys.shortlistIds] });
-          }
-        }
+        invalidateFor(action.tool);
         if (!result.ok) {
           updateAction(action.id, { status: 'error' });
           setError(result.error ?? 'Action failed');
@@ -368,7 +382,36 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setPendingActionId(null);
       }
     },
-    [queryClient, updateAction, pendingActionId],
+    [invalidateFor, updateAction, pendingActionId],
+  );
+
+  /**
+   * Only ever called for an action whose registry entry declares an undo. The
+   * registry refuses the rest rather than attempting a best-effort reversal, so
+   * a `false` here means "this genuinely cannot be taken back", not "it failed".
+   */
+  const undoAction = useCallback(
+    async (action: CopilotAction) => {
+      if (pendingActionId) return false;
+      if (!isUndoable(action.tool)) return false;
+
+      setPendingActionId(action.id);
+      try {
+        const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+        const result = await runUndo(action.tool, payload);
+        invalidateFor(action.tool);
+
+        if (!result.ok) {
+          setError(result.error ?? 'Undo failed');
+          return false;
+        }
+        updateAction(action.id, { status: 'undone' });
+        return true;
+      } finally {
+        setPendingActionId(null);
+      }
+    },
+    [invalidateFor, updateAction, pendingActionId],
   );
 
   const dismissAction = useCallback(
@@ -419,6 +462,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     clearMessages,
     retryLastMessage,
     confirmAction,
+    undoAction,
     dismissAction,
     loadConversation,
     refreshConversations,

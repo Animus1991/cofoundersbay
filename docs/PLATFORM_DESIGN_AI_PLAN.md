@@ -445,3 +445,50 @@ sm:text-2xl 19,68px έναντι 18,90      sm:text-4xl 28,79px έναντι 27,
 ### 15.6 Τι μένει για το 1b
 
 Το `ollama.service.ts` στέλνει ακόμη μόνο `model`/`messages`/`options`. Για πραγματικό tool calling χρειάζεται απόφαση **πού ζει το catalogue**: ο web client το στέλνει με το request, ή το API κρατά δικό του registry. Και ο tool-call loop (model → tool_call → execute → feedback → continue) θέλει τον confirm/undo pipeline του Wave 2 πρώτα, γιατί το `AGENTS.md` απαγορεύει ρητά αυτόματη επανάληψη AI POST μετά από μερικό streaming ή σφάλμα authorization/rate-limit.
+
+## 16. Wave 2 — αναστρεψιμότητα που έχει επαληθευτεί, όχι δηλωθεί
+
+### 16.1 Το πρώτο πράγμα που βρήκε ο έλεγχος ήταν δικό μου ψέμα
+
+Το Wave 1a δήλωσε το `reversal` ως **πρόζα**. Για το `send_connection` έγραψα: «The request appears in Connections and can be withdrawn there». **Είναι ψευδές.** Επαληθεύτηκε στον κώδικα:
+
+- `ConnectionsController` εκθέτει μόνο `@Post()`, `@Get()`, `@Patch(':connectionId')`, `@Post('block/:userId')`, `@Get('status/:userId')`. **Καμία διαδρομή ανάκλησης για τον αποστολέα.**
+- Το `@Patch` είναι το `respondToRequest`, που κάνει `throw new ForbiddenException('Not authorized')` αν `connection.receiverId !== userId`. Είναι του **παραλήπτη**, όχι του αποστολέα.
+- Το `sendRequest` δημιουργεί notification στον παραλήπτη **πριν** επιστρέψει.
+
+Αυτό είναι ακριβώς η κλάση σφάλματος που προειδοποιεί το `AGENTS.md` («Inspect actual API behavior before claiming that an archive is reversible»), και την έκανα εγώ, στο ίδιο commit που εισήγαγε το πεδίο.
+
+### 16.2 Η πραγματική αναστρεψιμότητα των τριών writes
+
+| Action | Πραγματικότητα | Τεκμήριο |
+|---|---|---|
+| `shortlist_add` | **full** | `DELETE /api/shortlist/:userId` → `savedProfile.deleteMany`. Πραγματική διαγραφή, κανείς δεν ειδοποιείται. |
+| `send_connection` | **none** | Δεν υπάρχει route ανάκλησης· ο παραλήπτης ειδοποιείται αμέσως. |
+| `start_or_send_message` | **none** | `MessagingController` δεν έχει delete· το `getOrCreateDirectConversation` επιστρέφει **ίδιο `{ id }`** είτε βρήκε είτε δημιούργησε, άρα ένα undo δεν μπορεί να ξεχωρίσει «το φτιάξαμε εμείς» από «ήταν ήδη του χρήστη». Το archive του δεύτερου θα κατέστρεφε δεδομένα που ο assistant δεν δημιούργησε. |
+
+Δηλαδή **1 από τα 3 writes** είναι όντως αναστρέψιμο.
+
+### 16.3 Ο τύπος επιβάλλει την ειλικρίνεια
+
+Το `reversal` έγινε **discriminated union**: το `kind: 'full' | 'partial'` απαιτεί τη συνάρτηση `undo`. Το `kind: 'none'` την απαγορεύει (`undo?: never`). **Μια δήλωση αναστρεψιμότητας δεν μεταγλωττίζεται χωρίς την υλοποίησή της** — ο μόνος τρόπος να μείνει αληθής όσο το registry μεγαλώνει. Το test το κατοχυρώνει και αντίστροφα, διαβάζοντας το `undo` μέσα από widened view ώστε η assertion να **ελέγχει** αντί να επαναλαμβάνει τον τύπο.
+
+### 16.4 Preview → confirm → apply → undo
+
+- **preview:** το `ActionCard` δείχνει την αναστρεψιμότητα **πριν** το confirm, με `AlertTriangle` και `text-destructive` όταν `writes && kind === 'none'`. Για το `navigate` (`writes: false`) δεν δείχνει γραμμή — θα ήταν θόρυβος σε κάθε κάρτα. Η δυνατότητα **δεν** αφαιρείται: η προειδοποίηση συνοδεύει το κουμπί, δεν το αντικαθιστά.
+- **undo:** `undoAction()` στο registry, `chat.undoAction` στο hook, κουμπί «Undo» μόνο όπου `isUndoable`. Αρνείται τα `none` με `Not reversible` **χωρίς να αγγίξει API**, αντί για best-effort που θα χτυπούσε το Forbidden PATCH του παραλήπτη.
+- Νέο status **`undone`**, διακριτό από `dismissed`: το δεύτερο σημαίνει «δεν έτρεξε ποτέ», το πρώτο «έτρεξε και αναιρέθηκε». Η συγχώνευσή τους θα έχανε το γεγονός ότι ένα write έφτασε στο backend.
+- Το invalidation μπήκε σε κοινό `invalidateFor(tool)` ώστε το undo να ανανεώνει **τα ίδια** caches με την ενέργεια που αναιρεί.
+
+### 16.5 Δίγλωσσα, επί τη ευκαιρία
+
+Τα `Done`/`Open`/`Dismiss`/`Dismissed` του `ActionCard` ήταν hardcoded αγγλικά. Πέρασαν σε `BilingualText` μαζί με τα νέα `Undo`/`Undone`, και τα `tap-target-y` μπήκαν στα κουμπιά (WCAG 2.5.8 στο 82% root). Μειώνει την επιφάνεια του Wave 3.
+
+### 16.6 Τεστ
+
+`actionRegistry.test.ts` 21 → **29**, νέο `ActionCard.test.tsx` με **8**. Κατοχυρώνουν: κάθε claim αναστρεψιμότητας έχει undo και κάθε `none` δεν έχει· κάθε write δηλώνει reversal· το undo του shortlist καλεί `removeFromShortlist`· τα δύο `none` επιστρέφουν `Not reversible` **και δεν καλούν κανένα API**· το UI προειδοποιεί πριν το confirm, δεν προσφέρει Undo όπου δεν υπάρχει, και ξεχωρίζει `undone` από `dismissed`.
+
+**Κατάσταση:** web 255/255 → **271/271** (31 files), `tsc --noEmit` καθαρό.
+
+### 16.7 Τι μένει από το Wave 2
+
+**Audit trail.** Δεν μπήκε. Χρειάζεται πίνακα Prisma + endpoints ώστε να καταγράφεται τι έκανε ο assistant, πότε, με ποια args και ποιο αποτέλεσμα — δηλαδή αλλαγή στο backend με migration. Το in-memory `status` της συνομιλίας **δεν** είναι audit trail: χάνεται στο reload. Δεν το δηλώνω ως γίνον.

@@ -19,7 +19,12 @@ export type CopilotActionTool =
   | 'navigate'
   | 'shortlist_add';
 
-export type CopilotActionStatus = 'pending' | 'done' | 'dismissed' | 'error';
+/**
+ * `undone` is distinct from `dismissed`: dismissed means the user declined
+ * before anything ran, undone means it ran and was then taken back. Collapsing
+ * them would lose the fact that a write reached the backend.
+ */
+export type CopilotActionStatus = 'pending' | 'done' | 'dismissed' | 'error' | 'undone';
 
 export type CopilotAction = {
   id: string;

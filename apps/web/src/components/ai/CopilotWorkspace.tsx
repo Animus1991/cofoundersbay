@@ -42,11 +42,13 @@ function AssistantBody({
   pendingActionId,
   onConfirm,
   onDismiss,
+  onUndo,
 }: {
   message: AIMessage;
   pendingActionId: string | null;
   onConfirm: (action: CopilotAction) => void;
   onDismiss: (action: CopilotAction) => void;
+  onUndo: (action: CopilotAction) => void;
 }) {
   const html = useMemo(() => {
     const escaped = message.content
@@ -85,6 +87,7 @@ function AssistantBody({
               busyId={pendingActionId}
               onConfirm={onConfirm}
               onDismiss={onDismiss}
+              onUndo={onUndo}
             />
           ))}
         </div>
@@ -291,6 +294,7 @@ export function CopilotWorkspace({
                       pendingActionId={chat.pendingActionId}
                       onConfirm={(a) => void handleConfirm(a)}
                       onDismiss={chat.dismissAction}
+                      onUndo={(a) => void chat.undoAction(a)}
                     />
                   )}
                   <p className={cn('mt-1 text-2xs', msg.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground')}>
