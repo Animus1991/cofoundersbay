@@ -333,18 +333,31 @@ function DimensionCard({
   const done = dim.criteria.filter((c) => c.completed).length;
   const hiddenCount = dim.criteria.length - 3;
   const statusCopy = STATUS_LABEL[status];
+  // Heaviest first: if only one thing is worth naming, name the one that
+  // moves the score most.
+  const remaining = dim.criteria
+    .filter((criterion) => !criterion.completed)
+    .sort((a, b) => b.weight - a.weight);
   const recPrompt = dim.recommendations[0]
     ? `Help me improve ${dim.labelEn} readiness (${pct}%). Next step: ${dim.recommendations[0].en}`
     : `Help me improve ${dim.labelEn} readiness (${pct}%). What should I do next?`;
 
   return (
     <Card className="min-w-0 rounded-xl transition-all hover:shadow-md">
-      <CardContent className="p-4 sm:p-5">
-        <div className="flex items-start gap-3 sm:gap-4">
+      {/* `h-full` down the chain, so the box at the foot of this card can sit
+          at the foot of it. The grid matches these cards' heights; without it
+          the shorter of a pair ended on empty space instead of its own
+          content. */}
+      <CardContent className="h-full p-4 sm:p-5">
+        <div className="flex h-full items-start gap-3 sm:gap-4">
           <div className="flex-shrink-0 rounded-xl bg-primary/10 p-2.5">
             <CfbGlyph name={dim.glyph} className="icon-md text-primary-accessible" />
           </div>
-          <div className="min-w-0 flex-1">
+          {/* `self-stretch`, not `items-stretch` on the row: the row keeps
+              `items-start` so the glyph stays a small square at the top,
+              while this column takes the card’s full height and gives the
+              `mt-auto` box below something to settle against. */}
+          <div className="flex min-w-0 flex-1 flex-col self-stretch">
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex min-w-0 items-center gap-2">
                 <h3 className="text-sm font-semibold">
@@ -382,7 +395,10 @@ function DimensionCard({
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
-            <div className="mt-4 space-y-1.5">
+            {/* `mb-4` here, not `mt-4` on the box below: that box carries
+                `mt-auto` so it settles at the foot of the card, and an
+                explicit top margin would cancel it. */}
+            <div className="mt-4 mb-4 space-y-1.5">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
@@ -416,8 +432,47 @@ function DimensionCard({
               )}
             </div>
 
+            {/* A strong dimension used to say nothing at all here, while the
+                weak one beside it carried a recommendation — and because the
+                grid matches their heights, "Προϊόν" ended with 182px of empty
+                card. What a nearly-finished dimension has to say is the one
+                thing still open, which is more useful than silence and fills
+                the space honestly. */}
+            {status === 'excellent' && (
+              <div className="mt-auto space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 p-3.5">
+                <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
+                  <CheckCircle2 className={cn('icon-sm', STATUS.success.icon)} />
+                  <BilingualText
+                    en={remaining.length ? 'What is left' : 'Fully covered'}
+                    el={remaining.length ? 'Τι απομένει' : 'Πλήρως καλυμμένη'}
+                    compact
+                  />
+                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {remaining.length ? (
+                    <BilingualText en={remaining[0].name} el={remaining[0].nameEl ?? remaining[0].name} />
+                  ) : (
+                    <BilingualText
+                      en="Every criterion in this dimension is met."
+                      el="Κάθε κριτήριο αυτής της διάστασης είναι καλυμμένο."
+                    />
+                  )}
+                </p>
+                {remaining.length > 1 && (
+                  <p className="text-2xs text-muted-foreground">
+                    <BilingualText
+                      en={`and ${remaining.length - 1} more`}
+                      el={`και ${remaining.length - 1} ακόμη`}
+                      compact
+                    />
+                  </p>
+                )}
+                <AIInsightButton prompt={recPrompt} className="h-8" />
+              </div>
+            )}
+
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-4 space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 p-3.5">
+              <div className="mt-auto space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 p-3.5">
                 <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CfbGlyph name="spark" className={cn('icon-sm', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
@@ -653,7 +708,9 @@ export default function ReadinessPage() {
 
   const reassessAction = (
     <div className="flex flex-wrap gap-2.5">
-      <AskAiButton />
+      {/* No Ask AI here: AppShell renders one from `askAi`, and that one carries
+          this page's readiness prompt. This was a second, promptless copy of
+          the same button sitting immediately beside it. */}
       <Button variant="outline" size="sm" disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
         <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? readinessEl('view_live_readiness') : readinessEl('view_demo_showcase')} compact />
       </Button>
@@ -726,8 +783,8 @@ export default function ReadinessPage() {
         {isDemo && (
           <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg p-4 text-sm text-status-info">
             <BilingualText
-              en="Demo showcase — simulated scores and history. Tick criteria freely: the scores recalculate, and everything is forgotten when you close the tab."
-              el="Επίδειξη — ενδεικτικές βαθμολογίες και ιστορικό. Σημειώστε ελεύθερα κριτήρια: οι βαθμολογίες επανυπολογίζονται και όλα ξεχνιούνται μόλις κλείσετε την καρτέλα."
+              en="Demo showcase — tick criteria freely; scores recalculate and nothing is kept."
+              el="Επίδειξη — σημειώστε ελεύθερα κριτήρια· οι βαθμολογίες επανυπολογίζονται και τίποτα δεν αποθηκεύεται."
             />
             {!overlayIsEmpty(demoOverlay) && (
               <Button variant="outline" size="sm" onClick={() => setDemoOverlay(resetReadinessOverlay())}>
@@ -769,7 +826,10 @@ export default function ReadinessPage() {
 
           {/* Accelerator readiness */}
           <Card className="min-w-0 rounded-xl">
-            <CardContent className="flex flex-col gap-4 p-5">
+            {/* `h-full`: the grid stretches the Card, but this column was only as
+                tall as its own content, so the `mt-auto` on the button below had
+                nothing to push against and left 85px of empty card under it. */}
+            <CardContent className="flex h-full flex-col gap-4 p-5">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5">
                   <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
@@ -800,7 +860,10 @@ export default function ReadinessPage() {
 
           {/* Investor readiness */}
           <Card className="min-w-0 rounded-xl">
-            <CardContent className="flex flex-col gap-4 p-5">
+            {/* `h-full`: the grid stretches the Card, but this column was only as
+                tall as its own content, so the `mt-auto` on the button below had
+                nothing to push against and left 85px of empty card under it. */}
+            <CardContent className="flex h-full flex-col gap-4 p-5">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5">
                   <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
@@ -889,7 +952,11 @@ export default function ReadinessPage() {
                     <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
                   </span>
                 </div>
-                <div className="mt-3 flex h-6 items-end gap-1">
+                {/* 40px, not 24. The seven weeks span 38→61, and in a 20px
+                    strip that whole journey was five pixels — the bars read as
+                    one flat row. The baseline stays at zero rather than at the
+                    minimum, so the rise is shown without being exaggerated. */}
+                <div className="mt-3 flex h-10 items-end gap-1 lg:h-[40px]">
                   {demoHistory.map((h, i) => (
                     <div
                       key={i}

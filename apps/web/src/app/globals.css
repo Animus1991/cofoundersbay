@@ -953,6 +953,18 @@ html {
   }
 
   /* ── Standardized icon sizes ── */
+  /* ── One stroke weight across both icon families ──
+     The product draws from two sets: its own `CfbGlyph`, deliberately drawn at
+     1.75, and lucide, which ships every glyph at 2. They sit side by side in
+     the same row — on /readiness it was 40 icons at 2 against 27 at 1.75 — and
+     two weights at one size is what makes a set look unruly rather than drawn.
+     CSS wins over the presentation attribute, so this needs no change at any
+     call site, and charts are untouched: their widths are on `path`, not on a
+     `svg.lucide`. */
+  svg.lucide {
+    stroke-width: 1.75;
+  }
+
   .icon-sm { @apply h-4 w-4; }  /* 16px - inline icons, badges */
   .icon-md { @apply h-5 w-5; }  /* 20px - default button/card icons */
   .icon-lg { @apply h-6 w-6; }  /* 24px - section headers, emphasis */
@@ -1327,6 +1339,61 @@ html {
     }
   }
 
+  /* ── Desktop spatial scale, anchored in pixels ──────────────────────────
+     The 82% desktop root shrinks every rem, and the type scale has been
+     retuned nine times to compensate. The *spatial* scales never were, so
+     they had all quietly drifted about a fifth smaller than the values their
+     own comments state, while the text beside them stayed put:
+
+       .icon-sm says 16px, rendered 13.12px
+       .card-comfortable says p-6 = 24px, rendered 19.68px
+       Button size="sm" says h-8 = 32px, rendered 26.24px
+       Button size="xs" says h-7 = 28px, rendered 22.96px -- under the 24px
+         floor of WCAG 2.5.8, which is a pixel floor and not a rem one
+
+     That is the whole of the "cramped" feeling: glyphs too small for their
+     labels, controls too short for their text, and cards whose padding lost
+     a fifth of its breathing room. Restoring the declared sizes is not a
+     redesign -- it is making the rendered value equal the documented one.
+
+     Type is deliberately untouched here. It is the one scale that was tuned
+     on purpose, and it stays exactly where it was set. */
+  @media (min-width: 1024px) {
+    .icon-sm  { height: 16px; width: 16px; }
+    .icon-md  { height: 20px; width: 20px; }
+    .icon-lg  { height: 24px; width: 24px; }
+    .icon-xl  { height: 32px; width: 32px; }
+
+    /* Tailwind's bare h-3/h-4/h-5/h-6 on an svg is the same intent written a
+       different way, and roughly half the product's glyphs are written that
+       way. Left to drift they would now be visibly smaller than the icon-*
+       beside them, which is a worse inconsistency than the one being fixed. */
+    svg.h-3 { height: 12px; }
+    svg.w-3 { width: 12px; }
+    svg.h-4 { height: 16px; }
+    svg.w-4 { width: 16px; }
+    svg.h-5 { height: 20px; }
+    svg.w-5 { width: 20px; }
+    svg.h-6 { height: 24px; }
+    svg.w-6 { width: 24px; }
+
+    /* The chrome no longer needs its own, larger icon scale: it existed only
+       because the page's glyphs were stuck at 13.12px, and the rail's were
+       lifted to 13.78px to compensate. Both are 16px now, which is what the
+       rail asked for and what puts the two surfaces back in agreement. */
+    aside .icon-sm,
+    header .icon-sm,
+    aside svg.h-4,
+    header svg.h-4 { height: 16px; width: 16px; }
+
+    aside .icon-md,
+    header .icon-md { height: 20px; width: 20px; }
+
+    aside .icon-lg,
+    header .icon-lg { height: 24px; width: 24px; }
+
+  }
+
   /* WCAG 2.5.8 is a CSS-pixel floor, not a rem one, so a `h-6`/`min-h-6` target
      is 19.67px once the desktop root is 82% -- and because these are utilities
      they also beat the `min-height: 24px` base rule that was meant to hold the
@@ -1395,6 +1462,25 @@ html {
     color: inherit;
   }
 
+  /* The same argument, one level up: a call site may put the muted token on a
+     wrapper *around* a bilingual label, which colours both languages and not
+     just the second. The Readiness CTA "Άνοιγμα Builder" does exactly that for
+     its subtitle, measuring the same 2.07:1 on the primary fill — it went
+     unseen only because the text was escaping the button's box entirely and
+     axe was comparing it against the page.
+
+     Scoped to surfaces that declare their own foreground, deliberately: an
+     `outline` or `ghost` button sits on the page background, where the muted
+     token is both readable and the right choice, and those variants carry
+     `text-foreground` rather than a `*-foreground` pair. Size still carries
+     the hierarchy the muted colour was providing. */
+  .text-primary-foreground .text-muted-foreground,
+  .text-secondary-foreground .text-muted-foreground,
+  .text-destructive-foreground .text-muted-foreground,
+  .text-accent-foreground .text-muted-foreground {
+    color: inherit;
+  }
+
   /* Top-bar chips hold their second language only where the bar has room.
      Measured at 834px: the header's right-hand cluster is `shrink-0` and the
      two demo chips rendered both languages in full, taking it to 794px and the
@@ -1420,6 +1506,60 @@ html {
      that space and keeps the roomier desktop rhythm above sm. */
   .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
   .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
+
+  /* ── The same padding, in the pixels it claims ──
+     `p-6` is 24px everywhere but the desktop app, where the 82% root renders
+     it 19.68px — so the roomier desktop rhythm this comment describes was the
+     one place that never got it. Stated after the definitions above because
+     these carry the same specificity and source order decides between them.
+
+     Vertical rhythm goes with it: a card whose padding grows while the space
+     around it stays put reads as more crowded, not less. */
+  @media (min-width: 1024px) {
+    .card-comfortable { padding: 24px; }
+    .card-compact { padding: 16px; }
+
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 24px; }
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 32px; }
+
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-5 { gap: 20px; }
+    .gap-6 { gap: 24px; }
+
+    /* The raw padding utilities, for the same reason. A card written `p-4` was
+       getting 13.12px of breathing room where it asked for 16, and `p-3` was
+       down to 9.84px — which is where the crowding that survived the
+       card-level fix above was coming from. Only the steps the product
+       actually uses are restated; anything else keeps its rem. */
+    .p-2   { padding: 8px; }
+    .p-2\.5 { padding: 10px; }
+    .p-3   { padding: 12px; }
+    .p-3\.5 { padding: 14px; }
+    .p-4   { padding: 16px; }
+    .p-5   { padding: 20px; }
+    .p-6   { padding: 24px; }
+
+    .px-2   { padding-left: 8px; padding-right: 8px; }
+    .px-2\.5 { padding-left: 10px; padding-right: 10px; }
+    .px-3   { padding-left: 12px; padding-right: 12px; }
+    .px-3\.5 { padding-left: 14px; padding-right: 14px; }
+    .px-4   { padding-left: 16px; padding-right: 16px; }
+    .px-5   { padding-left: 20px; padding-right: 20px; }
+    .px-6   { padding-left: 24px; padding-right: 24px; }
+
+    .py-1   { padding-top: 4px; padding-bottom: 4px; }
+    .py-1\.5 { padding-top: 6px; padding-bottom: 6px; }
+    .py-2   { padding-top: 8px; padding-bottom: 8px; }
+    .py-2\.5 { padding-top: 10px; padding-bottom: 10px; }
+    .py-3   { padding-top: 12px; padding-bottom: 12px; }
+    .py-3\.5 { padding-top: 14px; padding-bottom: 14px; }
+    .py-4   { padding-top: 16px; padding-bottom: 16px; }
+    .py-5   { padding-top: 20px; padding-bottom: 20px; }
+    .py-6   { padding-top: 24px; padding-bottom: 24px; }
+  }
 
   /* ── Spacing rhythm ── */
   .section-spacing { @apply space-y-8; }    /* Major sections */
@@ -1574,6 +1714,16 @@ html {
   @media (min-width: 640px) {
     .card-comfortable {
       padding: 1.75rem;
+    }
+  }
+  /* Stated in pixels from `lg`, where the 82% root turns the 28px intended
+     just above into 22.96px — narrower than the 24px every other theme gets,
+     which inverts what this theme is for. This rule is unlayered and carries
+     (0,2,0), so it also has to restate the anchor the utilities layer applies
+     to the other themes; it cannot simply fall through to it. */
+  @media (min-width: 1024px) {
+    .card-comfortable {
+      padding: 28px;
     }
   }
 

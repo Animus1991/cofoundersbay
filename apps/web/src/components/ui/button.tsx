@@ -30,13 +30,37 @@ const buttonVariants = cva(
         link:
           'text-primary-accessible underline-offset-4 hover:underline p-0 h-auto font-medium',
       },
+      /*
+       * Heights and horizontal padding are re-stated in pixels from `lg` up.
+       *
+       * The desktop root is 82%, so every rem here rendered about a fifth
+       * short of the value it names: `h-8` came out 26.24px, `h-7` came out
+       * 22.96px — under the 24px floor of WCAG 2.5.8, which counts CSS pixels
+       * and not rems. Buttons therefore sat tight around their own text while
+       * the type beside them had been retuned to stay legible, which is what
+       * made the controls feel cramped.
+       *
+       * Nothing below `lg` changes: there the root is 100%, the rem values
+       * already render at their nominal size, and the 44px touch heights are
+       * deliberate. The ladder is 28 / 32 / 36 / 40 / 48.
+       *
+       * Expressed as `min-height` with `height: auto`, not as a fixed height.
+       * A fixed one is indistinguishable from the ladder for an ordinary
+       * button — its text is far shorter than 32px — but it overrides the
+       * `h-auto` that call sites pass for a stacked control, and the three
+       * Readiness CTAs (glyph over label over subtitle) were pushed clean
+       * outside their own 36px box by it. A floor gives the ladder where the
+       * ladder applies and gets out of the way where the author asked it to.
+       */
       size: {
-        xs:   'h-7 min-h-7 px-2.5 text-xs rounded',
-        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8',
-        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9',
-        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10',
-        xl:   'h-12 px-8 text-base',
-        icon: 'h-11 w-11 md:h-9 md:w-9',
+        xs:   'h-7 min-h-7 px-2.5 text-xs rounded lg:h-auto lg:min-h-[28px] lg:px-[10px]',
+        sm:   'h-11 min-h-11 px-3 text-xs md:h-8 md:min-h-8 lg:h-auto lg:min-h-[32px] lg:px-[12px]',
+        md:   'h-11 min-h-11 px-4 md:h-9 md:min-h-9 lg:h-auto lg:min-h-[36px] lg:px-[16px]',
+        lg:   'h-11 min-h-11 px-6 text-base md:h-10 md:min-h-10 lg:h-auto lg:min-h-[40px] lg:px-[24px]',
+        xl:   'h-12 px-8 text-base lg:h-auto lg:min-h-[48px] lg:px-[32px]',
+        // An icon button has no text to outgrow its box, so it stays a fixed
+        // square — that is the shape, not a floor.
+        icon: 'h-11 w-11 md:h-9 md:w-9 lg:h-[36px] lg:w-[36px]',
       },
     },
     defaultVariants: {

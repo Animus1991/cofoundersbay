@@ -206,7 +206,9 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
                 {item.change === null ? '—' : `${item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}${Math.abs(item.change)}%`}
               </p>
               <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
-                <BilingualText en={item.label} el={item.labelEl} compact />
+                {/* Three columns in a narrow card: "Μηνύματα που στάλθηκαν"
+                    has nowhere to truncate to, so it wraps. */}
+                <BilingualText en={item.label} el={item.labelEl} compact wrap />
               </p>
             </div>
           ))}
@@ -471,15 +473,22 @@ export default function AnalyticsPage() {
           ))}
         </div>
         <div className="flex flex-wrap gap-2.5">
-          <AskAiButton />
-          <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs" onClick={() => refetch()} loading={isFetching}>
+          {/* AppShell's Ask AI carries this page's analytics prompt; this was a
+              promptless duplicate beside it. `h-10` is gone too — it overrode
+              the button ladder with a height that belongs to no step of it. */}
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => refetch()} loading={isFetching}>
             <RefreshCw className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
           </Button>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid h-auto w-full max-w-md grid-cols-3">
+        {/* Three equal columns capped at `max-w-md` is right on a phone, where
+            the strip should span the screen. On desktop that cap is 367px once
+            the 82% root is applied, which left ~76px per label and clipped
+            "Επισκόπηση" while its two neighbours fit. From `lg` the strip is
+            sized by its own labels instead. */}
+        <TabsList className="grid h-auto w-full max-w-md grid-cols-3 lg:inline-grid lg:w-auto lg:max-w-none lg:grid-cols-[repeat(3,auto)]">
           <TabsTrigger value="overview" className="min-h-10 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm">
             <CfbGlyph name="chart" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_overview')} el={analyticsEl('tab_overview')} compact />

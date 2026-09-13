@@ -283,6 +283,8 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
 export default function ProfilePage() {
   const router = useRouter();
   const { success } = useToast();
+  // The skills card showed six and offered to show all of them; the rest were
+  // unreachable because the offer had no handler behind it.
   const [showAllSkills, setShowAllSkills] = React.useState(false);
 
   const { data: meData, isLoading, isFetching, error, refetch } = useQuery({
@@ -587,7 +589,7 @@ export default function ProfilePage() {
                       size="sm"
                       className="text-muted-foreground h-auto p-0"
                       aria-expanded={showAllSkills}
-                      onClick={() => setShowAllSkills((shown) => !shown)}
+                      onClick={() => setShowAllSkills((shown: boolean) => !shown)}
                     >
                       {showAllSkills ? (
                         <BilingualText en="Show fewer" el="Εμφάνιση λιγότερων" />

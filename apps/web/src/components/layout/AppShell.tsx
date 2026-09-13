@@ -198,7 +198,15 @@ export function AppShell({
               viewport). It already wraps; letting it shrink to its widest
               single button is what makes the wrap happen. */}
           {(actions || showAskAi) && (
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
+            /* `lg:shrink-0` only. Below `lg` the cluster must keep giving
+               width back — that is what makes it wrap instead of pushing a
+               640px page sideways, as the note above records. On desktop the
+               opposite is true: there is room to spare, and letting the
+               heading's 90ch measure squeeze this column broke three buttons
+               onto three separate rows with ~900px sitting empty beside them.
+               The heading block carries `min-w-0`, so it absorbs the
+               difference. */
+            <div className="flex min-w-0 flex-wrap items-center gap-2 lg:min-w-fit lg:shrink-0">
               {showAskAi && (
                 <AIInsightButton prompt={askAiPrompt} variant="outline" size="sm" />
               )}

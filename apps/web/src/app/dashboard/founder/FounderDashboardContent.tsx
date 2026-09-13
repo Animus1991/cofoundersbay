@@ -681,16 +681,24 @@ export default function FounderDashboardContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-2.5">
+                {/* Nine actions in two columns left the ninth alone on a row
+                    of its own, stretched to full width and reading like a
+                    different kind of thing. Three columns divide them exactly. */}
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                   {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
                     <Link
                       key={href}
                       href={href}
-                      className="flex min-h-[4.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-card p-3.5 text-center transition-all hover:bg-muted/50 hover:border-border"
+                      className="flex min-h-[4.5rem] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
                     >
-                      <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
-                      <span className="text-xs font-medium text-foreground leading-tight">
-                        <BilingualText en={labelEn} el={labelEl} compact />
+                      <CfbGlyph name={glyph} className="icon-md shrink-0 text-primary-accessible" />
+                      {/* Three columns of this card are ~110px wide and the
+                          Greek labels are long — "Εύρεση συνιδρυτών" truncated
+                          into its neighbour. Two lines, not an ellipsis: the
+                          tile has the height for it and the word is the whole
+                          point of the tile. */}
+                      <span className="min-w-0 text-xs font-medium leading-tight text-foreground">
+                        <BilingualText en={labelEn} el={labelEl} compact wrap />
                       </span>
                     </Link>
                   ))}

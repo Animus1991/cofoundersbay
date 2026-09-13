@@ -45,14 +45,17 @@ function RadialGauge({ score }: { score: number }) {
 
   return (
     <div
-      className="relative h-20 w-20 shrink-0"
+      /* 80px, stated. `h-20` is 80px everywhere but the desktop app, where the
+         82% root renders it 65.6px — and the tier label centred inside it
+         ("Πρώιμη") had no room left and was clipped by the ring. */
+      className="relative h-20 w-20 shrink-0 lg:h-[80px] lg:w-[80px]"
       role="img"
       aria-label={bilingualAria(
         `Venture readiness ${score} out of 100 — ${labelEn}`,
         `Ετοιμότητα εγχειρήματος ${score} στα 100 — ${labelEl}`,
       )}
     >
-      <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90" aria-hidden="true">
+      <svg viewBox="0 0 36 36" className="h-20 w-20 -rotate-90 lg:h-[80px] lg:w-[80px]" aria-hidden="true">
         <circle cx="18" cy="18" r="15.5" fill="none" strokeWidth="3" className="stroke-muted" />
         <circle
           cx="18" cy="18" r="15.5"
@@ -67,7 +70,12 @@ function RadialGauge({ score }: { score: number }) {
           {score}
           <span className="text-xs font-medium text-muted-foreground">/100</span>
         </span>
-        <span className={cn('mt-0.5 text-2xs font-medium', color)}>{tierLabel}</span>
+        {/* The tier label is a single Greek or English word inside an 80px
+            ring; centred and clipped rather than allowed to spill, so a longer
+            tier name shortens instead of crossing the stroke. */}
+        <span className={cn('mt-0.5 max-w-full truncate px-1 text-center text-2xs font-medium', color)}>
+          {tierLabel}
+        </span>
       </div>
     </div>
   );

@@ -15,13 +15,18 @@ type BilingualTextProps = {
   /** Single-line inline with truncation — for tight containers (mode switcher). */
   compact?: boolean;
   /**
-   * `stacked` only: let each line wrap instead of truncating.
+   * Let the text wrap instead of truncating.
    *
    * Truncation is right for the sidebar, where the column width is fixed and a
    * clipped label is recoverable by expanding the rail. It is wrong in a stat
    * card, where the column is ~88px on a phone and there is nothing to expand —
    * "Κορυφαίες αντιστοιχίσεις" simply lost a third of itself. Wrapping to a
    * second line costs a few pixels of height and keeps the whole word.
+   *
+   * It used to be honoured by `stacked` alone, which left the variant that stat
+   * cards actually use — `compact` — unable to opt out of truncating, the exact
+   * case the paragraph above describes. All three variants honour it now;
+   * `false` remains the default, so nothing that did not ask changes.
    */
   wrap?: boolean;
   /**
@@ -87,7 +92,10 @@ export function BilingualText({
 
   if (!resolved.secondaryText) {
     return (
-      <span lang={resolved.primaryLang} className={cn(className, primaryClassName, compact && 'truncate')}>
+      <span
+        lang={resolved.primaryLang}
+        className={cn(className, primaryClassName, compact && (wrap ? 'break-words' : 'truncate'))}
+      >
         {resolved.primaryText}
       </span>
     );
@@ -95,8 +103,14 @@ export function BilingualText({
 
   if (compact) {
     return (
-      <span className={cn('inline-flex min-w-0 max-w-full items-baseline gap-0.5 truncate', className)}>
-        <span lang={resolved.primaryLang} className={cn('truncate', primaryClassName)}>
+      <span
+        className={cn(
+          'inline-flex min-w-0 max-w-full items-baseline gap-0.5',
+          wrap ? 'flex-wrap' : 'truncate',
+          className,
+        )}
+      >
+        <span lang={resolved.primaryLang} className={cn(wrap ? 'break-words' : 'truncate', primaryClassName)}>
           {resolved.primaryText}
         </span>
         <span className={cn('bilingual-separator shrink-0', separatorNarrow)} aria-hidden="true">
@@ -105,7 +119,8 @@ export function BilingualText({
         <span
           lang={resolved.secondaryLang ?? undefined}
           className={cn(
-            'bilingual-secondary truncate text-muted-foreground',
+            'bilingual-secondary text-muted-foreground',
+            wrap ? 'break-words' : 'truncate',
             secondaryNarrow,
             secondaryClassName,
           )}
