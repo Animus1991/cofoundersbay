@@ -138,7 +138,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
             <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
             <BilingualText en="Venture Readiness Score" el="Βαθμός ετοιμότητας εγχειρήματος" />
           </CardTitle>
-          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" asChild>
+          <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs gap-1" asChild>
             <Link href="/achievements" className="shrink-0">
               <BilingualText en="History" el="Ιστορικό" compact />
               <ArrowRight className="icon-sm" aria-hidden="true" />
@@ -147,7 +147,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="mb-3 flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-4">
           <RadialGauge score={vrs.overall} />
           <div className="min-w-0 flex-1 text-center sm:text-left">
             <p className={cn('text-sm font-semibold', tierColor)}>
@@ -174,13 +174,13 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           </div>
         </div>
 
-        <ul className={cn('space-y-1.5', compact && 'hidden')}>
+        <ul className={cn('space-y-2.5', compact && 'hidden')}>
           {vrs.dimensions.filter((dim) => dim?.href).map((dim) => {
             const { color, bar } = scoreTier(dim.score);
             return (
               <li key={dim.key}>
                 <Link href={dim.href} className="group block rounded-sm">
-                  <div className="mb-0.5 flex items-center justify-between gap-2 text-xs">
+                  <div className="mb-1 flex items-center justify-between gap-2 text-xs">
                     <span className="min-w-0 truncate text-muted-foreground transition-colors group-hover:text-foreground">
                       {dim.label}
                       {weightShare(dim.weight) !== null && (
@@ -203,7 +203,7 @@ export function VentureReadinessCard({ data: prefetched, compact = false, classN
           })}
         </ul>
 
-        {footer && <div className="mt-4 border-t border-border/60 pt-3">{footer}</div>}
+        {footer && <div className="mt-5 border-t border-border/60 pt-4">{footer}</div>}
       </CardContent>
     </Card>
   );

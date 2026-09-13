@@ -166,9 +166,9 @@ function StatCard({
 }) {
   const content = (
     <Card className="relative h-full overflow-hidden rounded-xl transition-all hover:shadow-md cursor-pointer">
-      <CardContent className="p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 space-y-1">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">{label}</p>
             <p className="text-xl font-bold tabular-nums sm:text-2xl">{value}</p>
             {trend && (
@@ -178,7 +178,7 @@ function StatCard({
               </p>
             )}
           </div>
-          <div className="shrink-0 rounded-lg bg-primary/10 p-1.5 sm:p-2">
+          <div className="shrink-0 rounded-lg bg-primary/10 p-2 sm:p-2.5">
             <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
           </div>
         </div>
@@ -192,7 +192,7 @@ function MatchPreviewCard({ match }: { match: SearchHit }) {
   const score = match.matchScore ?? 0;
   const scoreColor = score >= 85 ? STATUS.success.icon : score >= 70 ? STATUS.info.icon : STATUS.warning.icon;
   return (
-    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3 transition-all hover:border-primary/30 hover:shadow-sm">
+    <Link href={`/matches/${match.userId}`} className="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 transition-all hover:border-primary/30 hover:shadow-sm">
       <Avatar className="h-10 w-10 shrink-0">
         <AvatarImage src={match.avatarUrl ?? undefined} />
         <AvatarFallback className="bg-primary/10 text-primary-accessible text-sm font-semibold">
@@ -224,7 +224,7 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className={cn('shrink-0 rounded-full p-1.5', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}
+        className={cn('shrink-0 rounded-full p-2', isComplete ? STATUS.success.bg : isOverdue ? STATUS.danger.bg : 'bg-primary/10')}
         role="img"
         aria-label={stateLabel}
         title={stateLabel}
@@ -250,11 +250,11 @@ function MilestoneRow({ milestone }: { milestone: DemoMilestone }) {
             </Badge>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-2">
+        <div className="mt-1.5 flex items-center gap-2">
           <Progress value={milestone.progress} className="h-1.5 flex-1" />
           <span className="text-xs text-muted-foreground shrink-0 w-9 text-right tabular-nums">{milestone.progress}%</span>
         </div>
-        <p className={cn('text-xs mt-0.5', isOverdue ? STATUS.danger.text : 'text-muted-foreground')}>
+        <p className={cn('text-xs mt-1', isOverdue ? STATUS.danger.text : 'text-muted-foreground')}>
           <BilingualText
             en={`Due ${formatShortDate(milestone.dueDate, 'en')}`}
             el={`Λήξη ${formatShortDate(milestone.dueDate, 'el')}`}
@@ -360,7 +360,7 @@ export default function FounderDashboardContent() {
       <AppShell>
         <div className="py-6 space-y-6">
           <Skeleton className="h-10 w-64" />
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
           </div>
         </div>
@@ -415,7 +415,7 @@ export default function FounderDashboardContent() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard glyph="profile" label={<BilingualText en={dashboardEn('profile_views')} el={dashboardEl('profile_views')} stacked wrap />} value={stats?.activeProfiles ?? 48} trend={{ value: 12, positive: true }} href="/analytics" />
           <StatCard glyph="matches" label={<BilingualText en={dashboardEn('top_matches')} el={dashboardEl('top_matches')} stacked wrap />} value={stats?.matchesThisWeek ?? 7} trend={{ value: 3, positive: true }} href="/matches" />
           <StatCard glyph="messages" label={<BilingualText en={dashboardEn('unread_messages')} el={dashboardEl('unread_messages')} stacked wrap />} value={unreadMessages} href="/messages" />
@@ -424,7 +424,7 @@ export default function FounderDashboardContent() {
 
         <div className="grid min-w-0 gap-6 lg:grid-cols-3">
           {/* Main column */}
-          <div className="min-w-0 space-y-5 lg:col-span-2">
+          <div className="min-w-0 space-y-6 lg:col-span-2">
 
             {/* Readiness — single home.
                 This previously rendered VentureReadinessCard *and* a second
@@ -436,21 +436,21 @@ export default function FounderDashboardContent() {
               <VentureReadinessCard
                 data={vrs}
                 footer={
-                  <div className="space-y-2">
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                  <div className="space-y-2.5">
+                    <div className="grid gap-2.5 sm:grid-cols-3">
+                      <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/readiness" className="w-full">
                           <CfbGlyph name="chart" className="icon-sm" />
                           <BilingualText en="Full report" el="Πλήρης αναφορά" compact />
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/builder" className="w-full">
                           <CfbGlyph name="builder" className="icon-sm" />
                           <BilingualText en="Open Builder" el="Άνοιγμα Builder" compact />
                         </Link>
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                      <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                         <Link href="/expert-reviews" className="w-full">
                           <CfbGlyph name="award" className="icon-sm" />
                           <BilingualText en="Get Expert Review" el="Αξιολόγηση ειδικού" compact />
@@ -485,7 +485,7 @@ export default function FounderDashboardContent() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <p className="text-[11px] text-muted-foreground">
                     <BilingualText
                       en="Sample pipeline — live tracker is on Fundraising."
@@ -525,14 +525,14 @@ export default function FounderDashboardContent() {
                       <BilingualText en={dashboardEn('committed_count')} el={dashboardEl('committed_count')} compact />
                     </span>
                   </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                  <div className="flex flex-col gap-2.5 sm:flex-row">
+                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                       <Link href="/fundraising" className="flex-1">
                         <CfbGlyph name="wallet" className="icon-sm" />
                         <BilingualText en={dashboardEn('manage_pipeline')} el={dashboardEl('manage_pipeline')} compact />
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full gap-1.5" asChild>
+                    <Button variant="outline" size="md" className="w-full gap-1.5" asChild>
                       <Link href="/investors" className="flex-1">
                         <CfbGlyph name="discover" className="icon-sm" />
                         <BilingualText en={dashboardEn('find_investors')} el={dashboardEl('find_investors')} compact />
@@ -559,7 +559,7 @@ export default function FounderDashboardContent() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="space-y-2.5">
                 {recommendations?.suggestions?.slice(0, 4).map((match: SearchHit) => (
                   <MatchPreviewCard key={match.userId} match={match} />
                 ))}
@@ -572,7 +572,7 @@ export default function FounderDashboardContent() {
                         el={dashboardEl('complete_profile_for_matches')}
                       />
                     </p>
-                    <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-2.5">
                       <Button variant="outline" size="sm" className="gap-1.5" asChild>
                         <Link href="/profile/edit">
                           <CfbGlyph name="profile" className="icon-sm" />
@@ -620,7 +620,7 @@ export default function FounderDashboardContent() {
           </div>
 
           {/* Sidebar */}
-          <div className="min-w-0 space-y-5">
+          <div className="min-w-0 space-y-6">
 
             {/* Behavioral Nudge */}
             <BehavioralNudge surface="dashboard" />
@@ -647,7 +647,7 @@ export default function FounderDashboardContent() {
                   <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
                 </div>
                 <Progress value={profilePct} className="h-2" />
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {[
                     { labelEn: 'Photo & headline', labelEl: 'Φωτογραφία & τίτλος', done: true },
                     { labelEn: 'Skills (5+)', labelEl: 'Δεξιότητες (5+)', done: profilePct > 50 },
@@ -663,7 +663,7 @@ export default function FounderDashboardContent() {
                   ))}
                 </div>
                 {profilePct < 100 && (
-                  <Button variant="secondary" size="sm" className="w-full gap-1.5" asChild>
+                  <Button variant="secondary" size="md" className="w-full gap-1.5" asChild>
                     <Link href="/profile/edit">
                       <CfbGlyph name="profile" className="icon-sm" />
                       <BilingualText en={dashboardEn('fill_remaining_profile')} el={dashboardEl('fill_remaining_profile')} compact />
@@ -681,12 +681,12 @@ export default function FounderDashboardContent() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {QUICK_ACTIONS.map(({ href, glyph, labelEn, labelEl }) => (
                     <Link
                       key={href}
                       href={href}
-                      className="flex min-h-16 flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-card p-3 text-center transition-all hover:bg-muted/50 hover:border-border"
+                      className="flex min-h-[4.5rem] flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-card p-3.5 text-center transition-all hover:bg-muted/50 hover:border-border"
                     >
                       <CfbGlyph name={glyph} className="icon-md text-primary-accessible" />
                       <span className="text-xs font-medium text-foreground leading-tight">
@@ -706,7 +706,7 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="spark" className="icon-sm text-muted-foreground" />
                     <BilingualText en={dashboardEn('recent_activity')} el={dashboardEl('recent_activity')} />
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" asChild>
+                  <Button variant="ghost" size="sm" className="h-9 px-3 text-xs" asChild>
                     <Link href="/activity">
                       <BilingualText en={dashboardEn('view_all_activity')} el={dashboardEl('view_all_activity')} compact />
                     </Link>
@@ -715,8 +715,8 @@ export default function FounderDashboardContent() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {DEMO_ACTIVITY.map((item) => (
-                  <div key={item.id} className="flex items-start gap-2.5">
-                    <div className="mt-0.5 shrink-0 rounded-full bg-primary/10 p-1.5 text-primary-accessible">
+                  <div key={item.id} className="flex items-start gap-3">
+                    <div className="mt-0.5 shrink-0 rounded-full bg-primary/10 p-2 text-primary-accessible">
                       <CfbGlyph name={item.glyph} className="icon-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -740,14 +740,14 @@ export default function FounderDashboardContent() {
                     <CfbGlyph name="calendar" className="icon-sm text-primary-accessible" />
                     <BilingualText en={dashboardEn('upcoming')} el={dashboardEl('upcoming')} />
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1" asChild>
+                  <Button variant="ghost" size="sm" className="h-9 px-3 text-xs gap-1" asChild>
                     <Link href="/events">
                       <BilingualText en={dashboardEn('view_all')} el={dashboardEl('view_all')} compact />
                     </Link>
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2.5">
+              <CardContent className="space-y-3">
                 {showDemoData ? (
                   DEMO_EVENTS.slice(0, 3).map((event) => {
                     const tone = EVENT_CONFIG[event.type];
@@ -757,18 +757,18 @@ export default function FounderDashboardContent() {
                       <div
                         key={event.id}
                         className={cn(
-                          'flex items-start gap-2.5 rounded-xl border p-2.5 transition-colors',
+                          'flex items-start gap-3 rounded-xl border p-3 transition-colors',
                           isUrgent ? cn('border', cfg.border, cfg.bg) : 'border-border/60'
                         )}
                       >
-                        <div className={cn('mt-0.5 rounded-lg p-1.5 shrink-0', cfg.bg)}>
+                        <div className={cn('mt-0.5 rounded-lg p-2 shrink-0', cfg.bg)}>
                           <CfbGlyph name="calendar" className={cn('icon-sm', cfg.icon)} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-foreground truncate">
                             <BilingualText en={event.titleEn} el={event.titleEl} compact />
                           </p>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
                             <span className="text-xs text-muted-foreground">
                               <BilingualText
                                 en={`${formatShortDate(event.date, 'en')} · ${event.time}`}

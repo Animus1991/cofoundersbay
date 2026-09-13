@@ -1564,14 +1564,33 @@ html {
     backdrop-filter: none;
   }
 
-  /* ── Room to breathe ─────────────────────────────────────────────────── */
+  /* ── Room to breathe ───────────────────────────────────────────────────
+     Was a flat 28px on every card at every width: on a 360px phone a
+     two-column stat card spent 56 of its ~160px on padding, which is what
+     squeezed the labels. 20px below sm, the intended 28px from sm up. */
   .card-comfortable {
-    padding: 1.75rem;
+    padding: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .card-comfortable {
+      padding: 1.75rem;
+    }
   }
 
   #main-content {
     padding-top: 1.5rem;
   }
+}
+
+/* CardContent/CardFooter carry `pt-0` so a card's body and footer sit under
+   the header's own bottom padding — but `.card-comfortable` is declared after
+   Tailwind's utilities in the same layer (and again, unlayered, inside the
+   minimal theme), so `pt-0` never won and every header↔body seam paid the
+   padding twice. Restoring the intent for every theme: a second
+   card-comfortable block drops only its top padding. A headerless
+   CardContent is a first child, so it keeps its full padding. */
+.card-comfortable ~ .card-comfortable {
+  padding-top: 0;
 }
 
 

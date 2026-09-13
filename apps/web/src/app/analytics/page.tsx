@@ -89,9 +89,9 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
 
   return (
     <Card className="card-interactive min-w-0 rounded-xl border-border/60">
-      <CardContent className="p-3">
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <div className="rounded-lg bg-primary/10 p-2 text-primary-accessible">
+      <CardContent className="p-4">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="rounded-lg bg-primary/10 p-2.5 text-primary-accessible">
             <CfbGlyph name={metric.glyph} className="icon-md" />
           </div>
           <Badge
@@ -108,7 +108,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
           </Badge>
         </div>
-        <h3 className="mb-0.5 text-xl font-bold">{metricValue(metric)}</h3>
+        <h3 className="mb-1 text-xl font-bold">{metricValue(metric)}</h3>
         <p className="text-xs leading-snug text-muted-foreground">
           <BilingualText en={metric.label} el={metric.labelEl} />
         </p>
@@ -152,12 +152,12 @@ function ProfileFunnel({ metrics }: { metrics: AnalyticsMetric[] }) {
           <BilingualText en={analyticsEn('profile_funnel')} el={analyticsEl('profile_funnel')} compact />
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 p-3 pt-0 sm:p-6 sm:pt-0">
+      <CardContent className="space-y-3.5 p-3 pt-0 sm:p-6 sm:pt-0">
         <p className="text-xs text-muted-foreground">
           <BilingualText en={analyticsEn('funnel_note')} el={analyticsEl('funnel_note')} />
         </p>
         {stages.map((s) => (
-          <div key={s.key} className="space-y-1">
+          <div key={s.key} className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground"><BilingualText en={s.labelEn} el={s.labelEl} compact /></span>
               <span className="font-semibold text-foreground">{s.value === null ? '—' : s.value.toLocaleString('en-GB')}</span>
@@ -182,8 +182,8 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
   }));
   return (
     <Card className="min-w-0 rounded-xl border-primary/20 bg-primary/[0.03]">
-      <CardContent className="p-3 sm:p-4">
-        <div className="mb-3 flex min-w-0 items-center gap-2">
+      <CardContent className="p-4 sm:p-5">
+        <div className="mb-4 flex min-w-0 items-center gap-2.5">
           <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
           <span className="min-w-0 truncate text-sm font-semibold">
             <BilingualText en={analyticsEn('network_velocity')} el={analyticsEl('network_velocity')} compact />
@@ -192,10 +192,10 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
             <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
           </Badge>
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           {items.map((item) => (
             <div key={item.label} className="min-w-0 text-center">
-              <div className="mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+              <div className="mx-auto mb-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
                 <CfbGlyph name={item.glyph} className="icon-sm" />
               </div>
               <p className={cn('text-xs font-bold',
@@ -226,18 +226,18 @@ function TopContentList({ content }: { content: TopContent[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {content.map((item, index) => (
             <div
               key={item.id}
-              className="flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-secondary/40"
+              className="flex items-start gap-3 rounded-xl p-3.5 transition-colors hover:bg-secondary/40"
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary-accessible">
                 {index + 1}
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="mb-1 line-clamp-2 text-sm font-medium">{item.title}</h4>
-                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <CfbGlyph name="profile" className="icon-sm shrink-0" />
                     {item.views.toLocaleString('en-GB')} <BilingualText en={analyticsEn('views')} el={analyticsEl('views')} compact />
@@ -279,18 +279,18 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {achievements.map((achievement) => (
             <div
               key={achievement.id}
               className={cn(
-                'rounded-xl border p-3 transition-all',
+                'rounded-xl border p-3.5 transition-all',
                 achievement.unlocked
                   ? 'border-primary/20 bg-primary/5'
                   : 'border-border/40 bg-secondary/20 opacity-60'
               )}
             >
-              <div className="mb-2 flex items-center gap-2">
+              <div className="mb-2.5 flex items-center gap-2">
                 <CfbGlyph name="award" className={cn('icon-md', STATUS.warning.icon)} />
                 {achievement.unlocked && (
                   <Badge variant="default" className="text-xs">
@@ -298,7 +298,7 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
                   </Badge>
                 )}
               </div>
-              <h4 className="mb-1 text-sm font-semibold">{achievement.title}</h4>
+              <h4 className="mb-1.5 text-sm font-semibold">{achievement.title}</h4>
               <p className="text-xs text-muted-foreground">{achievement.description}</p>
             </div>
           ))}
@@ -310,11 +310,11 @@ function AchievementsCard({ achievements: rawAchievements }: { achievements?: { 
 
 function AnalyticsSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i} className="min-w-0 rounded-xl">
-            <CardContent className="p-3">
+            <CardContent className="p-4">
               <Skeleton className="mb-3 h-8 w-8" />
               <Skeleton className="mb-2 h-6 w-16" />
               <Skeleton className="h-3 w-24" />
@@ -450,9 +450,9 @@ export default function AnalyticsPage() {
       askAi={askPrompt}
       contentClassName="overflow-x-clip"
     >
-      <div className="min-w-0 space-y-4 overflow-x-clip">
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 flex-wrap gap-2">
+      <div className="min-w-0 space-y-5 overflow-x-clip">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap gap-2.5">
           {PERIODS.map((p) => (
             <button
               key={p}
@@ -460,7 +460,7 @@ export default function AnalyticsPage() {
               aria-pressed={period === p}
               onClick={() => setPeriod(p)}
               className={cn(
-                'min-h-10 rounded-full px-3 py-1 text-xs font-medium border transition-colors focus-ring',
+                'min-h-10 rounded-full px-3.5 py-1.5 text-xs font-medium border transition-colors focus-ring',
                 period === p
                   ? 'border-primary bg-primary/20 text-primary-accessible'
                   : 'border-border/60 text-muted-foreground hover:border-primary/40',
@@ -470,7 +470,7 @@ export default function AnalyticsPage() {
             </button>
           ))}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2.5">
           <AskAiButton />
           <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs" onClick={() => refetch()} loading={isFetching}>
             <RefreshCw className="icon-sm" /><BilingualText en="Refresh" el="Ανανέωση" compact />
@@ -480,21 +480,21 @@ export default function AnalyticsPage() {
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
         <TabsList className="grid h-auto w-full max-w-md grid-cols-3">
-          <TabsTrigger value="overview" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+          <TabsTrigger value="overview" className="min-h-10 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm">
             <CfbGlyph name="chart" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_overview')} el={analyticsEl('tab_overview')} compact />
           </TabsTrigger>
-          <TabsTrigger value="engagement" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+          <TabsTrigger value="engagement" className="min-h-10 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm">
             <CfbGlyph name="spark" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_engagement')} el={analyticsEl('tab_engagement')} compact />
           </TabsTrigger>
-          <TabsTrigger value="growth" className="min-h-10 gap-1.5 px-2 text-xs sm:gap-2 sm:text-sm">
+          <TabsTrigger value="growth" className="min-h-10 gap-1.5 px-3 text-xs sm:gap-2 sm:text-sm">
             <CfbGlyph name="target" className="icon-sm shrink-0" />
             <BilingualText en={analyticsEn('tab_growth')} el={analyticsEl('tab_growth')} compact />
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-4 space-y-4">
+        <TabsContent value="overview" className="mt-5 space-y-5">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (
@@ -503,7 +503,7 @@ export default function AnalyticsPage() {
             <>
               <p className="text-xs text-muted-foreground"><BilingualText en={isPreviewDemo() ? 'Demo showcase — sample metrics, not account activity.' : 'Recorded account activity. A dash means unavailable, not zero; trends require a comparable previous period.'} el={isPreviewDemo() ? 'Επίδειξη — ενδεικτικές μετρήσεις, όχι δραστηριότητα λογαριασμού.' : 'Καταγεγραμμένη δραστηριότητα λογαριασμού. Η παύλα σημαίνει μη διαθέσιμο, όχι μηδέν· οι τάσεις απαιτούν συγκρίσιμη προηγούμενη περίοδο.'} /></p>
               {metrics.length > 0 && (
-                <div className="grid min-w-0 gap-3 lg:grid-cols-3">
+                <div className="grid min-w-0 gap-4 lg:grid-cols-3">
                   <div className="min-w-0 lg:col-span-1">
                     <NetworkVelocity metrics={metrics} />
                   </div>
@@ -514,15 +514,15 @@ export default function AnalyticsPage() {
               )}
 
               {/* Metric cards with sparklines */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                 {metrics.map((metric) => {
                   const sparkValues = isPreviewDemo() ? demoSparklines[metric.label] ?? []
                     : metric.label === 'Profile Views' ? (profileViews ?? []).map((point) => point.views) : [];
                   return (
                     <Card key={metric.label} className="card-interactive relative min-w-0 overflow-hidden rounded-xl border-border/60">
-                      <CardContent className="p-3">
-                        <div className="mb-2 flex items-start justify-between gap-2">
-                          <div className="rounded-lg bg-primary/10 p-2 text-primary-accessible">
+                      <CardContent className="p-4">
+                        <div className="mb-3 flex items-start justify-between gap-3">
+                          <div className="rounded-lg bg-primary/10 p-2.5 text-primary-accessible">
                             <CfbGlyph name={metric.glyph} className="h-4 w-4" />
                           </div>
                           <Badge
@@ -533,12 +533,12 @@ export default function AnalyticsPage() {
                             {metric.change === null ? '—' : `${Math.abs(metric.change)}%`}
                           </Badge>
                         </div>
-                        <h3 className="mb-0.5 text-xl font-bold">{metricValue(metric)}</h3>
+                        <h3 className="mb-1 text-xl font-bold">{metricValue(metric)}</h3>
                         <p className="text-xs leading-snug text-muted-foreground">
                           <BilingualText en={metric.label} el={metric.labelEl} compact />
                         </p>
                         {sparkValues.length > 0 && (
-                          <div className="mt-2 opacity-60">
+                          <div className="mt-3 opacity-60">
                             <Sparkline values={sparkValues} />
                           </div>
                         )}
@@ -557,8 +557,8 @@ export default function AnalyticsPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                      <div className="min-w-0 space-y-1">
+                    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                      <div className="min-w-0 space-y-1.5">
                         <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('most_active_day')} el={analyticsEl('most_active_day')} compact /></p>
                         <p className="text-base font-semibold sm:text-lg">
                           {weeklySummary.mostActiveDay
@@ -566,20 +566,20 @@ export default function AnalyticsPage() {
                             : '—'}
                         </p>
                       </div>
-                      <div className="min-w-0 space-y-1">
+                      <div className="min-w-0 space-y-1.5">
                         <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('peak_hour')} el={analyticsEl('peak_hour')} compact /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.peakHour || '—'}</p>
                       </div>
-                      <div className="min-w-0 space-y-1">
+                      <div className="min-w-0 space-y-1.5">
                         <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('avg_response')} el={analyticsEl('avg_response')} compact /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.avgResponseTime || '—'}</p>
                       </div>
-                      <div className="min-w-0 space-y-1">
+                      <div className="min-w-0 space-y-1.5">
                         <p className="text-xs text-muted-foreground"><BilingualText en={analyticsEn('total_interactions')} el={analyticsEl('total_interactions')} compact /></p>
                         <p className="text-base font-semibold sm:text-lg">{weeklySummary.totalInteractions ?? '—'}</p>
                       </div>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-5">
                       <AskAiButton variant="ghost" labelEn={analyticsEn('ask_ai_insights')} labelEl={analyticsEl('ask_ai_insights')} />
                     </div>
                   </CardContent>
@@ -589,13 +589,13 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="engagement" className="mt-4 space-y-4">
+        <TabsContent value="engagement" className="mt-5 space-y-5">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (
             <AnalyticsSkeleton />
           ) : (
-            <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+            <div className="grid min-w-0 gap-5 lg:grid-cols-2">
               <EngagementBreakdown engagement={engagement} />
               {topContent && topContent.length > 0 ? (
                 <TopContentList content={topContent} />
@@ -613,7 +613,7 @@ export default function AnalyticsPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="growth" className="mt-4 space-y-4">
+        <TabsContent value="growth" className="mt-5 space-y-5">
           {isError ? (
             <ErrorState onRetry={() => void refetch()} />
           ) : waiting ? (
@@ -632,7 +632,7 @@ export default function AnalyticsPage() {
                   </CardContent>
                 </Card>
               )}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
                 {metrics.map((metric) => (
                   <MetricCard key={metric.label} metric={metric} />
                 ))}

@@ -127,7 +127,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
             aria-expanded={expanded}
             aria-controls={listId}
           >
-            <div className="shrink-0 rounded-lg bg-primary/10 p-1.5">
+            <div className="shrink-0 rounded-lg bg-primary/10 p-2">
               <CfbGlyph name="builder" className="icon-sm text-primary-accessible" />
             </div>
             <div className="min-w-0">
@@ -167,7 +167,7 @@ export function OnboardingChecklist({ steps, userName, autoCollapse = true }: On
         />
       </CardHeader>
 
-      <CardContent id={listId} hidden={!expanded} className="space-y-1.5 pb-3 pt-0">
+      <CardContent id={listId} hidden={!expanded} className="space-y-2 pb-4 pt-0">
         {steps.map((step) => (
           <div
             key={step.id}

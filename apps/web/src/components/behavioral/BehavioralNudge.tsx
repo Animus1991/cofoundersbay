@@ -66,14 +66,14 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
       <div
         key={mountKey}
         className={cn(
-          'flex items-center gap-3 rounded-xl border px-3 py-2 text-sm',
+          'flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-sm',
           PRIORITY_STYLES[action.priority],
           className,
         )}
       >
         <CfbGlyph name={glyph} className="icon-sm shrink-0 text-foreground/70" />
         <span className="flex-1 text-xs text-foreground/90">{action.title}</span>
-        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+        <Button variant="ghost" size="sm" className="h-8 px-2.5 text-xs" asChild>
           <Link href={action.ctaHref}>
             {action.ctaLabel} <ArrowRight className="ml-1 icon-sm" />
           </Link>
@@ -107,11 +107,11 @@ export function BehavioralNudge({ surface = 'dashboard', className, compact = fa
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-background">
           <CfbGlyph name={glyph} className="icon-sm text-primary-accessible" />
         </div>
-        <div className="flex-1 space-y-1">
+        <div className="flex-1 space-y-1.5">
           <p className="text-sm font-semibold leading-snug text-foreground">{action.title}</p>
           <p className="text-xs leading-relaxed text-muted-foreground">{action.description}</p>
-          <div className="pt-1">
-            <Button size="sm" className="h-7 gap-1.5 text-xs" asChild>
+          <div className="pt-1.5">
+            <Button size="sm" className="h-9 gap-1.5 px-3 text-xs" asChild>
               <Link href={action.ctaHref}>
                 {action.ctaLabel}
                 <ArrowRight className="icon-sm" />

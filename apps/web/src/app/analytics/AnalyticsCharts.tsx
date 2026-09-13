@@ -102,7 +102,7 @@ export function ProfileViewsChart({ data }: { data: AnalyticsProfileView[] }) {
           </ResponsiveContainer>
           <details className="mt-3 text-xs text-muted-foreground">
             <summary className="cursor-pointer rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><BilingualText en="View recorded values" el="Προβολή καταγεγραμμένων τιμών" compact /></summary>
-            <ul className="mt-2 space-y-1">{chartData.map((point) => <li key={point.date}>{point.date}: {point.views} / {point.unique ?? '—'}</li>)}</ul>
+            <ul className="mt-3 space-y-1.5">{chartData.map((point) => <li key={point.date}>{point.date}: {point.views} / {point.unique ?? '—'}</li>)}</ul>
           </details>
         </> : <Unavailable />}
       </CardContent>
@@ -123,7 +123,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
   const pieData = barData.filter((item) => item.value > 0);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {isSample && <SampleNotice />}
       <Card className="rounded-xl">
         <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold">
@@ -139,7 +139,7 @@ export function EngagementBreakdown({ engagement }: { engagement?: AnalyticsEnga
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>{barData.map((item, index) => <Cell key={item.name} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}</Bar>
             </BarChart>
           </ResponsiveContainer> : <Unavailable />}
-          <ul className="mt-3 space-y-1 text-xs text-muted-foreground">{values.map((item) => <li key={item.name}>
+          <ul className="mt-4 space-y-1.5 text-xs text-muted-foreground">{values.map((item) => <li key={item.name}>
             <BilingualText en={`${item.name}: ${typeof item.value === 'number' && Number.isFinite(item.value) ? item.value : 'Unavailable'}`} el={`${item.el}: ${typeof item.value === 'number' && Number.isFinite(item.value) ? item.value : 'Μη διαθέσιμο'}`} compact />
           </li>)}</ul>
         </CardContent>

@@ -117,7 +117,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
   return (
     <div
       className={cn(
-        'relative rounded-xl border px-4 py-3 pr-10 transition-all sm:pr-4',
+        'relative rounded-xl border px-4 py-3.5 pr-10 transition-all sm:pr-4',
         ac.border,
         ac.bg,
         className,
@@ -152,7 +152,7 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
               asChild
               variant="ghost"
               size="sm"
-              className={cn('mt-2 inline-flex h-8 gap-1 px-2.5 text-xs font-semibold sm:hidden', ac.cta)}
+              className={cn('mt-2.5 inline-flex h-9 gap-1.5 px-3 text-xs font-semibold sm:hidden', ac.cta)}
             >
               <Link href={action.href}>
                 <BilingualText en={cta} el={ctaEl} compact />
@@ -161,12 +161,12 @@ export function NextActionBanner({ action, expiresAt, className }: NextActionBan
             </Button>
           </div>
         </div>
-        <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+        <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className={cn('h-7 gap-1 px-2.5 text-xs font-semibold', ac.cta)}
+            className={cn('h-9 gap-1.5 px-3 text-xs font-semibold', ac.cta)}
           >
             <Link href={action.href}>
               <BilingualText en={cta} el={ctaEl} compact />

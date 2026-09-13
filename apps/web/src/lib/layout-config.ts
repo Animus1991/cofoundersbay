@@ -110,8 +110,8 @@ export type LayoutConfig = typeof layoutConfig;
  * `lg` the phone and tablet gutters are untouched.
  */
 export const appShellMainClasses =
-  'focus:outline-none flex-1 w-full min-w-0 px-3 sm:px-6 lg:px-[1.2rem] pt-3 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
+  'focus:outline-none flex-1 w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-[calc(6.75rem+env(safe-area-inset-bottom,0px))] sm:pb-28';
 
 /** Loading skeleton wrapper — mirrors AppShell main padding without a max-width cap. */
 export const appShellLoadingClasses =
-  'mx-auto w-full min-w-0 px-3 sm:px-6 lg:px-[1.2rem] pt-3 space-y-5';
+  'mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-5';

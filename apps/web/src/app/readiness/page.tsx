@@ -345,8 +345,8 @@ function DimensionCard({
             <CfbGlyph name={dim.glyph} className="icon-md text-primary-accessible" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex min-w-0 items-center gap-2">
                 <h3 className="text-sm font-semibold">
                   <BilingualText en={dim.labelEn} el={dim.labelEl} compact />
                 </h3>
@@ -373,7 +373,7 @@ function DimensionCard({
               </Badge>
             </div>
 
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-3.5 flex items-center gap-3">
               <Progress value={pct} className="h-1.5 min-w-0 flex-1" />
               <span className="w-9 shrink-0 text-right text-sm font-semibold tabular-nums">{pct}%</span>
             </div>
@@ -382,7 +382,7 @@ function DimensionCard({
               <BilingualText en={readinessEn('criteria_completed')} el={readinessEl('criteria_completed')} compact />
             </p>
 
-            <div className="mt-3 space-y-1">
+            <div className="mt-4 space-y-1.5">
               {(expanded ? dim.criteria : dim.criteria.slice(0, 3)).map((c) => (
                 <button
                   key={c.id}
@@ -390,7 +390,7 @@ function DimensionCard({
                   disabled={!canToggle || isMutating}
                   onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
-                    'flex min-h-11 w-full items-start gap-2 rounded-lg px-1.5 py-2 text-left text-sm transition-colors',
+                    'flex min-h-11 w-full items-start gap-2.5 rounded-lg px-2.5 py-2.5 text-left text-sm transition-colors',
                     canToggle ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
@@ -407,7 +407,7 @@ function DimensionCard({
                 <button
                   type="button"
                   onClick={() => setExpanded((e) => !e)}
-                  className="min-h-11 pl-6 text-xs text-primary-accessible transition-colors hover:underline"
+                  className="min-h-11 pl-7 text-xs text-primary-accessible transition-colors hover:underline"
                 >
                   {expanded
                     ? <BilingualText en={readinessEn('show_less')} el={readinessEl('show_less')} compact />
@@ -417,8 +417,8 @@ function DimensionCard({
             </div>
 
             {dim.recommendations.length > 0 && status !== 'excellent' && (
-              <div className="mt-3 space-y-2 rounded-xl border border-border/60 bg-secondary/50 p-3">
-                <p className="mb-1 flex items-center gap-1.5 text-xs font-medium">
+              <div className="mt-4 space-y-2.5 rounded-xl border border-border/60 bg-secondary/50 p-3.5">
+                <p className="mb-1.5 flex items-center gap-2 text-xs font-medium">
                   <CfbGlyph name="spark" className={cn('icon-sm', STATUS.warning.icon)} />
                   <BilingualText en={readinessEn('recommendation')} el={readinessEl('recommendation')} compact />
                 </p>
@@ -456,7 +456,7 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
           scoreName={primary === 'el' ? readinessEl('your_score') : readinessEn('your_score')}
           benchmarkName={primary === 'el' ? readinessEl('benchmark') : readinessEn('benchmark')}
         />
-        <div className="mt-1 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" /><BilingualText en={readinessEn('your_score')} el={readinessEl('your_score')} compact /></span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-muted-foreground/30" /><BilingualText en={readinessEn('benchmark')} el={readinessEl('benchmark')} compact /></span>
         </div>
@@ -492,7 +492,7 @@ function ScoreHistoryChart({ history }: { history: typeof DEMO_HISTORY }) {
           acceleratorName={primary === 'el' ? readinessEl('accelerator') : readinessEn('accelerator')}
           investorName={primary === 'el' ? readinessEl('investor') : readinessEn('investor')}
         />
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-primary" /><BilingualText en={readinessEn('overall')} el={readinessEl('overall')} compact /></span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-accent" /><BilingualText en={readinessEn('accelerator')} el={readinessEl('accelerator')} compact /></span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-0.5 w-5 bg-status-success" /><BilingualText en={readinessEn('investor')} el={readinessEl('investor')} compact /></span>
@@ -652,7 +652,7 @@ export default function ReadinessPage() {
   );
 
   const reassessAction = (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2.5">
       <AskAiButton />
       <Button variant="outline" size="sm" disabled={!mode || toggleMutation.isPending} onClick={() => setMode(isDemo ? 'live' : 'demo')}>
         <BilingualText en={isDemo ? 'View live readiness' : 'View demo showcase'} el={isDemo ? readinessEl('view_live_readiness') : readinessEl('view_demo_showcase')} compact />
@@ -737,9 +737,9 @@ export default function ReadinessPage() {
           </div>
         )}
 
-        <div className="grid min-w-0 gap-4 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-3">
           <Card className="min-w-0 rounded-xl border-primary/20 bg-primary/[0.03] lg:col-span-1">
-            <CardContent className="flex flex-col items-center gap-3 p-4 text-center">
+            <CardContent className="flex flex-col items-center gap-4 p-4 text-center">
               <div className="relative">
                 <ScoreRing score={overallScore} size={140} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -769,9 +769,9 @@ export default function ReadinessPage() {
 
           {/* Accelerator readiness */}
           <Card className="min-w-0 rounded-xl">
-            <CardContent className="flex flex-col gap-3 p-5">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="rounded-xl bg-primary/10 p-2">
+            <CardContent className="flex flex-col gap-4 p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-2.5">
                   <CfbGlyph name="award" className="icon-sm text-primary-accessible" />
                 </div>
                 <div className="min-w-0">
@@ -800,9 +800,9 @@ export default function ReadinessPage() {
 
           {/* Investor readiness */}
           <Card className="min-w-0 rounded-xl">
-            <CardContent className="flex flex-col gap-3 p-5">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="rounded-xl bg-primary/10 p-2">
+            <CardContent className="flex flex-col gap-4 p-5">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="rounded-xl bg-primary/10 p-2.5">
                   <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
                 </div>
                 <div className="min-w-0">
@@ -831,11 +831,11 @@ export default function ReadinessPage() {
         </div>
 
         {/* Radar + AI Insights row */}
-        <div className="grid min-w-0 gap-4 lg:grid-cols-5">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-5">
           <div className="min-w-0 lg:col-span-3">
             <ReadinessRadarChart dimensions={dimensions} />
           </div>
-          <div className="min-w-0 space-y-3 lg:col-span-2">
+          <div className="min-w-0 space-y-4 lg:col-span-2">
             {/* AI Insight Panel */}
             <Card className="rounded-xl border-primary/20 bg-primary/[0.03]">
               <CardHeader className="pb-2">
@@ -850,9 +850,9 @@ export default function ReadinessPage() {
                   />
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2.5">
+              <CardContent className="space-y-3">
                 {weakDims.slice(0, 3).map((d) => (
-                  <div key={d.key} className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-card p-2.5">
+                  <div key={d.key} className="flex items-start gap-3 rounded-xl border border-border/60 bg-card p-3">
                     <CfbGlyph name="spark" className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-foreground">
@@ -865,7 +865,7 @@ export default function ReadinessPage() {
                   </div>
                 ))}
                 {weakDims.length === 0 && (
-                  <div className="flex items-center gap-2 p-2.5">
+                  <div className="flex items-center gap-2.5 p-3">
                     <CheckCircle2 className={cn('icon-sm flex-shrink-0', STATUS.success.icon)} />
                     <p className="text-xs text-muted-foreground"><BilingualText en={readinessEn('all_dimensions_strong')} el={readinessEl('all_dimensions_strong')} /></p>
                   </div>
@@ -880,16 +880,16 @@ export default function ReadinessPage() {
             </Card>
             <Card className="rounded-xl">
               <CardContent className="p-4">
-                <p className="mb-2 text-xs text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact /></p>
+                <p className="mb-2.5 text-xs text-muted-foreground"><BilingualText en={readinessEn('score_change_7_weeks')} el={readinessEl('score_change_7_weeks')} compact /></p>
                 {isDemo ? <>
-                <div className="flex items-end gap-2">
+                <div className="flex items-end gap-2.5">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className={cn('mb-1 flex items-center gap-0.5 text-xs', TREND.up)}>
                     <TrendingUp className="icon-sm" />+{overallScore - demoHistory[0].score}{' '}
                     <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
                   </span>
                 </div>
-                <div className="mt-2 flex h-6 items-end gap-0.5">
+                <div className="mt-3 flex h-6 items-end gap-1">
                   {demoHistory.map((h, i) => (
                     <div
                       key={i}
@@ -907,15 +907,15 @@ export default function ReadinessPage() {
         {/* Tabs: Dimensions / Priority Actions / Benchmarks / History */}
         <Tabs defaultValue="dimensions" className="min-w-0">
           <TabsList className="flex w-full justify-start">
-            <TabsTrigger value="dimensions" className="px-2.5 text-xs sm:px-3 sm:text-sm"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
-            <TabsTrigger value="actions" className="px-2.5 text-xs sm:px-3 sm:text-sm"><BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact /></TabsTrigger>
-            <TabsTrigger value="benchmarks" className="px-2.5 text-xs sm:px-3 sm:text-sm"><BilingualText en={readinessEn('tab_benchmarks')} el={readinessEl('tab_benchmarks')} compact /></TabsTrigger>
-            <TabsTrigger value="history" className="px-2.5 text-xs sm:px-3 sm:text-sm"><BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact /></TabsTrigger>
+            <TabsTrigger value="dimensions" className="px-3 text-xs sm:px-4 sm:text-sm"><BilingualText en={readinessEn('tab_all_dimensions')} el={readinessEl('tab_all_dimensions')} compact /></TabsTrigger>
+            <TabsTrigger value="actions" className="px-3 text-xs sm:px-4 sm:text-sm"><BilingualText en={readinessEn('tab_priority_actions')} el={readinessEl('tab_priority_actions')} compact /></TabsTrigger>
+            <TabsTrigger value="benchmarks" className="px-3 text-xs sm:px-4 sm:text-sm"><BilingualText en={readinessEn('tab_benchmarks')} el={readinessEl('tab_benchmarks')} compact /></TabsTrigger>
+            <TabsTrigger value="history" className="px-3 text-xs sm:px-4 sm:text-sm"><BilingualText en={readinessEn('tab_history')} el={readinessEl('tab_history')} compact /></TabsTrigger>
           </TabsList>
 
-          <TabsContent value="dimensions" className="mt-4">
+          <TabsContent value="dimensions" className="mt-5">
             {!workspaceId && (
-              <div className={cn('mb-4 flex items-start gap-3 rounded-xl border p-4', STATUS.warning.border, STATUS.warning.bg)}>
+              <div className={cn('mb-5 flex items-start gap-3 rounded-xl border p-4', STATUS.warning.border, STATUS.warning.bg)}>
                 <AlertCircle className={cn('mt-0.5 icon-sm flex-shrink-0', STATUS.warning.icon)} />
                 <div className="min-w-0">
                   <p className={cn('text-sm font-medium', STATUS.warning.text)}><BilingualText en={readinessEn('no_workspace_title')} el={readinessEl('no_workspace_title')} /></p>
@@ -927,7 +927,7 @@ export default function ReadinessPage() {
                 </div>
               </div>
             )}
-            <div className="grid min-w-0 gap-4 md:grid-cols-2">
+            <div className="grid min-w-0 gap-5 md:grid-cols-2">
               {dimensions.map((dim) => (
                 <DimensionCard
                   key={dim.key}
@@ -940,7 +940,7 @@ export default function ReadinessPage() {
             </div>
           </TabsContent>
 
-          <TabsContent value="actions" className="mt-4">
+          <TabsContent value="actions" className="mt-5">
             <Card className="rounded-xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -972,8 +972,8 @@ export default function ReadinessPage() {
                     .map((item) => {
                       const itemColors = scoreColors(item.status);
                       return (
-                      <div key={item.key} className="flex items-start gap-3 rounded-xl border border-border/40 bg-secondary/50 p-3">
-                        <div className={cn('mt-0.5 rounded-full p-1.5', itemColors.bg)}>
+                      <div key={item.key} className="flex items-start gap-3 rounded-xl border border-border/40 bg-secondary/50 p-3.5">
+                        <div className={cn('mt-0.5 rounded-full p-2', itemColors.bg)}>
                           <ChevronRight className={cn('icon-sm', itemColors.icon)} />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1000,8 +1000,8 @@ export default function ReadinessPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="benchmarks" className="mt-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <TabsContent value="benchmarks" className="mt-5">
+            <div className="grid gap-5 sm:grid-cols-2">
               <Card className="rounded-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
@@ -1009,11 +1009,11 @@ export default function ReadinessPage() {
                     <BilingualText en={readinessEn('accelerator_benchmark')} el={readinessEl('accelerator_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3.5">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     return (
-                      <div key={d.key} className="space-y-1">
+                      <div key={d.key} className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground"><BilingualText en={d.labelEn} el={d.labelEl} compact /></span>
                           <span className="font-medium tabular-nums">{pct}%</span>
@@ -1039,11 +1039,11 @@ export default function ReadinessPage() {
                     <BilingualText en={readinessEn('investor_benchmark')} el={readinessEl('investor_benchmark')} compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-3.5">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     return (
-                      <div key={d.key} className="space-y-1">
+                      <div key={d.key} className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground"><BilingualText en={d.labelEn} el={d.labelEl} compact /></span>
                           <span className="font-medium tabular-nums">{pct}%</span>
@@ -1063,18 +1063,18 @@ export default function ReadinessPage() {
               </Card>
             </div>
 
-            <Card className="mt-4 rounded-xl">
+            <Card className="mt-5 rounded-xl">
               <CardHeader>
                 <CardTitle className="text-sm"><BilingualText en={readinessEn('dimension_weights')} el={readinessEl('dimension_weights')} /></CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {dimensions.map((d) => {
                     const pct = Math.round((d.score / d.maxScore) * 100);
                     const accelContrib = Math.round(pct * d.acceleratorWeight / 100);
                     const investContrib = Math.round(pct * d.investorWeight / 100);
                     return (
-                      <div key={d.key} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-2">
+                      <div key={d.key} className="flex items-center gap-3 rounded-xl bg-secondary/40 p-3">
                         <CfbGlyph name={d.glyph} className="h-4 w-4 flex-shrink-0 text-primary-accessible" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium"><BilingualText en={d.labelEn} el={d.labelEl} compact /></p>
@@ -1094,8 +1094,8 @@ export default function ReadinessPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="history" className="mt-4">
-            {isDemo ? <div className="space-y-4">
+          <TabsContent value="history" className="mt-5">
+            {isDemo ? <div className="space-y-5">
               <ScoreHistoryChart history={demoHistory} />
               <Card className="rounded-xl">
                 <CardHeader className="pb-3">
@@ -1104,10 +1104,10 @@ export default function ReadinessPage() {
                     <BilingualText en={readinessEn('assessment_log')} el={readinessEl('assessment_log')} compact />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-1">
                   {DEMO_HISTORY.slice().reverse().map((h, i) => (
-                    <div key={i} className="flex items-center gap-3 border-b border-border/40 py-2 last:border-0">
-                      <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
+                    <div key={i} className="flex items-center gap-3 border-b border-border/40 py-3 last:border-0">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary-accessible">
                         {h.week}
                       </div>
                       <div className="flex-1">
@@ -1135,22 +1135,22 @@ export default function ReadinessPage() {
         </Tabs>
 
         {/* Quick Actions */}
-        <div className="grid min-w-0 gap-3 sm:grid-cols-3">
-          <Button asChild className="h-auto min-h-14 flex-col gap-1 py-3">
+        <div className="grid min-w-0 gap-3 sm:gap-4 sm:grid-cols-3">
+          <Button asChild className="h-auto min-h-16 flex-col gap-1.5 py-4">
             <Link href="/builder">
               <CfbGlyph name="builder" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('open_builder')} el={readinessEl('open_builder')} compact /></span>
               <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('build_workspace')} el={readinessEl('build_workspace')} compact /></span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
+          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
             <Link href="/mentoring">
               <CfbGlyph name="mentor" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('find_mentor')} el={readinessEl('find_mentor')} compact /></span>
               <span className="text-xs text-muted-foreground"><BilingualText en={readinessEn('get_expert_guidance')} el={readinessEl('get_expert_guidance')} compact /></span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto min-h-14 flex-col gap-1 py-3">
+          <Button asChild variant="outline" className="h-auto min-h-16 flex-col gap-1.5 py-4">
             <Link href="/programs">
               <CfbGlyph name="award" className="icon-sm" />
               <span className="text-sm font-medium"><BilingualText en={readinessEn('browse_programs')} el={readinessEl('browse_programs')} compact /></span>

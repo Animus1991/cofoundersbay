@@ -146,12 +146,12 @@ export function SideNav() {
         {/* ── Navigation ── */}
         <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-hide">
           {sections.map(({ section, links }) => (
-            <div key={section} className="mb-1">
+            <div key={section} className="mb-1.5">
               {/* nav-section-label, not plain text-xs: these uppercase headings
                   take the display steps' -2% per pass while the links under them
                   take the +2% of the body scale (see globals.css). */}
               {showLabels ? (
-                <p className="nav-section-label mx-3 mb-1 mt-3 text-xs text-muted-foreground/80 first:mt-1">
+                <p className="nav-section-label mx-3 mb-1.5 mt-4 text-xs text-muted-foreground/80 first:mt-1">
                   <BilingualText
                     en={section}
                     el={getNavSectionEl(section)}
@@ -163,7 +163,7 @@ export function SideNav() {
               ) : (
                 <div className="mx-3 my-2 h-px bg-border/50" />
               )}
-              <ul className="space-y-0.5 px-2">
+              <ul className="space-y-1 px-2">
                 {links.map(({ href, label, icon: Icon, badge: badgeType }) => {
                   const active =
                     pathname === href || (href !== '/' && pathname?.startsWith(href));
@@ -191,7 +191,7 @@ export function SideNav() {
                       }
                       className={cn(
                         'group relative flex items-center rounded-lg text-sm transition-all duration-150 min-w-0 overflow-hidden',
-                        showLabels ? 'gap-2.5 px-2.5 py-1.5' : 'justify-center p-2.5',
+                        showLabels ? 'gap-2.5 px-2.5 py-2' : 'justify-center p-2.5',
                         active
                           ? 'bg-primary/8 text-primary-accessible font-medium'
                           : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
@@ -267,7 +267,7 @@ export function SideNav() {
         </nav>
 
         {/* ── User profile footer ── */}
-        <div className="flex-shrink-0 border-t border-border/60 p-2">
+        <div className="flex-shrink-0 border-t border-border/60 p-2.5">
           {user && mounted ? (
             <OptimizedLink
               href="/profile"
