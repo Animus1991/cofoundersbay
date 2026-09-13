@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { AIActionAuditService } from './ai-action-audit.service';
 import { AIConversationService } from './ai-conversation.service';
 import { AIJobQueueService } from './ai-job-queue.service';
 import { AIController } from './ai.controller';
@@ -46,6 +47,10 @@ const authGuard = {
     { provide: OllamaService, useValue: ollama },
     { provide: AIConversationService, useValue: conversations },
     { provide: AIJobQueueService, useValue: jobQueue },
+    // AIController took a constructor dependency on the action audit service.
+    // These tests cover the jobs routes and never reach it, so a stub keeps the
+    // module resolvable without pretending to exercise it.
+    { provide: AIActionAuditService, useValue: { record: vi.fn(), listForActor: vi.fn() } },
     { provide: PrismaService, useValue: prisma },
     { provide: JwtAuthGuard, useValue: authGuard },
     AIRateLimitGuard,

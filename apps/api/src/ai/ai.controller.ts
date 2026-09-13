@@ -1,5 +1,5 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Res, HttpStatus, NotFoundException } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Post, Body, UseGuards, Get, Param, Delete, Patch, Query, Req, Res, HttpStatus, NotFoundException } from '@nestjs/common';
+import type { Request, Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AIService } from './ai.service';
@@ -13,6 +13,8 @@ import { ChatRequestDto, CreateConversationDto, UpdateAIPreferencesDto } from '.
 import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { getAgent, listAgents } from './agents/base-agent';
 import { toToolCatalog } from '@cofounderbay/shared';
+import { AIActionAuditService } from './ai-action-audit.service';
+import { RecordAIActionDto } from './dto/record-action.dto';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -22,6 +24,7 @@ export class AIController {
     private readonly ollama: OllamaService,
     private readonly conversations: AIConversationService,
     private readonly jobQueue: AIJobQueueService,
+    private readonly actionAudit: AIActionAuditService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -58,6 +61,47 @@ export class AIController {
   @Get('tools')
   getTools() {
     return { tools: toToolCatalog() };
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Action audit trail
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Records an assistant action the user confirmed.
+   *
+   * Validated against the same declarations as a model's tool call, so the
+   * trail cannot be filled with capabilities that do not exist. A rejected
+   * entry answers 200 with `recorded: false` and a reason rather than an
+   * error status: the action it describes has already happened, and turning a
+   * completed action into a failed request would misreport it to the user.
+   */
+  @Post('actions')
+  async recordAction(
+    @CurrentUser() user: { id: string },
+    @Body() dto: RecordAIActionDto,
+    @Req() req: Request,
+  ) {
+    return this.actionAudit.record({
+      actorId: user.id,
+      actionId: dto.actionId,
+      args: dto.args ?? {},
+      outcome: dto.outcome,
+      ipAddress: req.ip ?? null,
+      userAgent: typeof req.headers['user-agent'] === 'string' ? req.headers['user-agent'] : null,
+    });
+  }
+
+  /** The caller's own trail. The actor is taken from the token, never the query. */
+  @Get('actions')
+  async listActions(
+    @CurrentUser() user: { id: string },
+    @Query('limit') limitRaw?: string,
+  ) {
+    const limit = limitRaw ? Number.parseInt(limitRaw, 10) : undefined;
+    return this.actionAudit.listForActor(user.id, {
+      limit: Number.isFinite(limit) ? limit : undefined,
+    });
   }
 
   // ─────────────────────────────────────────────────────────────

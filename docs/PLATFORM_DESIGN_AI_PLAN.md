@@ -577,3 +577,45 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 `git push origin --delete` σε τρία: `cursor/ai-os-fullpage-chat-` (κολοβό, δημιουργήθηκε από λάθος push μου — διπλότυπο του tip), `master` (`e1462d7`, 0 ahead / 77 behind, πλήρως περιεχόμενο, καμία αναφορά σε config) και `cursor/ui-upgrade-cloudflare-preview-53e0` (`c10ece1`, πλήρως περιεχόμενο). Τα SHAs καταγράφονται εδώ ώστε κάθε διαγραφή να είναι **αναστρέψιμη** με ένα push.
 
 Κρατήθηκαν: `main` (default), αυτή η γραμμή, `integration/ai-platform-upgrade` (**περιεχόμενο** αλλά ενεργή γραμμή άλλου agent — η διαγραφή θα διέκοπτε τη δουλειά του) και `claude/project-audit-upgrade-y2ebnr` (**32 μοναδικά commits**).
+
+## 19. Wave 2 (υπόλοιπο) — audit trail
+
+### 19.1 Δεν χρειάστηκε πίνακας
+
+Είχα δηλώσει ότι το audit trail «θέλει Prisma table + endpoints». **Λάθος στο πρώτο μισό.** Το `schema.prisma` έχει ήδη μοντέλο **`AuditLog`** με `actorId`, `action`, `entityType`/`entityId`, `metadataJson`, `ipAddress`, `userAgent` και indexes σε **ακριβώς** τα πεδία που ρωτά αυτή η χρήση — και **κανέναν writer**. Είναι η πρώτη του χρήση.
+
+Το `AdminAuditLog` είναι άλλη ανησυχία (moderation από staff, με δικό του typed union) και το `AIUsageLog` είναι telemetry (tokens, latency, ποιο μοντέλο απάντησε). Κανένα δεν καταγράφει **τι άλλαξε** ο assistant στα δεδομένα του χρήστη.
+
+### 19.2 Το εύρημα που βρήκε ο έλεγχος του πίνακα
+
+Πήγα να επαληθεύσω ότι ο πίνακας υπάρχει και βρήκα κάτι μεγαλύτερο: **οι migrations δημιουργούν 63 πίνακες, το schema δηλώνει 187 μοντέλα.** Το `AuditLog` δεν είναι σε καμία migration — **ούτε** όμως τα:
+
+- `SavedProfile` — το shortlist (`saveToShortlist`/`removeFromShortlist`, δηλαδή το μόνο αναστρέψιμο mutation του Wave 2)
+- `AIUsageLog` — γράφεται σε **κάθε** `/ai/chat`
+- `AIConversation` — η persistence των συνομιλιών
+
+Άρα η βάση δεν προμηθεύεται από το migration history· προμηθεύεται με **`prisma db push`** (υπάρχει ως `prisma:push` script). Το `AuditLog` είναι στην **ίδια θέση** με λειτουργίες που δουλεύουν σήμερα.
+
+Γι' αυτό **δεν** έγραψα χειροκίνητη migration: θα αποτύγχανε σε βάση που έχει γίνει push (ο πίνακας υπάρχει ήδη) και θα υπονοούσε ότι το history είναι αυθεντικό, ενώ είναι 124 μοντέλα πίσω. Αυτό είναι ανεξάρτητο ρίσκο deployment και καταγράφεται στο `AGENTS.md`.
+
+### 19.3 Τι μπήκε
+
+`AIActionAuditService` → γράφει στο `AuditLog` με `action = 'ai.<id>.<outcome>'` (ώστε το indexed πεδίο να μένει queryable και ανά capability και ανά outcome), `outcome ∈ {applied, undone, failed}`.
+
+**Το ίδιο gate με το tool call του μοντέλου:** κάθε εγγραφή περνά από `reviewToolCall`. Capability που δεν δηλώθηκε, ή args που δεν ταιριάζουν στο schema, **δεν είναι καταγράψιμα** — αλλιώς το trail θα ήταν ανεπαλήθευτος σκουπιδοτενεκές προσβάσιμος από κάθε authenticated caller.
+
+Το **υποκείμενο παράγεται** από το πρώτο required param της declaration (`userId`, `receiverId`, `href`) αντί να το στέλνει ο caller, ώστε να μην μπορεί να χρεώσει εγγραφή σε entity που τα args δεν ανέφεραν ποτέ. Το metadata κουβαλά `writes` και `reversalKind`, άρα το trail είναι αυτοπεριγραφόμενο.
+
+`POST /ai/actions` και `GET /ai/actions` (μόνο το **δικό** του trail ο καλών — ο actor από το token, ποτέ από το query). Client: `recordAIAction` fire-and-forget στο `confirmAction`/`undoAction`.
+
+### 19.4 Δύο σχεδιαστικές επιλογές που θέλουν εξήγηση
+
+**Αποτυχία εγγραφής δεν γίνεται error status.** Όταν τρέχει η καταγραφή, η ενέργεια **έχει ήδη συμβεί**. Ένα 500 θα έλεγε στον χρήστη ότι δεν συνέβη. Απαντά 2xx με `recorded: false` και reason· ο client δεν αναδεικνύει ποτέ αποτυχία audit.
+
+**Δεν είναι tamper-proof log, και δεν το παρουσιάζω ως τέτοιο.** Οι executors ζουν στον client (confirm-first: η ενέργεια γίνεται με το session του χρήστη), άρα caller που δεν κάνει ποτέ POST εδώ **εκτελεί παρ' όλα αυτά** την ενέργειά του — η εξουσιοδότηση ζει στα guards κάθε endpoint. Είναι ο λογαριασμός του προϊόντος για τον εαυτό του, για τον χρήστη και το support. Για να γίνει αυθεντικό, η εκτέλεση πρέπει να μετακομίσει server-side — άλλη αρχιτεκτονική.
+
+### 19.5 Εύρημα στα tests
+
+Το `{ provide: JwtAuthGuard, useValue: … }` **δεν** παρεμβάλλεται: ο πραγματικός guard επεκτείνει το `AuthGuard('jwt')` του passport και χωρίς registered strategy απαντά **500 αντί 401**. Και τα 14 tests μου απέτυχαν έτσι. Η υπάρχουσα σουίτα jobs κάνει `vi.spyOn(JwtAuthGuard.prototype, 'canActivate')` για τον ίδιο λόγο. Καταγράφηκε στο `AGENTS.md`.
+
+**Κατάσταση:** api 158 → **172/172** (7 files), web **279/279** (32 files), `tsc --noEmit` καθαρό σε web + api.

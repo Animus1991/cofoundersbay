@@ -97,6 +97,48 @@ export async function getAIAgents(): Promise<{ agents: AgentConfig[] }> {
   return apiRequest<{ agents: AgentConfig[] }>('/api/ai/agents');
 }
 
+export type AIActionOutcome = 'applied' | 'undone' | 'failed';
+
+export type AIActionAuditEntry = {
+  id: string;
+  actionId: string;
+  outcome: string;
+  entityType: string;
+  entityId: string | null;
+  args: Record<string, unknown>;
+  writes: boolean;
+  reversalKind: string | null;
+  createdAt: string;
+};
+
+/**
+ * Records an assistant action the user confirmed.
+ *
+ * The server validates `actionId` and `args` against the shared declarations
+ * and answers `{ recorded: false, reason }` for anything it will not store, so
+ * a caller cannot fill the trail with capabilities that do not exist.
+ *
+ * Callers must not surface a failure here: by the time this runs the action has
+ * already happened, and reporting the audit write as the action's outcome would
+ * tell the user something untrue.
+ */
+export async function recordAIAction(entry: {
+  actionId: string;
+  outcome: AIActionOutcome;
+  args?: Record<string, unknown>;
+}): Promise<{ recorded: boolean; reason?: string }> {
+  return apiRequest<{ recorded: boolean; reason?: string }>('/api/ai/actions', {
+    method: 'POST',
+    body: JSON.stringify(entry),
+  });
+}
+
+/** The signed-in user's own action trail. */
+export async function listAIActions(limit?: number): Promise<{ entries: AIActionAuditEntry[] }> {
+  const query = limit ? `?limit=${limit}` : '';
+  return apiRequest<{ entries: AIActionAuditEntry[] }>(`/api/ai/actions${query}`);
+}
+
 export async function sendAIChat(request: ChatRequest, signal?: AbortSignal): Promise<ChatResponse> {
   return apiRequest<ChatResponse>('/api/ai/chat', {
     method: 'POST',

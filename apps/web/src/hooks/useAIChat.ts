@@ -29,6 +29,7 @@ import {
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { executeCopilotAction, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
 import { isUndoable, undoAction as runUndo } from '@/lib/action-registry';
+import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
 import { CONNECTION_KEYS, MESSAGE_KEYS, queryKeys } from '@/lib/query-keys';
 
@@ -364,6 +365,26 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     [queryClient],
   );
 
+  /**
+   * Files the action in the user's trail. Deliberately not awaited by its
+   * callers and never allowed to throw: the action has already happened by the
+   * time this runs, so a failed audit write must not be reported as a failed
+   * action. Demo mode writes nothing, so it records nothing either.
+   */
+  const audit = useCallback(
+    (action: CopilotAction, outcome: AIActionOutcome) => {
+      if (isPreviewDemo()) return;
+      void recordAIAction({
+        actionId: action.tool,
+        outcome,
+        args: (action.payload ?? {}) as Record<string, unknown>,
+      }).catch(() => {
+        /* the trail is best-effort; the action itself already succeeded */
+      });
+    },
+    [],
+  );
+
   const confirmAction = useCallback(
     async (action: CopilotAction) => {
       if (pendingActionId) return;
@@ -371,6 +392,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       try {
         const result = await executeCopilotAction(action);
         invalidateFor(action.tool);
+        audit(action, result.ok ? 'applied' : 'failed');
         if (!result.ok) {
           updateAction(action.id, { status: 'error' });
           setError(result.error ?? 'Action failed');
@@ -382,7 +404,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setPendingActionId(null);
       }
     },
-    [invalidateFor, updateAction, pendingActionId],
+    [audit, invalidateFor, updateAction, pendingActionId],
   );
 
   /**
@@ -400,6 +422,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
         const result = await runUndo(action.tool, payload);
         invalidateFor(action.tool);
+        audit(action, result.ok ? 'undone' : 'failed');
 
         if (!result.ok) {
           setError(result.error ?? 'Undo failed');
@@ -411,7 +434,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setPendingActionId(null);
       }
     },
-    [invalidateFor, updateAction, pendingActionId],
+    [audit, invalidateFor, updateAction, pendingActionId],
   );
 
   const dismissAction = useCallback(
