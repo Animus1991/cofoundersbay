@@ -350,3 +350,14 @@ Claude `803ddb2`: έκτο theme **Minimal** (warm paper, ένα teal accent, co
 Υπόλοιπο κλίμακας (καταγεγραμμένο στο integration): `text-base` πέρασε και το `text-xl`· heading μικρότερο από body. Δεν το αλλάζουμε εδώ.
 
 
+### 13.9 Έλεγχος 2026-09-13 (απόγευμα) — regression στο test harness
+
+`git fetch origin --prune`. **Πιο ανεπτυγμένο προϊόν:** αυτή η γραμμή (`aba3dd9`) — περιέχει `integration/ai-platform-upgrade` `93e1c58`, `cursor/ui-upgrade-cloudflare-preview-53e0`, `main`, `master`. Claude fork ακόμα `1501b70` και **πιο πίσω, όχι πιο μπροστά**: `git diff HEAD..claude` δίνει 18.925 insertions αλλά **59.978 deletions** (λείπουν όλα τα `strings-*`, `page-registry`, `preview-api`, `semantic-colors`). Full merge θα αφαιρούσε λειτουργικότητα — μένει έξω.
+
+**Μετρημένη κατάσταση:** `tsc --noEmit` καθαρό. API 140/140. Web **207/228 — 21 failures**.
+
+Αιτία: το `6e1fae9` (tablet rail) πρόσθεσε `window.matchMedia` στο `SidebarProvider` (`SidebarContext.tsx:76`) χωρίς το jsdom να το υλοποιεί. Το `MobileNavigation.test.tsx` mountάρει `SidebarProvider`, άρα και τα 21 tests του έσκαγαν με `TypeError: window.matchMedia is not a function`. Το `6e1fae9` καταγράφηκε στο §13.5 ως «καμία παράλειψη» χωρίς να τρέξει η σουίτα, οπότε το regression έμεινε 2 μέρες στο tip.
+
+Διόρθωση στο **σωστό επίπεδο**: `.devin/vitest.setup.ts` με polyfill του `matchMedia` (width queries αποτιμώνται σε `window.innerWidth`· feature queries μένουν `false`). Δεν μπήκαν guards στα 8 production call sites — κάθε browser-στόχος έχει `matchMedia` από το 2013· το κενό είναι του jsdom. Μετά: **228/228, 28/28 files**.
+
+Παρατήρηση DX: το `UserMenu.test.tsx` τρώει 519s από τα 597s της σουίτας (87%).
