@@ -196,7 +196,7 @@ export function TwoFactorSetup({ onEnabled, onCancel }: TwoFactorSetupProps) {
 
           <div className="rounded-lg bg-secondary/50 p-4">
             <div className="grid grid-cols-2 gap-2">
-              {setupData?.backupCodes.map((code, i) => (
+              {setupData?.backupCodes?.map((code, i) => (
                 <code
                   key={i}
                   className="rounded bg-background px-2 py-1.5 text-center text-sm font-mono"

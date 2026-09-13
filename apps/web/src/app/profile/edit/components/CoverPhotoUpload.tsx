@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 
 interface CoverPhotoUploadProps {
@@ -12,6 +13,7 @@ interface CoverPhotoUploadProps {
 }
 
 export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhotoUploadProps) {
+  const { error: toastError } = useToast();
   const [preview, setPreview] = useState<string | null>(currentCover || null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -46,12 +48,12 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      toastError('Please upload an image file');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      toastError('File size must be less than 5MB');
       return;
     }
 
@@ -66,7 +68,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       await onUpload(file);
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('Upload failed. Please try again.');
+      toastError('Upload failed. Please try again.');
       setPreview(currentCover || null);
     } finally {
       setUploading(false);
@@ -82,7 +84,7 @@ export function CoverPhotoUpload({ currentCover, onUpload, onRemove }: CoverPhot
       setPreview(null);
     } catch (error) {
       console.error('Remove failed:', error);
-      alert('Remove failed. Please try again.');
+      toastError('Remove failed. Please try again.');
     } finally {
       setUploading(false);
     }

@@ -158,7 +158,7 @@ export function ReputationSystem({ points: externalPoints }: ReputationSystemPro
     ? xpData.recentEvents.slice(0, 8).map(xpEventToActivity)
     : [];
 
-  const currentStreak = xpData?.streak.currentStreak ?? 0;
+  const currentStreak = xpData?.streak?.currentStreak ?? 0;
 
   if (isLoading && externalPoints === undefined) {
     return (

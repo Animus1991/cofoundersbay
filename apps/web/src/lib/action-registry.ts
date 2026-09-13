@@ -116,7 +116,7 @@ async function writeCriterion(
 
   const { assessment } = await assessReadiness({ workspaceId });
   const score = assessment.dimensions.find((entry) => entry.dimension === dimension);
-  const criterion = score?.criteria.find((entry) => entry.id === criterionId);
+  const criterion = score?.criteria?.find((entry) => entry.id === criterionId);
   if (!criterion) return { ok: false, error: 'That criterion is not part of this dimension' };
   if (criterion.completed === completed) {
     return {

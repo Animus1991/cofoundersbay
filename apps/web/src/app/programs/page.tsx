@@ -357,7 +357,7 @@ export default function ProgramsPage() {
       (p) =>
         p.title.toLowerCase().includes(q) ||
         (p.description ?? '').toLowerCase().includes(q) ||
-        p.organization?.name.toLowerCase().includes(q) ||
+        p.organization?.name?.toLowerCase().includes(q) ||
         p.industries.some((i) => i.toLowerCase().includes(q)),
     );
   }, [allPrograms, search]);

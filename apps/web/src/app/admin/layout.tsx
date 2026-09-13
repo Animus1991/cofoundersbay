@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { AdminGuard } from '@/components/auth/AdminGuard';
+import { AppShellFrame } from '@/components/layout/AppShell';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, Building2, KeyRound, Globe, Zap } from 'lucide-react';
 
@@ -46,8 +47,17 @@ function AdminSubNav() {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminGuard>
-      <AdminSubNav />
-      {children}
+      {/* The frame is mounted here rather than by each admin page, so the
+          sub-nav sits inside the shell (it previously rendered above the
+          page's own AppShell, leaving it visually detached) and the sidebar
+          survives navigation between admin sections. The negative margins
+          cancel appShellMainClasses' padding so the bar spans the column. */}
+      <AppShellFrame>
+        <div className="-mx-3 -mt-3 mb-4 sm:-mx-6 lg:-mx-[1.2rem]">
+          <AdminSubNav />
+        </div>
+        {children}
+      </AppShellFrame>
     </AdminGuard>
   );
 }

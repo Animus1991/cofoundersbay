@@ -12,6 +12,7 @@ import {
   ExperimentRecord, ExperimentMetrics, SystemConfigRecord,
 } from '@/lib/api';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { useToast } from '@/components/ui/toast';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -299,6 +300,7 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
 // ── System Config Editor ────────────────────────────────────────────────────────
 
 function ConfigEditor() {
+  const { success: toastSuccess, error: toastError } = useToast();
   const [configs, setConfigs] = useState<SystemConfigRecord[]>([]);
   const [category, setCategory] = useState('');
   const [loading, setLoading] = useState(false);
@@ -324,7 +326,7 @@ function ConfigEditor() {
   const save = async (cfg: SystemConfigRecord) => {
     let value: unknown;
     try { value = JSON.parse(editValues[cfg.key] ?? ''); }
-    catch { alert('Invalid JSON'); return; }
+    catch { toastError('Invalid JSON'); return; }
     setSaving(cfg.key);
     try {
       await adminUpsertConfig(cfg.key, { value, description: cfg.description ?? undefined, category: cfg.category ?? undefined });
@@ -339,7 +341,7 @@ function ConfigEditor() {
     try {
       const res = await adminSeedDefaultConfigs();
       await load();
-      alert(`Seeded ${res.seeded} default config keys.`);
+      toastSuccess(`Seeded ${res.seeded} default config keys.`);
     } finally {
       setSeedLoading(false);
     }

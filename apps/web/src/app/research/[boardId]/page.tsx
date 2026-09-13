@@ -792,7 +792,7 @@ export default function ResearchBoardPage() {
       
       // Move all selected nodes together if dragging one of the selection
       if (selectedNodeIds.size > 1 && selectedNodeIds.has(draggingNodeId)) {
-        const draggedNode = board?.nodes.find((n) => n.id === draggingNodeId);
+        const draggedNode = board?.nodes?.find((n) => n.id === draggingNodeId);
         if (draggedNode) {
           const dx = x - draggedNode.posX;
           const dy = y - draggedNode.posY;
@@ -885,7 +885,7 @@ export default function ResearchBoardPage() {
   const handleNodeDragStart = useCallback((nodeId: string, e: React.MouseEvent) => {
     if (activeTool !== 'select') return;
     
-    const node = board?.nodes.find((n) => n.id === nodeId);
+    const node = board?.nodes?.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -904,7 +904,7 @@ export default function ResearchBoardPage() {
 
   // Node resize handler
   const handleNodeResizeStart = useCallback((nodeId: string, e: React.MouseEvent, direction: 'right' | 'bottom' | 'corner') => {
-    const node = board?.nodes.find((n) => n.id === nodeId);
+    const node = board?.nodes?.find((n) => n.id === nodeId);
     if (!node || node.locked) return;
     e.preventDefault();
     setResizingNodeId(nodeId);
@@ -1009,7 +1009,7 @@ export default function ResearchBoardPage() {
       // Delete selected nodes
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (selectedNodeIds.size > 0) {
-          const toDelete = board?.nodes.filter((n) => selectedNodeIds.has(n.id) && !n.locked) ?? [];
+          const toDelete = board?.nodes?.filter((n) => selectedNodeIds.has(n.id) && !n.locked) ?? [];
           toDelete.forEach((n) => deleteNodeMutation.mutate(n.id));
         }
       }
@@ -1854,7 +1854,7 @@ export default function ResearchBoardPage() {
           <div className="absolute top-4 left-4 z-40 pointer-events-auto" style={{ width: 340 }}>
             <CommentsPanel
               nodeId={commentsNodeId}
-              nodeTitle={board?.nodes.find((n) => n.id === commentsNodeId)?.title}
+              nodeTitle={board?.nodes?.find((n) => n.id === commentsNodeId)?.title}
               currentUserId={currentUser.id}
               onClose={() => setCommentsNodeId(null)}
             />
@@ -1996,7 +1996,7 @@ export default function ResearchBoardPage() {
           {contextMenu.nodeId ? (
             <>
               <button
-                onClick={() => { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
+                onClick={() => { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n) setViewingNode(n); setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-secondary transition-colors flex items-center gap-2"
               >
                 <Eye className="icon-sm" /> Open
@@ -2021,7 +2021,7 @@ export default function ResearchBoardPage() {
               </button>
               <div className="h-px bg-border my-1" />
               <button
-                onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
+                onClick={() => { if (contextMenu.nodeId) { const n = board?.nodes?.find((nd) => nd.id === contextMenu.nodeId); if (n && !n.locked) deleteNodeMutation.mutate(contextMenu.nodeId); } setContextMenu(null); }}
                 className="w-full px-3 py-2 text-sm text-left hover:bg-destructive/10 text-destructive-accessible transition-colors flex items-center gap-2"
               >
                 <Trash2 className="icon-sm" /> Delete

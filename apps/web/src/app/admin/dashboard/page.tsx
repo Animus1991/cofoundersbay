@@ -169,7 +169,7 @@ export default function AdminDashboardPage() {
   });
 
   // Prepare chart data
-  const userRoleData = metrics?.users.byRole
+  const userRoleData = metrics?.users?.byRole
     ? Object.entries(metrics.users.byRole).map(([role, count]) => ({
         name: role.charAt(0).toUpperCase() + role.slice(1),
         value: count,
@@ -286,15 +286,15 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.users.total.toLocaleString('en-GB')}
+              {metricsLoading ? '...' : (metrics?.users?.total?.toLocaleString('en-GB') ?? '—')}
             </div>
             <p className="text-xs text-muted-foreground">
-              +{metrics?.users.new} new today
+              +{metrics?.users?.new} new today
             </p>
             <div className="mt-2">
-              <Progress value={(metrics?.users.active || 0) / (metrics?.users.total || 1) * 100} className="h-2" />
+              <Progress value={(metrics?.users?.active || 0) / (metrics?.users?.total || 1) * 100} className="h-2" />
               <p className="text-xs text-muted-foreground mt-1">
-                {((metrics?.users.active || 0) / (metrics?.users.total || 1) * 100).toFixed(1)}% active
+                {((metrics?.users?.active || 0) / (metrics?.users?.total || 1) * 100).toFixed(1)}% active
               </p>
             </div>
           </CardContent>
@@ -317,11 +317,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Messages</span>
-                <span>{metrics?.engagement.messages}</span>
+                <span>{metrics?.engagement?.messages}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Connections</span>
-                <span>{metrics?.engagement.connections}</span>
+                <span>{metrics?.engagement?.connections}</span>
               </div>
             </div>
           </CardContent>
@@ -334,7 +334,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : `${metrics?.performance.avgResponseTime}ms`}
+              {metricsLoading ? '...' : `${metrics?.performance?.avgResponseTime}ms`}
             </div>
             <p className="text-xs text-muted-foreground">
               Avg response time
@@ -342,11 +342,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Uptime</span>
-                <span>{((metrics?.performance.uptime || 0) * 100).toFixed(2)}%</span>
+                <span>{((metrics?.performance?.uptime || 0) * 100).toFixed(2)}%</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Error Rate</span>
-                <span>{((metrics?.performance.errorRate || 0) * 100).toFixed(2)}%</span>
+                <span>{((metrics?.performance?.errorRate || 0) * 100).toFixed(2)}%</span>
               </div>
             </div>
           </CardContent>
@@ -359,7 +359,7 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              {metricsLoading ? '...' : metrics?.business.mentorSessions}
+              {metricsLoading ? '...' : metrics?.business?.mentorSessions}
             </div>
             <p className="text-xs text-muted-foreground">
               Mentor sessions
@@ -367,11 +367,11 @@ export default function AdminDashboardPage() {
             <div className="mt-2 space-y-1">
               <div className="flex justify-between text-xs">
                 <span>Job Posts</span>
-                <span>{metrics?.business.jobPostings}</span>
+                <span>{metrics?.business?.jobPostings}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span>Conversion</span>
-                <span>{((metrics?.business.conversionRate || 0) * 100).toFixed(1)}%</span>
+                <span>{((metrics?.business?.conversionRate || 0) * 100).toFixed(1)}%</span>
               </div>
             </div>
           </CardContent>

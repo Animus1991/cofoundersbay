@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Paperclip, Smile, X, Image as ImageIcon, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 
 interface MessageComposerProps {
@@ -19,6 +20,7 @@ export function MessageComposer({
   disabled = false,
   className,
 }: MessageComposerProps) {
+  const { error: toastError } = useToast();
   const [content, setContent] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
@@ -64,7 +66,7 @@ export function MessageComposer({
     const validFiles = files.filter((file) => {
       const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert(`${file.name} is too large. Max size is 10MB.`);
+        toastError(`${file.name} is too large. Max size is 10MB.`);
         return false;
       }
       return true;

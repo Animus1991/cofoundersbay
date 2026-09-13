@@ -149,7 +149,7 @@ export function EntityReferenceSelector({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
-                placeholder={`Search ${ENTITY_TYPES.find((t) => t.type === selectedType)?.label.toLowerCase()}...`}
+                placeholder={`Search ${ENTITY_TYPES.find((t) => t.type === selectedType)?.label?.toLowerCase()}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"

@@ -98,7 +98,7 @@ export function ScoreInspector() {
         .slice(0, 10)
     : [];
 
-  const pendingFlags = report?.anomalies.filter((a) => a.status === 'pending') ?? [];
+  const pendingFlags = report?.anomalies?.filter((a) => a.status === 'pending') ?? [];
 
   return (
     <div className="space-y-5">

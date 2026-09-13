@@ -128,6 +128,62 @@ const nextConfig: NextConfig = {
   
   // Headers for caching and security
   async headers() {
+    const apiOrigin = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+
+    // The API lives on a different origin, so it must be named in connect-src
+    // or every request the app makes is blocked by the browser — silently, from
+    // the server's point of view. Fail loudly at build time instead.
+    // Adopted from origin/claude/project-audit-upgrade-y2ebnr (6a9e740, 87d78b7).
+    if (isProduction && !apiOrigin) {
+      console.warn(
+        '\n[next.config] NEXT_PUBLIC_API_URL is not set for this production build.\n' +
+          '  The Content-Security-Policy will only allow same-origin requests, so every\n' +
+          '  call to the API will be blocked in the browser. Set it before deploying.\n',
+      );
+    }
+
+    // Each entry is dropped when empty, so an unset origin cannot leave a
+    // stray token (or a double space) inside the directive.
+    const connectSrc = [
+      "'self'",
+      apiOrigin,
+      apiOrigin.replace(/^http/, 'ws'),
+      'https://*.posthog.com',
+      'https://*.sentry.io',
+      'wss:',
+      // Local dev talks to the API and the websocket over plain http on
+      // another port; without these `next dev` blocks its own requests.
+      ...(isProduction ? [] : ['http://localhost:*', 'ws://localhost:*', 'http://127.0.0.1:*', 'ws://127.0.0.1:*']),
+    ].filter(Boolean);
+
+    // `unsafe-inline` is required for styles because the theme system writes
+    // inline custom properties; `unsafe-eval` is only allowed in development,
+    // where React Refresh needs it.
+    const csp = [
+      "default-src 'self'",
+      `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"} https://*.posthog.com`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      `connect-src ${connectSrc.join(' ')}`,
+      "media-src 'self' blob: https:",
+      "worker-src 'self' blob:",
+      // Daily.co rooms are iframed, and the research canvas plus the PDF
+      // annotation viewer iframe arbitrary document URLs — including blob:
+      // object URLs — so this cannot be narrowed to named hosts without
+      // breaking those surfaces. http: is required for user-supplied links.
+      "frame-src 'self' https: http: blob:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'self'",
+      // Only in production: on a plain-http local worker run this would upgrade
+      // same-origin navigations to https and break them.
+      ...(isProduction && process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://')
+        ? ['upgrade-insecure-requests']
+        : []),
+    ].join('; ');
+
     const headers = [
       {
         source: '/:path*',
@@ -149,14 +205,20 @@ const nextConfig: NextConfig = {
             value: 'SAMEORIGIN'
           },
           {
+            // X-XSS-Protection is deprecated and its filter has itself been a
+            // source of vulnerabilities; 0 disables it. CSP replaces it.
             key: 'X-XSS-Protection',
-            value: '1; mode=block'
+            value: '0'
           },
           {
             // strict-origin-when-cross-origin over origin-when-cross-origin:
             // the latter still sends the origin to http:// targets.
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin'
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: csp
           },
           {
             // Deny by default. camera/microphone stay available to same-origin
@@ -168,6 +230,14 @@ const nextConfig: NextConfig = {
             // allow-popups so OAuth sign-in windows still work.
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin-allow-popups'
+          },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'same-origin'
+          },
+          {
+            key: 'X-Permitted-Cross-Domain-Policies',
+            value: 'none'
           }
         ]
       },

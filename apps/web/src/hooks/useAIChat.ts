@@ -117,9 +117,13 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         ]);
 
         setIsAIAvailable(Boolean(health?.available));
-        setAgents(agentsData?.agents ?? []);
+        // A 200 with a malformed body (older API, proxy interstitial) is not a
+        // rejection, so `?? []` alone is not enough — coerce before storing or
+        // every consumer of `agents.find(...)` crashes past route boundaries.
+        setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents : []);
       } catch {
         setIsAIAvailable(false);
+        setAgents([]);
       }
     };
 

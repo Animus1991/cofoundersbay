@@ -53,6 +53,7 @@ import { QueryProvider } from '@/components/providers/QueryProvider';
 import { RoleProvider } from '@/contexts/RoleContext';
 import { ServiceWorkerRegistration } from '@/components/common/ServiceWorkerRegistration';
 import { SidebarProvider } from '@/components/layout/SidebarContext';
+import { SkipToContent } from '@/components/layout/SkipToContent';
 import { GlobalFloatingUi } from '@/components/layout/GlobalFloatingUi';
 import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
@@ -126,11 +127,7 @@ export default function RootLayout({
       >
         {/* Single skip link for the whole app (WCAG 2.4.1). AppShell used to render
             a second one, so keyboard users hit the same link twice. */}
-        <a href="#main-content" className="skip-to-content">
-          <span lang="en">Skip to main content</span>
-          <span aria-hidden="true"> · </span>
-          <span lang="el">Μετάβαση στο κύριο περιεχόμενο</span>
-        </a>
+        <SkipToContent />
         <ErrorBoundary>
           <QueryProvider>
             <LanguagePreferenceProvider>

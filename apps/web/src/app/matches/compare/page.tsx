@@ -378,7 +378,7 @@ export default function MatchComparePage() {
               <div className="flex gap-3 mt-4">
                 <Button>
                   <MessageSquare className="icon-sm mr-2" />
-                  Message {selectedUsers[0]?.name.split(' ')[0]}
+                  Message {selectedUsers[0]?.name?.split(' ')[0]}
                 </Button>
                 <Button variant="outline">
                   <Target className="icon-sm mr-2" />

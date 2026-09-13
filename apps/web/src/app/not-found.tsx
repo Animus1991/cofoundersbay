@@ -3,6 +3,11 @@ import { Home, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/brand/Logo';
 
+export const metadata = {
+  title: 'Page not found',
+  robots: { index: false, follow: false },
+};
+
 export default function NotFound() {
   return (
     <main id="main-content" className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">

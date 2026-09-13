@@ -332,7 +332,7 @@ export default function EndorsementsPage() {
   // Computed data
   const received: Endorsement[] = showDemoData
     ? demoReceived
-    : (receivedData?.endorsements.map(mapApiItem) ?? []);
+    : (receivedData?.endorsements?.map(mapApiItem) ?? []);
   const given: Endorsement[] = showDemoData ? GIVEN : [];
 
   const mySkills: SkillEndorsement[] = showDemoData

@@ -85,8 +85,8 @@ export function useUnreadCounts(pollIntervalMs = 60_000): UnreadCounts {
   void introError;
   void notifError;
 
-  const messages = convData?.conversations.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
-  const intros = introData?.connections.filter((c) => c.status === 'pending').length ?? 0;
+  const messages = convData?.conversations?.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0) ?? 0;
+  const intros = introData?.connections?.filter((c) => c.status === 'pending')?.length ?? 0;
   const notifications = notifData?.count ?? 0;
 
   return { messages, intros, notifications };
