@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -259,6 +260,7 @@ function TenantEditor({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const isNew = !tenant;
@@ -359,7 +361,17 @@ function TenantEditor({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Tenant details"
+        tabIndex={-1}
+        className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
         <CardHeader className="flex flex-row items-center justify-between border-b shrink-0">
           <div>
             <CardTitle className="flex items-center gap-2">

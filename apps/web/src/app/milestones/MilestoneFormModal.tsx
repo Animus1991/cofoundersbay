@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { BilingualText } from '@/components/common/BilingualText';
 import { CfbGlyph } from '@/components/icons/CfbGlyph';
 import { bilingualAria } from '@/lib/i18n/format';
@@ -68,6 +69,7 @@ export function MilestoneFormModal({
   const t = useMilestonePrimaryText();
   const { open: openAskAi } = usePopupChat();
   const isEdit = !!initial;
+  const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
 
   const [form, setForm] = useState<FormData>({
     title: '',
@@ -130,13 +132,23 @@ export function MilestoneFormModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Panel */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl animate-fade-in">
+      {/* Panel — `useModalA11y` supplies what Radix would: focus in on open,
+          Tab trapped inside, Escape closes, body scroll locked, focus returned
+          to whatever opened it. The hook was written for exactly these
+          hand-rolled overlays and had never been attached to one. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="milestone-modal-title"
+        tabIndex={-1}
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl animate-fade-in"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
           <div className="flex items-center gap-2">
             <CfbGlyph name="flag" className="icon-sm text-primary-accessible" />
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 id="milestone-modal-title" className="text-sm font-semibold text-foreground">
               <BilingualText
                 en={isEdit ? milestoneEn('modal_edit') : milestoneEn('modal_new')}
                 el={isEdit ? milestoneEl('modal_edit') : milestoneEl('modal_new')}

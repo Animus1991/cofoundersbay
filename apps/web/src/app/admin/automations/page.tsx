@@ -18,6 +18,7 @@ import {
 import { usePollingGuards } from '@/hooks/usePollingGuards';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ const ACTION_TYPES = [
 ] as const;
 
 function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const panelRef = useModalA11y<HTMLDivElement>(open, onClose);
   const { success, error: toastError } = useToast();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -82,9 +84,18 @@ function CreateRuleSlideOver({ open, onClose, onCreated }: { open: boolean; onCl
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto">
+      {/* A slide-over is a dialog: `useModalA11y` gives it the semantics, the
+          focus move, the Tab trap, Escape and the scroll lock it had none of. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="automation-rule-title"
+        tabIndex={-1}
+        className="w-full max-w-lg bg-background shadow-xl flex flex-col overflow-y-auto"
+      >
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold">Create Automation Rule</h2>
+          <h2 id="automation-rule-title" className="text-lg font-semibold">Create Automation Rule</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="icon-md" /></button>
         </div>
         <div className="p-5 space-y-4 flex-1">

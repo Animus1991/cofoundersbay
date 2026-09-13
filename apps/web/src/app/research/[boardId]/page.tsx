@@ -50,6 +50,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { useToast } from '@/components/ui/toast';
 import {
   getResearchBoard,
@@ -373,6 +374,7 @@ export default function ResearchBoardPage() {
 
   // Keyboard shortcuts help dialog
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, () => setShowShortcuts(false));
 
   // Right-click context menu
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; nodeId?: string } | null>(null);
@@ -2120,9 +2122,19 @@ export default function ResearchBoardPage() {
       {/* Keyboard Shortcuts Dialog */}
       {showShortcuts && (
         <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+          {/* A hand-rolled overlay with no dialog semantics: a keyboard user
+              opened it and kept tabbing through the board behind it, and
+              Escape did nothing. `useModalA11y` supplies what Radix would. */}
+          <div
+            ref={shortcutsRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shortcuts-dialog-title"
+            tabIndex={-1}
+            className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+          >
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-semibold flex items-center gap-2">
+              <h2 id="shortcuts-dialog-title" className="text-lg font-semibold flex items-center gap-2">
                 <Keyboard className="icon-md text-primary-accessible" />
                 Keyboard Shortcuts
               </h2>

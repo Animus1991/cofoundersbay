@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/useModalA11y";
 import { bilingualAria } from "@/lib/i18n/format";
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
@@ -331,10 +332,20 @@ function DocumentViewer({ node, onClose, onSave }: DocumentViewerProps) {
   const isPdf = node.type === "pdf";
   const isText = node.type === "text" || node.type === "note";
   const isDoc = node.type === "document" && !isPdf && !isImage;
+  const viewerRef = useModalA11y<HTMLDivElement>(true, onClose);
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
+      {/* Escape was handled by hand here; the rest of what a dialog owes a
+          keyboard user was not. `useModalA11y` adds the semantics, the focus
+          move, the trap and the scroll lock — it was written for exactly this
+          kind of overlay, welded into a canvas with exit animations. */}
       <motion.div
+        ref={viewerRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Node viewer"
+        tabIndex={-1}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -533,6 +544,7 @@ export default function ResearchCanvas() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutsRef = useModalA11y<HTMLDivElement>(showShortcuts, () => setShowShortcuts(false));
   
   // History for undo/redo
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -1446,6 +1458,11 @@ export default function ResearchCanvas() {
         {showShortcuts && (
           <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
+              ref={shortcutsRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Keyboard shortcuts"
+              tabIndex={-1}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}

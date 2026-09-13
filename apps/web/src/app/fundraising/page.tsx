@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { STATUS, type StatusTone } from '@/lib/semantic-colors';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import { CfbGlyph, CfbGlyphWell, type CfbGlyphName } from '@/components/icons/CfbGlyph';
@@ -101,6 +102,7 @@ function AddLeadModal({
   const t = useFundraisingPrimaryText();
   const { success } = useToast();
   const [name, setName] = useState('');
+  const panelRef = useModalA11y<HTMLFormElement>(open, onClose);
   const [firm, setFirm] = useState('');
   const [type, setType] = useState<string>('Angel');
   const [stage, setStage] = useState('Pre-Seed / Seed');
@@ -130,11 +132,23 @@ function AddLeadModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <form onSubmit={submit} className="relative w-full max-w-lg space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-2xl">
+      {/* `useModalA11y` gives this the four behaviours Radix would: focus in
+          on open, Tab trapped, Escape closes, scroll locked and focus
+          returned. Without them a keyboard user opened this and kept tabbing
+          through the page behind it. */}
+      <form
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fundraising-modal-title"
+        tabIndex={-1}
+        onSubmit={submit}
+        className="relative w-full max-w-lg space-y-4 overflow-hidden rounded-2xl border border-border/60 bg-card p-5 shadow-2xl"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CfbGlyph name="wallet" className="icon-sm text-primary-accessible" />
-            <h2 className="text-sm font-semibold">
+            <h2 id="fundraising-modal-title" className="text-sm font-semibold">
               <BilingualText en={fundraisingEn('modal_new')} el={fundraisingEl('modal_new')} />
             </h2>
           </div>

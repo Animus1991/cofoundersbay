@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -227,6 +228,7 @@ function SSOConfigPanel({
   tenantName: string;
   onClose: () => void;
 }) {
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const [saveError, setSaveError] = useState('');
@@ -374,7 +376,17 @@ function SSOConfigPanel({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <Card
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="SSO configuration"
+        tabIndex={-1}
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
         <CardHeader className="flex flex-row items-center justify-between border-b sticky top-0 bg-card z-10">
           <div>
             <CardTitle>SSO — {tenantName}</CardTitle>

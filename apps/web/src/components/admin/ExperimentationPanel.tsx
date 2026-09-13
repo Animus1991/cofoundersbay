@@ -12,6 +12,7 @@ import {
   ExperimentRecord, ExperimentMetrics, SystemConfigRecord,
 } from '@/lib/api';
 import { useConfirm, deleteConfirmCopy } from '@/components/ui/confirm-dialog';
+import { useModalA11y } from '@/hooks/useModalA11y';
 import { useToast } from '@/components/ui/toast';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -199,6 +200,7 @@ function ExperimentCard({
 // ── Create Experiment Modal ─────────────────────────────────────────────────────
 
 function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const panelRef = useModalA11y<HTMLDivElement>(true, onClose);
   const [form, setForm] = useState({
     name: '', key: '', description: '',
     variantA: '{}', variantB: '{}', splitRatio: '0.5',
@@ -235,8 +237,18 @@ function CreateExperimentModal({ onClose, onCreated }: { onClose: () => void; on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">New Experiment</h3>
+      {/* `useModalA11y`: focus in on open, Tab trapped, Escape closes,
+          scroll locked, focus returned. This was a bare overlay with a
+          close handler and nothing else a dialog owes a keyboard user. */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-experiment-title"
+        tabIndex={-1}
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6"
+      >
+        <h3 id="new-experiment-title" className="text-lg font-semibold text-foreground mb-4">New Experiment</h3>
         <div className="space-y-3">
           {[
             { label: 'Name', key: 'name', placeholder: 'e.g. Higher XP for artifacts' },
