@@ -27,11 +27,17 @@ const labels = [
 
 /**
  * Radix opens the menu synchronously on the trigger's keydown, so this resolves
- * with a sync query. That is deliberate: `findBy*`/`waitFor` cost ~20s per call
- * in this suite's environment (the shared vitest config registers no setupFiles,
- * so RTL's auto-cleanup never installs and the retry loop crawls), which turns
- * an assertion failure into an indistinguishable timeout. Sync queries keep the
- * failure message pointed at its real subject.
+ * with a sync query. That keeps a failed assertion pointed at its real subject
+ * instead of surfacing as a timeout, which is reason enough on its own.
+ *
+ * It is not, however, a performance measure. This comment used to claim that
+ * `findBy*`/`waitFor` cost ~20s per call here because no setupFiles registered
+ * RTL's auto-cleanup. Measured against this same config, a `waitFor` that
+ * passes on its first check costs 4-19ms, whether the assertion is trivial or
+ * queries a rendered node -- the retry loop is not what makes this file slow.
+ * The cost is in mounting and opening the Radix menu under jsdom, which the
+ * sync-query choice does not change. Do not cite the old number when deciding
+ * whether async queries are affordable elsewhere.
  */
 function openMenu(key = 'ArrowDown') {
   const trigger = screen.getByRole('button');

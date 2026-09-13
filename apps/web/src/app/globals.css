@@ -1013,23 +1013,32 @@ html {
      founder journey" is `text-lg`, and the page title and the stat numerals
      ("Founder dashboard", "1840", "0/4") are `text-2xl`.
 
-     THE SCALE NO LONGER RUNS IN ORDER. As rendered now, smallest first:
+     THE ORDER IS RESTORED HERE. Nine passes had taken the steps below the
+     threshold to x1.2182660 while `text-lg` and up went to x0.9604, which put
+     body copy above both the section heading (`text-lg`) and the card heading
+     (`text-xl`) -- only weight still separated them.
 
-       text-xs 13.401 | text-sm 13.986 | text-lg 14.176 | body 14.984
-       text-xl 15.751 | text-base 15.984
+     Neither remedy this comment used to propose actually works, and both were
+     checked before choosing a third: letting `text-lg` travel with the lower
+     steps puts it at 17.98px, and moving the threshold up to `text-xl` puts
+     `text-xl` at 19.98px. Both land above the `text-2xl` anchor of 18.90px, so
+     each one only moves the inversion up a step. The two halves of the scale
+     have drifted 23% apart, and no threshold placed inside the ladder closes
+     that.
 
-     `text-base` has now passed `text-xl` as well, so body copy is the largest
-     step in the scale below the page title: a paragraph renders larger than
-     both the section heading above it (`text-lg`, 1.65px smaller) and the
-     card heading (`text-xl`). Only weight still separates any of them.
+     What closes it is interpolating the two orphaned steps back into the room
+     that is actually available -- between `text-base` (15.984) and the
+     `text-2xl` anchor (18.901) -- at the geometric ratio those two imply,
+     x1.0574676. `text-2xl` and every display step above it are unchanged to the
+     digit, since those are the elements that were named in each pass, and
+     nothing below `text-lg` moves either. As rendered now, smallest first:
 
-     This is the arithmetic of the request, not a fault in applying it: the steps
-     below the threshold have taken +18.2% across seven passes while `text-lg`
-     has taken -4%. Restoring the order means letting `text-lg` travel with the
-     steps below it, or moving the threshold up to `text-xl` so only the page
-     title and the stat numerals stay fixed -- those are the elements that get
-     named each time, and both options leave every one of them exactly where it
-     is.
+       text-2xs 13.401 | text-xs 13.401 | text-sm 13.986 | body   14.984
+       text-base 15.984 | text-lg 16.902 | text-xl 17.874 | text-2xl 18.901
+
+     `text-2xs` and `text-xs` still land on the same value: both sit under the
+     scaled 11px floor, which is what a floor does rather than a fault. They are
+     the one pair `typeScaleOrder.test.ts` permits to be equal.
 
      Sizes are rem x multiplier, not fixed px, so a reader who raises their
      browser default still gets the scale; the px halves of the `max()` on the
@@ -1061,17 +1070,21 @@ html {
       line-height: 1.82739912rem;
     }
 
-    /* ── the display steps: x0.9604 ── */
+    /* ── the two steps that had fallen under body: interpolated back in ──
+       Line heights keep the ratio each step carried before (28/18 for `lg`,
+       1.4 for `xl`), so the leading travels with the size instead of staying
+       pinned to the 1.6807rem both had been sharing. */
     .text-lg {
-      font-size: 1.08045rem;
-      line-height: 1.6807rem;
+      font-size: 1.28827696rem;
+      line-height: 2.00398638rem;
     }
 
     .text-xl {
-      font-size: 1.2005rem;
-      line-height: 1.6807rem;
+      font-size: 1.36231119rem;
+      line-height: 1.90723567rem;
     }
 
+    /* ── the display steps: x0.9604, the anchor and above ── */
     .text-2xl {
       font-size: 1.4406rem;
       line-height: 1.9208rem;
@@ -1096,6 +1109,95 @@ html {
     }
 
     .text-7xl {
+      font-size: 4.214235rem;
+    }
+
+    /* ── Responsive variants ──────────────────────────────────────────────
+       Nine passes tuned the unprefixed utilities only, so every `sm:`/`md:`
+       type class fell through to the raw Tailwind scale against the 82% root
+       and none of this work reached it. Measured at 1024px, the drift was:
+
+         sm:text-xs   9.84px vs 13.40   sm:text-sm  11.48px vs 13.99
+         sm:text-lg  14.76px vs 16.90   sm:text-xl  16.40px vs 17.87
+         sm:text-2xl 19.68px vs 18.90   sm:text-4xl 28.79px vs 27.65
+
+       The first two broke the documented 11px floor outright. The three
+       `sm:text-xs` call sites are written `text-[11px] ... sm:text-xs`, so the
+       variant was *lowering* an explicitly-set 11px to 9.84px on exactly the
+       viewport it was meant to grow on -- twice on the founder dashboard, once
+       on `/discover`.
+
+       Every `sm:`/`md:` breakpoint is already active at 1024px, so each variant
+       simply takes its unprefixed value. Declared after all of them, and `sm:`
+       before `md:`, so `text-base sm:text-sm` and `sm:text-lg md:text-xl` still
+       resolve the way Tailwind's own ordering resolves them. Only the variants
+       the product actually uses are listed; `typeScaleOrder.test.ts` fails if a
+       component starts using one that is missing here. */
+    .sm\:text-xs {
+      font-size: max(0.91369956rem, 13.40092686px);
+      line-height: max(1.21826608rem, 19.49225726px);
+    }
+
+    .sm\:text-sm {
+      font-size: 1.06598282rem;
+      line-height: 1.52283260rem;
+    }
+
+    .sm\:text-lg {
+      font-size: 1.28827696rem;
+      line-height: 2.00398638rem;
+    }
+
+    .sm\:text-xl {
+      font-size: 1.36231119rem;
+      line-height: 1.90723567rem;
+    }
+
+    .sm\:text-2xl {
+      font-size: 1.4406rem;
+      line-height: 1.9208rem;
+    }
+
+    .sm\:text-4xl {
+      font-size: 2.107118rem;
+      line-height: 2.341455rem;
+    }
+
+    /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
+       `/themes/alliance`. Line height is left alone -- the display steps carry
+       `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
+    .sm\:text-5xl {
+      font-size: 2.80917rem;
+    }
+
+    .sm\:text-6xl {
+      font-size: 3.511222rem;
+    }
+
+    .md\:text-lg {
+      font-size: 1.28827696rem;
+      line-height: 2.00398638rem;
+    }
+
+    .md\:text-xl {
+      font-size: 1.36231119rem;
+      line-height: 1.90723567rem;
+    }
+
+    .md\:text-2xl {
+      font-size: 1.4406rem;
+      line-height: 1.9208rem;
+    }
+
+    .md\:text-6xl {
+      font-size: 3.511222rem;
+    }
+
+    .lg\:text-6xl {
+      font-size: 3.511222rem;
+    }
+
+    .lg\:text-7xl {
       font-size: 4.214235rem;
     }
 
@@ -1134,14 +1236,18 @@ html {
       line-height: 1.80900607rem;
     }
 
+    /* The rail had inherited the same inversion: its own `text-base` wordmark
+       (15.823px) outran both of these. Interpolated between that wordmark and
+       the page's `text-2xl` anchor, which the rail has no override for and so
+       falls through to -- ratio x1.0610395. */
     aside .text-lg {
-      font-size: 1.08045rem;
-      line-height: 1.6807rem;
+      font-size: 1.27961792rem;
+      line-height: 1.99051676rem;
     }
 
     aside .text-xl {
-      font-size: 1.2005rem;
-      line-height: 1.6807rem;
+      font-size: 1.35772514rem;
+      line-height: 1.90081520rem;
     }
 
     /* Icons in the rail and the top bar, +2% then +3% = x1.0506.
