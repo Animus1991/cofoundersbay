@@ -22,6 +22,10 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { BilingualText } from '@/components/common/BilingualText';
+import { shortlistEn, shortlistEl } from '@/lib/i18n/strings-shortlist';
+import { formatDate } from '@/lib/i18n/format';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import {
   listShortlist,
   removeFromShortlist,
@@ -34,20 +38,22 @@ type SortBy = 'saved_newest' | 'saved_oldest' | 'name_az' | 'match_score';
 type RoleFilter = 'all' | 'founder' | 'mentor' | 'investor' | 'cofounder' | 'org';
 type StatusLabel = 'hot' | 'follow_up' | 'contacted' | 'not_relevant' | null;
 
-const ROLE_TABS: { value: RoleFilter; label: string; icon: React.ElementType }[] = [
-  { value: 'all', label: 'All', icon: Bookmark },
-  { value: 'founder', label: 'Founders', icon: Target },
-  { value: 'cofounder', label: 'Co-founders', icon: UserCheck },
-  { value: 'mentor', label: 'Mentors', icon: GraduationCap },
-  { value: 'investor', label: 'Investors', icon: DollarSign },
-  { value: 'org', label: 'Orgs', icon: Building2 },
+/** The label is a key, so the tab reads in whichever language the reader chose. */
+const ROLE_TABS: { value: RoleFilter; key: string; icon: React.ElementType }[] = [
+  { value: 'all', key: 'role_all', icon: Bookmark },
+  { value: 'founder', key: 'role_founder', icon: Target },
+  { value: 'cofounder', key: 'role_cofounder', icon: UserCheck },
+  { value: 'mentor', key: 'role_mentor', icon: GraduationCap },
+  { value: 'investor', key: 'role_investor', icon: DollarSign },
+  { value: 'org', key: 'role_org', icon: Building2 },
 ];
 
-const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { label: string; color: string }> = {
-  hot:          { label: '🔥 Hot lead',    color: 'bg-status-danger-bg text-status-danger border-status-danger-border' },
-  follow_up:    { label: '⏰ Follow up',   color: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
-  contacted:    { label: '✅ Contacted',   color: 'bg-status-success-bg text-status-success border-status-success-border' },
-  not_relevant: { label: '⛔ Not relevant', color: 'bg-muted text-muted-foreground' },
+/** `key` rather than `label`, so the pill reads in the reader's language. */
+const STATUS_CONFIG: Record<NonNullable<StatusLabel>, { key: string; color: string }> = {
+  hot:          { key: 'status_hot',          color: 'bg-status-danger-bg text-status-danger border-status-danger-border' },
+  follow_up:    { key: 'status_follow_up',    color: 'bg-status-warning-bg text-status-warning border-status-warning-border' },
+  contacted:    { key: 'status_contacted',    color: 'bg-status-success-bg text-status-success border-status-success-border' },
+  not_relevant: { key: 'status_not_relevant', color: 'bg-muted text-muted-foreground' },
 };
 
 function ShortlistCardSkeleton({ grid }: { grid?: boolean }) {
@@ -69,6 +75,8 @@ function ShortlistCardSkeleton({ grid }: { grid?: boolean }) {
 function NoteEditor({
   initial, onSave, onCancel, isSaving,
 }: { initial: string; onSave: (note: string) => void; onCancel: () => void; isSaving?: boolean }) {
+  // Visible string slots take the reader's language, not both joined.
+  const say = useBilingualString();
   const [value, setValue] = useState(initial);
   return (
     <div className="mt-2 space-y-2">
@@ -76,17 +84,17 @@ function NoteEditor({
         autoFocus
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a private note about this person…"
+        placeholder={say(shortlistEn('note_placeholder'), shortlistEl('note_placeholder'))}
         rows={2}
         maxLength={500}
         className="w-full rounded-lg border border-input bg-background px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 resize-none"
       />
       <div className="flex items-center gap-2">
         <Button size="sm" className="h-7 gap-1 text-xs" onClick={() => onSave(value)} disabled={isSaving}>
-          <Check className="icon-sm" /> {isSaving ? 'Saving…' : 'Save'}
+          <Check className="icon-sm" /> {isSaving ? say(shortlistEn('saving'), shortlistEl('saving')) : say(shortlistEn('save'), shortlistEl('save'))}
         </Button>
         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={onCancel}>
-          <X className="icon-sm mr-1" /> Cancel
+          <X className="icon-sm mr-1" /> <BilingualText en={shortlistEn('cancel')} el={shortlistEl('cancel')} compact />
         </Button>
       </div>
     </div>
@@ -103,6 +111,8 @@ function ShortlistCard({
   onToggleSelect: (userId: string) => void;
   compareMode: boolean;
 }) {
+  // Visible string slots take the reader's language, not both joined.
+  const say = useBilingualString();
   const [editingNote, setEditingNote] = useState(false);
   const [savingNote, setSavingNote] = useState(false);
   const [statusLabel, setStatusLabel] = useState<StatusLabel>(null);
@@ -158,11 +168,16 @@ function ShortlistCard({
                     : 'bg-muted text-muted-foreground border-border',
                 )}>
                   <Sparkles className="h-2.5 w-2.5" />
-                  {matchScore}% match
+                  {matchScore}%{' '}
+                  <BilingualText en={shortlistEn('match_suffix')} el={shortlistEl('match_suffix')} compact />
                 </span>
                 {statusLabel && (
                   <span className={cn('rounded-full border px-2 py-0.5 text-2xs font-medium', STATUS_CONFIG[statusLabel].color)}>
-                    {STATUS_CONFIG[statusLabel].label}
+                    <BilingualText
+                      en={shortlistEn(STATUS_CONFIG[statusLabel].key)}
+                      el={shortlistEl(STATUS_CONFIG[statusLabel].key)}
+                      compact
+                    />
                   </span>
                 )}
               </div>
@@ -185,16 +200,16 @@ function ShortlistCard({
 
             {/* Actions */}
             <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => setEditingNote((v) => !v)} title="Edit note" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <button onClick={() => setEditingNote((v) => !v)} title={say(shortlistEn('note_edit'), shortlistEl('note_edit'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <Edit2 className="icon-sm" />
               </button>
-              <Link href={`/messages?to=${item.userId}`} title="Message" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/messages?to=${item.userId}`} title={say(shortlistEn('message'), shortlistEl('message'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <MessageCircle className="icon-sm" />
               </Link>
-              <Link href={`/profiles/${item.userId}`} title="View profile" className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+              <Link href={`/profiles/${item.userId}`} title={say(shortlistEn('view_profile'), shortlistEl('view_profile'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
                 <ExternalLink className="icon-sm" />
               </Link>
-              <button onClick={() => onRemove(item.userId)} title="Remove" className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
+              <button onClick={() => onRemove(item.userId)} title={say(shortlistEn('remove'), shortlistEl('remove'))} className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive-accessible transition-colors">
                 <Trash2 className="icon-sm" />
               </button>
             </div>
@@ -214,7 +229,7 @@ function ShortlistCard({
 
           {/* Status label picker */}
           <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-            <span className="text-2xs text-muted-foreground font-medium">Label:</span>
+            <span className="text-2xs text-muted-foreground font-medium"><BilingualText en={shortlistEn('label')} el={shortlistEl('label')} compact /></span>
             {(Object.entries(STATUS_CONFIG) as [NonNullable<StatusLabel>, typeof STATUS_CONFIG[NonNullable<StatusLabel>]][]).map(([key, cfg]) => (
               <button
                 key={key}
@@ -224,7 +239,7 @@ function ShortlistCard({
                   statusLabel === key ? cfg.color : 'border-border/60 text-muted-foreground hover:border-border',
                 )}
               >
-                {cfg.label}
+                <BilingualText en={shortlistEn(cfg.key)} el={shortlistEl(cfg.key)} compact />
               </button>
             ))}
           </div>
@@ -244,12 +259,18 @@ function ShortlistCard({
           <div className="mt-2 flex items-center justify-between">
             <p className="text-2xs text-muted-foreground flex items-center gap-1">
               <Clock className="icon-sm" />
-              Saved {new Date(item.savedAt).toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}
+              {/* The date itself stays pinned to UTC, as every date in the
+                  product is; only the word around it changes language. */}
+              <BilingualText
+                en={shortlistEn('saved_on').replace('{date}', formatDate(item.savedAt, 'en'))}
+                el={shortlistEl('saved_on').replace('{date}', formatDate(item.savedAt, 'el'))}
+                compact
+              />
             </p>
             <div className="flex items-center gap-1.5">
               <Button variant="ghost" size="sm" className="h-6 gap-1 text-2xs px-2 text-muted-foreground hover:text-foreground" asChild>
                 <Link href={`/matches/compare?ids=${item.userId}`}>
-                  <GitMerge className="icon-sm" /> Compare
+                  <GitMerge className="icon-sm" /> <BilingualText en={shortlistEn('compare')} el={shortlistEl('compare')} compact />
                 </Link>
               </Button>
             </div>
@@ -261,6 +282,8 @@ function ShortlistCard({
 }
 
 export default function ShortlistPage() {
+  // Visible string slots take the reader's language, not both joined.
+  const say = useBilingualString();
   const qc = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
@@ -347,25 +370,25 @@ export default function ShortlistPage() {
   }, []);
 
   return (
-    <AppShell title="Saved Profiles" description="Profiles you've bookmarked to revisit, compare, and reach out to">
+    <AppShell title={shortlistEn('page_title')} description={shortlistEn('page_description')}>
       <div className="space-y-5 pb-10">
 
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Total saved', value: rawItems.length, icon: Bookmark, color: 'text-primary-accessible', bg: 'bg-primary/10' },
-            { label: 'With notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
-            { label: 'Avg match score', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
-            { label: 'Roles covered', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
-          ].map(({ label, value, icon: Icon, color, bg }) => (
-            <Card key={label} className="shadow-sm border-border/50">
+            { key: 'stat_total', value: rawItems.length, icon: Bookmark, color: 'text-primary-accessible', bg: 'bg-primary/10' },
+            { key: 'stat_notes', value: rawItems.filter((i) => i.note).length, icon: Tag, color: 'text-status-warning', bg: 'bg-status-warning-bg' },
+            { key: 'stat_avg_match', value: rawItems.length ? '74%' : '—', icon: Sparkles, color: 'text-status-success', bg: 'bg-status-success-bg' },
+            { key: 'stat_roles', value: new Set(rawItems.map((i) => i.profile?.role)).size, icon: TrendingUp, color: 'text-status-info', bg: 'bg-status-info-bg' },
+          ].map(({ key, value, icon: Icon, color, bg }) => (
+            <Card key={key} className="shadow-sm border-border/50">
               <CardContent className="flex items-center gap-3 p-3">
                 <div className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', bg, color)}>
                   <Icon className="icon-sm" />
                 </div>
                 <div>
                   <p className="text-base font-bold text-foreground leading-none">{value}</p>
-                  <p className="mt-0.5 text-2xs text-muted-foreground">{label}</p>
+                  <p className="mt-0.5 text-2xs text-muted-foreground"><BilingualText en={shortlistEn(key)} el={shortlistEl(key)} compact /></p>
                 </div>
               </CardContent>
             </Card>
@@ -379,7 +402,7 @@ export default function ShortlistPage() {
             <div className="relative flex-1 min-w-48">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 icon-sm text-muted-foreground" />
               <Input
-                placeholder="Search saved profiles…"
+                placeholder={say(shortlistEn('search_placeholder'), shortlistEl('search_placeholder'))}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 h-9 text-sm"
@@ -391,10 +414,10 @@ export default function ShortlistPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="saved_newest">Newest first</SelectItem>
-                <SelectItem value="saved_oldest">Oldest first</SelectItem>
-                <SelectItem value="name_az">Name A–Z</SelectItem>
-                <SelectItem value="match_score">Best match</SelectItem>
+                <SelectItem value="saved_newest"><BilingualText en={shortlistEn('sort_newest')} el={shortlistEl('sort_newest')} compact /></SelectItem>
+                <SelectItem value="saved_oldest"><BilingualText en={shortlistEn('sort_oldest')} el={shortlistEl('sort_oldest')} compact /></SelectItem>
+                <SelectItem value="name_az"><BilingualText en={shortlistEn('sort_name')} el={shortlistEl('sort_name')} compact /></SelectItem>
+                <SelectItem value="match_score"><BilingualText en={shortlistEn('sort_match')} el={shortlistEl('sort_match')} compact /></SelectItem>
               </SelectContent>
             </Select>
             <div className="flex items-center rounded-lg border border-border/60 p-0.5">
@@ -412,17 +435,21 @@ export default function ShortlistPage() {
               onClick={() => { setCompareMode((v) => !v); setSelectedIds(new Set()); }}
             >
               <GitMerge className="icon-sm" />
-              {compareMode ? 'Cancel compare' : 'Compare'}
+              <BilingualText
+                en={shortlistEn(compareMode ? 'compare_cancel' : 'compare_start')}
+                el={shortlistEl(compareMode ? 'compare_cancel' : 'compare_start')}
+                compact
+              />
             </Button>
           </div>
 
           {/* Role tabs */}
           <Tabs value={roleFilter} onValueChange={(v) => setRoleFilter(v as RoleFilter)}>
             <TabsList className="h-auto flex-wrap gap-1 bg-transparent p-0">
-              {ROLE_TABS.map(({ value, label, icon: Icon }) => (
+              {ROLE_TABS.map(({ value, key, icon: Icon }) => (
                 <TabsTrigger key={value} value={value} className="h-8 gap-1.5 rounded-lg border border-border/60 bg-card px-3 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary">
                   <Icon className="icon-sm" />
-                  {label}
+                  <BilingualText en={shortlistEn(key)} el={shortlistEl(key)} compact />
                   {roleCounts[value] !== undefined && (
                     <span className="ml-0.5 rounded-full bg-current/10 px-1.5 py-0.5 text-2xs font-semibold">
                       {roleCounts[value]}
@@ -438,12 +465,15 @@ export default function ShortlistPage() {
         {compareMode && selectedIds.size >= 2 && (
           <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
             <p className="text-sm font-medium text-foreground">
-              {selectedIds.size} profiles selected (max 3)
+              <BilingualText
+                en={shortlistEn('selected_max').replace('{n}', String(selectedIds.size))}
+                el={shortlistEl('selected_max').replace('{n}', String(selectedIds.size))}
+                compact
+              />
             </p>
             <Button size="sm" className="gap-1.5" asChild>
               <Link href={`/matches/compare?ids=${Array.from(selectedIds).join(',')}`}>
-                <GitMerge className="icon-sm" /> Compare now
-              </Link>
+                <GitMerge className="icon-sm" /><BilingualText en={shortlistEn('compare_now')} el={shortlistEl('compare_now')} compact /></Link>
             </Button>
           </div>
         )}
@@ -452,8 +482,8 @@ export default function ShortlistPage() {
         {isError ? (
           <div className="flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card py-16 text-center">
             <AlertTriangle className="icon-xl text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">Failed to load shortlist.</p>
-            <Button variant="secondary" size="sm" onClick={() => refetch()}>Retry</Button>
+            <p className="text-sm text-muted-foreground"><BilingualText en={shortlistEn('load_failed')} el={shortlistEl('load_failed')} compact /></p>
+            <Button variant="secondary" size="sm" onClick={() => refetch()}><BilingualText en={shortlistEn('retry')} el={shortlistEl('retry')} compact /></Button>
           </div>
         ) : isLoading ? (
           <div className={cn('gap-3', viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2' : 'space-y-3')}>
@@ -477,7 +507,7 @@ export default function ShortlistPage() {
             {rawItems.length === 0 && (
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Button size="sm" className="gap-1.5" asChild>
-                  <Link href="/matches">Browse matches</Link>
+                  <Link href="/matches"><BilingualText en={shortlistEn('browse_matches')} el={shortlistEl('browse_matches')} compact /></Link>
                 </Button>
                 <Button size="sm" variant="outline" className="gap-1.5" asChild>
                   <Link href={`/ai?q=${encodeURIComponent('I have no saved profiles. Who from my matches should I shortlist first?')}`}>
@@ -491,7 +521,11 @@ export default function ShortlistPage() {
         ) : (
           <>
             <p className="text-xs text-muted-foreground">
-              Showing {filtered.length} of {rawItems.length} profiles
+              <BilingualText
+                en={shortlistEn('showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
+                el={shortlistEl('showing_of').replace('{shown}', String(filtered.length)).replace('{total}', String(rawItems.length))}
+                compact
+              />
             </p>
             <div className={cn(viewMode === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 gap-3' : 'space-y-3')}>
               {filtered.map((item) => (
