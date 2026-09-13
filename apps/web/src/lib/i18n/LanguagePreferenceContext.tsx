@@ -112,6 +112,25 @@ export function useLanguagePreference() {
 }
 
 /** Resolve primary/secondary text + lang codes for BilingualText. */
+/**
+ * One string, in the reader's language, for a slot that cannot take a node.
+ *
+ * `bilingualInline` joins both languages unconditionally, which is right for an
+ * `aria-label` — a screen reader benefits from hearing both — and wrong for a
+ * visible `placeholder`, where it doubles the text and truncates: the
+ * endorsement dialog's skill field read "A skill, e.g. Fundraising · Μια
+ * δεξιότητα, π.χ. Χρηματοδοτ…" for a reader who had chosen one language.
+ *
+ * This resolves to the primary alone, honouring the same preference
+ * `BilingualText` reads. Use it for placeholders and any other visible
+ * string-only slot; keep `bilingualInline` for aria and for toast bodies,
+ * where both languages are wanted.
+ */
+export function useBilingualString() {
+  const { primary, showSecondary } = useLanguagePreference();
+  return (en: string, el: string) => resolveBilingualPair(en, el, primary, showSecondary).primaryText;
+}
+
 export function resolveBilingualPair(
   en: string,
   el: string | null | undefined,

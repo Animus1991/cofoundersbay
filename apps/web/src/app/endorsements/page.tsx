@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDemoData } from '@/contexts/DemoDataContext';
@@ -10,9 +10,14 @@ import {
   getEndorsementStats,
   approveEndorsement,
   declineEndorsement,
+  listConnectionRequests,
   type EndorsementItem,
 } from '@/lib/api';
 import { queryKeys } from '@/lib/query-keys';
+import { BilingualText } from '@/components/common/BilingualText';
+import { MessageButton } from '@/components/common/PersonActions';
+import { bilingualInline } from '@/lib/i18n/format';
+import { GiveEndorsementDialog } from '@/components/endorsements/GiveEndorsementDialog';
 import {
   Handshake, Plus, Star, CheckCircle2, Clock, MessageSquare,
   User, ChevronRight, Award, TrendingUp, BadgeCheck, Quote,
@@ -184,10 +189,11 @@ function EndorsementCard({
               </Button>
             </div>
           )}
+          {/* "Reply" had no handler and endorsements have no reply endpoint —
+              but replying to someone who endorsed you is opening a thread with
+              them, and their id is right here. */}
           {(endorsement.isApproved || type === 'given') && (
-            <Button variant="ghost" size="sm" className="gap-1">
-              <MessageSquare className="icon-sm" />Reply
-            </Button>
+            <MessageButton userId={user.id} displayName={user.name} variant="ghost" />
           )}
         </div>
       </CardContent>
@@ -232,14 +238,39 @@ function SkillsGrid({ skills }: { skills: SkillEndorsement[] }) {
 
 // ── Request Panel ──────────────────────────────────────────────────────────────
 
-function RequestPanel() {
+const DEMO_CONNECTIONS = [
+  { id: 'c1', name: 'Sarah Chen', role: 'Investor', endorsed: true },
+  { id: 'c2', name: 'Michael Torres', role: 'CTO', endorsed: false },
+  { id: 'c3', name: 'Emma Williams', role: 'Angel', endorsed: false },
+  { id: 'c4', name: 'Sofia Papadaki', role: 'Growth Marketer', endorsed: false },
+];
+
+function RequestPanel({ meId, endorsedIds }: { meId?: string; endorsedIds: Set<string> }) {
   const [search, setSearch] = useState('');
-  const CONNECTIONS = [
-    { id: 'c1', name: 'Sarah Chen', role: 'Investor', endorsed: true },
-    { id: 'c2', name: 'Michael Torres', role: 'CTO', endorsed: false },
-    { id: 'c3', name: 'Emma Williams', role: 'Angel', endorsed: false },
-    { id: 'c4', name: 'Sofia Papadaki', role: 'Growth Marketer', endorsed: false },
-  ];
+
+  // The panel listed four hardcoded names with ids that belong to nobody, so
+  // "Request" could not have reached a person even with a handler. These are
+  // the reader's own accepted connections; the demo names stay as the fallback
+  // for a session that has none.
+  const { data: accepted } = useQuery({
+    queryKey: ['connections', 'accepted', 'for-endorsements'],
+    queryFn: () => listConnectionRequests({ type: 'accepted', limit: 50 }),
+    enabled: !!meId,
+    staleTime: 5 * 60_000,
+  });
+
+  const real = (accepted?.connections ?? []).map((c) => {
+    const other = c.requesterId === meId ? c.receiver : c.requester;
+    return {
+      id: other?.id ?? c.id,
+      name: other?.displayName ?? '',
+      role: other?.role ?? '',
+      endorsed: endorsedIds.has(other?.id ?? ''),
+      real: true as const,
+    };
+  }).filter((c) => c.name);
+
+  const CONNECTIONS = real.length ? real : DEMO_CONNECTIONS.map((c) => ({ ...c, real: false as const }));
   const filtered = CONNECTIONS.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
   return (
     <Card>
@@ -266,9 +297,25 @@ function RequestPanel() {
                 </div>
               </div>
               {c.endorsed ? (
-                <Badge variant="secondary" size="sm"><CheckCircle2 className="icon-sm mr-1" />Endorsed</Badge>
+                <Badge variant="secondary" size="sm">
+                  <CheckCircle2 className="icon-sm mr-1" />
+                  <BilingualText en="Endorsed" el="Έδωσε σύσταση" compact />
+                </Badge>
+              ) : c.real ? (
+                /* Asking for an endorsement is a message, and there is no
+                   endpoint for anything else. The thread is the request. */
+                <MessageButton userId={c.id} displayName={c.name} variant="outline" />
               ) : (
-                <Button size="sm" variant="outline">Request</Button>
+                /* A demo name has no thread to open; the control says so
+                   rather than looking available. */
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled
+                  title={bilingualInline('Sample connection', 'Ενδεικτική επαφή')}
+                >
+                  <BilingualText en="Request" el="Αίτημα" compact />
+                </Button>
               )}
             </div>
           ))}
@@ -298,6 +345,9 @@ function mapApiItem(item: EndorsementItem): Endorsement {
 }
 
 export default function EndorsementsPage() {
+  // The two "give" buttons had no dialog to open, so the page could show,
+  // approve and decline endorsements but never produce one.
+  const [giving, setGiving] = useState(false);
   const { showDemoData } = useDemoData();
   const qc = useQueryClient();
 
@@ -334,6 +384,11 @@ export default function EndorsementsPage() {
     ? demoReceived
     : (receivedData?.endorsements?.map(mapApiItem) ?? []);
   const given: Endorsement[] = showDemoData ? GIVEN : [];
+  // Whoever has already written one is shown as such rather than asked again.
+  const endorsedIds = useMemo(
+    () => new Set(received.map((e) => e.fromUserId).filter(Boolean)),
+    [received],
+  );
 
   const mySkills: SkillEndorsement[] = showDemoData
     ? MY_SKILLS
@@ -415,8 +470,9 @@ export default function EndorsementsPage() {
                 </TabsTrigger>
                 <TabsTrigger value="given">Given ({given.length})</TabsTrigger>
               </TabsList>
-              <Button size="sm" className="h-8 gap-1.5 text-xs">
-                <Plus className="icon-sm" />Give Endorsement
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setGiving(true)}>
+                <Plus className="icon-sm" />
+                <BilingualText en="Give Endorsement" el="Δώστε σύσταση" compact />
               </Button>
             </div>
 
@@ -444,7 +500,10 @@ export default function EndorsementsPage() {
                 <Card><CardContent className="py-12 text-center">
                   <Handshake className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
                   <p className="font-medium">No endorsements given yet</p>
-                  <Button size="sm" className="mt-4"><Plus className="icon-sm mr-1.5" />Give First Endorsement</Button>
+                  <Button size="sm" className="mt-4" onClick={() => setGiving(true)}>
+                    <Plus className="icon-sm mr-1.5" />
+                    <BilingualText en="Give First Endorsement" el="Δώστε την πρώτη σύσταση" compact />
+                  </Button>
                 </CardContent></Card>
               )}
             </TabsContent>
@@ -454,9 +513,11 @@ export default function EndorsementsPage() {
         {/* Right: Sidebar */}
         <div className="space-y-4">
           <SkillsGrid skills={mySkills} />
-          <RequestPanel />
+          <RequestPanel meId={meId} endorsedIds={endorsedIds} />
         </div>
       </div>
+
+      <GiveEndorsementDialog open={giving} onOpenChange={setGiving} />
     </AppShell>
   );
 }

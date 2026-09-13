@@ -36,6 +36,7 @@ import {
   type SearchResultTypeKey,
 } from '@/lib/i18n/strings-search';
 import { cn } from '@/lib/utils';
+import { useBilingualString } from '@/lib/i18n/LanguagePreferenceContext';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 type SearchCategory = SearchCategoryKey;
@@ -270,6 +271,10 @@ export default function SearchPage() {
   const initialCategory = (searchParams?.get('category') as SearchCategory) || 'all';
 
   const [query, setQuery] = useState(initialQuery);
+
+  // Visible text, so one language — not both joined by a dot.
+
+  const sayOne = useBilingualString();
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [category, setCategory] = useState<SearchCategory>(initialCategory);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -353,7 +358,7 @@ export default function SearchPage() {
             <Input
               ref={inputRef}
               type="text"
-              placeholder={bilingualInline(searchEn('input_placeholder'), searchEl('input_placeholder'))}
+              placeholder={sayOne(searchEn('input_placeholder'), searchEl('input_placeholder'))}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setInputFocused(true)}
