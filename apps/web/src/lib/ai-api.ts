@@ -5,8 +5,10 @@ import { ApiError, apiFetch, apiRequest, withApiAbort } from './api';
 // ─────────────────────────────────────────────────────────────
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: 'system' | 'user' | 'assistant' | 'tool';
   content: string;
+  /** Set on a `tool` message: which declared capability the result belongs to. */
+  toolName?: string;
 }
 
 export interface AgentConfig {
@@ -61,6 +63,87 @@ export interface ChatRequest {
   model?: string;
   history?: ChatMessage[];
   context?: Record<string, unknown>;
+  /**
+   * Ask the server to offer the model the function-calling catalogue.
+   *
+   * Opt-in: omitting it produces the same request as before tools existed, and
+   * not every model Ollama serves supports them.
+   */
+  enableTools?: boolean;
+}
+
+/**
+ * A capability the model asked for, already checked against the shared
+ * declarations by the server.
+ *
+ * It is a proposal, not an outcome. Nothing has run: `writes` says whether
+ * confirming it would reach a write endpoint, and the user confirms before it
+ * does.
+ */
+export interface AIToolCallProposal {
+  name: string;
+  args: Record<string, string | number | boolean>;
+  writes: boolean;
+  droppedArgs: string[];
+}
+
+export interface AIToolCallRejection {
+  name: string;
+  reason: string;
+}
+
+/**
+ * Build the turn that follows a tool call the user confirmed.
+ *
+ * The constraint this exists to satisfy: AGENTS.md forbids repeating an AI POST
+ * after partial streaming output. A streamed turn that ends in a proposal has
+ * already delivered text to the screen, so that request can never be sent
+ * again -- not to "finish" it, not to hand the model the result.
+ *
+ * So the loop is closed by moving forward rather than back. The turn that
+ * proposed is *complete*: its prompt and the text that streamed both become
+ * history. The result of the action the user confirmed is appended as a `tool`
+ * message, and the next turn is a new POST with its own prompt. The model sees
+ * the whole exchange; the transport never replays anything.
+ *
+ * It is written as a pure function over the previous request for the same
+ * reason: there is no path here that reaches the network, so no caller can
+ * accidentally turn a continuation into a retry. It returns a request; sending
+ * it is a separate, deliberate act.
+ */
+export function continueAfterToolCall(params: {
+  /** The request whose turn produced the proposal. Used only as a source of history. */
+  previous: ChatRequest;
+  /** The assistant text that already streamed. Carried forward, never re-fetched. */
+  assistantText: string;
+  /** The capability that ran, as named in the accepted proposal. */
+  toolName: string;
+  /** What the client's action returned, serialised for the model to read. */
+  result: string;
+  /**
+   * What to ask next. Defaults to a neutral continuation so the caller is not
+   * forced to invent a prompt for the common "now carry on" case.
+   */
+  followUp?: string;
+}): ChatRequest {
+  const { previous, assistantText, toolName, result, followUp } = params;
+
+  const history: ChatMessage[] = [
+    ...(previous.history ?? []),
+    { role: 'user', content: previous.message },
+  ];
+  // An empty assistant turn is possible when the model proposed before saying
+  // anything; carrying an empty message would only add noise for the model.
+  if (assistantText.trim()) {
+    history.push({ role: 'assistant', content: assistantText });
+  }
+  history.push({ role: 'tool', content: result, toolName });
+
+  return {
+    ...previous,
+    message: followUp ?? `The ${toolName} action completed. Continue from its result.`,
+    history,
+  };
 }
 
 export type AIPreferences = {
@@ -152,6 +235,48 @@ export interface AIStreamEvent {
   done: boolean;
   model?: string;
   fallback?: boolean;
+  /**
+   * Present only on the terminal event, and only when the model asked for
+   * something the server accepted.
+   *
+   * They arrive at the end rather than mid-stream on purpose: replaying an AI
+   * POST after partial output is forbidden, so the calls are assembled during
+   * the one stream and handed over once it has finished. Acting on them is a
+   * new turn the user starts by confirming, never a resend of this one.
+   */
+  toolCalls?: AIToolCallProposal[];
+  /** Calls the server refused, so a model that invents capabilities is visible. */
+  rejectedToolCalls?: AIToolCallRejection[];
+}
+
+function isToolCallProposalList(value: unknown): value is AIToolCallProposal[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        entry !== null &&
+        typeof entry === 'object' &&
+        typeof (entry as AIToolCallProposal).name === 'string' &&
+        (entry as AIToolCallProposal).name.length > 0 &&
+        typeof (entry as AIToolCallProposal).writes === 'boolean' &&
+        typeof (entry as AIToolCallProposal).args === 'object' &&
+        (entry as AIToolCallProposal).args !== null &&
+        !Array.isArray((entry as AIToolCallProposal).args),
+    )
+  );
+}
+
+function isToolCallRejectionList(value: unknown): value is AIToolCallRejection[] {
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (entry) =>
+        entry !== null &&
+        typeof entry === 'object' &&
+        typeof (entry as AIToolCallRejection).name === 'string' &&
+        typeof (entry as AIToolCallRejection).reason === 'string',
+    )
+  );
 }
 
 export class AIStreamError extends Error {
@@ -243,7 +368,12 @@ export async function* streamAIChat(
       if (!data || typeof data !== 'object' || typeof data.done !== 'boolean' ||
         (data.chunk !== undefined && typeof data.chunk !== 'string') ||
         (data.model !== undefined && typeof data.model !== 'string') ||
-        (data.fallback !== undefined && typeof data.fallback !== 'boolean')) {
+        (data.fallback !== undefined && typeof data.fallback !== 'boolean') ||
+        // Validated to the same standard as the rest of the frame. A proposal
+        // that is not an array of named calls would otherwise reach the UI as
+        // an actionable card built from nothing.
+        (data.toolCalls !== undefined && !isToolCallProposalList(data.toolCalls)) ||
+        (data.rejectedToolCalls !== undefined && !isToolCallRejectionList(data.rejectedToolCalls))) {
         throw new AIStreamError('Invalid AI stream event', 'AI_STREAM_INVALID');
       }
       return data;

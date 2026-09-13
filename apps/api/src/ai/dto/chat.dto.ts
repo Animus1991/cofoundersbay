@@ -2,11 +2,21 @@ import { IsString, IsOptional, IsArray, ValidateNested, IsEnum, IsNumber, IsBool
 import { Type } from 'class-transformer';
 
 export class ChatMessageDto {
-  @IsEnum(['system', 'user', 'assistant'])
-  role!: 'system' | 'user' | 'assistant';
+  /**
+   * `tool` is accepted so a confirmed tool call can report its result in the
+   * history of the next turn. The server never fabricates one: it only ever
+   * arrives from a client that performed the action the user confirmed.
+   */
+  @IsEnum(['system', 'user', 'assistant', 'tool'])
+  role!: 'system' | 'user' | 'assistant' | 'tool';
 
   @IsString()
   content!: string;
+
+  /** The declared capability this result belongs to. */
+  @IsString()
+  @IsOptional()
+  toolName?: string;
 }
 
 export class ChatRequestDto {
@@ -33,6 +43,20 @@ export class ChatRequestDto {
 
   @IsOptional()
   context?: Record<string, any>;
+
+  /**
+   * Offer the model the function-calling catalogue for this turn.
+   *
+   * Opt-in, and off by default, so a turn that does not ask for it produces
+   * byte-identical requests to before tools existed. Not every model served by
+   * Ollama supports them, and silently adding a `tools` field to every request
+   * would change behaviour for deployments that never asked. Turning the
+   * default on is a decision for whenever a tool-capable model is the
+   * configured one.
+   */
+  @IsBoolean()
+  @IsOptional()
+  enableTools?: boolean;
 }
 
 export class CreateConversationDto {

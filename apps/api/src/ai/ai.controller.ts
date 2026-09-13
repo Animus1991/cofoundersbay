@@ -15,6 +15,7 @@ import { getAgent, listAgents } from './agents/base-agent';
 import { toToolCatalog } from '@cofounderbay/shared';
 import { AIActionAuditService } from './ai-action-audit.service';
 import { RecordAIActionDto } from './dto/record-action.dto';
+import { reviewToolCalls } from './tool-calls';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -142,6 +143,7 @@ export class AIController {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
+        tools: dto.enableTools ? toToolCatalog() : undefined,
       });
 
       success = true;
@@ -158,10 +160,16 @@ export class AIController {
         });
       }
 
+      // Same contract as the streaming path: validated proposals, never
+      // executed here, and the rejections are reported rather than swallowed.
+      const review = reviewToolCalls(this.ollama.takeLastToolCalls());
+
       return {
         message: response,
         agent: agent.config.id,
         model: usedModel,
+        ...(review.accepted.length ? { toolCalls: review.accepted } : {}),
+        ...(review.rejected.length ? { rejectedToolCalls: review.rejected } : {}),
       };
     } catch (err: any) {
       isFallback = true;
@@ -239,6 +247,7 @@ export class AIController {
         model: dto.model,
         temperature: agent.config.temperature,
         maxTokens: agent.config.maxTokens,
+        tools: dto.enableTools ? toToolCatalog() : undefined,
       })) {
         fullResponse += chunk;
         res.write(`data: ${JSON.stringify({ chunk, done: false })}\n\n`);
@@ -254,7 +263,28 @@ export class AIController {
         });
       }
 
-      res.write(`data: ${JSON.stringify({ done: true, model: usedModel })}\n\n`);
+      // Tool calls ride out on the terminal event, as *proposals*.
+      //
+      // This is the whole design constraint: the assistant must never replay an
+      // AI POST after partial streaming output, so there is no second call to
+      // the model here and no retry of this one. What the model asked for is
+      // assembled during the single stream, checked against the declarations,
+      // and handed to the client, which renders it as a confirmable card. If
+      // the user confirms, the client performs the action and any continuation
+      // is a *new* turn the user initiated — not a resend of this one.
+      //
+      // `rejected` travels too rather than being dropped silently: a model that
+      // keeps inventing capabilities is something the client can surface and a
+      // reader of the logs can act on.
+      const review = reviewToolCalls(this.ollama.takeLastToolCalls());
+      res.write(
+        `data: ${JSON.stringify({
+          done: true,
+          model: usedModel,
+          ...(review.accepted.length ? { toolCalls: review.accepted } : {}),
+          ...(review.rejected.length ? { rejectedToolCalls: review.rejected } : {}),
+        })}\n\n`,
+      );
       res.end();
     } catch (err: any) {
       isFallback = true;

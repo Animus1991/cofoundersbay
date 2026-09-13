@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { streamAIChat } from './ai-api';
+import { continueAfterToolCall, streamAIChat, type ChatRequest } from './ai-api';
 
 const encoder = new TextEncoder();
 
@@ -205,6 +205,59 @@ describe('streamAIChat SSE framing and cleanup', () => {
     await expect(collect()).rejects.toMatchObject({ code: 'AI_STREAM_INVALID' });
   });
 
+  it('carries validated tool-call proposals on the terminal event', async () => {
+    // They arrive at the end, not mid-stream: replaying an AI POST after
+    // partial output is forbidden, so the calls are assembled during the one
+    // stream and handed over once it has finished.
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sse(
+      'data: {"chunk":"on it","done":false}\n\n' +
+      'data: {"done":true,"model":"test","toolCalls":[{"name":"shortlist_add","args":{"userId":"u2"},"writes":true,"droppedArgs":[]}]}\n\n',
+    )));
+
+    const events = await collect();
+    expect(events[0]).toEqual({ chunk: 'on it', done: false });
+    expect(events[1].toolCalls).toEqual([
+      { name: 'shortlist_add', args: { userId: 'u2' }, writes: true, droppedArgs: [] },
+    ]);
+  });
+
+  it('surfaces the calls the server refused', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sse(
+      'data: {"done":true,"rejectedToolCalls":[{"name":"rm_rf","reason":"\\"rm_rf\\" is not a declared capability"}]}\n\n',
+    )));
+
+    const events = await collect();
+    expect(events[0].rejectedToolCalls).toEqual([
+      { name: 'rm_rf', reason: '"rm_rf" is not a declared capability' },
+    ]);
+  });
+
+  it('leaves both fields absent when the model asked for nothing', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sse('data: {"done":true,"model":"test"}\n\n')));
+
+    const events = await collect();
+    expect(events[0].toolCalls).toBeUndefined();
+    expect(events[0].rejectedToolCalls).toBeUndefined();
+  });
+
+  it.each([
+    // Not a list at all.
+    'data: {"done":true,"toolCalls":"shortlist_add"}\n\n',
+    'data: {"done":true,"toolCalls":{"name":"shortlist_add"}}\n\n',
+    // A nameless or unnamed call would build a card out of nothing.
+    'data: {"done":true,"toolCalls":[{"args":{},"writes":true}]}\n\n',
+    'data: {"done":true,"toolCalls":[{"name":"","args":{},"writes":true}]}\n\n',
+    // Without `writes` the UI cannot tell a read from a mutation.
+    'data: {"done":true,"toolCalls":[{"name":"x","args":{}}]}\n\n',
+    // Args have to be an object, not a list or null.
+    'data: {"done":true,"toolCalls":[{"name":"x","args":[],"writes":false}]}\n\n',
+    'data: {"done":true,"toolCalls":[{"name":"x","args":null,"writes":false}]}\n\n',
+    'data: {"done":true,"rejectedToolCalls":[{"name":"x"}]}\n\n',
+  ])('rejects a malformed proposal instead of passing it to the UI (%s)', async (text) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sse(text)));
+    await expect(collect()).rejects.toMatchObject({ code: 'AI_STREAM_INVALID' });
+  });
+
   it('surfaces an SSE error even when followed by done', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(sse(
       'event: error\ndata: {"error":"Provider failed","done":true}\n\n',
@@ -250,5 +303,75 @@ describe('streamAIChat SSE framing and cleanup', () => {
     await expect(iterator.next()).rejects.toThrow('Connection reset');
     expect(source.cancel).toHaveBeenCalledOnce();
     expect(source.release).toHaveBeenCalledOnce();
+  });
+});
+
+describe('continueAfterToolCall', () => {
+  const previous: ChatRequest = {
+    message: 'Raise my market score',
+    agentId: 'readiness',
+    model: 'llama3.1',
+    enableTools: true,
+    context: { page: '/readiness' },
+    history: [{ role: 'user', content: 'hello' }, { role: 'assistant', content: 'hi' }],
+  };
+
+  it('moves the finished turn into history instead of resending it', () => {
+    const next = continueAfterToolCall({
+      previous,
+      assistantText: 'I can tick that criterion for you.',
+      toolName: 'readiness.tickCriterion',
+      result: '{"ok":true,"score":55}',
+    });
+
+    // the prompt that produced the proposal is now history, not the message
+    expect(next.message).not.toBe(previous.message);
+    expect(next.history?.map((m) => [m.role, m.content])).toEqual([
+      ['user', 'hello'],
+      ['assistant', 'hi'],
+      ['user', 'Raise my market score'],
+      ['assistant', 'I can tick that criterion for you.'],
+      ['tool', '{"ok":true,"score":55}'],
+    ]);
+    expect(next.history?.at(-1)?.toolName).toBe('readiness.tickCriterion');
+  });
+
+  it('carries the rest of the turn forward unchanged', () => {
+    const next = continueAfterToolCall({
+      previous, assistantText: 'ok', toolName: 't', result: '{}',
+    });
+    expect(next.agentId).toBe('readiness');
+    expect(next.model).toBe('llama3.1');
+    expect(next.enableTools).toBe(true);
+    expect(next.context).toEqual({ page: '/readiness' });
+  });
+
+  it('omits an empty assistant turn rather than carrying a blank message', () => {
+    const next = continueAfterToolCall({
+      previous, assistantText: '   ', toolName: 't', result: '{}',
+    });
+    expect(next.history?.some((m) => m.role === 'assistant' && !m.content.trim())).toBe(false);
+    expect(next.history?.at(-1)?.role).toBe('tool');
+  });
+
+  it('accepts an explicit follow-up prompt', () => {
+    const next = continueAfterToolCall({
+      previous, assistantText: 'ok', toolName: 't', result: '{}',
+      followUp: 'What should I do next?',
+    });
+    expect(next.message).toBe('What should I do next?');
+  });
+
+  it('never touches the network — building a continuation sends nothing', () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    continueAfterToolCall({ previous, assistantText: 'ok', toolName: 't', result: '{}' });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('leaves the previous request untouched, so it can never be resent by accident', () => {
+    const snapshot = JSON.parse(JSON.stringify(previous));
+    continueAfterToolCall({ previous, assistantText: 'ok', toolName: 't', result: '{}' });
+    expect(previous).toEqual(snapshot);
   });
 });
