@@ -335,4 +335,18 @@ Claude `803ddb2`: έκτο theme **Minimal** (warm paper, ένα teal accent, co
 
 Αντικειμενικό υπόλοιπο που καταγράφει το ίδιο το integration: μετά το `0a0a9ed`, `text-base` (14.76px) είναι μεγαλύτερο από `text-lg` (14.18px). Δεν το «διορθώνουμε» εδώ — είναι μέρος της γραμμής προϊόντος.
 
+### 13.8 Έλεγχος 2026-09-13
+
+`git fetch origin --prune`. **Πιο ανεπτυγμένο προϊόν:** `integration/ai-platform-upgrade` `93e1c58` — 7 commits πάνω στο `0a0a9ed`. Claude fork ακόμα `1501b70`. Full merge Claude ακόμα ~336 conflicts.
+
+Τραβήχτηκαν με `git merge origin/integration/ai-platform-upgrade` (καμία παράλειψη):
+
+- `599d4ab` / `3d7326c` — type pass 5–6: μικρά +2%, display και sidebar headings κρατημένα.
+- `53d9bbc` — pass 7 + καθάρισμα catalogues (70 σκουπίδια/locale: timestamps, Tailwind, ids)· διόρθωση de `{count}`.
+- `68e97c0` — `/builder` Readiness: preview-api workspace handlers + guards (`problemClarity` crash)· glossary· pass 8· sidebar sizes παγωμένα.
+- `48a1ea9` — pass 9 + phrase-level i18n (nail/deck/SAFE/seed/canvas/round).
+- `487f485` / `93e1c58` — rail + top-bar icons +2% μετά +3% (μόνο `aside`/`header` από `lg`)· page icons αμετάβλητα.
+
+Υπόλοιπο κλίμακας (καταγεγραμμένο στο integration): `text-base` πέρασε και το `text-xl`· heading μικρότερο από body. Δεν το αλλάζουμε εδώ.
+
 
