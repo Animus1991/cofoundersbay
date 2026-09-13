@@ -538,3 +538,42 @@ Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έ�
 ### 17.5 Τι μένει
 
 Ο **tool-call loop** (model → tool_call → πρόταση → επιβεβαίωση → εκτέλεση → feedback στο μοντέλο → συνέχεια) δεν έχει συνδεθεί στο streaming path. Το `chatStream` στέλνει `tools` αν του δοθούν, αλλά τα tool_calls σε streaming έρχονται τμηματικά και θέλουν χωριστή συναρμολόγηση. Και το `AGENTS.md` απαγορεύει επανάληψη AI POST μετά από μερικό streaming, άρα ο loop θέλει σχεδιασμό που δεν ξαναστέλνει. Δεν το δηλώνω ως γίνον.
+
+## 18. Wave 3 — ο assistant μιλά τη γλώσσα του χρήστη
+
+### 18.1 Η πραγματική αιτία δεν ήταν τα strings
+
+Πριν μεταφράσω οτιδήποτε: το `usePageContext` έγραφε **`locale: 'en'` σταθερά**. Το packet που δίνεται στον engine δήλωνε κάθε αναγνώστη Αγγλόφωνο, ό,τι κι αν είχε επιλέξει. **Η μετάφραση των strings χωρίς αυτή τη διόρθωση δεν θα άλλαζε τίποτα για κανέναν.** Διορθώθηκε να διαβάζει το `useI18n()` (που έχει λειτουργικό default, άρα ασφαλές και εκτός provider).
+
+Το `catalog.ts` υποσχόταν ήδη `'AI replies will use {code}.'` — υπόσχεση που τα hardcoded strings διέψευδαν σε κάθε απάντηση.
+
+### 18.2 Ποιο i18n σύστημα, από τα δύο
+
+Υπάρχουν δύο παράλληλα: το `LanguagePreferenceContext` (en/el, για `BilingualText`) και το `I18nProvider` (**9 locales**, `t()` με `{vars}` και lazy catalogues). Ο engine συνθέτει **πρόζα markdown**, όχι components, οπότε το `BilingualText` δεν τον φτάνει. Επιλέχθηκε το `translate(locale, source, vars)`: αγγλικό κείμενο ως κλειδί, 9 locales, και unknown key μένει αγγλικό — δηλαδή τα υπόλοιπα 7 locales κάνουν graceful fallback εξ ορισμού, όχι regression.
+
+### 18.3 Τι άλλαξε
+
+26 αντικαταστάσεις στο `copilot-engine.ts`: κάθε `sections.push`, `title`, `description`, `confirmLabel`, citation label και τα δύο fallback μηνύματα περνούν από `t()`. ~50 ελληνικές εγγραφές στο `CATALOG.el`.
+
+**Ενικός/πληθυντικός σε ξεχωριστά κλειδιά**, γιατί τα ελληνικά κλίνουν το ουσιαστικό και όχι μόνο την κατάληξη — ένα template με `{count}` δεν καλύπτει και τα δύο. Στο πέρασμα διορθώθηκε και υπάρχον γραμματικό λάθος: «1 pending intro **wait** on Connections» → «waits».
+
+Τα labels του `nextAction` μένουν αγγλικά **ως κλειδιά** (το `fetchGraph` δεν έχει locale) και μεταφράζονται στο σημείο εμφάνισης με `t(graph.nextAction.label)`.
+
+### 18.4 Ο φρουρός βρήκε δύο που μου ξέφυγαν
+
+`apps/web/src/lib/copilotStrings.test.ts` σαρώνει την πηγή του engine και απαίτησε ελληνικό για κάθε αγγλική πρόταση. Βρήκε αμέσως:
+
+- **`'No pending intros.'`** — το είχα τυλίξει σε `t()` αλλά **ξέχασα** την ελληνική εγγραφή.
+- **`' · unread'`** — δεν το είχα εντοπίσει **καθόλου** στην αρχική καταγραφή. Ήταν concatenated marker μέσα σε template. Ξαναγράφτηκε ως κανονικό κλειδί `'**{title}** · unread'`, γιατί είναι μέρος της πρότασης και όχι διαχωριστικό.
+
+Κατοχυρώνει: ελληνικό για κάθε πρόταση· ελληνικό **διαφορετικό** από το αγγλικό· **ίδια placeholders** στις δύο γλώσσες (χαμένο `{name}` εμφανίζει άγκιστρα στον χρήστη)· κανένα bare literal σε `sections.push`/`title`/`description`/`confirmLabel`· και ότι το `usePageContext` **δεν** ξανακωδικοποιεί `locale: 'en'`.
+
+Το `label:` εξαιρείται ρητά από τον κανόνα bare-literal, με τεκμηρίωση: είναι lookup key, και η κάλυψη ελληνικών το πιάνει ούτως ή άλλως.
+
+**Κατάσταση:** web 273 → **279/279** (32 files), `tsc --noEmit` καθαρό.
+
+### 18.5 Καθαρισμός branches
+
+`git push origin --delete` σε τρία: `cursor/ai-os-fullpage-chat-` (κολοβό, δημιουργήθηκε από λάθος push μου — διπλότυπο του tip), `master` (`e1462d7`, 0 ahead / 77 behind, πλήρως περιεχόμενο, καμία αναφορά σε config) και `cursor/ui-upgrade-cloudflare-preview-53e0` (`c10ece1`, πλήρως περιεχόμενο). Τα SHAs καταγράφονται εδώ ώστε κάθε διαγραφή να είναι **αναστρέψιμη** με ένα push.
+
+Κρατήθηκαν: `main` (default), αυτή η γραμμή, `integration/ai-platform-upgrade` (**περιεχόμενο** αλλά ενεργή γραμμή άλλου agent — η διαγραφή θα διέκοπτε τη δουλειά του) και `claude/project-audit-upgrade-y2ebnr` (**32 μοναδικά commits**).

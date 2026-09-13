@@ -10,6 +10,8 @@ import {
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
 import { executeAction } from '@/lib/action-registry';
+import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
+import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName } from '@/lib/copilot-planner';
 import type {
@@ -25,6 +27,22 @@ export type PageContextPacket = {
   role?: string | null;
   locale?: string;
 };
+
+/**
+ * Bound to the reader's locale for one turn.
+ *
+ * The engine is a plain async function rather than a component, so it cannot
+ * read `useI18n`. It receives the locale on the page-context packet and binds
+ * `translate` once, which keeps every string in this file a lookup rather than
+ * a literal. English copy stays the lookup key, so an untranslated locale
+ * renders exactly what it rendered before.
+ */
+type Translator = (source: string, vars?: TranslateVars) => string;
+
+function translatorFor(locale?: string): Translator {
+  const resolved: AppLocale = locale && isAppLocale(locale) ? locale : 'en';
+  return (source, vars) => translate(resolved, source, vars);
+}
 
 function newId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -114,14 +132,54 @@ function findPerson(hits: SearchHit[], name?: string): SearchHit | undefined {
   return undefined;
 }
 
-function describeGraph(graph: CopilotGraph): string {
+function describeGraph(graph: CopilotGraph, t: Translator): string {
+  // Counts get a singular and a plural key rather than an appended "s": Greek
+  // inflects the noun, not just its ending, so one interpolated template
+  // cannot serve both. The old singular also read "1 pending intro wait on
+  // Connections", which this fixes on the way past.
   const parts = [
-    `You are **${graph.me.displayName}** (${graph.me.role}${graph.me.location ? `, ${graph.me.location}` : ''}).`,
-    graph.unreadMessages ? `You have **${graph.unreadMessages}** unread message${graph.unreadMessages === 1 ? '' : 's'}.` : 'Inbox is caught up.',
-    graph.pendingIntros ? `**${graph.pendingIntros}** pending intro${graph.pendingIntros === 1 ? '' : 's'} wait on Connections.` : 'No pending intros.',
-    graph.unreadNotifications ? `**${graph.unreadNotifications}** unread notification${graph.unreadNotifications === 1 ? '' : 's'}.` : null,
-    graph.readiness ? `Venture readiness is **${graph.readiness.overall}%**${graph.readiness.lowestLabel ? ` (weakest: ${graph.readiness.lowestLabel})` : ''}.` : null,
-    graph.nextAction ? `Suggested next step: **${graph.nextAction.label}**.` : null,
+    graph.me.location
+      ? t('You are **{name}** ({role}, {location}).', {
+          name: graph.me.displayName,
+          role: t(graph.me.role),
+          location: graph.me.location,
+        })
+      : t('You are **{name}** ({role}).', { name: graph.me.displayName, role: t(graph.me.role) }),
+    graph.unreadMessages
+      ? t(
+          graph.unreadMessages === 1
+            ? 'You have **{count}** unread message.'
+            : 'You have **{count}** unread messages.',
+          { count: graph.unreadMessages },
+        )
+      : t('Inbox is caught up.'),
+    graph.pendingIntros
+      ? t(
+          graph.pendingIntros === 1
+            ? '**{count}** pending intro waits on Connections.'
+            : '**{count}** pending intros wait on Connections.',
+          { count: graph.pendingIntros },
+        )
+      : t('No pending intros.'),
+    graph.unreadNotifications
+      ? t(
+          graph.unreadNotifications === 1
+            ? '**{count}** unread notification.'
+            : '**{count}** unread notifications.',
+          { count: graph.unreadNotifications },
+        )
+      : null,
+    graph.readiness
+      ? graph.readiness.lowestLabel
+        ? t('Venture readiness is **{score}%** (weakest: {weakest}).', {
+            score: graph.readiness.overall,
+            weakest: t(graph.readiness.lowestLabel),
+          })
+        : t('Venture readiness is **{score}%**.', { score: graph.readiness.overall })
+      : null,
+    graph.nextAction
+      ? t('Suggested next step: **{step}**.', { step: t(graph.nextAction.label) })
+      : null,
   ];
   return parts.filter(Boolean).join(' ');
 }
@@ -130,6 +188,7 @@ export async function runCopilotTurn(
   userMessage: string,
   pageContext?: PageContextPacket,
 ): Promise<CopilotTurnResult> {
+  const t = translatorFor(pageContext?.locale);
   const planned = planCopilotTools(userMessage);
   const usedTools = planned.map((t) => t.name);
   const citations: CopilotCitation[] = [];
@@ -144,7 +203,9 @@ export async function runCopilotTurn(
     const pool = people.length ? people : matches;
     const target = findPerson(pool, name || detectPersonName(userMessage));
     if (!target) return false;
-    sections.push(`I found **${target.displayName}**. Save them to your shortlist if you'd like.`);
+    sections.push(
+      t('I found **{name}**. Save them to your shortlist if you like.', { name: target.displayName }),
+    );
     citations.push({
       type: 'person',
       id: target.userId,
@@ -154,9 +215,11 @@ export async function runCopilotTurn(
     actions.push({
       id: newId('shortlist'),
       tool: 'shortlist_add',
-      title: `Save ${target.displayName} to shortlist`,
-      description: `Add ${target.displayName} to your saved profiles. This only writes when you confirm.`,
-      confirmLabel: 'Save to shortlist',
+      title: t('Save {name} to shortlist', { name: target.displayName }),
+      description: t('Add {name} to your saved profiles. This only writes when you confirm.', {
+        name: target.displayName,
+      }),
+      confirmLabel: t('Save to shortlist'),
       payload: { userId: target.userId, displayName: target.displayName },
       status: 'pending',
       href: '/shortlist',
@@ -167,20 +230,20 @@ export async function runCopilotTurn(
   for (const tool of planned) {
     if (tool.name === 'get_graph') {
       graph = await fetchGraph();
-      sections.push(describeGraph(graph));
+      sections.push(describeGraph(graph, t));
       citations.push({
         type: 'graph',
         id: 'graph-me',
-        label: `${graph.me.displayName} · live graph`,
+        label: t('{name} · live graph', { name: graph.me.displayName }),
         href: '/dashboard',
       });
       if (graph.nextAction) {
         actions.push({
           id: newId('nav'),
           tool: 'navigate',
-          title: graph.nextAction.label,
-          description: 'Open the surface that currently needs you.',
-          confirmLabel: 'Open',
+          title: t(graph.nextAction.label),
+          description: t('Open the surface that currently needs you.'),
+          confirmLabel: t('Open'),
           payload: { href: graph.nextAction.href },
           status: 'pending',
           href: graph.nextAction.href,
@@ -198,8 +261,13 @@ export async function runCopilotTurn(
       if (people.length === 0) {
         sections.push(
           tool.args.location
-            ? `I could not find people matching “${tool.args?.q ?? 'your query'}” in ${tool.args?.location}. Try Discover or broaden the location.`
-            : `No people matched “${tool.args?.q ?? 'your query'}”. Try Matches or Search.`,
+            ? t(
+                'I could not find people matching “{query}” in {location}. Try Discover or broaden the location.',
+                { query: tool.args?.q ?? t('your query'), location: tool.args.location },
+              )
+            : t('No people matched “{query}”. Try Matches or Search.', {
+                query: tool.args?.q ?? t('your query'),
+              }),
         );
       } else {
         const lines = people.slice(0, 4).map((p) => {
@@ -212,7 +280,7 @@ export async function runCopilotTurn(
           const score = typeof p.matchScore === 'number' ? ` · ${p.matchScore}%` : '';
           return `• **${p.displayName}** — ${p.headline ?? p.role}${p.location ? ` (${p.location})` : ''}${score}`;
         });
-        sections.push(`Here is who I found:\n${lines.join('\n')}`);
+        sections.push(`${t('Here is who I found:')}\n${lines.join('\n')}`);
       }
     }
 
@@ -220,7 +288,7 @@ export async function runCopilotTurn(
       const result = await getRecommendations({ limit: 5 });
       matches = result.suggestions ?? [];
       if (matches.length === 0) {
-        sections.push('No live recommendations yet. Complete your profile to improve matching.');
+        sections.push(t('No live recommendations yet. Complete your profile to improve matching.'));
       } else {
         const lines = matches.slice(0, 4).map((p) => {
           citations.push({
@@ -231,7 +299,7 @@ export async function runCopilotTurn(
           });
           return `• **${p.displayName}** — ${p.matchScore ?? '—'}% · ${p.headline ?? p.role}`;
         });
-        sections.push(`Personalized matches:\n${lines.join('\n')}`);
+        sections.push(`${t('Personalized matches:')}\n${lines.join('\n')}`);
       }
     }
 
@@ -239,26 +307,32 @@ export async function runCopilotTurn(
       const result = await listNotifications({ limit: 8 });
       const items = result.notifications ?? [];
       if (items.length === 0) {
-        sections.push('You are caught up — no notifications in the queue.');
+        sections.push(t('You are caught up — no notifications in the queue.'));
       } else {
         const lines = items.slice(0, 6).map((n) => {
           citations.push({
             type: 'notification',
             id: n.id,
-            label: n.title || n.type || 'Notification',
+            label: n.title || n.type || t('Notification'),
             href: '/notifications',
           });
-          const unread = n.readAt ? '' : ' · unread';
-          return `• **${n.title || n.type}**${unread}`;
+          // The "unread" marker is part of the sentence, not a separator, so it
+          // needs its own key rather than being concatenated on.
+          const label = n.title || n.type || t('Notification');
+          return `• ${
+            n.readAt
+              ? t('**{title}**', { title: label })
+              : t('**{title}** · unread', { title: label })
+          }`;
         });
-        sections.push(`Latest notifications:\n${lines.join('\n')}`);
+        sections.push(`${t('Latest notifications:')}\n${lines.join('\n')}`);
       }
       actions.push({
         id: newId('nav'),
         tool: 'navigate',
-        title: 'Open notifications',
-        description: 'The same inbox as the bell in the top bar.',
-        confirmLabel: 'Open',
+        title: t('Open notifications'),
+        description: t('The same inbox as the bell in the top bar.'),
+        confirmLabel: t('Open'),
         payload: { href: '/notifications' },
         status: 'pending',
         href: '/notifications',
@@ -268,7 +342,7 @@ export async function runCopilotTurn(
     if (tool.name === 'shortlist_add') {
       const ok = await applyShortlist(tool.args.name);
       if (!ok && !planned.some((t) => t.name === 'search_people' || t.name === 'get_recommendations')) {
-        sections.push('Name someone from Matches or Search and I will save them to your shortlist.');
+        sections.push(t('Name someone from Matches or Search and I will save them to your shortlist.'));
       }
     }
 
@@ -279,19 +353,25 @@ export async function runCopilotTurn(
         actions.push({
           id: newId('connect'),
           tool: 'send_connection',
-          title: `Send intro to ${target.displayName}`,
-          description: `This uses the same Connections API as the rest of the app. ${target.headline ?? ''}`.trim(),
-          confirmLabel: 'Send intro',
+          title: t('Send intro to {name}', { name: target.displayName }),
+          description: `${t('This uses the same Connections API as the rest of the app.')} ${
+            target.headline ?? ''
+          }`.trim(),
+          confirmLabel: t('Send intro'),
           payload: {
             receiverId: target.userId,
-            message: `Hi ${target.displayName.split(' ')[0]}, I'd like to connect on CoFounderBay.`,
+            message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
+              firstName: target.displayName.split(' ')[0],
+            }),
             displayName: target.displayName,
           },
           status: 'pending',
           href: personHref(target),
         });
       } else {
-        sections.push('I need a specific person before I can send an intro. Name someone from Matches or Search.');
+        sections.push(
+          t('I need a specific person before I can send an intro. Name someone from Matches or Search.'),
+        );
       }
     }
 
@@ -302,15 +382,17 @@ export async function runCopilotTurn(
         actions.push({
           id: newId('msg'),
           tool: 'start_or_send_message',
-          title: `Message ${target.displayName}`,
-          description: 'Opens (or creates) a direct thread. The first message is not sent until you write it.',
-          confirmLabel: 'Open thread',
+          title: t('Message {name}', { name: target.displayName }),
+          description: t(
+            'Opens (or creates) a direct thread. The first message is not sent until you write it.',
+          ),
+          confirmLabel: t('Open thread'),
           payload: { userId: target.userId, displayName: target.displayName },
           status: 'pending',
           href: `/messages`,
         });
       } else {
-        sections.push('Tell me who to message (name from your network or search results).');
+        sections.push(t('Tell me who to message (name from your network or search results).'));
       }
     }
 
@@ -320,9 +402,11 @@ export async function runCopilotTurn(
       actions.push({
         id: newId('nav'),
         tool: 'navigate',
-        title: `Open ${label}`,
-        description: pageContext?.route ? `You are currently on ${pageContext.route}.` : 'Jump to that page.',
-        confirmLabel: 'Go',
+        title: t('Open {label}', { label: t(label) }),
+        description: pageContext?.route
+          ? t('You are currently on {route}.', { route: pageContext.route })
+          : t('Jump to that page.'),
+        confirmLabel: t('Go'),
         payload: { href },
         status: 'pending',
         href,
@@ -339,12 +423,14 @@ export async function runCopilotTurn(
       actions.push({
         id: newId('connect'),
         tool: 'send_connection',
-        title: `Connect with ${p.displayName}`,
-        description: p.matchReasons?.join(' · ') || p.headline || p.role,
-        confirmLabel: 'Send intro',
+        title: t('Connect with {name}', { name: p.displayName }),
+        description: p.matchReasons?.join(' · ') || p.headline || t(p.role),
+        confirmLabel: t('Send intro'),
         payload: {
           receiverId: p.userId,
-          message: `Hi ${p.displayName.split(' ')[0]}, I'd like to connect on CoFounderBay.`,
+          message: t('Hi {firstName}, I’d like to connect on CoFounderBay.', {
+            firstName: p.displayName.split(' ')[0],
+          }),
           displayName: p.displayName,
         },
         status: 'pending',
@@ -356,7 +442,7 @@ export async function runCopilotTurn(
   if (planned.some((t) => t.name === 'shortlist_add') && !actions.some((a) => a.tool === 'shortlist_add')) {
     const ok = await applyShortlist(detectPersonName(userMessage));
     if (!ok) {
-      sections.push('Name someone from Matches or Search and I will save them to your shortlist.');
+      sections.push(t('Name someone from Matches or Search and I will save them to your shortlist.'));
     }
   }
 
@@ -374,8 +460,12 @@ export async function runCopilotTurn(
   let message = sections.join('\n\n').trim();
   if (!message) {
     message = isPreviewDemo()
-      ? 'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.'
-      : 'I can search the network, pull matches, save a shortlist, read alerts, send an intro, open a conversation, or navigate. What should we do?';
+      ? t(
+          'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.',
+        )
+      : t(
+          'I can search the network, pull matches, save a shortlist, read alerts, send an intro, open a conversation, or navigate. What should we do?',
+        );
   }
 
   return {

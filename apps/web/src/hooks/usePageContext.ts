@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useRoleOptional } from '@/contexts/RoleContext';
+import { useI18n } from '@/components/common/I18nProvider';
 import type { PageContextPacket } from '@/lib/copilot-engine';
 
 function entityFromPath(pathname: string | null): PageContextPacket['entity'] {
@@ -22,14 +23,19 @@ function entityFromPath(pathname: string | null): PageContextPacket['entity'] {
 export function usePageContext(): PageContextPacket {
   const pathname = usePathname();
   const role = useRoleOptional();
+  // Was hardcoded to 'en', so the assistant was told every reader was English
+  // no matter what they had chosen — which made translating its replies
+  // pointless until this line changed. `useI18n` carries a working default, so
+  // this is safe outside the provider too.
+  const { locale } = useI18n();
 
   return useMemo(
     () => ({
       route: pathname ?? '/',
       entity: entityFromPath(pathname),
       role: role?.primaryRole ?? null,
-      locale: 'en',
+      locale,
     }),
-    [pathname, role?.primaryRole],
+    [pathname, role?.primaryRole, locale],
   );
 }
