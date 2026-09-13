@@ -410,3 +410,38 @@ sm:text-2xl 19,68px έναντι 18,90      sm:text-4xl 28,79px έναντι 27,
 Το `UserMenu.test.tsx` τεκμηρίωνε ότι `waitFor`/`findBy*` κοστίζουν «~20s per call» σε αυτό το config και το χρησιμοποιούσε ως λόγο αποφυγής async queries. **Μετρήθηκε: 4–19ms**, είτε η assertion είναι τετριμμένη είτε ρωτά rendered node. Το κόστος του αρχείου είναι το mount/open του Radix menu κάτω από jsdom (~1,9s ανά κύκλο), όχι το retry loop. Ο ισχυρισμός διορθώθηκε επί τόπου ώστε να μη χρησιμοποιηθεί αλλού ως τεκμήριο.
 
 **Κατάσταση:** web 234/234 (29 files), api 140/140, `tsc --noEmit` καθαρό, `postcss` parse καθαρό (214 rules).
+
+## 15. Wave 1a — το Action Registry
+
+### 15.1 Γιατί
+
+Μια δυνατότητα του assistant υπήρχε σε **τέσσερα ασύνδετα σημεία**: ένα όνομα στο `CopilotToolName`, ένα keyword branch στο `copilot-planner`, ένας proposal builder μέσα στο `runCopilotTurn`, και ένα σκέλος του `if` chain στο `executeCopilotAction`. Τίποτα δεν τα έδενε, άρα το tool catalogue που χρειάζεται ένα μοντέλο **δεν μπορούσε να παραχθεί**, και το platform inventory (155 routes, 499 endpoints, 3.672 surfaces) δεν είχε τρόπο να πει σε πόσα από αυτά φτάνει ο assistant. Έφτανε σε τέσσερα.
+
+### 15.2 Τι μπήκε
+
+`apps/web/src/lib/action-registry.ts` — μία δήλωση ανά δυνατότητα: δίγλωσσο label/description, param specs, `kind` (read/mutation), `writes`, **`reversal`** (πώς το παίρνει πίσω ο χρήστης, δηλωμένο ακόμη και όταν η απάντηση είναι «δεν αναστρέφεται»), `confirmLabel`, executor.
+
+Από αυτό παράγονται:
+- `executeAction()` — το `executeCopilotAction` πλέον **delegates**. Το `if` chain έφυγε· η συμπεριφορά όχι (parity tests παρακάτω).
+- `toToolCatalog()` — JSON Schema για function calling. **Δεν έχει συνδεθεί ακόμη σε μοντέλο** — αυτό είναι το 1b. Παράγεται και ελέγχεται, ώστε να μην μπορεί να αποκλίνει από αυτό που ο executor δέχεται.
+- `resolveRouteTarget()` — πλοήγηση με το όνομα της σελίδας από το `PAGE_REGISTRY`.
+
+### 15.3 Μετρημένη επέκταση εμβέλειας
+
+Ο planner είχε **18 hand-written aliases**. Το `PAGE_REGISTRY` έχει δίγλωσσο τίτλο για κάθε σελίδα. Μετρημένο: **100 static routes, 95 διακριτοί προορισμοί προσπελάσιμοι με το όνομά τους, 0 unreachable** — από 18. Τα aliases ελέγχονται **πρώτα**, άρα καμία φράση δεν αλλάζει προορισμό· το test το κατοχυρώνει για κάθε key του πίνακα.
+
+Καταγράφεται και το trade-off: το `'pitch'` είναι alias για `/builder`, οπότε το «open the pitch deck» συνεχίζει να πάει στο `/builder` και όχι στο πιο ειδικό `/builder/pitch-deck`, παρόλο που ο resolver μόνος του θα το έβρισκε. Προτιμήθηκε η διατήρηση έναντι της ακρίβειας, και υπάρχει test που το λέει ρητά αντί να το κρύβει.
+
+### 15.4 Εύρημα κατά τη διάρκεια
+
+Τα ελληνικά titles **δεν** είναι στο `PAGE_REGISTRY`: μόνο 2 από ~100 entries γράφουν `titleEl` inline· τα υπόλοιπα ζουν στο `strings-pages.ts` και τα συνθέτει το `getPageMeta`. Η πρώτη υλοποίηση διάβαζε τον raw array, οπότε **κάθε ελληνική φράση ήταν αδύνατο να λυθεί**. Το βρήκε το δικό μου test, όχι επιθεώρηση. Η resolution περνά τώρα από το `getPageMeta`.
+
+### 15.5 Ο φρουρός
+
+`apps/web/src/lib/actionRegistry.test.ts` — 21 tests. Διαβάζει τα union members από το `copilot-types.ts` **στατικά**, ώστε ένα νέο tool name χωρίς registry entry να αποτυγχάνει εδώ και όχι τη στιγμή που το ζητά το μοντέλο. Κατοχυρώνει: κάθε δηλωμένο tool έχει entry· κάθε `CopilotActionTool` είναι εκτελέσιμο mutation· κάθε mutation δηλώνει δίγλωσσα confirmLabel και reversal· κανένα read δεν είναι `writes`· το catalogue είναι καλοσχηματισμένο και κάθε `required` όνομα ορίζεται στα properties· **executor parity** για τα 4 mutations (ίδιες κλήσεις API, ίδια error strings `Missing user`/`Missing receiver`/`Unsupported action`, non-string note πέφτει, σφάλμα API επιστρέφεται αντί να πεταχτεί).
+
+**Κατάσταση:** web 234/234 → **255/255** (30 files), `tsc --noEmit` καθαρό.
+
+### 15.6 Τι μένει για το 1b
+
+Το `ollama.service.ts` στέλνει ακόμη μόνο `model`/`messages`/`options`. Για πραγματικό tool calling χρειάζεται απόφαση **πού ζει το catalogue**: ο web client το στέλνει με το request, ή το API κρατά δικό του registry. Και ο tool-call loop (model → tool_call → execute → feedback → continue) θέλει τον confirm/undo pipeline του Wave 2 πρώτα, γιατί το `AGENTS.md` απαγορεύει ρητά αυτόματη επανάληψη AI POST μετά από μερικό streaming ή σφάλμα authorization/rate-limit.

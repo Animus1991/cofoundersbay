@@ -1,3 +1,4 @@
+import { resolveRouteTarget } from '@/lib/action-registry';
 import type { CopilotToolName, PlannedTool } from './copilot-types';
 
 const ROUTE_ALIASES: Array<{ keys: string[]; href: string; label: string }> = [
@@ -63,7 +64,14 @@ export function detectNavigateHref(message: string): { href: string; label: stri
   ]);
   if (!wantsNav) return undefined;
   const hit = ROUTE_ALIASES.find((alias) => includesAny(message, alias.keys));
-  return hit ? { href: hit.href, label: hit.label } : undefined;
+  if (hit) return { href: hit.href, label: hit.label };
+
+  // The aliases above cover 18 destinations; the product has 155, and
+  // `PAGE_REGISTRY` already carries a bilingual title for each one. Consulted
+  // only after an alias misses, so every phrase that resolved before still
+  // resolves to exactly the same route as before.
+  const fromRegistry = resolveRouteTarget(message);
+  return fromRegistry ? { href: fromRegistry.href, label: fromRegistry.label } : undefined;
 }
 
 function searchQueryFromMessage(message: string): string {

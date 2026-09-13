@@ -6,12 +6,10 @@ import {
   listNotifications,
   searchProfiles,
   getRecommendations,
-  sendConnectionRequest,
-  getOrCreateDirectConversation,
-  saveToShortlist,
   type SearchHit,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
+import { executeAction } from '@/lib/action-registry';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { planCopilotTools, detectPersonName } from '@/lib/copilot-planner';
 import type {
@@ -388,35 +386,19 @@ export async function runCopilotTurn(
   };
 }
 
+/**
+ * Delegates to `action-registry`, which now owns what each capability does.
+ * The chain this replaced described the same four writes in a place nothing
+ * else could read, so the model's tool catalogue could not be derived from it.
+ *
+ * `action.href` is still folded in as the default `href`: the navigate arm used
+ * to read `payload.href ?? action.href ?? '/dashboard'`, and proposals built
+ * before this change carry the destination in either field.
+ */
 export async function executeCopilotAction(
   action: CopilotAction,
 ): Promise<{ ok: boolean; href?: string; error?: string }> {
-  try {
-    if (action.tool === 'navigate') {
-      const href = String(action.payload?.href ?? action.href ?? '/dashboard');
-      return { ok: true, href };
-    }
-    if (action.tool === 'send_connection') {
-      const receiverId = String(action.payload?.receiverId ?? '');
-      const message = typeof action.payload?.message === 'string' ? action.payload.message : undefined;
-      if (!receiverId) return { ok: false, error: 'Missing receiver' };
-      await sendConnectionRequest({ receiverId, message });
-      return { ok: true };
-    }
-    if (action.tool === 'start_or_send_message') {
-      const userId = String(action.payload?.userId ?? '');
-      if (!userId) return { ok: false, error: 'Missing user' };
-      const { conversationId } = await getOrCreateDirectConversation(userId);
-      return { ok: true, href: `/messages?c=${conversationId}` };
-    }
-    if (action.tool === 'shortlist_add') {
-      const userId = String(action.payload?.userId ?? '');
-      if (!userId) return { ok: false, error: 'Missing user' };
-      await saveToShortlist(userId);
-      return { ok: true, href: '/shortlist' };
-    }
-    return { ok: false, error: 'Unsupported action' };
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Action failed' };
-  }
+  const payload: Record<string, unknown> = { ...(action.payload ?? {}) };
+  if (payload.href === undefined && action.href !== undefined) payload.href = action.href;
+  return executeAction(action.tool, payload);
 }
