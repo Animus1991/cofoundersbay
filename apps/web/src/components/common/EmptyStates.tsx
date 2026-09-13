@@ -162,6 +162,51 @@ export function NoFilterResults({
   );
 }
 
+/**
+ * The primary way forward an empty state offers.
+ *
+ * An empty screen has nothing else to give, so a button here that does nothing
+ * is the worst place in the product for one — and nine of these rendered
+ * exactly that, across the eighteen pages importing this file. The page
+ * supplies the real action: `actionHref` for a destination, `onAction` for a
+ * handler. Supply neither and no primary is drawn at all; the Ask AI beside it
+ * becomes the way forward, which is honest and still useful.
+ */
+export type EmptyActionProps = {
+  /** Where the primary goes. Wins over `onAction` when both are given. */
+  actionHref?: string;
+  /** What the primary does. */
+  onAction?: () => void;
+};
+
+function PrimaryAction({
+  actionHref,
+  onAction,
+  size,
+  className,
+  children,
+}: EmptyActionProps & {
+  size?: 'sm' | 'md';
+  className?: string;
+  children: React.ReactNode;
+}) {
+  if (actionHref) {
+    return (
+      <Button asChild size={size} className={className}>
+        <Link href={actionHref}>{children}</Link>
+      </Button>
+    );
+  }
+  if (onAction) {
+    return (
+      <Button size={size} className={className} onClick={onAction}>
+        {children}
+      </Button>
+    );
+  }
+  return null;
+}
+
 function AskAiLink({ prompt }: { prompt: string }) {
   return (
     <Button asChild variant="outline" className="gap-2">
@@ -242,7 +287,7 @@ export function EmptyEvents({ className }: EmptyStateProps) {
   );
 }
 
-export function EmptyJobs({ className }: EmptyStateProps) {
+export function EmptyJobs({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className={cn('mb-4 flex h-16 w-16 items-center justify-center rounded-full', STATUS.warning.bg)}>
@@ -253,10 +298,10 @@ export function EmptyJobs({ className }: EmptyStateProps) {
         There are no job listings at the moment. Post a job to find your next team member.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button className="gap-2">
+        <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <Briefcase className="icon-sm" />
           Post a job
-        </Button>
+        </PrimaryAction>
         <AskAiLink prompt="Help me write a cofounder or early-hire job post based on my profile gaps." />
       </div>
     </div>
@@ -344,7 +389,7 @@ export function EmptyLearning({ className }: EmptyStateProps) {
   );
 }
 
-export function EmptyMarketplace({ className }: EmptyStateProps) {
+export function EmptyMarketplace({ className, actionHref, onAction }: EmptyStateProps & EmptyActionProps) {
   return (
     <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-status-accent-bg">
@@ -355,10 +400,10 @@ export function EmptyMarketplace({ className }: EmptyStateProps) {
         The marketplace is empty. Be the first to offer your services to the community.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-2">
-        <Button className="gap-2">
+        <PrimaryAction actionHref={actionHref} onAction={onAction} className="gap-2">
           <ShoppingBag className="icon-sm" />
           List a service
-        </Button>
+        </PrimaryAction>
         <AskAiLink prompt="The marketplace is empty. Help me decide whether to list a service or find an expert instead." />
       </div>
     </div>
@@ -419,7 +464,7 @@ export function EmptyOrgPrograms({ filtersActive, onClearFilters, className }: F
   );
 }
 
-export function EmptyOrgCohorts({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
+export function EmptyOrgCohorts({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
   if (filtersActive) return <NoFilterResults entity="cohorts" onClear={onClearFilters} className={className} />;
   return (
     <ListEmptyState
@@ -428,9 +473,9 @@ export function EmptyOrgCohorts({ filtersActive, onClearFilters, className }: Fi
       title="No cohorts yet"
       description="A cohort groups startups going through a program together. Create one to assign mentors, track milestones, and run demo days."
       action={(
-        <Button>
+        <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> Create cohort
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
@@ -455,7 +500,7 @@ export function EmptyOrgApplications({ filtersActive, onClearFilters, className 
   );
 }
 
-export function EmptyOrgMembers({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
+export function EmptyOrgMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
   if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
   return (
     <ListEmptyState
@@ -464,9 +509,9 @@ export function EmptyOrgMembers({ filtersActive, onClearFilters, className }: Fi
       title="No team members yet"
       description="Invite colleagues to help run programs, review applications, and manage cohorts. Roles control who can do what."
       action={(
-        <Button>
+        <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <UserPlus className="mr-1.5 icon-sm" /> Invite member
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
@@ -498,7 +543,7 @@ export function EmptyOrgMentors({ filtersActive, onClearFilters, className }: Fi
   );
 }
 
-export function EmptyOrgStartups({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
+export function EmptyOrgStartups({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
   if (filtersActive) return <NoFilterResults entity="startups" onClear={onClearFilters} className={className} />;
   return (
     <ListEmptyState
@@ -507,9 +552,9 @@ export function EmptyOrgStartups({ filtersActive, onClearFilters, className }: F
       title="No startups in portfolio yet"
       description="Startups accepted into a program appear here. You can also import existing portfolio companies."
       action={(
-        <Button>
+        <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> Add startup
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
@@ -536,7 +581,7 @@ export function EmptyOrgEvents({ filtersActive, onClearFilters, className }: Fil
   );
 }
 
-export function EmptyTenantMembers({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
+export function EmptyTenantMembers({ filtersActive, onClearFilters, className, actionHref = '/invite', onAction }: FilterAwareEmptyProps & EmptyActionProps) {
   if (filtersActive) return <NoFilterResults entity="members" onClear={onClearFilters} className={className} />;
   return (
     <ListEmptyState
@@ -545,16 +590,16 @@ export function EmptyTenantMembers({ filtersActive, onClearFilters, className }:
       title="No members in this workspace yet"
       description="Invite people via email or share your invitation link. Roles determine access to billing, branding, and admin tools."
       action={(
-        <Button>
+        <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <UserPlus className="mr-1.5 icon-sm" /> Invite member
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
   );
 }
 
-export function EmptyTenantPrograms({ filtersActive, onClearFilters, className }: FilterAwareEmptyProps) {
+export function EmptyTenantPrograms({ filtersActive, onClearFilters, className, actionHref, onAction }: FilterAwareEmptyProps & EmptyActionProps) {
   if (filtersActive) return <NoFilterResults entity="programs" onClear={onClearFilters} className={className} />;
   return (
     <ListEmptyState
@@ -563,16 +608,16 @@ export function EmptyTenantPrograms({ filtersActive, onClearFilters, className }
       title="No programs published"
       description="Workspaces with programs unlock applications, cohorts, and structured mentoring. Publish one to invite startups."
       action={(
-        <Button>
+        <PrimaryAction actionHref={actionHref} onAction={onAction}>
           <Plus className="mr-1.5 icon-sm" /> New program
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
   );
 }
 
-export function EmptyTenantWebhooks({ className }: { className?: string }) {
+export function EmptyTenantWebhooks({ className, actionHref, onAction }: { className?: string } & EmptyActionProps) {
   return (
     <ListEmptyState
       icon={Webhook}
@@ -581,16 +626,16 @@ export function EmptyTenantWebhooks({ className }: { className?: string }) {
       title="No webhooks configured"
       description="Webhooks push real-time events (signups, payments, applications) to Zapier, Slack, or any HTTPS endpoint. Add one to start receiving events."
       action={(
-        <Button size="sm">
+        <PrimaryAction actionHref={actionHref} onAction={onAction} size="sm">
           <Plus className="mr-1.5 icon-sm" /> Add webhook
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />
   );
 }
 
-export function EmptyTenantApiKeys({ className }: { className?: string }) {
+export function EmptyTenantApiKeys({ className, actionHref, onAction }: { className?: string } & EmptyActionProps) {
   return (
     <ListEmptyState
       icon={KeyRound}
@@ -599,9 +644,9 @@ export function EmptyTenantApiKeys({ className }: { className?: string }) {
       title="No API keys yet"
       description="API keys grant programmatic access to your workspace. Scope each key to specific permissions and rotate regularly."
       action={(
-        <Button size="sm">
+        <PrimaryAction actionHref={actionHref} onAction={onAction} size="sm">
           <Plus className="mr-1.5 icon-sm" /> Create API key
-        </Button>
+        </PrimaryAction>
       )}
       className={className}
     />

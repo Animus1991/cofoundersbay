@@ -16,6 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { AppShell } from '@/components/layout/AppShell';
 import { RoleBadge } from '@/components/common/RoleBadge';
 import { cn } from '@/lib/utils';
+import { ConnectButton, MessageButton } from '@/components/common/PersonActions';
 
 type CompareUser = {
   id: string;
@@ -148,14 +149,11 @@ function CompareColumn({ user, onRemove }: { user: CompareUser; onRemove: () => 
           </div>
 
           <div className="flex gap-2 mt-4">
-            <Button size="sm" className="flex-1 gap-1">
-              <MessageSquare className="icon-sm" />
-              Message
-            </Button>
-            <Button size="sm" variant="outline" className="flex-1 gap-1">
-              <UserPlus className="icon-sm" />
-              Connect
-            </Button>
+            {/* Both of these drew a button with nothing behind it while the
+                assistant could already open the thread and send the intro.
+                Same endpoints, same destination, whichever way it is asked. */}
+            <MessageButton userId={user.id} displayName={user.name} variant="default" className="flex-1" />
+            <ConnectButton userId={user.id} displayName={user.name} variant="outline" className="flex-1" />
           </div>
         </CardContent>
       </Card>
@@ -375,14 +373,20 @@ export default function MatchComparePage() {
                 Their technical expertise and previous startup experience align well with your needs. 
                 Consider scheduling a call to discuss potential collaboration.
               </p>
-              <div className="flex gap-3 mt-4">
-                <Button>
-                  <MessageSquare className="icon-sm mr-2" />
-                  Message {selectedUsers[0]?.name?.split(' ')[0]}
-                </Button>
-                <Button variant="outline">
-                  <Target className="icon-sm mr-2" />
-                  View Full Analysis
+              <div className="flex flex-wrap gap-3 mt-4">
+                <MessageButton
+                  userId={selectedUsers[0]?.id}
+                  displayName={selectedUsers[0]?.name}
+                  variant="default"
+                  size="md"
+                />
+                {/* The full analysis is this person's match page — the one
+                    screen that actually holds it. */}
+                <Button asChild variant="outline" size="md">
+                  <Link href={`/matches/${selectedUsers[0]?.id ?? ''}`}>
+                    <Target className="icon-sm mr-2" />
+                    View Full Analysis
+                  </Link>
                 </Button>
               </div>
             </CardContent>

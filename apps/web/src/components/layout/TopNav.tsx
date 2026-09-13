@@ -45,22 +45,29 @@ export function TopNav() {
           >
             <Keyboard className="icon-sm" aria-hidden="true" />
           </Button>
-          <OptimizedLink href="/discover">
-            <Button variant="secondary" className="hidden lg:flex gap-2 hover-lift">
+          {/* `asChild`, not an anchor wrapping a button: `OptimizedLink` is a
+              forwardRef over <a>, so the old shape was interactive content
+              inside a link — invalid HTML and two tab stops for one target. */}
+          <Button asChild variant="secondary" className="hidden lg:flex gap-2 hover-lift">
+            <OptimizedLink href="/discover">
               <CfbGlyph name="discover" className="icon-sm" />
               Discover
-            </Button>
-          </OptimizedLink>
-          <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
-            <Button variant="ghost" size="icon" className="relative hidden lg:flex shrink-0" tabIndex={-1} aria-hidden="true">
+            </OptimizedLink>
+          </Button>
+          {/* Same change here, which also retires the `tabIndex={-1}
+              aria-hidden` pair: those hid the inner button from assistive
+              technology to work around the nesting. With one element there is
+              nothing to hide, and the link keeps its own label. */}
+          <Button asChild variant="ghost" size="icon" className="relative hidden lg:flex shrink-0">
+            <OptimizedLink href="/messages" aria-label={unreadMessages > 0 ? `Messages (${unreadMessages} unread)` : 'Messages'}>
               <CfbGlyph name="messages" className="icon-sm" />
               {unreadMessages > 0 && (
                 <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-primary px-0.5 text-2xs font-bold text-primary-foreground">
                   {unreadMessages > 99 ? '99+' : unreadMessages}
                 </span>
               )}
-            </Button>
-          </OptimizedLink>
+            </OptimizedLink>
+          </Button>
         </div>
 
         {/* Actions */}
