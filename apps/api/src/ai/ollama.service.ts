@@ -24,6 +24,15 @@ export class OllamaService implements OnModuleInit, IAIProvider {
   private readonly defaultModel: string;
   private isAvailable = false;
   private availableModels: string[] = [];
+  /**
+   * Tool calls from the most recent non-streaming `chat`, or null when the
+   * model asked for none. Held separately because `chat` returns a string and
+   * every existing caller depends on that signature; widening it would be a
+   * breaking change to `IAIProvider` for a capability most callers ignore.
+   * Read it through `takeLastToolCalls`, which clears it so a later turn
+   * cannot pick up a previous turn's request.
+   */
+  private lastToolCalls: unknown = null;
 
   constructor(
     private readonly config: ConfigService,
@@ -83,6 +92,13 @@ export class OllamaService implements OnModuleInit, IAIProvider {
     return this.defaultModel;
   }
 
+  /** Returns and clears the tool calls from the last non-streaming `chat`. */
+  takeLastToolCalls(): unknown {
+    const calls = this.lastToolCalls;
+    this.lastToolCalls = null;
+    return calls;
+  }
+
   async chat(messages: ChatMessage[], options?: ChatOptions): Promise<string> {
     if (!this.isAvailable) {
       throw new Error('Ollama service is not available');
@@ -105,6 +121,15 @@ export class OllamaService implements OnModuleInit, IAIProvider {
       },
     };
 
+    // Only sent when a caller supplies a catalogue. Until this existed the
+    // request carried model/messages/options and nothing else, so no model in
+    // this product had ever been offered a tool -- and the rule-based planner
+    // documented as a fallback for 'when the LLM has no tools' was in fact the
+    // only path there was.
+    if (options?.tools?.length) {
+      body.tools = options.tools;
+    }
+
     try {
       const res = await fetch(`${this.baseUrl}/api/chat`, {
         method: 'POST',
@@ -119,6 +144,7 @@ export class OllamaService implements OnModuleInit, IAIProvider {
       }
 
       const data = await res.json();
+      this.lastToolCalls = data.message?.tool_calls ?? null;
       return data.message?.content || '';
     } catch (err: any) {
       this.logger.error(`Ollama chat failed: ${err.message}`);

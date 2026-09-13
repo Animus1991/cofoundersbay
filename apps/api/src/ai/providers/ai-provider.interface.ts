@@ -1,3 +1,5 @@
+import type { ToolCatalogEntry } from '@cofounderbay/shared';
+
 /**
  * IAIProvider — contract that every AI backend must satisfy.
  *
@@ -19,6 +21,14 @@ export interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
   systemPrompt?: string;
+  /**
+   * Function-calling catalogue, derived from `ACTION_DECLARATIONS` in
+   * `@cofounderbay/shared`. Optional because not every provider or local model
+   * supports tools, and because omitting it has to keep the previous
+   * behaviour exactly: before this existed, no model in this product was ever
+   * offered one.
+   */
+  tools?: ToolCatalogEntry[];
 }
 
 export interface ProviderHealthStatus {

@@ -12,6 +12,7 @@ import { AIAgentType } from '@prisma/client';
 import { ChatRequestDto, CreateConversationDto, UpdateAIPreferencesDto } from './dto/chat.dto';
 import { EnqueueJobDto } from './dto/enqueue-job.dto';
 import { getAgent, listAgents } from './agents/base-agent';
+import { toToolCatalog } from '@cofounderbay/shared';
 
 @Controller('ai')
 @UseGuards(JwtAuthGuard)
@@ -43,6 +44,20 @@ export class AIController {
   @Get('agents')
   getAgents() {
     return { agents: listAgents() };
+  }
+
+  /**
+   * The function-calling catalogue, derived from `ACTION_DECLARATIONS` in
+   * `@cofounderbay/shared`.
+   *
+   * Served from the same declarations `reviewToolCalls` checks against, so a
+   * client cannot be shown one contract while the server enforces another.
+   * Executing an accepted call is still the web app's job, behind the
+   * confirmation the user gives it.
+   */
+  @Get('tools')
+  getTools() {
+    return { tools: toToolCatalog() };
   }
 
   // ─────────────────────────────────────────────────────────────

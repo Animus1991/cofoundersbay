@@ -6,11 +6,13 @@ import {
   saveToShortlist,
   sendConnectionRequest,
 } from '@/lib/api';
+import { ACTION_DECLARATIONS, listActionIds } from '@cofounderbay/shared';
 import {
-  ACTION_REGISTRY,
+  canExecute,
   executeAction,
   getActionSpec,
   isUndoable,
+  listActions,
   resolveRouteTarget,
   toToolCatalog,
   undoAction,
@@ -77,7 +79,7 @@ describe('action registry coverage', () => {
 
     const notRunnable = actionTools.filter((name) => {
       const spec = getActionSpec(name);
-      return !spec || spec.kind !== 'mutation' || typeof spec.execute !== 'function';
+      return !spec || spec.kind !== 'mutation' || !canExecute(name);
     });
     expect(notRunnable).toEqual([]);
   });
@@ -85,7 +87,7 @@ describe('action registry coverage', () => {
   it('states a bilingual label, confirm label and reversal for every mutation', () => {
     const faults: string[] = [];
 
-    for (const spec of ACTION_REGISTRY) {
+    for (const spec of listActions()) {
       for (const [field, pair] of [
         ['label', spec.label],
         ['description', spec.description],
@@ -110,6 +112,26 @@ describe('action registry coverage', () => {
     expect(faults).toEqual([]);
   });
 
+  it('declares in the shared package exactly the tools the app names', () => {
+    // The declaration now lives in @cofounderbay/shared so the server can
+    // enforce the same list it offers a model. `CopilotToolName` stays as the
+    // app's own vocabulary; this is what stops the two from drifting.
+    const declared = [...listActionIds()].sort();
+    const named = unionMembers(TYPES_SOURCE, 'CopilotToolName').sort();
+
+    expect(declared).toEqual(named);
+  });
+
+  it('binds an executor to every declared mutation', () => {
+    // The Record<MutationActionId, …> in action-registry makes this a compile
+    // error too. Asserted here as well so the failure names the capability.
+    const unbound = listActions()
+      .filter((spec) => spec.kind === 'mutation' && !canExecute(spec.id))
+      .map((spec) => spec.id);
+
+    expect(unbound).toEqual([]);
+  });
+
   it('backs every claim of reversibility with a working undo', () => {
     // The first version of this registry claimed send_connection could be
     // "withdrawn in Connections". ConnectionsController has no withdraw route
@@ -118,23 +140,21 @@ describe('action registry coverage', () => {
     // same thing at runtime plus its converse: a `none` must not smuggle one in.
     const faults: string[] = [];
 
-    for (const spec of ACTION_REGISTRY) {
+    for (const spec of listActions()) {
       const reversal = spec.reversal;
       if (!reversal) continue;
 
+      // The declaration states the claim; the app holds the implementation.
+      // Comparing the two across the package boundary is the check that the
+      // discriminated union used to perform inside a single object.
       const claimsReversible = reversal.kind !== 'none';
-      // Read through a widened view: the union already forbids the mismatch, so
-      // narrowing would reduce one side of this comparison to `never` and the
-      // assertion would only be restating the type rather than checking it.
-      const hasUndo = typeof (reversal as { undo?: unknown }).undo === 'function';
 
-      if (claimsReversible !== hasUndo) {
-        faults.push(
-          `${spec.id}: kind="${reversal.kind}" but undo is ${hasUndo ? 'present' : 'absent'}`,
-        );
-      }
       if (isUndoable(spec.id) !== claimsReversible) {
-        faults.push(`${spec.id} disagrees with isUndoable()`);
+        faults.push(
+          `${spec.id}: declares kind="${reversal.kind}" but the app ${
+            isUndoable(spec.id) ? 'binds' : 'binds no'
+          } undo`,
+        );
       }
     }
 
@@ -142,12 +162,12 @@ describe('action registry coverage', () => {
   });
 
   it('states a reversal for every mutation that writes', () => {
-    const silent = ACTION_REGISTRY.filter((spec) => spec.writes && !spec.reversal).map((s) => s.id);
+    const silent = listActions().filter((spec) => spec.writes && !spec.reversal).map((s) => s.id);
     expect(silent).toEqual([]);
   });
 
   it('never marks a read tool as writing', () => {
-    const wrong = ACTION_REGISTRY.filter((spec) => spec.kind === 'read' && spec.writes).map((s) => s.id);
+    const wrong = listActions().filter((spec) => spec.kind === 'read' && spec.writes).map((s) => s.id);
     expect(wrong).toEqual([]);
   });
 });
@@ -155,7 +175,7 @@ describe('action registry coverage', () => {
 describe('model tool catalogue', () => {
   it('derives one well-formed entry per registry action', () => {
     const catalog = toToolCatalog();
-    expect(catalog).toHaveLength(ACTION_REGISTRY.length);
+    expect(catalog).toHaveLength(ACTION_DECLARATIONS.length);
 
     const faults: string[] = [];
     for (const entry of catalog) {

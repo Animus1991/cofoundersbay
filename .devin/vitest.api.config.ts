@@ -6,6 +6,15 @@ const ts = require('typescript');
 
 export default {
   root: fileURLToPath(new URL('../apps/api/', import.meta.url)),
+  resolve: {
+    // Same reason as the web config: `dist` is gitignored and these tests do
+    // not run through turbo, so the shared package is read from source. No API
+    // test previously reached a module that imports it, so this resolution had
+    // never actually been exercised.
+    alias: {
+      '@cofounderbay/shared': fileURLToPath(new URL('../packages/shared/src/index.ts', import.meta.url)),
+    },
+  },
   plugins: [
     {
       name: 'nestjs-typescript-decorators',

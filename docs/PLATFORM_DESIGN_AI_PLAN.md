@@ -492,3 +492,49 @@ sm:text-2xl 19,68px έναντι 18,90      sm:text-4xl 28,79px έναντι 27,
 ### 16.7 Τι μένει από το Wave 2
 
 **Audit trail.** Δεν μπήκε. Χρειάζεται πίνακα Prisma + endpoints ώστε να καταγράφεται τι έκανε ο assistant, πότε, με ποια args και ποιο αποτέλεσμα — δηλαδή αλλαγή στο backend με migration. Το in-memory `status` της συνομιλίας **δεν** είναι audit trail: χάνεται στο reload. Δεν το δηλώνω ως γίνον.
+
+## 17. Wave 1b — μία πηγή αλήθειας, με επιβολή στον server
+
+### 17.1 Τι μετακόμισε και τι όχι
+
+`packages/shared/src/actions/` κρατά πλέον το **δηλωτικό** μισό: δίγλωσσο copy, params, `kind`, `writes`, `reversal` (kind + explanation), `confirmLabel`, και το `toToolCatalog()`. Οι **executors μένουν στην εφαρμογή** — κλείνουν πάνω στο API client της και μια συνάρτηση δεν περνά το σύνορο πακέτου ως δεδομένο.
+
+### 17.2 Η εγγύηση επέζησε της μετακόμισης
+
+Στο Wave 2 η ειλικρίνεια επιβαλλόταν από discriminated union μέσα σε **ένα** object. Περνώντας το σύνορο, η εγγύηση αναδιατυπώθηκε:
+
+```ts
+ACTION_DECLARATIONS = [...] as const satisfies readonly ActionDeclaration[]
+
+type MutationActionId = Extract<DeclaredAction, { kind: 'mutation' }>['id'];
+type UndoableActionId = Extract<DeclaredAction, { reversal: { kind: 'full' | 'partial' } }>['id'];
+```
+
+Η εφαρμογή δένει `EXECUTORS: Record<MutationActionId, Executor>` και `UNDOS: Record<UndoableActionId, Executor>`. **Δήλωσε mutation χωρίς executor, ή claim αναστρεψιμότητας χωρίς undo, και το αρχείο δεν μεταγλωττίζεται.** Το `as const` επαληθεύτηκε ότι διατηρεί και τα 8 literal ids στο εκπεμπόμενο `.d.ts`.
+
+Δύο παγίδες που βρήκε ο compiler και όχι η επιθεώρηση:
+- Το `as const` στενεύει τα `params` στα πεδία που *τυχαίνει* να χρησιμοποιούν οι τρέχουσες εγγραφές — κανένα δεν έχει `enumValues`, άρα η ανάγνωσή του δεν μεταγλωττιζόταν. Το `toToolCatalog` διαβάζει widened.
+- Το `as const` δίνει στα read actions **κανένα** key `reversal`, άρα το `spec.reversal?.kind` δεν μπορούσε να μπει στο union. Προστέθηκε `listDeclarations()`/`getActionDeclaration()` που επιστρέφουν το widened `ActionDeclaration`.
+
+### 17.3 Η υποδομή που χρειάστηκε πρώτα
+
+Το `packages/shared` καταναλώνεται μέσω `dist`, που είναι **gitignored**, και το `pnpm --filter @cofounderbay/web test` **παρακάμπτει το turbo** — άρα σε καθαρό clone τα tests θα έσκαγαν στο πρώτο import. Επίσης κανένα API test δεν έφτανε ποτέ σε module που κάνει import το shared, οπότε αυτή η ανάλυση **δεν είχε δοκιμαστεί ποτέ**.
+
+- Και τα δύο vitest configs κάνουν alias το `@cofounderbay/shared` στο `src/index.ts` → tests διαβάζουν πηγή, δουλεύουν σε καθαρό clone, χωρίς build step.
+- Το turbo task `dev` πήρε `dependsOn: ["^build"]`. Επαληθεύτηκε με `turbo run dev --dry=json`: `@cofounderbay/web#dev` και `@cofounderbay/api#dev` εξαρτώνται τώρα από `@cofounderbay/shared#build`. Χωρίς αυτό, το `pnpm run dev` θα έτρεχε πάνω σε stale `dist` ενώ τα tests θα περνούσαν.
+
+### 17.4 Tool calling με επιβολή
+
+- `ollama.service.ts`: το `ChatOptions` πήρε προαιρετικό `tools`, που μπαίνει στο body **μόνο** όταν ο caller δώσει catalogue — η προηγούμενη συμπεριφορά μένει ακριβώς ίδια όταν λείπει. Τα `tool_calls` της απάντησης δεν πετιούνται πια· κρατιούνται και διαβάζονται με `takeLastToolCalls()`, που τα καθαρίζει ώστε ένα turn να μην πάρει το αίτημα προηγούμενου. Η υπογραφή του `chat()` **δεν** άλλαξε, άρα κανένας caller ούτε το `IAIProvider` δεν έσπασε.
+- `GET /ai/tools` σερβίρει το `toToolCatalog()` — ο client βλέπει **το ίδιο** contract που επιβάλλει ο server.
+- `apps/api/src/ai/tool-calls.ts` είναι το σημείο επιβολής. Απορρίπτει όνομα που δεν δηλώθηκε, λείπον required argument, λάθος τύπο (**αυστηρά, χωρίς coercion** — μοντέλο που στέλνει `42` για string έχει παρανοήσει το schema και το coercion το κρύβει), και τιμή εκτός enum. Ρίχνει τα args που δεν δηλώθηκαν και **αναφέρει ποια**. Διαβάζει args είτε ως object (Ollama) είτε ως JSON string (OpenAI-compatible).
+
+**Τι ρητά δεν κάνει:** δεν εκτελεί τίποτα. Οι executors είναι στον client, πίσω από την επιβεβαίωση του χρήστη· ένα accepted call γυρίζει ως **πρόταση** και κουβαλά `writes` ώστε κανείς να μην περάσει mutation για read. Δεν είναι authorization check — τα guards κάθε endpoint μένουν.
+
+Malformed έξοδος μοντέλου γυρίζει «τίποτα δεν έγινε δεκτό» αντί για 500. Έχει ήδη ρίξει τις σελίδες αυτού του προϊόντος μία φορά (`1a309c6`).
+
+**Κατάσταση:** web 271 → **273/273** (31 files), api 140 → **158/158** (6 files), `tsc --noEmit` καθαρό σε web / api / shared, shared build καθαρό.
+
+### 17.5 Τι μένει
+
+Ο **tool-call loop** (model → tool_call → πρόταση → επιβεβαίωση → εκτέλεση → feedback στο μοντέλο → συνέχεια) δεν έχει συνδεθεί στο streaming path. Το `chatStream` στέλνει `tools` αν του δοθούν, αλλά τα tool_calls σε streaming έρχονται τμηματικά και θέλουν χωριστή συναρμολόγηση. Και το `AGENTS.md` απαγορεύει επανάληψη AI POST μετά από μερικό streaming, άρα ο loop θέλει σχεδιασμό που δεν ξαναστέλνει. Δεν το δηλώνω ως γίνον.
