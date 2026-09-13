@@ -305,14 +305,54 @@ interface ImageCropperTriggerProps {
   aspectRatio?: number;
   outputSize?: number;
   title?: string;
+  /** What the trigger does, for anyone who cannot see the image inside it. */
+  label?: string;
+  /**
+   * Lets a second control open the same dialog.
+   *
+   * On the profile editor the photo and a button beside it both mean "crop and
+   * upload"; without this the button had nothing to open and simply sat there
+   * looking like the primary action.
+   */
+  openSignal?: number;
   children: React.ReactNode;
 }
 
-export function ImageCropperTrigger({ onCrop, cropShape, aspectRatio, outputSize, title, children }: ImageCropperTriggerProps) {
+export function ImageCropperTrigger({
+  onCrop, cropShape, aspectRatio, outputSize, title, label, openSignal, children,
+}: ImageCropperTriggerProps) {
   const [open, setOpen] = useState(false);
+
+  // A bump from outside opens it. The initial value is ignored so the dialog
+  // does not appear on mount.
+  const lastSignal = useRef(openSignal);
+  useEffect(() => {
+    if (openSignal !== undefined && openSignal !== lastSignal.current) {
+      lastSignal.current = openSignal;
+      setOpen(true);
+    }
+  }, [openSignal]);
+
   return (
     <>
-      <div onClick={() => setOpen(true)} className="cursor-pointer">{children}</div>
+      {/* A div with onClick was invisible to the keyboard: the only way to
+          change your photo was a mouse. Given the role it already plays, it
+          needs the name, the focus stop and the two keys that operate it. */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={label ?? title ?? 'Crop and upload an image'}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className="cursor-pointer rounded-md focus-ring"
+      >
+        {children}
+      </div>
       <ImageCropper
         open={open}
         onClose={() => setOpen(false)}

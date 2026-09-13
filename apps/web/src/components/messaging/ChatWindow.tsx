@@ -191,7 +191,7 @@ function MessageBubble({
 
           <div
             className={cn(
-              'px-4 py-2.5 text-[13.5px] leading-relaxed shadow-sm',
+              'px-4 py-2.5 text-[13.23px] leading-relaxed shadow-sm',
               isOwn
                 ? 'rounded-2xl rounded-br-sm bg-primary text-primary-foreground'
                 : 'rounded-2xl rounded-bl-sm border border-border/40 bg-background/90 text-foreground backdrop-blur-sm',
@@ -387,7 +387,7 @@ export function ChatWindow({
               />
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-[15px] font-semibold tracking-tight text-foreground">{conversation.recipientName}</span>
+                  <span className="truncate text-[14.7px] font-semibold tracking-tight text-foreground">{conversation.recipientName}</span>
                   <RoleBadge role={conversation.recipientRole || 'founder'} size="sm" className="hidden sm:inline-flex" />
                 </div>
                 <p className={cn('text-xs', conversation.isOnline ? 'font-medium text-status-success' : 'text-muted-foreground')}>

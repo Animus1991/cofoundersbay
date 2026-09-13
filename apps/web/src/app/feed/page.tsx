@@ -10,6 +10,7 @@ import {
   Plus, RefreshCw, ChevronDown, X, Flag, Settings,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
+import Link from 'next/link';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -508,8 +509,10 @@ function SuggestedConnections() {
             </div>
           ))}
         </div>
-        <Button variant="ghost" size="sm" className="w-full mt-3">
-          View All
+        <Button asChild variant="ghost" size="sm" className="w-full mt-3">
+          <Link href="/discover">
+            <BilingualText en="View All" el="Προβολή όλων" compact />
+          </Link>
         </Button>
       </CardContent>
     </Card>
@@ -523,20 +526,35 @@ export default function FeedPage() {
   const [showPreferences, setShowPreferences] = useState(false);
 
   // Fetch personalized feed
+  // `useInfiniteQuery` was imported and never used, and "Load More" sat below a
+  // fixed first page doing nothing — while the endpoint has taken an `offset`
+  // and returned `hasMore` all along. This asks for the next page it advertises.
+  const PAGE_SIZE = 20;
   const {
-    data: feedData,
+    data: feedPages,
     isLoading: feedLoading,
     error: feedError,
     refetch: refetchFeed,
-  } = useQuery({
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ['feed', 'personalized', activeTab],
-    queryFn: () => getPersonalizedFeed({
-      limit: 20,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => getPersonalizedFeed({
+      limit: PAGE_SIZE,
+      offset: pageParam as number,
       contentTypes: activeTab === 'trending' ? undefined : ['update', 'milestone', 'question', 'announcement', 'achievement'],
       refresh: activeTab === 'trending',
     }),
+    getNextPageParam: (last, all) =>
+      last?.hasMore ? all.reduce((n, page) => n + (page?.posts?.length ?? 0), 0) : undefined,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  const feedData = feedPages
+    ? { posts: feedPages.pages.flatMap((page) => page?.posts ?? []) }
+    : undefined;
 
   // Fetch feed preferences
   const {
@@ -734,13 +752,24 @@ export default function FeedPage() {
               ))}
             </div>
 
-            {/* Load More */}
-            <div className="flex justify-center">
-              <Button variant="outline">
-                <RefreshCw className="icon-sm mr-2" />
-                Load More
-              </Button>
-            </div>
+            {/* Load More — shown only when the endpoint says there is more,
+                so it never promises a page that does not exist. */}
+            {hasNextPage && (
+              <div className="flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={() => void fetchNextPage()}
+                  disabled={isFetchingNextPage}
+                >
+                  <RefreshCw className={cn('icon-sm mr-2', isFetchingNextPage && 'animate-spin')} />
+                  <BilingualText
+                    en={isFetchingNextPage ? 'Loading…' : 'Load More'}
+                    el={isFetchingNextPage ? 'Φόρτωση…' : 'Περισσότερα'}
+                    compact
+                  />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}

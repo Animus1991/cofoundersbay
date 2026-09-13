@@ -67,6 +67,32 @@ export type ActionDeclaration = {
    */
   writes: boolean;
   reversal?: ActionReversalDeclaration;
+  /**
+   * True when a successful run should move the user to the `href` its outcome
+   * returns.
+   *
+   * This used to be a pair of tool ids written into `CopilotWorkspace`, which
+   * meant a new capability returning an `href` was silently ignored by the one
+   * component able to act on it. It belongs next to the declaration: whether
+   * confirming an action takes you somewhere is a property of the action, not
+   * of the component that renders its button. `shortlist_add` is why the flag
+   * is needed at all rather than "navigate whenever an href comes back" — it
+   * returns `/shortlist` as the place the result can be seen, while leaving
+   * the user exactly where they were.
+   */
+  navigatesOnSuccess?: boolean;
+  /**
+   * Which argument the audit log should file this action against, and what
+   * that argument is.
+   *
+   * The audit derives the subject from the first required parameter and calls
+   * it a user unless it is named `href`. That held while every mutation acted
+   * on a person, and stopped holding the moment one acted on a readiness
+   * dimension: the log would have recorded "team" as a user id. Declared here
+   * rather than mapped inside the audit service so the fact lives with the
+   * capability, and omitted wherever the original heuristic is already right.
+   */
+  auditSubject?: { param: string; entityType: string };
   confirmLabel?: BilingualCopy;
 };
 

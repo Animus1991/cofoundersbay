@@ -112,6 +112,7 @@ export const ACTION_DECLARATIONS = [
         el: 'Δεν γράφεται τίποτα, άρα δεν υπάρχει κάτι να αναιρεθεί. Χρησιμοποίησε το πίσω του browser για επιστροφή.',
       },
     },
+    navigatesOnSuccess: true,
     confirmLabel: { en: 'Go', el: 'Μετάβαση' },
   },
   {
@@ -219,7 +220,151 @@ export const ACTION_DECLARATIONS = [
         el: 'Δεν στέλνεται μήνυμα, άρα ο άλλος δεν έχει κάτι να διαβάσει. Το νήμα δεν μπορεί να αφαιρεθεί και το API δεν αναφέρει αν δημιουργήθηκε τώρα ή υπήρχε ήδη.',
       },
     },
+    navigatesOnSuccess: true,
     confirmLabel: { en: 'Open thread', el: 'Άνοιγμα νήματος' },
+  },
+  {
+    id: 'readiness_tick_criterion',
+    kind: 'mutation',
+    label: { en: 'Tick a readiness criterion', el: 'Σήμανση κριτηρίου ετοιμότητας' },
+    description: {
+      en: 'Mark one readiness criterion as met or not met on the user’s Startup Builder workspace, which recalculates that dimension’s score.',
+      el: 'Σημειώνει ένα κριτήριο ετοιμότητας ως καλυμμένο ή μη στον χώρο Startup Builder του χρήστη, κάτι που επανυπολογίζει τη βαθμολογία της διάστασης.',
+    },
+    params: [
+      {
+        name: 'dimension',
+        type: 'string',
+        required: true,
+        enumValues: ['team', 'market', 'product', 'business', 'funding', 'execution'],
+        description: {
+          en: 'Which of the six readiness dimensions the criterion belongs to.',
+          el: 'Σε ποια από τις έξι διαστάσεις ετοιμότητας ανήκει το κριτήριο.',
+        },
+      },
+      {
+        name: 'criterionId',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'The criterion’s id, as listed on the Readiness page for that dimension.',
+          el: 'Το id του κριτηρίου, όπως εμφανίζεται στη σελίδα Ετοιμότητας για τη διάσταση.',
+        },
+      },
+      {
+        name: 'completed',
+        type: 'boolean',
+        required: true,
+        description: {
+          en: 'True to mark it met, false to clear it.',
+          el: 'True για να σημανθεί ως καλυμμένο, false για να καθαριστεί.',
+        },
+      },
+    ],
+    writes: true,
+    reversal: {
+      // The identifier the undo needs is in the *input*, not the output, which
+      // is what makes this genuinely reversible where `workspace_create` is
+      // not. The executor also refuses a no-op: ticking something already
+      // ticked would otherwise leave an undo that clears a box the user set
+      // themselves.
+      kind: 'full',
+      explanation: {
+        en: 'Setting the criterion back restores the previous score exactly. Nothing is sent to anyone, and the action is refused outright if the criterion is already in the state being asked for.',
+        el: 'Η επαναφορά του κριτηρίου αποκαθιστά ακριβώς την προηγούμενη βαθμολογία. Δεν στέλνεται τίποτα σε κανέναν, και η ενέργεια απορρίπτεται αν το κριτήριο είναι ήδη στην κατάσταση που ζητείται.',
+      },
+    },
+    auditSubject: { param: 'criterionId', entityType: 'readiness_criterion' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Update criterion', el: 'Ενημέρωση κριτηρίου' },
+  },
+  {
+    id: 'analytics_set_period',
+    kind: 'mutation',
+    label: { en: 'Change the analytics window', el: 'Αλλαγή περιόδου αναλυτικών' },
+    description: {
+      en: 'Switch the Analytics page between the 7, 14, 30 and 90 day windows.',
+      el: 'Εναλλάσσει τη σελίδα Αναλυτικών μεταξύ των περιόδων 7, 14, 30 και 90 ημερών.',
+    },
+    params: [
+      {
+        name: 'period',
+        type: 'string',
+        required: true,
+        enumValues: ['7d', '14d', '30d', '90d'],
+        description: {
+          en: 'The window to show.',
+          el: 'Η περίοδος που θα εμφανιστεί.',
+        },
+      },
+    ],
+    // Like `navigate`, this moves the user's view rather than their data, and
+    // that distinction is what the UI reads to decide whether to warn.
+    writes: false,
+    reversal: {
+      kind: 'partial',
+      explanation: {
+        en: 'Nothing is stored — the window lives in the page’s address. Taking it back returns to the default 7-day view, which is where the page starts, not necessarily the window you had open before; switching costs a click either way.',
+        el: 'Δεν αποθηκεύεται τίποτα — η περίοδος ζει στη διεύθυνση της σελίδας. Η αναίρεση επιστρέφει στην προεπιλογή των 7 ημερών, δηλαδή εκεί που ξεκινά η σελίδα, όχι απαραίτητα στην περίοδο που είχατε ανοιχτή πριν· η εναλλαγή κοστίζει ένα κλικ έτσι κι αλλιώς.',
+      },
+    },
+    auditSubject: { param: 'period', entityType: 'analytics_window' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Show that window', el: 'Εμφάνιση περιόδου' },
+  },
+  {
+    id: 'workspace_create',
+    kind: 'mutation',
+    label: { en: 'Create a Startup Builder workspace', el: 'Δημιουργία χώρου Startup Builder' },
+    description: {
+      en: 'Create the workspace the Readiness page needs before criteria can be ticked or a score saved.',
+      el: 'Δημιουργεί τον χώρο εργασίας που χρειάζεται η σελίδα Ετοιμότητας πριν μπορέσουν να σημανθούν κριτήρια ή να αποθηκευτεί βαθμολογία.',
+    },
+    params: [
+      {
+        name: 'name',
+        type: 'string',
+        required: true,
+        description: {
+          en: 'What to call the workspace, e.g. the venture’s name.',
+          el: 'Πώς θα ονομαστεί ο χώρος, π.χ. το όνομα του εγχειρήματος.',
+        },
+      },
+      {
+        name: 'description',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'One line on what the venture is.',
+          el: 'Μία γραμμή για το τι είναι το εγχείρημα.',
+        },
+      },
+      {
+        name: 'startupName',
+        type: 'string',
+        required: false,
+        description: {
+          en: 'The startup’s name, when it differs from the workspace name.',
+          el: 'Το όνομα του startup, όταν διαφέρει από το όνομα του χώρου.',
+        },
+      },
+    ],
+    writes: true,
+    reversal: {
+      // `undoAction` receives the original payload, never the outcome, so an
+      // undo here has no handle on the workspace that was just made. Archiving
+      // by name would be a guess, and the user may already own a workspace
+      // with that name — the same reasoning that makes `start_or_send_message`
+      // irreversible. Archiving stays a deliberate act in Builder.
+      kind: 'none',
+      explanation: {
+        en: 'A new workspace is yours and empty, so nothing is lost by leaving it. It cannot be taken back automatically because the undo is given what was asked for, not what was created, and archiving by name could archive a workspace you already had. Archive it from Startup Builder when you want it gone.',
+        el: 'Ο νέος χώρος είναι δικός σου και κενός, οπότε δεν χάνεται τίποτα αν μείνει. Δεν αναιρείται αυτόματα επειδή η αναίρεση λαμβάνει ό,τι ζητήθηκε, όχι ό,τι δημιουργήθηκε, και η αρχειοθέτηση βάσει ονόματος θα μπορούσε να αρχειοθετήσει χώρο που είχες ήδη. Αρχειοθέτησέ τον από το Startup Builder όποτε θέλεις.',
+      },
+    },
+    auditSubject: { param: 'name', entityType: 'workspace' },
+    navigatesOnSuccess: true,
+    confirmLabel: { en: 'Create workspace', el: 'Δημιουργία χώρου' },
   },
 ] as const satisfies readonly ActionDeclaration[];
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -33,6 +33,16 @@ import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusChipClasses, type StatusTone } from '@/lib/semantic-colors';
 import { assessReadiness, updateReadinessCriterion, type ReadinessOverall } from '@/lib/api';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import {
+  applyOverlay,
+  DEMO_CRITERIA,
+  overlayIsEmpty,
+  readReadinessOverlay,
+  resetReadinessOverlay,
+  toggleDemoCriterion,
+  type ReadinessOverlay,
+} from '@/lib/readiness-demo';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { CfbGlyph, type CfbGlyphName } from '@/components/icons/CfbGlyph';
 import { AIInsightButton } from '@/components/ai/AIInsightButton';
@@ -112,50 +122,6 @@ const REC_EL: Record<string, string> = Object.fromEntries(
   Object.values(DEMO_RECS).map((pair) => [pair.en, pair.el]),
 );
 
-const DEMO_CRITERIA: Record<string, { id: string; name: string; completed: boolean; weight: number }[]> = {
-  team:      [
-    { id: 't1', name: 'Co-founder identified',           completed: true,  weight: 30 },
-    { id: 't2', name: 'Complementary skills covered',    completed: true,  weight: 25 },
-    { id: 't3', name: 'Full-time commitment secured',    completed: true,  weight: 20 },
-    { id: 't4', name: 'Previous startup experience',     completed: false, weight: 15 },
-    { id: 't5', name: 'Advisory board in place',         completed: false, weight: 10 },
-  ],
-  market:    [
-    { id: 'm1', name: 'Target market defined',           completed: true,  weight: 25 },
-    { id: 'm2', name: 'Market size validated (TAM/SAM)', completed: true,  weight: 25 },
-    { id: 'm3', name: 'Competitive analysis completed',  completed: false, weight: 20 },
-    { id: 'm4', name: 'Customer interviews (10+)',       completed: false, weight: 20 },
-    { id: 'm5', name: 'Market timing analysis',          completed: false, weight: 10 },
-  ],
-  product:   [
-    { id: 'p1', name: 'Problem validated with users',    completed: true,  weight: 25 },
-    { id: 'p2', name: 'Solution clearly defined',        completed: true,  weight: 25 },
-    { id: 'p3', name: 'MVP built and tested',            completed: true,  weight: 20 },
-    { id: 'p4', name: 'User feedback collected',         completed: true,  weight: 15 },
-    { id: 'p5', name: 'Product roadmap documented',      completed: false, weight: 15 },
-  ],
-  business:  [
-    { id: 'b1', name: 'Revenue model defined',           completed: true,  weight: 30 },
-    { id: 'b2', name: 'Pricing strategy validated',      completed: false, weight: 25 },
-    { id: 'b3', name: 'Unit economics calculated',       completed: false, weight: 20 },
-    { id: 'b4', name: 'Go-to-market strategy defined',   completed: true,  weight: 15 },
-    { id: 'b5', name: 'Partnership strategy outlined',   completed: false, weight: 10 },
-  ],
-  funding:   [
-    { id: 'f1', name: 'Pitch deck ready (10-12 slides)', completed: true,  weight: 25 },
-    { id: 'f2', name: 'Financial projections (3 years)', completed: false, weight: 25 },
-    { id: 'f3', name: 'Data room prepared',              completed: false, weight: 20 },
-    { id: 'f4', name: 'Target investor list built',      completed: false, weight: 15 },
-    { id: 'f5', name: 'Term sheet knowledge ready',      completed: true,  weight: 15 },
-  ],
-  execution: [
-    { id: 'e1', name: 'OKRs / quarterly goals set',      completed: true,  weight: 25 },
-    { id: 'e2', name: 'Key milestones defined',          completed: true,  weight: 25 },
-    { id: 'e3', name: 'Core metrics tracked',            completed: true,  weight: 20 },
-    { id: 'e4', name: 'Regular retrospectives held',     completed: false, weight: 15 },
-    { id: 'e5', name: 'Documentation practices in place',completed: false, weight: 15 },
-  ],
-};
 
 const DEMO_HISTORY: { week: string; score: number; accel: number; invest: number }[] = [
   { week: 'W1', score: 38, accel: 32, invest: 28 },
@@ -256,12 +222,19 @@ function isAssessmentData(value: unknown): value is AssessmentData {
     && new Set(assessment.dimensions.map((d) => d.dimension)).size === assessment.dimensions.length;
 }
 
-function buildDemoAssessment(): AssessmentData {
-  const dimensions = Object.entries(DEMO_CRITERIA).map(([dimension, criteria]) => ({
-    dimension, criteria, maxScore: 100,
-    score: criteria.reduce((sum, criterion) => sum + (criterion.completed ? criterion.weight : 0), 0),
-    recommendations: [DEMO_RECS[dimension].en],
-  }));
+function buildDemoAssessment(overlay: ReadinessOverlay = {}): AssessmentData {
+  const dimensions = Object.entries(DEMO_CRITERIA).map(([dimension, seed]) => {
+    // Every number on this page is derived from these flags and their weights,
+    // which is why the demo can be made writable by overriding the flags alone
+    // — dimension score, overall, accelerator and investor readiness all
+    // recompute from here rather than being stored anywhere.
+    const criteria = applyOverlay(dimension, seed, overlay) as typeof seed;
+    return {
+      dimension, criteria, maxScore: 100,
+      score: criteria.reduce((sum, criterion) => sum + (criterion.completed ? criterion.weight : 0), 0),
+      recommendations: [DEMO_RECS[dimension].en],
+    };
+  });
   const weightedScore = (audience: 'acceleratorWeight' | 'investorWeight') => Math.round(
     dimensions.reduce((sum, d) => sum + (d.score / d.maxScore) * DIMENSION_META[d.dimension][audience], 0),
   );
@@ -273,10 +246,24 @@ function buildDemoAssessment(): AssessmentData {
 }
 
 const DEMO_ASSESSMENT = buildDemoAssessment();
-DEMO_HISTORY[DEMO_HISTORY.length - 1] = {
-  week: 'W7', score: DEMO_ASSESSMENT.overallScore,
-  accel: DEMO_ASSESSMENT.acceleratorReadiness, invest: DEMO_ASSESSMENT.investorReadiness,
-};
+
+/**
+ * The last point on the history chart is today, so it has to follow whatever
+ * the visitor has just ticked rather than the seed it was pinned to.
+ */
+function demoHistoryWith(assessment: AssessmentData): typeof DEMO_HISTORY {
+  return DEMO_HISTORY.map((point, index) =>
+    index === DEMO_HISTORY.length - 1
+      ? {
+          ...point,
+          week: 'W7',
+          score: assessment.overallScore,
+          accel: assessment.acceleratorReadiness,
+          invest: assessment.investorReadiness,
+        }
+      : point,
+  );
+}
 
 function exportHistoryCsv(history: typeof DEMO_HISTORY) {
   const rows = ['week,overall,accelerator,investor', ...history.map((h) => `${h.week},${h.score},${h.accel},${h.invest}`)];
@@ -327,12 +314,15 @@ function ScoreRing({ score, size = 128 }: { score: number; size?: number }) {
 
 function DimensionCard({
   dim,
-  workspaceId,
+  canToggle,
   onToggle,
   isMutating,
 }: {
   dim: DimData;
-  workspaceId: string | null;
+  // Whether a criterion can be changed, stated outright. This used to be the
+  // workspace id doing double duty, which is why the demo — which has no
+  // workspace and needs none — could only be read.
+  canToggle: boolean;
   onToggle: (dimKey: string, cId: string, current: boolean) => void;
   isMutating: boolean;
 }) {
@@ -397,11 +387,11 @@ function DimensionCard({
                 <button
                   key={c.id}
                   type="button"
-                  disabled={!workspaceId || isMutating}
-                  onClick={() => workspaceId && onToggle(dim.key, c.id, c.completed)}
+                  disabled={!canToggle || isMutating}
+                  onClick={() => canToggle && onToggle(dim.key, c.id, c.completed)}
                   className={cn(
                     'flex min-h-11 w-full items-start gap-2 rounded-lg px-1.5 py-2 text-left text-sm transition-colors',
-                    workspaceId ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
+                    canToggle ? 'cursor-pointer hover:bg-secondary/60' : 'cursor-default',
                   )}
                 >
                   {c.completed
@@ -534,7 +524,18 @@ export default function ReadinessPage() {
   const qc = useQueryClient();
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   const [mode, setMode] = useState<'live' | 'demo' | null>(null);
+  const [demoOverlay, setDemoOverlay] = useState<ReadinessOverlay>({});
   const isDemo = mode === 'demo';
+
+  // Read after mount, never during render: the server has no session storage,
+  // so reading it while rendering would make the markup disagree on which
+  // boxes are ticked.
+  useEffect(() => {
+    setDemoOverlay(readReadinessOverlay());
+  }, []);
+
+  const demoAssessment = useMemo(() => buildDemoAssessment(demoOverlay), [demoOverlay]);
+  const demoHistory = useMemo(() => demoHistoryWith(demoAssessment), [demoAssessment]);
 
   useEffect(() => {
     try {
@@ -544,6 +545,26 @@ export default function ReadinessPage() {
     }
     setMode(isPreviewDemo() ? 'demo' : 'live');
   }, []);
+
+  /**
+   * The assistant can tick a criterion and create the workspace this page
+   * needs, and neither goes through the mutation below — so neither would show
+   * until a manual refresh. It announces both on the window, the way the rest
+   * of the app announces a login or a lost API, and this picks the workspace up
+   * and drops the stale scores.
+   */
+  useEffect(() => {
+    const onChanged = () => {
+      try {
+        setWorkspaceId(localStorage.getItem('cfb_default_workspace')?.trim() || null);
+      } catch {
+        /* a blocked read leaves the current selection alone */
+      }
+      void qc.invalidateQueries({ queryKey: ['readiness'] });
+    };
+    window.addEventListener('cfb:readiness-updated', onChanged);
+    return () => window.removeEventListener('cfb:readiness-updated', onChanged);
+  }, [qc]);
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
     queryKey: ['readiness', workspaceId, 'canonical'],
@@ -568,11 +589,67 @@ export default function ReadinessPage() {
   });
 
   const handleToggle = useCallback((dimKey: string, cId: string, current: boolean) => {
+    // The showcase keeps its changes for the session rather than refusing them.
+    // Every score it displays is derived from these flags, so the page behaves
+    // exactly as the live one does — it just has nowhere to send them.
+    if (mode === 'demo') {
+      setDemoOverlay(toggleDemoCriterion(dimKey, cId, !current));
+      return;
+    }
     if (!workspaceId || mode !== 'live' || !data || isError || toggleMutation.isPending) return;
     toggleMutation.mutate({ dimKey, criterionId: cId, completed: current });
   }, [workspaceId, mode, data, isError, toggleMutation]);
 
-  const apiData = isDemo ? DEMO_ASSESSMENT : data;
+  const apiData = isDemo ? demoAssessment : data;
+
+  /**
+   * Tell the assistant what is actually on this screen.
+   *
+   * Published before the early returns below, because it has to describe the
+   * empty and error states too — those are exactly the moments the reader most
+   * needs to be told what to do next, and the states in which the assistant
+   * previously described criteria the page was not showing.
+   */
+  usePublishPageSnapshot(
+    '/readiness',
+    !mode
+      ? null
+      : {
+          title: 'Readiness Score',
+          state: !isDemo && !workspaceId
+            ? 'empty'
+            : !isDemo && isLoading
+              ? 'loading'
+              : (isError && !isDemo) || !apiData
+                ? 'error'
+                : isDemo
+                  ? 'demo'
+                  : 'ready',
+          summary: !isDemo && !workspaceId
+            ? 'No workspace is selected, so no criteria can be scored yet.'
+            : apiData
+              ? `Six readiness dimensions scored from ${apiData.dimensions.reduce((n, d) => n + d.criteria.length, 0)} criteria.`
+              : undefined,
+          ...(apiData
+            ? {
+                figures: {
+                  Overall: `${Math.round((apiData.overallScore / apiData.overallMax) * 100)}%`,
+                  Accelerator: `${apiData.acceleratorReadiness}%`,
+                  Investor: `${apiData.investorReadiness}%`,
+                  ...Object.fromEntries(
+                    apiData.dimensions.map((d) => [
+                      d.dimension,
+                      `${d.criteria.filter((c) => c.completed).length}/${d.criteria.length}`,
+                    ]),
+                  ),
+                },
+              }
+            : {}),
+          actions: !isDemo && !workspaceId
+            ? ['workspace_create']
+            : ['readiness_tick_criterion', 'navigate'],
+        },
+  );
 
   const reassessAction = (
     <div className="flex flex-wrap gap-2">
@@ -647,9 +724,17 @@ export default function ReadinessPage() {
           </p>
         )}
         {isDemo && (
-          <p role="status" className="rounded-xl border border-status-info-border bg-status-info-bg p-4 text-sm text-status-info">
-            <BilingualText en="Demo showcase — simulated scores and history. Changes are disabled." el="Επίδειξη — ενδεικτικές βαθμολογίες και ιστορικό. Οι αλλαγές είναι απενεργοποιημένες." />
-          </p>
+          <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-status-info-border bg-status-info-bg p-4 text-sm text-status-info">
+            <BilingualText
+              en="Demo showcase — simulated scores and history. Tick criteria freely: the scores recalculate, and everything is forgotten when you close the tab."
+              el="Επίδειξη — ενδεικτικές βαθμολογίες και ιστορικό. Σημειώστε ελεύθερα κριτήρια: οι βαθμολογίες επανυπολογίζονται και όλα ξεχνιούνται μόλις κλείσετε την καρτέλα."
+            />
+            {!overlayIsEmpty(demoOverlay) && (
+              <Button variant="outline" size="sm" onClick={() => setDemoOverlay(resetReadinessOverlay())}>
+                <BilingualText en="Reset the demo" el="Επαναφορά επίδειξης" compact />
+              </Button>
+            )}
+          </div>
         )}
 
         <div className="grid min-w-0 gap-4 lg:grid-cols-3">
@@ -800,16 +885,16 @@ export default function ReadinessPage() {
                 <div className="flex items-end gap-2">
                   <span className="text-xl font-bold tabular-nums">{overallScore}</span>
                   <span className={cn('mb-1 flex items-center gap-0.5 text-xs', TREND.up)}>
-                    <TrendingUp className="icon-sm" />+{overallScore - DEMO_HISTORY[0].score}{' '}
+                    <TrendingUp className="icon-sm" />+{overallScore - demoHistory[0].score}{' '}
                     <BilingualText en={readinessEn('pts')} el={readinessEl('pts')} compact />
                   </span>
                 </div>
                 <div className="mt-2 flex h-6 items-end gap-0.5">
-                  {DEMO_HISTORY.map((h, i) => (
+                  {demoHistory.map((h, i) => (
                     <div
                       key={i}
                       className="flex-1 rounded-sm bg-primary/40 transition-all"
-                      style={{ height: `${(h.score / 100) * 100}%`, opacity: 0.4 + (i / DEMO_HISTORY.length) * 0.6 }}
+                      style={{ height: `${(h.score / 100) * 100}%`, opacity: 0.4 + (i / demoHistory.length) * 0.6 }}
                     />
                   ))}
                 </div>
@@ -847,7 +932,7 @@ export default function ReadinessPage() {
                 <DimensionCard
                   key={dim.key}
                   dim={dim}
-                  workspaceId={isDemo ? null : workspaceId}
+                  canToggle={isDemo || (!!workspaceId && mode === 'live' && !isError)}
                   onToggle={handleToggle}
                   isMutating={toggleMutation.isPending}
                 />
@@ -1011,7 +1096,7 @@ export default function ReadinessPage() {
 
           <TabsContent value="history" className="mt-4">
             {isDemo ? <div className="space-y-4">
-              <ScoreHistoryChart history={DEMO_HISTORY} />
+              <ScoreHistoryChart history={demoHistory} />
               <Card className="rounded-xl">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm">

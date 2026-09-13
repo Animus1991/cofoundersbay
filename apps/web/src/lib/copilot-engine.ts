@@ -9,11 +9,12 @@ import {
   type SearchHit,
 } from '@/lib/api';
 import { apiRequest } from '@/lib/api';
-import { executeAction } from '@/lib/action-registry';
+import { executeAction, getActionSpec } from '@/lib/action-registry';
+import type { AIToolCallProposal } from '@/lib/ai-api';
 import { isAppLocale, translate, type TranslateVars } from '@/lib/i18n/translate';
 import type { AppLocale } from '@/lib/locale';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { planCopilotTools, detectPersonName } from '@/lib/copilot-planner';
+import { planCopilotTools, detectPersonName, asksAboutThisPage } from '@/lib/copilot-planner';
 import type {
   CopilotAction,
   CopilotCitation,
@@ -23,6 +24,20 @@ import type {
 
 export type PageContextPacket = {
   route: string;
+  /**
+   * What the page has on screen, when it publishes it.
+   *
+   * Optional on purpose: a route that says nothing leaves the assistant
+   * exactly as well informed as it was before this existed.
+   */
+  screen?: {
+    route: string;
+    title?: string;
+    state?: 'loading' | 'ready' | 'empty' | 'error' | 'demo';
+    summary?: string;
+    figures?: Record<string, string | number>;
+    actions?: readonly string[];
+  };
   entity?: { type: string; id: string };
   role?: string | null;
   locale?: string;
@@ -47,6 +62,28 @@ function translatorFor(locale?: string): Translator {
 function newId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/**
+ * Display names for the six readiness dimensions and the four analytics
+ * windows. English is the lookup key, so an untranslated locale reads exactly
+ * what it read before, and an argument outside these maps is treated as a
+ * missing argument rather than passed through to the API.
+ */
+const READINESS_DIMENSION_LABEL: Record<string, string> = {
+  team: 'Team',
+  market: 'Market',
+  product: 'Product',
+  business: 'Business',
+  funding: 'Funding',
+  execution: 'Execution',
+};
+
+const ANALYTICS_PERIOD_LABEL: Record<string, string> = {
+  '7d': '7 days',
+  '14d': '14 days',
+  '30d': '30 days',
+  '90d': '90 days',
+};
 
 function personHref(hit: SearchHit) {
   return `/profiles/${hit.userId}`;
@@ -184,6 +221,62 @@ function describeGraph(graph: CopilotGraph, t: Translator): string {
   return parts.filter(Boolean).join(' ');
 }
 
+/**
+ * Turns the capabilities a *model* asked for into the same confirmable cards
+ * the heuristic planner produces.
+ *
+ * Until this existed, the tool catalogue was assembled, declared, validated on
+ * the server and never reached a user: `enableTools` was opt-in and nothing
+ * opted in, so the model narrated whatever `planCopilotTools` had matched by
+ * keyword instead of choosing for itself. The proposals arrive already checked
+ * against the declarations by the server — this only has to render them.
+ *
+ * No new copy is needed because the declaration *is* the card: every action
+ * already carries a bilingual label, description and confirm label, which is
+ * what makes a capability added in `@cofounderbay/shared` immediately
+ * presentable here without a second place to edit.
+ */
+export function actionsFromToolCalls(
+  proposals: readonly AIToolCallProposal[],
+  locale?: string,
+): CopilotAction[] {
+  const t = translatorFor(locale);
+  // Greek is written into the declaration itself; every other locale reads the
+  // canonical English through the catalogue, so an untranslated one still gets
+  // a sentence rather than a key.
+  const say = (copy: { en: string; el: string }) => (locale === 'el' ? copy.el : t(copy.en));
+
+  const actions: CopilotAction[] = [];
+  for (const proposal of proposals) {
+    const spec = getActionSpec(proposal.name);
+    // A read tool answers a question; the engine composes that answer in prose
+    // and there is nothing for the user to confirm.
+    if (!spec || spec.kind !== 'mutation') continue;
+
+    const args = proposal.args ?? {};
+    const payload: Record<string, unknown> = { ...args };
+    const href = typeof args.href === 'string' ? args.href : undefined;
+
+    // An argument the server dropped is named rather than hidden: the card
+    // would otherwise claim to do something with a value that never arrived.
+    const dropped = proposal.droppedArgs?.length
+      ? ' ' + t('Ignored arguments: {names}.', { names: proposal.droppedArgs.join(', ') })
+      : '';
+
+    actions.push({
+      id: newId('tool'),
+      tool: spec.id as CopilotAction['tool'],
+      title: say(spec.label),
+      description: say(spec.description) + dropped,
+      confirmLabel: spec.confirmLabel ? say(spec.confirmLabel) : t('Confirm'),
+      payload,
+      status: 'pending',
+      ...(href ? { href } : {}),
+    });
+  }
+  return actions;
+}
+
 export async function runCopilotTurn(
   userMessage: string,
   pageContext?: PageContextPacket,
@@ -226,6 +319,31 @@ export async function runCopilotTurn(
     });
     return true;
   };
+
+  // Ground the turn in what the reader is actually looking at.
+  //
+  // The assistant knew the route and nothing on it, so "what am I looking at"
+  // and "what should I do here" were answerable only in generalities. The page
+  // publishes a snapshot; this turns it into the first thing said, and leads
+  // with the way forward when the page cannot currently do its job.
+  const screen = pageContext?.screen;
+  if (screen && asksAboutThisPage(userMessage)) {
+    const where = screen.title
+      ? t('You are on {title}.', { title: screen.title })
+      : t('You are on {route}.', { route: screen.route });
+    const parts = [where];
+    if (screen.summary) parts.push(screen.summary);
+
+    const figures = Object.entries(screen.figures ?? {});
+    if (figures.length) {
+      parts.push(figures.map(([name, value]) => `${t(name)}: ${value}`).join(' · '));
+    }
+    if (screen.state === 'empty') parts.push(t('There is nothing on it yet.'));
+    else if (screen.state === 'error') parts.push(t('It could not load, so what it shows may be incomplete.'));
+    else if (screen.state === 'demo') parts.push(t('These are showcase figures, not your account.'));
+
+    sections.push(parts.join(' '));
+  }
 
   for (const tool of planned) {
     if (tool.name === 'get_graph') {
@@ -413,6 +531,79 @@ export async function runCopilotTurn(
       });
       citations.push({ type: 'route', id: href, label, href });
     }
+
+    if (tool.name === 'readiness_tick_criterion') {
+      const dimension = tool.args?.dimension || '';
+      const criterionId = tool.args?.criterionId || '';
+      const label = READINESS_DIMENSION_LABEL[dimension];
+      if (!label || !criterionId) {
+        sections.push(
+          t('Tell me which readiness criterion, and in which of the six dimensions.'),
+        );
+      } else {
+        // The model says `completed: false` as the string "false" over the
+        // wire, because planned arguments are strings. Anything else is a
+        // request to tick, which is the common case.
+        const completed = tool.args?.completed !== 'false';
+        actions.push({
+          id: newId('crit'),
+          tool: 'readiness_tick_criterion',
+          title: completed
+            ? t('Mark a {dimension} criterion as met', { dimension: t(label) })
+            : t('Clear a {dimension} criterion', { dimension: t(label) }),
+          description: t(
+            'Saved on your Startup Builder workspace, which recalculates that dimension. Refused if it is already there.',
+          ),
+          confirmLabel: completed ? t('Update criterion') : t('Clear criterion'),
+          payload: { dimension, criterionId, completed },
+          status: 'pending',
+          href: '/readiness',
+        });
+        citations.push({ type: 'route', id: '/readiness', label: 'Readiness', href: '/readiness' });
+      }
+    }
+
+    if (tool.name === 'analytics_set_period') {
+      const period = tool.args?.period || '';
+      if (!ANALYTICS_PERIOD_LABEL[period]) {
+        sections.push(t('I can show 7, 14, 30 or 90 days. Which one?'));
+      } else {
+        actions.push({
+          id: newId('period'),
+          tool: 'analytics_set_period',
+          title: t('Show analytics for {period}', { period: t(ANALYTICS_PERIOD_LABEL[period]) }),
+          description: t('Changes which window Analytics shows. Nothing is stored.'),
+          confirmLabel: t('Show that window'),
+          payload: { period },
+          status: 'pending',
+          href: `/analytics?period=${period}`,
+        });
+      }
+    }
+
+    if (tool.name === 'workspace_create') {
+      const name = (tool.args?.name || '').trim();
+      if (!name) {
+        sections.push(t('What should I call the workspace?'));
+      } else {
+        actions.push({
+          id: newId('ws'),
+          tool: 'workspace_create',
+          title: t('Create the workspace “{name}”', { name }),
+          description: t(
+            'Readiness needs a workspace before any criterion can be ticked. This creates one and selects it for you.',
+          ),
+          confirmLabel: t('Create workspace'),
+          payload: {
+            name,
+            ...(tool.args?.description ? { description: tool.args.description } : {}),
+            ...(tool.args?.startupName ? { startupName: tool.args.startupName } : {}),
+          },
+          status: 'pending',
+          href: '/readiness',
+        });
+      }
+    }
   }
 
   if (people.length || matches.length) {
@@ -459,13 +650,19 @@ export async function runCopilotTurn(
 
   let message = sections.join('\n\n').trim();
   if (!message) {
-    message = isPreviewDemo()
+    const network = isPreviewDemo()
       ? t(
           'I can search people, save them to your shortlist, read notifications, send intros, open a thread, or jump to any page. Try: “find a technical cofounder in Athens”.',
         )
       : t(
           'I can search the network, pull matches, save a shortlist, read alerts, send an intro, open a conversation, or navigate. What should we do?',
         );
+    // Appended rather than folded into the two sentences above, which are
+    // already translated into eight languages each; rewording them would
+    // orphan sixteen translations to announce three capabilities.
+    message = `${network} ${t(
+      'I can also tick your readiness criteria, change the analytics window, and create the workspace Builder needs.',
+    )}`;
   }
 
   return {

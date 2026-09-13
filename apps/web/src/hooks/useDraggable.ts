@@ -22,10 +22,15 @@ interface UseDraggableReturn {
   dragHandleProps: {
     onMouseDown: (e: React.MouseEvent) => void;
     onTouchStart: (e: React.TouchEvent) => void;
+    onKeyDown: (e: React.KeyboardEvent) => void;
     style: React.CSSProperties;
   };
   resetPosition: () => void;
 }
+
+/** Arrow-key step, and the larger step Shift asks for. */
+const KEYBOARD_STEP = 10;
+const KEYBOARD_STEP_LARGE = 50;
 
 /**
  * Hook to make an element draggable with position persistence
@@ -160,12 +165,46 @@ export function useDraggable(options: UseDraggableOptions = {}): UseDraggableRet
     }
   }, [initialPosition, storageKey]);
 
+  /**
+   * Moves the element with the arrow keys, and returns it home with Home or
+   * Escape.
+   *
+   * The handle this belongs to is rendered with `role="button"` and
+   * `tabIndex={0}`, so a keyboard user can already reach it — it simply did
+   * nothing once they got there, which is worse than not being focusable at
+   * all. Mouse and touch both had a way to move it; this is the third.
+   *
+   * Shift multiplies the step, the way a keyboard-resizable control usually
+   * behaves, and the same `constrainPosition` keeps it on screen.
+   */
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const step = e.shiftKey ? KEYBOARD_STEP_LARGE : KEYBOARD_STEP;
+    const move = (dx: number, dy: number) => {
+      e.preventDefault();
+      setPosition((current) => constrainPosition(current.x + dx, current.y + dy));
+    };
+
+    switch (e.key) {
+      case 'ArrowLeft': return move(-step, 0);
+      case 'ArrowRight': return move(step, 0);
+      case 'ArrowUp': return move(0, -step);
+      case 'ArrowDown': return move(0, step);
+      case 'Home':
+      case 'Escape':
+        e.preventDefault();
+        return resetPosition();
+      default:
+        return undefined;
+    }
+  }, [constrainPosition, resetPosition]);
+
   return {
     position,
     isDragging,
     dragHandleProps: {
       onMouseDown: handleMouseDown,
       onTouchStart: handleTouchStart,
+      onKeyDown: handleKeyDown,
       style: {
         cursor: isDragging ? 'grabbing' : 'grab',
         userSelect: 'none' as const,

@@ -190,6 +190,10 @@ export function UnifiedChatPopup() {
   const popupRef = useRef<HTMLDivElement>(null);
 
   // ── Draggable ──────────────────────────────────────────────────────────────
+  const dragLabel = bilingualAria(
+    'Drag to move, or use the arrow keys',
+    'Σύρετε για μετακίνηση ή χρησιμοποιήστε τα βελάκια',
+  );
   const { position, isDragging, dragHandleProps } = useDraggable({
     storageKey: 'cfb-unified-chat-position',
     initialPosition: { x: 0, y: 0 },
@@ -497,6 +501,10 @@ export function UnifiedChatPopup() {
       >
         <div
           {...dragHandleProps}
+          role="button"
+          tabIndex={0}
+          aria-label={dragLabel}
+          title={dragLabel}
           className={cn(
             'flex items-center justify-center rounded-full bg-primary text-primary-foreground/80 shadow-md cursor-grab',
             'hover:bg-primary/90 transition-all',
@@ -504,7 +512,7 @@ export function UnifiedChatPopup() {
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="icon-sm" />
+          <GripVertical className="icon-sm" aria-hidden="true" />
         </div>
         <div
           className="flex items-center gap-2 cursor-pointer rounded-full bg-primary shadow-lg px-4 py-2.5 hover:bg-primary/90 hover:shadow-xl transition-all"
@@ -546,13 +554,17 @@ export function UnifiedChatPopup() {
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/60 bg-primary shrink-0">
         <div
           {...dragHandleProps}
+          role="button"
+          tabIndex={0}
+          aria-label={dragLabel}
+          title={dragLabel}
           className={cn(
             'flex items-center justify-center rounded-md text-white/60 hover:text-white/90 hover:bg-white/10 transition-colors cursor-grab',
             isDragging && 'text-white/90 bg-white/10 cursor-grabbing'
           )}
           style={{ width: 24, height: 24, ...dragHandleProps.style }}
         >
-          <GripVertical className="icon-sm" />
+          <GripVertical className="icon-sm" aria-hidden="true" />
         </div>
 
         <div className="flex-1 flex items-center gap-1 bg-white/10 rounded-full p-0.5">

@@ -1,23 +1,24 @@
-export type CopilotToolName =
-  | 'get_graph'
-  | 'search_people'
-  | 'get_recommendations'
-  | 'get_notifications'
-  | 'shortlist_add'
-  | 'send_connection'
-  | 'start_or_send_message'
-  | 'navigate';
+import type { DeclaredActionId, MutationActionId } from '@cofounderbay/shared';
+
+/**
+ * Every capability the assistant can name, derived from the declarations
+ * rather than restated here.
+ *
+ * These two unions used to be written out by hand, which made them a second
+ * registry: a capability declared in `@cofounderbay/shared` and offered to the
+ * model was not representable in the type the planner and engine speak, so the
+ * model could ask for something this app could not carry. Deriving them means
+ * a declaration is the only place a capability is added.
+ */
+export type CopilotToolName = DeclaredActionId;
 
 export type PlannedTool = {
   name: CopilotToolName;
   args: Record<string, string>;
 };
 
-export type CopilotActionTool =
-  | 'send_connection'
-  | 'start_or_send_message'
-  | 'navigate'
-  | 'shortlist_add';
+/** The subset that is proposed for confirmation: exactly the mutations. */
+export type CopilotActionTool = MutationActionId;
 
 /**
  * `undone` is distinct from `dismissed`: dismissed means the user declined

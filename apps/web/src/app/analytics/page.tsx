@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
 import { useQuery } from '@tanstack/react-query';
 import {
   getAnalyticsOverview,
@@ -339,14 +341,51 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+/** The windows this page can show. `7d` is the one it opens on. */
+const PERIODS = ['7d', '14d', '30d', '90d'] as const;
+type Period = (typeof PERIODS)[number];
+
+function isPeriod(value: string | null): value is Period {
+  return value !== null && (PERIODS as readonly string[]).includes(value);
+}
+
 export default function AnalyticsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'overview' | 'engagement' | 'growth'>('overview');
-  const [period, setPeriod] = useState('7d');
+  const [period, setPeriodState] = useState<Period>('7d');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  /**
+   * The window is readable from the address, so it can be linked, shared and
+   * set by something other than a click — which is what lets the assistant
+   * change it without a second, hidden way of driving this page.
+   *
+   * It is read after mount rather than during render on purpose: the server
+   * renders the default window, and reading the address during the first
+   * render would leave the server's markup and the client's disagreeing about
+   * which button is pressed.
+   */
+  useEffect(() => {
+    const fromUrl = searchParams?.get('period') ?? null;
+    if (isPeriod(fromUrl)) setPeriodState(fromUrl);
+  }, [searchParams]);
+
+  const setPeriod = useCallback(
+    (next: Period) => {
+      setPeriodState(next);
+      // `replace`, not `push`: stepping through four windows should not leave
+      // four entries for Back to walk out of. The default window drops the
+      // parameter rather than spelling it, so `/analytics` stays the canonical
+      // address for the page as it opens.
+      router.replace(next === '7d' ? '/analytics' : `/analytics?period=${next}`, { scroll: false });
+    },
+    [router],
+  );
 
   const { data: overview, isLoading, isError, isFetching, refetch } = useQuery({
     queryKey: ['analytics', 'overview', period],
@@ -358,6 +397,27 @@ export default function AnalyticsPage() {
 
   const waiting = !mounted || isLoading;
   const metrics = metricsToDisplay(overview?.metrics);
+
+  /**
+   * What this screen is showing, for the assistant.
+   *
+   * The window is part of it: "engagement is down" means nothing without
+   * knowing whether the reader is looking at seven days or ninety.
+   */
+  usePublishPageSnapshot('/analytics', {
+    title: 'Analytics',
+    state: waiting ? 'loading' : isError ? 'error' : isPreviewDemo() ? 'demo' : 'ready',
+    summary: `Account activity over the last ${period.replace('d', '')} days.`,
+    figures: {
+      Window: period,
+      ...Object.fromEntries(
+        metrics
+          .filter((m) => m.value !== null && m.value !== undefined)
+          .map((m) => [m.label, String(m.value)]),
+      ),
+    },
+    actions: ['analytics_set_period', 'navigate'],
+  });
   const profileViews = overview?.profileViews;
   const engagement = overview?.engagement;
   const topContent = overview?.topContent;
@@ -393,7 +453,7 @@ export default function AnalyticsPage() {
       <div className="min-w-0 space-y-4 overflow-x-clip">
       <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 flex-wrap gap-2">
-          {(['7d', '14d', '30d', '90d'] as const).map((p) => (
+          {PERIODS.map((p) => (
             <button
               key={p}
               type="button"

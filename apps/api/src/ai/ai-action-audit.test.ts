@@ -171,6 +171,26 @@ describe('AI action audit over decorated HTTP routes', () => {
     expect((rows[0].metadataJson as Record<string, unknown>).writes).toBe(false);
   });
 
+  it('files a page capability against what it actually acted on', async () => {
+    // The subject heuristic reads the first required argument and calls it a
+    // user. For a readiness tick that argument is a dimension, so without the
+    // declaration saying otherwise every one of these rows would name "team"
+    // as a user id.
+    await post({
+      actionId: 'readiness_tick_criterion',
+      outcome: 'applied',
+      args: { dimension: 'team', criterionId: 'c1', completed: true },
+    });
+    await post({ actionId: 'analytics_set_period', outcome: 'applied', args: { period: '30d' } });
+    await post({ actionId: 'workspace_create', outcome: 'applied', args: { name: 'Helios' } });
+
+    expect(rows.map((row) => [row.entityType, row.entityId])).toEqual([
+      ['readiness_criterion', 'c1'],
+      ['analytics_window', '30d'],
+      ['workspace', 'Helios'],
+    ]);
+  });
+
   it('records an undo distinctly from the action it reverses', async () => {
     await post({ actionId: 'shortlist_add', outcome: 'applied', args: { userId: 'u2' } });
     await post({ actionId: 'shortlist_add', outcome: 'undone', args: { userId: 'u2' } });

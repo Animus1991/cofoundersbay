@@ -109,16 +109,46 @@ describe('live readiness and explicit showcase isolation', () => {
     await waitFor(() => expect(assessReadiness).toHaveBeenCalledTimes(3));
   });
 
-  it('supports an explicit read-only demo showcase even with a saved live workspace', async () => {
+  it('lets the showcase be ticked while keeping it entirely off the live workspace', async () => {
+    // The showcase used to be a screenshot: every criterion disabled, under a
+    // banner that said so. It is writable now — its scores were always derived
+    // from these flags — but the guarantee that matters is unchanged and is
+    // what the rest of this case asserts: a saved live workspace is never
+    // read, never written, and never replaced by sample scores.
     localStorage.setItem('cfb_default_workspace', workspaceId);
     localStorage.setItem('cfb_demo_data', '1');
     mount();
+
     const criterion = await screen.findByRole('button', { name: /Co-founder identified/ });
-    expect((criterion as HTMLButtonElement).disabled).toBe(true);
+    expect((criterion as HTMLButtonElement).disabled).toBe(false);
+
+    // Team ships three of five met; clearing one is visible in the count.
+    expect(screen.getAllByText('3/5').length).toBeGreaterThan(0);
     fireEvent.click(criterion);
-    expect(screen.getByText('Demo showcase — simulated scores and history. Changes are disabled.')).toBeTruthy();
+    await waitFor(() => expect(screen.getAllByText('2/5').length).toBeGreaterThan(0));
+
     expect((screen.getByRole('button', { name: /Reassess/i }) as HTMLButtonElement).disabled).toBe(true);
     expect(assessReadiness).not.toHaveBeenCalled();
+    expect(updateReadinessCriterion).not.toHaveBeenCalled();
+  });
+
+  it('recalculates the showcase score from the criteria and forgets it on reset', async () => {
+    localStorage.setItem('cfb_demo_data', '1');
+    mount();
+
+    // Market ships two of five met, with the third criterion unmet and visible
+    // without expanding the card.
+    expect(screen.getAllByText('2/5').length).toBeGreaterThan(0);
+    fireEvent.click(await screen.findByRole('button', { name: /Competitive analysis completed/ }));
+
+    // Nothing is stored anywhere but the session, so the way back is offered
+    // as soon as there is something to go back from.
+    const reset = await screen.findByRole('button', { name: 'Reset the demo' });
+    await waitFor(() => expect(screen.getAllByText('3/5').length).toBeGreaterThan(1));
+
+    fireEvent.click(reset);
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Reset the demo' })).toBeNull());
+    expect(screen.getAllByText('2/5').length).toBeGreaterThan(0);
     expect(updateReadinessCriterion).not.toHaveBeenCalled();
   });
 

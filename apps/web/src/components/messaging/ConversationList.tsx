@@ -119,7 +119,7 @@ function ConversationItem({
             )}
             <span
               className={cn(
-                'truncate text-[13px] leading-tight',
+                'truncate text-[12.74px] leading-tight',
                 unread ? 'font-semibold text-foreground' : 'font-medium text-foreground',
               )}
             >
@@ -138,7 +138,7 @@ function ConversationItem({
         <div className="mt-0.5 flex items-center justify-between gap-2">
           <p
             className={cn(
-              'truncate text-[12px] leading-snug',
+              'truncate text-[11.76px] leading-snug',
               unread ? 'font-medium text-foreground/80' : 'text-muted-foreground',
             )}
           >

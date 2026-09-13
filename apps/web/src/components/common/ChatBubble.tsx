@@ -53,7 +53,10 @@ export function ChatBubble() {
     ? bilingualAria(`Open messages (${unreadEn})`, `Άνοιγμα μηνυμάτων (${unreadEl})`)
     : bilingualAria('Open messages', 'Άνοιγμα μηνυμάτων');
   const dismissLabel = bilingualAria('Hide chat bubble for this visit', 'Απόκρυψη φούσκας chat για αυτή την επίσκεψη');
-  const dragLabel = bilingualAria('Drag to move', 'Σύρετε για μετακίνηση');
+  const dragLabel = bilingualAria(
+    'Drag to move, or use the arrow keys',
+    'Σύρετε για μετακίνηση ή χρησιμοποιήστε τα βελάκια',
+  );
 
   return (
     <div

@@ -27,7 +27,7 @@ import {
   type ChatMessage,
 } from '@/lib/ai-api';
 import { isPreviewDemo } from '@/lib/preview-demo';
-import { executeCopilotAction, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
+import { actionsFromToolCalls, executeCopilotAction, runCopilotTurn, type PageContextPacket } from '@/lib/copilot-engine';
 import { isUndoable, undoAction as runUndo } from '@/lib/action-registry';
 import { recordAIAction, type AIActionOutcome } from '@/lib/ai-api';
 import type { CopilotAction, CopilotCitation, CopilotTurnResult } from '@/lib/copilot-types';
@@ -253,10 +253,22 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
               toolNarrative: narrative,
               usedTools: turn?.usedTools ?? [],
             },
+            // Offer the model the capability catalogue.
+            //
+            // Everything behind this flag — the shared declarations, the
+            // server-side validation, the confirm/undo/audit contract, the
+            // assembly of tool calls out of a single stream — was built and
+            // tested while nothing ever set it, so the catalogue was never
+            // sent and the model could only narrate whatever the keyword
+            // planner had already matched. The planner still runs and its
+            // proposals still stand: a model that supports no tools, or asks
+            // for none, produces exactly the turn it produced before.
+            enableTools: true,
           };
           let fullContent = '';
           let finalModel = '';
           let fallback = false;
+          let proposed: CopilotAction[] = [];
 
           try {
             for await (const data of streamAIChat(request, controller.signal)) {
@@ -277,7 +289,16 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
                     : message,
                 ),
               );
-              if (data.done) break;
+              if (data.done) {
+                // Proposals ride the terminal event. They are rendered with
+                // the same card the planner uses, because both read the same
+                // declaration — so a capability the model picks looks and
+                // behaves exactly like one a keyword matched.
+                if (data.toolCalls?.length) {
+                  proposed = actionsFromToolCalls(data.toolCalls, pageContext?.locale);
+                }
+                break;
+              }
             }
           } catch (streamError) {
             // If streaming fails, fall back to non-streaming only when no content was received
@@ -289,10 +310,17 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           }
 
           if (!isCurrent()) return;
+          // What the model asked for leads, because it read the question; what
+          // the planner matched follows, minus anything the model already
+          // covered. Nothing the planner found is thrown away — a keyword hit
+          // the model missed is still a capability the user asked for.
+          const merged = proposed.length
+            ? [...proposed, ...(actions ?? []).filter((a) => !proposed.some((p) => p.tool === a.tool))]
+            : actions;
           setMessages((prev) =>
             prev.map((message) =>
               message.id === assistantMessageId
-                ? { ...message, content: fullContent, model: finalModel, fallback, isStreaming: false, actions, citations }
+                ? { ...message, content: fullContent, model: finalModel, fallback, isStreaming: false, actions: merged, citations }
                 : message,
             ),
           );

@@ -58,16 +58,25 @@ export class AIActionAuditService {
    * required — `userId` for a shortlist entry, `receiverId` for an intro,
    * `href` for a navigation. Derived rather than passed in so a caller cannot
    * file an entry against an entity the arguments never mentioned.
+   *
+   * A declaration may name its own subject instead, which is what the page
+   * capabilities do: the first required argument of a readiness tick is a
+   * dimension, and calling that a user id would have quietly filed every one
+   * of those rows against a person who does not exist.
    */
   private subjectOf(actionId: string, args: Record<string, unknown>) {
     const declaration = getActionDeclaration(actionId);
-    const first = declaration?.params.find((param) => param.required);
-    const value = first ? args[first.name] : undefined;
+    const declared = declaration?.auditSubject;
+    const param = declared
+      ? declaration?.params.find((candidate) => candidate.name === declared.param)
+      : declaration?.params.find((candidate) => candidate.required);
+    const value = param ? args[param.name] : undefined;
 
-    if (!first || typeof value !== 'string' || !value) {
+    if (!param || typeof value !== 'string' || !value) {
       return { entityType: 'ai_action', entityId: null as string | null };
     }
-    return { entityType: first.name === 'href' ? 'route' : 'user', entityId: value };
+    if (declared) return { entityType: declared.entityType, entityId: value };
+    return { entityType: param.name === 'href' ? 'route' : 'user', entityId: value };
   }
 
   async record(params: {

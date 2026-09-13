@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/useSession';
 import { useDemoData } from '@/contexts/DemoDataContext';
+import { usePublishPageSnapshot } from '@/contexts/PageSnapshotContext';
+import { isPreviewDemo } from '@/lib/preview-demo';
 import { usePopupChat } from '@/contexts/PopupChatContext';
 import { cn } from '@/lib/utils';
 import { STATUS, TREND, type StatusTone } from '@/lib/semantic-colors';
@@ -308,6 +310,28 @@ export default function FounderDashboardContent() {
   const fundStats = fundraisingPipelineStats(FUNDRAISING_SEED_LEADS);
   const fundingPct = Math.round((fundRound.raised / fundRound.target) * 100);
   const greeting = getTimeBasedGreeting();
+
+  /**
+   * The dashboard's own figures, for the assistant.
+   *
+   * This is the screen a founder opens on, so it is the one where "what should
+   * I do next?" is asked most — and the one where the assistant previously had
+   * to answer from the route name alone.
+   */
+  usePublishPageSnapshot('/dashboard/founder', {
+    title: 'Founder dashboard',
+    state: !mounted ? 'loading' : isPreviewDemo() ? 'demo' : 'ready',
+    summary: `${displayName}'s dashboard: profile, readiness, connections and the current round.`,
+    figures: {
+      'Profile completeness': `${profilePct}%`,
+      'Readiness': `${avgReadiness}%`,
+      'Pending intros': pendingRequests,
+      'Recommended matches': recommendations?.suggestions?.length ?? 0,
+      'Round progress': `${fundingPct}%`,
+      'Committed investors': fundStats.committed,
+    },
+    actions: ['navigate', 'shortlist_add', 'send_connection', 'start_or_send_message'],
+  });
 
   const onboardingSteps = buildOnboardingSteps({
     hasProfile:      !!(profile?.profile?.displayName && profile?.profile?.headline),

@@ -17,6 +17,24 @@ vi.mock('@/contexts/PopupChatContext', () => ({
 }));
 vi.mock('next/dynamic', () => ({ default: () => () => <div /> }));
 
+/**
+ * A stand-in address bar. The window is readable from the URL so that a link,
+ * a bookmark or the assistant can set it, and these two states are what the
+ * page actually reads and writes.
+ */
+const url = { search: '', replaced: [] as string[] };
+vi.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(url.search),
+  useRouter: () => ({
+    replace: (href: string) => {
+      url.replaced.push(href);
+      url.search = href.includes('?') ? href.slice(href.indexOf('?') + 1) : '';
+    },
+    push: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
+
 const overview: AnalyticsOverview = {
   metrics: { profileViews: 0, profileViewsChange: 0, newConnections: 0, newConnectionsChange: 0, messagesSent: 0, messagesSentChange: 0, engagementRate: null, engagementRateChange: null, searchAppearances: null, searchAppearancesChange: null, activityScore: null, activityScoreChange: null },
   profileViews: [], engagement: { connections: 0, messages: 0, likes: null, comments: null, shares: null }, topContent: null,
@@ -28,7 +46,7 @@ function mount() {
   clients.push(client);
   return render(<QueryClientProvider client={client}><AnalyticsPage /></QueryClientProvider>);
 }
-beforeEach(() => { vi.clearAllMocks(); vi.mocked(getAnalyticsOverview).mockResolvedValue(overview); });
+beforeEach(() => { vi.clearAllMocks(); url.search = ''; url.replaced = []; vi.mocked(getAnalyticsOverview).mockResolvedValue(overview); });
 afterEach(() => { cleanup(); clients.splice(0).forEach(client => client.clear()); });
 
 describe('analytics clarity and controls', () => {
@@ -53,5 +71,37 @@ describe('analytics clarity and controls', () => {
     const count = vi.mocked(getAnalyticsOverview).mock.calls.length;
     fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
     await waitFor(() => expect(getAnalyticsOverview).toHaveBeenCalledTimes(count + 1));
+  });
+
+  it('puts the chosen window in the address, and drops the parameter for the default', async () => {
+    mount();
+    await screen.findByText(/Recorded account activity/);
+
+    fireEvent.click(screen.getByRole('button', { name: '90 days' }));
+    await waitFor(() => expect(url.replaced).toContain('/analytics?period=90d'));
+
+    // Back to the window the page opens on: the address returns to the bare
+    // route rather than spelling out the default.
+    fireEvent.click(screen.getByRole('button', { name: '7 days' }));
+    await waitFor(() => expect(url.replaced).toContain('/analytics'));
+  });
+
+  it('opens on the window named in the address', async () => {
+    url.search = 'period=30d';
+    mount();
+    await screen.findByText(/Recorded account activity/);
+
+    await waitFor(() => expect(getAnalyticsOverview).toHaveBeenCalledWith('30d', 5));
+    expect(screen.getByRole('button', { name: '30 days' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: '7 days' }).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('ignores a window it does not recognise instead of asking the API for it', async () => {
+    url.search = 'period=all-time';
+    mount();
+    await screen.findByText(/Recorded account activity/);
+
+    expect(screen.getByRole('button', { name: '7 days' }).getAttribute('aria-pressed')).toBe('true');
+    expect(getAnalyticsOverview).not.toHaveBeenCalledWith('all-time', 5);
   });
 });

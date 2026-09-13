@@ -340,6 +340,8 @@ export default function ProfileEditPage() {
     }
   };
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  // Bumped to open the cropper from the button beside the photo.
+  const [cropperSignal, setCropperSignal] = useState(0);
 
   const { data: meData, isLoading: profileLoading, isError: profileError, refetch: refetchProfile } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -603,6 +605,8 @@ export default function ProfileEditPage() {
                       aspectRatio={1}
                       outputSize={400}
                       title="Crop Profile Photo"
+                      label="Crop and upload your profile photo"
+                      openSignal={cropperSignal}
                       onCrop={async (blob, dataUrl) => {
                         setUploadingAvatar(true);
                         try {
@@ -638,18 +642,25 @@ export default function ProfileEditPage() {
                           onChange={(e) => updateField('avatarUrl', e.target.value)}
                           className="flex-1"
                         />
+                        {/* It said "Crop & Upload" and did nothing: the only
+                            way in was the photo, which the help text below had
+                            to explain. Now both open the same dialog. */}
                         <Button
                           type="button"
                           variant="secondary"
                           className="gap-2 sm:w-auto w-full"
                           disabled={uploadingAvatar}
+                          onClick={() => setCropperSignal((n) => n + 1)}
                         >
                           {uploadingAvatar ? <Loader2 className="icon-sm animate-spin" /> : <Camera className="icon-sm" />}
-                          Crop & Upload
+                          <BilingualText en="Crop & Upload" el="Περικοπή και μεταφόρτωση" compact />
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Click the photo to crop & upload. Recommended size: 400x400px. JPG, PNG or WebP. Max 5MB.
+                        <BilingualText
+                          en="Use the photo or the button to crop & upload. Recommended size: 400×400px. JPG, PNG or WebP. Max 5MB."
+                          el="Χρησιμοποιήστε τη φωτογραφία ή το κουμπί για περικοπή και μεταφόρτωση. Προτεινόμενο μέγεθος: 400×400px. JPG, PNG ή WebP. Έως 5MB."
+                        />
                       </p>
                     </div>
                   </div>

@@ -8,11 +8,16 @@ import {
   type UndoableActionId,
 } from '@cofounderbay/shared';
 import {
+  assessReadiness,
   getOrCreateDirectConversation,
   removeFromShortlist,
   saveToShortlist,
   sendConnectionRequest,
+  updateReadinessCriterion,
 } from '@/lib/api';
+import { createWorkspace } from '@/lib/builder-api';
+import { isPreviewDemo } from '@/lib/preview-demo';
+import { demoCriterionState, toggleDemoCriterion } from '@/lib/readiness-demo';
 import { PAGE_REGISTRY, getPageMeta } from '@/lib/page-registry';
 
 /**
@@ -43,6 +48,102 @@ function requireString(payload: Record<string, unknown>, key: string): string {
   return typeof value === 'string' ? value : '';
 }
 
+/**
+ * The workspace the Readiness page itself works on.
+ *
+ * `/readiness` resolves its workspace from this one key and nothing else, so
+ * reading the same key is what keeps a tool the assistant runs and a box the
+ * user clicks pointed at the same scores. When it is empty the page shows its
+ * "create or select a workspace" card — which is why `workspace_create` writes
+ * the key back below, instead of leaving the user to select by hand what the
+ * assistant just made for them.
+ */
+const WORKSPACE_KEY = 'cfb_default_workspace';
+
+function currentWorkspaceId(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    return window.localStorage.getItem(WORKSPACE_KEY)?.trim() || '';
+  } catch {
+    return '';
+  }
+}
+
+const READINESS_DIMENSIONS = ['team', 'market', 'product', 'business', 'funding', 'execution'];
+
+/**
+ * Writes one readiness criterion after checking it is not already there.
+ *
+ * The check is the reason `undo` is safe to offer. `undoAction` is handed the
+ * original payload and never the outcome, so an undo can only set the
+ * criterion to the opposite of what was asked. If the box had already been
+ * ticked by the user, running the tool would be a no-op and *undoing* it would
+ * clear something the assistant never set. Refusing the no-op closes that gap,
+ * and costs one request the page makes on load anyway.
+ */
+async function writeCriterion(
+  payload: Record<string, unknown>,
+  completed: boolean,
+): Promise<ActionOutcome> {
+  const dimension = requireString(payload, 'dimension');
+  if (!READINESS_DIMENSIONS.includes(dimension)) return { ok: false, error: 'Unknown readiness dimension' };
+
+  const criterionId = requireString(payload, 'criterionId');
+  if (!criterionId) return { ok: false, error: 'Missing criterion' };
+
+  // The showcase keeps its own criteria and its own session overlay, and it is
+  // the whole page a visitor without an account ever sees. Refusing here would
+  // have made the assistant a narrator of a page it could not touch — and it
+  // has no workspace to reach for, by design.
+  if (isPreviewDemo()) {
+    const current = demoCriterionState(dimension, criterionId);
+    if (current === undefined) return { ok: false, error: 'That criterion is not part of this dimension' };
+    if (current === completed) {
+      return {
+        ok: false,
+        error: completed ? 'That criterion is already met' : 'That criterion is already clear',
+      };
+    }
+    toggleDemoCriterion(dimension, criterionId, completed);
+    notifyReadinessChanged();
+    return { ok: true, href: '/readiness' };
+  }
+
+  const workspaceId = currentWorkspaceId();
+  if (!workspaceId) {
+    return { ok: false, error: 'No workspace selected. Create one first, then tick criteria.' };
+  }
+
+  const { assessment } = await assessReadiness({ workspaceId });
+  const score = assessment.dimensions.find((entry) => entry.dimension === dimension);
+  const criterion = score?.criteria.find((entry) => entry.id === criterionId);
+  if (!criterion) return { ok: false, error: 'That criterion is not part of this dimension' };
+  if (criterion.completed === completed) {
+    return {
+      ok: false,
+      error: completed ? 'That criterion is already met' : 'That criterion is already clear',
+    };
+  }
+
+  await updateReadinessCriterion(workspaceId, { dimension, criterionId, completed });
+  notifyReadinessChanged();
+  return { ok: true, href: '/readiness' };
+}
+
+/**
+ * Tells an open Readiness page that its scores are stale.
+ *
+ * The page owns its React Query cache and an executor cannot reach it, so
+ * without this a criterion ticked from the assistant would be saved on the
+ * server and invisible on screen until a manual refresh. The `cfb:` window
+ * event is the convention the rest of the app already uses for this
+ * (`cfb:login`, `cfb:api-online`, `cfb:sidebar-mode`).
+ */
+function notifyReadinessChanged(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('cfb:readiness-updated'));
+}
+
 /** Exhaustive over every declared mutation. Adding one without an arm fails to compile. */
 const EXECUTORS: Record<MutationActionId, Executor> = {
   navigate: async (payload) => ({
@@ -71,7 +172,53 @@ const EXECUTORS: Record<MutationActionId, Executor> = {
     const { conversationId } = await getOrCreateDirectConversation(userId);
     return { ok: true, href: `/messages?c=${conversationId}` };
   },
+
+  readiness_tick_criterion: async (payload) =>
+    writeCriterion(payload, payload?.completed !== false),
+
+  analytics_set_period: async (payload) => {
+    const period = requireString(payload, 'period');
+    if (!ANALYTICS_PERIODS.includes(period)) return { ok: false, error: 'Unknown period' };
+    return { ok: true, href: `/analytics?period=${period}` };
+  },
+
+  workspace_create: async (payload) => {
+    // The showcase has readiness without a workspace, and no account to hang
+    // one on. Saying so is truer than reaching for an endpoint that will
+    // refuse the request, or than reporting success for nothing.
+    if (isPreviewDemo()) {
+      return { ok: false, error: 'The demo showcase already has a workspace. Sign in to create your own.' };
+    }
+
+    const name = requireString(payload, 'name').trim();
+    if (!name) return { ok: false, error: 'Missing workspace name' };
+    // The API caps the name at 100 characters and rejects the whole request
+    // over it, which would read to the user as the assistant failing rather
+    // than as a name being too long.
+    if (name.length > 100) return { ok: false, error: 'Workspace name is too long (100 characters)' };
+
+    const description = requireString(payload, 'description').trim() || undefined;
+    const startupName = requireString(payload, 'startupName').trim() || undefined;
+    const workspace = await createWorkspace({ name, description, startupName });
+    if (!workspace?.id) return { ok: false, error: 'Workspace was not created' };
+
+    // Selecting it is the half that makes this useful: `/readiness` reads this
+    // key alone, so a workspace created and left unselected would leave the
+    // page showing the same empty card it showed before.
+    try {
+      window.localStorage.setItem(WORKSPACE_KEY, workspace.id);
+    } catch {
+      // A blocked storage write is not a failed creation — the workspace
+      // exists, and Builder can select it. Saying `ok` here and sending the
+      // user to Builder is truer than reporting the write as failed.
+      return { ok: true, href: '/builder' };
+    }
+    notifyReadinessChanged();
+    return { ok: true, href: '/readiness' };
+  },
 };
+
+const ANALYTICS_PERIODS = ['7d', '14d', '30d', '90d'];
 
 /**
  * Exhaustive over every declaration that claims `full` or `partial`
@@ -86,6 +233,17 @@ const UNDOS: Record<UndoableActionId, Executor> = {
     await removeFromShortlist(userId);
     return { ok: true, href: '/shortlist' };
   },
+
+  // Sets the criterion back to where it was. `writeCriterion` refuses a no-op
+  // on the way in, so the box this clears is always one the assistant ticked,
+  // and it refuses again here if the user has since changed it by hand.
+  readiness_tick_criterion: async (payload) =>
+    writeCriterion(payload, payload?.completed === false),
+
+  // Returns the page to the window it opens on. Declared `partial` for exactly
+  // this reason: the payload says which window was asked for, never which one
+  // was open before.
+  analytics_set_period: async () => ({ ok: true, href: '/analytics' }),
 };
 
 export function listActions(): readonly ActionDeclaration[] {

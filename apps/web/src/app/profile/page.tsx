@@ -283,6 +283,7 @@ function RoleDetails({ role, payload }: { role: string; payload: Record<string, 
 export default function ProfilePage() {
   const router = useRouter();
   const { success } = useToast();
+  const [showAllSkills, setShowAllSkills] = React.useState(false);
 
   const { data: meData, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: queryKeys.me.profile(),
@@ -558,7 +559,7 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="pt-5">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {profile.skills.slice(0, 6).map((s, i) => {
+                  {(showAllSkills ? profile.skills : profile.skills.slice(0, 6)).map((s, i) => {
                     const lvl = s.level ?? (i % 3 === 0 ? 'expert' : i % 3 === 1 ? 'intermediate' : 'beginner');
                     const pct = lvl === 'expert' ? 92 - i * 2 : lvl === 'intermediate' ? 68 - i * 3 : 42 - i * 2;
                     return (
@@ -579,8 +580,20 @@ export default function ProfilePage() {
                 </div>
                 {profile.skills.length > 6 && (
                   <div className="mt-4 pt-4 border-t border-border/50 text-center">
-                    <Button variant="link" size="sm" className="text-muted-foreground h-auto p-0">
-                      <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
+                    {/* It offered to show all of them and did nothing; the six
+                        after the sixth were simply unreachable. */}
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="text-muted-foreground h-auto p-0"
+                      aria-expanded={showAllSkills}
+                      onClick={() => setShowAllSkills((shown) => !shown)}
+                    >
+                      {showAllSkills ? (
+                        <BilingualText en="Show fewer" el="Εμφάνιση λιγότερων" />
+                      ) : (
+                        <BilingualText en={`${profileEn('show_all_skills')} ${profile.skills.length} ${profileEn('skills_suffix')}`} el={`${profileEl('show_all_skills')} ${profile.skills.length} ${profileEl('skills_suffix')}`} />
+                      )}
                     </Button>
                   </div>
                 )}
@@ -596,8 +609,10 @@ export default function ProfilePage() {
                   <FolderOpen className="icon-md text-primary-accessible" />
                   <BilingualText en={profileEn('portfolio_showcase')} el={profileEl('portfolio_showcase')} />
                 </CardTitle>
-                <Button variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
-                  <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
+                <Button asChild variant="ghost" size="sm" className="h-8 gap-1 text-xs text-primary-accessible">
+                  <Link href="/profile/edit">
+                    <Plus className="icon-sm" /> <BilingualText en={profileEn('add')} el={profileEl('add')} />
+                  </Link>
                 </Button>
               </div>
             </CardHeader>

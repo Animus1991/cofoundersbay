@@ -283,7 +283,10 @@ export default function CalendarPage() {
               <List className="icon-sm" />
             </Button>
           </div>
-          <Button size="sm" className="gap-1.5"><Plus className="icon-sm" /> <BilingualText en="Add Event" el="Προσθήκη εκδήλωσης" compact /></Button>
+          {/* /events/create has existed all along. */}
+          <Button asChild size="sm" className="gap-1.5">
+            <Link href="/events/create"><Plus className="icon-sm" /> <BilingualText en="Add Event" el="Προσθήκη εκδήλωσης" compact /></Link>
+          </Button>
         </div>
       }
     >
@@ -379,7 +382,9 @@ export default function CalendarPage() {
                     <div className="py-8 text-center">
                       <CalendarIcon className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
                       <p className="text-sm text-muted-foreground"><BilingualText en="No events on this day" el="Καμία εκδήλωση αυτή την ημέρα" /></p>
-                      <Button variant="outline" size="sm" className="mt-3 gap-1"><Plus className="icon-sm" /> <BilingualText en="Schedule something" el="Προγραμματισμός" compact /></Button>
+                      <Button asChild variant="outline" size="sm" className="mt-3 gap-1">
+                        <Link href="/events/create"><Plus className="icon-sm" /> <BilingualText en="Schedule something" el="Προγραμματισμός" compact /></Link>
+                      </Button>
                     </div>
                   )}
                 </CardContent>

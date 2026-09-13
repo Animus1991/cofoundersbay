@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
 import { useSearchParams } from 'next/navigation';
 import {
   CreditCard,
@@ -612,8 +613,13 @@ export default function SettingsPage() {
                   <p className="text-sm font-medium text-foreground">Export your data</p>
                   <p className="text-xs text-muted-foreground">Download all your profile, connections, and activity data as a ZIP archive.</p>
                 </div>
-                <Button variant="outline" size="sm" className="shrink-0 gap-2">
-                  <Download className="icon-sm" />Export
+                {/* /settings/data-export has existed all along; this button
+                    simply never pointed at it. */}
+                <Button asChild variant="outline" size="sm" className="shrink-0 gap-2">
+                  <Link href="/settings/data-export">
+                    <Download className="icon-sm" />
+                    <BilingualText en="Export" el="Εξαγωγή" compact />
+                  </Link>
                 </Button>
               </div>
               <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 flex items-center justify-between gap-4">

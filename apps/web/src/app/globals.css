@@ -89,14 +89,14 @@ html {
     --radius:           12px;
 
     /* Typography scale — refined for readability */
-    --font-size-xs:     0.75rem;    /* 12px */
-    --font-size-sm:     0.875rem;   /* 14px */
-    --font-size-base:   0.9375rem;  /* 15px */
-    --font-size-lg:     1rem;       /* 16px */
-    --font-size-xl:     1.125rem;   /* 18px */
-    --font-size-2xl:    1.25rem;    /* 20px */
-    --font-size-3xl:    1.5rem;     /* 24px */
-    --font-size-4xl:    2rem;       /* 32px */
+    --font-size-xs:     0.735rem;   /* 11.76px */
+    --font-size-sm:     0.8575rem;  /* 13.72px */
+    --font-size-base:   0.91875rem; /* 14.7px */
+    --font-size-lg:     0.98rem;    /* 15.68px */
+    --font-size-xl:     1.1025rem;  /* 17.64px */
+    --font-size-2xl:    1.225rem;   /* 19.6px */
+    --font-size-3xl:    1.47rem;    /* 23.52px */
+    --font-size-4xl:    1.96rem;    /* 31.36px */
 
     /* Gradients */
     --gradient-hero:    linear-gradient(135deg, hsl(222 47% 6%) 0%, hsl(222 47% 12%) 50%, hsl(235 80% 20%) 100%);
@@ -391,20 +391,21 @@ html {
   }
 
   @media (max-width: 639.98px) {
-    h1.text-base, h2.text-base, h3.text-base { font-size: 0.97rem; }
-    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.09125rem; }
-    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.2125rem; }
-    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.455rem; }
-    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.77316rem; }
-    h1.text-4xl,  h2.text-4xl                { font-size: 2.12818rem; }
+    h1.text-base, h2.text-base, h3.text-base { font-size: 0.9506rem; }
+    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.069425rem; }
+    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.18825rem; }
+    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.4259rem; }
+    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.7376968rem; }
+    h1.text-4xl,  h2.text-4xl                { font-size: 2.0856164rem; }
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     min-height: 100dvh;
     font-feature-settings: 'cv11', 'ss01';
-    /* 15px at the default 16px root; 12.3px once html is 82% on desktop. */
-    font-size: 0.9375rem;
+    /* 15px at the default 16px root; 12.3px once html is 82% on desktop.
+       −2% pass: 14.7px at 16px root; 12.05px at the desktop root. */
+    font-size: 0.91875rem;
     line-height: 1.55;
     letter-spacing: -0.011em;
     text-rendering: optimizeLegibility;
@@ -422,7 +423,7 @@ html {
      first. */
   @media (min-width: 1024px) {
     body {
-      font-size: 1.14212445rem;
+      font-size: 1.11928192rem;
     }
   }
 
@@ -738,7 +739,7 @@ html {
     border-radius: var(--radius);
     background: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
-    font-size: 0.875rem;
+    font-size: 0.8575rem;
     font-weight: 600;
     white-space: nowrap;
     outline: 2px solid hsl(var(--ring));
@@ -975,7 +976,7 @@ html {
      element so tailwind-merge can resolve a caller-supplied override
      (e.g. secondaryClassName="text-primary-foreground" on an active chip). */
   .bilingual-secondary {
-    font-size: max(11px, 0.6875rem, 0.85em);
+    font-size: max(11px, 0.67375rem, 0.85em);
     line-height: 1.35;                 /* room for Greek diacritics */
     font-weight: 400;
     letter-spacing: 0;
@@ -984,30 +985,67 @@ html {
   /* Separator between primary and secondary in inline mode. */
   .bilingual-separator {
     @apply select-none text-muted-foreground/40;
-    font-size: max(11px, 0.6875rem, 0.85em);
+    font-size: max(11px, 0.67375rem, 0.85em);
   }
 
-  /* Hold the 11px floor when html is 82% on desktop (0.6875rem → 9.02px). */
+  /* Hold the 11px floor when html is 82% on desktop (0.67375rem → 8.84px). */
   .text-2xs {
-    font-size: max(0.6875rem, 11px);
+    font-size: max(0.67375rem, 11px);
     line-height: max(1rem, 16px);
   }
 
-  /* `text-xs` needed the same floor and did not have it. 0.75rem against the 82%
-     desktop root is 9.84px, and it is the most common size in the product -- 111
+  /* `text-xs` needed the same floor and did not have it. 0.735rem against the 82%
+     desktop root is 9.64px, and it is the most common size in the product -- 111
      text nodes on the founder dashboard alone were rendering below the
      documented 11px minimum on every desktop. */
   .text-xs {
-    font-size: max(0.75rem, 11px);
+    font-size: max(0.735rem, 11px);
     line-height: max(1rem, 16px);
   }
 
+  /* ── Phone/tablet type scale: −2% pass ─────────────────────────────────────
+     Every step below `lg` is the class's own size x0.98; the px floors keep the
+     documented 11px/16px minimums, so `2xs`/`xs` stay pinned at 11px on mobile
+     and the floor, not the multiplier, is what they render. Steps `3xl` and up
+     follow `tailwind.config.ts`'s display values, not Tailwind's defaults.
+     The `min-width: 1024px` block further down still wins on desktop — same
+     layer, same specificity, later source order. */
+  .text-sm  { font-size: 0.8575rem; }
+  .text-base { font-size: 0.98rem; }
+  .text-lg  { font-size: 1.1025rem; }
+  .text-xl  { font-size: 1.225rem; }
+  .text-2xl { font-size: 1.47rem; }
+  .text-3xl { font-size: 1.79144rem; }
+  .text-4xl { font-size: 2.15012rem; }
+  .text-5xl { font-size: 2.8665rem; }
+  .text-6xl { font-size: 3.58288rem; }
+  .text-7xl { font-size: 4.30024rem; }
+
+  /* Same pass for the responsive variants while the desktop block is inactive:
+     `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
+     in landscape and every tablet up to `lg`. */
+  @media (max-width: 1023.98px) {
+    .sm\:text-xs  { font-size: max(0.735rem, 11px); }
+    .sm\:text-sm  { font-size: 0.8575rem; }
+    .sm\:text-lg  { font-size: 1.1025rem; }
+    .sm\:text-xl  { font-size: 1.225rem; }
+    .sm\:text-2xl { font-size: 1.47rem; }
+    .sm\:text-4xl { font-size: 2.15012rem; }
+    .sm\:text-5xl { font-size: 2.8665rem; }
+    .sm\:text-6xl { font-size: 3.58288rem; }
+    .md\:text-lg  { font-size: 1.1025rem; }
+    .md\:text-xl  { font-size: 1.225rem; }
+    .md\:text-2xl { font-size: 1.47rem; }
+    .md\:text-6xl { font-size: 3.58288rem; }
+  }
+
   /* ── Web view type scale ────────────────────────────────────────────────
-     Desktop only, built up over nine requested passes:
-       page, below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02, x1.01 = x1.2182660
-       `text-lg` and up        held, held, x0.98, x0.98, then held        = x0.9604
-       the sidebar             frozen at pass 7, then x1.02 on this pass
-       the sidebar's headings  frozen at pass 6 and held since
+     Desktop only, built up over nine requested passes, then one uniform x0.98
+     pass over every step, every responsive variant, the rail, and body copy:
+       page, below `text-lg`  x1.05, x1.03, x1.02 x4, x1.01, x1.02, x1.01, x0.98 = x1.19390076
+       `text-lg` and up        held, held, x0.98, x0.98, then held, x0.98  = x0.941192
+       the sidebar             frozen at pass 7, x1.02, then x0.98
+       the sidebar's headings  frozen at pass 6, held since, then x0.98
 
      The threshold came from measuring what the named elements are: "Your
      founder journey" is `text-lg`, and the page title and the stat numerals
@@ -1031,10 +1069,12 @@ html {
      `text-2xl` anchor (18.901) -- at the geometric ratio those two imply,
      x1.0574676. `text-2xl` and every display step above it are unchanged to the
      digit, since those are the elements that were named in each pass, and
-     nothing below `text-lg` moves either. As rendered now, smallest first:
+     nothing below `text-lg` moves either. A later requested pass then moved
+     every step, variant, the rail and body copy by a uniform x0.98, so the
+     ladder still ascends. As rendered now, smallest first:
 
-       text-2xs 13.401 | text-xs 13.401 | text-sm 13.986 | body   14.984
-       text-base 15.984 | text-lg 16.902 | text-xl 17.874 | text-2xl 18.901
+       text-2xs 13.133 | text-xs 13.133 | text-sm 13.706 | body   14.685
+       text-base 15.664 | text-lg 16.564 | text-xl 17.516 | text-2xl 18.523
 
      `text-2xs` and `text-xs` still land on the same value: both sit under the
      scaled 11px floor, which is what a floor does rather than a fault. They are
@@ -1049,24 +1089,24 @@ html {
      own parent, so it follows whichever side of the threshold that parent is
      on. */
   @media (min-width: 1024px) {
-    /* ── below the threshold: x1.1251926 ── */
+    /* ── below the threshold: x1.1251926, then x0.98 ── */
     .text-2xs {
-      font-size: max(0.83755788rem, 13.40092686px);
+      font-size: max(0.82080672rem, 13.13290832px);
       line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .text-xs {
-      font-size: max(0.91369956rem, 13.40092686px);
+      font-size: max(0.89542557rem, 13.13290832px);
       line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .text-sm {
-      font-size: 1.06598282rem;
+      font-size: 1.04466316rem;
       line-height: 1.52283260rem;
     }
 
     .text-base {
-      font-size: 1.21826608rem;
+      font-size: 1.19390076rem;
       line-height: 1.82739912rem;
     }
 
@@ -1075,41 +1115,41 @@ html {
        1.4 for `xl`), so the leading travels with the size instead of staying
        pinned to the 1.6807rem both had been sharing. */
     .text-lg {
-      font-size: 1.28827696rem;
+      font-size: 1.26251142rem;
       line-height: 2.00398638rem;
     }
 
     .text-xl {
-      font-size: 1.36231119rem;
+      font-size: 1.33506497rem;
       line-height: 1.90723567rem;
     }
 
-    /* ── the display steps: x0.9604, the anchor and above ── */
+    /* ── the display steps: x0.9604, then x0.98, the anchor and above ── */
     .text-2xl {
-      font-size: 1.4406rem;
+      font-size: 1.411788rem;
       line-height: 1.9208rem;
     }
 
     .text-3xl {
-      font-size: 1.755611rem;
+      font-size: 1.72049878rem;
       line-height: 2.107118rem;
     }
 
     .text-4xl {
-      font-size: 2.107118rem;
+      font-size: 2.06497564rem;
       line-height: 2.341455rem;
     }
 
     .text-5xl {
-      font-size: 2.80917rem;
+      font-size: 2.7529866rem;
     }
 
     .text-6xl {
-      font-size: 3.511222rem;
+      font-size: 3.44099756rem;
     }
 
     .text-7xl {
-      font-size: 4.214235rem;
+      font-size: 4.1299503rem;
     }
 
     /* ── Responsive variants ──────────────────────────────────────────────
@@ -1134,32 +1174,32 @@ html {
        the product actually uses are listed; `typeScaleOrder.test.ts` fails if a
        component starts using one that is missing here. */
     .sm\:text-xs {
-      font-size: max(0.91369956rem, 13.40092686px);
+      font-size: max(0.89542557rem, 13.13290832px);
       line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .sm\:text-sm {
-      font-size: 1.06598282rem;
+      font-size: 1.04466316rem;
       line-height: 1.52283260rem;
     }
 
     .sm\:text-lg {
-      font-size: 1.28827696rem;
+      font-size: 1.26251142rem;
       line-height: 2.00398638rem;
     }
 
     .sm\:text-xl {
-      font-size: 1.36231119rem;
+      font-size: 1.33506497rem;
       line-height: 1.90723567rem;
     }
 
     .sm\:text-2xl {
-      font-size: 1.4406rem;
+      font-size: 1.411788rem;
       line-height: 1.9208rem;
     }
 
     .sm\:text-4xl {
-      font-size: 2.107118rem;
+      font-size: 2.06497564rem;
       line-height: 2.341455rem;
     }
 
@@ -1167,38 +1207,38 @@ html {
        `/themes/alliance`. Line height is left alone -- the display steps carry
        `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
     .sm\:text-5xl {
-      font-size: 2.80917rem;
+      font-size: 2.7529866rem;
     }
 
     .sm\:text-6xl {
-      font-size: 3.511222rem;
+      font-size: 3.44099756rem;
     }
 
     .md\:text-lg {
-      font-size: 1.28827696rem;
+      font-size: 1.26251142rem;
       line-height: 2.00398638rem;
     }
 
     .md\:text-xl {
-      font-size: 1.36231119rem;
+      font-size: 1.33506497rem;
       line-height: 1.90723567rem;
     }
 
     .md\:text-2xl {
-      font-size: 1.4406rem;
+      font-size: 1.411788rem;
       line-height: 1.9208rem;
     }
 
     .md\:text-6xl {
-      font-size: 3.511222rem;
+      font-size: 3.44099756rem;
     }
 
     .lg\:text-6xl {
-      font-size: 3.511222rem;
+      font-size: 3.44099756rem;
     }
 
     .lg\:text-7xl {
-      font-size: 4.214235rem;
+      font-size: 4.1299503rem;
     }
 
     /* The sidebar's uppercase section headings run the other way: they take the
@@ -1215,24 +1255,24 @@ html {
        weight, declared after, or the frozen `aside .text-xs` would capture the
        section headings too. */
     aside .text-2xs {
-      font-size: max(0.82912778rem, 13.26604446px);
+      font-size: max(0.81254522rem, 13.00072357px);
       line-height: max(1.20600404rem, 19.29606467px);
     }
 
     aside .text-xs {
-      font-size: max(0.90450303rem, 13.26604446px);
+      font-size: max(0.88641297rem, 13.00072357px);
       line-height: max(1.20600404rem, 19.29606467px);
     }
 
     aside .text-sm {
-      font-size: 1.05525354rem;
+      font-size: 1.03414847rem;
       line-height: 1.50750505rem;
     }
 
     /* The logo wordmark is `text-base`; the rest are frozen so the rail cannot
        drift if it later uses one of them. */
     aside .text-base {
-      font-size: 1.20600404rem;
+      font-size: 1.18188396rem;
       line-height: 1.80900607rem;
     }
 
@@ -1241,12 +1281,12 @@ html {
        the page's `text-2xl` anchor, which the rail has no override for and so
        falls through to -- ratio x1.0610395. */
     aside .text-lg {
-      font-size: 1.27961792rem;
+      font-size: 1.25402556rem;
       line-height: 1.99051676rem;
     }
 
     aside .text-xl {
-      font-size: 1.35772514rem;
+      font-size: 1.33057064rem;
       line-height: 1.90081520rem;
     }
 
@@ -1282,7 +1322,7 @@ html {
     }
 
     aside .nav-section-label {
-      font-size: max(0.81080055rem, 11.8917414px);
+      font-size: max(0.79458454rem, 11.65390657px);
       line-height: max(1.0810674rem, 17.2970784px);
     }
   }

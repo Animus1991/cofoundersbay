@@ -36,8 +36,73 @@ const PERSON_ALIASES: Array<{ keys: string[]; name: string }> = [
   { keys: ['nikos', 'andreou', 'νίκος', 'νικος'], name: 'Nikos' },
 ];
 
+/**
+ * The analytics windows, longest spelling first so "14 days" is not captured
+ * by "4 days" and "90" is not captured inside "190".
+ */
+const PERIOD_ALIASES: Array<{ keys: string[]; period: string }> = [
+  { keys: ['90 day', '90d', '3 month', '90 ημέρ', '90 ημερ', '3 μήν', '3 μην', 'τρίμην', 'τριμην'], period: '90d' },
+  // 'μήνα', not 'μήν': the shorter stem is inside 'μήνυμα' (message).
+  { keys: ['30 day', '30d', 'last month', 'μήνα', 'μηνα', '30 ημέρ', '30 ημερ'], period: '30d' },
+  { keys: ['14 day', '14d', 'two week', 'fortnight', '14 ημέρ', '14 ημερ', 'δεκαπενθ'], period: '14d' },
+  { keys: ['7 day', '7d', 'last week', 'this week', '7 ημέρ', '7 ημερ', 'εβδομάδ', 'εβδομαδ'], period: '7d' },
+];
+
+const READINESS_DIMENSION_ALIASES: Array<{ keys: string[]; dimension: string }> = [
+  { keys: ['team', 'ομάδ', 'ομαδ'], dimension: 'team' },
+  { keys: ['market', 'αγορά', 'αγορα'], dimension: 'market' },
+  { keys: ['product', 'προϊόν', 'προιον', 'προϊον'], dimension: 'product' },
+  { keys: ['business', 'μοντέλο', 'μοντελο', 'επιχειρηματικ'], dimension: 'business' },
+  { keys: ['funding', 'χρηματοδ', 'επένδυσ', 'επενδυσ'], dimension: 'funding' },
+  { keys: ['execution', 'εκτέλεσ', 'εκτελεσ', 'υλοποίησ', 'υλοποιησ'], dimension: 'execution' },
+];
+
 function includesAny(haystack: string, needles: string[]): boolean {
   return needles.some((n) => haystack.includes(n));
+}
+
+/**
+ * Whether the reader is asking about the screen in front of them.
+ *
+ * Narrow on purpose. A question about the page is one the page's own snapshot
+ * can answer; anything broader belongs to the network tools, and answering it
+ * by describing the current page would be a non-sequitur.
+ *
+ * It lives here rather than in the engine because every other phrase list does
+ * — and because the engine's source is scanned for user-facing prose, where a
+ * list of matching keys reads as untranslated copy.
+ */
+const THIS_PAGE_PHRASES = [
+  'this page', 'this screen', 'what am i looking at', 'what is here', 'what do i see',
+  'where am i', 'what should i do here', 'explain this',
+  'αυτή τη σελίδα', 'αυτη τη σελιδα', 'αυτή η σελίδα', 'αυτη η σελιδα',
+  'τι βλέπω', 'τι βλεπω', 'πού βρίσκομαι', 'που βρισκομαι',
+  'τι κάνω εδώ', 'τι κανω εδω', 'τι είναι αυτό', 'τι ειναι αυτο',
+];
+
+export function asksAboutThisPage(message: string): boolean {
+  return includesAny(message.toLowerCase(), THIS_PAGE_PHRASES);
+}
+
+export function detectAnalyticsPeriod(message: string): string | undefined {
+  return PERIOD_ALIASES.find((alias) => includesAny(message, alias.keys))?.period;
+}
+
+export function detectReadinessDimension(message: string): string | undefined {
+  return READINESS_DIMENSION_ALIASES.find((alias) => includesAny(message, alias.keys))?.dimension;
+}
+
+/**
+ * Pulls a workspace name out of quotes.
+ *
+ * Only quoted, deliberately. Guessing a name from free prose would create
+ * something the user has to go and rename, and the engine's "what should I
+ * call it?" is a better answer than a wrong name. Handles the curly quotes a
+ * phone keyboard produces as well as the straight ones a desktop does.
+ */
+export function detectQuotedName(rawMessage: string): string | undefined {
+  const match = rawMessage.match(/["“'«]([^"”'»]{1,100})["”'»]/);
+  return match?.[1].trim() || undefined;
 }
 
 export function detectLocation(message: string): string | undefined {
@@ -190,6 +255,43 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     'στειλε μηνυμα',
   ]);
 
+  // Analytics, readiness and workspace intents. Each needs both an object and
+  // a verb before it plans anything: "readiness" alone is a question about a
+  // score, not a request to change one.
+  const wantsPeriod =
+    includesAny(message, ['analytic', 'metric', 'αναλυτικ', 'μετρήσ', 'μετρησ', 'στατιστικ']) &&
+    detectAnalyticsPeriod(message) !== undefined;
+
+  const wantsWorkspace = includesAny(message, [
+    'create a workspace',
+    'create workspace',
+    'new workspace',
+    'start a workspace',
+    'set up a workspace',
+    'δημιούργησε χώρο',
+    'δημιουργησε χωρο',
+    'νέο χώρο εργασίας',
+    'νεο χωρο εργασιας',
+    'φτιάξε χώρο',
+    'φτιαξε χωρο',
+  ]);
+
+  const wantsCriterion =
+    includesAny(message, ['readiness', 'criteri', 'ετοιμότητ', 'ετοιμοτητ', 'κριτήρι', 'κριτηρι']) &&
+    includesAny(message, [
+      'tick',
+      'check off',
+      'mark',
+      'complete',
+      'done',
+      'τσέκαρε',
+      'τσεκαρε',
+      'σημείωσε',
+      'σημειωσε',
+      'ολοκλήρωσ',
+      'ολοκληρωσ',
+    ]);
+
   if (wantsGraph) add('get_graph');
 
   if (wantsSearch) {
@@ -233,6 +335,24 @@ export function planCopilotTools(rawMessage: string): PlannedTool[] {
     if (person && !tools.some((t) => t.name === 'search_people')) {
       add('search_people', { q: person });
     }
+  }
+
+  if (wantsPeriod) {
+    const period = detectAnalyticsPeriod(message);
+    if (period) add('analytics_set_period', { period });
+  }
+
+  if (wantsWorkspace) {
+    const name = detectQuotedName(rawMessage);
+    add('workspace_create', name ? { name } : {});
+  }
+
+  if (wantsCriterion) {
+    const dimension = detectReadinessDimension(message);
+    // Without a criterion id there is nothing to write, and one cannot be
+    // guessed from prose — the engine turns this into a question naming the
+    // six dimensions rather than a half-formed write.
+    add('readiness_tick_criterion', dimension ? { dimension } : {});
   }
 
   if (nav) add('navigate', { href: nav.href, label: nav.label });

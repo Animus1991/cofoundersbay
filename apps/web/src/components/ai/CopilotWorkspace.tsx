@@ -22,6 +22,7 @@ import { usePageContext } from '@/hooks/usePageContext';
 import { ActionCard } from '@/components/ai/ActionCard';
 import { CitationChip } from '@/components/ai/CitationChip';
 import type { CopilotAction } from '@/lib/copilot-types';
+import { getActionSpec } from '@/lib/action-registry';
 import { SanitizedHtml } from '@/components/common/SanitizedHtml';
 
 const STARTERS = [
@@ -129,7 +130,12 @@ export function CopilotWorkspace({
 
   const handleConfirm = async (action: CopilotAction) => {
     const result = await chat.confirmAction(action);
-    if (result?.href && (action.tool === 'navigate' || action.tool === 'start_or_send_message')) {
+    // Whether confirming takes you somewhere is declared with the action, not
+    // listed here. This read the two tool ids that existed when it was written,
+    // so any capability added afterwards returned an href this component threw
+    // away. `shortlist_add` still returns `/shortlist` and still leaves you
+    // where you are, because it declares `navigatesOnSuccess` false.
+    if (result?.href && getActionSpec(action.tool)?.navigatesOnSuccess) {
       router.push(result.href);
     }
   };

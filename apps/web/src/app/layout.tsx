@@ -58,6 +58,7 @@ import { PopupChatProvider } from '@/contexts/PopupChatContext';
 import { MessagingProvider } from '@/contexts/MessagingContext';
 import { TenantProvider } from '@/components/providers/TenantContext';
 import { DemoDataProvider } from '@/contexts/DemoDataContext';
+import { PageSnapshotProvider } from '@/contexts/PageSnapshotContext';
 import { ApiHealthProbe } from '@/components/providers/ApiHealthProbe';
 import { PostHogProvider } from '@/components/providers/PostHogProvider';
 import { LanguagePreferenceProvider } from '@/lib/i18n/LanguagePreferenceContext';
@@ -149,12 +150,18 @@ export default function RootLayout({
                                   <RoleTheme>
                                     <PreviewSessionGuard />
                                     <DomI18n>
+                                      {/* Above both the page and the floating
+                                          assistant, because the page writes
+                                          what is on screen and the assistant
+                                          reads it. */}
+                                      <PageSnapshotProvider>
                                       <OfflineBanner />
                                       {children}
                                       <GlobalFloatingUi />
                                       <Suspense fallback={null}>
                                         <PostHogProvider />
                                       </Suspense>
+                                      </PageSnapshotProvider>
                                     </DomI18n>
                                   </RoleTheme>
                                 </DemoDataProvider>
