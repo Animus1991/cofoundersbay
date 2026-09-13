@@ -11,6 +11,9 @@ import {
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import Link from 'next/link';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
+import { addComposedPost, readComposedPosts } from '@/lib/feed-demo';
+import { RelativeTime } from '@/components/common/LocalTime';
 import { BilingualText } from '@/components/common/BilingualText';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -28,7 +31,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
 import { isPreviewDemo } from '@/lib/preview-demo';
 import { SampleDataNotice } from '@/components/common/SampleDataNotice';
 import {
@@ -214,10 +216,25 @@ function CreatePostCard({ onPost }: { onPost: (content: string, type: PostType) 
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm">
+                  {/* An image and a link need somewhere to upload to, and the
+                      feed has no server yet. Disabled and labelled, rather
+                      than looking available and doing nothing. */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    aria-label={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
+                    title={bilingualAria('Attach an image — not available yet', 'Επισύναψη εικόνας — μη διαθέσιμο ακόμη')}
+                  >
                     <ImageIcon className="icon-sm" />
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    aria-label={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
+                    title={bilingualAria('Attach a link — not available yet', 'Επισύναψη συνδέσμου — μη διαθέσιμο ακόμη')}
+                  >
                     <Link2 className="icon-sm" />
                   </Button>
                   <Button
@@ -272,7 +289,6 @@ function PostCard({
     .join('')
     .toUpperCase();
 
-  const timeAgo = formatDistanceToNow(new Date(post.createdAt), { addSuffix: true });
 
   return (
     <Card className="overflow-hidden shadow-sm border-border/50 hover:shadow-md transition-shadow">
@@ -305,7 +321,12 @@ function PostCard({
                 )}
               </div>
               <p className="text-sm text-muted-foreground">{post.author.headline}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{timeAgo}</p>
+              {/* Computed in an effect, not during render: the server's
+                  "now" is not the browser's, and the two disagreeing is
+                  what made this page fail hydration on every load. */}
+              <p className="text-xs text-muted-foreground mt-0.5">
+                <RelativeTime value={post.createdAt} />
+              </p>
               {post.relevanceReasons && post.relevanceReasons.length > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   <span className="font-medium">Why you're seeing this:</span> {post.relevanceReasons.join(', ')}
@@ -552,9 +573,17 @@ export default function FeedPage() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Whatever the reader composed this session leads; the feed follows.
+  const [composed, setComposed] = useState<FeedPost[]>([]);
+  useEffect(() => {
+    setComposed(readComposedPosts());
+  }, []);
+
   const feedData = feedPages
-    ? { posts: feedPages.pages.flatMap((page) => page?.posts ?? []) }
-    : undefined;
+    ? { posts: [...composed, ...feedPages.pages.flatMap((page) => page?.posts ?? [])] }
+    : composed.length
+      ? { posts: composed }
+      : undefined;
 
   // Fetch feed preferences
   const {
@@ -597,9 +626,26 @@ export default function FeedPage() {
       : [];
 
   const handlePost = (content: string, type: PostType) => {
-    // In a real implementation, this would create a new post via API
-    success('Post published!');
-    refetchFeed();
+    // There is no feed module in the API — `/api/feed/*` is served by the
+    // browser's demo shim alone — so this used to toast "Post published!" over
+    // a post that went nowhere. It now goes somewhere the reader can see, for
+    // the session, the way the fundraising and readiness demos already work.
+    setComposed(addComposedPost({
+      content,
+      type: type as FeedPost['type'],
+      author: {
+        id: 'me',
+        displayName: 'You',
+        headline: undefined,
+      },
+    }));
+    success(
+      bilingualInline('Posted', 'Δημοσιεύτηκε'),
+      bilingualInline(
+        'Kept for this session — the feed has no server to store it yet.',
+        'Κρατείται για αυτή τη συνεδρία — το feed δεν έχει ακόμη διακομιστή να το αποθηκεύσει.',
+      ),
+    );
   };
 
   const handleLike = (postId: string, isCurrentlyLiked: boolean) => {

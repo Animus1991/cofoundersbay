@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { BilingualText } from '@/components/common/BilingualText';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Briefcase,
@@ -194,8 +195,21 @@ function OpportunityCard({ opportunity }: { opportunity: OpportunityItem }) {
               </a>
             </Button>
           ) : (
-            <Button size="sm" className="gap-1.5 text-xs">
-              Apply Now <ArrowRight className="icon-sm" />
+            /* No link was posted, and there is no apply endpoint to call — so
+               the button said "Apply Now" and did nothing. The assistant can
+               actually draft the approach from what this listing says, and the
+               label now names that rather than promising a form. */
+            <Button size="sm" variant="outline" className="gap-1.5 text-xs" asChild>
+              <Link
+                href={`/ai?q=${encodeURIComponent(
+                  `Draft my approach for this opportunity: "${opportunity.title}"` +
+                    `${opportunity.company ? ` at ${opportunity.company}` : ''}. ` +
+                    `Type: ${cfg.label}. ${opportunity.description ?? ''}`,
+                )}`}
+              >
+                <BilingualText en="Draft an approach" el="Σύνταξη προσέγγισης" compact />
+                <ArrowRight className="icon-sm" />
+              </Link>
             </Button>
           )}
           <Button
@@ -257,9 +271,19 @@ function JobCard({ job }: { job: JobPostingView }) {
         </div>
 
         <div className="flex gap-2 pt-1">
-          <Button size="sm" className="gap-1.5 text-xs">
-            Apply Now
-            <ArrowRight className="icon-sm" />
+          {/* Same here: the job feed has no apply route and the posting
+              carries no creator id to message, so the honest useful action is
+              the one the assistant can perform. */}
+          <Button size="sm" className="gap-1.5 text-xs" asChild>
+            <Link
+              href={`/ai?q=${encodeURIComponent(
+                `Draft an application for the role "${job.title}" posted by ${job.creator.displayName}. ` +
+                  'Use my profile and tell me what is missing before I send it.',
+              )}`}
+            >
+              <BilingualText en="Draft application" el="Σύνταξη αίτησης" compact />
+              <ArrowRight className="icon-sm" />
+            </Link>
           </Button>
           <Button
             variant="outline"

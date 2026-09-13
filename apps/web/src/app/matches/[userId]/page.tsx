@@ -7,12 +7,21 @@ import Link from 'next/link';
 import {
   ArrowLeft, MoreVertical, AlertTriangle, Bookmark, Send,
   Clock, TrendingUp, CheckCircle, Info, Brain, Zap, MessageCircle, ExternalLink,
+  Link as LinkIcon, UserRound,
 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { BilingualText } from '@/components/common/BilingualText';
+import { bilingualAria, bilingualInline } from '@/lib/i18n/format';
 import {
   getMatchVs, recordMatchFeedback, recordBehavioralSignal, sendConnectionRequest,
   saveToShortlist, removeFromShortlist, getShortlistIds,
@@ -365,12 +374,47 @@ export default function MatchDetailPage() {
             style={{ fontFamily: 'var(--font-mono)' }}>
             Compatibility Analysis
           </span>
-          <button
-            className="p-1.5 -mr-1.5 rounded-lg hover:bg-muted transition-colors"
-            aria-label="More options"
-          >
-            <MoreVertical className="icon-md text-foreground" />
-          </button>
+          {/* This offered "More options" and had no menu behind it. The two
+              things this screen can actually do beyond the buttons already on
+              it are: hand someone the link, and open the full profile. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="p-1.5 -mr-1.5 rounded-lg transition-colors hover:bg-muted focus-ring"
+                aria-label={bilingualAria('More options', 'Περισσότερες επιλογές')}
+              >
+                <MoreVertical className="icon-md text-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    addToast({
+                      type: 'success',
+                      title: bilingualInline('Link copied', 'Ο σύνδεσμος αντιγράφηκε'),
+                    });
+                  } catch {
+                    addToast({
+                      type: 'error',
+                      title: bilingualInline('Could not copy the link', 'Δεν αντιγράφηκε ο σύνδεσμος'),
+                    });
+                  }
+                }}
+              >
+                <LinkIcon className="mr-2 icon-sm" />
+                <BilingualText en="Copy link" el="Αντιγραφή συνδέσμου" compact />
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href={`/profiles/${targetUserId}`}>
+                  <UserRound className="mr-2 icon-sm" />
+                  <BilingualText en="Open full profile" el="Άνοιγμα πλήρους προφίλ" compact />
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* ── Hero section ───────────────────────────────────────────────────── */}

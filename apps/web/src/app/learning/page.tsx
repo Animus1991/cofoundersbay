@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Search, BookOpen, Video, FileText, Award, Clock, TrendingUp, Play, ExternalLink, Sparkles, Flame, Bookmark, CheckCircle2, ChevronRight, Target, Users, BarChart3 } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
+import { BilingualText } from '@/components/common/BilingualText';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -409,9 +410,13 @@ export default function LearningPage() {
               <Target className="icon-sm text-primary-accessible" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Learning Paths</h2>
             </div>
-            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-muted-foreground">
-              View all <ChevronRight className="icon-sm" />
-            </Button>
+            {/* "View all" had nothing to reveal — the grid below already
+                renders every path. A count says something true in the space
+                the promise was occupying. */}
+            <span className="text-xs tabular-nums text-muted-foreground">
+              {LEARNING_PATHS.length}{' '}
+              <BilingualText en="paths" el="μονοπάτια" compact />
+            </span>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {LEARNING_PATHS.map((path) => <LearningPathCard key={path.id} path={path} />)}
