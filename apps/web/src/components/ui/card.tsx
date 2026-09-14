@@ -17,7 +17,11 @@ Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col gap-1.5 card-comfortable', className)} {...props} />
+    /* `card-header` carries one thing: the seam to the body below. It cannot
+       live at the call site — `.card-comfortable` is declared after Tailwind's
+       own utilities in the same layer, so every `pb-2`/`pb-3` passed here has
+       been silently losing to it at every width. See globals.css. */
+    <div ref={ref} className={cn('flex flex-col gap-1.5 card-comfortable card-header', className)} {...props} />
   ),
 );
 CardHeader.displayName = 'CardHeader';
@@ -51,3 +55,4 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 CardFooter.displayName = 'CardFooter';
 
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+

@@ -617,21 +617,14 @@ export default function FounderDashboardContent() {
                 {DEMO_MILESTONES.map((m) => <MilestoneRow key={m.id} milestone={m} />)}
               </CardContent>
             </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="min-w-0 space-y-6">
-
-            {/* Behavioral Nudge */}
-            <BehavioralNudge surface="dashboard" />
-
-            {/* XP Progress Widget */}
-            <XPProgressWidget />
-
-            {/* Badges Widget */}
-            <BadgesWidget />
-
-            {/* Profile Strength */}
+            {/* Profile strength — moved here from the sidebar.
+                The two columns were 1663px and 2169px, so the wider,
+                more important one ended 506px early and the page had a
+                void down its left side. This card is the one sidebar
+                item that is a task rather than a readout, so it is the
+                one that belongs in the main column; moving it leaves the
+                columns within ~25px of each other and keeps XP and
+                Badges together where they belong. */}
             <Card className="rounded-xl">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -647,7 +640,11 @@ export default function FounderDashboardContent() {
                   <span className={cn('font-bold', profilePct >= 80 ? STATUS.success.icon : STATUS.warning.icon)}>{profilePct}%</span>
                 </div>
                 <Progress value={profilePct} className="h-2" />
-                <div className="space-y-2">
+                {/* Two columns from `sm`: this card moved out of the 381px
+                    sidebar into the 786px main column, where four checklist
+                    rows stacked single-file would be four short lines with
+                    half the card empty beside them. */}
+                <div className="space-y-2 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-2 sm:space-y-0">
                   {[
                     { labelEn: 'Photo & headline', labelEl: 'Φωτογραφία & τίτλος', done: true },
                     { labelEn: 'Skills (5+)', labelEl: 'Δεξιότητες (5+)', done: profilePct > 50 },
@@ -672,6 +669,19 @@ export default function FounderDashboardContent() {
                 )}
               </CardContent>
             </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="min-w-0 space-y-6">
+
+            {/* Behavioral Nudge */}
+            <BehavioralNudge surface="dashboard" />
+
+            {/* XP Progress Widget */}
+            <XPProgressWidget />
+
+            {/* Badges Widget */}
+            <BadgesWidget />
 
             {/* Quick Actions Grid */}
             <Card className="rounded-xl">

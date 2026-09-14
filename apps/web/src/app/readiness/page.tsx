@@ -498,19 +498,30 @@ function ReadinessRadarChart({ dimensions }: { dimensions: DimData[] }) {
     benchmark: 65,
   }));
   return (
-    <Card className="rounded-xl">
+    /* The radar sits beside a two-card column that runs 275px taller, so the
+       row stretched this cell and left the space under the card empty. Filling
+       it is not a matter of padding: the radar is the one thing on the page
+       that reads better at size, so the height goes to the chart. */
+    <Card className="flex h-full flex-col rounded-xl">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm">
           <CfbGlyph name="chart" className="icon-sm text-primary-accessible" />
           <BilingualText en={readinessEn('readiness_radar')} el={readinessEl('readiness_radar')} compact />
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ReadinessRadarChartInner
-          data={data}
-          scoreName={primary === 'el' ? readinessEl('your_score') : readinessEn('your_score')}
-          benchmarkName={primary === 'el' ? readinessEl('benchmark') : readinessEn('benchmark')}
-        />
+      <CardContent className="flex flex-1 flex-col">
+        {/* `flex-1` takes whatever the row gives; `min-h-[280px]` is the floor,
+            and the one that matters on a phone, where the cell does not stretch
+            and `h-full` resolves to auto. (`basis-[280px]` would be dead here —
+            `flex-1` is shorthand for `flex: 1 1 0%` and resets the basis.) */}
+        <div className="min-h-[280px] flex-1">
+          <ReadinessRadarChartInner
+            height="100%"
+            data={data}
+            scoreName={primary === 'el' ? readinessEl('your_score') : readinessEn('your_score')}
+            benchmarkName={primary === 'el' ? readinessEl('benchmark') : readinessEn('benchmark')}
+          />
+        </div>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-primary/60" /><BilingualText en={readinessEn('your_score')} el={readinessEl('your_score')} compact /></span>
           <span className="flex items-center gap-1.5"><span className="inline-block h-2 w-4 rounded-full bg-muted-foreground/30" /><BilingualText en={readinessEn('benchmark')} el={readinessEl('benchmark')} compact /></span>

@@ -392,11 +392,11 @@ html {
 
   @media (max-width: 639.98px) {
     h1.text-base, h2.text-base, h3.text-base { font-size: 0.9506rem; }
-    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.069425rem; }
-    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.18825rem; }
-    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.4259rem; }
-    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.7376968rem; }
-    h1.text-4xl,  h2.text-4xl                { font-size: 2.0856164rem; }
+    h1.text-lg,   h2.text-lg,   h3.text-lg   { font-size: 1.04803650rem; }
+    h1.text-xl,   h2.text-xl,   h3.text-xl   { font-size: 1.16448500rem; }
+    h1.text-2xl,  h2.text-2xl,  h3.text-2xl  { font-size: 1.39738200rem; }
+    h1.text-3xl,  h2.text-3xl,  h3.text-3xl  { font-size: 1.70294286rem; }
+    h1.text-4xl,  h2.text-4xl                { font-size: 2.04390407rem; }
   }
 
   body {
@@ -1015,23 +1015,26 @@ html {
     line-height: max(1rem, 16px);
   }
 
-  /* ── Phone/tablet type scale: −2% pass ─────────────────────────────────────
+  /* ── Phone/tablet type scale: −2% pass, then −2% again on the display half ──
      Every step below `lg` is the class's own size x0.98; the px floors keep the
      documented 11px/16px minimums, so `2xs`/`xs` stay pinned at 11px on mobile
      and the floor, not the multiplier, is what they render. Steps `3xl` and up
      follow `tailwind.config.ts`'s display values, not Tailwind's defaults.
+     `text-lg` and up then took a second x0.98 — see the web view block below
+     for what that pass was for; the phone scale takes it too so a stat card
+     does not change proportion when the viewport crosses `lg`.
      The `min-width: 1024px` block further down still wins on desktop — same
      layer, same specificity, later source order. */
   .text-sm  { font-size: 0.8575rem; }
   .text-base { font-size: 0.98rem; }
-  .text-lg  { font-size: 1.1025rem; }
-  .text-xl  { font-size: 1.225rem; }
-  .text-2xl { font-size: 1.47rem; }
-  .text-3xl { font-size: 1.79144rem; }
-  .text-4xl { font-size: 2.15012rem; }
-  .text-5xl { font-size: 2.8665rem; }
-  .text-6xl { font-size: 3.58288rem; }
-  .text-7xl { font-size: 4.30024rem; }
+  .text-lg  { font-size: 1.08045000rem; }
+  .text-xl  { font-size: 1.20050000rem; }
+  .text-2xl { font-size: 1.44060000rem; }
+  .text-3xl { font-size: 1.75561120rem; }
+  .text-4xl { font-size: 2.10711760rem; }
+  .text-5xl { font-size: 2.80917000rem; }
+  .text-6xl { font-size: 3.51122240rem; }
+  .text-7xl { font-size: 4.21423520rem; }
 
   /* Same pass for the responsive variants while the desktop block is inactive:
      `sm:`/`md:` utilities match at 640px+ / 768px+, which still includes phones
@@ -1039,16 +1042,16 @@ html {
   @media (max-width: 1023.98px) {
     .sm\:text-xs  { font-size: max(0.735rem, 11px); }
     .sm\:text-sm  { font-size: 0.8575rem; }
-    .sm\:text-lg  { font-size: 1.1025rem; }
-    .sm\:text-xl  { font-size: 1.225rem; }
-    .sm\:text-2xl { font-size: 1.47rem; }
-    .sm\:text-4xl { font-size: 2.15012rem; }
-    .sm\:text-5xl { font-size: 2.8665rem; }
-    .sm\:text-6xl { font-size: 3.58288rem; }
-    .md\:text-lg  { font-size: 1.1025rem; }
-    .md\:text-xl  { font-size: 1.225rem; }
-    .md\:text-2xl { font-size: 1.47rem; }
-    .md\:text-6xl { font-size: 3.58288rem; }
+    .sm\:text-lg  { font-size: 1.08045000rem; }
+    .sm\:text-xl  { font-size: 1.20050000rem; }
+    .sm\:text-2xl { font-size: 1.44060000rem; }
+    .sm\:text-4xl { font-size: 2.10711760rem; }
+    .sm\:text-5xl { font-size: 2.80917000rem; }
+    .sm\:text-6xl { font-size: 3.51122240rem; }
+    .md\:text-lg  { font-size: 1.08045000rem; }
+    .md\:text-xl  { font-size: 1.20050000rem; }
+    .md\:text-2xl { font-size: 1.44060000rem; }
+    .md\:text-6xl { font-size: 3.51122240rem; }
   }
 
   /* ── Web view type scale ────────────────────────────────────────────────
@@ -1086,7 +1089,17 @@ html {
      ladder still ascends. As rendered now, smallest first:
 
        text-2xs 13.133 | text-xs 13.133 | text-sm 13.706 | body   14.685
-       text-base 15.664 | text-lg 16.564 | text-xl 17.516 | text-2xl 18.523
+       text-base 15.664 | text-lg 16.233 | text-xl 17.166 | text-2xl 18.152
+
+     The display half — `text-lg` and up, every variant, and the `h1/h2/h3`
+     overrides on phones — then took one more x0.98. The request named the stat
+     pairs ("24% Ολοκλήρωση", "42% Ετοιμότητα", "0 Ολοκληρωμένα",
+     "1 Συνεργάτες"), whose numerals are `text-xl sm:text-2xl` and whose labels
+     are `text-2xs`; 187 call sites use `text-xl font-bold`, 71 use `text-2xl`,
+     38 use `text-3xl`, so the only way to reach every one of them without
+     omission is the scale itself. Body copy and the two smallest steps stay
+     where they are, which also narrows the numeral-to-label ratio rather than
+     shifting the whole page down with it.
 
      `text-2xs` and `text-xs` still land on the same value: both sit under the
      scaled 11px floor, which is what a floor does rather than a fault. They are
@@ -1127,41 +1140,41 @@ html {
        1.4 for `xl`), so the leading travels with the size instead of staying
        pinned to the 1.6807rem both had been sharing. */
     .text-lg {
-      font-size: 1.26251142rem;
-      line-height: 2.00398638rem;
+      font-size: 1.23726119rem;
+      line-height: 1.96390665rem;
     }
 
     .text-xl {
-      font-size: 1.33506497rem;
-      line-height: 1.90723567rem;
+      font-size: 1.30836367rem;
+      line-height: 1.86909096rem;
     }
 
     /* ── the display steps: x0.9604, then x0.98, the anchor and above ── */
     .text-2xl {
-      font-size: 1.411788rem;
-      line-height: 1.9208rem;
+      font-size: 1.38355224rem;
+      line-height: 1.88238400rem;
     }
 
     .text-3xl {
-      font-size: 1.72049878rem;
-      line-height: 2.107118rem;
+      font-size: 1.68608880rem;
+      line-height: 2.06497564rem;
     }
 
     .text-4xl {
-      font-size: 2.06497564rem;
-      line-height: 2.341455rem;
+      font-size: 2.02367613rem;
+      line-height: 2.29462590rem;
     }
 
     .text-5xl {
-      font-size: 2.7529866rem;
+      font-size: 2.69792687rem;
     }
 
     .text-6xl {
-      font-size: 3.44099756rem;
+      font-size: 3.37217761rem;
     }
 
     .text-7xl {
-      font-size: 4.1299503rem;
+      font-size: 4.04735129rem;
     }
 
     /* ── Responsive variants ──────────────────────────────────────────────
@@ -1196,61 +1209,69 @@ html {
     }
 
     .sm\:text-lg {
-      font-size: 1.26251142rem;
-      line-height: 2.00398638rem;
+      font-size: 1.23726119rem;
+      line-height: 1.96390665rem;
     }
 
     .sm\:text-xl {
-      font-size: 1.33506497rem;
-      line-height: 1.90723567rem;
+      font-size: 1.30836367rem;
+      line-height: 1.86909096rem;
     }
 
     .sm\:text-2xl {
-      font-size: 1.411788rem;
-      line-height: 1.9208rem;
+      font-size: 1.38355224rem;
+      line-height: 1.88238400rem;
     }
 
     .sm\:text-4xl {
-      font-size: 2.06497564rem;
-      line-height: 2.341455rem;
+      font-size: 2.02367613rem;
+      line-height: 2.29462590rem;
     }
 
     /* Marketing hero sizes: `/` and `/t/[slug]` headlines, `/pricing`,
        `/themes/alliance`. Line height is left alone -- the display steps carry
        `lineHeight: '1'` from `tailwind.config.ts`, not a rem value. */
     .sm\:text-5xl {
-      font-size: 2.7529866rem;
+      font-size: 2.69792687rem;
     }
 
     .sm\:text-6xl {
-      font-size: 3.44099756rem;
+      font-size: 3.37217761rem;
     }
 
     .md\:text-lg {
-      font-size: 1.26251142rem;
-      line-height: 2.00398638rem;
+      font-size: 1.23726119rem;
+      line-height: 1.96390665rem;
     }
 
     .md\:text-xl {
-      font-size: 1.33506497rem;
-      line-height: 1.90723567rem;
+      font-size: 1.30836367rem;
+      line-height: 1.86909096rem;
     }
 
     .md\:text-2xl {
-      font-size: 1.411788rem;
-      line-height: 1.9208rem;
+      font-size: 1.38355224rem;
+      line-height: 1.88238400rem;
     }
 
     .md\:text-6xl {
-      font-size: 3.44099756rem;
+      font-size: 3.37217761rem;
+    }
+
+    /* `lg:text-xs` — the Network Velocity labels, which step up from `text-2xs`
+       when that card stacks into rows at `lg` and has the width for it. Takes
+       the same value as the unprefixed step, declared after it so it wins. */
+    .lg\:text-xs {
+      font-size: max(0.89542557rem, 13.13290832px);
+      line-height: max(1.21826608rem, 19.49225726px);
     }
 
     .lg\:text-6xl {
-      font-size: 3.44099756rem;
+      font-size: 3.37217761rem;
     }
 
     .lg\:text-7xl {
-      font-size: 4.1299503rem;
+      font-size: 4.04735129rem;
     }
 
     /* The sidebar's uppercase section headings run the other way: they take the
@@ -1507,6 +1528,31 @@ html {
   .card-compact { @apply p-3 sm:p-4; }      /* Compact cards - lists, dense info */
   .card-comfortable { @apply p-4 sm:p-6; }  /* Comfortable cards - default */
 
+  /* ── The seam under a card heading ──
+     `CardContent` carries `pt-0`, so the whole distance from a card's title to
+     its first line of body is this one value: the header's bottom padding. It
+     was the card's full padding — 24px above the title and 24px below it — and
+     equal space on both sides is what makes a heading read as floating between
+     two blocks instead of belonging to the one under it. Proximity is the only
+     thing marking that ownership, so the space below has to be the smaller of
+     the two.
+
+     Two thirds: 16px under 24px of padding, 12px under 16px. Call sites cannot
+     express this — the 23 headers on the founder pages ask for `pb-2`, `pb-3`
+     or nothing and every one of them rendered 24px, because `.card-comfortable`
+     above is declared after Tailwind's `pb-*` in the same layer and wins on
+     source order. Stated here, once, it is the same distance on every card in
+     the product.
+
+     Two classes, not one: `p-6`/`sm:p-6` at a call site carries (0,1,0) and a
+     `sm:` variant lands late enough in the sheet to beat a single-class rule.
+     (0,2,0) settles it for good. A card that genuinely needs a different seam
+     asks with `!pb-…`, which is the honest way to say "this one is special". */
+  .card-comfortable.card-header { padding-bottom: 12px; }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header { padding-bottom: 16px; }
+  }
+
   /* ── The same padding, in the pixels it claims ──
      `p-6` is 24px everywhere but the desktop app, where the 82% root renders
      it 19.68px — so the roomier desktop rhythm this comment describes was the
@@ -1518,6 +1564,7 @@ html {
   @media (min-width: 1024px) {
     .card-comfortable { padding: 24px; }
     .card-compact { padding: 16px; }
+    .card-comfortable.card-header { padding-bottom: 16px; }
 
     .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 16px; }
     .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px; }
@@ -1724,6 +1771,17 @@ html {
   @media (min-width: 1024px) {
     .card-comfortable {
       padding: 28px;
+    }
+  }
+  /* The seam, restated for this theme for the same reason the padding is: these
+     rules are unlayered and carry (0,2,0), so the `.card-header` rule in the
+     utilities layer cannot reach a card inside it. Two thirds again. */
+  .card-comfortable.card-header {
+    padding-bottom: 14px;
+  }
+  @media (min-width: 640px) {
+    .card-comfortable.card-header {
+      padding-bottom: 18px;
     }
   }
 

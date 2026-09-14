@@ -456,8 +456,13 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          {/* Main content column */}
-          <div className="space-y-6">
+          {/* Main content column.
+              A flex column from `lg` so the last card can take the slack: the
+              sidebar runs 315px longer than this column, which left a void down
+              the middle of the page. The card that absorbs it is the portfolio
+              one, whose content is an empty state — the one kind of content
+              that is *better* with room around it than cramped. */}
+          <div className="space-y-6 lg:flex lg:flex-col">
             {/* Bio */}
             <Card className="animate-fade-in stagger-1 shadow-sm border-border/50">
               <CardHeader className="pb-3 border-b border-border/50">
@@ -604,7 +609,7 @@ export default function ProfilePage() {
           )}
 
           {/* Portfolio placeholder */}
-          <Card className="animate-fade-in shadow-sm border-border/50">
+          <Card className="animate-fade-in shadow-sm border-border/50 lg:flex lg:flex-1 lg:flex-col">
             <CardHeader className="pb-3 border-b border-border/50">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
@@ -618,8 +623,8 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-5">
-              <div className="flex flex-col items-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60">
+            <CardContent className="pt-5 lg:flex lg:flex-1 lg:flex-col">
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center rounded-xl bg-secondary/10 border border-dashed border-border/60 lg:flex-1">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-accessible">
                   <FolderOpen className="icon-lg" />
                 </div>

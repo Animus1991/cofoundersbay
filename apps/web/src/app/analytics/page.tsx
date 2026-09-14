@@ -181,8 +181,11 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
     glyph: m.glyph,
   }));
   return (
-    <Card className="min-w-0 rounded-xl border-primary/20 bg-primary/[0.03]">
-      <CardContent className="p-4 sm:p-5">
+    /* `h-full` + a flex column: this card shares a grid row with the funnel,
+       which is the taller of the two. The row stretched the cell and the card
+       kept its natural height, leaving 122px of empty page under it. */
+    <Card className="flex h-full min-w-0 flex-col rounded-xl border-primary/20 bg-primary/[0.03]">
+      <CardContent className="flex flex-1 flex-col p-4 sm:p-5">
         <div className="mb-4 flex min-w-0 items-center gap-2.5">
           <CfbGlyph name="spark" className="icon-sm shrink-0 text-primary-accessible" />
           <span className="min-w-0 truncate text-sm font-semibold">
@@ -192,22 +195,31 @@ function NetworkVelocity({ metrics }: { metrics: AnalyticsMetric[] }) {
             <BilingualText en={analyticsEn('vs_prev')} el={analyticsEl('vs_prev')} compact />
           </Badge>
         </div>
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        {/* Two layouts for two shapes of box. Full width on a phone, three
+            across reads fine. In the third of a row this card occupies from
+            `lg`, three columns are about 110px each — too narrow for
+            "Μηνύματα που στάλθηκαν", which is why it needed `wrap` — and they
+            filled a third of the height the row gives us. Stacked, each metric
+            takes a full line, the label stops wrapping, and the three rows
+            divide the height between them, so the card ends where the row
+            ends. */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 lg:flex lg:flex-1 lg:flex-col lg:gap-0 lg:divide-y lg:divide-primary/10">
           {items.map((item) => (
-            <div key={item.label} className="min-w-0 text-center">
-              <div className="mx-auto mb-1.5 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible">
+            <div
+              key={item.label}
+              className="min-w-0 text-center lg:flex lg:flex-1 lg:items-center lg:gap-3 lg:text-left"
+            >
+              <div className="mx-auto mb-1.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary-accessible lg:mx-0 lg:mb-0">
                 <CfbGlyph name={item.glyph} className="icon-sm" />
               </div>
-              <p className={cn('text-xs font-bold',
+              <p className={cn('text-xs font-bold tabular-nums lg:order-3 lg:shrink-0',
                 item.changeType === 'increase' ? TREND.up
                 : item.changeType === 'decrease' ? TREND.down
                 : TREND.flat
               )}>
                 {item.change === null ? '—' : `${item.changeType === 'increase' ? '+' : item.changeType === 'decrease' ? '-' : ''}${Math.abs(item.change)}%`}
               </p>
-              <p className="mt-0.5 text-2xs leading-tight text-muted-foreground">
-                {/* Three columns in a narrow card: "Μηνύματα που στάλθηκαν"
-                    has nowhere to truncate to, so it wraps. */}
+              <p className="mt-0.5 text-2xs leading-tight text-muted-foreground lg:order-2 lg:mt-0 lg:min-w-0 lg:flex-1 lg:text-xs">
                 <BilingualText en={item.label} el={item.labelEl} compact wrap />
               </p>
             </div>

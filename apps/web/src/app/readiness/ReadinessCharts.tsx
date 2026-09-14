@@ -29,13 +29,17 @@ export function ReadinessRadarChartInner({
   data,
   scoreName = 'Your Score',
   benchmarkName = 'Benchmark',
+  height = 280,
 }: {
   data: RadarDatum[];
   scoreName?: string;
   benchmarkName?: string;
+  /** `'100%'` lets the radar grow into a card that has height to spare; the
+      wrapper must then resolve a height of its own (flex-1 + min-h). */
+  height?: number | string;
 }) {
   return (
-    <ResponsiveContainer width="100%" height={280}>
+    <ResponsiveContainer width="100%" height={height}>
       <RadarChart data={data} margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
         <PolarGrid className="stroke-border/40" />
         <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
